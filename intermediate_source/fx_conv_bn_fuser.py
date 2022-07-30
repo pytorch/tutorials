@@ -174,7 +174,7 @@ def fuse(model: torch.nn.Module) -> torch.nn.Module:
         # that's being called. Here, we check `Node.target` to see if it's a
         # batch norm module, and then check `Node.args[0].target` to see if the
         # input `Node` is a convolution.
-        if type(modules[node.target]) is nn.BatchNorm2d and type(modules[node.args[0].target]) is nn.Conv2d:
+        if isinstance(modules[node.target], nn.BatchNorm2d) and isinstance(modules[node.args[0].target], nn.Conv2d):
             if len(node.args[0].users) > 1:  # Output of conv is used by other nodes
                 continue
             conv = modules[node.args[0].target]

@@ -24,7 +24,7 @@ We’ll start by doing the necessary imports:
 
 ##############################################################################
 
-from __future__ import print_function, division, absolute_import
+
 import numpy as np
 import torch
 import torch.nn as nn

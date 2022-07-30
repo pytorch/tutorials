@@ -69,7 +69,7 @@ We'll end up with a dictionary of lists of names per language,
 ``{language: [names ...]}``. The generic variables "category" and "line"
 (for language and name in our case) are used for later extensibility.
 """
-from __future__ import unicode_literals, print_function, division
+
 from io import open
 import glob
 import os

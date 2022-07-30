@@ -112,7 +112,7 @@ DCGAN Tutorial
 # will be explained in the coming sections.
 # 
 
-from __future__ import print_function
+
 #%matplotlib inline
 import argparse
 import os
