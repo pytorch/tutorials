@@ -88,7 +88,7 @@ Float32
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):
@@ -121,7 +121,7 @@ BFloat16
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):
@@ -158,7 +158,7 @@ Float32
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):
@@ -183,7 +183,7 @@ BFloat16
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):
@@ -220,7 +220,7 @@ Float32
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):
@@ -250,7 +250,7 @@ BFloat16
    
    class Model(nn.Module):
        def __init__(self):
-           super(Model, self).__init__()
+           super().__init__()
            self.linear = nn.Linear(4, 5)
    
        def forward(self, input):

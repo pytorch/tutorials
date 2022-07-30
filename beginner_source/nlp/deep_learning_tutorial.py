@@ -261,7 +261,7 @@ class BoWClassifier(nn.Module):  # inheriting from nn.Module!
     def __init__(self, num_labels, vocab_size):
         # calls the init function of nn.Module.  Dont get confused by syntax,
         # just always do it in an nn.Module
-        super(BoWClassifier, self).__init__()
+        super().__init__()
 
         # Define the parameters that you will need.  In this case, we need A and b,
         # the parameters of the affine mapping.

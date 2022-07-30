@@ -43,7 +43,7 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 class PositionalEncoding(nn.Module):
 
     def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
+        super().__init__()
         self.dropout = nn.Dropout(p=dropout)
 
         pe = torch.zeros(max_len, d_model)
@@ -88,7 +88,7 @@ if torch.cuda.device_count() < 4:
 
 class Encoder(nn.Module):
     def __init__(self, ntoken, ninp, dropout=0.5):
-        super(Encoder, self).__init__()
+        super().__init__()
         self.pos_encoder = PositionalEncoding(ninp, dropout)
         self.encoder = nn.Embedding(ntoken, ninp)
         self.ninp = ninp
@@ -106,7 +106,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, ntoken, ninp):
-        super(Decoder, self).__init__()
+        super().__init__()
         self.decoder = nn.Linear(ninp, ntoken)
         self.init_weights()
 

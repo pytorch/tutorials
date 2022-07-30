@@ -197,7 +197,7 @@ class ScriptModule(torch.jit.ScriptModule):
 # methods and functions
 class Net(torch.nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         # Modules must be attributes on the Module because if you want to trace
         # or script this Module, we must be able to inherit the submodules'
         # params.

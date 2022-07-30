@@ -80,7 +80,7 @@ the two ResNet shards.
     class ResNetBase(nn.Module):
         def __init__(self, block, inplanes, num_classes=1000,
                     groups=1, width_per_group=64, norm_layer=None):
-            super(ResNetBase, self).__init__()
+            super().__init__()
 
             self._lock = threading.Lock()
             self._block = block
@@ -129,7 +129,7 @@ match.
 
     class ResNetShard1(ResNetBase):
         def __init__(self, device, *args, **kwargs):
-            super(ResNetShard1, self).__init__(
+            super().__init__(
                 Bottleneck, 64, num_classes=num_classes, *args, **kwargs)
 
             self.device = device
@@ -158,7 +158,7 @@ match.
 
     class ResNetShard2(ResNetBase):
         def __init__(self, device, *args, **kwargs):
-            super(ResNetShard2, self).__init__(
+            super().__init__(
                 Bottleneck, 512, num_classes=num_classes, *args, **kwargs)
 
             self.device = device
@@ -206,7 +206,7 @@ simplify distributed optimizer construction, which will be used later.
 
     class DistResNet50(nn.Module):
         def __init__(self, num_split, workers, *args, **kwargs):
-            super(DistResNet50, self).__init__()
+            super().__init__()
 
             self.num_split = num_split
 

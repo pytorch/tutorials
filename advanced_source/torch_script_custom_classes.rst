@@ -325,7 +325,7 @@ Once this is done, you can use the op like the following example:
 
   class TryCustomOp(torch.nn.Module):
       def __init__(self):
-          super(TryCustomOp, self).__init__()
+          super().__init__()
           self.f = torch.classes.my_classes.MyStackClass(["foo", "bar"])
 
       def forward(self):

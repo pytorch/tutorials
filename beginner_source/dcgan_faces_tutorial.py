@@ -331,7 +331,7 @@ def weights_init(m):
 
 class Generator(nn.Module):
     def __init__(self, ngpu):
-        super(Generator, self).__init__()
+        super().__init__()
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is Z, going into a convolution
@@ -405,7 +405,7 @@ print(netG)
 
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
-        super(Discriminator, self).__init__()
+        super().__init__()
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64

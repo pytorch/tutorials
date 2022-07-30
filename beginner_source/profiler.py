@@ -55,7 +55,7 @@ import torch.autograd.profiler as profiler
 
 class MyModule(nn.Module):
     def __init__(self, in_features: int, out_features: int, bias: bool = True):
-        super(MyModule, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(in_features, out_features, bias)
 
     def forward(self, input, mask):
@@ -241,7 +241,7 @@ Self CPU time total: 5.347s
 
 class MyModule(nn.Module):
     def __init__(self, in_features: int, out_features: int, bias: bool = True):
-        super(MyModule, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(in_features, out_features, bias)
 
     def forward(self, input, mask):

@@ -57,7 +57,7 @@ class MNISTConvNet(nn.Module):
         # this is the place where you instantiate all your modules
         # you can later access them using the same names you've given them in
         # here
-        super(MNISTConvNet, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(1, 10, 5)
         self.pool1 = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(10, 20, 5)
@@ -221,7 +221,7 @@ class RNN(nn.Module):
 
     # you can also accept arguments in your model constructor
     def __init__(self, data_size, hidden_size, output_size):
-        super(RNN, self).__init__()
+        super().__init__()
 
         self.hidden_size = hidden_size
         input_size = data_size + hidden_size

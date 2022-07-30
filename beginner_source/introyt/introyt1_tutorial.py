@@ -175,7 +175,7 @@ import torch.nn.functional as F  # for the activation function
 class LeNet(nn.Module):
 
     def __init__(self):
-        super(LeNet, self).__init__()
+        super().__init__()
         # 1 input image channel (black & white), 6 output channels, 3x3 square convolution
         # kernel
         self.conv1 = nn.Conv2d(1, 6, 3)
@@ -462,7 +462,7 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 class Net(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)

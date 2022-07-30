@@ -23,7 +23,7 @@ Common case, bundling an input to a model that only uses 'forward' for inference
 
     class Net(nn.Module):
         def __init__(self):
-            super(Net, self).__init__()
+            super().__init__()
             self.lin = nn.Linear(10, 1)
 
         def forward(self, x):
@@ -66,7 +66,7 @@ Uncommon case, bundling and retrieving inputs for functions beyond 'forward'
 
     class Net(nn.Module):
         def __init__(self):
-            super(Net, self).__init__()
+            super().__init__()
             self.lin = nn.Linear(10, 1)
 
         def forward(self, x):

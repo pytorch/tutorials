@@ -226,7 +226,7 @@ word_to_ix = {word: i for i, word in enumerate(vocab)}
 class NGramLanguageModeler(nn.Module):
 
     def __init__(self, vocab_size, embedding_dim, context_size):
-        super(NGramLanguageModeler, self).__init__()
+        super().__init__()
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.linear1 = nn.Linear(context_size * embedding_dim, 128)
         self.linear2 = nn.Linear(128, vocab_size)

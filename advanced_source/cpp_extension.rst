@@ -55,7 +55,7 @@ look something like this::
 
   class LLTM(torch.nn.Module):
       def __init__(self, input_features, state_size):
-          super(LLTM, self).__init__()
+          super().__init__()
           self.input_features = input_features
           self.state_size = state_size
           # 3 * state_size for input gate, output gate and candidate cell gate.
@@ -469,7 +469,7 @@ class citizens of PyTorch::
 
   class LLTM(torch.nn.Module):
       def __init__(self, input_features, state_size):
-          super(LLTM, self).__init__()
+          super().__init__()
           self.input_features = input_features
           self.state_size = state_size
           self.weights = torch.nn.Parameter(

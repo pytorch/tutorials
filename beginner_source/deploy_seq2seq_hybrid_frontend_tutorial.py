@@ -285,7 +285,7 @@ def indexesFromSentence(voc, sentence):
 
 class EncoderRNN(nn.Module):
     def __init__(self, hidden_size, embedding, n_layers=1, dropout=0):
-        super(EncoderRNN, self).__init__()
+        super().__init__()
         self.n_layers = n_layers
         self.hidden_size = hidden_size
         self.embedding = embedding
@@ -328,7 +328,7 @@ class EncoderRNN(nn.Module):
 # Luong attention layer
 class Attn(nn.Module):
     def __init__(self, method, hidden_size):
-        super(Attn, self).__init__()
+        super().__init__()
         self.method = method
         if self.method not in ['dot', 'general', 'concat']:
             raise ValueError(self.method, "is not an appropriate attention method.")
@@ -396,7 +396,7 @@ class Attn(nn.Module):
 
 class LuongAttnDecoderRNN(nn.Module):
     def __init__(self, attn_model, embedding, hidden_size, output_size, n_layers=1, dropout=0.1):
-        super(LuongAttnDecoderRNN, self).__init__()
+        super().__init__()
 
         # Keep for reference
         self.attn_model = attn_model
@@ -543,7 +543,7 @@ class LuongAttnDecoderRNN(nn.Module):
 
 class GreedySearchDecoder(nn.Module):
     def __init__(self, encoder, decoder, decoder_n_layers):
-        super(GreedySearchDecoder, self).__init__()
+        super().__init__()
         self.encoder = encoder
         self.decoder = decoder
         self._device = device

@@ -53,7 +53,7 @@ print(torch.__version__)
 
 class MyCell(torch.nn.Module):
     def __init__(self):
-        super(MyCell, self).__init__()
+        super().__init__()
 
     def forward(self, x, h):
         new_h = torch.tanh(x + h)
@@ -86,7 +86,7 @@ print(my_cell(x, h))
 
 class MyCell(torch.nn.Module):
     def __init__(self):
-        super(MyCell, self).__init__()
+        super().__init__()
         self.linear = torch.nn.Linear(4, 4)
 
     def forward(self, x, h):
@@ -133,7 +133,7 @@ class MyDecisionGate(torch.nn.Module):
 
 class MyCell(torch.nn.Module):
     def __init__(self):
-        super(MyCell, self).__init__()
+        super().__init__()
         self.dg = MyDecisionGate()
         self.linear = torch.nn.Linear(4, 4)
 
@@ -181,7 +181,7 @@ print(my_cell(x, h))
 
 class MyCell(torch.nn.Module):
     def __init__(self):
-        super(MyCell, self).__init__()
+        super().__init__()
         self.linear = torch.nn.Linear(4, 4)
 
     def forward(self, x, h):
@@ -264,7 +264,7 @@ class MyDecisionGate(torch.nn.Module):
 
 class MyCell(torch.nn.Module):
     def __init__(self, dg):
-        super(MyCell, self).__init__()
+        super().__init__()
         self.dg = dg
         self.linear = torch.nn.Linear(4, 4)
 
@@ -327,7 +327,7 @@ traced_cell(x, h)
 
 class MyRNNLoop(torch.nn.Module):
     def __init__(self):
-        super(MyRNNLoop, self).__init__()
+        super().__init__()
         self.cell = torch.jit.trace(MyCell(scripted_gate), (x, h))
 
     def forward(self, xs):
@@ -347,7 +347,7 @@ print(rnn_loop.code)
 
 class WrapRNN(torch.nn.Module):
     def __init__(self):
-        super(WrapRNN, self).__init__()
+        super().__init__()
         self.loop = torch.jit.script(MyRNNLoop())
 
     def forward(self, xs):

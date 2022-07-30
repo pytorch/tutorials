@@ -79,7 +79,7 @@ vanilla Pytorch model::
 
   class MyModule(torch.nn.Module):
       def __init__(self, N, M):
-          super(MyModule, self).__init__()
+          super().__init__()
           self.weight = torch.nn.Parameter(torch.rand(N, M))
 
       def forward(self, input):
@@ -98,7 +98,7 @@ compile the module with ``torch.jit.script`` as follows::
 
     class MyModule(torch.nn.Module):
         def __init__(self, N, M):
-            super(MyModule, self).__init__()
+            super().__init__()
             self.weight = torch.nn.Parameter(torch.rand(N, M))
 
         def forward(self, input):

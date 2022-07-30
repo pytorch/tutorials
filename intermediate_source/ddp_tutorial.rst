@@ -114,7 +114,7 @@ different DDP processes starting from different initial model parameter values.
 
     class ToyModel(nn.Module):
         def __init__(self):
-            super(ToyModel, self).__init__()
+            super().__init__()
             self.net1 = nn.Linear(10, 10)
             self.relu = nn.ReLU()
             self.net2 = nn.Linear(10, 5)
@@ -245,7 +245,7 @@ helpful when training large models with a huge amount of data.
 
     class ToyMpModel(nn.Module):
         def __init__(self, dev0, dev1):
-            super(ToyMpModel, self).__init__()
+            super().__init__()
             self.dev0 = dev0
             self.dev1 = dev1
             self.net1 = torch.nn.Linear(10, 10).to(dev0)
@@ -312,7 +312,7 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
 
     class ToyModel(nn.Module):
         def __init__(self):
-            super(ToyModel, self).__init__()
+            super().__init__()
             self.net1 = nn.Linear(10, 10)
             self.relu = nn.ReLU()
             self.net2 = nn.Linear(10, 5)

@@ -271,7 +271,7 @@ Python interface:
 
   class Net(torch.nn.Module):
     def __init__(self, N, M):
-      super(Net, self).__init__()
+      super().__init__()
       self.W = torch.nn.Parameter(torch.randn(N, M))
       self.b = torch.nn.Parameter(torch.randn(M))
 
@@ -318,7 +318,7 @@ assigned as an attribute of a module:
 
   class Net(torch.nn.Module):
     def __init__(self, N, M):
-        super(Net, self).__init__()
+        super().__init__()
         # Registered as a submodule behind the scenes
         self.linear = torch.nn.Linear(N, M)
         self.another_bias = torch.nn.Parameter(torch.rand(M))

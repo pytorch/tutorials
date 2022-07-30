@@ -41,7 +41,7 @@ Let's start with the familiar: importing our required modules and defining a sim
 
    class Net(nn.Module):
        def __init__(self, num_gpus=0):
-           super(Net, self).__init__()
+           super().__init__()
            print(f"Using {num_gpus} GPUs to train")
            self.num_gpus = num_gpus
            device = torch.device(

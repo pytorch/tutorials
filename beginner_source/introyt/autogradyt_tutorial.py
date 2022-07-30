@@ -248,7 +248,7 @@ DIM_OUT = 10
 class TinyModel(torch.nn.Module):
 
     def __init__(self):
-        super(TinyModel, self).__init__()
+        super().__init__()
         
         self.layer1 = torch.nn.Linear(1000, 100)
         self.relu = torch.nn.ReLU()

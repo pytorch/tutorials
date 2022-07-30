@@ -48,7 +48,7 @@ import torch
 class TinyModel(torch.nn.Module):
     
     def __init__(self):
-        super(TinyModel, self).__init__()
+        super().__init__()
         
         self.linear1 = torch.nn.Linear(100, 200)
         self.activation = torch.nn.ReLU()
@@ -150,7 +150,7 @@ import torch.functional as F
 class LeNet(torch.nn.Module):
 
     def __init__(self):
-        super(LeNet, self).__init__()
+        super().__init__()
         # 1 input image channel (black & white), 6 output channels, 5x5 square convolution
         # kernel
         self.conv1 = torch.nn.Conv2d(1, 6, 5)
@@ -249,7 +249,7 @@ class LeNet(torch.nn.Module):
 class LSTMTagger(torch.nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size):
-        super(LSTMTagger, self).__init__()
+        super().__init__()
         self.hidden_dim = hidden_dim
 
         self.word_embeddings = torch.nn.Embedding(vocab_size, embedding_dim)

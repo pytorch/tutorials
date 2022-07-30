@@ -109,7 +109,7 @@ class ScipyConv2dFunction(Function):
 
 class ScipyConv2d(Module):
     def __init__(self, filter_width, filter_height):
-        super(ScipyConv2d, self).__init__()
+        super().__init__()
         self.filter = Parameter(torch.randn(filter_width, filter_height))
         self.bias = Parameter(torch.randn(1, 1))
 

@@ -172,7 +172,7 @@ imshow(content_img, title='Content Image')
 class ContentLoss(nn.Module):
 
     def __init__(self, target,):
-        super(ContentLoss, self).__init__()
+        super().__init__()
         # we 'detach' the target content from the tree used
         # to dynamically compute the gradient: this is a stated value,
         # not a variable. Otherwise the forward method of the criterion
@@ -238,7 +238,7 @@ def gram_matrix(input):
 class StyleLoss(nn.Module):
 
     def __init__(self, target_feature):
-        super(StyleLoss, self).__init__()
+        super().__init__()
         self.target = gram_matrix(target_feature).detach()
 
     def forward(self, input):
@@ -280,7 +280,7 @@ cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
 # nn.Sequential
 class Normalization(nn.Module):
     def __init__(self, mean, std):
-        super(Normalization, self).__init__()
+        super().__init__()
         # .view the mean and std to make them [C x 1 x 1] so that they can
         # directly work with image Tensor of shape [B x C x H x W].
         # B is batch size. C is number of channels. H is height and W is width.

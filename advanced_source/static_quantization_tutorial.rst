@@ -87,7 +87,7 @@ Note: this code is taken from
     class ConvBNReLU(nn.Sequential):  
         def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1): 
             padding = (kernel_size - 1) // 2  
-            super(ConvBNReLU, self).__init__( 
+            super().__init__( 
                 nn.Conv2d(in_planes, out_planes, kernel_size, stride, padding, groups=groups, bias=False),  
                 nn.BatchNorm2d(out_planes, momentum=0.1), 
                 # Replace with ReLU 
@@ -97,7 +97,7 @@ Note: this code is taken from
 
     class InvertedResidual(nn.Module):  
         def __init__(self, inp, oup, stride, expand_ratio): 
-            super(InvertedResidual, self).__init__()  
+            super().__init__()  
             self.stride = stride  
             assert stride in [1, 2] 
 
@@ -137,7 +137,7 @@ Note: this code is taken from
                 round_nearest (int): Round the number of channels in each layer to be a multiple of this number 
                 Set to 1 to turn off rounding 
             """ 
-            super(MobileNetV2, self).__init__() 
+            super().__init__() 
             block = InvertedResidual  
             input_channel = 32  
             last_channel = 1280 

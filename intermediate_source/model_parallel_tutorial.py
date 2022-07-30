@@ -51,7 +51,7 @@ import torch.optim as optim
 
 class ToyModel(nn.Module):
     def __init__(self):
-        super(ToyModel, self).__init__()
+        super().__init__()
         self.net1 = torch.nn.Linear(10, 10).to('cuda:0')
         self.relu = torch.nn.ReLU()
         self.net2 = torch.nn.Linear(10, 5).to('cuda:1')
@@ -99,7 +99,7 @@ num_classes = 1000
 
 class ModelParallelResNet50(ResNet):
     def __init__(self, *args, **kwargs):
-        super(ModelParallelResNet50, self).__init__(
+        super().__init__(
             Bottleneck, [3, 4, 6, 3], num_classes=num_classes, *args, **kwargs)
 
         self.seq1 = nn.Sequential(
@@ -249,7 +249,7 @@ plot([mp_mean, rn_mean],
 
 class PipelineParallelResNet50(ModelParallelResNet50):
     def __init__(self, split_size=20, *args, **kwargs):
-        super(PipelineParallelResNet50, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.split_size = split_size
 
     def forward(self, x):

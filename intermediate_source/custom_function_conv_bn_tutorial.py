@@ -209,7 +209,7 @@ import math
 class FusedConvBN(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, exp_avg_factor=0.1,
                  eps=1e-3, device=None, dtype=None):
-        super(FusedConvBN, self).__init__()
+        super().__init__()
         factory_kwargs = {'device': device, 'dtype': dtype}
         # Conv parameters
         weight_shape = (out_channels, in_channels, kernel_size, kernel_size)
@@ -248,7 +248,7 @@ memory_allocated = [[],[]]
 
 class Net(nn.Module):
     def __init__(self, fused=True):
-        super(Net, self).__init__()
+        super().__init__()
         self.fused = fused
         if fused:
             self.convbn1 = FusedConvBN(1, 32, 3)

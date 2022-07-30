@@ -350,7 +350,7 @@ of inputs across all ranks.
         that it participates in.
         """
         def __init__(self, device, process_group):
-            super(Counter, self).__init__()
+            super().__init__()
             self.device = device
             self.process_group = process_group
             self.count = torch.tensor([0], device=device).float()

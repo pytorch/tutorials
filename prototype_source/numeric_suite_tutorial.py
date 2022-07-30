@@ -157,7 +157,7 @@ class MyOutputLogger(ns.Logger):
     """
 
     def __init__(self):
-        super(MyOutputLogger, self).__init__()
+        super().__init__()
 
     def forward(self, x):
         # Custom functionalities
@@ -249,7 +249,7 @@ class MyShadowLogger(ns.Logger):
     """
 
     def __init__(self):
-        super(MyShadowLogger, self).__init__()
+        super().__init__()
 
     def forward(self, x, y):
         # Custom functionalities
@@ -286,7 +286,7 @@ class LSTMModel(nn.Module):
     """Container module with an encoder, a recurrent module, and a decoder."""
 
     def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5):
-        super(LSTMModel, self).__init__()
+        super().__init__()
         self.encoder = nn.Embedding(ntoken, ninp)
         self.rnn = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
         self.decoder = nn.Linear(nhid, ntoken)

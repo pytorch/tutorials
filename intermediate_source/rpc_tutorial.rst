@@ -73,7 +73,7 @@ usages.
     class Policy(nn.Module):
 
         def __init__(self):
-            super(Policy, self).__init__()
+            super().__init__()
             self.affine1 = nn.Linear(4, 128)
             self.dropout = nn.Dropout(p=0.6)
             self.affine2 = nn.Linear(128, 2)
@@ -420,7 +420,7 @@ takes a GPU tensor, you need to move it to the proper device explicitly.
         Encoding layers of the RNNModel
         """
         def __init__(self, ntoken, ninp, dropout):
-            super(EmbeddingTable, self).__init__()
+            super().__init__()
             self.drop = nn.Dropout(dropout)
             self.encoder = nn.Embedding(ntoken, ninp).cuda()
             self.encoder.weight.data.uniform_(-0.1, 0.1)
@@ -431,7 +431,7 @@ takes a GPU tensor, you need to move it to the proper device explicitly.
 
     class Decoder(nn.Module):
         def __init__(self, ntoken, nhid, dropout):
-            super(Decoder, self).__init__()
+            super().__init__()
             self.drop = nn.Dropout(dropout)
             self.decoder = nn.Linear(nhid, ntoken)
             self.decoder.bias.data.zero_()
@@ -463,7 +463,7 @@ RPC functions.
 
     class RNNModel(nn.Module):
         def __init__(self, ps, ntoken, ninp, nhid, nlayers, dropout=0.5):
-            super(RNNModel, self).__init__()
+            super().__init__()
 
             # setup embedding table remotely
             self.emb_table_rref = rpc.remote(ps, EmbeddingTable, args=(ntoken, ninp, dropout))
