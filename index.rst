@@ -1,5 +1,17 @@
 Welcome to PyTorch Tutorials
 ============================
+
+What's new in PyTorch tutorials?
+
+* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
+* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
+* `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
+* `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
+* `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
+* `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=whats_new_tutorials&utm_medium=cpp_ext>`__
+* `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html?utm_source=whats_new_tutorials&utm_medium=forward_ad>`__ (added functorch API capabilities)
+* `Real Time Inference on Raspberry Pi 4 (30 fps!) <https://pytorch.org/tutorials/intermediate/realtime_rpi.html?utm_source=whats_new_tutorials&utm_medium=rpi>`__
+
 .. raw:: html
 
     <div class="tutorials-callout-container">
@@ -203,6 +215,13 @@ Welcome to PyTorch Tutorials
 .. Text
 
 .. customcarditem::
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: beginner/bettertransformer_tutorial.html
+   :tags: Production,Text
+
+.. customcarditem::
    :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
    :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
    :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
@@ -263,6 +282,7 @@ Welcome to PyTorch Tutorials
 
 
 .. Deploying PyTorch Models in Production
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -357,7 +377,7 @@ Welcome to PyTorch Tutorials
    :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
    :image: _static/img/thumbnails/cropped/realtime_rpi.png
    :link: intermediate/realtime_rpi.html
-   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+   :tags: TorchScript,Model-Optimization,Image/Video,Quantization
 
 .. customcarditem::
    :header: Autograd in C++ Frontend
@@ -472,6 +492,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
+   
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex
+   :tags: Model-Optimization,Production
 
 .. Parallel-and-Distributed-Training
 
@@ -559,6 +586,20 @@ Welcome to PyTorch Tutorials
    :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_adavnced_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -583,6 +624,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/torchrec.png
    :link: intermediate/torchrec_tutorial.html
    :tags: TorchRec,Recommender
+
+.. customcarditem::
+   :header: Exploring TorchRec sharding
+   :card_description: This tutorial covers the sharding schemes of embedding tables by using <code>EmbeddingPlanner</code> and <code>DistributedModelParallel</code> API.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: advanced/sharding.html
+   :tags: TorchRec,Recommender
+
 
 .. End of tutorial card section
 
@@ -611,9 +660,9 @@ Additional Resources
 
 .. customcalloutitem::
    :header: Examples of PyTorch
-   :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
-   :button_link: https://github.com/pytorch/examples
-   :button_text: Checkout Examples
+   :description: A set of examples around PyTorch in Vision, Text, Reinforcement Learning that you can incorporate in your existing work.
+   :button_link: https://pytorch.org/examples?utm_source=examples&utm_medium=examples-landing
+   :button_text: Check Out Examples
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
@@ -733,6 +782,7 @@ Additional Resources
    :caption: Text
 
    beginner/transformer_tutorial
+   beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
@@ -812,6 +862,7 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
+   intermediate/torchserve_with_ipex
 
 .. toctree::
    :maxdepth: 2
@@ -823,6 +874,8 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/FSDP_adavnced_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
@@ -849,3 +902,4 @@ Additional Resources
    :caption: Recommendation Systems
 
    intermediate/torchrec_tutorial
+   advanced/sharding

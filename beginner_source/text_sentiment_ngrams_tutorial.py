@@ -15,6 +15,9 @@ In this tutorial, we will show how to use the torchtext library to build the dat
 # -----------------------------------
 #
 # The torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the ``AG_NEWS`` dataset iterators yield the raw data as a tuple of label and text.
+#
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+#
 
 import torch
 from torchtext.datasets import AG_NEWS

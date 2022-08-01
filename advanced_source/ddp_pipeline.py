@@ -139,8 +139,10 @@ def run_worker(rank, world_size):
 
 
 ######################################################################
-# The training process uses Wikitext-2 dataset from ``torchtext``. The
-# vocab object is built based on the train dataset and is used to numericalize
+# The training process uses Wikitext-2 dataset from ``torchtext``. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
+#
+# The vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
 # function arranges the dataset into columns, trimming off any tokens remaining
 # after the data has been divided into batches of size ``batch_size``.
