@@ -376,9 +376,26 @@
 <p>This tutorial shows how to align transcript to speech with
 <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>, using CTC segmentation algorithm described in
 <a class="reference external" href="https://arxiv.org/abs/2007.09127">CTC-Segmentation of Large Corpora for German End-to-end Speech
-Recognition</a>.
-Overview
-——–</p>
+Recognition</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchaudio</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torchaudio</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
+
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.12.0+cu102
+0.12.0+cu102
+cuda
+</pre></div>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
 <p>The process of alignment looks like the following.</p>
 <ol class="arabic simple">
 <li><p>Estimate the frame-wise label probability from audio waveform</p></li>
@@ -388,43 +405,23 @@ labels aligned at time step.</p></li>
 </ol>
 <p>In this example, we use <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>’s <code class="docutils literal notranslate"><span class="pre">Wav2Vec2</span></code> model for
 acoustic feature extraction.</p>
+</div>
 <div class="section" id="preparation">
 <h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this heading">¶</a></h2>
 <p>First we import the necessary packages, and fetch data that we work on.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># %matplotlib inline</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchaudio</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">IPython</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">IPython</span>
 
-<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'figure.figsize'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">16.0</span><span class="p">,</span> <span class="mf">4.8</span><span class="p">]</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"figure.figsize"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">16.0</span><span class="p">,</span> <span class="mf">4.8</span><span class="p">]</span>
 
 <span class="n">torch</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">torchaudio</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
-<span class="n">SPEECH_URL</span> <span class="o">=</span> <span class="s1">'https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav'</span>
-<span class="n">SPEECH_FILE</span> <span class="o">=</span> <span class="s1">'_assets/speech.wav'</span>
-
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">):</span>
-  <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">'_assets'</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-  <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SPEECH_URL</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.12.0+cu102
-0.12.0+cu102
-cuda
+<span class="n">SPEECH_FILE</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">download_asset</span><span class="p">(</span><span class="s2">"tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -445,9 +442,9 @@ normalize the <code class="docutils literal notranslate"><span class="pre">emiss
 <span class="n">model</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
-  <span class="n">waveform</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
-  <span class="n">emissions</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
-  <span class="n">emissions</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">emissions</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">waveform</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
+    <span class="n">emissions</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
+    <span class="n">emissions</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">emissions</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">emission</span> <span class="o">=</span> <span class="n">emissions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 </pre></div>
@@ -497,29 +494,35 @@ represents the probability of label <span class="math">\(c_j\)</span> at time st
 <span class="math">\(repeat\)</span> represents the blank token from CTC formulation. (For the
 detail of CTC algorithm, please refer to the <em>Sequence Modeling with CTC</em>
 [<a class="reference external" href="https://distill.pub/2017/ctc/">distill.pub</a>])</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transcript</span> <span class="o">=</span> <span class="s1">'I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT'</span>
-<span class="n">dictionary</span>  <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transcript</span> <span class="o">=</span> <span class="s2">"I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT"</span>
+<span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)}</span>
 
 <span class="n">tokens</span> <span class="o">=</span> <span class="p">[</span><span class="n">dictionary</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">transcript</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">transcript</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)))</span>
 
-<span class="k">def</span> <span class="nf">get_trellis</span><span class="p">(</span><span class="n">emission</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">blank_id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-  <span class="n">num_frame</span> <span class="o">=</span> <span class="n">emission</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-  <span class="n">num_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
 
-  <span class="c1"># Trellis has extra diemsions for both time axis and tokens.</span>
-  <span class="c1"># The extra dim for tokens represents &lt;SoS&gt; (start-of-sentence)</span>
-  <span class="c1"># The extra dim for time axis is for simplification of the code.</span>
-  <span class="n">trellis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">num_frame</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_tokens</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">'inf'</span><span class="p">))</span>
-  <span class="n">trellis</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_frame</span><span class="p">):</span>
-    <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
-        <span class="c1"># Score for staying at the same token</span>
-        <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">blank_id</span><span class="p">],</span>
-        <span class="c1"># Score for changing to the next token</span>
-        <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">tokens</span><span class="p">],</span>
-    <span class="p">)</span>
-  <span class="k">return</span> <span class="n">trellis</span>
+<span class="k">def</span> <span class="nf">get_trellis</span><span class="p">(</span><span class="n">emission</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">blank_id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">num_frame</span> <span class="o">=</span> <span class="n">emission</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">num_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+
+    <span class="c1"># Trellis has extra diemsions for both time axis and tokens.</span>
+    <span class="c1"># The extra dim for tokens represents &lt;SoS&gt; (start-of-sentence)</span>
+    <span class="c1"># The extra dim for time axis is for simplification of the code.</span>
+    <span class="n">trellis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_tokens</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">trellis</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">trellis</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">emission</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">trellis</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">num_tokens</span><span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
+    <span class="n">trellis</span><span class="p">[</span><span class="o">-</span><span class="n">num_tokens</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_frame</span><span class="p">):</span>
+        <span class="n">trellis</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="c1"># Score for staying at the same token</span>
+            <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">blank_id</span><span class="p">],</span>
+            <span class="c1"># Score for changing to the next token</span>
+            <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">tokens</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">trellis</span>
+
 
 <span class="n">trellis</span> <span class="o">=</span> <span class="n">get_trellis</span><span class="p">(</span><span class="n">emission</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
 </pre></div>
@@ -530,7 +533,7 @@ detail of CTC algorithm, please refer to the <em>Sequence Modeling with CTC</em>
 </div>
 <div class="section" id="id1">
 <h3>Visualization<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">'lower'</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">"- Inf"</span><span class="p">,</span> <span class="p">(</span><span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">,</span> <span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -557,62 +560,188 @@ probability of each segment, we take the frame-wise probability from
 emission matrix.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Point</span><span class="p">:</span>
-  <span class="n">token_index</span><span class="p">:</span> <span class="nb">int</span>
-  <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span>
-  <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">token_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
 
 
 <span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">blank_id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-  <span class="c1"># Note:</span>
-  <span class="c1"># j and t are indices for trellis, which has extra dimensions</span>
-  <span class="c1"># for time and tokens at the beginning.</span>
-  <span class="c1"># When refering to time frame index `T` in trellis,</span>
-  <span class="c1"># the corresponding index in emission is `T-1`.</span>
-  <span class="c1"># Similarly, when refering to token index `J` in trellis,</span>
-  <span class="c1"># the corresponding index in transcript is `J-1`.</span>
-  <span class="n">j</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-  <span class="n">t_start</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">trellis</span><span class="p">[:,</span> <span class="n">j</span><span class="p">])</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="c1"># Note:</span>
+    <span class="c1"># j and t are indices for trellis, which has extra dimensions</span>
+    <span class="c1"># for time and tokens at the beginning.</span>
+    <span class="c1"># When referring to time frame index `T` in trellis,</span>
+    <span class="c1"># the corresponding index in emission is `T-1`.</span>
+    <span class="c1"># Similarly, when referring to token index `J` in trellis,</span>
+    <span class="c1"># the corresponding index in transcript is `J-1`.</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">t_start</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">trellis</span><span class="p">[:,</span> <span class="n">j</span><span class="p">])</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-  <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
-  <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-    <span class="c1"># 1. Figure out if the current position was stay or change</span>
-    <span class="c1"># Note (again):</span>
-    <span class="c1"># `emission[J-1]` is the emission at time frame `J` of trellis dimension.</span>
-    <span class="c1"># Score for token staying the same from time frame J-1 to T.</span>
-    <span class="n">stayed</span> <span class="o">=</span> <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">blank_id</span><span class="p">]</span>
-    <span class="c1"># Score for token changing from C-1 at T-1 to J at T.</span>
-    <span class="n">changed</span> <span class="o">=</span> <span class="n">trellis</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tokens</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># 1. Figure out if the current position was stay or change</span>
+        <span class="c1"># Note (again):</span>
+        <span class="c1"># `emission[J-1]` is the emission at time frame `J` of trellis dimension.</span>
+        <span class="c1"># Score for token staying the same from time frame J-1 to T.</span>
+        <span class="n">stayed</span> <span class="o">=</span> <span class="n">trellis</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blank_id</span><span class="p">]</span>
+        <span class="c1"># Score for token changing from C-1 at T-1 to J at T.</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">trellis</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tokens</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span>
 
-    <span class="c1"># 2. Store the path with frame-wise probability.</span>
-    <span class="n">prob</span> <span class="o">=</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tokens</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">changed</span> <span class="o">&gt;</span> <span class="n">stayed</span> <span class="k">else</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-    <span class="c1"># Return token index and time index in non-trellis coordinate.</span>
-    <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob</span><span class="p">))</span>
+        <span class="c1"># 2. Store the path with frame-wise probability.</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="n">emission</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tokens</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">changed</span> <span class="o">&gt;</span> <span class="n">stayed</span> <span class="k">else</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="c1"># Return token index and time index in non-trellis coordinate.</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">prob</span><span class="p">))</span>
 
-    <span class="c1"># 3. Update the token</span>
-    <span class="k">if</span> <span class="n">changed</span> <span class="o">&gt;</span> <span class="n">stayed</span><span class="p">:</span>
-      <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
-      <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">break</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Failed to align'</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">path</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># 3. Update the token</span>
+        <span class="k">if</span> <span class="n">changed</span> <span class="o">&gt;</span> <span class="n">stayed</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Failed to align"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
 
 <span class="n">path</span> <span class="o">=</span> <span class="n">backtrack</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[Point(token_index=0, time_index=30, score=0.9999842643737793), Point(token_index=0, time_index=31, score=0.9846924543380737), Point(token_index=0, time_index=32, score=0.999970555305481), Point(token_index=0, time_index=33, score=0.15400339663028717), Point(token_index=1, time_index=34, score=0.9999173879623413), Point(token_index=1, time_index=35, score=0.6080788373947144), Point(token_index=2, time_index=36, score=0.9997721314430237), Point(token_index=2, time_index=37, score=0.9997128844261169), Point(token_index=3, time_index=38, score=0.9999358654022217), Point(token_index=3, time_index=39, score=0.9861688017845154), Point(token_index=4, time_index=40, score=0.9238617420196533), Point(token_index=4, time_index=41, score=0.9257278442382812), Point(token_index=4, time_index=42, score=0.01566038466989994), Point(token_index=5, time_index=43, score=0.9998378753662109), Point(token_index=6, time_index=44, score=0.9988445043563843), Point(token_index=6, time_index=45, score=0.10143067687749863), Point(token_index=7, time_index=46, score=0.9999427795410156), Point(token_index=7, time_index=47, score=0.9999943971633911), Point(token_index=8, time_index=48, score=0.9979605674743652), Point(token_index=8, time_index=49, score=0.0360388308763504), Point(token_index=8, time_index=50, score=0.06163577362895012), Point(token_index=9, time_index=51, score=4.3347572500351816e-05), Point(token_index=10, time_index=52, score=0.9999799728393555), Point(token_index=10, time_index=53, score=0.9967108964920044), Point(token_index=10, time_index=54, score=0.9999256134033203), Point(token_index=11, time_index=55, score=0.9999982118606567), Point(token_index=11, time_index=56, score=0.9990687966346741), Point(token_index=11, time_index=57, score=0.9999996423721313), Point(token_index=11, time_index=58, score=0.9999996423721313), Point(token_index=11, time_index=59, score=0.8457356095314026), Point(token_index=12, time_index=60, score=0.9999996423721313), Point(token_index=12, time_index=61, score=0.9996013045310974), Point(token_index=13, time_index=62, score=0.999998927116394), Point(token_index=13, time_index=63, score=0.003525640582665801), Point(token_index=13, time_index=64, score=1.0), Point(token_index=13, time_index=65, score=1.0), Point(token_index=14, time_index=66, score=0.9999915361404419), Point(token_index=14, time_index=67, score=0.9971593618392944), Point(token_index=14, time_index=68, score=0.9999990463256836), Point(token_index=14, time_index=69, score=0.9999992847442627), Point(token_index=14, time_index=70, score=0.9999997615814209), Point(token_index=14, time_index=71, score=0.9999998807907104), Point(token_index=14, time_index=72, score=0.9999880790710449), Point(token_index=14, time_index=73, score=0.011425008997321129), Point(token_index=15, time_index=74, score=0.9999977350234985), Point(token_index=15, time_index=75, score=0.9996135830879211), Point(token_index=15, time_index=76, score=0.999998927116394), Point(token_index=15, time_index=77, score=0.9727545380592346), Point(token_index=16, time_index=78, score=0.999998927116394), Point(token_index=16, time_index=79, score=0.9949339032173157), Point(token_index=16, time_index=80, score=0.999998927116394), Point(token_index=16, time_index=81, score=0.9999121427536011), Point(token_index=17, time_index=82, score=0.9999774694442749), Point(token_index=17, time_index=83, score=0.6575940847396851), Point(token_index=17, time_index=84, score=0.9984299540519714), Point(token_index=18, time_index=85, score=0.9999876022338867), Point(token_index=18, time_index=86, score=0.9993749260902405), Point(token_index=18, time_index=87, score=0.9999988079071045), Point(token_index=18, time_index=88, score=0.10423431545495987), Point(token_index=19, time_index=89, score=0.9999969005584717), Point(token_index=19, time_index=90, score=0.3978341519832611), Point(token_index=20, time_index=91, score=0.9999932050704956), Point(token_index=20, time_index=92, score=1.698824576124025e-06), Point(token_index=20, time_index=93, score=0.9861288666725159), Point(token_index=21, time_index=94, score=0.9999960660934448), Point(token_index=21, time_index=95, score=0.9992732405662537), Point(token_index=21, time_index=96, score=0.9993410706520081), Point(token_index=22, time_index=97, score=0.9999983310699463), Point(token_index=22, time_index=98, score=0.9999971389770508), Point(token_index=22, time_index=99, score=0.9999998807907104), Point(token_index=22, time_index=100, score=0.9999995231628418), Point(token_index=23, time_index=101, score=0.9999732971191406), Point(token_index=23, time_index=102, score=0.9983227849006653), Point(token_index=23, time_index=103, score=0.9999991655349731), Point(token_index=23, time_index=104, score=0.9999996423721313), Point(token_index=23, time_index=105, score=0.9999998807907104), Point(token_index=23, time_index=106, score=1.0), Point(token_index=23, time_index=107, score=0.9998630285263062), Point(token_index=24, time_index=108, score=0.9999980926513672), Point(token_index=24, time_index=109, score=0.9988582134246826), Point(token_index=25, time_index=110, score=0.9999798536300659), Point(token_index=25, time_index=111, score=0.8573148250579834), Point(token_index=26, time_index=112, score=0.9999847412109375), Point(token_index=26, time_index=113, score=0.9870273470878601), Point(token_index=26, time_index=114, score=1.9043951397179626e-05), Point(token_index=27, time_index=115, score=0.9999794960021973), Point(token_index=27, time_index=116, score=0.9998255372047424), Point(token_index=28, time_index=117, score=0.9999990463256836), Point(token_index=28, time_index=118, score=0.9999732971191406), Point(token_index=28, time_index=119, score=0.0009000634308904409), Point(token_index=29, time_index=120, score=0.9993476271629333), Point(token_index=29, time_index=121, score=0.9975456595420837), Point(token_index=29, time_index=122, score=0.0003050032537430525), Point(token_index=30, time_index=123, score=0.9999344348907471), Point(token_index=30, time_index=124, score=6.078783371776808e-06), Point(token_index=31, time_index=125, score=0.9833160042762756), Point(token_index=32, time_index=126, score=0.9974580407142639), Point(token_index=32, time_index=127, score=0.0008231091196648777), Point(token_index=33, time_index=128, score=0.9965152740478516), Point(token_index=33, time_index=129, score=0.017463626340031624), Point(token_index=34, time_index=130, score=0.9989171028137207), Point(token_index=35, time_index=131, score=0.9999697208404541), Point(token_index=35, time_index=132, score=0.9999843835830688), Point(token_index=36, time_index=133, score=0.9997640252113342), Point(token_index=36, time_index=134, score=0.5094714164733887), Point(token_index=37, time_index=135, score=0.9998301267623901), Point(token_index=37, time_index=136, score=0.08526826649904251), Point(token_index=37, time_index=137, score=0.004072640556842089), Point(token_index=38, time_index=138, score=0.9999815225601196), Point(token_index=38, time_index=139, score=0.012052125297486782), Point(token_index=38, time_index=140, score=0.9999980926513672), Point(token_index=38, time_index=141, score=0.0005778271006420255), Point(token_index=39, time_index=142, score=0.9999067783355713), Point(token_index=39, time_index=143, score=0.9999960660934448), Point(token_index=39, time_index=144, score=0.9999980926513672), Point(token_index=40, time_index=145, score=0.9999916553497314), Point(token_index=40, time_index=146, score=0.9971164464950562), Point(token_index=40, time_index=147, score=0.9981799125671387), Point(token_index=41, time_index=148, score=0.9999310970306396), Point(token_index=41, time_index=149, score=0.9879486560821533), Point(token_index=41, time_index=150, score=0.9997625946998596), Point(token_index=42, time_index=151, score=0.9999535083770752), Point(token_index=43, time_index=152, score=0.9999715089797974), Point(token_index=44, time_index=153, score=0.6811389923095703)]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Point(token_index=0, time_index=30, score=0.9999842643737793)
+Point(token_index=0, time_index=31, score=0.9846924543380737)
+Point(token_index=0, time_index=32, score=0.999970555305481)
+Point(token_index=0, time_index=33, score=0.15400339663028717)
+Point(token_index=1, time_index=34, score=0.9999173879623413)
+Point(token_index=1, time_index=35, score=0.6080788373947144)
+Point(token_index=2, time_index=36, score=0.9997721314430237)
+Point(token_index=2, time_index=37, score=0.9997128844261169)
+Point(token_index=3, time_index=38, score=0.9999358654022217)
+Point(token_index=3, time_index=39, score=0.9861688017845154)
+Point(token_index=4, time_index=40, score=0.9238617420196533)
+Point(token_index=4, time_index=41, score=0.9257278442382812)
+Point(token_index=4, time_index=42, score=0.01566038466989994)
+Point(token_index=5, time_index=43, score=0.9998378753662109)
+Point(token_index=6, time_index=44, score=0.9988445043563843)
+Point(token_index=6, time_index=45, score=0.10143067687749863)
+Point(token_index=7, time_index=46, score=0.9999427795410156)
+Point(token_index=7, time_index=47, score=0.9999943971633911)
+Point(token_index=8, time_index=48, score=0.9979605674743652)
+Point(token_index=8, time_index=49, score=0.0360388308763504)
+Point(token_index=8, time_index=50, score=0.06163577362895012)
+Point(token_index=9, time_index=51, score=4.3347572500351816e-05)
+Point(token_index=10, time_index=52, score=0.9999799728393555)
+Point(token_index=10, time_index=53, score=0.9967108964920044)
+Point(token_index=10, time_index=54, score=0.9999256134033203)
+Point(token_index=11, time_index=55, score=0.9999982118606567)
+Point(token_index=11, time_index=56, score=0.9990687966346741)
+Point(token_index=11, time_index=57, score=0.9999996423721313)
+Point(token_index=11, time_index=58, score=0.9999996423721313)
+Point(token_index=11, time_index=59, score=0.8457356095314026)
+Point(token_index=12, time_index=60, score=0.9999996423721313)
+Point(token_index=12, time_index=61, score=0.9996013045310974)
+Point(token_index=13, time_index=62, score=0.999998927116394)
+Point(token_index=13, time_index=63, score=0.003525640582665801)
+Point(token_index=13, time_index=64, score=1.0)
+Point(token_index=13, time_index=65, score=1.0)
+Point(token_index=14, time_index=66, score=0.9999915361404419)
+Point(token_index=14, time_index=67, score=0.9971593618392944)
+Point(token_index=14, time_index=68, score=0.9999990463256836)
+Point(token_index=14, time_index=69, score=0.9999992847442627)
+Point(token_index=14, time_index=70, score=0.9999997615814209)
+Point(token_index=14, time_index=71, score=0.9999998807907104)
+Point(token_index=14, time_index=72, score=0.9999880790710449)
+Point(token_index=14, time_index=73, score=0.011425008997321129)
+Point(token_index=15, time_index=74, score=0.9999977350234985)
+Point(token_index=15, time_index=75, score=0.9996135830879211)
+Point(token_index=15, time_index=76, score=0.999998927116394)
+Point(token_index=15, time_index=77, score=0.9727545380592346)
+Point(token_index=16, time_index=78, score=0.999998927116394)
+Point(token_index=16, time_index=79, score=0.9949339032173157)
+Point(token_index=16, time_index=80, score=0.999998927116394)
+Point(token_index=16, time_index=81, score=0.9999121427536011)
+Point(token_index=17, time_index=82, score=0.9999774694442749)
+Point(token_index=17, time_index=83, score=0.6575940847396851)
+Point(token_index=17, time_index=84, score=0.9984299540519714)
+Point(token_index=18, time_index=85, score=0.9999876022338867)
+Point(token_index=18, time_index=86, score=0.9993749260902405)
+Point(token_index=18, time_index=87, score=0.9999988079071045)
+Point(token_index=18, time_index=88, score=0.10423431545495987)
+Point(token_index=19, time_index=89, score=0.9999969005584717)
+Point(token_index=19, time_index=90, score=0.3978341519832611)
+Point(token_index=20, time_index=91, score=0.9999932050704956)
+Point(token_index=20, time_index=92, score=1.698824576124025e-06)
+Point(token_index=20, time_index=93, score=0.9861288666725159)
+Point(token_index=21, time_index=94, score=0.9999960660934448)
+Point(token_index=21, time_index=95, score=0.9992732405662537)
+Point(token_index=21, time_index=96, score=0.9993410706520081)
+Point(token_index=22, time_index=97, score=0.9999983310699463)
+Point(token_index=22, time_index=98, score=0.9999971389770508)
+Point(token_index=22, time_index=99, score=0.9999998807907104)
+Point(token_index=22, time_index=100, score=0.9999995231628418)
+Point(token_index=23, time_index=101, score=0.9999732971191406)
+Point(token_index=23, time_index=102, score=0.9983227849006653)
+Point(token_index=23, time_index=103, score=0.9999991655349731)
+Point(token_index=23, time_index=104, score=0.9999996423721313)
+Point(token_index=23, time_index=105, score=0.9999998807907104)
+Point(token_index=23, time_index=106, score=1.0)
+Point(token_index=23, time_index=107, score=0.9998630285263062)
+Point(token_index=24, time_index=108, score=0.9999980926513672)
+Point(token_index=24, time_index=109, score=0.9988582134246826)
+Point(token_index=25, time_index=110, score=0.9999798536300659)
+Point(token_index=25, time_index=111, score=0.8573148250579834)
+Point(token_index=26, time_index=112, score=0.9999847412109375)
+Point(token_index=26, time_index=113, score=0.9870273470878601)
+Point(token_index=26, time_index=114, score=1.9043951397179626e-05)
+Point(token_index=27, time_index=115, score=0.9999794960021973)
+Point(token_index=27, time_index=116, score=0.9998255372047424)
+Point(token_index=28, time_index=117, score=0.9999990463256836)
+Point(token_index=28, time_index=118, score=0.9999732971191406)
+Point(token_index=28, time_index=119, score=0.0009000634308904409)
+Point(token_index=29, time_index=120, score=0.9993476271629333)
+Point(token_index=29, time_index=121, score=0.9975456595420837)
+Point(token_index=29, time_index=122, score=0.0003050032537430525)
+Point(token_index=30, time_index=123, score=0.9999344348907471)
+Point(token_index=30, time_index=124, score=6.078783371776808e-06)
+Point(token_index=31, time_index=125, score=0.9833160042762756)
+Point(token_index=32, time_index=126, score=0.9974580407142639)
+Point(token_index=32, time_index=127, score=0.0008231091196648777)
+Point(token_index=33, time_index=128, score=0.9965152740478516)
+Point(token_index=33, time_index=129, score=0.017463626340031624)
+Point(token_index=34, time_index=130, score=0.9989171028137207)
+Point(token_index=35, time_index=131, score=0.9999697208404541)
+Point(token_index=35, time_index=132, score=0.9999843835830688)
+Point(token_index=36, time_index=133, score=0.9997640252113342)
+Point(token_index=36, time_index=134, score=0.5094714164733887)
+Point(token_index=37, time_index=135, score=0.9998301267623901)
+Point(token_index=37, time_index=136, score=0.08526826649904251)
+Point(token_index=37, time_index=137, score=0.004072640556842089)
+Point(token_index=38, time_index=138, score=0.9999815225601196)
+Point(token_index=38, time_index=139, score=0.012052125297486782)
+Point(token_index=38, time_index=140, score=0.9999980926513672)
+Point(token_index=38, time_index=141, score=0.0005778271006420255)
+Point(token_index=39, time_index=142, score=0.9999067783355713)
+Point(token_index=39, time_index=143, score=0.9999960660934448)
+Point(token_index=39, time_index=144, score=0.9999980926513672)
+Point(token_index=40, time_index=145, score=0.9999916553497314)
+Point(token_index=40, time_index=146, score=0.9971164464950562)
+Point(token_index=40, time_index=147, score=0.9981799125671387)
+Point(token_index=41, time_index=148, score=0.9999310970306396)
+Point(token_index=41, time_index=149, score=0.9879486560821533)
+Point(token_index=41, time_index=150, score=0.9997625946998596)
+Point(token_index=42, time_index=151, score=0.9999535083770752)
+Point(token_index=43, time_index=152, score=0.9999715089797974)
+Point(token_index=44, time_index=153, score=0.6811389923095703)
 </pre></div>
 </div>
 <div class="section" id="id2">
 <h3>Visualization<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_trellis_with_path</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-  <span class="c1"># To plot trellis with path, we take advantage of 'nan' value</span>
-  <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">token_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">)</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">'lower'</span><span class="p">)</span>
+    <span class="c1"># To plot trellis with path, we take advantage of 'nan' value</span>
+    <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">token_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">)</span>
+
 
 <span class="n">plot_trellis_with_path</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"The path found by backtracking"</span><span class="p">)</span>
@@ -627,32 +756,41 @@ probability for the merged segments.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Merge the labels</span>
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Segment</span><span class="p">:</span>
-  <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
-  <span class="n">start</span><span class="p">:</span> <span class="nb">int</span>
-  <span class="n">end</span><span class="p">:</span> <span class="nb">int</span>
-  <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
 
-  <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="se">\t</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">4.2f</span><span class="si">}</span><span class="s2">): [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2">)"</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="se">\t</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">4.2f</span><span class="si">}</span><span class="s2">): [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="si">:</span><span class="s2">5d</span><span class="si">}</span><span class="s2">)"</span>
 
-  <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
 
 <span class="k">def</span> <span class="nf">merge_repeats</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-  <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-  <span class="n">segments</span> <span class="o">=</span> <span class="p">[]</span>
-  <span class="k">while</span> <span class="n">i1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="k">while</span> <span class="n">i2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span> <span class="o">==</span> <span class="n">path</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span><span class="p">:</span>
-      <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">score</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">i2</span> <span class="o">-</span> <span class="n">i1</span><span class="p">)</span>
-    <span class="n">segments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Segment</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">i2</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
-    <span class="n">i1</span> <span class="o">=</span> <span class="n">i2</span>
-  <span class="k">return</span> <span class="n">segments</span>
+    <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">i2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span> <span class="o">==</span> <span class="n">path</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span><span class="p">:</span>
+            <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">score</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">i2</span> <span class="o">-</span> <span class="n">i1</span><span class="p">)</span>
+        <span class="n">segments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Segment</span><span class="p">(</span>
+                <span class="n">transcript</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">token_index</span><span class="p">],</span>
+                <span class="n">path</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span>
+                <span class="n">path</span><span class="p">[</span><span class="n">i2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">score</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="n">i2</span>
+    <span class="k">return</span> <span class="n">segments</span>
+
 
 <span class="n">segments</span> <span class="o">=</span> <span class="n">merge_repeats</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -707,43 +845,44 @@ T       (0.68): [  153,   154)
 <div class="section" id="id3">
 <h3>Visualization<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_trellis_with_segments</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">transcript</span><span class="p">):</span>
-  <span class="c1"># To plot trellis with path, we take advantage of 'nan' value</span>
-  <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">)</span>
+    <span class="c1"># To plot trellis with path, we take advantage of 'nan' value</span>
+    <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
 
-  <span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">))</span>
-  <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Path, label and probability for each label"</span><span class="p">)</span>
-  <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">'lower'</span><span class="p">)</span>
-  <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">))</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Path, label and probability for each label"</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
 
-  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mf">.7</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="s1">'bold'</span><span class="p">)</span>
-      <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="mf">.3</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">4.3</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">4.3</span><span class="p">))</span>
 
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Label probability with and without repetation"</span><span class="p">)</span>
-  <span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
-  <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">.4</span><span class="p">)</span>
-      <span class="n">hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
-      <span class="n">ws</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-      <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mf">.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="s1">'bold'</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">ws</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'gray'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Label probability with and without repetation"</span><span class="p">)</span>
+    <span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">0.4</span><span class="p">)</span>
+            <span class="n">hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
+            <span class="n">ws</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mf">0.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">),</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">ws</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
 
-  <span class="n">xs</span><span class="p">,</span> <span class="n">hs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-  <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">token_index</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">time_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-      <span class="n">hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
+    <span class="n">xs</span><span class="p">,</span> <span class="n">hs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">token_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">time_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">score</span><span class="p">)</span>
 
-  <span class="n">ax2</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'black'</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ax1</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ax1</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
+
 
 <span class="n">plot_trellis_with_segments</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">transcript</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -757,25 +896,26 @@ as the word boundary, so we merge the segments before each occurance of
 <p>Then, finally, we segment the original audio into segmented audio and
 listen to them to see if the segmentation is correct.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Merge words</span>
-<span class="k">def</span> <span class="nf">merge_words</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="s1">'|'</span><span class="p">):</span>
-  <span class="n">words</span> <span class="o">=</span> <span class="p">[]</span>
-  <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="n">i1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span> <span class="ow">or</span> <span class="n">segments</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">separator</span><span class="p">:</span>
-      <span class="k">if</span> <span class="n">i1</span> <span class="o">!=</span> <span class="n">i2</span><span class="p">:</span>
-        <span class="n">segs</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
-        <span class="n">word</span> <span class="o">=</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">])</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">seg</span><span class="o">.</span><span class="n">length</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">length</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">)</span>
-        <span class="n">words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Segment</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i2</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
-      <span class="n">i1</span> <span class="o">=</span> <span class="n">i2</span> <span class="o">+</span> <span class="mi">1</span>
-      <span class="n">i2</span> <span class="o">=</span> <span class="n">i1</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">return</span> <span class="n">words</span>
+<span class="k">def</span> <span class="nf">merge_words</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="s2">"|"</span><span class="p">):</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span> <span class="ow">or</span> <span class="n">segments</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">separator</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i1</span> <span class="o">!=</span> <span class="n">i2</span><span class="p">:</span>
+                <span class="n">segs</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+                <span class="n">word</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">])</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span> <span class="o">*</span> <span class="n">seg</span><span class="o">.</span><span class="n">length</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">length</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segs</span><span class="p">)</span>
+                <span class="n">words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Segment</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="n">i2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+            <span class="n">i1</span> <span class="o">=</span> <span class="n">i2</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">i2</span> <span class="o">=</span> <span class="n">i1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">words</span>
+
 
 <span class="n">word_segments</span> <span class="o">=</span> <span class="n">merge_words</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_segments</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -794,63 +934,69 @@ MOMENT  (0.97): [  142,   154)
 <div class="section" id="id4">
 <h3>Visualization<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_alignments</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">word_segments</span><span class="p">,</span> <span class="n">waveform</span><span class="p">):</span>
-  <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">seg</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">)</span>
+    <span class="n">trellis_with_path</span> <span class="o">=</span> <span class="n">trellis</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">trellis_with_path</span><span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">seg</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
 
-  <span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">))</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">))</span>
 
-  <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">'lower'</span><span class="p">)</span>
-  <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
-  <span class="n">ax1</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">trellis_with_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
 
-  <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_segments</span><span class="p">:</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_segments</span><span class="p">:</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
 
-  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">))</span>
-      <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">))</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 
-  <span class="c1"># The original waveform</span>
-  <span class="n">ratio</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
-  <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_segments</span><span class="p">:</span>
-    <span class="n">x0</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">start</span>
-    <span class="n">x1</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">end</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
+    <span class="c1"># The original waveform</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_segments</span><span class="p">:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">end</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
 
-  <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s1">'|'</span><span class="p">:</span>
-      <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">))</span>
-  <span class="n">xticks</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">()</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">xticks</span><span class="p">,</span> <span class="n">xticks</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'time [second]'</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-  <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">label</span> <span class="o">!=</span> <span class="s2">"|"</span><span class="p">:</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">start</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">))</span>
+    <span class="n">xticks</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">xticks</span><span class="p">,</span> <span class="n">xticks</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time [second]"</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
-<span class="n">plot_alignments</span><span class="p">(</span><span class="n">trellis</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">word_segments</span><span class="p">,</span> <span class="n">waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span>
+
+<span class="n">plot_alignments</span><span class="p">(</span>
+    <span class="n">trellis</span><span class="p">,</span>
+    <span class="n">segments</span><span class="p">,</span>
+    <span class="n">word_segments</span><span class="p">,</span>
+    <span class="n">waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="c1"># A trick to embed the resulting audio to the generated file.</span>
-<span class="c1"># `IPython.display.Audio` has to be the last call in a cell,</span>
-<span class="c1"># and there should be only one call par cell.</span>
-<span class="k">def</span> <span class="nf">display_segment</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
-  <span class="n">ratio</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="n">word</span> <span class="o">=</span> <span class="n">word_segments</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-  <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-  <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-  <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_assets/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">.wav"</span>
-  <span class="n">torchaudio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">waveform</span><span class="p">[:,</span> <span class="n">x0</span><span class="p">:</span><span class="n">x1</span><span class="p">],</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
-  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">x0</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">x1</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> sec"</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_forced_alignment_with_torchaudio_tutorial_005.png" class="sphx-glr-single-img" src="../_images/sphx_glr_forced_alignment_with_torchaudio_tutorial_005.png"/>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># A trick to embed the resulting audio to the generated file.</span>
+<span class="c1"># `IPython.display.Audio` has to be the last call in a cell,</span>
+<span class="c1"># and there should be only one call par cell.</span>
+<span class="k">def</span> <span class="nf">display_segment</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">trellis</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">word</span> <span class="o">=</span> <span class="n">word_segments</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="n">word</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">x0</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">x1</span> <span class="o">/</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> sec"</span><span class="p">)</span>
+    <span class="n">segment</span> <span class="o">=</span> <span class="n">waveform</span><span class="p">[:,</span> <span class="n">x0</span><span class="p">:</span><span class="n">x1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">rate</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate the audio for each segment</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span>
 <span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
@@ -929,7 +1075,7 @@ MOMENT  (0.97): [  142,   154)
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>In this tutorial, we looked how to use torchaudio’s Wav2Vec2 model to
 perform CTC segmentation for forced alignment.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.595 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  7.188 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-forced-alignment-with-torchaudio-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/fb41e66541f035797afa084a35353686/forced_alignment_with_torchaudio_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">forced_alignment_with_torchaudio_tutorial.py</span></code></a></p>
@@ -984,6 +1130,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Forced Alignment with Wav2Vec2</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#preparation">Preparation</a></li>
 <li><a class="reference internal" href="#generate-frame-wise-label-probability">Generate frame-wise label probability</a><ul>
 <li><a class="reference internal" href="#visualization">Visualization</a></li>

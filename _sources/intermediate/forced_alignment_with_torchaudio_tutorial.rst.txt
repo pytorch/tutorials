@@ -16,6 +16,36 @@ This tutorial shows how to align transcript to speech with
 ``torchaudio``, using CTC segmentation algorithm described in
 `CTC-Segmentation of Large Corpora for German End-to-end Speech
 Recognition <https://arxiv.org/abs/2007.09127>`__.
+
+.. code-block:: default
+
+
+    import torch
+    import torchaudio
+
+    print(torch.__version__)
+    print(torchaudio.__version__)
+
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    1.12.0+cu102
+    0.12.0+cu102
+    cuda
+
+
 Overview
 --------
 
@@ -42,46 +72,23 @@ First we import the necessary packages, and fetch data that we work on.
 
     # %matplotlib inline
 
-    import os
     from dataclasses import dataclass
 
-    import torch
-    import torchaudio
-    import requests
+    import IPython
     import matplotlib
     import matplotlib.pyplot as plt
-    import IPython
 
-    matplotlib.rcParams['figure.figsize'] = [16.0, 4.8]
+    matplotlib.rcParams["figure.figsize"] = [16.0, 4.8]
 
     torch.random.manual_seed(0)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    print(torch.__version__)
-    print(torchaudio.__version__)
-    print(device)
-
-    SPEECH_URL = 'https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav'
-    SPEECH_FILE = '_assets/speech.wav'
-
-    if not os.path.exists(SPEECH_FILE):
-      os.makedirs('_assets', exist_ok=True)
-      with open(SPEECH_FILE, 'wb') as file:
-        file.write(requests.get(SPEECH_URL).content)
+    SPEECH_FILE = torchaudio.utils.download_asset("tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
 
- Out:
-
- .. code-block:: none
-
-    1.12.0+cu102
-    0.12.0+cu102
-    cuda
 
 
 Generate frame-wise label probability
@@ -109,9 +116,9 @@ labels.
     model = bundle.get_model().to(device)
     labels = bundle.get_labels()
     with torch.inference_mode():
-      waveform, _ = torchaudio.load(SPEECH_FILE)
-      emissions, _ = model(waveform.to(device))
-      emissions = torch.log_softmax(emissions, dim=-1)
+        waveform, _ = torchaudio.load(SPEECH_FILE)
+        emissions, _ = model(waveform.to(device))
+        emissions = torch.log_softmax(emissions, dim=-1)
 
     emission = emissions[0].cpu().detach()
 
@@ -193,29 +200,35 @@ detail of CTC algorithm, please refer to the *Sequence Modeling with CTC*
 .. code-block:: default
 
 
-    transcript = 'I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT'
-    dictionary  = {c: i for i, c in enumerate(labels)}
+    transcript = "I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT"
+    dictionary = {c: i for i, c in enumerate(labels)}
 
     tokens = [dictionary[c] for c in transcript]
     print(list(zip(transcript, tokens)))
 
-    def get_trellis(emission, tokens, blank_id=0):
-      num_frame = emission.size(0)
-      num_tokens = len(tokens)
 
-      # Trellis has extra diemsions for both time axis and tokens.
-      # The extra dim for tokens represents <SoS> (start-of-sentence)
-      # The extra dim for time axis is for simplification of the code. 
-      trellis = torch.full((num_frame+1, num_tokens+1), -float('inf'))
-      trellis[:, 0] = 0
-      for t in range(num_frame):
-        trellis[t+1, 1:] = torch.maximum(
-            # Score for staying at the same token
-            trellis[t, 1:] + emission[t, blank_id],
-            # Score for changing to the next token
-            trellis[t, :-1] + emission[t, tokens],
-        )
-      return trellis
+    def get_trellis(emission, tokens, blank_id=0):
+        num_frame = emission.size(0)
+        num_tokens = len(tokens)
+
+        # Trellis has extra diemsions for both time axis and tokens.
+        # The extra dim for tokens represents <SoS> (start-of-sentence)
+        # The extra dim for time axis is for simplification of the code.
+        trellis = torch.empty((num_frame + 1, num_tokens + 1))
+        trellis[0, 0] = 0
+        trellis[1:, 0] = torch.cumsum(emission[:, 0], 0)
+        trellis[0, -num_tokens:] = -float("inf")
+        trellis[-num_tokens:, 0] = float("inf")
+
+        for t in range(num_frame):
+            trellis[t + 1, 1:] = torch.maximum(
+                # Score for staying at the same token
+                trellis[t, 1:] + emission[t, blank_id],
+                # Score for changing to the next token
+                trellis[t, :-1] + emission[t, tokens],
+            )
+        return trellis
+
 
     trellis = get_trellis(emission, tokens)
 
@@ -238,7 +251,7 @@ Visualization
 
 .. code-block:: default
 
-    plt.imshow(trellis[1:, 1:].T, origin='lower')
+    plt.imshow(trellis[1:, 1:].T, origin="lower")
     plt.annotate("- Inf", (trellis.size(1) / 5, trellis.size(1) / 1.5))
     plt.colorbar()
     plt.show()
@@ -280,50 +293,54 @@ emission matrix.
 .. code-block:: default
 
 
+
     @dataclass
     class Point:
-      token_index: int
-      time_index: int
-      score: float
+        token_index: int
+        time_index: int
+        score: float
 
 
     def backtrack(trellis, emission, tokens, blank_id=0):
-      # Note:
-      # j and t are indices for trellis, which has extra dimensions 
-      # for time and tokens at the beginning.
-      # When refering to time frame index `T` in trellis,
-      # the corresponding index in emission is `T-1`.
-      # Similarly, when refering to token index `J` in trellis,
-      # the corresponding index in transcript is `J-1`.
-      j = trellis.size(1) - 1
-      t_start = torch.argmax(trellis[:, j]).item()
+        # Note:
+        # j and t are indices for trellis, which has extra dimensions
+        # for time and tokens at the beginning.
+        # When referring to time frame index `T` in trellis,
+        # the corresponding index in emission is `T-1`.
+        # Similarly, when referring to token index `J` in trellis,
+        # the corresponding index in transcript is `J-1`.
+        j = trellis.size(1) - 1
+        t_start = torch.argmax(trellis[:, j]).item()
 
-      path = []
-      for t in range(t_start, 0, -1):
-        # 1. Figure out if the current position was stay or change
-        # Note (again):
-        # `emission[J-1]` is the emission at time frame `J` of trellis dimension.
-        # Score for token staying the same from time frame J-1 to T.
-        stayed = trellis[t-1, j] + emission[t-1, blank_id]
-        # Score for token changing from C-1 at T-1 to J at T.
-        changed = trellis[t-1, j-1] + emission[t-1, tokens[j-1]]
+        path = []
+        for t in range(t_start, 0, -1):
+            # 1. Figure out if the current position was stay or change
+            # Note (again):
+            # `emission[J-1]` is the emission at time frame `J` of trellis dimension.
+            # Score for token staying the same from time frame J-1 to T.
+            stayed = trellis[t - 1, j] + emission[t - 1, blank_id]
+            # Score for token changing from C-1 at T-1 to J at T.
+            changed = trellis[t - 1, j - 1] + emission[t - 1, tokens[j - 1]]
 
-        # 2. Store the path with frame-wise probability.
-        prob = emission[t-1, tokens[j-1] if changed > stayed else 0].exp().item()
-        # Return token index and time index in non-trellis coordinate.
-        path.append(Point(j-1, t-1, prob))
+            # 2. Store the path with frame-wise probability.
+            prob = emission[t - 1, tokens[j - 1] if changed > stayed else 0].exp().item()
+            # Return token index and time index in non-trellis coordinate.
+            path.append(Point(j - 1, t - 1, prob))
 
-        # 3. Update the token
-        if changed > stayed:
-          j -= 1
-          if j == 0:
-            break
-      else:
-        raise ValueError('Failed to align')
-      return path[::-1]
+            # 3. Update the token
+            if changed > stayed:
+                j -= 1
+                if j == 0:
+                    break
+        else:
+            raise ValueError("Failed to align")
+        return path[::-1]
+
 
     path = backtrack(trellis, emission, tokens)
-    print(path)
+    for p in path:
+        print(p)
+
 
 
 
@@ -335,7 +352,130 @@ emission matrix.
 
  .. code-block:: none
 
-    [Point(token_index=0, time_index=30, score=0.9999842643737793), Point(token_index=0, time_index=31, score=0.9846924543380737), Point(token_index=0, time_index=32, score=0.999970555305481), Point(token_index=0, time_index=33, score=0.15400339663028717), Point(token_index=1, time_index=34, score=0.9999173879623413), Point(token_index=1, time_index=35, score=0.6080788373947144), Point(token_index=2, time_index=36, score=0.9997721314430237), Point(token_index=2, time_index=37, score=0.9997128844261169), Point(token_index=3, time_index=38, score=0.9999358654022217), Point(token_index=3, time_index=39, score=0.9861688017845154), Point(token_index=4, time_index=40, score=0.9238617420196533), Point(token_index=4, time_index=41, score=0.9257278442382812), Point(token_index=4, time_index=42, score=0.01566038466989994), Point(token_index=5, time_index=43, score=0.9998378753662109), Point(token_index=6, time_index=44, score=0.9988445043563843), Point(token_index=6, time_index=45, score=0.10143067687749863), Point(token_index=7, time_index=46, score=0.9999427795410156), Point(token_index=7, time_index=47, score=0.9999943971633911), Point(token_index=8, time_index=48, score=0.9979605674743652), Point(token_index=8, time_index=49, score=0.0360388308763504), Point(token_index=8, time_index=50, score=0.06163577362895012), Point(token_index=9, time_index=51, score=4.3347572500351816e-05), Point(token_index=10, time_index=52, score=0.9999799728393555), Point(token_index=10, time_index=53, score=0.9967108964920044), Point(token_index=10, time_index=54, score=0.9999256134033203), Point(token_index=11, time_index=55, score=0.9999982118606567), Point(token_index=11, time_index=56, score=0.9990687966346741), Point(token_index=11, time_index=57, score=0.9999996423721313), Point(token_index=11, time_index=58, score=0.9999996423721313), Point(token_index=11, time_index=59, score=0.8457356095314026), Point(token_index=12, time_index=60, score=0.9999996423721313), Point(token_index=12, time_index=61, score=0.9996013045310974), Point(token_index=13, time_index=62, score=0.999998927116394), Point(token_index=13, time_index=63, score=0.003525640582665801), Point(token_index=13, time_index=64, score=1.0), Point(token_index=13, time_index=65, score=1.0), Point(token_index=14, time_index=66, score=0.9999915361404419), Point(token_index=14, time_index=67, score=0.9971593618392944), Point(token_index=14, time_index=68, score=0.9999990463256836), Point(token_index=14, time_index=69, score=0.9999992847442627), Point(token_index=14, time_index=70, score=0.9999997615814209), Point(token_index=14, time_index=71, score=0.9999998807907104), Point(token_index=14, time_index=72, score=0.9999880790710449), Point(token_index=14, time_index=73, score=0.011425008997321129), Point(token_index=15, time_index=74, score=0.9999977350234985), Point(token_index=15, time_index=75, score=0.9996135830879211), Point(token_index=15, time_index=76, score=0.999998927116394), Point(token_index=15, time_index=77, score=0.9727545380592346), Point(token_index=16, time_index=78, score=0.999998927116394), Point(token_index=16, time_index=79, score=0.9949339032173157), Point(token_index=16, time_index=80, score=0.999998927116394), Point(token_index=16, time_index=81, score=0.9999121427536011), Point(token_index=17, time_index=82, score=0.9999774694442749), Point(token_index=17, time_index=83, score=0.6575940847396851), Point(token_index=17, time_index=84, score=0.9984299540519714), Point(token_index=18, time_index=85, score=0.9999876022338867), Point(token_index=18, time_index=86, score=0.9993749260902405), Point(token_index=18, time_index=87, score=0.9999988079071045), Point(token_index=18, time_index=88, score=0.10423431545495987), Point(token_index=19, time_index=89, score=0.9999969005584717), Point(token_index=19, time_index=90, score=0.3978341519832611), Point(token_index=20, time_index=91, score=0.9999932050704956), Point(token_index=20, time_index=92, score=1.698824576124025e-06), Point(token_index=20, time_index=93, score=0.9861288666725159), Point(token_index=21, time_index=94, score=0.9999960660934448), Point(token_index=21, time_index=95, score=0.9992732405662537), Point(token_index=21, time_index=96, score=0.9993410706520081), Point(token_index=22, time_index=97, score=0.9999983310699463), Point(token_index=22, time_index=98, score=0.9999971389770508), Point(token_index=22, time_index=99, score=0.9999998807907104), Point(token_index=22, time_index=100, score=0.9999995231628418), Point(token_index=23, time_index=101, score=0.9999732971191406), Point(token_index=23, time_index=102, score=0.9983227849006653), Point(token_index=23, time_index=103, score=0.9999991655349731), Point(token_index=23, time_index=104, score=0.9999996423721313), Point(token_index=23, time_index=105, score=0.9999998807907104), Point(token_index=23, time_index=106, score=1.0), Point(token_index=23, time_index=107, score=0.9998630285263062), Point(token_index=24, time_index=108, score=0.9999980926513672), Point(token_index=24, time_index=109, score=0.9988582134246826), Point(token_index=25, time_index=110, score=0.9999798536300659), Point(token_index=25, time_index=111, score=0.8573148250579834), Point(token_index=26, time_index=112, score=0.9999847412109375), Point(token_index=26, time_index=113, score=0.9870273470878601), Point(token_index=26, time_index=114, score=1.9043951397179626e-05), Point(token_index=27, time_index=115, score=0.9999794960021973), Point(token_index=27, time_index=116, score=0.9998255372047424), Point(token_index=28, time_index=117, score=0.9999990463256836), Point(token_index=28, time_index=118, score=0.9999732971191406), Point(token_index=28, time_index=119, score=0.0009000634308904409), Point(token_index=29, time_index=120, score=0.9993476271629333), Point(token_index=29, time_index=121, score=0.9975456595420837), Point(token_index=29, time_index=122, score=0.0003050032537430525), Point(token_index=30, time_index=123, score=0.9999344348907471), Point(token_index=30, time_index=124, score=6.078783371776808e-06), Point(token_index=31, time_index=125, score=0.9833160042762756), Point(token_index=32, time_index=126, score=0.9974580407142639), Point(token_index=32, time_index=127, score=0.0008231091196648777), Point(token_index=33, time_index=128, score=0.9965152740478516), Point(token_index=33, time_index=129, score=0.017463626340031624), Point(token_index=34, time_index=130, score=0.9989171028137207), Point(token_index=35, time_index=131, score=0.9999697208404541), Point(token_index=35, time_index=132, score=0.9999843835830688), Point(token_index=36, time_index=133, score=0.9997640252113342), Point(token_index=36, time_index=134, score=0.5094714164733887), Point(token_index=37, time_index=135, score=0.9998301267623901), Point(token_index=37, time_index=136, score=0.08526826649904251), Point(token_index=37, time_index=137, score=0.004072640556842089), Point(token_index=38, time_index=138, score=0.9999815225601196), Point(token_index=38, time_index=139, score=0.012052125297486782), Point(token_index=38, time_index=140, score=0.9999980926513672), Point(token_index=38, time_index=141, score=0.0005778271006420255), Point(token_index=39, time_index=142, score=0.9999067783355713), Point(token_index=39, time_index=143, score=0.9999960660934448), Point(token_index=39, time_index=144, score=0.9999980926513672), Point(token_index=40, time_index=145, score=0.9999916553497314), Point(token_index=40, time_index=146, score=0.9971164464950562), Point(token_index=40, time_index=147, score=0.9981799125671387), Point(token_index=41, time_index=148, score=0.9999310970306396), Point(token_index=41, time_index=149, score=0.9879486560821533), Point(token_index=41, time_index=150, score=0.9997625946998596), Point(token_index=42, time_index=151, score=0.9999535083770752), Point(token_index=43, time_index=152, score=0.9999715089797974), Point(token_index=44, time_index=153, score=0.6811389923095703)]
+    Point(token_index=0, time_index=30, score=0.9999842643737793)
+    Point(token_index=0, time_index=31, score=0.9846924543380737)
+    Point(token_index=0, time_index=32, score=0.999970555305481)
+    Point(token_index=0, time_index=33, score=0.15400339663028717)
+    Point(token_index=1, time_index=34, score=0.9999173879623413)
+    Point(token_index=1, time_index=35, score=0.6080788373947144)
+    Point(token_index=2, time_index=36, score=0.9997721314430237)
+    Point(token_index=2, time_index=37, score=0.9997128844261169)
+    Point(token_index=3, time_index=38, score=0.9999358654022217)
+    Point(token_index=3, time_index=39, score=0.9861688017845154)
+    Point(token_index=4, time_index=40, score=0.9238617420196533)
+    Point(token_index=4, time_index=41, score=0.9257278442382812)
+    Point(token_index=4, time_index=42, score=0.01566038466989994)
+    Point(token_index=5, time_index=43, score=0.9998378753662109)
+    Point(token_index=6, time_index=44, score=0.9988445043563843)
+    Point(token_index=6, time_index=45, score=0.10143067687749863)
+    Point(token_index=7, time_index=46, score=0.9999427795410156)
+    Point(token_index=7, time_index=47, score=0.9999943971633911)
+    Point(token_index=8, time_index=48, score=0.9979605674743652)
+    Point(token_index=8, time_index=49, score=0.0360388308763504)
+    Point(token_index=8, time_index=50, score=0.06163577362895012)
+    Point(token_index=9, time_index=51, score=4.3347572500351816e-05)
+    Point(token_index=10, time_index=52, score=0.9999799728393555)
+    Point(token_index=10, time_index=53, score=0.9967108964920044)
+    Point(token_index=10, time_index=54, score=0.9999256134033203)
+    Point(token_index=11, time_index=55, score=0.9999982118606567)
+    Point(token_index=11, time_index=56, score=0.9990687966346741)
+    Point(token_index=11, time_index=57, score=0.9999996423721313)
+    Point(token_index=11, time_index=58, score=0.9999996423721313)
+    Point(token_index=11, time_index=59, score=0.8457356095314026)
+    Point(token_index=12, time_index=60, score=0.9999996423721313)
+    Point(token_index=12, time_index=61, score=0.9996013045310974)
+    Point(token_index=13, time_index=62, score=0.999998927116394)
+    Point(token_index=13, time_index=63, score=0.003525640582665801)
+    Point(token_index=13, time_index=64, score=1.0)
+    Point(token_index=13, time_index=65, score=1.0)
+    Point(token_index=14, time_index=66, score=0.9999915361404419)
+    Point(token_index=14, time_index=67, score=0.9971593618392944)
+    Point(token_index=14, time_index=68, score=0.9999990463256836)
+    Point(token_index=14, time_index=69, score=0.9999992847442627)
+    Point(token_index=14, time_index=70, score=0.9999997615814209)
+    Point(token_index=14, time_index=71, score=0.9999998807907104)
+    Point(token_index=14, time_index=72, score=0.9999880790710449)
+    Point(token_index=14, time_index=73, score=0.011425008997321129)
+    Point(token_index=15, time_index=74, score=0.9999977350234985)
+    Point(token_index=15, time_index=75, score=0.9996135830879211)
+    Point(token_index=15, time_index=76, score=0.999998927116394)
+    Point(token_index=15, time_index=77, score=0.9727545380592346)
+    Point(token_index=16, time_index=78, score=0.999998927116394)
+    Point(token_index=16, time_index=79, score=0.9949339032173157)
+    Point(token_index=16, time_index=80, score=0.999998927116394)
+    Point(token_index=16, time_index=81, score=0.9999121427536011)
+    Point(token_index=17, time_index=82, score=0.9999774694442749)
+    Point(token_index=17, time_index=83, score=0.6575940847396851)
+    Point(token_index=17, time_index=84, score=0.9984299540519714)
+    Point(token_index=18, time_index=85, score=0.9999876022338867)
+    Point(token_index=18, time_index=86, score=0.9993749260902405)
+    Point(token_index=18, time_index=87, score=0.9999988079071045)
+    Point(token_index=18, time_index=88, score=0.10423431545495987)
+    Point(token_index=19, time_index=89, score=0.9999969005584717)
+    Point(token_index=19, time_index=90, score=0.3978341519832611)
+    Point(token_index=20, time_index=91, score=0.9999932050704956)
+    Point(token_index=20, time_index=92, score=1.698824576124025e-06)
+    Point(token_index=20, time_index=93, score=0.9861288666725159)
+    Point(token_index=21, time_index=94, score=0.9999960660934448)
+    Point(token_index=21, time_index=95, score=0.9992732405662537)
+    Point(token_index=21, time_index=96, score=0.9993410706520081)
+    Point(token_index=22, time_index=97, score=0.9999983310699463)
+    Point(token_index=22, time_index=98, score=0.9999971389770508)
+    Point(token_index=22, time_index=99, score=0.9999998807907104)
+    Point(token_index=22, time_index=100, score=0.9999995231628418)
+    Point(token_index=23, time_index=101, score=0.9999732971191406)
+    Point(token_index=23, time_index=102, score=0.9983227849006653)
+    Point(token_index=23, time_index=103, score=0.9999991655349731)
+    Point(token_index=23, time_index=104, score=0.9999996423721313)
+    Point(token_index=23, time_index=105, score=0.9999998807907104)
+    Point(token_index=23, time_index=106, score=1.0)
+    Point(token_index=23, time_index=107, score=0.9998630285263062)
+    Point(token_index=24, time_index=108, score=0.9999980926513672)
+    Point(token_index=24, time_index=109, score=0.9988582134246826)
+    Point(token_index=25, time_index=110, score=0.9999798536300659)
+    Point(token_index=25, time_index=111, score=0.8573148250579834)
+    Point(token_index=26, time_index=112, score=0.9999847412109375)
+    Point(token_index=26, time_index=113, score=0.9870273470878601)
+    Point(token_index=26, time_index=114, score=1.9043951397179626e-05)
+    Point(token_index=27, time_index=115, score=0.9999794960021973)
+    Point(token_index=27, time_index=116, score=0.9998255372047424)
+    Point(token_index=28, time_index=117, score=0.9999990463256836)
+    Point(token_index=28, time_index=118, score=0.9999732971191406)
+    Point(token_index=28, time_index=119, score=0.0009000634308904409)
+    Point(token_index=29, time_index=120, score=0.9993476271629333)
+    Point(token_index=29, time_index=121, score=0.9975456595420837)
+    Point(token_index=29, time_index=122, score=0.0003050032537430525)
+    Point(token_index=30, time_index=123, score=0.9999344348907471)
+    Point(token_index=30, time_index=124, score=6.078783371776808e-06)
+    Point(token_index=31, time_index=125, score=0.9833160042762756)
+    Point(token_index=32, time_index=126, score=0.9974580407142639)
+    Point(token_index=32, time_index=127, score=0.0008231091196648777)
+    Point(token_index=33, time_index=128, score=0.9965152740478516)
+    Point(token_index=33, time_index=129, score=0.017463626340031624)
+    Point(token_index=34, time_index=130, score=0.9989171028137207)
+    Point(token_index=35, time_index=131, score=0.9999697208404541)
+    Point(token_index=35, time_index=132, score=0.9999843835830688)
+    Point(token_index=36, time_index=133, score=0.9997640252113342)
+    Point(token_index=36, time_index=134, score=0.5094714164733887)
+    Point(token_index=37, time_index=135, score=0.9998301267623901)
+    Point(token_index=37, time_index=136, score=0.08526826649904251)
+    Point(token_index=37, time_index=137, score=0.004072640556842089)
+    Point(token_index=38, time_index=138, score=0.9999815225601196)
+    Point(token_index=38, time_index=139, score=0.012052125297486782)
+    Point(token_index=38, time_index=140, score=0.9999980926513672)
+    Point(token_index=38, time_index=141, score=0.0005778271006420255)
+    Point(token_index=39, time_index=142, score=0.9999067783355713)
+    Point(token_index=39, time_index=143, score=0.9999960660934448)
+    Point(token_index=39, time_index=144, score=0.9999980926513672)
+    Point(token_index=40, time_index=145, score=0.9999916553497314)
+    Point(token_index=40, time_index=146, score=0.9971164464950562)
+    Point(token_index=40, time_index=147, score=0.9981799125671387)
+    Point(token_index=41, time_index=148, score=0.9999310970306396)
+    Point(token_index=41, time_index=149, score=0.9879486560821533)
+    Point(token_index=41, time_index=150, score=0.9997625946998596)
+    Point(token_index=42, time_index=151, score=0.9999535083770752)
+    Point(token_index=43, time_index=152, score=0.9999715089797974)
+    Point(token_index=44, time_index=153, score=0.6811389923095703)
 
 
 Visualization
@@ -345,11 +485,12 @@ Visualization
 .. code-block:: default
 
     def plot_trellis_with_path(trellis, path):
-      # To plot trellis with path, we take advantage of 'nan' value
-      trellis_with_path = trellis.clone()
-      for i, p in enumerate(path):
-        trellis_with_path[p.time_index, p.token_index] = float('nan')
-      plt.imshow(trellis_with_path[1:, 1:].T, origin='lower')
+        # To plot trellis with path, we take advantage of 'nan' value
+        trellis_with_path = trellis.clone()
+        for _, p in enumerate(path):
+            trellis_with_path[p.time_index, p.token_index] = float("nan")
+        plt.imshow(trellis_with_path[1:, 1:].T, origin="lower")
+
 
     plot_trellis_with_path(trellis, path)
     plt.title("The path found by backtracking")
@@ -375,35 +516,46 @@ probability for the merged segments.
 .. code-block:: default
 
 
+
     # Merge the labels
     @dataclass
     class Segment:
-      label: str
-      start: int
-      end: int
-      score: float
+        label: str
+        start: int
+        end: int
+        score: float
 
-      def __repr__(self):
-        return f"{self.label}\t({self.score:4.2f}): [{self.start:5d}, {self.end:5d})"
+        def __repr__(self):
+            return f"{self.label}\t({self.score:4.2f}): [{self.start:5d}, {self.end:5d})"
 
-      @property
-      def length(self):
-        return self.end - self.start
+        @property
+        def length(self):
+            return self.end - self.start
+
 
     def merge_repeats(path):
-      i1, i2 = 0, 0
-      segments = []
-      while i1 < len(path):
-        while i2 < len(path) and path[i1].token_index == path[i2].token_index:
-          i2 += 1
-        score = sum(path[k].score for k in range(i1, i2)) / (i2 - i1)
-        segments.append(Segment(transcript[path[i1].token_index], path[i1].time_index, path[i2-1].time_index + 1, score))
-        i1 = i2
-      return segments
+        i1, i2 = 0, 0
+        segments = []
+        while i1 < len(path):
+            while i2 < len(path) and path[i1].token_index == path[i2].token_index:
+                i2 += 1
+            score = sum(path[k].score for k in range(i1, i2)) / (i2 - i1)
+            segments.append(
+                Segment(
+                    transcript[path[i1].token_index],
+                    path[i1].time_index,
+                    path[i2 - 1].time_index + 1,
+                    score,
+                )
+            )
+            i1 = i2
+        return segments
+
 
     segments = merge_repeats(path)
     for seg in segments:
-      print(seg)
+        print(seg)
+
 
 
 
@@ -469,43 +621,44 @@ Visualization
 .. code-block:: default
 
     def plot_trellis_with_segments(trellis, segments, transcript):
-      # To plot trellis with path, we take advantage of 'nan' value
-      trellis_with_path = trellis.clone()
-      for i, seg in enumerate(segments):
-        if seg.label != '|':
-          trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
+        # To plot trellis with path, we take advantage of 'nan' value
+        trellis_with_path = trellis.clone()
+        for i, seg in enumerate(segments):
+            if seg.label != "|":
+                trellis_with_path[seg.start + 1 : seg.end + 1, i + 1] = float("nan")
 
-      fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
-      ax1.set_title("Path, label and probability for each label")
-      ax1.imshow(trellis_with_path.T, origin='lower')
-      ax1.set_xticks([])
+        fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
+        ax1.set_title("Path, label and probability for each label")
+        ax1.imshow(trellis_with_path.T, origin="lower")
+        ax1.set_xticks([])
 
-      for i, seg in enumerate(segments):
-        if seg.label != '|':
-          ax1.annotate(seg.label, (seg.start + .7, i + 0.3), weight='bold')
-          ax1.annotate(f'{seg.score:.2f}', (seg.start - .3, i + 4.3))
+        for i, seg in enumerate(segments):
+            if seg.label != "|":
+                ax1.annotate(seg.label, (seg.start + 0.7, i + 0.3), weight="bold")
+                ax1.annotate(f"{seg.score:.2f}", (seg.start - 0.3, i + 4.3))
 
-      ax2.set_title("Label probability with and without repetation")
-      xs, hs, ws = [], [], []
-      for seg in segments:
-        if seg.label != '|':
-          xs.append((seg.end + seg.start) / 2 + .4)
-          hs.append(seg.score)
-          ws.append(seg.end - seg.start)
-          ax2.annotate(seg.label, (seg.start + .8, -0.07), weight='bold')
-      ax2.bar(xs, hs, width=ws, color='gray', alpha=0.5, edgecolor='black')
+        ax2.set_title("Label probability with and without repetation")
+        xs, hs, ws = [], [], []
+        for seg in segments:
+            if seg.label != "|":
+                xs.append((seg.end + seg.start) / 2 + 0.4)
+                hs.append(seg.score)
+                ws.append(seg.end - seg.start)
+                ax2.annotate(seg.label, (seg.start + 0.8, -0.07), weight="bold")
+        ax2.bar(xs, hs, width=ws, color="gray", alpha=0.5, edgecolor="black")
 
-      xs, hs = [], []
-      for p in path:
-        label = transcript[p.token_index]
-        if label != '|':
-          xs.append(p.time_index + 1)
-          hs.append(p.score)
-  
-      ax2.bar(xs, hs, width=0.5, alpha=0.5)
-      ax2.axhline(0, color='black')
-      ax2.set_xlim(ax1.get_xlim())
-      ax2.set_ylim(-0.1, 1.1)
+        xs, hs = [], []
+        for p in path:
+            label = transcript[p.token_index]
+            if label != "|":
+                xs.append(p.time_index + 1)
+                hs.append(p.score)
+
+        ax2.bar(xs, hs, width=0.5, alpha=0.5)
+        ax2.axhline(0, color="black")
+        ax2.set_xlim(ax1.get_xlim())
+        ax2.set_ylim(-0.1, 1.1)
+
 
     plot_trellis_with_segments(trellis, segments, transcript)
     plt.tight_layout()
@@ -534,25 +687,27 @@ listen to them to see if the segmentation is correct.
 
 
     # Merge words
-    def merge_words(segments, separator='|'):
-      words = []
-      i1, i2 = 0, 0
-      while i1 < len(segments):
-        if i2 >= len(segments) or segments[i2].label == separator:
-          if i1 != i2:
-            segs = segments[i1:i2]
-            word = ''.join([seg.label for seg in segs])
-            score = sum(seg.score * seg.length for seg in segs) / sum(seg.length for seg in segs)
-            words.append(Segment(word, segments[i1].start, segments[i2-1].end, score))
-          i1 = i2 + 1
-          i2 = i1
-        else:
-          i2 += 1
-      return words
+    def merge_words(segments, separator="|"):
+        words = []
+        i1, i2 = 0, 0
+        while i1 < len(segments):
+            if i2 >= len(segments) or segments[i2].label == separator:
+                if i1 != i2:
+                    segs = segments[i1:i2]
+                    word = "".join([seg.label for seg in segs])
+                    score = sum(seg.score * seg.length for seg in segs) / sum(seg.length for seg in segs)
+                    words.append(Segment(word, segments[i1].start, segments[i2 - 1].end, score))
+                i1 = i2 + 1
+                i2 = i1
+            else:
+                i2 += 1
+        return words
+
 
     word_segments = merge_words(segments)
     for word in word_segments:
-      print(word)
+        print(word)
+
 
 
 
@@ -582,66 +737,82 @@ Visualization
 .. code-block:: default
 
     def plot_alignments(trellis, segments, word_segments, waveform):
-      trellis_with_path = trellis.clone()
-      for i, seg in enumerate(segments):
-        if seg.label != '|':
-          trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
+        trellis_with_path = trellis.clone()
+        for i, seg in enumerate(segments):
+            if seg.label != "|":
+                trellis_with_path[seg.start + 1 : seg.end + 1, i + 1] = float("nan")
 
-      fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
+        fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
 
-      ax1.imshow(trellis_with_path[1:, 1:].T, origin='lower')
-      ax1.set_xticks([])
-      ax1.set_yticks([])
+        ax1.imshow(trellis_with_path[1:, 1:].T, origin="lower")
+        ax1.set_xticks([])
+        ax1.set_yticks([])
 
-      for word in word_segments:
-        ax1.axvline(word.start - 0.5)
-        ax1.axvline(word.end - 0.5)
+        for word in word_segments:
+            ax1.axvline(word.start - 0.5)
+            ax1.axvline(word.end - 0.5)
 
-      for i, seg in enumerate(segments):
-        if seg.label != '|':
-          ax1.annotate(seg.label, (seg.start, i + 0.3))
-          ax1.annotate(f'{seg.score:.2f}', (seg.start , i + 4), fontsize=8)
+        for i, seg in enumerate(segments):
+            if seg.label != "|":
+                ax1.annotate(seg.label, (seg.start, i + 0.3))
+                ax1.annotate(f"{seg.score:.2f}", (seg.start, i + 4), fontsize=8)
 
-      # The original waveform
-      ratio = waveform.size(0) / (trellis.size(0) - 1)
-      ax2.plot(waveform)
-      for word in word_segments:
-        x0 = ratio * word.start
-        x1 = ratio * word.end
-        ax2.axvspan(x0, x1, alpha=0.1, color='red')
-        ax2.annotate(f'{word.score:.2f}', (x0, 0.8))
+        # The original waveform
+        ratio = waveform.size(0) / (trellis.size(0) - 1)
+        ax2.plot(waveform)
+        for word in word_segments:
+            x0 = ratio * word.start
+            x1 = ratio * word.end
+            ax2.axvspan(x0, x1, alpha=0.1, color="red")
+            ax2.annotate(f"{word.score:.2f}", (x0, 0.8))
 
-      for seg in segments:
-        if seg.label != '|':
-          ax2.annotate(seg.label, (seg.start * ratio, 0.9))
-      xticks = ax2.get_xticks()
-      plt.xticks(xticks, xticks / bundle.sample_rate)
-      ax2.set_xlabel('time [second]')
-      ax2.set_yticks([])
-      ax2.set_ylim(-1.0, 1.0)
-      ax2.set_xlim(0, waveform.size(-1))
+        for seg in segments:
+            if seg.label != "|":
+                ax2.annotate(seg.label, (seg.start * ratio, 0.9))
+        xticks = ax2.get_xticks()
+        plt.xticks(xticks, xticks / bundle.sample_rate)
+        ax2.set_xlabel("time [second]")
+        ax2.set_yticks([])
+        ax2.set_ylim(-1.0, 1.0)
+        ax2.set_xlim(0, waveform.size(-1))
 
-    plot_alignments(trellis, segments, word_segments, waveform[0],)
+
+    plot_alignments(
+        trellis,
+        segments,
+        word_segments,
+        waveform[0],
+    )
     plt.show()
-
-    # A trick to embed the resulting audio to the generated file.
-    # `IPython.display.Audio` has to be the last call in a cell,
-    # and there should be only one call par cell.
-    def display_segment(i):
-      ratio = waveform.size(1) / (trellis.size(0) - 1)
-      word = word_segments[i]
-      x0 = int(ratio * word.start)
-      x1 = int(ratio * word.end)
-      filename = f"_assets/{i}_{word.label}.wav"
-      torchaudio.save(filename, waveform[:, x0:x1], bundle.sample_rate)
-      print(f"{word.label} ({word.score:.2f}): {x0 / bundle.sample_rate:.3f} - {x1 / bundle.sample_rate:.3f} sec")
-      return IPython.display.Audio(filename)
 
 
 
 
 .. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_005.png
     :class: sphx-glr-single-img
+
+
+
+
+
+.. code-block:: default
+
+
+    # A trick to embed the resulting audio to the generated file.
+    # `IPython.display.Audio` has to be the last call in a cell,
+    # and there should be only one call par cell.
+    def display_segment(i):
+        ratio = waveform.size(1) / (trellis.size(0) - 1)
+        word = word_segments[i]
+        x0 = int(ratio * word.start)
+        x1 = int(ratio * word.end)
+        print(f"{word.label} ({word.score:.2f}): {x0 / bundle.sample_rate:.3f} - {x1 / bundle.sample_rate:.3f} sec")
+        segment = waveform[:, x0:x1]
+        return IPython.display.Audio(segment.numpy(), rate=bundle.sample_rate)
+
+
+
+
 
 
 
@@ -849,7 +1020,7 @@ perform CTC segmentation for forced alignment.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  6.595 seconds)
+   **Total running time of the script:** ( 0 minutes  7.188 seconds)
 
 
 .. _sphx_glr_download_intermediate_forced_alignment_with_torchaudio_tutorial.py:
