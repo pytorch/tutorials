@@ -85,7 +85,8 @@ Chatbot Tutorial
 # ------------
 #
 # To start, Download the data ZIP file
-# `here <https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html>`__
+# `here <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__
+
 # and put in a ``data/`` directory under the current directory.
 #
 # After that, let’s import some necessities.
@@ -110,6 +111,7 @@ import codecs
 from io import open
 import itertools
 import math
+import json
 
 
 USE_CUDA = torch.cuda.is_available()
@@ -140,7 +142,7 @@ device = torch.device("cuda" if USE_CUDA else "cpu")
 # original format.
 #
 
-corpus_name = "cornell movie-dialogs corpus"
+corpus_name = "movie-corpus"
 corpus = os.path.join("data", corpus_name)
 
 def printLines(file, n=10):
@@ -149,7 +151,7 @@ def printLines(file, n=10):
     for line in lines[:n]:
         print(line)
 
-printLines(os.path.join(corpus, "movie_lines.txt"))
+printLines(os.path.join(corpus, "utterances.jsonl"))
 
 
 ######################################################################
@@ -170,45 +172,38 @@ printLines(os.path.join(corpus, "movie_lines.txt"))
 #    conversations
 #
 
-# Splits each line of the file into a dictionary of fields
-def loadLines(fileName, fields):
+# Splits each line of the file to create lines and conversations
+def loadLinesAndConversations(fileName):
     lines = {}
+    conversations = {}
     with open(fileName, 'r', encoding='iso-8859-1') as f:
         for line in f:
-            values = line.split(" +++$+++ ")
-            # Extract fields
+            lineJson = json.loads(line)
+            # Extract fields for line object
             lineObj = {}
-            for i, field in enumerate(fields):
-                lineObj[field] = values[i]
+            lineObj["lineID"] = lineJson["id"]
+            lineObj["characterID"] = lineJson["speaker"]
+            lineObj["text"] = lineJson["text"]
             lines[lineObj['lineID']] = lineObj
-    return lines
 
+            # Extract fields for conversation object
+            if lineJson["conversation_id"] not in conversations:
+                convObj = {}
+                convObj["conversationID"] = lineJson["conversation_id"]
+                convObj["movieID"] = lineJson["meta"]["movie_id"]
+                convObj["lines"] = [lineObj]
+            else:
+                convObj = conversations[lineJson["conversation_id"]]
+                convObj["lines"].insert(0, lineObj)
+            conversations[convObj["conversationID"]] = convObj
 
-# Groups fields of lines from `loadLines` into conversations based on *movie_conversations.txt*
-def loadConversations(fileName, lines, fields):
-    conversations = []
-    with open(fileName, 'r', encoding='iso-8859-1') as f:
-        for line in f:
-            values = line.split(" +++$+++ ")
-            # Extract fields
-            convObj = {}
-            for i, field in enumerate(fields):
-                convObj[field] = values[i]
-            # Convert string to list (convObj["utteranceIDs"] == "['L598485', 'L598486', ...]")
-            utterance_id_pattern = re.compile('L[0-9]+')
-            lineIds = utterance_id_pattern.findall(convObj["utteranceIDs"])
-            # Reassemble lines
-            convObj["lines"] = []
-            for lineId in lineIds:
-                convObj["lines"].append(lines[lineId])
-            conversations.append(convObj)
-    return conversations
+    return lines, conversations
 
 
 # Extracts pairs of sentences from conversations
 def extractSentencePairs(conversations):
     qa_pairs = []
-    for conversation in conversations:
+    for conversation in conversations.values():
         # Iterate over all the lines of the conversation
         for i in range(len(conversation["lines"]) - 1):  # We ignore the last line (no answer for it)
             inputLine = conversation["lines"][i]["text"].strip()
@@ -231,18 +226,12 @@ delimiter = '\t'
 # Unescape the delimiter
 delimiter = str(codecs.decode(delimiter, "unicode_escape"))
 
-# Initialize lines dict, conversations list, and field ids
+# Initialize lines dict and conversations dict
 lines = {}
-conversations = []
-MOVIE_LINES_FIELDS = ["lineID", "characterID", "movieID", "character", "text"]
-MOVIE_CONVERSATIONS_FIELDS = ["character1ID", "character2ID", "movieID", "utteranceIDs"]
-
-# Load lines and process conversations
-print("\nProcessing corpus...")
-lines = loadLines(os.path.join(corpus, "movie_lines.txt"), MOVIE_LINES_FIELDS)
-print("\nLoading conversations...")
-conversations = loadConversations(os.path.join(corpus, "movie_conversations.txt"),
-                                  lines, MOVIE_CONVERSATIONS_FIELDS)
+conversations = {}
+# Load lines and conversations
+print("\nProcessing corpus into lines and conversations...")
+lines, conversations = loadLinesAndConversations(os.path.join(corpus, "utterances.jsonl"))
 
 # Write new csv file
 print("\nWriting newly formatted file...")
@@ -1341,7 +1330,7 @@ for state in decoder_optimizer.state.values():
     for k, v in state.items():
         if isinstance(v, torch.Tensor):
             state[k] = v.cuda()
-    
+
 # Run training iterations
 print("Starting Training!")
 trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
