@@ -36,8 +36,8 @@ pip install -r $DIR/../requirements.txt
 pip install tb-nightly
 
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en
-python -m spacy download de
+python -m spacy download en_core_web_sm
+python -m spacy download de_core_news_sm
 
 # PyTorch Theme
 rm -rf src
