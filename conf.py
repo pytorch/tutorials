@@ -46,6 +46,12 @@ except ImportError:
     warnings.warn('unable to load "torchvision" package')
 import pytorch_sphinx_theme
 
+rst_epilog ="""
+.. |edit| image:: /_static/pencil-16.png
+           :width: 16px
+           :height: 16px
+"""
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -69,7 +75,7 @@ sphinx_gallery_conf = {
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': 'tutorial.py',
-    'backreferences_dir': False
+    'backreferences_dir': None
 }
 
 if os.getenv('GALLERY_PATTERN'):
@@ -129,7 +135,7 @@ release = torch.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

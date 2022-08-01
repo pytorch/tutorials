@@ -36,8 +36,8 @@ pip install -r $DIR/../requirements.txt
 pip install tb-nightly
 
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en
-python -m spacy download de
+python -m spacy download en_core_web_sm
+python -m spacy download de_core_news_sm
 
 # PyTorch Theme
 rm -rf src
@@ -63,7 +63,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
-  python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
+  # python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
 
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
