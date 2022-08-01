@@ -162,12 +162,11 @@ printLines(os.path.join(corpus, "utterances.jsonl"))
 # contains a tab-separated *query sentence* and a *response sentence* pair.
 #
 # The following functions facilitate the parsing of the raw
-# *movie_lines.txt* data file.
+# *utterances.jsonl* data file.
 #
-# -  ``loadLines`` splits each line of the file into a dictionary of
-#    fields (lineID, characterID, movieID, character, text)
-# -  ``loadConversations`` groups fields of lines from ``loadLines`` into
-#    conversations based on *movie_conversations.txt*
+# -  ``loadLinesAndConversations`` splits each line of the file into a dictionary of
+#    lines with fields: lineID, characterID, and text and then groups them
+#    into conversations with fields: conversationID, movieID, and lines.
 # -  ``extractSentencePairs`` extracts pairs of sentences from
 #    conversations
 #
