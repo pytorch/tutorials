@@ -490,10 +490,10 @@
 <p><a class="reference external" href="https://pytorch.org/docs/stable/amp.html">torch.cuda.amp</a> provides convenience methods for mixed precision,
 where some operations use the <code class="docutils literal notranslate"><span class="pre">torch.float32</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) datatype and other operations
 use <code class="docutils literal notranslate"><span class="pre">torch.float16</span></code> (<code class="docutils literal notranslate"><span class="pre">half</span></code>). Some ops, like linear layers and convolutions,
-are much faster in <code class="docutils literal notranslate"><span class="pre">float16</span></code>. Other ops, like reductions, often require the dynamic
+are much faster in <code class="docutils literal notranslate"><span class="pre">float16</span></code> or <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code>. Other ops, like reductions, often require the dynamic
 range of <code class="docutils literal notranslate"><span class="pre">float32</span></code>.  Mixed precision tries to match each op to its appropriate datatype,
 which can reduce your network’s runtime and memory footprint.</p>
-<p>Ordinarily, “automatic mixed precision training” uses <a class="reference external" href="https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast">torch.cuda.amp.autocast</a> and
+<p>Ordinarily, “automatic mixed precision training” uses <a class="reference external" href="https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast">torch.autocast</a> and
 <a class="reference external" href="https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler">torch.cuda.amp.GradScaler</a> together.</p>
 <p>This recipe measures the performance of a simple network in default precision,
 then walks through adding <code class="docutils literal notranslate"><span class="pre">autocast</span></code> and <code class="docutils literal notranslate"><span class="pre">GradScaler</span></code> to run the same network in
@@ -589,7 +589,7 @@ for details on what precision autocast chooses for each op, and under what circu
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># 0 epochs, this section is for illustration only</span>
     <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
         <span class="c1"># Runs the forward pass under autocast.</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
             <span class="c1"># output is float16 because linear layers autocast to float16.</span>
             <span class="k">assert</span> <span class="n">output</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span>
@@ -623,7 +623,7 @@ performs the steps of gradient scaling conveniently.</p>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># 0 epochs, this section is for illustration only</span>
     <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
@@ -656,7 +656,7 @@ This allows switching between default precision and mixed precision without if/e
 <span class="n">start_timer</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
     <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">use_amp</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="n">use_amp</span><span class="p">):</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
@@ -674,7 +674,7 @@ the parameters’ <code class="docutils literal notranslate"><span class="pre">.
 unscale them first using <a class="reference external" href="https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.unscale_">scaler.unscale_(optimizer)</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># 0 epochs, this section is for illustration only</span>
     <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
@@ -728,7 +728,7 @@ load model and optimizer states from the checkpoint as usual, and ignore the sav
 <p><code class="docutils literal notranslate"><span class="pre">autocast</span></code> may be used by itself to wrap inference or evaluation forward passes. <code class="docutils literal notranslate"><span class="pre">GradScaler</span></code> is not necessary.</p>
 </div>
 <div class="section" id="advanced-topics">
-<span id="id3"></span><h2>Advanced topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading">¶</a></h2>
+<span id="id2"></span><h2>Advanced topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading">¶</a></h2>
 <p>See the <a class="reference external" href="https://pytorch.org/docs/stable/notes/amp_examples.html">Automatic Mixed Precision Examples</a> for advanced use cases including:</p>
 <ul class="simple">
 <li><p>Gradient accumulation</p></li>
@@ -744,7 +744,7 @@ a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.</p
 of the dispatcher tutorial.</p>
 </div>
 <div class="section" id="troubleshooting">
-<span id="id4"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">¶</a></h2>
+<span id="id3"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="speedup-with-amp-is-minor">
 <h3>Speedup with Amp is minor<a class="headerlink" href="#speedup-with-amp-is-minor" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
