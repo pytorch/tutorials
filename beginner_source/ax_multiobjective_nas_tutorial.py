@@ -50,6 +50,11 @@ from torchx import specs
 from torchx.version import TORCHX_IMAGE
 
 
+# load in the training code
+with Path.cwd().joinpath("mnist_train_nas.py").open("rt") as f:
+    train_source = f.read()
+
+
 def trainer(
     log_path: str,
     hidden_size_1: int,
@@ -60,11 +65,6 @@ def trainer(
     batch_size: int,
     trial_idx: int = -1,
 ) -> specs.AppDef:
-
-    # load in the training code
-    train_source = Path(__file__).parent.joinpath("mnist_train_nas.py")
-    with train_source.open("rt") as f:
-        source = f.read()
 
     # define the log path so we can pass it to the TorchX AppDef
     if trial_idx >= 0:
@@ -79,7 +79,7 @@ def trainer(
                 entrypoint="python",
                 args=[
                     "-c",
-                    source,
+                    train_source,
                     "--log_path",
                     log_path,
                     "--hidden_size_1",
@@ -427,11 +427,8 @@ print(df)
 #
 
 from ax.service.utils.report_utils import _pareto_frontier_scatter_2d_plotly
-from ax.utils.notebook.plotting import init_notebook_plotting, render
 
-fig = _pareto_frontier_scatter_2d_plotly(experiment)
-init_notebook_plotting()
-render(fig)
+_pareto_frontier_scatter_2d_plotly(experiment)
 
 
 ######################################################################
@@ -448,6 +445,10 @@ render(fig)
 
 from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
 from ax.plot.diagnostic import interact_cross_validation
+from ax.utils.notebook.plotting import init_notebook_plotting, render
+
+# initialize some plotting code for plotting in notebooks
+init_notebook_plotting()
 
 # The surrogate model is stored on the GenerationStrategy
 cv = cross_validate(gs.model)
