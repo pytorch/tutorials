@@ -73,10 +73,9 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data -P $(DATADIR)
 	cp $(DATADIR)/iris.data beginner_source/data/
 
-	# TODO Download updated movie-corpus zip file, upload it to pytorch-tutorial-assets and use that link here
 	# Download dataset for beginner_source/chatbot_tutorial.py
-	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus.zip -P $(DATADIR)
-	unzip $(ZIPOPTS) $(DATADIR)/cornell_movie_dialogs_corpus.zip -d beginner_source/data/
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus_v2.zip -P $(DATADIR)
+	unzip $(ZIPOPTS) $(DATADIR)/cornell_movie_dialogs_corpus_v2.zip -d beginner_source/data/
 
 	# Download dataset for beginner_source/audio_classifier_tutorial.py
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz -P $(DATADIR)
