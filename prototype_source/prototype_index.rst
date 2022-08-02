@@ -138,8 +138,8 @@ Prototype features are not available as part of binary distributions like PyPI o
    :header: Nested Tensor
    :card_description: Learn about nested tensors, the new way to batch heterogeneous-length data
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/nestedtensor_tutorial.html
-   :tags: nestedtensor
+   :link: ../prototype/nestedtensor.html
+   :tags: NestedTensor
 
 .. End of tutorial card section
 
@@ -171,4 +171,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/torchscript_freezing.html
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
-   prototype/nestedtensor_tutorial.html
+   prototype/nestedtensor.html

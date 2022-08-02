@@ -16,6 +16,9 @@ Nested tensors are a natural solution for representing sequential data within va
 
 In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness
 for operating on sequential data of varying lengths with a real-world example.
+
+The nested tensor operations used here have not been released yet.
+You will have to install the latest nightly to run this tutorial.
 """
 
 import torch
