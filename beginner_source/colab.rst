@@ -28,9 +28,9 @@ To fix this, we'll copy the required file into our Google Drive account.
 1. Log into Google Drive.
 2. In Google Drive, make a folder named **data**, with a subfolder named
    **cornell**.
-3. Visit the Cornell Movie Dialogs Corpus and download the ZIP file.
+3. Visit the Cornell Movie Dialogs Corpus and download the movie-corpus ZIP file.
 4. Unzip the file on your local machine.
-5. Copy the files **movie\_lines.txt** and **movie\_conversations.txt** to the **data/cornell** folder that you
+5. Copy the file **utterances.jsonl** to the **data/cornell** folder that you
    created in Google Drive.
 
 Now we'll need to edit the file in\_ \_Colab to point to the file on
