@@ -43,7 +43,7 @@ pt = nt.to_padded_tensor(0.0)
 print(pt)
 
 ######################################################################
-# For practical reason, conceptually we implement nested tensor
+# For practical reasons, conceptually we implement nested tensor
 # as a batch of tensors with different shapes,
 # i.e. dimension 0 is assumed to be the batch dimension.
 # Indexing dimension 0 gives back the underlying tensor.
@@ -68,14 +68,14 @@ print("last column of 1st underlying tensor:", nt[1, :, -1], sep='\n')
 #
 # **reshape**
 #
-# Reshape is to change the shape of a tensor.
+# The reshape op is for changing the shape of a tensor.
 # Its full semantics for regular tensors can be found
 # `here <https://pytorch.org/docs/stable/generated/torch.reshape.html>`__.
 # For regular tensors, when specifying the new shape,
 # a single dimension may be -1, in which case it is inferred
 # from the remaining dimensions and the number of elements.
 #
-# The semantics for nested tensors is similar, except that -1 no longer infers.
+# The semantics for nested tensors are similar, except that -1 no longer infers.
 # Instead, it inherits the old size (here 2 for ``nt[0]`` and 3 for ``nt[1]``).
 # -1 is the only legal size to specify for a jagged dimension.
 nt1 = nt.reshape(2, -1, 2, 3)
@@ -84,12 +84,12 @@ print(nt1)
 ######################################################################
 # **transpose**
 #
-# Transpose is to swap two dimensions of a tensor.
+# The transpose op is for swapping two dimensions of a tensor.
 # Its full semantics can be found
 # `here <https://pytorch.org/docs/stable/generated/torch.transpose.html>`__.
-# Note that nested tensor dimension 0 is special:
-# assumed to be the batch dimension,
-# so transposing nested tensor dimension 0 is forbidden.
+# Note that nested tensor dimension 0 is special;
+# it is assumed to be the batch dimension,
+# so transposes involving nested tensor dimension 0 are forbidden.
 nt2 = nt1.transpose(1, 2)
 print(nt2)
 
