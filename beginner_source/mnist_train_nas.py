@@ -140,7 +140,6 @@ trainer = Trainer(
     gpus=AVAIL_GPUS,
     max_epochs=args.epochs,
     enable_progress_bar=False,
-    weights_summary=None,
     deterministic=True,  # Do we want a bit of noise?
     default_root_dir=args.log_path,
 )
