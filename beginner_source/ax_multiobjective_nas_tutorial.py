@@ -26,7 +26,6 @@ This tutorial makes use of the following PyTorch libraries:
 - `PyTorch Lightning <https://github.com/PyTorchLightning/pytorch-lightning>`__ (specifying the model and training loop)
 - `TorchX <https://github.com/pytorch/torchx>`__ (for running training jobs remotely / asynchronously)
 - `BoTorch <https://github.com/pytorch/botorch>`__ (the Bayesian Optimization library powering Ax's algorithms)
-
 """
 
 
@@ -111,7 +110,7 @@ def trainer(
 #
 # In order to launch them on a cluster, you can instead specify a
 # different TorchX scheduler and adjust the configuration appropriately
-# (e.g. if you have a Kubernetes cluster,  you just need to change the
+# (e.g. if you have a Kubernetes cluster, you just need to change the
 # scheduler from local_cwd to kubernetes).
 #
 
@@ -411,8 +410,7 @@ scheduler.run_all_trials()
 
 from ax.service.utils.report_utils import exp_to_df
 
-df = exp_to_df(experiment)
-print(df)
+exp_to_df(experiment)
 
 
 ######################################################################
@@ -426,9 +424,23 @@ print(df)
 # models with low validation accuracy.
 #
 
+
+# import plotly.io as pio
+# # Ax uses Plotly to produce interactive plots. These are great for
+# # viewing and analysis, but they aren't particularly easy to get
+# # to render correctly in the generated website that uses the
+# # code. Changing the default to `png` strips the interactive
+# # components - if you like to try this just comment out the line
+# # below.
+# pio.renderers.default = "png"
+
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
+
 from ax.service.utils.report_utils import _pareto_frontier_scatter_2d_plotly
 
 _pareto_frontier_scatter_2d_plotly(experiment)
+
 
 
 ######################################################################
@@ -447,8 +459,8 @@ from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
 from ax.plot.diagnostic import interact_cross_validation
 from ax.utils.notebook.plotting import init_notebook_plotting, render
 
-# initialize some plotting code for plotting in notebooks
-init_notebook_plotting()
+# # initialize some plotting code for plotting in notebooks
+# init_notebook_plotting()
 
 # The surrogate model is stored on the GenerationStrategy
 cv = cross_validate(gs.model)
