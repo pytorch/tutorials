@@ -1,0 +1,443 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_prototype_nestedtensor.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_prototype_nestedtensor.py:
+
+
+Nested Tensors
+===============================================================
+
+Nested tensor is very similar to regular tensor, except for the shape:
+
+* for a regular tensor, each dimension has a size
+
+* for a nested tensor, not all dimensions have regular sizes; some of them are jagged
+
+Nested tensors are a natural solution for representing sequential data within various domains:
+
+* in NLP, sentences can have variable lengths, so a batch of sentences forms a nested tensor
+
+* in CV, images can have variable shapes, so a batch of images forms a nested tensor
+
+In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness
+for operating on sequential data of varying lengths with a real-world example.
+
+The nested tensor operations used here have not been released yet.
+You will have to install the latest nightly to run this tutorial.
+Nested Tensor Initialization
+----------------
+
+
+From the Python frontend, a nested tensor can be created from a list of tensors.
+
+By padding every underlying tensor to the same shape,
+a nested tensor can be converted to a regular tensor.
+
+For practical reasons, conceptually we implement nested tensor
+as a batch of tensors with different shapes,
+i.e. dimension 0 is assumed to be the batch dimension.
+Indexing dimension 0 gives back the underlying tensor.
+
+Slicing in dimension 0 has not been supported yet.
+
+Nested Tensor Operations
+----------------
+
+
+As each operation must be explicitly implemented for nested tensors,
+operation coverage for nested tensors is currently narrower than that of regular tensors.
+For now, only basic operations such as index, dropout, softmax, transpose, reshape, linear, bmm are covered.
+However, coverage is being expanded rapidly.
+If you need certain operations, please file an `issue <https://github.com/pytorch/pytorch>`__
+to help us prioritize coverage.
+
+**reshape**
+
+The reshape op is for changing the shape of a tensor.
+Its full semantics for regular tensors can be found
+`here <https://pytorch.org/docs/stable/generated/torch.reshape.html>`__.
+For regular tensors, when specifying the new shape,
+a single dimension may be -1, in which case it is inferred
+from the remaining dimensions and the number of elements.
+
+The semantics for nested tensors are similar, except that -1 no longer infers.
+Instead, it inherits the old size (here 2 for ``nt[0]`` and 3 for ``nt[1]``).
+-1 is the only legal size to specify for a jagged dimension.
+
+**transpose**
+
+The transpose op is for swapping two dimensions of a tensor.
+Its full semantics can be found
+`here <https://pytorch.org/docs/stable/generated/torch.transpose.html>`__.
+Note that nested tensor dimension 0 is special;
+it is assumed to be the batch dimension,
+so transposes involving nested tensor dimension 0 are forbidden.
+
+**others**
+
+Other operations have the same semantics as for regular tensors.
+Applying the operation on a nested tensor is equivalent to
+applying the operation to the underlying tensor components,
+with the result being a nested tensor as well.
+
+Why Nested Tensor
+----------------
+
+
+In the age before nested tensor, one has to manually pad each data tensor
+to the same shape to form a batch as a regular tensor.
+For example, we have 2 sentences and a vocabulary, then pad with 0.
+
+Clearly, padding introduces inefficiency.
+Further, padding with zeros does not correctly treat entries as padding for every operation,
+e.g. in softmax one has to pad with -inf rather than 0 to ignore specific entries.
+
+Let us take a look at a practical example: the multi-head attention component
+utilized in `Transformers <https://arxiv.org/pdf/1706.03762.pdf>`__.
+The nested tensor version is straightforward.
+
+
+.. code-block:: default
+
+
+
+    """
+    Args:
+        query: query of shape (N, L_t, E_q)
+        key: key of shape (N, L_s, E_k)
+        value: value of shape (N, L_s, E_v)
+        nheads: number of heads in multi-head attention
+        W_q: Weight for query input projection of shape (E_total, E_q)
+        W_k: Weight for key input projection of shape (E_total, E_k)
+        W_v: Weight for value input projection of shape (E_total, E_v)
+        W_out: Weight for output projection of shape (E_out, E_total)
+        b_q (optional): Bias for query input projection of shape E_total. Default: None
+        b_k (optional): Bias for key input projection of shape E_total. Default: None
+        b_v (optional): Bias for value input projection of shape E_total. Default: None
+        b_out (optional): Bias for output projection of shape E_out. Default: None
+        dropout_p: dropout probability. Default: 0.0
+        where:
+            N is the batch size
+            L_t is the target sequence length (jagged)
+            L_s is the source sequence length (jagged)
+            E_q is the embedding size for query
+            E_k is the embedding size for key
+            E_v is the embedding size for value
+            E_total is the embedding size for all heads combined
+            E_out is the output embedding size
+    Returns:
+        attn_output: Output of shape (N, L_t, E_out)
+    """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The 0-padded tensor version additionally requires masks
+for more complicated treatments at padded entries.
+
+
+.. code-block:: default
+
+    """
+    Args:
+        query: query of shape (N, L_t, E_q)
+        key: key of shape (N, L_s, E_k)
+        value: value of shape (N, L_s, E_v)
+        nheads: number of heads in multi-head attention
+        attn_mask_q: boolean mask indicating locations that should not take part in attention for query, shape (N, L_t)
+        attn_mask_kv: boolean mask indicating locations that should not take part in attention for key and value, shape (N, L_s)
+        W_q: Weight for query input projection of shape (E_total, E_q)
+        W_k: Weight for key input projection of shape (E_total, E_k)
+        W_v: Weight for value input projection of shape (E_total, E_v)
+        W_out: Weight for output projection of shape (E_out, E_total)
+        b_q (optional): Bias for query input projection of shape E_total. Default: None
+        b_k (optional): Bias for key input projection of shape E_total. Default: None
+        b_v (optional): Bias for value input projection of shape E_total. Default: None
+        b_out (optional): Bias for output projection of shape E_out. Default: None
+        dropout_p: dropout probability. Default: 0.0
+        where:
+            N is the batch size
+            L_t is the target sequence length (padded)
+            L_s is the source sequence length (padded)
+            E_q is the embedding size for query
+            E_k is the embedding size for key
+            E_v is the embedding size for value
+            E_total is the embedding size for all heads combined
+            E_out is the output embedding size
+    Returns:
+        attn_output: Output of shape (N, L_t, E_out)
+    """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set hyperparameters following `the Transformer paper <https://arxiv.org/pdf/1706.03762.pdf>`__
+
+except for dropout probability: set to 0 for correctness check
+
+Let us generate some realistic fake data from Zipf's law.
+
+create inputs
+
+
+.. code-block:: default
+
+
+    # create parameters
+
+
+
+
+
+    # create nested input
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # pad input
+
+
+
+
+    # create attention masks
+
+
+
+
+
+
+
+
+
+
+
+check correctness and performance
+
+The nested tensor version avoids wasted computation on padding,
+so in sequential CPU execution it is faster than padded tensor version as expected.
+Optimization for multi-threaded environment is underway.
+
+For now, performant kernels are provided for specific use cases, e.g.
+self-attention evaluation by multi-head attention formula.
+
+
+.. code-block:: default
+
+
+    # embeddings are assumed to be the same
+
+
+
+
+
+extract parameters for correctness check
+
+check correctness and performance
+
+
+.. code-block:: default
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+
+
+.. _sphx_glr_download_prototype_nestedtensor.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: nestedtensor.py <nestedtensor.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: nestedtensor.ipynb <nestedtensor.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
