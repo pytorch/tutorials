@@ -34,7 +34,7 @@ This tutorial makes use of the following PyTorch libraries:
 # -----------------------
 #
 # Our goal is to optimize the PyTorch Lightning training job defined
-# in `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py`__.
+# in `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
 # the values of the architcture and hyperparameters of the training
 # job and creates a TorchX AppDef (see the
@@ -299,9 +299,9 @@ opt_config = MultiObjectiveOptimizationConfig(
 # Creating the Ax Experiment
 # --------------------------
 #
-# In Ax, the `Experiment` object is the object that stores all the
-# information about the problem setup (`Experiment`s can be serialized
-# to JSON or stored to a databse backend such as MySQL in order to
+# In Ax, the ``Experiment`` object is the object that stores all the
+# information about the problem setup (``Experiment``s can be serialized
+# to JSON or stored to a database backend such as MySQL in order to
 # persist and be available to load on different machines - we won't
 # be using this functionality in this tutorial though).
 #
@@ -319,10 +319,10 @@ experiment = Experiment(
 # Choosing the GenerationStrategy
 # -------------------------------
 #
-# A `GenerationStrategy` is the abstract representation of how we
+# A ``GenerationStrategy`` is the abstract representation of how we
 # would like to perform the optimization. While this can be customized
 # (if you’d like to do so, see
-# `this tutorial <https://ax.dev/tutorials/generation_str ategy.html>`___),
+# `this tutorial <https://ax.dev/tutorials/generation_strategy.html>`_),
 # in most cases Ax can automatically determine an appropriate strategy
 # based on the search space, optimization config, and the total number
 # of trials we want to run.
@@ -456,7 +456,7 @@ _pareto_frontier_scatter_2d_plotly(experiment)
 #
 
 from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
-from ax.plot.diagnostic import interact_cross_validation
+from ax.plot.diagnostic import interact_cross_validation_plotly
 from ax.utils.notebook.plotting import init_notebook_plotting, render
 
 # # initialize some plotting code for plotting in notebooks
@@ -465,7 +465,7 @@ from ax.utils.notebook.plotting import init_notebook_plotting, render
 # The surrogate model is stored on the GenerationStrategy
 cv = cross_validate(gs.model)
 diagnostics = compute_diagnostics(cv)
-render(interact_cross_validation(cv))
+interact_cross_validation_plotly(cv)
 
 
 # TODO: Contour plots?
@@ -510,7 +510,7 @@ render(interact_cross_validation(cv))
 
 # cv = cross_validate(model_saas)
 # diagnostics = compute_diagnostics(cv)
-# render(interact_cross_validation(cv))
+# interact_cross_validation_plotly(cv)
 
 
 ######################################################################
