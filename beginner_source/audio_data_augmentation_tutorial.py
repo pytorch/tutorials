@@ -239,14 +239,14 @@ speech, _ = torchaudio.load(SAMPLE_SPEECH)
 noise, _ = torchaudio.load(SAMPLE_NOISE)
 noise = noise[:, : speech.shape[1]]
 
-speech_power = speech.norm(p=2)
-noise_power = noise.norm(p=2)
+speech_rms = speech.norm(p=2)
+noise_rms = noise.norm(p=2)
 
 snr_dbs = [20, 10, 3]
 noisy_speeches = []
 for snr_db in snr_dbs:
     snr = 10 ** (snr_db / 20)
-    scale = snr * noise_power / speech_power
+    scale = snr * noise_rms / speech_rms
     noisy_speeches.append((scale * speech + noise) / 2)
 
 ######################################################################
@@ -376,7 +376,7 @@ noise, _ = torchaudio.load(SAMPLE_NOISE)
 noise = noise[:, : rir_applied.shape[1]]
 
 snr_db = 8
-scale = math.exp(snr_db / 10) * noise.norm(p=2) / rir_applied.norm(p=2)
+scale = (10 ** (snr_db / 20)) * noise.norm(p=2) / rir_applied.norm(p=2)
 bg_added = (scale * rir_applied + noise) / 2
 
 plot_specgram(bg_added, sample_rate, title="BG noise added")
