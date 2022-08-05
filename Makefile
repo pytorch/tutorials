@@ -104,7 +104,6 @@ download:
 
 
 docs:
-	make download
 	make html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
