@@ -21,9 +21,6 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
-# export PATH=/opt/conda/bin:$PATH
-# pip install sphinx==1.8.2 pandas
-
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
@@ -39,10 +36,7 @@ pip install tb-nightly
 python -m spacy download en_core_web_sm
 python -m spacy download de_core_news_sm
 
-# PyTorch Theme
 rm -rf src
-pip install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==9.0.1
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
