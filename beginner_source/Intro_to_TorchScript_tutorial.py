@@ -39,7 +39,7 @@ print(torch.__version__)
 # Basics of PyTorch Model Authoring
 # ---------------------------------
 #
-# Let’s start out be defining a simple ``Module``. A ``Module`` is the
+# Let’s start out by defining a simple ``Module``. A ``Module`` is the
 # basic unit of composition in PyTorch. It contains:
 #
 # 1. A constructor, which prepares the module for invocation
