@@ -289,7 +289,7 @@ _ = viz.visualize_image_attr(np.transpose(attributions_ig.squeeze().cpu().detach
 # Gradient-based attribution methods help to understand the model in terms
 # of directly computing out the output changes with respect to the input.
 # *Perturbation-based attribution* methods approach this more directly, by
-# introducing changes to the output to measure the effect on the output.
+# introducing changes to the input to measure the effect on the output.
 # `Occlusion <https://captum.ai/api/occlusion.html>`__ is one such method.
 # It involves replacing sections of the input image, and examining the
 # effect on the output signal.
