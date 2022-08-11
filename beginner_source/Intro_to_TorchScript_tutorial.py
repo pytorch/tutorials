@@ -111,7 +111,7 @@ print(my_cell(x, h))
 # ``Module``\ ’s subclass hierarchy. In our example, we can see our
 # ``Linear`` subclass and its parameters.
 #
-# By composing ``Module``\ s in this way, we can succintly and readably
+# By composing ``Module``\ s in this way, we can succinctly and readably
 # author models with reusable components.
 #
 # You may have noticed ``grad_fn`` on the outputs. This is a detail of
