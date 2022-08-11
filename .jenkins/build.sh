@@ -36,8 +36,6 @@ pip install tb-nightly
 python -m spacy download en_core_web_sm
 python -m spacy download de_core_news_sm
 
-rm -rf src
-
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
 
