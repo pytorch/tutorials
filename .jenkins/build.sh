@@ -29,9 +29,6 @@ pip install -r $DIR/../requirements.txt
 # pip uninstall -y torch torchvision torchaudio torchtext
 # pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
 
-# For Tensorboard. Until 1.14 moves to the release channel.
-pip install tb-nightly
-
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
 python -m spacy download de_core_news_sm
