@@ -75,6 +75,26 @@ def remove_other_files(all_files, files_to_keep) -> None:
             remove_runnable_code(file, file)
 
 
+def install_dependencies(files_to_run: List[str], dry_run: bool = False) -> None:
+    import sys
+    from subprocess import check_call
+    dependencies: List[str] = []
+    for fname in files_to_run:
+        requirements_file = REPO_BASE_DIR / fname.replace(".py", "_requirements.txt")
+        if requirements_file.exists():
+            with open(requirements_file) as f:
+                lines = [l.strip() for l in f.read().split("\n") if len(l)>0]
+            for line in lines:
+                if line not in dependencies:
+                    dependencies.append(line)
+    if len(dependencies) == 0:
+        return
+    if dry_run:
+        print(f"This shard needs to install {dependencies}")
+        return
+    check_call([sys.executable, "-mpip", "install"] + dependencies)
+
+
 def parse_args() -> Any:
     from argparse import ArgumentParser
     parser = ArgumentParser("Select files to run")
@@ -91,6 +111,7 @@ def main() -> None:
     files_to_run = calculate_shards(all_files, num_shards=args.num_shards)[args.shard_num]
     if not args.dry_run:
         remove_other_files(all_files, compute_files_to_keep(files_to_run))
+    install_dependencies(files_to_run, args.dry_run)
     stripped_file_names = [Path(x).stem for x in files_to_run]
     print(" ".join(stripped_file_names))
 
