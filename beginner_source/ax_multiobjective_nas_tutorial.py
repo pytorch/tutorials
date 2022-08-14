@@ -7,16 +7,28 @@ Multi-Objective NAS with Ax
 `Max Balandat <https://github.com/Balandat>`__,
 and the Adaptive Experimentation team at Meta.
 
-In this tutorial we show how to use Ax to run multi-objective neural
-architecture search for a simple neural network model on the popular
-MNIST dataset.
+In this tutorial we show how to use `Ax <https://ax.dev/>`__ to run
+multi-objective neural architecture search (NAS) for a simple neural
+network model on the popular MNIST dataset. While the underlying
+methodology would typically be used for more complicated models and
+larger datasets, we opt for a tutorial that is easily runnable
+end-to-end on a laptop in less than 20 minutes.
 
-While the underlying methodology can be used for more complicated models
-and larger datasets, we opt for a tutorial that is easily runnable
-end-to-end on a laptop in less than an hour.
+In many NAS applications, there is a natural tradeoff between multiple
+objectives of interest. For instance, when deploying models on-device
+we may want to maximize model performance (e.g. accuracy), while
+simultaneously minimizing competing metrics like power consumption,
+inference latency, or model size in order to satisfy deployment
+constraints. Often, we may be able to reduce computational requirements
+or latency of predictions substantially by accepting minimally lower
+model performance. Principled methods for exploring such tradeoffs
+efficiently are key enablers of scalable and sustainable AI, and have
+many successful applications at Meta - see for instance our
+`case study <https://research.facebook.com/blog/2021/07/optimizing-model-accuracy-and-latency-using-bayesian-multi-objective-neural-architecture-search/>`__
+on a Natural Language Understanding model.
 
-In our example, we will tune the widths of two hidden layers, the
-learning rate, the dropout probability, the batch size, and the
+In our example here, we will tune the widths of two hidden layers,
+the learning rate, the dropout probability, the batch size, and the
 number of training epochs. The goal is to trade off performance
 (accuracy on the validation set) and model size (the number of
 model parameters).
@@ -103,7 +115,8 @@ def trainer(
 # Setting up the Runner
 # ---------------------
 #
-# Ax’s Runner abstraction allows writing interfaces to various backends.
+# Ax’s `Runner <https://ax.dev/api/core.html#module-ax.core.runner>`__
+# abstraction allows writing interfaces to various backends.
 # Ax already comes with Runner for TorchX, and so we just need to
 # configure it. For the purpose of this tutorial we run jobs locally
 # in a fully asynchronous fashion.
@@ -138,7 +151,6 @@ ax_runner = TorchXRunner(
 # First, we define our search space. Ax supports both range parameters
 # of type integer and float as well as choice parameters which can have
 # non-numerical types such as strings.
-#
 # We will tune the hidden sizes, learning rate, dropout, and number of
 # epochs as range parameters and tune the batch size as an ordered choice
 # parameter to enforce it to be a power of 2.
@@ -152,9 +164,10 @@ from ax.core import (
 )
 
 parameters = [
-    # NOTE: hidden_size_1 and hidden_size_2 should probably be powers of 2,
-    # but in that case num_params can't take on that many values which makes the
-    # Pareto frontier look pretty weird. This seems fine for a tutorial.
+    # NOTE: In a real-world setting, hidden_size_1 and hidden_size_2
+    # should probably be powers of 2, but in our simple example this
+    # would mean that num_params can't take on that many values, which
+    # in turn makes the Pareto frontier look pretty weird.
     RangeParameter(
         name="hidden_size_1",
         lower=16,
@@ -199,7 +212,9 @@ parameters = [
 
 search_space = SearchSpace(
     parameters=parameters,
-    parameter_constraints=[],  # It may make sense to add a constraint hidden_size_2 <= hidden_size_1
+    # NOTE: In practice, it may make sense to add a constraint
+    # hidden_size_2 <= hidden_size_1
+    parameter_constraints=[],
 )
 
 
@@ -207,24 +222,26 @@ search_space = SearchSpace(
 # Setting up Metrics
 # ------------------
 #
-# Ax has the concept of a Metric that defines properties of outcomes
-# and how observations are obtained for these outcomes. This allows
-# e.g. encodig how data is fetched from some distributed execution
-# backend and post-processed before being passed as input to Ax.
+# Ax has the concept of a `Metric <https://ax.dev/api/core.html#metric>`__
+# that defines properties of outcomes and how observations are obtained
+# for these outcomes. This allows e.g. encodig how data is fetched from
+# some distributed execution backend and post-processed before being
+# passed as input to Ax.
 #
-# In this tutorial we will use multi-objective optimization with the
-# goal of maximizing the validation accuracy and minimizing the number
-# of model parameters. The latter represents a simple proxy of model
-# latency, which is hard to estimate accurately for small ML models
-# (in an actual application we would benchmark the latency while
+# In this tutorial we will use
+# `multi-objective optimization <https://ax.dev/tutorials/multiobjective_optimization.html>`__
+# with the goal of maximizing the validation accuracy and minimizing
+# the number of model parameters. The latter represents a simple proxy
+# of model latency, which is hard to estimate accurately for small ML
+# models (in an actual application we would benchmark the latency while
 # running the model on-device).
 #
-# In our example TorchX will run the training jobs in a fully async
-# fashion locally and write the results to disk based on the trial
-# index (see trainer() function above). We'll define a metric class
-# that is a ware of that logging directory. By subclassing
-# `TensorboardCurveMetric` we get the logic to read and parse the
-# tensorboard logs for free.
+# In our example TorchX will run the training jobs in a fully asynchronous
+# fashion locally and write the results to the ``log_dir`` based on the trial
+# index (see the ``trainer()`` function above). We will define a metric
+# class that is a ware of that logging directory. By subclassing
+# `TensorboardCurveMetric <https://ax.dev/tutorials/multiobjective_optimization.html>`__
+# we get the logic to read and parse the tensorboard logs for free.
 #
 
 from ax.metrics.tensorboard import TensorboardCurveMetric
@@ -232,7 +249,7 @@ from ax.metrics.tensorboard import TensorboardCurveMetric
 
 class MyTensorboardMetric(TensorboardCurveMetric):
 
-    # We need to tell the new Tensorboard metric how to get the id /
+    # NOTE: We need to tell the new Tensorboard metric how to get the id /
     # file handle for the tensorboard logs from a trial. In this case
     # our convention is to just save a separate file per trial in
     # the pre-specified log dir.
@@ -245,21 +262,30 @@ class MyTensorboardMetric(TensorboardCurveMetric):
 
     # This indicates whether the metric is queryable while the trial is
     # still running. We don't use this in the current tutorial, but Ax
-    # utilizes this to implement early-stopping capabilities.
+    # utilizes this to implement trial-level early-stopping functionality.
     @classmethod
     def is_available_while_running(cls):
         return False
 
 
 ######################################################################
-# Now we can instatiate the Metrics for accuracy and the number of
-# model parameters (TODO: Show signature of TensorboardCurveMetric
-# constructor). We specify `lower_is_better` to indicate the
-# favorable direction of a metric.
+# Now we can instatiate the metrics for accuracy and the number of
+# model parameters Here `curve_name` is the name of the metric in the
+# Tensorboard logs, while `name` is the metric name used internally
+# by Ax. We also specify `lower_is_better` to indicate the favorable
+# direction of the two metrics.
 #
 
-val_acc = MyTensorboardMetric("val_acc", "val_acc", lower_is_better=False)
-model_num_params = MyTensorboardMetric("num_params", "num_params", lower_is_better=True)
+val_acc = MyTensorboardMetric(
+    name="val_acc",
+    curve_name="val_acc",
+    lower_is_better=False,
+)
+model_num_params = MyTensorboardMetric(
+    name="num_params",
+    curve_name="num_params",
+    lower_is_better=True,
+)
 
 
 ######################################################################
@@ -267,8 +293,9 @@ model_num_params = MyTensorboardMetric("num_params", "num_params", lower_is_bett
 # ----------------------------------
 #
 # The way to tell Ax what it should optimize is by means of an
-# `OptimizatioConfig`. Here we use a `MultiObjectiveOptimizationConfig`
-# as we will be performing multi-objective optimization.
+# `OptimizationConfig <https://ax.dev/api/core.html#module-ax.core.optimization_config>`__.
+# Here we use a ``MultiObjectiveOptimizationConfig`` as we will
+# be performing multi-objective optimization.
 #
 # Additionally, Ax supports placing constraints on the different
 # metrics by specifying objective thresholds, which bound the region
@@ -299,11 +326,15 @@ opt_config = MultiObjectiveOptimizationConfig(
 # Creating the Ax Experiment
 # --------------------------
 #
-# In Ax, the ``Experiment`` object is the object that stores all the
-# information about the problem setup (``Experiment``s can be serialized
-# to JSON or stored to a database backend such as MySQL in order to
-# persist and be available to load on different machines - we won't
-# be using this functionality in this tutorial though).
+# In Ax, the `Experiment <https://ax.dev/api/core.html#module-ax.core.experiment>`__
+# object is the object that stores all the information about the problem
+# setup.
+#
+# ..tip:
+#   ``Experiment`` objects can be serialized to JSON or stored to a
+#   database backend such as MySQL in order to persist and be available
+#   to load on different machines. See the the `Ax Docs <https://ax.dev/docs/storage.html>`__
+#   on the storage functionality for details.
 #
 
 from ax.core import Experiment
@@ -319,10 +350,10 @@ experiment = Experiment(
 # Choosing the GenerationStrategy
 # -------------------------------
 #
-# A ``GenerationStrategy`` is the abstract representation of how we
-# would like to perform the optimization. While this can be customized
-# (if you’d like to do so, see
-# `this tutorial <https://ax.dev/tutorials/generation_strategy.html>`_),
+# A `GenerationStrategy <https://ax.dev/api/modelbridge.html#module-ax.modelbridge.generation_strategy>`__
+# is the abstract representation of how we would like to perform the
+# optimization. While this can be customized (if you’d like to do so, see
+# `this tutorial <https://ax.dev/tutorials/generation_strategy.html>`__),
 # in most cases Ax can automatically determine an appropriate strategy
 # based on the search space, optimization config, and the total number
 # of trials we want to run.
@@ -332,7 +363,7 @@ experiment = Experiment(
 #
 
 
-total_trials = 48 # total evaluation budget
+total_trials = 48  # total evaluation budget
 
 from ax.modelbridge.dispatch_utils import choose_generation_strategy
 
@@ -347,21 +378,21 @@ gs = choose_generation_strategy(
 # Configuring the Scheduler
 # -------------------------
 #
-# The `Scheduler` acts as the loop control for the optimization.
+# The `Scheduler` (TODO: link) acts as the loop control for the optimization.
 # It communicates with the backend to launch trials, check their status,
 # and retrieve results (in the case of this tutorial it is simply reading
 # and parsing the locally saved logs, bug in a remote execution setting
-# it would call APIs).
-#
-# The following illustration from the Ax Scheduler tutorial summarizes how the
-# Scheduler interacts with any external system used to run trial evaluations:
+# it would call APIs). The following illustration from the Ax
+# `Scheduler tutorial <https://ax.dev/tutorials/scheduler.html>`__
+# summarizes how the Scheduler interacts with external systems used to run
+# trial evaluations:
 #
 # .. image:: ../../_static/img/ax_scheduler_illustration.png
 #
 #
-# The Scheduler requires the `Experiment` and the `GenerationStrategy`.
-# A set of options can be passed in via `SchedulerOptions`. Here, we
-# configure the number of total evaluations as well as `max_pending_trials`,
+# The ``Scheduler`` requires the ``Experiment`` and the ``GenerationStrategy``.
+# A set of options can be passed in via ``SchedulerOptions``. Here, we
+# configure the number of total evaluations as well as ``max_pending_trials``,
 # the maximum number of trials that should run concurrently (in our
 # local setting this is the number of training jobs running as individual
 # processes, while in a remote execution setting this would be the number
@@ -384,12 +415,12 @@ scheduler = Scheduler(
 # Running the optimization
 # ------------------------
 #
-# Everything is configured, we can now let Ax run the optimization
+# Now that everything is configured, we can let Ax run the optimization
 # in a fully automated fashion. The Scheduler will periodially check
 # the logs for the status of all currenty running trials, and if a
-# trial completes it will update its status on the experiment and
-# fetch the observations needed for the Bayesian Optimization
-# algorithm.
+# trial completes the scheduler will update its status on the
+# experiment and fetch the observations needed for the Bayesian
+# optimization algorithm.
 #
 
 scheduler.run_all_trials()
@@ -400,125 +431,88 @@ scheduler.run_all_trials()
 # ----------------------
 #
 # We can now inspect the result of the optimization using helper
-# functions and visualizations integrated with Ax.
+# functions and visualizations included with Ax.
 
 ######################################################################
 # First, we generate a dataframe with a summary of the results
-# of the experiment.
-# TODO: What do we see?
+# of the experiment. Each row in this dataframe corresponds ot a
+# trial (i.e. a training job that was run), and contains information
+# on the status of the trial, the parameter configuration that was
+# evaluated, and the metric values that were observed. This provides
+# an easy way to sanity check the optimization.
 #
 
 from ax.service.utils.report_utils import exp_to_df
 
-exp_to_df(experiment)
+df = exp_to_df(experiment)
+df.head(10)
 
 
 ######################################################################
 # We can also visualize the Pareto frontier of tradeoffs between the
 # validation accuracy and the number of model parameters.
 #
-# The final results can be seen in the Figure below where the color
-# corresponds to the iteration number for each trial. We see that our
-# method was able to successfully explore the trade-offs  and found
-# both large models with high validation accuracy as well as small
-# models with low validation accuracy.
+# .. tip::
+#   Ax uses Ploly to produce interactive plots, which allow you to
+#   do things like zoom, crop, or hover in order to view details
+#   of components of the plot. Try it out, and take a look at the
+#   `visualization tutorial <https://ax.dev/tutorials/visualizations.html>`__
+#   if you'd like to learn more).
 #
-
-
-# import plotly.io as pio
-# # Ax uses Plotly to produce interactive plots. These are great for
-# # viewing and analysis, but they aren't particularly easy to get
-# # to render correctly in the generated website that uses the
-# # code. Changing the default to `png` strips the interactive
-# # components - if you like to try this just comment out the line
-# # below.
-# pio.renderers.default = "png"
-
-import plotly.io as pio
-pio.renderers.default = 'sphinx_gallery'
+# The final optimization results are shown in the Figure below where
+# the color corresponds to the iteration number for each trial.
+# We see that our method was able to successfully explore the
+# trade-offs and found both large models with high validation
+# accuracy as well as small models with compartively lower
+# validation accuracy.
+#
 
 from ax.service.utils.report_utils import _pareto_frontier_scatter_2d_plotly
 
 _pareto_frontier_scatter_2d_plotly(experiment)
 
 
-
 ######################################################################
 # To better understand what our surrogate models have learned about
-# the black box objectives, let's take a look at the LOO cross
-# validation results. Since our models are Gaussian Processes, they
-# not only provide point predictions but also uncertainty estimates
-# about these predictions.
+# the black box objectives, we can take a look at the Leave-one-out
+# cross validation results. Since our models are Gaussian Processes,
+# they not only provide point predictions but also uncertainty estimates
+# about these predictions. A good model means
 #
-# Ax makes it easy to do leave-one-out cross-validation. As the figures
-# below show, the model size (num_params) metric is much easier to model
-# than the validation accuracy (val_acc) metric.
+# As the figures below show, the model size (num_params) metric is
+# much easier to model than the validation accuracy (val_acc) metric.
 #
 
 from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
 from ax.plot.diagnostic import interact_cross_validation_plotly
 from ax.utils.notebook.plotting import init_notebook_plotting, render
 
-# # initialize some plotting code for plotting in notebooks
-# init_notebook_plotting()
+cv = cross_validate(model=gs.model)  # The surrogate model is stored on the GenerationStrategy
+compute_diagnostics(cv)
 
-# The surrogate model is stored on the GenerationStrategy
-cv = cross_validate(gs.model)
-diagnostics = compute_diagnostics(cv)
 interact_cross_validation_plotly(cv)
 
 
-# TODO: Contour plots?
+######################################################################
+# We can also make contour plots to better understand how the different
+# objectives depend on two of the input parameters. In the figure below
+# we show the validation accuracy predicted by the model as a function
+# of the two hidden sizes. The validation accuracy clearly increases
+# as the hidden sizes increase.
+#
 
+from ax.plot.contour import interact_contour_plotly
 
-# Suggest removing SAASBO below - seems somewhat orthogonal to the tutorial
-# and could confuse the reader more than it may help.
-
-# ######################################################################
-# # We can also see how a SAASBO (TODO: link) model compares against our
-# # standard models;
-# #
-# # TODO: What do we see?
-# #
-
-# from ax.modelbridge.registry import Cont_X_trans, Models, Y_trans
-# from ax.modelbridge.transforms.winsorize import Winsorize
-# from ax.models.torch.botorch_moo_defaults import get_NEHVI
-
-# model_kwargs = {
-#     "objective_thresholds": opt_config.objective_thresholds,
-#     "acqf_constructor": get_NEHVI,
-#     "transforms": [Winsorize] + Y_trans + Cont_X_trans,
-#     "transform_configs": {
-#         "Winsorize": {
-#             "optimization_config": opt_config
-#         },
-#     },
-# }
-
-# model_saas = Models.FULLYBAYESIANMOO(
-#     experiment=experiment,
-#     data=experiment.fetch_data(),
-#     use_saas=True,
-#     num_samples=256,
-#     warmup_steps=512,
-#     gp_kernel="matern",
-#     disable_progbar=False,
-#     verbose=False,
-#     **model_kwargs,
-# )
-
-# cv = cross_validate(model_saas)
-# diagnostics = compute_diagnostics(cv)
-# interact_cross_validation_plotly(cv)
+interact_contour_plotly(model=gs.model, metric_name="val_acc")
 
 
 ######################################################################
-# Learn more
-# ----------
-#
-# TODO: Pointers to stuff
-#
+# Similarly, we show the number of model parameters as a function of
+# the hidden sizes in the figure below and see that it also increases
+# as a function of the hidden sizes (the dependency on ``hidden_size_1``
+# is much larger).
+
+interact_contour_plotly(model=gs.model, metric_name="num_params")
 
 
 ######################################################################
