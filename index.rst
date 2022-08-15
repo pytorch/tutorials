@@ -501,11 +501,11 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization,Production
 
 .. customcarditem::
-   :header: Multi-Objective Neural Architechture Search with Ax
+   :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ray-tune.png
    :link: beginner/ax_multiobjective_nas_tutorial.html
-   :tags: Model-Optimization,Best-Practice
+   :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
 .. Parallel-and-Distributed-Training
 
