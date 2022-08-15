@@ -7,7 +7,7 @@ Multi-Objective NAS with Ax
 `Max Balandat <https://github.com/Balandat>`__,
 and the Adaptive Experimentation team at Meta.
 
-In this tutorial we show how to use `Ax <https://ax.dev/>`__ to run
+In this tutorial, we show how to use `Ax <https://ax.dev/>`__ to run
 multi-objective neural architecture search (NAS) for a simple neural
 network model on the popular MNIST dataset. While the underlying
 methodology would typically be used for more complicated models and
@@ -16,7 +16,7 @@ end-to-end on a laptop in less than 20 minutes.
 
 In many NAS applications, there is a natural tradeoff between multiple
 objectives of interest. For instance, when deploying models on-device
-we may want to maximize model performance (e.g. accuracy), while
+we may want to maximize model performance (for example, accuracy), while
 simultaneously minimizing competing metrics like power consumption,
 inference latency, or model size in order to satisfy deployment
 constraints. Often, we may be able to reduce computational requirements
@@ -49,9 +49,8 @@ This tutorial makes use of the following PyTorch libraries:
 # in `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
 # the values of the architcture and hyperparameters of the training
-# job and creates a TorchX AppDef (see the
-# `TorchX docs <https://pytorch.org/torchx/latest/basics.html>`__
-# for more detail) with the appropriate settings.
+# job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
+# with the appropriate settings.
 #
 
 
@@ -122,9 +121,9 @@ def trainer(
 # in a fully asynchronous fashion.
 #
 # In order to launch them on a cluster, you can instead specify a
-# different TorchX scheduler and adjust the configuration appropriately
-# (e.g. if you have a Kubernetes cluster, you just need to change the
-# scheduler from local_cwd to kubernetes).
+# different TorchX scheduler and adjust the configuration appropriately.
+# For example, if you have a Kubernetes cluster, you just need to change the
+# scheduler from ``local_cwd`` to ``kubernetes``).
 #
 
 
@@ -239,9 +238,9 @@ search_space = SearchSpace(
 # In our example TorchX will run the training jobs in a fully asynchronous
 # fashion locally and write the results to the ``log_dir`` based on the trial
 # index (see the ``trainer()`` function above). We will define a metric
-# class that is a ware of that logging directory. By subclassing
+# class that is aware of that logging directory. By subclassing
 # `TensorboardCurveMetric <https://ax.dev/tutorials/multiobjective_optimization.html>`__
-# we get the logic to read and parse the tensorboard logs for free.
+# we get the logic to read and parse the Tensorboard logs for free.
 #
 
 from ax.metrics.tensorboard import TensorboardCurveMetric
@@ -270,7 +269,7 @@ class MyTensorboardMetric(TensorboardCurveMetric):
 
 ######################################################################
 # Now we can instatiate the metrics for accuracy and the number of
-# model parameters Here `curve_name` is the name of the metric in the
+# model parameters. Here `curve_name` is the name of the metric in the
 # Tensorboard logs, while `name` is the metric name used internally
 # by Ax. We also specify `lower_is_better` to indicate the favorable
 # direction of the two metrics.
@@ -300,7 +299,7 @@ model_num_params = MyTensorboardMetric(
 # Additionally, Ax supports placing constraints on the different
 # metrics by specifying objective thresholds, which bound the region
 # of interest in the outcome space that we want to explore. For this
-# ecample we will constrain the validation accuracy to be at least
+# example, we will constrain the validation accuracy to be at least
 # 0.94 (94%) and the number of model parameters to be at most 80,000.
 #
 
@@ -330,7 +329,7 @@ opt_config = MultiObjectiveOptimizationConfig(
 # object is the object that stores all the information about the problem
 # setup.
 #
-# ..tip:
+# .. tip:
 #   ``Experiment`` objects can be serialized to JSON or stored to a
 #   database backend such as MySQL in order to persist and be available
 #   to load on different machines. See the the `Ax Docs <https://ax.dev/docs/storage.html>`__
@@ -358,7 +357,7 @@ experiment = Experiment(
 # based on the search space, optimization config, and the total number
 # of trials we want to run.
 #
-# Typically, Ax will choose to evauate a number of random configurations
+# Typically, Ax chooses to evaluate a number of random configurations
 # before starting a model-based Bayesian Optimization strategy.
 #
 
@@ -380,9 +379,9 @@ gs = choose_generation_strategy(
 #
 # The `Scheduler` (TODO: link) acts as the loop control for the optimization.
 # It communicates with the backend to launch trials, check their status,
-# and retrieve results (in the case of this tutorial it is simply reading
-# and parsing the locally saved logs, bug in a remote execution setting
-# it would call APIs). The following illustration from the Ax
+# and retrieve results. In the case of this tutorial, it is simply reading
+# and parsing the locally saved logs. In a remote execution setting,
+# it would call APIs. The following illustration from the Ax
 # `Scheduler tutorial <https://ax.dev/tutorials/scheduler.html>`__
 # summarizes how the Scheduler interacts with external systems used to run
 # trial evaluations:
@@ -393,10 +392,10 @@ gs = choose_generation_strategy(
 # The ``Scheduler`` requires the ``Experiment`` and the ``GenerationStrategy``.
 # A set of options can be passed in via ``SchedulerOptions``. Here, we
 # configure the number of total evaluations as well as ``max_pending_trials``,
-# the maximum number of trials that should run concurrently (in our
-# local setting this is the number of training jobs running as individual
-# processes, while in a remote execution setting this would be the number
-# of machines you want to use in parallel).
+# the maximum number of trials that should run concurrently. In our
+# local setting, this is the number of training jobs running as individual
+# processes, while in a remote execution setting, this would be the number
+# of machines you want to use in parallel.
 #
 
 
@@ -417,7 +416,7 @@ scheduler = Scheduler(
 #
 # Now that everything is configured, we can let Ax run the optimization
 # in a fully automated fashion. The Scheduler will periodially check
-# the logs for the status of all currenty running trials, and if a
+# the logs for the status of all currently running trials, and if a
 # trial completes the scheduler will update its status on the
 # experiment and fetch the observations needed for the Bayesian
 # optimization algorithm.
@@ -435,8 +434,8 @@ scheduler.run_all_trials()
 
 ######################################################################
 # First, we generate a dataframe with a summary of the results
-# of the experiment. Each row in this dataframe corresponds ot a
-# trial (i.e. a training job that was run), and contains information
+# of the experiment. Each row in this dataframe corresponds to a
+# trial (that is, a training job that was run), and contains information
 # on the status of the trial, the parameter configuration that was
 # evaluated, and the metric values that were observed. This provides
 # an easy way to sanity check the optimization.
@@ -453,17 +452,17 @@ df.head(10)
 # validation accuracy and the number of model parameters.
 #
 # .. tip::
-#   Ax uses Ploly to produce interactive plots, which allow you to
+#   Ax uses Plotly to produce interactive plots, which allow you to
 #   do things like zoom, crop, or hover in order to view details
 #   of components of the plot. Try it out, and take a look at the
 #   `visualization tutorial <https://ax.dev/tutorials/visualizations.html>`__
 #   if you'd like to learn more).
 #
-# The final optimization results are shown in the Figure below where
+# The final optimization results are shown in the figure below where
 # the color corresponds to the iteration number for each trial.
 # We see that our method was able to successfully explore the
 # trade-offs and found both large models with high validation
-# accuracy as well as small models with compartively lower
+# accuracy as well as small models with comparatively lower
 # validation accuracy.
 #
 
@@ -474,13 +473,17 @@ _pareto_frontier_scatter_2d_plotly(experiment)
 
 ######################################################################
 # To better understand what our surrogate models have learned about
-# the black box objectives, we can take a look at the Leave-one-out
+# the black box objectives, we can take a look at the leave-one-out
 # cross validation results. Since our models are Gaussian Processes,
 # they not only provide point predictions but also uncertainty estimates
-# about these predictions. A good model means
+# about these predictions. A good model means that the predicted means
+# (the points in the figure) are close to the 45 degree line and that the
+# confidence intervals cover the 45 degree line with the expected frequency
+# (here we use 95% confidence intervals, so we would expect them to contain
+# the true observation 95% of the time).
 #
-# As the figures below show, the model size (num_params) metric is
-# much easier to model than the validation accuracy (val_acc) metric.
+# As the figures below show, the model size (``num_params``) metric is
+# much easier to model than the validation accuracy (``val_acc``) metric.
 #
 
 from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
@@ -495,7 +498,7 @@ interact_cross_validation_plotly(cv)
 
 ######################################################################
 # We can also make contour plots to better understand how the different
-# objectives depend on two of the input parameters. In the figure below
+# objectives depend on two of the input parameters. In the figure below,
 # we show the validation accuracy predicted by the model as a function
 # of the two hidden sizes. The validation accuracy clearly increases
 # as the hidden sizes increase.
