@@ -68,6 +68,7 @@ PyTorch and all the other libraries we need have ARM 64-bit/aarch64 variants so 
 .. code:: shell
 
     $ pip install torch torchvision torchaudio
+    # Installing OpenCV will take about 2 hours and nothing shows in the terminal until it finishes.
     $ pip install opencv-contrib-python
     $ pip install numpy --upgrade
 
