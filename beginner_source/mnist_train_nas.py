@@ -24,10 +24,6 @@ warnings.filterwarnings("ignore")  # Disable data logger warnings
 logging.getLogger("pytorch_lightning").setLevel(logging.ERROR)  # Disable GPU/TPU prints
 
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="train mnist")
     parser.add_argument(
@@ -40,7 +36,7 @@ def parse_args():
         "--hidden_size_2", type=int, required=True, help="hidden size layer 2"
     )
     parser.add_argument("--learning_rate", type=float, required=True, help="learning rate")
-   parser.add_argument("--epochs", type=int, required=True, help="number of epochs")
+    parser.add_argument("--epochs", type=int, required=True, help="number of epochs")
     parser.add_argument("--dropout", type=float, required=True, help="dropout probability")
     parser.add_argument("--batch_size", type=int, required=True, help="batch size")
     return parser.parse_args()
@@ -133,40 +129,45 @@ class MnistModel(LightningModule):
         return DataLoader(self.mnist_val, batch_size=self.batch_size)
 
 
-mnist_model = MnistModel()
+def run_training_job():
+
+    mnist_model = MnistModel()
+
+    # Initialize a trainer (don't log anything since things get so slow...)
+    trainer = Trainer(
+        logger=False,
+        gpus=AVAIL_GPUS,
+        max_epochs=args.epochs,
+        enable_progress_bar=False,
+        deterministic=True,  # Do we want a bit of noise?
+        default_root_dir=args.log_path,
+    )
+
+    logger = pl_loggers.TensorBoardLogger(args.log_path)
+
+    print(f"Logging to path: {args.log_path}.")
+
+    # Train the model and log time ⚡
+    start = time.time()
+    trainer.fit(model=mnist_model)
+    end = time.time()
+    train_time = end - start
+    logger.log_metrics({"train_time": end - start})
+
+    # Compute the validation accuracy once and log the score
+    with io.capture_output() as captured:
+        val_accuracy = trainer.validate()[0]["val_acc"]
+    logger.log_metrics({"val_acc": val_accuracy})
+
+    # Log the number of model parameters
+    num_params = trainer.model.num_params
+    logger.log_metrics({"num_params": num_params})
+
+    logger.save()
+
+    # Print outputs
+    print(f"train time: {train_time}, val acc: {val_accuracy}, num_params: {num_params}")
 
 
-# Initialize a trainer (don't log anything since things get so slow...)
-trainer = Trainer(
-    logger=False,
-    gpus=AVAIL_GPUS,
-    max_epochs=args.epochs,
-    enable_progress_bar=False,
-    deterministic=True,  # Do we want a bit of noise?
-    default_root_dir=args.log_path,
-)
-
-logger = pl_loggers.TensorBoardLogger(args.log_path)
-
-eprint(args.log_path)
-
-# Train the model and log time ⚡
-start = time.time()
-trainer.fit(model=mnist_model)
-end = time.time()
-train_time = end - start
-logger.log_metrics({"train_time": end - start})
-
-# Compute the validation accuracy once and log the score
-with io.capture_output() as captured:
-    val_accuracy = trainer.validate()[0]["val_acc"]
-logger.log_metrics({"val_acc": val_accuracy})
-
-# Log the number of model parameters
-num_params = trainer.model.num_params
-logger.log_metrics({"num_params": num_params})
-
-logger.save()
-
-# Print outputs
-eprint(f"train time: {train_time}, val acc: {val_accuracy}, num_params: {num_params}")
+if __name__ == "__main__":
+    run_training_job()
