@@ -45,24 +45,20 @@ This tutorial makes use of the following PyTorch libraries:
 # Defining the TorchX App
 # -----------------------
 #
-# Our goal is to optimize the PyTorch Lightning training job defined
-# in `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py>`__.
+# Our goal is to optimize the PyTorch Lightning training job defined in
+# `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
 # the values of the architcture and hyperparameters of the training
 # job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
 # with the appropriate settings.
 #
 
-
 from pathlib import Path
 
+import torchx
+
 from torchx import specs
-from torchx.version import TORCHX_IMAGE
-
-
-# load in the training code
-with Path.cwd().joinpath("mnist_train_nas.py").open("rt") as f:
-    train_source = f.read()
+from torchx.components import utils
 
 
 def trainer(
@@ -80,33 +76,26 @@ def trainer(
     if trial_idx >= 0:
         log_path = Path(log_path).joinpath(str(trial_idx)).absolute().as_posix()
 
-    return specs.AppDef(
+    return utils.python(
+        # command line args to the training script
+        "--log_path",
+        log_path,
+        "--hidden_size_1",
+        str(hidden_size_1),
+        "--hidden_size_2",
+        str(hidden_size_2),
+        "--learning_rate",
+        str(learning_rate),
+        "--epochs",
+        str(epochs),
+        "--dropout",
+        str(dropout),
+        "--batch_size",
+        str(batch_size),
+        # other config options
         name="trainer",
-        roles=[
-            specs.Role(
-                name="trainer",
-                image=TORCHX_IMAGE,
-                entrypoint="python",
-                args=[
-                    "-c",
-                    train_source,
-                    "--log_path",
-                    log_path,
-                    "--hidden_size_1",
-                    str(hidden_size_1),
-                    "--hidden_size_2",
-                    str(hidden_size_2),
-                    "--learning_rate",
-                    str(learning_rate),
-                    "--epochs",
-                    str(epochs),
-                    "--dropout",
-                    str(dropout),
-                    "--batch_size",
-                    str(batch_size),
-                ],
-            )
-        ],
+        script="mnist_train_nas.py",
+        image=torchx.version.TORCHX_IMAGE,
     )
 
 
