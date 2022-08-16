@@ -28,22 +28,24 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-parser = argparse.ArgumentParser(description="train mnist")
-parser.add_argument(
-    "--log_path", type=str, required=True, help="dir to place tensorboard logs from all trials"
-)
-parser.add_argument(
-    "--hidden_size_1", type=int, required=True, help="hidden size layer 1"
-)
-parser.add_argument(
-    "--hidden_size_2", type=int, required=True, help="hidden size layer 2"
-)
-parser.add_argument("--learning_rate", type=float, required=True, help="learning rate")
-parser.add_argument("--epochs", type=int, required=True, help="number of epochs")
-parser.add_argument("--dropout", type=float, required=True, help="dropout probability")
-parser.add_argument("--batch_size", type=int, required=True, help="batch size")
+def parse_args():
+    parser = argparse.ArgumentParser(description="train mnist")
+    parser.add_argument(
+        "--log_path", type=str, required=True, help="dir to place tensorboard logs from all trials"
+    )
+    parser.add_argument(
+        "--hidden_size_1", type=int, required=True, help="hidden size layer 1"
+    )
+    parser.add_argument(
+        "--hidden_size_2", type=int, required=True, help="hidden size layer 2"
+    )
+    parser.add_argument("--learning_rate", type=float, required=True, help="learning rate")
+   parser.add_argument("--epochs", type=int, required=True, help="number of epochs")
+    parser.add_argument("--dropout", type=float, required=True, help="dropout probability")
+    parser.add_argument("--batch_size", type=int, required=True, help="batch size")
+    return parser.parse_args()
 
-args = parser.parse_args()
+args = parse_args()
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
 AVAIL_GPUS = min(1, torch.cuda.device_count())
