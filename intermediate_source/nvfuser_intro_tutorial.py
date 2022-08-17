@@ -22,8 +22,7 @@ networks running on Volta and later CUDA accelerators by generating
 fast custom “fusion” kernels at runtime. nvFuser is specifically
 designed to meet the unique requirements of the PyTorch community,
 and it supports diverse network architectures and programs with
-dynamic inputs of varying shapes and strides. If you’re unfamiliar
-with nvFuser please review [this blog post, INSERT BLOG POST LINK].
+dynamic inputs of varying shapes and strides.
 
 Importing Packages and Selecting a Device
 -----------------------------------------
