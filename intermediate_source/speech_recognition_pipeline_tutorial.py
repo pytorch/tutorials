@@ -4,7 +4,7 @@ Speech Recognition with Wav2Vec2
 
 **Author**: `Moto Hira <moto@fb.com>`__
 
-This tutorial shows how to perform speech recognition using using
+This tutorial shows how to perform speech recognition using
 pre-trained models from wav2vec 2.0
 [`paper <https://arxiv.org/abs/2006.11477>`__].
 
@@ -118,7 +118,7 @@ print(model.__class__)
 #
 # We will use the speech data from `VOiCES
 # dataset <https://iqtlabs.github.io/voices/>`__, which is licensed under
-# Creative Commos BY 4.0.
+# Creative Commons BY 4.0.
 #
 
 IPython.display.Audio(SPEECH_FILE)

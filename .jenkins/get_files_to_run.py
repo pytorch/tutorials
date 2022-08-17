@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 import json
 import os
 from pathlib import Path
@@ -14,7 +14,7 @@ def get_all_files() -> List[str]:
     return [str(x) for x in sources]
 
 
-def calculate_shards(all_files, num_shards=20):
+def calculate_shards(all_files: List[str], num_shards: int = 20):
     with (REPO_BASE_DIR / ".jenkins" / "metadata.json").open() as fp:
         metadata = json.load(fp)
     sharded_files = [(0.0, []) for _ in range(num_shards)]
@@ -61,13 +61,22 @@ def remove_other_files(all_files, files_to_run) -> None:
             remove_runnable_code(file, file)
 
 
+def parse_args() -> Any:
+    from argparse import ArgumentParser
+    parser = ArgumentParser("Select files to run")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--num-shards", type=int, default=int(os.environ.get("NUM_WORKERS", 20)))
+    parser.add_argument("--shard-num", type=int, default=int(os.environ.get("WORKER_ID", 0)))
+    return parser.parse_args()
+
+
 def main() -> None:
-    num_shards = int(os.environ.get("NUM_WORKERS", 20))
-    shard_num = int(os.environ.get("WORKER_ID", 0))
+    args = parse_args()
 
     all_files = get_all_files()
-    files_to_run = calculate_shards(all_files, num_shards=num_shards)[shard_num]
-    remove_other_files(all_files, files_to_run)
+    files_to_run = calculate_shards(all_files, num_shards=args.num_shards)[args.shard_num]
+    if not args.dry_run:
+        remove_other_files(all_files, files_to_run)
     stripped_file_names = [Path(x).stem for x in files_to_run]
     print(" ".join(stripped_file_names))
 
