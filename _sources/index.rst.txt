@@ -500,6 +500,13 @@ What's new in PyTorch tutorials?
    :link: intermediate/torchserve_with_ipex
    :tags: Model-Optimization,Production
 
+.. customcarditem::
+   :header: Introduction to nvFuser
+   :card_description: An introduction to nvFuser
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/nvfuser_intro_tutorial.html
+   :tags: Model-Optimization
+
 .. Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -863,6 +870,7 @@ Additional Resources
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
    intermediate/torchserve_with_ipex
+   intermediate/nvfuser_intro_tutorial
 
 .. toctree::
    :maxdepth: 2

@@ -288,6 +288,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -434,11 +435,11 @@ is invoked.</p></li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.7568, 0.2881, 0.2019, 0.0758],
-        [0.8696, 0.2109, 0.9450, 0.7289],
-        [0.7615, 0.6982, 0.8566, 0.8590]]), tensor([[0.7568, 0.2881, 0.2019, 0.0758],
-        [0.8696, 0.2109, 0.9450, 0.7289],
-        [0.7615, 0.6982, 0.8566, 0.8590]]))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.7789, 0.6658, 0.5326, 0.8828],
+        [0.7071, 0.6377, 0.5538, 0.8482],
+        [0.9048, 0.7757, 0.5510, 0.8873]]), tensor([[0.7789, 0.6658, 0.5326, 0.8828],
+        [0.7071, 0.6377, 0.5538, 0.8482],
+        [0.9048, 0.7757, 0.5510, 0.8873]]))
 </pre></div>
 </div>
 <p>So we’ve:</p>
@@ -474,11 +475,11 @@ matrices of random values. Then we invoked the cell with
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MyCell(
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[ 0.8034, -0.2446,  0.0528,  0.3421],
-        [ 0.9583,  0.1381,  0.2413,  0.6478],
-        [ 0.9459, -0.0182, -0.4350,  0.9370]], grad_fn=&lt;TanhBackward0&gt;), tensor([[ 0.8034, -0.2446,  0.0528,  0.3421],
-        [ 0.9583,  0.1381,  0.2413,  0.6478],
-        [ 0.9459, -0.0182, -0.4350,  0.9370]], grad_fn=&lt;TanhBackward0&gt;))
+(tensor([[ 0.6905, -0.1984,  0.5473,  0.2554],
+        [ 0.5585, -0.4117,  0.5486, -0.0571],
+        [ 0.6908, -0.6462,  0.6158,  0.0280]], grad_fn=&lt;TanhBackward0&gt;), tensor([[ 0.6905, -0.1984,  0.5473,  0.2554],
+        [ 0.5585, -0.4117,  0.5486, -0.0571],
+        [ 0.6908, -0.6462,  0.6158,  0.0280]], grad_fn=&lt;TanhBackward0&gt;))
 </pre></div>
 </div>
 <p>We’ve redefined our module <code class="docutils literal notranslate"><span class="pre">MyCell</span></code>, but this time we’ve added a
@@ -526,11 +527,11 @@ flexibility in model authoring.</p>
   (dg): MyDecisionGate()
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[ 0.4554,  0.6406, -0.1427,  0.2012],
-        [ 0.6698,  0.8471,  0.2534, -0.3003],
-        [ 0.5188,  0.8764, -0.2278,  0.4103]], grad_fn=&lt;TanhBackward0&gt;), tensor([[ 0.4554,  0.6406, -0.1427,  0.2012],
-        [ 0.6698,  0.8471,  0.2534, -0.3003],
-        [ 0.5188,  0.8764, -0.2278,  0.4103]], grad_fn=&lt;TanhBackward0&gt;))
+(tensor([[0.9183, 0.5787, 0.2436, 0.7689],
+        [0.9084, 0.4257, 0.1876, 0.6638],
+        [0.9532, 0.3944, 0.4120, 0.8263]], grad_fn=&lt;TanhBackward0&gt;), tensor([[0.9183, 0.5787, 0.2436, 0.7689],
+        [0.9084, 0.4257, 0.1876, 0.6638],
+        [0.9532, 0.3944, 0.4120, 0.8263]], grad_fn=&lt;TanhBackward0&gt;))
 </pre></div>
 </div>
 <p>We’ve once again redefined our MyCell class, but here we’ve defined
@@ -642,17 +643,17 @@ the Python module:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[-0.3361,  0.1401,  0.2844, -0.1973],
-        [-0.4709,  0.3194,  0.3669, -0.2308],
-        [-0.4663,  0.1907,  0.5830, -0.2165]], grad_fn=&lt;TanhBackward0&gt;), tensor([[-0.3361,  0.1401,  0.2844, -0.1973],
-        [-0.4709,  0.3194,  0.3669, -0.2308],
-        [-0.4663,  0.1907,  0.5830, -0.2165]], grad_fn=&lt;TanhBackward0&gt;))
-(tensor([[-0.3361,  0.1401,  0.2844, -0.1973],
-        [-0.4709,  0.3194,  0.3669, -0.2308],
-        [-0.4663,  0.1907,  0.5830, -0.2165]],
-       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[-0.3361,  0.1401,  0.2844, -0.1973],
-        [-0.4709,  0.3194,  0.3669, -0.2308],
-        [-0.4663,  0.1907,  0.5830, -0.2165]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[ 0.7543, -0.4217,  0.0609,  0.2340],
+        [ 0.4632, -0.6622,  0.1387,  0.7809],
+        [ 0.1038, -0.1129, -0.3066,  0.4669]], grad_fn=&lt;TanhBackward0&gt;), tensor([[ 0.7543, -0.4217,  0.0609,  0.2340],
+        [ 0.4632, -0.6622,  0.1387,  0.7809],
+        [ 0.1038, -0.1129, -0.3066,  0.4669]], grad_fn=&lt;TanhBackward0&gt;))
+(tensor([[ 0.7543, -0.4217,  0.0609,  0.2340],
+        [ 0.4632, -0.6622,  0.1387,  0.7809],
+        [ 0.1038, -0.1129, -0.3066,  0.4669]],
+       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[ 0.7543, -0.4217,  0.0609,  0.2340],
+        [ 0.4632, -0.6622,  0.1387,  0.7809],
+        [ 0.1038, -0.1129, -0.3066,  0.4669]],
        grad_fn=&lt;DifferentiableGraphBackward&gt;))
 </pre></div>
 </div>
@@ -855,7 +856,7 @@ python-free execution.</p>
 out the NeurIPS demo for converting machine translation models using
 TorchScript:
 <a class="reference external" href="https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ">https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.782 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.719 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-intro-to-torchscript-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/07d05907b3ff859aeed5f76f1acc5df4/Intro_to_TorchScript_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">Intro_to_TorchScript_tutorial.py</span></code></a></p>

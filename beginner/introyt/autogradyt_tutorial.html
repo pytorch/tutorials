@@ -288,6 +288,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -565,17 +566,17 @@ to the function with no history of its own.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>d:
-&lt;AddBackward0 object at 0x7f56c6845b90&gt;
-((&lt;MulBackward0 object at 0x7f56c6845410&gt;, 0), (None, 0))
-((&lt;SinBackward0 object at 0x7f56c6845410&gt;, 0), (None, 0))
-((&lt;AccumulateGrad object at 0x7f56c6845290&gt;, 0),)
+&lt;AddBackward0 object at 0x7f52d026d7d0&gt;
+((&lt;MulBackward0 object at 0x7f52d026d850&gt;, 0), (None, 0))
+((&lt;SinBackward0 object at 0x7f52d026d850&gt;, 0), (None, 0))
+((&lt;AccumulateGrad object at 0x7f52d026db50&gt;, 0),)
 ()
 
 c:
-&lt;MulBackward0 object at 0x7f56c68454d0&gt;
+&lt;MulBackward0 object at 0x7f52d026d210&gt;
 
 b:
-&lt;SinBackward0 object at 0x7f56c6845410&gt;
+&lt;SinBackward0 object at 0x7f52d026d850&gt;
 
 a:
 None
@@ -658,8 +659,8 @@ weights, and verify that no gradients have been computed yet:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0019, -0.0843, -0.0799,  0.0762, -0.0774, -0.0757, -0.0681, -0.0118,
-         0.0013, -0.0513], grad_fn=&lt;SliceBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0847, -0.0600,  0.0481, -0.0423, -0.0423, -0.0639,  0.0645, -0.0678,
+         0.0937, -0.0220], grad_fn=&lt;SliceBackward0&gt;)
 None
 </pre></div>
 </div>
@@ -676,7 +677,7 @@ basic stochastic gradient descent optimizer.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(147.5357, grad_fn=&lt;SumBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(164.7857, grad_fn=&lt;SumBackward0&gt;)
 </pre></div>
 </div>
 <p>Now, let’s call <code class="docutils literal notranslate"><span class="pre">loss.backward()</span></code> and see what happens:</p>
@@ -686,10 +687,10 @@ basic stochastic gradient descent optimizer.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0019, -0.0843, -0.0799,  0.0762, -0.0774, -0.0757, -0.0681, -0.0118,
-         0.0013, -0.0513], grad_fn=&lt;SliceBackward0&gt;)
-tensor([ 0.4611,  2.1234, -0.6207,  0.7999,  2.9003,  0.3493,  0.2335,  2.6508,
-         0.2534,  1.4710])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0847, -0.0600,  0.0481, -0.0423, -0.0423, -0.0639,  0.0645, -0.0678,
+         0.0937, -0.0220], grad_fn=&lt;SliceBackward0&gt;)
+tensor([ 0.1182, -0.0932,  3.8191, -0.3534, -0.3667,  1.7789, -2.6860,  6.6382,
+         0.7809, -0.0450])
 </pre></div>
 </div>
 <p>We can see that the gradients have been computed for each learning
@@ -702,10 +703,10 @@ based on the computed gradients.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0024, -0.0865, -0.0793,  0.0754, -0.0803, -0.0760, -0.0684, -0.0144,
-         0.0011, -0.0527], grad_fn=&lt;SliceBackward0&gt;)
-tensor([ 0.4611,  2.1234, -0.6207,  0.7999,  2.9003,  0.3493,  0.2335,  2.6508,
-         0.2534,  1.4710])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0848, -0.0599,  0.0443, -0.0419, -0.0419, -0.0657,  0.0672, -0.0744,
+         0.0930, -0.0219], grad_fn=&lt;SliceBackward0&gt;)
+tensor([ 0.1182, -0.0932,  3.8191, -0.3534, -0.3667,  1.7789, -2.6860,  6.6382,
+         0.7809, -0.0450])
 </pre></div>
 </div>
 <p>You should see that <code class="docutils literal notranslate"><span class="pre">layer2</span></code>’s weights have changed.</p>
@@ -728,10 +729,10 @@ learning weights will accumulate:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([ 0.4611,  2.1234, -0.6207,  0.7999,  2.9003,  0.3493,  0.2335,  2.6508,
-         0.2534,  1.4710])
-tensor([-0.8610, 20.1927,  1.5799,  7.6844, 24.1432, 14.2412,  1.0810, 24.8168,
-         5.1068,  9.3608])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([ 0.1182, -0.0932,  3.8191, -0.3534, -0.3667,  1.7789, -2.6860,  6.6382,
+         0.7809, -0.0450])
+tensor([-0.6313,  6.3549, 16.5587, -1.0645, -4.9840,  7.4996, -8.3747, 42.3403,
+        -7.7309,  2.1652])
 tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 </pre></div>
 </div>
@@ -840,8 +841,8 @@ from the computation history:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([0.9932, 0.3315, 0.4197, 0.0959, 0.6539], requires_grad=True)
-tensor([0.9932, 0.3315, 0.4197, 0.0959, 0.6539])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([0.0704, 0.9019, 0.7722, 0.7109, 0.4265], requires_grad=True)
+tensor([0.0704, 0.9019, 0.7722, 0.7109, 0.4265])
 </pre></div>
 </div>
 <p>We did this above when we wanted to graph some of our tensors. This is
@@ -896,14 +897,14 @@ example usage:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls
 ---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-                  aten::div        49.58%       4.214ms        49.58%       4.214ms       4.214us       7.265ms        50.12%       7.265ms       7.265us          1000
-                  aten::mul        47.82%       4.064ms        47.82%       4.064ms       4.064us       7.230ms        49.88%       7.230ms       7.230us          1000
-    cudaGetDeviceProperties         2.38%     202.000us         2.38%     202.000us     202.000us       0.000us         0.00%       0.000us       0.000us             1
-      cudaDeviceSynchronize         0.22%      19.000us         0.22%      19.000us      19.000us       0.000us         0.00%       0.000us       0.000us             1
+                  aten::div        49.00%       4.443ms        49.00%       4.443ms       4.443us       7.529ms        50.12%       7.529ms       7.529us          1000
+                  aten::mul        48.52%       4.400ms        48.52%       4.400ms       4.400us       7.492ms        49.88%       7.492ms       7.492us          1000
+    cudaGetDeviceProperties         2.22%     201.000us         2.22%     201.000us     201.000us       0.000us         0.00%       0.000us       0.000us             1
+      cudaDeviceSynchronize         0.26%      24.000us         0.26%      24.000us      24.000us       0.000us         0.00%       0.000us       0.000us             1
          cudaGetDeviceCount         0.00%       0.000us         0.00%       0.000us       0.000us       0.000us         0.00%       0.000us       0.000us             1
 ---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 8.499ms
-Self CUDA time total: 14.495ms
+Self CPU time total: 9.068ms
+Self CUDA time total: 15.021ms
 </pre></div>
 </div>
 <p>The profiler can also label individual sub-blocks of code, break out the
@@ -974,7 +975,7 @@ precedes it. Let’s try a specific example with a small vector:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([1318.8033, -160.5680,  433.5419], grad_fn=&lt;MulBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-802.4326,   58.6309,  602.8697], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 <p>If we tried to call <code class="docutils literal notranslate"><span class="pre">y.backward()</span></code> now, we’d get a runtime error and a
@@ -989,7 +990,7 @@ Jacobian:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([8.1920e+02, 8.1920e+03, 8.1920e-01])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
 </pre></div>
 </div>
 <p>(Note that the output gradients are all related to powers of two - which
@@ -1013,7 +1014,7 @@ single-element inputs:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([0.3162]), tensor([0.9506]))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([0.1913]), tensor([0.9270]))
 </pre></div>
 </div>
 <p>If you look closely, the first output should equal <span class="math">\(2e^x\)</span> (since
@@ -1026,7 +1027,7 @@ should be 3.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([0.2485, 0.1255, 0.9912]), tensor([0.7597, 0.7684, 0.8071]))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([0.5535, 0.3491, 0.6193]), tensor([0.8205, 0.7801, 0.2940]))
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">torch.autograd.functional.hessian()</span></code> method works identically
@@ -1051,7 +1052,7 @@ and <code class="docutils literal notranslate"><span class="pre">hvp()</span></c
 <p>For more information, including performance notes on the <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api">docs for the
 functional
 API</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.177 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.117 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-autogradyt-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/1a94e27be9b0e79da5acafc1f68a7143/autogradyt_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autogradyt_tutorial.py</span></code></a></p>

@@ -1,0 +1,1399 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Getting Started - Accelerate Your Scripts with nvFuser — PyTorch Tutorials 1.12.1+cu102 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="../beginner/dist_overview.html" rel="next" title="PyTorch Distributed Overview"/>
+<link href="torchserve_with_ipex.html" rel="prev" title="Grokking PyTorch Intel CPU performance from first principles"/>
+<!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+<!-- End Google Analytics -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+<span class="dropdown-title">torchaudio</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+<span class="dropdown-title">torchtext</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+<span class="dropdown-title">torchvision</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchrec">
+<span class="dropdown-title">TorchRec</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/data">
+<span class="dropdown-title">TorchData</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+<span class="dropdown-title">TorchServe</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchx/">
+<span class="dropdown-title">TorchX</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+<span class="dropdown-title">PyTorch on XLA Devices</span>
+<p></p>
+</a>
+</div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Resources
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/features">
+<span class="dropdown-title">About</span>
+<p>Learn about PyTorch’s features and capabilities</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/hub">
+<span class="dropdown-title">Models (Beta)</span>
+<p>Discover, publish, and reuse pre-trained models</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.12.1+cu102
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speech_command_classification_with_torchaudio_tutorial.html">Speech Command Classification with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_to_speech_with_torchaudio.html">Text-to-speech with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with nn.Transformer and torchtext</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Getting Started - Accelerate Your Scripts with nvFuser</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/intermediate/nvfuser_intro_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/nvfuser_intro_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-nvfuser-intro-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="getting-started-accelerate-your-scripts-with-nvfuser">
+<span id="sphx-glr-intermediate-nvfuser-intro-tutorial-py"></span><h1>Getting Started - Accelerate Your Scripts with nvFuser<a class="headerlink" href="#getting-started-accelerate-your-scripts-with-nvfuser" title="Permalink to this heading">¶</a></h1>
+<p><strong>Authors</strong>: <a class="reference external" href="https://github.com/csarofeen">Christian Sarofeen</a>
+<a class="reference external" href="https://github.com/ptrblck">Piotr Bialecki</a>
+<a class="reference external" href="https://github.com/kevinstephano">Kevin Stephano</a>
+<a class="reference external" href="https://github.com/jjsjann123">Jie Jiang</a>
+<a class="reference external" href="https://github.com/crcrpar">Masaki Kozuki</a>
+<cite>Neal Vaidya</cite></p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
+<p>This tutorial will demonstrate how you can accelerate your networks
+with nvFuser. nvFuser is a Deep Learning Compiler that just-in-time
+compiles fast and flexible GPU specific code to reliably accelerate
+users’ networks automatically, providing speedups for deep learning
+networks running on Volta and later CUDA accelerators by generating
+fast custom “fusion” kernels at runtime. nvFuser is specifically
+designed to meet the unique requirements of the PyTorch community,
+and it supports diverse network architectures and programs with
+dynamic inputs of varying shapes and strides.</p>
+</div>
+<div class="section" id="importing-packages-and-selecting-a-device">
+<h2>Importing Packages and Selecting a Device<a class="headerlink" href="#importing-packages-and-selecting-a-device" title="Permalink to this heading">¶</a></h2>
+<p>In order to run this tutorial and see the benefits of using nvFuser,
+you would need to install the <cite>1.12.0</cite> PyTorch release as well as
+<cite>functorch</cite> <cite>0.2</cite> or newer version of them. <cite>functorch</cite> also needs
+<cite>networkx</cite> for its smart recomputation heuristics which you can
+install via <cite>pip install networkx</cite>.
+Additionally, a GPU is required.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">functorch</span>
+<span class="kn">from</span> <span class="nn">functorch.compile</span> <span class="kn">import</span> <span class="n">memory_efficient_fusion</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="s2">"PyTorch &gt;= 1.12.0 required, but your environment uses torch==</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">functorch</span><span class="o">.</span><span class="n">__version__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">major</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">minor</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="s2">"FuncTorch &gt;= 0.2.0 required, but your environment uses functorch==</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">functorch</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-transformer-block">
+<h2>The Transformer Block<a class="headerlink" href="#the-transformer-block" title="Permalink to this heading">¶</a></h2>
+<p>The network topology we’re going to focus on is the Transformer
+Block for networks like BERT. As of writing this tutorial, nvFuser
+provides acceleration of pointwise, reduction, and normalization
+operations. These simple operations are the backbone of large
+networks, so improving the speed of these operations can improve
+overall network training speed. Future releases of nvFuser will
+improve the performance of Linear Layers, but for now we will
+specifically look at the Bias-Dropout-Add-LayerNorm section of this
+Transformer Block.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_transformer_block.png" src="../_images/nvfuser_transformer_block.png"/>
+</div>
+<p>First, let’s define the forward pass for this section of our network.
+For when we’ll use TorchScript on this function, we decorate the
+function with type information of the function parameters. This isn’t
+always required, but it can often help to provide this information to
+TorchScript because it is a strictly typed system. Since we have
+PyTorch’s autograd system, we don’t need to explicitly define the
+backwards pass.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">composite_definition</span><span class="p">(</span>
+    <span class="n">input1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias1_out</span> <span class="o">=</span> <span class="n">input1</span> <span class="o">+</span> <span class="n">bias1</span>
+    <span class="n">dropout_out</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">bias1_out</span><span class="p">,</span> <span class="n">dropout_prob</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">norm_input</span> <span class="o">=</span> <span class="n">dropout_out</span> <span class="o">+</span> <span class="n">input2</span>
+    <span class="n">norm_output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">layer_norm</span><span class="p">(</span>
+        <span class="n">norm_input</span><span class="p">,</span> <span class="p">(</span><span class="n">input1</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">normalization_axis</span><span class="p">),),</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias2</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">norm_output</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup-and-performance-metrics">
+<h2>Setup and Performance Metrics<a class="headerlink" href="#setup-and-performance-metrics" title="Permalink to this heading">¶</a></h2>
+<p>Next, we initialize some inputs, parameters, and a simulated gradient
+output tensor for the backwards pass since we aren’t including a
+loss function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup initial tensors and parameters</span>
+<span class="n">input_size</span> <span class="o">=</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1024</span><span class="p">]</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span>
+<span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span>
+
+<span class="c1"># Create sample inputs</span>
+<span class="n">input1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">input_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">input2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">input1</span><span class="p">)</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+
+<span class="c1"># Precompute a grad output tensor, for this example it's the same size</span>
+<span class="c1"># as the inputs</span>
+<span class="n">grad_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">input1</span><span class="p">)</span>
+
+<span class="c1"># Randomly initialize the model parameters</span>
+<span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">input_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+<span class="n">bias1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">input_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+<span class="n">bias2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">input_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias1</span><span class="p">,</span> <span class="n">bias2</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To produce a baseline performance we will measure the speed of our
+forward and backward passes in PyTorch’s default eager mode. To get
+accurate and comparable measurements, we perform a few warm up
+iterations. Then, we time many iterations of the forward and backward
+pass using performance counters combined with proper GPU
+synchronization, then compute the average iterations per second.
+It’s important to be very careful when measuring performance on the
+GPU, as we want to remove any initialization costs and need
+synchronization since it’s an asynchronous device. Since we will
+measure many variations of this problem with and without nvFuser we
+define a helper method called <cite>profile_workload</cite> and will use
+<cite>functool.partial</cite> to concisely profile the workload.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Utility to profile the workload</span>
+<span class="k">def</span> <span class="nf">profile_workload</span><span class="p">(</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">""</span><span class="p">):</span>
+    <span class="c1"># Perform warm-up iterations</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="c1"># Run model, forward and backward</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">forward_func</span><span class="p">()</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">grad_output</span><span class="p">)</span>
+        <span class="c1"># delete gradiens to avoid profiling the gradient accumulation</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Synchronize the GPU before starting the timer</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iteration_count</span><span class="p">):</span>
+        <span class="c1"># Run model, forward and backward</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">forward_func</span><span class="p">()</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">grad_output</span><span class="p">)</span>
+        <span class="c1"># delete gradiens to avoid profiling the gradient accumulation</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Synchronize the GPU before stopping the timer</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">iters_per_second</span> <span class="o">=</span> <span class="n">iteration_count</span> <span class="o">/</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">label</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Average iterations per second: </span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iters_per_second</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>We can now measure a baseline performance of PyTorch’s eager mode
+(without nvFuser).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run and profile eager mode execution on the composite definition of our</span>
+<span class="c1"># operations.</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">composite_definition</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Eager Mode - Composite definition"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Eager Mode - Composite definition
+Average iterations per second: 191.40
+</pre></div>
+</div>
+<p>It’s important for PyTorch and nvFuser to work well across diverse
+GPU architectures. For our measurements we’ve run this tutorial on
+five GPUs ranging from consumer to enterprise grade. Our baseline
+geometric mean (geomean) performance across these GPUs is 850
+iterations per second, plotted in the figure below.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_0.png" src="../_images/nvfuser_tutorial_0.png"/>
+</div>
+<p>As we run different variations of this script with nvFuser, we will
+continue to add the results to this figure for the same GPUs.</p>
+</div>
+<div class="section" id="torchscript-nvfuser">
+<h2>TorchScript &amp; nvFuser<a class="headerlink" href="#torchscript-nvfuser" title="Permalink to this heading">¶</a></h2>
+<p>nvFuser is the default fusion system in TorchScript since PyTorch
+version 1.12, so to turn on nvFuser we need to enable TorchScript.
+This will allow nvFuser to automatically generate fast kernels and
+take over execution of these operations. TorchScript can be a
+challenging system to get working, but with our current definition
+of our operators, all we need to do is wrap our function in the
+<cite>torch.jit.script</cite> compile function. We can then simply run our
+workload as before.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_composite_definition</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">composite_definition</span><span class="p">)</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">scripted_composite_definition</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"TorchScript - Composite definition"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TorchScript - Composite definition
+Average iterations per second: 246.70
+</pre></div>
+</div>
+<p>Before we get to the results, it is important to mention here that
+nvFuser does not generate the exact same sequence of random numbers,
+as random number generation in PyTorch is dependent on the precise
+parallelization scheme used for the GPU function. Therefore, if you
+want to validate the output of nvFuser with the output without
+nvFuser, it would require disabling the random number generation
+functions. In this example, we would simply need to change
+<cite>dropout_out = F.dropout(bias1_out, dropout_prob, training=True)</cite>
+to
+<cite>dropout_out = F.dropout(bias1_out, dropout_prob, training=False)</cite>
+as the dropout function is the only function in this example that
+depends on random number generation.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_1.png" src="../_images/nvfuser_tutorial_1.png"/>
+</div>
+<p>Our geomean performance with nvFuser is 1,394 images per second
+which is a geomean of 1.64x faster than eager mode. We did not
+include the time that TorchScript and nvFuser take to compile the
+program and GPU functions. For real end-to-end training the
+compile time of TorchScript and nvFuser are negligible. For
+example, in this tutorial the combination of TorchScript and
+nvFuser took around 2.4s in total to compile these high speed
+GPU functions.</p>
+<p>nvFuser’s capabilities extend well beyond this initial performance gain.</p>
+</div>
+<div class="section" id="nvfuser-dynamic-shapes">
+<h2>nvFuser &amp; Dynamic Shapes<a class="headerlink" href="#nvfuser-dynamic-shapes" title="Permalink to this heading">¶</a></h2>
+<p>It is challenging for Deep Learning Compilers to provide performance
+gains when the user changes the input sizes of the tensors. However,
+supporting changing shapes has always been a fundamental design
+criteria for nvFuser, as processing different-sized input tensors is
+critical to many applications like Natural Language Processing and
+Graph Neural Networks.</p>
+<p>To use nvFuser on inputs that change shape from iteration, we
+generate new input and output gradient tensors and make a few
+different sizes. Since the last dimension is shared with the
+parameters and cannot be changed dynamically in LayerNorm, we
+perturb the first two dimensions of the input and gradient tensors.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SHAPE_COUNT</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">dynamic_sizes</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>
+
+<span class="n">inputs1</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">inputs2</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">grad_outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="c1"># Create some random shapes</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SHAPE_COUNT</span><span class="p">):</span>
+    <span class="n">dynamic_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">dynamic_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">dynamic_sizes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">inputs1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">inputs2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+    <span class="n">grad_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>No changes from before are required for running with TorchScript, we
+simply reuse the previous definition that we wrapped in
+<cite>torch.jit.script</cite>.</p>
+<p>We’ll start as usual by performing some warm-up iterations, however
+we won’t show nvFuser all of the input sizes, we’ll only show one
+size for the warm-up.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform warm-up iterations</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">dynamic_input1</span> <span class="o">=</span> <span class="n">inputs1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dynamic_input2</span> <span class="o">=</span> <span class="n">inputs2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dynamic_grad_output</span> <span class="o">=</span> <span class="n">grad_outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Run model, forward and backward</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">scripted_composite_definition</span><span class="p">(</span>
+        <span class="n">dynamic_input1</span><span class="p">,</span>
+        <span class="n">dynamic_input2</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">,</span>
+        <span class="n">bias1</span><span class="p">,</span>
+        <span class="n">bias2</span><span class="p">,</span>
+        <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">dynamic_grad_output</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we can measure the performance metrics of nvFuser as we have
+previously.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Profile manually as our helper function expects static inputs</span>
+<span class="n">iteration_count</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># Synchronize the GPU before starting the timer</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iteration_count</span><span class="p">):</span>
+    <span class="n">dynamic_input1</span> <span class="o">=</span> <span class="n">inputs1</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">SHAPE_COUNT</span><span class="p">]</span>
+    <span class="n">dynamic_input2</span> <span class="o">=</span> <span class="n">inputs2</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">SHAPE_COUNT</span><span class="p">]</span>
+    <span class="n">dynamic_grad_output</span> <span class="o">=</span> <span class="n">grad_outputs</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">SHAPE_COUNT</span><span class="p">]</span>
+    <span class="n">dynamic_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">dynamic_input1</span><span class="p">,</span> <span class="n">dynamic_input2</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias1</span><span class="p">,</span> <span class="n">bias2</span><span class="p">]</span>
+
+    <span class="c1"># Run model, forward and backward</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">scripted_composite_definition</span><span class="p">(</span>
+        <span class="n">dynamic_input1</span><span class="p">,</span>
+        <span class="n">dynamic_input2</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">,</span>
+        <span class="n">bias1</span><span class="p">,</span>
+        <span class="n">bias2</span><span class="p">,</span>
+        <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">dynamic_grad_output</span><span class="p">)</span>
+    <span class="c1"># Delete the gradients to avoid profiling the gradient accumulation</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">dynamic_parameters</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># Synchronize the GPU before stopping the timer</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">stop</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">iters_per_second</span> <span class="o">=</span> <span class="n">iteration_count</span> <span class="o">/</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"TorchScript - Random Sizes"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Average iterations per second: </span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iters_per_second</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TorchScript - Random Sizes
+Average iterations per second: 248.15
+</pre></div>
+</div>
+<p>Performance across our GPUs is very similar to the previous
+performance seen. Only the performance of the A100 degraded
+slightly, but is still much higher than without nvFuser. The small
+change in performance of the A100 is actually related to the
+additional CPU overhead that dynamic shapes cause in nvFuser.
+nvFuser at runtime has to infer how to run the different sized
+kernels, so additional CPU time is consumed. This CPU time is
+present with all GPUs, but since the A100 runs its functions so fast
+this CPU overhead cannot be fully hidden by the asynchronous nature
+of GPU execution.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_2.png" src="../_images/nvfuser_tutorial_2.png"/>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Today, nvFuser in TorchScript is the only exposure of
+nvFuser that allows for dynamic shape changes, although we will
+expand this capability to other systems in the future. For more
+insight into how dynamic shapes are implemented in nvFuser, you can
+view this presentation from GTC 2021:
+<a class="reference external" href="https://www.nvidia.com/en-us/on-demand/session/gtcspring21-s31952/">https://www.nvidia.com/en-us/on-demand/session/gtcspring21-s31952/</a></p>
+</div>
+</div>
+<div class="section" id="defining-novel-operations-with-nvfuser-and-functorch">
+<h2>Defining novel operations with nvFuser and FuncTorch<a class="headerlink" href="#defining-novel-operations-with-nvfuser-and-functorch" title="Permalink to this heading">¶</a></h2>
+<p>One of the primary benefits of nvFuser is the ability to define
+novel operations composed of PyTorch “primitives” which are then
+just-in-time compiled into efficient kernels.</p>
+<p>PyTorch has strong performance for any individual operation,
+especially composite operations like LayerNorm. However, if
+LayerNorm wasn’t already implemented in PyTorch as a composite
+operation, then you’d have to define it as a series of simpler
+(primitive) operations. Let’s make such a definition and run it
+without nvFuser.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">primitive_definition</span><span class="p">(</span>
+    <span class="n">input1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias1_out</span> <span class="o">=</span> <span class="n">input1</span> <span class="o">+</span> <span class="n">bias1</span>
+    <span class="n">dropout_out</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">bias1_out</span><span class="p">,</span> <span class="n">dropout_prob</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">norm_input</span> <span class="o">=</span> <span class="n">dropout_out</span> <span class="o">+</span> <span class="n">input2</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">norm_input</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">normalization_axis</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="n">keepdim</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">norm_input</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="n">diff_sq</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">*</span> <span class="n">diff</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">diff_sq</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">normalization_axis</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="n">keepdim</span><span class="p">)</span>
+    <span class="n">pre_shift_scale_norm_output</span> <span class="o">=</span> <span class="p">(</span><span class="n">norm_input</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="n">norm_output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">pre_shift_scale_norm_output</span> <span class="o">+</span> <span class="n">bias2</span>
+    <span class="k">return</span> <span class="n">norm_output</span>
+
+
+<span class="c1"># Profile primitive definition</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">primitive_definition</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Eager Mode - Primitive Definition"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Eager Mode - Primitive Definition
+Average iterations per second: 61.59
+</pre></div>
+</div>
+<p>While the above is mathematically equivalent to our previous
+definition, benchmarking our new function with the original static
+shape using TorchScript and nvFuser shows the iterations per second
+decreases – mostly due to the cost of accessing memory to save
+intermediate results.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_3.png" src="../_images/nvfuser_tutorial_3.png"/>
+</div>
+<p>The geomean iterations per second is 260 iterations per second,
+3.26x slower than the composite definition in eager mode and 5.35x
+slower than the nvFuser composite operation! For more information on
+why there’s such a drastic decrease in compute speed please see this
+presentation from GTC 2022:
+<a class="reference external" href="https://www.nvidia.com/en-us/on-demand/session/gtcspring22-s41958/">https://www.nvidia.com/en-us/on-demand/session/gtcspring22-s41958/</a></p>
+<p>nvFuser with TorchScript can improve the performance of this
+operation even though it’s defined with primitive PyTorch
+operations. Simply by enabling TorchScript on the new function
+(just like before), we can see much of the performance returns.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Profile scripted primitive definition</span>
+<span class="n">scripted_primitive_definition</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">primitive_definition</span><span class="p">)</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">scripted_primitive_definition</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"TorchScript - Primitive definition"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TorchScript - Primitive definition
+Average iterations per second: 124.89
+</pre></div>
+</div>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_4.png" src="../_images/nvfuser_tutorial_4.png"/>
+</div>
+<p>However, the performance is still slower than the original eager
+mode performance of the composite definition. TorchScript works well
+when predefined composite operations are used, however TorchScript’s
+application of Autograd saves all of the activations for each
+operator in the fusion for re-use in the backwards pass. However,
+this is not typically the optimal choice. Especially when chaining
+together multiple simple operations, it is often much faster to
+recompute some intermediate tensors rather than spend the time
+storing and retrieving several saved results from memory.</p>
+<p>It’s possible to optimize away many of these unnecessary memory
+accesses, but it requires building a connected forward and backward
+graph which isn’t possible with TorchScript. The
+<cite>memory_efficient_fusion</cite> pass in FuncTorch, however, is such an
+optimization pass. To use this pass, we have to redefine our
+function to pull the constants inside (for now it’s easiest to make
+non-tensor constants literals in the function definition):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">primitive_definition_for_memory_efficient_fusion</span><span class="p">(</span>
+    <span class="n">input1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias1_out</span> <span class="o">=</span> <span class="n">input1</span> <span class="o">+</span> <span class="n">bias1</span>
+    <span class="n">dropout_out</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">bias1_out</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">norm_input</span> <span class="o">=</span> <span class="n">dropout_out</span> <span class="o">+</span> <span class="n">input2</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">norm_input</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">norm_input</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="n">diff_sq</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">*</span> <span class="n">diff</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">diff_sq</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pre_shift_scale_norm_output</span> <span class="o">=</span> <span class="p">(</span><span class="n">norm_input</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="n">norm_output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">pre_shift_scale_norm_output</span> <span class="o">+</span> <span class="n">bias2</span>
+    <span class="k">return</span> <span class="n">norm_output</span>
+</pre></div>
+</div>
+<p>Now, instead of passing our function to TorchScript, we will pass it
+to FuncTorch’s optimization pass.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optimize the model with FuncTorch tracing and the memory efficiency</span>
+<span class="c1"># optimization pass</span>
+<span class="n">memory_efficient_primitive_definition</span> <span class="o">=</span> <span class="n">memory_efficient_fusion</span><span class="p">(</span>
+    <span class="n">primitive_definition_for_memory_efficient_fusion</span>
+<span class="p">)</span>
+
+<span class="c1"># Profile memory efficient primitive definition</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">memory_efficient_primitive_definition</span><span class="p">,</span> <span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias1</span><span class="p">,</span> <span class="n">bias2</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">,</span>
+    <span class="n">grad_output</span><span class="p">,</span>
+    <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">"FuncTorch - Primitive definition"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>FuncTorch - Primitive definition
+Average iterations per second: 117.54
+</pre></div>
+</div>
+<p>This recovers even more speed, but it’s still not as fast as
+TorchScripts original performance with the composite definition.
+However, this is still faster than running this new definition
+without nvFuser, and is still faster than the composite definition
+without nvFuser.</p>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_5.png" src="../_images/nvfuser_tutorial_5.png"/>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FuncTorch’s memory efficient pass is still actively in development
+and future versions are expected to achieve performance closer
+to that of TorchScript with the composite definition.</p>
+</div>
+</div>
+<div class="section" id="transformer-block-with-a-novel-normalization">
+<h2>Transformer Block With a Novel Normalization<a class="headerlink" href="#transformer-block-with-a-novel-normalization" title="Permalink to this heading">¶</a></h2>
+<p>The ability to quickly execute chains of simple operations is
+important as not every operation has a composite operation defined
+in PyTorch. Previously, this meant researchers either had to define
+an entirely new operation in PyTorch – which takes a lot of time and
+knowledge of the lower-level PyTorch code as well as parallel
+programming – or writing the operation in simpler PyTorch ops and
+settling for poor performance. For example, let’s replace LayerNorm
+in our example with RMSNorm. Even though RMSNorm is a bit simpler
+than LayerNorm, it doesn’t have an existing compound operation in
+PyTorch. See the <a class="reference external" href="https://doi.org/10.48550/arXiv.1910.07467">Root Mean Square Layer Normalization</a> paper for more information about RMSNorm.
+As before, we’ll define our new transformer block with
+primitive PyTorch operations.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">with_rms_norm</span><span class="p">(</span>
+    <span class="n">input1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias_out</span> <span class="o">=</span> <span class="n">input1</span> <span class="o">+</span> <span class="n">bias</span>
+    <span class="n">dropout_out</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">bias_out</span><span class="p">,</span> <span class="n">dropout_prob</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">norm_input</span> <span class="o">=</span> <span class="n">dropout_out</span> <span class="o">+</span> <span class="n">input2</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">norm_input</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">norm_input</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">normalization_axis</span><span class="p">,</span> <span class="n">keepdim</span><span class="p">)</span>
+    <span class="n">pre_shift_scale_norm_output</span> <span class="o">=</span> <span class="n">norm_input</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="n">norm_output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">pre_shift_scale_norm_output</span>
+    <span class="k">return</span> <span class="n">norm_output</span>
+</pre></div>
+</div>
+<p>As before, we’ll get a baseline by running PyTorch without nvFuser.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Profile rms_norm</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">with_rms_norm</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Eager Mode - RMS Norm"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Eager Mode - RMS Norm
+Average iterations per second: 83.69
+</pre></div>
+</div>
+<p>With nvFuser through TorchScript.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Profile scripted rms_norm</span>
+<span class="n">scripted_with_rms_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">with_rms_norm</span><span class="p">)</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">scripted_with_rms_norm</span><span class="p">,</span>
+    <span class="n">input1</span><span class="p">,</span>
+    <span class="n">input2</span><span class="p">,</span>
+    <span class="n">weight</span><span class="p">,</span>
+    <span class="n">bias1</span><span class="p">,</span>
+    <span class="n">normalization_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dropout_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"TorchScript - RMS Norm"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TorchScript - RMS Norm
+Average iterations per second: 177.98
+</pre></div>
+</div>
+<p>With nvFuser through Functorch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">with_rms_norm_for_memory_efficient_fusion</span><span class="p">(</span>
+    <span class="n">input1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">input2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias_out</span> <span class="o">=</span> <span class="n">input1</span> <span class="o">+</span> <span class="n">bias</span>
+    <span class="n">dropout_out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">bias_out</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">norm_input</span> <span class="o">=</span> <span class="n">dropout_out</span> <span class="o">+</span> <span class="n">input2</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">norm_input</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">norm_input</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pre_shift_scale_norm_output</span> <span class="o">=</span> <span class="n">norm_input</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="n">norm_output</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">pre_shift_scale_norm_output</span>
+    <span class="k">return</span> <span class="n">norm_output</span>
+
+
+<span class="c1"># Profile memory efficient rms_norm</span>
+<span class="n">memory_efficient_rms_norm</span> <span class="o">=</span> <span class="n">memory_efficient_fusion</span><span class="p">(</span>
+    <span class="n">with_rms_norm_for_memory_efficient_fusion</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">memory_efficient_rms_norm</span><span class="p">,</span> <span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias1</span><span class="p">)</span>
+<span class="n">profile_workload</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">,</span> <span class="n">iteration_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"FuncTorch - RMS Norm"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>FuncTorch - RMS Norm
+Average iterations per second: 186.38
+</pre></div>
+</div>
+<div class="figure align-default">
+<img alt="../_images/nvfuser_tutorial_6.png" src="../_images/nvfuser_tutorial_6.png"/>
+</div>
+<p>Since RMSNorm is simpler than LayerNorm the performance of our new
+transformer block is a little higher than the primitive definition
+without nvFuser (354 iterations per second compared with 260
+iterations per second). With TorchScript, the iterations per second
+increases by 2.68x and 3.36x to 952 iterations per second and 1,191
+iterations per second with TorchScript and FuncTorch’s memory
+efficient optimization pass, respectively. The performance of this
+new operation nearly matches the performance of the composite Layer
+Norm definition with TorchScript.</p>
+<p>nvFuser is here to provide the ability to define novel operations in
+simple PyTorch and get performance that’s close to a highly optimized
+composite operation in PyTorch. We believe this will enable research
+into novel network topologies without paying for sometimes devastating
+effects on speed of training. nvFuser provides this unique ability as
+it’s able to analyze users’ programs to provide performance as fast as a
+highly hand tuned implementation, regardless of how the operations are
+defined. nvFuser still cannot support every operation in PyTorch,
+however its capabilities will continue to grow over time.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  16.364 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-nvfuser-intro-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/34f7e75ee94707fc2de88bf7b609e4d9/nvfuser_intro_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">nvfuser_intro_tutorial.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/3aee46f78e182e15b64326eddd31f2e2/nvfuser_intro_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">nvfuser_intro_tutorial.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/dist_overview.html" rel="next" title="PyTorch Distributed Overview">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="torchserve_with_ipex.html" rel="prev" title="Grokking PyTorch Intel CPU performance from first principles"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2022, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Getting Started - Accelerate Your Scripts with nvFuser</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#importing-packages-and-selecting-a-device">Importing Packages and Selecting a Device</a></li>
+<li><a class="reference internal" href="#the-transformer-block">The Transformer Block</a></li>
+<li><a class="reference internal" href="#setup-and-performance-metrics">Setup and Performance Metrics</a></li>
+<li><a class="reference internal" href="#torchscript-nvfuser">TorchScript &amp; nvFuser</a></li>
+<li><a class="reference internal" href="#nvfuser-dynamic-shapes">nvFuser &amp; Dynamic Shapes</a></li>
+<li><a class="reference internal" href="#defining-novel-operations-with-nvfuser-and-functorch">Defining novel operations with nvFuser and FuncTorch</a></li>
+<li><a class="reference internal" href="#transformer-block-with-a-novel-normalization">Transformer Block With a Novel Normalization</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
+<script src="../_static/katex_autorenderer.js"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; isplay: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Stay Connected</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">PyTorch Hub</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li class="resources-mobile-menu-title">
+            Docs
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+</li>
+<li>
+<a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+</li>
+<li>
+<a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+</li>
+<li>
+<a href="https://pytorch.org/serve/">TorchServe</a>
+</li>
+<li>
+<a href="https://pytorch.org/torchx/">TorchX</a>
+</li>
+<li>
+<a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+            Resources
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">About</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">Models (Beta)</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+</ul>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
