@@ -511,7 +511,7 @@ What's new in PyTorch tutorials?
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ray-tune.png
-   :link: beginner/ax_multiobjective_nas_tutorial.html
+   :link: intermediate/ax_multiobjective_nas_tutorial.html
    :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
 .. Parallel-and-Distributed-Training
@@ -878,7 +878,7 @@ Additional Resources
    advanced/static_quantization_tutorial
    intermediate/torchserve_with_ipex
    intermediate/nvfuser_intro_tutorial
-   beginner/ax_multiobjective_nas_tutorial
+   intermediate/ax_multiobjective_nas_tutorial
 
 .. toctree::
    :maxdepth: 2
