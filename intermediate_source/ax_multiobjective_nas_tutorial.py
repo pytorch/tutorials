@@ -46,7 +46,7 @@ This tutorial makes use of the following PyTorch libraries:
 # -----------------------
 #
 # Our goal is to optimize the PyTorch Lightning training job defined in
-# `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/beginner_source/mnist_train_nas.py>`__.
+# `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/intermediate_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
 # the values of the architcture and hyperparameters of the training
 # job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
@@ -103,7 +103,7 @@ def trainer(
 # Setting up the Runner
 # ---------------------
 #
-# Ax’s `Runner <https://ax.dev/api/core.html#module-ax.core.runner>`__
+# Ax’s `Runner <https://ax.dev/api/core.html#ax.core.runner.Runner>`__
 # abstraction allows writing interfaces to various backends.
 # Ax already comes with Runner for TorchX, and so we just need to
 # configure it. For the purpose of this tutorial we run jobs locally
@@ -228,7 +228,7 @@ search_space = SearchSpace(
 # fashion locally and write the results to the ``log_dir`` based on the trial
 # index (see the ``trainer()`` function above). We will define a metric
 # class that is aware of that logging directory. By subclassing
-# `TensorboardCurveMetric <https://ax.dev/tutorials/multiobjective_optimization.html>`__
+# `TensorboardCurveMetric <https://ax.dev/api/metrics.html?highlight=tensorboardcurvemetric#ax.metrics.tensorboard.TensorboardCurveMetric>`__
 # we get the logic to read and parse the Tensorboard logs for free.
 #
 
@@ -314,7 +314,7 @@ opt_config = MultiObjectiveOptimizationConfig(
 # Creating the Ax Experiment
 # --------------------------
 #
-# In Ax, the `Experiment <https://ax.dev/api/core.html#module-ax.core.experiment>`__
+# In Ax, the `Experiment <https://ax.dev/api/core.html#ax.core.experiment.Experiment>`__
 # object is the object that stores all the information about the problem
 # setup.
 #
@@ -338,7 +338,7 @@ experiment = Experiment(
 # Choosing the GenerationStrategy
 # -------------------------------
 #
-# A `GenerationStrategy <https://ax.dev/api/modelbridge.html#module-ax.modelbridge.generation_strategy>`__
+# A `GenerationStrategy <https://ax.dev/api/modelbridge.html#ax.modelbridge.generation_strategy.GenerationStrategy>`__
 # is the abstract representation of how we would like to perform the
 # optimization. While this can be customized (if you’d like to do so, see
 # `this tutorial <https://ax.dev/tutorials/generation_strategy.html>`__),
