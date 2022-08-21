@@ -38,6 +38,9 @@ from custom_directives import IncludeDirective, GalleryItemDirective, CustomGall
 import distutils.file_util
 import re
 
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
+
 
 try:
     import torchvision

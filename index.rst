@@ -492,13 +492,27 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
-   
+
 .. customcarditem::
    :header: Grokking PyTorch Intel CPU Performance from First Principles
    :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torchserve_with_ipex
    :tags: Model-Optimization,Production
+
+.. customcarditem::
+   :header: Introduction to nvFuser
+   :card_description: An introduction to nvFuser
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/nvfuser_intro_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Multi-Objective Neural Architecture Search with Ax
+   :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
+   :image: _static/img/ray-tune.png
+   :link: intermediate/ax_multiobjective_nas_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
 .. Parallel-and-Distributed-Training
 
@@ -863,6 +877,8 @@ Additional Resources
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
    intermediate/torchserve_with_ipex
+   intermediate/nvfuser_intro_tutorial
+   intermediate/ax_multiobjective_nas_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -894,7 +910,7 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
-   
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
