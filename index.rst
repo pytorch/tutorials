@@ -510,7 +510,7 @@ What's new in PyTorch tutorials?
 .. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
-   :image: _static/img/ray-tune.png
+   :image: _static/img/ax_logo.png
    :link: intermediate/ax_multiobjective_nas_tutorial.html
    :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
