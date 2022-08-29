@@ -284,7 +284,7 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 
 from torch import nn, optim
 
-model = torchvision.models.resnet18(pretrained=True)
+model = resnet18(weights=ResNet18_Weights.DEFAULT)
 
 # Freeze all the parameters in the network
 for param in model.parameters():
