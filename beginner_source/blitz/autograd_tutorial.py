@@ -43,8 +43,9 @@ shape (1,1000).
     This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
 
 """
-import torch, torchvision
-model = torchvision.models.resnet18(pretrained=True)
+import torch
+from torchvision.models import resnet18, ResNet18_Weights
+model = resnet18(weights=ResNet18_Weights.DEFAULT)
 data = torch.rand(1, 3, 64, 64)
 labels = torch.rand(1, 1000)
 
