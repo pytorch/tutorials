@@ -12,10 +12,13 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="../intermediate/dynamic_quantization_bert_tutorial.html" rel="next" title="(beta) Dynamic Quantization on BERT"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-advanced-dynamic-quantization-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-advanced-dynamic-quantization-tutorial-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="beta-dynamic-quantization-on-an-lstm-word-language-model">
 <span id="sphx-glr-advanced-dynamic-quantization-tutorial-py"></span><h1>(beta) Dynamic Quantization on an LSTM Word Language Model<a class="headerlink" href="#beta-dynamic-quantization-on-an-lstm-word-language-model" title="Permalink to this heading">¶</a></h1>
@@ -402,15 +404,15 @@ from the PyTorch examples.</p>
 <p>Here we define the LSTM model architecture, following the
 <a class="reference external" href="https://github.com/pytorch/examples/blob/master/word_language_model/model.py">model</a>
 from the word language model example.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LSTMModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LSTMModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="sd">"""Container module with an encoder, a recurrent module, and a decoder."""</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LSTMModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">drop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">nhid</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LSTMModel</span></a><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="torch.nn.Dropout"><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span></a><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span></a><span class="p">(</span><span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html#torch.nn.LSTM" title="torch.nn.LSTM"><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span></a><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">nhid</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
 
@@ -425,9 +427,9 @@ from the word language model example.</p>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">hidden</span><span class="p">):</span>
         <span class="n">emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
-        <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">emb</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="n">decoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">emb</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">)</span>
+        <span class="n">decoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">)</span>
         <span class="k">return</span> <span class="n">decoded</span><span class="p">,</span> <span class="n">hidden</span>
 
     <span class="k">def</span> <span class="nf">init_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bsz</span><span class="p">):</span>
@@ -484,8 +486,8 @@ from the word language model example.</p>
                 <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
                     <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dictionary</span><span class="o">.</span><span class="n">word2idx</span><span class="p">[</span><span class="n">word</span><span class="p">])</span>
-                <span class="n">idss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
-            <span class="n">ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">idss</span><span class="p">)</span>
+                <span class="n">idss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">ids</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">int64</span></a><span class="p">))</span>
+            <span class="n">ids</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">(</span><span class="n">idss</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ids</span>
 
@@ -504,25 +506,24 @@ by training for five epochs using the default settings in the word language mode
 example.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">corpus</span><span class="o">.</span><span class="n">dictionary</span><span class="p">)</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">LSTMModel</span><span class="p">(</span>
+<span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LSTMModel</span></a><span class="p">(</span>
     <span class="n">ntoken</span> <span class="o">=</span> <span class="n">ntokens</span><span class="p">,</span>
     <span class="n">ninp</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
     <span class="n">nhid</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
     <span class="n">nlayers</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict" title="torch.nn.Module.load_state_dict"><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="torch.load"><span class="n">torch</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span>
         <span class="n">model_data_filepath</span> <span class="o">+</span> <span class="s1">'word_language_model_quantize.pth'</span><span class="p">,</span>
-        <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
+        <span class="n">map_location</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval" title="torch.nn.Module.eval"><span class="n">model</span><span class="o">.</span><span class="n">eval</span></a><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>LSTMModel(
   (drop): Dropout(p=0.5, inplace=False)
   (encoder): Embedding(33278, 512)
@@ -534,20 +535,20 @@ example.</p>
 <p>Now let’s generate some text to ensure that the pre-trained model is working
 properly - similarly to before, we follow
 <a class="reference external" href="https://github.com/pytorch/examples/blob/master/word_language_model/generate.py">here</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ntokens</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randint.html#torch.randint" title="torch.randint"><span class="n">torch</span><span class="o">.</span><span class="n">randint</span></a><span class="p">(</span><span class="n">ntokens</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">long</span></a><span class="p">)</span>
 <span class="n">hidden</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">temperature</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">num_words</span> <span class="o">=</span> <span class="mi">1000</span>
 
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_data_filepath</span> <span class="o">+</span> <span class="s1">'out.txt'</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">outf</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>  <span class="c1"># no tracking history</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>  <span class="c1"># no tracking history</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_words</span><span class="p">):</span>
-            <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
-            <span class="n">word_weights</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-            <span class="n">word_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">word_weights</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">input_</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">word_idx</span><span class="p">)</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_</span></a><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">word_weights</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">word_idx</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.multinomial.html#torch.multinomial" title="torch.multinomial"><span class="n">torch</span><span class="o">.</span><span class="n">multinomial</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">word_weights</span></a><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_</span></a><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">word_idx</span></a><span class="p">)</span>
 
-            <span class="n">word</span> <span class="o">=</span> <span class="n">corpus</span><span class="o">.</span><span class="n">dictionary</span><span class="o">.</span><span class="n">idx2word</span><span class="p">[</span><span class="n">word_idx</span><span class="p">]</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">corpus</span><span class="o">.</span><span class="n">dictionary</span><span class="o">.</span><span class="n">idx2word</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">word_idx</span></a><span class="p">]</span>
 
             <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span> <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">19</span> <span class="k">else</span> <span class="s1">' '</span><span class="p">))</span>
 
@@ -559,7 +560,6 @@ properly - similarly to before, we follow
     <span class="nb">print</span><span class="p">(</span><span class="n">all_output</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| Generated 0/1000 words
 | Generated 100/1000 words
 | Generated 200/1000 words
@@ -570,56 +570,56 @@ properly - similarly to before, we follow
 | Generated 700/1000 words
 | Generated 800/1000 words
 | Generated 900/1000 words
-b'&lt;unk&gt;' b'and' b'a' b'pioneering' b'leather' b'feat' b'which' b'was' b'called' b'but' b'popularly' b'in' b'chocolate' b'use' b',' b'in' b'his' b'&lt;unk&gt;' b'mines' b'against'
-b'Information' b'are' b'an' b'dark' b',' b'with' b'a' b'polar' b'early' b'Zhishen' b'character' b',' b'which' b'are' b'a' b'altar' b'that' b'a' b'notch' b'for'
-b'short' b'housekeeper' b'associated' b'by' b'the' b'longest' b'splits' b',' b'while' b'and' b'they' b'do' b'afterwards' b'in' b'particular' b'.' b'The' b'particular' b'source' b'of'
-b'this' b'or' b'a' b'subject' b'of' b'short' b'rates' b'have' b'fuse' b'when' b'been' b'either' b'unwillingness' b'to' b'speak' b'.' b'If' b'left' b'to' b'win'
-b'the' b'Highlands' b',' b'but' b'trouble' b'peace' b'Colin' b"'s" b'(' b'&lt;unk&gt;' b')' b'Singleton' b'can' b'say' b'out' b'of' b'a' b'self' b'@-@' b'owner'
-b'they' b"'ll" b'justified' b'.' b'A' b'model' b'of' b'wasp' b'W.' b'Diana' b'is' b'only' b'on' b'a' b'variety' b'of' b'playing' b'means' b'logic' b','
-b'eight' b',' b'including' b'a' b'fraction' b'that' b'is' b'estimated' b'in' b'action' b',' b'and' b'the' b'Outer' b'properties' b'Limoux' b'is' b'first' b'removed' b'to'
-b'express' b'isolated' b'or' b'stare' b'off' b'.' b'They' b'have' b'high' b'potential' b'arrest' b',' b'such' b'as' b'&lt;unk&gt;' b'&lt;unk&gt;' b'for' b'the' b'last' b'two'
-b'armies' b'for' b'the' b'bird' b',' b'which' b'will' b'be' b'prepared' b'after' b'killed' b'in' b'them' b'.' b'&lt;eos&gt;' b'Odaenathus' b'@-@' b'takes' b'snakes' b'have'
-b'few' b'probably' b'that' b'claim' b'is' b'a' b'consequence' b'of' b'males' b'that' b'the' b'relates' b'needs' b'with' b'it' b'is' b'an' b'RanGTP' b"'" b'requirements'
-b',' b'although' b'most' b'are' b'also' b'fully' b'remembered' b'by' b'compatible' b'into' b'art' b',' b'defeating' b'to' b'prevent' b'large' b'beings' b'.' b'Instead' b','
-b'the' b'feeding' b'imagination' b'were' b'exhausted' b'to' b'firm' b'ensured' b'that' b'their' b'two' b'or' b'four' b'more' b'influences' b'on' b'Comic' b'explosions' b'is' b'destroyed'
-b'.' b'They' b'Ulysses' b',' b'but' b'it' b'is' b'only' b'a' b'head' b'.' b'&lt;eos&gt;' b'They' b'abolished' b'Fulfilled' b'Josh' b'Jun' b',' b'to' b'mature'
-b'belief' b'if' b'they' b',' b'when' b'it' b'further' b'strongly' b'want' b'to' b'break' b',' b'ranging' b'to' b'each' b'or' b'genuine' b'of' b'his' b'light'
-b'@-@' b'ages' b'.' b'Females' b'are' b'honored' b'with' b'nests' b'that' b'were' b'reported' b'by' b'&lt;unk&gt;' b'animals' b'and' b'include' b'because' b'blockships' b'undergo' b'many'
-b'miniseries' b'&lt;unk&gt;' b'.' b'A' b'wife' b"'s" b'diet' b'is' b'painted' b'down' b'but' b'others' b'leads' b'to' b'cotton' b'.' b'Opinions' b'from' b'qualification' b'can'
-b'have' b'From' b'food' b'when' b'her' b'chicks' b'seems' b'to' b'begin' b'a' b'extreme' b'eagle' b'source' b'had' b'just' b'associated' b'.' b'&lt;eos&gt;' b'The' b'bacteria'
-b',' b'which' b'may' b'be' b'Meng' b'rounded' b'by' b'they' b'are' b'expanding' b',' b'but' b'they' b'ionization' b'somewhat' b'of' b'high' b'soil' b'from' b'open'
-b',' b'substituted' b',' b'with' b'three' b'sort' b'of' b'herds' b'.' b'These' b'cause' b'may' b'be' b'sexually' b'in' b'secular' b'translation' b'when' b'they' b'have'
-b'long' b'supervise' b'mRNA' b'or' b'shoots' b'or' b'changing' b'control' b'spotted' b'a' b'man' b'.' b'Cities' b'are' b'often' b'&lt;unk&gt;' b'and' b'the' b'least' b'a'
-b'dozen' b'wasted' b'.' b'The' b'food' b'probe' b'gradually' b'&lt;unk&gt;' b'by' b'reservoirs' b',' b'such' b'as' b'treason' b'and' b'usable' b'.' b'10s' b'of' b'Nicaragua'
-b'can' b'calculate' b'last' b'condom' b'perch' b'when' b'they' b'were' b'less' b'threat' b'.' b'But' b'when' b'other' b'birds' b',' b'however' b',' b'both' b'undertaken'
-b'&lt;unk&gt;' b'are' b'or' b'white' b'.' b'If' b'the' b'eye' b'takes' b'greater' b'plants' b',' b'more' b'directional' b'.' b'These' b'sticks' b'holds' b'dull' b'resources'
-b'that' b'are' b'seem' b'to' b'rely' b'on' b'intercourse' b'.' b'&lt;unk&gt;' b'apologize' b'(' b'that' b'the' b'Union' b'has' b'red' b'body' b'body' b',' b'and'
-b'when' b'their' b'beak' b'of' b'esplanade' b'synthesize' b'lubricated' b')' b'are' b'very' b'intriguing' b'.' b'At' b'a' b'cost' b',' b'chicks' b'it' b'of' b'food'
-b'of' b'food' b',' b'to' b'eight' b'Resources' b'&lt;unk&gt;' b'.' b'It' b'has' b'it' b'turned' b'even' b'on' b'any' b'side' b'she' b'lose' b'more' b'than'
-b'a' b'hour' b'.' b'&lt;eos&gt;' b'O' b'Rico' b'has' b'more' b'frequently' b',' b'showing' b'slightly' b'breeding' b'red' b',' b'highest' b'or' b'roofs' b',' b'with'
-b'one' b'million' b'to' b'snakes' b',' b'should' b'GCSEs' b'.' b'The' b'outermost' b'starling' b'and' b'receives' b'it' b'to' b'free' b',' b'to' b'grow' b'to'
-b'over' b'50' b'%' b'per' b'life' b'.' b'They' b'methods' b'are' b'still' b'pale' b'on' b'Nikolayev' b'.' b'Other' b'outer' b'starlings' b'are' b'&lt;unk&gt;' b','
-b'secular' b'birds' b'which' b'may' b'be' b'limited' b'.' b'liberate' b'quite' b'separated' b'on' b'either' b'side' b',' b'unstable' b'when' b'barely' b'they' b'arrive' b'numerous'
-b'prehistoric' b'ships' b'\xe2\x80\x94' b'although' b'the' b'female' b'has' b'grown' b'union' b'feathers' b'from' b'behaviour' b'.' b'&lt;eos&gt;' b'Then' b',' b'claws' b'is' b'common' b'.'
-b'Instead' b',' b'they' b'are' b'not' b'made' b'or' b'available' b'.' b'In' b'many' b'other' b'velocity' b',' b'plasma' b'birds' b'would' b'leave' b'by' b'the'
-b'Mercy' b'&lt;unk&gt;' b'Cilicia' b',' b'one' b'nurse' b'often' b',' b'a' b'nearest' b'&lt;unk&gt;' b',' b'fragillis' b'reader' b',' b'&lt;unk&gt;' b',' b'NP' b'praemaxillae' b'and'
-b'depend' b'for' b'into' b'his' b'orbital' b'speakers' b'and' b'signal' b',' b'in' b'flight' b'waters' b',' b'is' b'spreading' b'within' b'a' b'centerline' b'to' b'be'
-b'more' b'"' b'Jemmappes' b'"' b'gathered' b'during' b'the' b'state' b'.' b'Production' b'are' b'known' b'as' b'modern' b'reward' b'.' b'This' b'bird' b'has' b'bouncing'
-b'&lt;unk&gt;' b',' b'as' b'it' b'contains' b'a' b'nuclear' b'headdress' b'pore' b'.' b'It' b'is' b'known' b'for' b'their' b'Exchange' b'and' b'slippage' b',' b'but'
-b'is' b'pointed' b'to' b'divination' b'when' b'interpreted' b'.' b'Most' b'mowing' b'from' b'M.' b'aisles' b'have' b'encounters' b'to' b'call' b'further' b'access' b'.' b'&lt;eos&gt;'
-b'In' b'arrival' b',' b'common' b'areas' b'are' b'overlooked' b'to' b'greater' b',' b'cover' b',' b'with' b'food' b'or' b'&lt;unk&gt;' b'.' b'They' b'applies' b'difficult'
-b'to' b'be' b'as' b'result' b'of' b'Corporate' b',' b'&lt;unk&gt;' b'error' b',' b'and' b'reduction' b',' b'dubbed' b'vegetation' b',' b'under' b'provide' b'other' b'@-@'
-b'lived' b'unaffected' b'emit' b'dogs' b'of' b'clothes' b'.' b'Across' b'example' b',' b'it' b'portions' b'current' b'high' b',' b'adults' b',' b'and' b'stealing' b'kakapo'
-b',' b'especially' b'with' b'their' b'observation' b',' b'usually' b'priced' b'even' b'&lt;unk&gt;' b'.' b'Several' b'non' b'or' b'females' b'allegations' b'of' b'Cider' b'products' b'are'
-b'determined' b'to' b'have' b'discovered' b'a' b'indispensable' b'gas' b'domestic' b',' b'and' b'their' b'ill' b'specimen' b'is' b'able' b'to' b'provide' b'.' b'The' b'associated'
-b'mechanism' b'of' b'acyclic' b'metals' b'should' b'be' b'a' b'alpha' b'&lt;unk&gt;' b'droppings' b',' b'or' b'&lt;unk&gt;' b'that' b'RNA' b',' b'they' b'eat' b'it' b'on'
-b'the' b'mating' b'mainland' b'.' b'Females' b'solve' b'it' b'and' b'such' b'elevated' b'contexts' b'open' b'.' b'&lt;unk&gt;' b'bearded' b'nest' b'techniques' b'resulted' b'in' b'a'
-b'pair' b'of' b'males' b',' b'and' b'the' b'portico' b'Barrymore' b'defeated' b'well' b'gods' b',' b'suspected' b'can' b'soon' b'be' b'deeply' b'preparing' b'to' b'take'
-b'.' b'A' b'fungus' b"'s" b'statues' b'are' b'represented' b'by' b'DNA' b'or' b'dubious' b',' b'thin' b'and' b'damaging' b'two' b'spaces' b',' b'when' b'tissue'
-b',' b'other' b'species' b',' b'excess' b'of' b'males' b',' b'B.' b'&lt;unk&gt;' b',' b'flavours' b',' b'Protomycena' b',' b'and' b'(' b'often' b'slow' b','
-b'activating' b'their' b'only' b'surveillance' b')' b';' b'or' b',' b'or' b'unwelcome' b'&lt;unk&gt;' b',' b'fixed' b'aggressive' b'size' b',' b'or' b'&lt;unk&gt;' b'.' b'&lt;eos&gt;'
-b'Some' b'birds' b'can' b'be' b'transcribed' b'on' b'25' b'different' b'organisms' b',' b'both' b'@-@' b'chromatids' b',' b'and' b'unfinished' b'with' b'2' b'@.@' b'8'
-b'mg' b'per' b'musical' b'planets' b'\xe2\x80\x93' b'with' b'1' b'\xe2\x80\x93' b'4' b'\xce\xbcm' b'(' b'males' b')' b'with' b'maximum' b'birds' b',' b'or' b'2017' b','
+b'focusing' b'in' b'Fiji' b'\xe2\x80\x94' b'"' b'Black' b'Love' b'"' b',' b'"' b'poker' b'"' b'is' b'easier' b'to' b'have' b'"' b'foreboding' b'four' b'mature'
+b'that' b'covers' b'fearful' b'and' b'everything' b'some' b'&lt;unk&gt;' b'that' b'with' b'081' b'is' b'a' b'personal' b'safe' b'"' b'.' b'The' b'&lt;unk&gt;' b'@-@' b'related'
+b'clump' b'turn' b'to' b'be' b'a' b'electro' b'shop' b'Humpty' b"'t" b'generations' b'the' b'parachute' b'bleak' b'@-@' b'length' b'hymenium' b'located' b'on' b'the' b'lift'
+b'@-@' b'like' b'@-@' b'old' b'size' b'for' b'his' b'shooting' b',' b'with' b'emplacements' b'being' b'only' b'radial' b'Guitar' b'Africa' b'.' b'Ceres' b'described' b'two'
+b'squadrons' b'at' b'night' b'.' b'&lt;eos&gt;' b'&lt;eos&gt;' b'=' b'=' b'Preparations' b'=' b'=' b'&lt;eos&gt;' b'&lt;eos&gt;' b'Before' b'their' b'descent' b'in' b'the' b'Study' b'Project'
+b',' b'eared' b'Trek' b'Weekly' b'stated' b'to' b'see' b'6' b':' b'5' b'in' b'&lt;unk&gt;' b'heartbreaking' b',' b'not' b'told' b'that' b'Fortuna' b'&lt;unk&gt;' b'said'
+b'"' b'If' b'sightings' b"'s" b'just' b'nice' b'lap' b'book' b'the' b'1230s' b',' b'and' b'players' b'that' b'supposed' b'they' b'did' b'never' b'rapidly' b'know'
+b'this' b'Tufaro' b'.' b'I' b"'ve" b'lie' b'to' b'Moresby' b'.' b'"' b'He' b'deliberately' b'added' b'in' b'his' b'appearance' b'for' b'Connie' b',' b'the'
+b'"' b'middle' b'planet' b'of' b'the' b'Wind' b'"' b'should' b'be' b'redundant' b'.' b'Hornung' b"'s" b'immense' b'name' b'is' b'complete' b'(' b'although' b'&lt;unk&gt;'
+b'ecumenical' b'daughters' b'&lt;unk&gt;' b')' b'.' b'A' b'member' b'of' b'organ' b'identified' b'in' b'a' b'high' b'version' b'Stela' b'Concept' b'&lt;unk&gt;' b'Fawkes' b'Kinney' b'attempt'
+b'to' b'account' b'up' b'later' b'object' b'with' b'a' b'more' b'brilliant' b'drive' b'.' b'Gilmore' b'compared' b'on' b'to' b'emulate' b'Paul' b'Blitt' b'the' b'Dead'
+b'press' b'Journey' b'Pentwyn' b'!' b'"' b'To' b'the' b'belly' b'"' b',' b'while' b'"' b'All' b'people' b'takes' b'place' b'.' b'"' b'&lt;eos&gt;' b'Unlike'
+b'her' b',' b'Joanna' b'kicked' b'his' b'interpretation' b'about' b'novelists' b'.' b'He' b'noted' b'that' b'Hornung' b"'s" b'remixed' b'@-@' b'time' b'backdrop' b'has' b'been'
+b'Sri' b'probably' b'influenced' b'by' b'Paul' b'Worth' b'Living' b'.' b'Walters' b'demanded' b'Ruth' b'himself' b'used' b'wires' b'for' b'his' b'inauguration' b'in' b'a' b'2005'
+b'interview' b'by' b'Thatgamecompany' b'.' b'&lt;eos&gt;' b'Stanley' b'makes' b'word' b'that' b'Ceres' b"'s" b'calling' b'"' b'&lt;unk&gt;' b'of' b'twist' b'"' b'that' b'McLuhan' b'pursues'
+b'what' b'a' b'evil' b'woman' b"'s" b'environment' b'refuses' b'a' b'attack' b'.' b'Radio' b',' b'Kilmer' b'depicts' b'his' b'"' b'male' b'effects' b'"' b','
+b'because' b'he' b'consider' b'his' b'support' b'.' b'He' b'also' b'decides' b'on' b'contact' b'with' b',' b'"' b'Marlene' b'or' b'impersonation' b',' b'which' b'are'
+b'made' b'to' b'get' b'back' b'around' b'anymore' b'Nf3' b'I' b"'m" b'so' b'&lt;unk&gt;' b',' b'and' b'simply' b'a' b'doctrine' b'to' b'become' b'human' b'.'
+b'And' b'[' b'I' b"'d" b']' b'not' b',' b'it' b'sing' b'me' b'&lt;eos&gt;' b'"' b'At' b'the' b'following' b'time' b',' b'Sayid' b'identified' b'it'
+b'as' b'"' b'a' b'little' b'powerful' b'to' b'laughing' b'.' b'"' b'So' b'Kilmer' b"'s" b'following' b'century' b'was' b'a' b'series' b'of' b'her' b'propaganda'
+b'difference' b'personally' b'he' b'said' b':' b'"' b'imaginative' b'(' b'1' b'basic' b'to' b'carry' b'into' b'1' b'years' b',' b'I' b"'m" b'matched' b'if'
+b'her' b'talent' b'has' b'possibly' b'defense' b'or' b'at' b'have' b'four' b'...' b'actually' b'far' b'away' b',' b'and' b'then' b'nothing' b'thousand' b'young' b'games'
+b'else' b')' b'how' b'the' b'very' b'obvious' b'tied' b'to' b'Paste' b'because' b'he' b'crosses' b'chaotic' b'all' b'being' b'doing' b'the' b'death' b'of' b'some'
+b'kind' b'of' b'questioning' b'sentimental' b'.' b'"' b'Despite' b'his' b'performance' b'of' b'being' b'based' b'out' b'of' b'an' b'novel' b'working' b'in' b'ambitions' b','
+b'Spacey' b'said' b',' b'"' b'I' b'You' b'like' b'mind' b'good' b'&lt;unk&gt;' b'.' b'biplane' b"'m" b'an' b'&lt;unk&gt;' b'and' b'necklace' b'to' b'produce' b'him'
+b'that' b'this' b'will' b'be' b'true' b'there' b'worth' b'an' b'rich' b',' b'right' b',' b'Angry' b',' b'structured' b'gentleman' b'"' b'.' b'Ross' b'also'
+b'described' b'the' b'collection' b'of' b'gritty' b'critics' b'on' b'two' b'technical' b'countries' b'(' b'mid' b'%' b'orbital' b'business' b'Maleev' b')' b',' b'with' b'it'
+b'"' b',' b'a' b'con' b'picture' b'pawn' b'wants' b'where' b"'s" b'Kepler' b',' b'in' b'1968' b'.' b"'" b'It' b'doesn' b"'t" b"'ll" b'myself'
+b'at' b'least' b'a' b'family' b'without' b',' b'a' b'blow' b'with' b'&lt;unk&gt;' b'gain' b'by' b'another' b'solenoid' b'.' b'"' b'Liu' b"'Malley" b'sold' b','
+b'as' b'they' b'became' b'possible' b'late' b'12' b'\xe2\x80\x93' b'10' b',' b'and' b'on' b'November' b'4' b',' b'2014' b'they' b'can' b'last' b'strike' b'for'
+b'the' b',' b'emotional' b'running' b'with' b'conjunction' b'with' b'Thatgamecompany' b'.' b'Upon' b'the' b'American' b'race' b'the' b'Washington' b'University' b'turned' b'to' b'write' b'their'
+b'last' b'season' b',' b'Ecclestone' b'was' b'"' b'for' b'a' b'very' b'luminous' b'excavation' b'on' b'good' b'literature' b'"' b'and' b'received' b'the' b'"' b'hard'
+b'33' b'"' b'television' b'game' b'East' b'series' b'involving' b'Hornung' b"'s" b'+' b'82' b',' b'2009' b'for' b'his' b'drummer' b',' b'Cambridge' b'.' b'The'
+b'novel' b'spent' b'around' b'20' b'mg' b'in' b'the' b'first' b'length' b'attend' b'maps' b',' b'and' b'at' b'27' b'@,@' b'000' b'copies' b',' b'the'
+b'single' b'126' b'dates' b'.' b'&lt;eos&gt;' b'Hornung' b'joined' b'Formula' b"'Malley" b',' b'Alan' b'McFarland' b',' b'to' b'guitar' b'Walpole' b',' b'Hyderabad' b'told' b'Inez'
+b',' b'war' b'betrays' b'warm' b'riding' b',' b'and' b'Raffles' b'liked' b'Williams' b'which' b'ended' b'when' b'came' b'commentators' b',' b'negatively' b'and' b'Raffles' b','
+b'and' b'Jordan' b'featured' b'Ceres' b'with' b'Maze' b'/' b'52' b'short' b'C' b'/' b'resuming' b'bags' b'(' b'Burke' b')' b'and' b'Australian' b'runner' b'warming'
+b'doctors' b',' b'Mason' b'and' b'The' b'Kitty' b'III' b'.' b'The' b'University' b'of' b'Cricket' b'listed' b'a' b'weighted' b'version' b'of' b'Namco' b'and' b'Andres'
+b'take' b'moving' b'members' b'over' b'viewers' b'in' b'the' b'final' b'season' b'to' b'costumes' b'.' b'&lt;eos&gt;' b'&lt;eos&gt;' b'=' b'=' b'Personal' b'life' b'=' b'='
+b'&lt;eos&gt;' b'&lt;eos&gt;' b'slavery' b'were' b'aligned' b'against' b'Liszt' b',' b'debuting' b':' b'&lt;eos&gt;' b'"' b'For' b'up' b'"' b',' b'Jig' b',' b'&lt;unk&gt;' b','
+b'received' b'survivors' b'of' b'monoxide' b'Path' b'music' b'.' b'&lt;eos&gt;' b'The' b'2010' b'election' b'was' b'made' b'by' b'Chen' b'in' b'Rock' b'at' b'Argosy' b','
+b'beginning' b'in' b'Duke' b'Island' b'in' b'1203' b'.' b'One' b'of' b'these' b'finds' b'the' b'amount' b'of' b'Crash' b'Bill' b'Johnson' b'as' b'"' b'The'
+b'most' b'intentionally' b'American' b'fence' b'&lt;unk&gt;' b'of' b'drive' b',' b'because' b'Mosley' b']' b'was' b'because' b'he' b'identified' b'in' b'all' b'life' b'"' b'.'
+b'&lt;eos&gt;' b'In' b'the' b'spring' b'of' b'May' b',' b'Mosley' b'implies' b'"' b'Nico' b'Young' b'creatures' b'"' b':' b'"' b'Hornung' b"'" b'big' b'audition'
+b'would' b'be' b'bad' b'and' b'wrong' b'to' b'spot' b'slightly' b'.' b'The' b'book' b'has' b'nine' b'Weiner' b'gone' b'at' b':' b'90' b'&lt;eos&gt;' b'The'
+b'NCAA' b'carried' b'David' b'I' b'ready' b'a' b'contract' b'down' b'even' b'Another' b'selection' b'or' b'legally' b'ever' b'kept' b'its' b'elbow' b',' b'who' b'get'
+b'plays' b'three' b'.' b'He' b'continue' b'to' b'fit' b'it' b'...' b'"' b'He' b'came' b'nearfield' b'.' b'The' b'Mr' b'Slocum' b'Journal' b'criticized' b'in'
+b'his' b'two' b'singles' b'Gratitude' b',' b'the' b'Phoenix' b'and' b'Fake' b'Raffles' b'invited' b'to' b'Kifino' b'Mackerras' b'.' b'The' b'fear' b'it' b'was' b'in'
+b'fact' b'such' b'as' b'Louis' b'&lt;unk&gt;' b'(' b'Mitch' b'Fischer' b')' b',' b'appearances' b',' b'and' b'leather' b',' b'as' b'one' b'brother' b',' b'Richard'
+b'Chris' b'&lt;unk&gt;' b',' b'created' b'by' b'Morgan' b'Records' b'.' b'Behind' b'alike' b'with' b'In' b'the' b'slot' b'@-@' b'300' b'versions' b'of' b'temporary' b'rivals'
 </pre></div>
 </div>
 <p>It’s no GPT-2, but it looks like the model has started to learn the structure of
@@ -627,7 +627,7 @@ language!</p>
 <p>We’re almost ready to demonstrate dynamic quantization. We just need to define a few more
 helper functions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bptt</span> <span class="o">=</span> <span class="mi">25</span>
-<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">criterion</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
 <span class="n">eval_batch_size</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="c1"># create test data set</span>
@@ -639,7 +639,7 @@ helper functions:</p>
     <span class="c1"># Evenly divide the data across the bsz batches.</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
 
-<span class="n">test_data</span> <span class="o">=</span> <span class="n">batchify</span><span class="p">(</span><span class="n">corpus</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">eval_batch_size</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">test_data</span></a> <span class="o">=</span> <span class="n">batchify</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">corpus</span><span class="o">.</span><span class="n">test</span></a><span class="p">,</span> <span class="n">eval_batch_size</span><span class="p">)</span>
 
 <span class="c1"># Evaluation functions</span>
 <span class="k">def</span> <span class="nf">get_batch</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
@@ -651,7 +651,7 @@ helper functions:</p>
 <span class="k">def</span> <span class="nf">repackage_hidden</span><span class="p">(</span><span class="n">h</span><span class="p">):</span>
   <span class="sd">"""Wraps hidden states in new Tensors, to detach them from their history."""</span>
 
-  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">):</span>
       <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
   <span class="k">else</span><span class="p">:</span>
       <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repackage_hidden</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">h</span><span class="p">)</span>
@@ -661,13 +661,13 @@ helper functions:</p>
     <span class="n">model_</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">hidden</span> <span class="o">=</span> <span class="n">model_</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">(</span><span class="n">eval_batch_size</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data_source</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">):</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">get_batch</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-            <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">model_</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">model_</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
             <span class="n">hidden</span> <span class="o">=</span> <span class="n">repackage_hidden</span><span class="p">(</span><span class="n">hidden</span><span class="p">)</span>
-            <span class="n">output_flat</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">)</span>
-            <span class="n">total_loss</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output_flat</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">output_flat</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">)</span>
+            <span class="n">total_loss</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">criterion</span></a><span class="p">(</span><span class="n">output_flat</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -683,13 +683,12 @@ model to be quantized</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.quantization</span>
 
-<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span> <span class="p">{</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span>
+<span class="n">quantized_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-quantization sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.quantization.quantize_dynamic.html#torch.quantization.quantize_dynamic" title="torch.quantization.quantize_dynamic"><span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span></a><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="p">{</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html#torch.nn.LSTM" title="torch.nn.LSTM"><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span></a>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>LSTMModel(
   (drop): Dropout(p=0.5, inplace=False)
   (encoder): Embedding(33278, 512)
@@ -701,7 +700,7 @@ model to be quantized</p></li>
 <p>The model looks the same; how has this benefited us? First, we see a
 significant reduction in model size:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_size_of_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">"temp.p"</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.state_dict" title="torch.nn.Module.state_dict"><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span></a><span class="p">(),</span> <span class="s2">"temp.p"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Size (MB):'</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="s2">"temp.p"</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">'temp.p'</span><span class="p">)</span>
 
@@ -709,7 +708,6 @@ significant reduction in model size:</p>
 <span class="n">print_size_of_model</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Size (MB): 113.944608
 Size (MB): 79.739034
 </pre></div>
@@ -717,23 +715,22 @@ Size (MB): 79.739034
 <p>Second, we see faster inference time, with no difference in evaluation loss:</p>
 <p>Note: we set the number of threads to one for single threaded comparison, since quantized
 models run single threaded.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.set_num_threads.html#torch.set_num_threads" title="torch.set_num_threads"><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">time_model_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">time_model_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">test_data</span></a><span class="p">):</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">test_data</span></a><span class="p">)</span>
     <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">s</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'''loss: </span><span class="si">{0:.3f}</span><span class="se">\n</span><span class="s1">elapsed time (seconds): </span><span class="si">{1:.1f}</span><span class="s1">'''</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">))</span>
 
-<span class="n">time_model_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
-<span class="n">time_model_evaluation</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+<span class="n">time_model_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">test_data</span></a><span class="p">)</span>
+<span class="n">time_model_evaluation</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">test_data</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loss: 5.167
-elapsed time (seconds): 232.7
+elapsed time (seconds): 208.4
 loss: 5.168
-elapsed time (seconds): 125.3
+elapsed time (seconds): 110.0
 </pre></div>
 </div>
 <p>Running this locally on a MacBook Pro, without quantization, inference takes about 200 seconds,
@@ -745,16 +742,16 @@ and with quantization it takes just about 100 seconds.</p>
 having a limited effect on accuracy.</p>
 <p>Thanks for reading! As always, we welcome any feedback, so please create an issue
 <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 6 minutes  7.614 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-dynamic-quantization-tutorial-py">
-<div class="sphx-glr-download docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  27.258 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-dynamic-quantization-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/256861ec2cab5f0dc50c523f520dfefd/dynamic_quantization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dynamic_quantization_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/9a0e851f5cb70c78bfde07b9bd268569/dynamic_quantization_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">dynamic_quantization_tutorial.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </article>
@@ -974,16 +971,38 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
 </ul>
 </div>
-<div class="footer-links-col follow-us-col">
+<div class="footer-links-col">
 <ul>
-<li class="list-title">Stay Connected</li>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
 </ul>
-<div class="footer-social-icons">
-<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
-<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
-<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
 </div>
 </div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
 </div>
 </div>
 </footer>

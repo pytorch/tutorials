@@ -12,10 +12,13 @@
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../../genindex.html" rel="index" title="Index"/>
 <link href="../../search.html" rel="search" title="Search"/>
 <link href="saveloadrun_tutorial.html" rel="next" title="Save and Load the Model"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-basics-optimization-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-basics-optimization-tutorial-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <p class="sphx-glr-example-title" id="sphx-glr-beginner-basics-optimization-tutorial-py"><a class="reference external" href="intro.html">Learn the Basics</a> ||
 <a class="reference external" href="quickstart_tutorial.html">Quickstart</a> ||
@@ -394,37 +396,37 @@ detailed walkthrough of this process, check out this video on <a class="referenc
 and <a class="reference external" href="buildmodel_tutorial.html">Build Model</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">ToTensor</span><span class="p">,</span> <span class="n">Lambda</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html#torchvision.transforms.ToTensor" title="torchvision.transforms.ToTensor"><span class="n">ToTensor</span></a><span class="p">,</span> <span class="n">Lambda</span>
 
-<span class="n">training_data</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">FashionMNIST</span><span class="p">(</span>
+<a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">training_data</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">datasets</span><span class="o">.</span><span class="n">FashionMNIST</span></a><span class="p">(</span>
     <span class="n">root</span><span class="o">=</span><span class="s2">"data"</span><span class="p">,</span>
     <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">transform</span><span class="o">=</span><span class="n">ToTensor</span><span class="p">()</span>
+    <span class="n">transform</span><span class="o">=</span><a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html#torchvision.transforms.ToTensor" title="torchvision.transforms.ToTensor"><span class="n">ToTensor</span></a><span class="p">()</span>
 <span class="p">)</span>
 
-<span class="n">test_data</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">FashionMNIST</span><span class="p">(</span>
+<a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">test_data</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">datasets</span><span class="o">.</span><span class="n">FashionMNIST</span></a><span class="p">(</span>
     <span class="n">root</span><span class="o">=</span><span class="s2">"data"</span><span class="p">,</span>
     <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">transform</span><span class="o">=</span><span class="n">ToTensor</span><span class="p">()</span>
+    <span class="n">transform</span><span class="o">=</span><a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html#torchvision.transforms.ToTensor" title="torchvision.transforms.ToTensor"><span class="n">ToTensor</span></a><span class="p">()</span>
 <span class="p">)</span>
 
-<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
-<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_dataloader</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">training_data</span></a><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_dataloader</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torchvision-datasets sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST" title="torchvision.datasets.FashionMNIST"><span class="n">test_data</span></a><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
 
-<span class="k">class</span> <span class="nc">NeuralNetwork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">NeuralNetwork</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">NeuralNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">linear_relu_stack</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+        <span class="nb">super</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">NeuralNetwork</span></a><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html#torch.nn.Flatten" title="torch.nn.Flatten"><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span></a><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear_relu_stack</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">(</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html#torch.nn.ReLU" title="torch.nn.ReLU"><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span></a><span class="p">(),</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html#torch.nn.ReLU" title="torch.nn.ReLU"><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span></a><span class="p">(),</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -432,24 +434,77 @@ and <a class="reference external" href="buildmodel_tutorial.html">Build Model</a
         <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_relu_stack</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logits</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">NeuralNetwork</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">NeuralNetwork</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
+
+  0%|          | 0/26421880 [00:00&lt;?, ?it/s]
+  0%|          | 32768/26421880 [00:00&lt;01:26, 304261.67it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:27, 302602.29it/s]
+  0%|          | 131072/26421880 [00:00&lt;00:59, 440087.11it/s]
+  1%|          | 196608/26421880 [00:00&lt;00:51, 505286.05it/s]
+  2%|1         | 425984/26421880 [00:00&lt;00:23, 1084647.06it/s]
+  2%|2         | 557056/26421880 [00:00&lt;00:22, 1127393.63it/s]
+  3%|3         | 851968/26421880 [00:00&lt;00:15, 1647195.18it/s]
+  6%|5         | 1507328/26421880 [00:00&lt;00:08, 3044615.99it/s]
+ 11%|#         | 2818048/26421880 [00:00&lt;00:04, 5867196.08it/s]
+ 21%|##        | 5439488/26421880 [00:01&lt;00:01, 11486289.81it/s]
+ 32%|###2      | 8519680/26421880 [00:01&lt;00:01, 16689195.79it/s]
+ 44%|####3     | 11599872/26421880 [00:01&lt;00:00, 20107619.72it/s]
+ 56%|#####5    | 14712832/26421880 [00:01&lt;00:00, 22679356.26it/s]
+ 67%|######7   | 17793024/26421880 [00:01&lt;00:00, 24388584.67it/s]
+ 79%|#######9  | 20905984/26421880 [00:01&lt;00:00, 25674695.76it/s]
+ 91%|######### | 24018944/26421880 [00:01&lt;00:00, 26559428.03it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 15067400.95it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
+
+  0%|          | 0/29515 [00:00&lt;?, ?it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 268326.00it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 266968.47it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
+
+  0%|          | 0/4422102 [00:00&lt;?, ?it/s]
+  1%|          | 32768/4422102 [00:00&lt;00:14, 300320.46it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:14, 298540.70it/s]
+  3%|2         | 131072/4422102 [00:00&lt;00:09, 434536.64it/s]
+  4%|4         | 196608/4422102 [00:00&lt;00:08, 498688.05it/s]
+ 10%|9         | 425984/4422102 [00:00&lt;00:03, 1071643.80it/s]
+ 13%|#2        | 557056/4422102 [00:00&lt;00:03, 1111383.05it/s]
+ 16%|#5        | 688128/4422102 [00:00&lt;00:03, 1139190.26it/s]
+ 19%|#9        | 851968/4422102 [00:00&lt;00:02, 1251598.10it/s]
+ 23%|##2       | 1015808/4422102 [00:00&lt;00:02, 1326397.67it/s]
+ 27%|##7       | 1212416/4422102 [00:01&lt;00:02, 1469026.53it/s]
+ 32%|###1      | 1409024/4422102 [00:01&lt;00:01, 1566944.78it/s]
+ 36%|###5      | 1572864/4422102 [00:01&lt;00:01, 1543359.48it/s]
+ 40%|####      | 1769472/4422102 [00:01&lt;00:01, 1617695.87it/s]
+ 44%|####4     | 1966080/4422102 [00:01&lt;00:01, 1669534.57it/s]
+ 50%|####9     | 2195456/4422102 [00:01&lt;00:01, 1791374.83it/s]
+ 54%|#####4    | 2392064/4422102 [00:01&lt;00:01, 1791501.79it/s]
+ 59%|#####8    | 2588672/4422102 [00:01&lt;00:01, 1793342.55it/s]
+ 64%|######3   | 2818048/4422102 [00:01&lt;00:00, 1875197.51it/s]
+ 68%|######8   | 3014656/4422102 [00:02&lt;00:00, 1854888.87it/s]
+ 73%|#######3  | 3244032/4422102 [00:02&lt;00:00, 1919937.04it/s]
+ 78%|#######7  | 3440640/4422102 [00:02&lt;00:00, 1885159.31it/s]
+ 83%|########2 | 3670016/4422102 [00:02&lt;00:00, 1942541.40it/s]
+ 87%|########7 | 3866624/4422102 [00:02&lt;00:00, 1900435.26it/s]
+ 93%|#########2| 4096000/4422102 [00:02&lt;00:00, 1956870.28it/s]
+ 98%|#########7| 4325376/4422102 [00:02&lt;00:00, 1992663.92it/s]
+100%|##########| 4422102/4422102 [00:02&lt;00:00, 1608153.09it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
+
+  0%|          | 0/5148 [00:00&lt;?, ?it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 19091314.76it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -497,7 +552,7 @@ prediction using the inputs of our given data sample and compare it against the 
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss">nn.CrossEntropyLoss</a> combines <code class="docutils literal notranslate"><span class="pre">nn.LogSoftmax</span></code> and <code class="docutils literal notranslate"><span class="pre">nn.NLLLoss</span></code>.</p>
 <p>We pass our model’s output logits to <code class="docutils literal notranslate"><span class="pre">nn.CrossEntropyLoss</span></code>, which will normalize the logits and compute the prediction error.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the loss function</span>
-<span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -507,7 +562,7 @@ prediction using the inputs of our given data sample and compare it against the 
 All optimization logic is encapsulated in  the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code> object. Here, we use the SGD optimizer; additionally, there are many <a class="reference external" href="https://pytorch.org/docs/stable/optim.html">different optimizers</a>
 available in PyTorch such as ADAM and RMSProp, that work better for different kinds of models and data.</p>
 <p>We initialize the optimizer by registering the model’s parameters that need to be trained, and passing in the learning rate hyperparameter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">optimizer</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="simple">
@@ -524,33 +579,33 @@ available in PyTorch such as ADAM and RMSProp, that work better for different ki
 <span id="full-impl-label"></span><h2>Full Implementation<a class="headerlink" href="#full-implementation" title="Permalink to this heading">¶</a></h2>
 <p>We define <code class="docutils literal notranslate"><span class="pre">train_loop</span></code> that loops over our optimization code, and <code class="docutils literal notranslate"><span class="pre">test_loop</span></code> that
 evaluates the model’s performance against our test data.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_loop</span><span class="p">(</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_loop</span><span class="p">(</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">optimizer</span></a><span class="p">):</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
         <span class="c1"># Compute prediction and loss</span>
         <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># Backpropagation</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD.zero_grad" title="torch.optim.SGD.zero_grad"><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span></a><span class="p">()</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD.step" title="torch.optim.SGD.step"><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span></a><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">batch</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">loss</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">batch</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">&gt;7f</span><span class="si">}</span><span class="s2">  [</span><span class="si">{</span><span class="n">current</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">size</span><span class="si">:</span><span class="s2">&gt;5d</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">test_loop</span><span class="p">(</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">test_loop</span><span class="p">(</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">):</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
     <span class="n">num_batches</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)</span>
     <span class="n">test_loss</span><span class="p">,</span> <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="k">for</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
             <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-            <span class="n">test_loss</span> <span class="o">+=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            <span class="n">correct</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">test_loss</span> <span class="o">+=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">correct</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">float</span></a><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
     <span class="n">test_loss</span> <span class="o">/=</span> <span class="n">num_batches</span>
     <span class="n">correct</span> <span class="o">/=</span> <span class="n">size</span>
@@ -559,167 +614,166 @@ evaluates the model’s performance against our test data.</p>
 </div>
 <p>We initialize the loss function and optimizer, and pass it to <code class="docutils literal notranslate"><span class="pre">train_loop</span></code> and <code class="docutils literal notranslate"><span class="pre">test_loop</span></code>.
 Feel free to increase the number of epochs to track the model’s improving performance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">optimizer</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
 <span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Epoch </span><span class="si">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">-------------------------------"</span><span class="p">)</span>
-    <span class="n">train_loop</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-    <span class="n">test_loop</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">)</span>
+    <span class="n">train_loop</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_dataloader</span></a><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">optimizer</span></a><span class="p">)</span>
+    <span class="n">test_loop</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_dataloader</span></a><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">loss_fn</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Done!"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1
 -------------------------------
-loss: 2.310106  [    0/60000]
-loss: 2.293930  [ 6400/60000]
-loss: 2.271419  [12800/60000]
-loss: 2.267283  [19200/60000]
-loss: 2.253253  [25600/60000]
-loss: 2.222903  [32000/60000]
-loss: 2.231053  [38400/60000]
-loss: 2.196734  [44800/60000]
-loss: 2.201960  [51200/60000]
-loss: 2.168470  [57600/60000]
+loss: 2.312993  [    0/60000]
+loss: 2.293687  [ 6400/60000]
+loss: 2.277977  [12800/60000]
+loss: 2.270495  [19200/60000]
+loss: 2.248456  [25600/60000]
+loss: 2.221443  [32000/60000]
+loss: 2.229308  [38400/60000]
+loss: 2.194633  [44800/60000]
+loss: 2.200767  [51200/60000]
+loss: 2.154330  [57600/60000]
 Test Error:
- Accuracy: 45.9%, Avg loss: 2.161205
+ Accuracy: 50.6%, Avg loss: 2.154464
 
 Epoch 2
 -------------------------------
-loss: 2.175268  [    0/60000]
-loss: 2.161486  [ 6400/60000]
-loss: 2.104841  [12800/60000]
-loss: 2.124345  [19200/60000]
-loss: 2.075034  [25600/60000]
-loss: 2.014608  [32000/60000]
-loss: 2.047164  [38400/60000]
-loss: 1.967355  [44800/60000]
-loss: 1.978450  [51200/60000]
-loss: 1.907027  [57600/60000]
+loss: 2.171601  [    0/60000]
+loss: 2.150970  [ 6400/60000]
+loss: 2.094481  [12800/60000]
+loss: 2.111578  [19200/60000]
+loss: 2.049848  [25600/60000]
+loss: 1.992188  [32000/60000]
+loss: 2.020368  [38400/60000]
+loss: 1.941146  [44800/60000]
+loss: 1.958418  [51200/60000]
+loss: 1.863075  [57600/60000]
 Test Error:
- Accuracy: 57.6%, Avg loss: 1.905425
+ Accuracy: 57.8%, Avg loss: 1.871427
 
 Epoch 3
 -------------------------------
-loss: 1.938153  [    0/60000]
-loss: 1.903871  [ 6400/60000]
-loss: 1.792583  [12800/60000]
-loss: 1.837875  [19200/60000]
-loss: 1.725341  [25600/60000]
-loss: 1.674281  [32000/60000]
-loss: 1.705151  [38400/60000]
-loss: 1.602076  [44800/60000]
-loss: 1.625857  [51200/60000]
-loss: 1.529291  [57600/60000]
+loss: 1.908225  [    0/60000]
+loss: 1.869885  [ 6400/60000]
+loss: 1.758677  [12800/60000]
+loss: 1.803532  [19200/60000]
+loss: 1.675953  [25600/60000]
+loss: 1.638421  [32000/60000]
+loss: 1.657230  [38400/60000]
+loss: 1.568344  [44800/60000]
+loss: 1.602888  [51200/60000]
+loss: 1.476927  [57600/60000]
 Test Error:
- Accuracy: 61.7%, Avg loss: 1.544952
+ Accuracy: 61.6%, Avg loss: 1.504053
 
 Epoch 4
 -------------------------------
-loss: 1.607714  [    0/60000]
-loss: 1.568198  [ 6400/60000]
-loss: 1.424846  [12800/60000]
-loss: 1.499217  [19200/60000]
-loss: 1.380489  [25600/60000]
-loss: 1.371294  [32000/60000]
-loss: 1.391973  [38400/60000]
-loss: 1.312066  [44800/60000]
-loss: 1.342646  [51200/60000]
-loss: 1.255881  [57600/60000]
+loss: 1.569987  [    0/60000]
+loss: 1.532559  [ 6400/60000]
+loss: 1.389954  [12800/60000]
+loss: 1.466325  [19200/60000]
+loss: 1.333331  [25600/60000]
+loss: 1.339085  [32000/60000]
+loss: 1.347601  [38400/60000]
+loss: 1.282022  [44800/60000]
+loss: 1.321551  [51200/60000]
+loss: 1.210880  [57600/60000]
 Test Error:
- Accuracy: 63.7%, Avg loss: 1.276282
+ Accuracy: 63.7%, Avg loss: 1.238210
 
 Epoch 5
 -------------------------------
-loss: 1.351862  [    0/60000]
-loss: 1.325855  [ 6400/60000]
-loss: 1.166134  [12800/60000]
-loss: 1.272454  [19200/60000]
-loss: 1.150998  [25600/60000]
-loss: 1.169922  [32000/60000]
-loss: 1.193452  [38400/60000]
-loss: 1.125908  [44800/60000]
-loss: 1.162203  [51200/60000]
-loss: 1.090632  [57600/60000]
+loss: 1.308320  [    0/60000]
+loss: 1.291681  [ 6400/60000]
+loss: 1.129225  [12800/60000]
+loss: 1.246998  [19200/60000]
+loss: 1.110605  [25600/60000]
+loss: 1.137421  [32000/60000]
+loss: 1.156826  [38400/60000]
+loss: 1.100396  [44800/60000]
+loss: 1.146706  [51200/60000]
+loss: 1.055139  [57600/60000]
 Test Error:
- Accuracy: 65.1%, Avg loss: 1.105403
+ Accuracy: 65.0%, Avg loss: 1.074301
 
 Epoch 6
 -------------------------------
-loss: 1.178754  [    0/60000]
-loss: 1.169799  [ 6400/60000]
-loss: 0.992524  [12800/60000]
-loss: 1.128013  [19200/60000]
-loss: 1.006861  [25600/60000]
-loss: 1.031354  [32000/60000]
-loss: 1.067976  [38400/60000]
-loss: 1.004159  [44800/60000]
-loss: 1.042892  [51200/60000]
-loss: 0.985034  [57600/60000]
+loss: 1.134693  [    0/60000]
+loss: 1.140564  [ 6400/60000]
+loss: 0.959707  [12800/60000]
+loss: 1.111027  [19200/60000]
+loss: 0.975467  [25600/60000]
+loss: 1.002777  [32000/60000]
+loss: 1.040473  [38400/60000]
+loss: 0.985385  [44800/60000]
+loss: 1.033804  [51200/60000]
+loss: 0.959241  [57600/60000]
 Test Error:
- Accuracy: 66.0%, Avg loss: 0.993595
+ Accuracy: 66.2%, Avg loss: 0.969860
 
 Epoch 7
 -------------------------------
-loss: 1.057202  [    0/60000]
-loss: 1.067940  [ 6400/60000]
-loss: 0.872074  [12800/60000]
-loss: 1.031318  [19200/60000]
-loss: 0.915557  [25600/60000]
-loss: 0.933094  [32000/60000]
-loss: 0.985741  [38400/60000]
-loss: 0.923595  [44800/60000]
-loss: 0.960015  [51200/60000]
-loss: 0.914228  [57600/60000]
+loss: 1.016191  [    0/60000]
+loss: 1.043945  [ 6400/60000]
+loss: 0.844785  [12800/60000]
+loss: 1.021028  [19200/60000]
+loss: 0.890990  [25600/60000]
+loss: 0.909027  [32000/60000]
+loss: 0.965370  [38400/60000]
+loss: 0.910152  [44800/60000]
+loss: 0.956374  [51200/60000]
+loss: 0.895741  [57600/60000]
 Test Error:
- Accuracy: 67.1%, Avg loss: 0.917323
+ Accuracy: 67.2%, Avg loss: 0.899068
 
 Epoch 8
 -------------------------------
-loss: 0.967571  [    0/60000]
-loss: 0.997878  [ 6400/60000]
-loss: 0.785925  [12800/60000]
-loss: 0.963274  [19200/60000]
-loss: 0.854783  [25600/60000]
-loss: 0.861568  [32000/60000]
-loss: 0.928243  [38400/60000]
-loss: 0.869283  [44800/60000]
-loss: 0.900716  [51200/60000]
-loss: 0.863510  [57600/60000]
+loss: 0.930409  [    0/60000]
+loss: 0.977413  [ 6400/60000]
+loss: 0.763055  [12800/60000]
+loss: 0.957254  [19200/60000]
+loss: 0.834991  [25600/60000]
+loss: 0.841163  [32000/60000]
+loss: 0.912785  [38400/60000]
+loss: 0.859049  [44800/60000]
+loss: 0.900803  [51200/60000]
+loss: 0.850574  [57600/60000]
 Test Error:
- Accuracy: 68.3%, Avg loss: 0.862768
+ Accuracy: 68.6%, Avg loss: 0.848056
 
 Epoch 9
 -------------------------------
-loss: 0.898829  [    0/60000]
-loss: 0.946128  [ 6400/60000]
-loss: 0.722005  [12800/60000]
-loss: 0.912936  [19200/60000]
-loss: 0.811844  [25600/60000]
-loss: 0.807865  [32000/60000]
-loss: 0.885069  [38400/60000]
-loss: 0.831488  [44800/60000]
-loss: 0.856917  [51200/60000]
-loss: 0.825014  [57600/60000]
+loss: 0.864683  [    0/60000]
+loss: 0.927716  [ 6400/60000]
+loss: 0.702267  [12800/60000]
+loss: 0.909822  [19200/60000]
+loss: 0.795212  [25600/60000]
+loss: 0.790795  [32000/60000]
+loss: 0.873138  [38400/60000]
+loss: 0.823045  [44800/60000]
+loss: 0.859395  [51200/60000]
+loss: 0.816223  [57600/60000]
 Test Error:
- Accuracy: 69.7%, Avg loss: 0.821683
+ Accuracy: 69.9%, Avg loss: 0.809346
 
 Epoch 10
 -------------------------------
-loss: 0.844013  [    0/60000]
-loss: 0.904728  [ 6400/60000]
-loss: 0.672521  [12800/60000]
-loss: 0.874119  [19200/60000]
-loss: 0.779295  [25600/60000]
-loss: 0.766346  [32000/60000]
-loss: 0.850609  [38400/60000]
-loss: 0.803402  [44800/60000]
-loss: 0.823280  [51200/60000]
-loss: 0.794128  [57600/60000]
+loss: 0.812603  [    0/60000]
+loss: 0.887869  [ 6400/60000]
+loss: 0.655091  [12800/60000]
+loss: 0.873359  [19200/60000]
+loss: 0.764957  [25600/60000]
+loss: 0.752337  [32000/60000]
+loss: 0.840903  [38400/60000]
+loss: 0.796239  [44800/60000]
+loss: 0.827165  [51200/60000]
+loss: 0.788559  [57600/60000]
 Test Error:
- Accuracy: 70.9%, Avg loss: 0.789234
+ Accuracy: 71.5%, Avg loss: 0.778383
 
 Done!
 </pre></div>
@@ -732,16 +786,16 @@ Done!
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html">torch.optim</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">Warmstart Training a Model</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  53.894 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-optimization-tutorial-py">
-<div class="sphx-glr-download docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  50.078 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-optimization-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0662a149d54bd776924742c96eb6282d/optimization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">optimization_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/91d72708edab956d7293bb263e2ab53f/optimization_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">optimization_tutorial.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </article>
@@ -964,16 +1018,38 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
 </ul>
 </div>
-<div class="footer-links-col follow-us-col">
+<div class="footer-links-col">
 <ul>
-<li class="list-title">Stay Connected</li>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
 </ul>
-<div class="footer-social-icons">
-<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
-<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
-<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
 </div>
 </div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
 </div>
 </div>
 </footer>

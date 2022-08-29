@@ -12,10 +12,13 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="fx_profiling_tutorial.html" rel="next" title="(beta) Building a Simple CPU Performance Profiler with FX"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="beta-building-a-convolution-batch-norm-fuser-in-fx">
 <span id="sphx-glr-intermediate-fx-conv-bn-fuser-py"></span><h1>(beta) Building a Convolution/Batch Norm fuser in FX<a class="headerlink" href="#beta-building-a-convolution-batch-norm-fuser-in-fx" title="Permalink to this heading">¶</a></h1>
@@ -383,8 +385,8 @@ transformations of PyTorch, to do the following:</p>
 </ol>
 <p>Note that this optimization only works for models in inference mode (i.e. <cite>mode.eval()</cite>)</p>
 <p>We will be building the fuser that exists here:
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py</a>
-First, let’s get some imports out of the way (we will be using all
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py</a></p>
+<p>First, let’s get some imports out of the way (we will be using all
 of these later in the code).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span> <span class="nn">copy</span>
@@ -397,22 +399,22 @@ of these later in the code).</p>
 and batch norms. Note that this model has some tricky components - some of
 the conv/batch norm patterns are hidden within Sequentials and one of the
 BatchNorms is wrapped in another Module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WrappedBatchNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WrappedBatchNorm</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mod</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mod</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<span class="k">class</span> <span class="nc">M</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">M</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nested</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nested</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">(</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">WrappedBatchNorm</span><span class="p">()</span>
 
@@ -437,7 +439,7 @@ accessing the computational graph. FX resolves this problem by symbolically
 tracing the actual operations called, so that we can track the computations
 through the <cite>forward</cite> call, nested within Sequential modules, or wrapped in
 an user-defined module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">traced_model</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -474,12 +476,12 @@ clarity purposes.</p>
 
 <span class="k">def</span> <span class="nf">fuse_conv_bn_weights</span><span class="p">(</span><span class="n">conv_w</span><span class="p">,</span> <span class="n">conv_b</span><span class="p">,</span> <span class="n">bn_rm</span><span class="p">,</span> <span class="n">bn_rv</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">bn_w</span><span class="p">,</span> <span class="n">bn_b</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">conv_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">conv_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
+        <span class="n">conv_b</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros_like.html#torch.zeros_like" title="torch.zeros_like"><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span></a><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bn_w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bn_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
+        <span class="n">bn_w</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones_like.html#torch.ones_like" title="torch.ones_like"><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bn_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bn_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
-    <span class="n">bn_var_rsqrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rsqrt</span><span class="p">(</span><span class="n">bn_rv</span> <span class="o">+</span> <span class="n">bn_eps</span><span class="p">)</span>
+        <span class="n">bn_b</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros_like.html#torch.zeros_like" title="torch.zeros_like"><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span></a><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
+    <span class="n">bn_var_rsqrt</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rsqrt.html#torch.rsqrt" title="torch.rsqrt"><span class="n">torch</span><span class="o">.</span><span class="n">rsqrt</span></a><span class="p">(</span><span class="n">bn_rv</span> <span class="o">+</span> <span class="n">bn_eps</span><span class="p">)</span>
 
     <span class="n">conv_w</span> <span class="o">=</span> <span class="n">conv_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">bn_w</span> <span class="o">*</span> <span class="n">bn_var_rsqrt</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">conv_w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">conv_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">conv_b</span> <span class="o">-</span> <span class="n">bn_rm</span><span class="p">)</span> <span class="o">*</span> <span class="n">bn_var_rsqrt</span> <span class="o">*</span> <span class="n">bn_w</span> <span class="o">+</span> <span class="n">bn_b</span>
@@ -501,19 +503,19 @@ and apply the desired fusions.</p>
     <span class="o">*</span><span class="n">parent</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="s1">''</span><span class="p">,</span> <span class="n">name</span>
 
-<span class="k">def</span> <span class="nf">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">new_module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/fx.html#torch.fx.Node" title="torch.fx.Node"><span class="n">fx</span><span class="o">.</span><span class="n">Node</span></a><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">new_module</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
     <span class="n">parent_name</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">_parent_name</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">parent_name</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">new_module</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">:</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="c1"># The first step of most FX passes is to symbolically trace our model to</span>
     <span class="c1"># obtain a `GraphModule`. This is a representation of our original model</span>
     <span class="c1"># that is functionally identical to our original model, except that we now</span>
     <span class="c1"># also have a graph representation of our forward pass.</span>
-    <span class="n">fx_model</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span> <span class="o">=</span> <span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">fx_model</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/fx.html#torch.fx.GraphModule" title="torch.fx.GraphModule"><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="n">modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fx_model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">())</span>
 
     <span class="c1"># The primary representation for working with FX are the `Graph` and the</span>
@@ -532,7 +534,7 @@ and apply the desired fusions.</p>
         <span class="c1"># that's being called. Here, we check `Node.target` to see if it's a</span>
         <span class="c1"># batch norm module, and then check `Node.args[0].target` to see if the</span>
         <span class="c1"># input `Node` is a convolution.</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">users</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Output of conv is used by other nodes</span>
                 <span class="k">continue</span>
             <span class="n">conv</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
@@ -567,7 +569,7 @@ results are identical. In addition, we can print out the code for our fused
 model and verify that there are no more batch norms.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">fused_model</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">fused_model</span><span class="p">(</span><span class="n">inp</span><span class="p">),</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -579,10 +581,10 @@ this pass improves inference performance.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="n">rn18</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span>
+<span class="n">rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span>
 <span class="n">rn18</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">rn18</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">benchmark</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
@@ -602,7 +604,7 @@ this pass improves inference performance.</p>
 (Torchscriptable) PyTorch code, we can easily <cite>jit.script</cite> the output to try
 and increase our performance even more. In this way, our FX model
 transformation composes with Torchscript with no issues.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"jit time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">jit_rn18</span><span class="p">))</span>
 
 
@@ -620,15 +622,15 @@ transformation composes with Torchscript with no issues.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-conv-bn-fuser-py">
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-conv-bn-fuser-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/a8a58591f09624693bd748be066141fd/fx_conv_bn_fuser.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fx_conv_bn_fuser.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/a22e5922e71fe39ad848a64968a5570e/fx_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fx_conv_bn_fuser.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </article>
@@ -847,16 +849,38 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
 </ul>
 </div>
-<div class="footer-links-col follow-us-col">
+<div class="footer-links-col">
 <ul>
-<li class="list-title">Stay Connected</li>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
 </ul>
-<div class="footer-social-icons">
-<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
-<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
-<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
 </div>
 </div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
 </div>
 </div>
 </footer>

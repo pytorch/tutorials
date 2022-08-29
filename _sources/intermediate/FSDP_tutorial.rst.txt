@@ -27,7 +27,7 @@ FSDP GPU memory footprint would be smaller than DDP across all workers. This mak
 
    FSDP Workflow
 
-At high level FDSP works as follow:
+At high level FSDP works as follow:
 
 *In constructor*
 

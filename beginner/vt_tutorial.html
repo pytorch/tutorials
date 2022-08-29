@@ -12,10 +12,13 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="audio_io_tutorial.html" rel="next" title="Audio I/O"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-vt-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-vt-tutorial-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="optimizing-vision-transformer-model-for-deployment">
 <span id="sphx-glr-beginner-vt-tutorial-py"></span><h1>Optimizing Vision Transformer Model for Deployment<a class="headerlink" href="#optimizing-vision-transformer-model-for-deployment" title="Permalink to this heading">¶</a></h1>
@@ -387,9 +389,9 @@ then go through the complete steps of scripting, quantizing, optimizing,
 and using the model in iOS and Android apps. We will also compare the
 performance of quantized, optimized and non-quantized, non-optimized
 models, and show the benefits of applying quantization and optimization
-to the model along the steps.
-What is DeiT
-———————</p>
+to the model along the steps.</p>
+<div class="section" id="what-is-deit">
+<h2>What is DeiT<a class="headerlink" href="#what-is-deit" title="Permalink to this heading">¶</a></h2>
 <p>Convolutional Neural Networks (CNNs) have been the main models for image
 classification since deep learning took off in 2012, but CNNs typically
 require hundreds of millions of images for training to achieve the
@@ -406,6 +408,7 @@ a CNN’s output.</p></li>
 vision tasks, with limited access to data and resources. For more
 details on DeiT, see the <a class="reference external" href="https://github.com/facebookresearch/deit">repo</a>
 and <a class="reference external" href="https://arxiv.org/abs/2012.12877">paper</a>.</p>
+</div>
 <div class="section" id="classifying-images-with-deit">
 <h2>Classifying Images with DeiT<a class="headerlink" href="#classifying-images-with-deit" title="Permalink to this heading">¶</a></h2>
 <p>Follow the README at the DeiT repo for detailed information on how to
@@ -430,25 +433,81 @@ required packages:</p>
 <span class="c1"># should be 1.8.0</span>
 
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'facebookresearch/deit:main'</span><span class="p">,</span> <span class="s1">'deit_base_patch16_224'</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-hub sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/hub.html#torch.hub.load" title="torch.hub.load"><span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="s1">'facebookresearch/deit:main'</span><span class="p">,</span> <span class="s1">'deit_base_patch16_224'</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval" title="torch.nn.Module.eval"><span class="n">model</span><span class="o">.</span><span class="n">eval</span></a><span class="p">()</span>
 
-<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">IMAGENET_DEFAULT_MEAN</span><span class="p">,</span> <span class="n">IMAGENET_DEFAULT_STD</span><span class="p">),</span>
+<a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html#torchvision.transforms.Compose" title="torchvision.transforms.Compose"><span class="n">transform</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html#torchvision.transforms.Compose" title="torchvision.transforms.Compose"><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span></a><span class="p">([</span>
+    <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Resize.html#torchvision.transforms.Resize" title="torchvision.transforms.Resize"><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span></a><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.CenterCrop.html#torchvision.transforms.CenterCrop" title="torchvision.transforms.CenterCrop"><span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span></a><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.ToTensor.html#torchvision.transforms.ToTensor" title="torchvision.transforms.ToTensor"><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span></a><span class="p">(),</span>
+    <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Normalize.html#torchvision.transforms.Normalize" title="torchvision.transforms.Normalize"><span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span></a><span class="p">(</span><span class="n">IMAGENET_DEFAULT_MEAN</span><span class="p">,</span> <span class="n">IMAGENET_DEFAULT_STD</span><span class="p">),</span>
 <span class="p">])</span>
 
-<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png"</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
-<span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">)[</span><span class="kc">None</span><span class="p">,]</span>
-<span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="n">clsidx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">clsidx</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png"</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html#torchvision.transforms.Compose" title="torchvision.transforms.Compose"><span class="n">transform</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)[</span><span class="kc">None</span><span class="p">,]</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.argmax.html#torch.argmax" title="torch.argmax"><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.12.1+cu102
+Downloading: "https://github.com/facebookresearch/deit/zipball/main" to /var/lib/jenkins/.cache/torch/hub/main.zip
+Downloading: "https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/deit_base_patch16_224-b5f2ef4d.pth
+
+  0%|          | 0.00/330M [00:00&lt;?, ?B/s]
+  0%|          | 56.0k/330M [00:00&lt;10:49, 533kB/s]
+  0%|          | 264k/330M [00:00&lt;04:12, 1.37MB/s]
+  0%|          | 1.13M/330M [00:00&lt;01:17, 4.43MB/s]
+  1%|1         | 4.59M/330M [00:00&lt;00:21, 15.7MB/s]
+  4%|3         | 12.2M/330M [00:00&lt;00:09, 36.5MB/s]
+  6%|5         | 19.8M/330M [00:00&lt;00:06, 47.6MB/s]
+  8%|8         | 26.8M/330M [00:00&lt;00:06, 52.9MB/s]
+ 10%|#         | 34.5M/330M [00:00&lt;00:05, 58.3MB/s]
+ 13%|#2        | 42.2M/330M [00:01&lt;00:04, 61.9MB/s]
+ 15%|#5        | 49.8M/330M [00:01&lt;00:04, 64.0MB/s]
+ 17%|#7        | 57.1M/330M [00:01&lt;00:04, 64.9MB/s]
+ 20%|#9        | 64.6M/330M [00:01&lt;00:04, 65.3MB/s]
+ 22%|##1       | 72.4M/330M [00:01&lt;00:04, 66.7MB/s]
+ 24%|##3       | 78.8M/330M [00:01&lt;00:04, 65.2MB/s]
+ 26%|##6       | 86.4M/330M [00:01&lt;00:03, 66.4MB/s]
+ 28%|##8       | 94.0M/330M [00:01&lt;00:03, 67.5MB/s]
+ 31%|###       | 101M/330M [00:01&lt;00:03, 67.5MB/s]
+ 33%|###3      | 109M/330M [00:02&lt;00:03, 68.4MB/s]
+ 35%|###5      | 117M/330M [00:02&lt;00:03, 68.2MB/s]
+ 38%|###7      | 124M/330M [00:02&lt;00:03, 67.7MB/s]
+ 40%|###9      | 132M/330M [00:02&lt;00:03, 68.9MB/s]
+ 42%|####2     | 139M/330M [00:02&lt;00:02, 67.5MB/s]
+ 44%|####4     | 147M/330M [00:02&lt;00:02, 68.7MB/s]
+ 46%|####6     | 153M/330M [00:02&lt;00:02, 66.2MB/s]
+ 49%|####8     | 161M/330M [00:02&lt;00:02, 67.3MB/s]
+ 51%|#####1    | 169M/330M [00:02&lt;00:02, 68.7MB/s]
+ 53%|#####3    | 176M/330M [00:03&lt;00:02, 67.6MB/s]
+ 56%|#####5    | 183M/330M [00:03&lt;00:02, 68.2MB/s]
+ 58%|#####7    | 191M/330M [00:03&lt;00:02, 68.7MB/s]
+ 60%|######    | 199M/330M [00:03&lt;00:02, 68.8MB/s]
+ 62%|######2   | 206M/330M [00:03&lt;00:01, 68.9MB/s]
+ 65%|######4   | 214M/330M [00:03&lt;00:01, 68.4MB/s]
+ 67%|######7   | 221M/330M [00:03&lt;00:01, 68.9MB/s]
+ 69%|######9   | 228M/330M [00:03&lt;00:01, 68.5MB/s]
+ 71%|#######1  | 235M/330M [00:04&lt;00:01, 66.6MB/s]
+ 74%|#######3  | 243M/330M [00:04&lt;00:01, 67.2MB/s]
+ 76%|#######5  | 250M/330M [00:04&lt;00:01, 66.8MB/s]
+ 78%|#######7  | 257M/330M [00:04&lt;00:01, 68.5MB/s]
+ 80%|########  | 264M/330M [00:04&lt;00:00, 69.8MB/s]
+ 82%|########2 | 271M/330M [00:04&lt;00:00, 68.7MB/s]
+ 84%|########4 | 278M/330M [00:04&lt;00:00, 67.4MB/s]
+ 86%|########6 | 285M/330M [00:04&lt;00:00, 67.2MB/s]
+ 89%|########8 | 293M/330M [00:04&lt;00:00, 68.1MB/s]
+ 91%|######### | 300M/330M [00:04&lt;00:00, 68.8MB/s]
+ 93%|#########3| 308M/330M [00:05&lt;00:00, 69.0MB/s]
+ 95%|#########5| 315M/330M [00:05&lt;00:00, 67.4MB/s]
+ 97%|#########7| 322M/330M [00:05&lt;00:00, 68.4MB/s]
+100%|#########9| 330M/330M [00:05&lt;00:00, 72.0MB/s]
+100%|##########| 330M/330M [00:05&lt;00:00, 63.4MB/s]
+/opt/conda/lib/python3.7/site-packages/torchvision/transforms/transforms.py:333: UserWarning:
+
+Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+
 269
 </pre></div>
 </div>
@@ -465,10 +524,13 @@ Android apps.</p>
 model. See the <a class="reference external" href="https://pytorch.org/tutorials/recipes/script_optimized.html">Script and Optimize recipe</a> for a
 quick overview. Run the code below to convert the DeiT model used in the
 previous step to the TorchScript format that can run on mobile.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'facebookresearch/deit:main'</span><span class="p">,</span> <span class="s1">'deit_base_patch16_224'</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">scripted_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">scripted_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"fbdeit_scripted.pt"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-hub sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/hub.html#torch.hub.load" title="torch.hub.load"><span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="s1">'facebookresearch/deit:main'</span><span class="p">,</span> <span class="s1">'deit_base_patch16_224'</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval" title="torch.nn.Module.eval"><span class="n">model</span><span class="o">.</span><span class="n">eval</span></a><span class="p">()</span>
+<span class="n">scripted_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.jit.ScriptModule.html#torch.jit.ScriptModule.save" title="torch.jit.ScriptModule.save"><span class="n">scripted_model</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"fbdeit_scripted.pt"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Using cache found in /var/lib/jenkins/.cache/torch/hub/facebookresearch_deit_main
 </pre></div>
 </div>
 <p>The scripted model file fbdeit_scripted.pt of size about 346MB is
@@ -488,9 +550,14 @@ for more details).</p>
 <span class="n">model</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qconfig</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">backend</span>
 
-<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qconfig_spec</span><span class="o">=</span><span class="p">{</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span><span class="p">)</span>
-<span class="n">scripted_quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
-<span class="n">scripted_quantized_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"fbdeit_scripted_quantized.pt"</span><span class="p">)</span>
+<span class="n">quantized_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-quantization sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.quantization.quantize_dynamic.html#torch.quantization.quantize_dynamic" title="torch.quantization.quantize_dynamic"><span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qconfig_spec</span><span class="o">=</span><span class="p">{</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span></a><span class="p">)</span>
+<span class="n">scripted_quantized_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.jit.ScriptModule.html#torch.jit.ScriptModule.save" title="torch.jit.ScriptModule.save"><span class="n">scripted_quantized_model</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"fbdeit_scripted_quantized.pt"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/conda/lib/python3.7/site-packages/torch/ao/quantization/observer.py:178: UserWarning:
+
+Please use quant_min and quant_max to specify the range for observers.                     reduce_range will be deprecated in a future release of PyTorch.
 </pre></div>
 </div>
 <p>This generates the scripted and quantized version of the model
@@ -498,13 +565,12 @@ fbdeit_quantized_scripted.pt, with size about 89MB, a 74% reduction of
 the non-quantized model size of 346MB!</p>
 <p>You can use the <code class="docutils literal notranslate"><span class="pre">scripted_quantized_model</span></code> to generate the same
 inference result:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">scripted_quantized_model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="n">clsidx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">clsidx</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">scripted_quantized_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.argmax.html#torch.argmax" title="torch.argmax"><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 <span class="c1"># The same output 269 should be printed</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>269
 </pre></div>
 </div>
@@ -513,22 +579,25 @@ inference result:</p>
 <h2>Optimizing DeiT<a class="headerlink" href="#optimizing-deit" title="Permalink to this heading">¶</a></h2>
 <p>The final step before using the quantized and scripted
 model on mobile is to optimize it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.mobile_optimizer</span> <span class="kn">import</span> <span class="n">optimize_for_mobile</span>
-<span class="n">optimized_scripted_quantized_model</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">scripted_quantized_model</span><span class="p">)</span>
-<span class="n">optimized_scripted_quantized_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"fbdeit_optimized_scripted_quantized.pt"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.mobile_optimizer</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-mobile_optimizer sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/mobile_optimizer.html#torch.utils.mobile_optimizer.optimize_for_mobile" title="torch.utils.mobile_optimizer.optimize_for_mobile"><span class="n">optimize_for_mobile</span></a>
+<span class="n">optimized_scripted_quantized_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-mobile_optimizer sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/mobile_optimizer.html#torch.utils.mobile_optimizer.optimize_for_mobile" title="torch.utils.mobile_optimizer.optimize_for_mobile"><span class="n">optimize_for_mobile</span></a><span class="p">(</span><span class="n">scripted_quantized_model</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.jit.ScriptModule.html#torch.jit.ScriptModule.save" title="torch.jit.ScriptModule.save"><span class="n">optimized_scripted_quantized_model</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"fbdeit_optimized_scripted_quantized.pt"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The generated fbdeit_optimized_scripted_quantized.pt file has about the
 same size as the quantized, scripted, but non-optimized model. The
 inference result remains the same.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">optimized_scripted_quantized_model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="n">clsidx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">clsidx</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">optimized_scripted_quantized_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.argmax.html#torch.argmax" title="torch.argmax"><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">clsidx</span></a><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 <span class="c1"># Again, the same output 269 should be printed</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>269
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/conda/lib/python3.7/site-packages/torch/nn/modules/module.py:1130: UserWarning:
+
+Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  ../c10/core/TensorImpl.h:1408.)
+
+269
 </pre></div>
 </div>
 </div>
@@ -537,7 +606,7 @@ inference result remains the same.</p>
 <p>To see how much model size reduction and inference speed up the Lite
 Interpreter can result in, let’s create the lite version of the model.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimized_scripted_quantized_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s2">"fbdeit_optimized_scripted_quantized_lite.ptl"</span><span class="p">)</span>
-<span class="n">ptl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"fbdeit_optimized_scripted_quantized_lite.ptl"</span><span class="p">)</span>
+<span class="n">ptl</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.jit.load.html#torch.jit.load" title="torch.jit.load"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="s2">"fbdeit_optimized_scripted_quantized_lite.ptl"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Although the lite model size is comparable to the non-lite version, when
@@ -548,30 +617,29 @@ running the lite version on mobile, the inference speed up is expected.</p>
 <p>To see how the inference speed differs for the four models - the
 original model, the scripted model, the quantized-and-scripted model,
 the optimized-quantized-and-scripted model - run the code below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof1</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof2</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">scripted_model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof3</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">scripted_quantized_model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof4</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">optimized_scripted_quantized_model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof5</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">ptl</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">prof1</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">prof2</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">scripted_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">prof3</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">scripted_quantized_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">prof4</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">optimized_scripted_quantized_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile" title="torch.autograd.profiler.profile"><span class="n">prof5</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <span class="n">ptl</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">img</span></a><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"original model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted &amp; quantized model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted &amp; quantized &amp; optimized model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"lite model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"original model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted &amp; quantized model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"scripted &amp; quantized &amp; optimized model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"lite model: </span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>original model: 312.71ms
-scripted model: 336.61ms
-scripted &amp; quantized model: 219.76ms
-scripted &amp; quantized &amp; optimized model: 226.82ms
-lite model: 207.13ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>original model: 335.33ms
+scripted model: 366.10ms
+scripted &amp; quantized model: 244.47ms
+scripted &amp; quantized &amp; optimized model: 230.68ms
+lite model: 232.35ms
 </pre></div>
 </div>
 <p>The results running on a Google Colab are:</p>
@@ -590,15 +658,15 @@ model.</p>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'Model'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'original model'</span><span class="p">,</span><span class="s1">'scripted model'</span><span class="p">,</span> <span class="s1">'scripted &amp; quantized model'</span><span class="p">,</span> <span class="s1">'scripted &amp; quantized &amp; optimized model'</span><span class="p">,</span> <span class="s1">'lite model'</span><span class="p">]})</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
-    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">),</span> <span class="s2">"0%"</span><span class="p">],</span>
-    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
-     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">-</span><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="p">)</span><span class="o">/</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
-    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
-     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">-</span><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="p">)</span><span class="o">/</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
-    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
-     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">-</span><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="p">)</span><span class="o">/</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
-    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
-     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">-</span><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="p">)</span><span class="o">/</span><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span><span class="o">*</span><span class="mi">100</span><span class="p">)]],</span>
+    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">),</span> <span class="s2">"0%"</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
+     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">-</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof2</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="p">)</span><span class="o">/</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
+     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">-</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof3</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="p">)</span><span class="o">/</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
+     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">-</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof4</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="p">)</span><span class="o">/</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">*</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">ms"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">/</span><span class="mi">1000</span><span class="p">),</span>
+     <span class="s2">"</span><span class="si">{:.2f}</span><span class="s2">%"</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">-</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof5</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="p">)</span><span class="o">/</span><a class="sphx-glr-backref-module-torch-autograd-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.autograd.profiler.profile.self_cpu_time_total.html#torch.autograd.profiler.profile.self_cpu_time_total" title="torch.autograd.profiler.profile.self_cpu_time_total"><span class="n">prof1</span><span class="o">.</span><span class="n">self_cpu_time_total</span></a><span class="o">*</span><span class="mi">100</span><span class="p">)]],</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Inference Time'</span><span class="p">,</span> <span class="s1">'Reduction'</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -613,13 +681,14 @@ model.</p>
 <span class="sd">"""</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Model Inference Time Reduction
-0                          original model       312.71ms        0%
-1                          scripted model       336.61ms    -7.64%
-2              scripted &amp; quantized model       219.76ms    29.72%
-3  scripted &amp; quantized &amp; optimized model       226.82ms    27.46%
-4                              lite model       207.13ms    33.76%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>                                    Model Inference Time Reduction
+0                          original model       335.33ms        0%
+1                          scripted model       366.10ms    -9.18%
+2              scripted &amp; quantized model       244.47ms    27.10%
+3  scripted &amp; quantized &amp; optimized model       230.68ms    31.21%
+4                              lite model       232.35ms    30.71%
+
+'\n        Model                             Inference Time    Reduction\n0\toriginal model                             1236.69ms           0%\n1\tscripted model                             1226.72ms        0.81%\n2\tscripted &amp; quantized model                  593.19ms       52.03%\n3\tscripted &amp; quantized &amp; optimized model      598.01ms       51.64%\n4\tlite model                                  600.72ms       51.43%\n'
 </pre></div>
 </div>
 <div class="section" id="learn-more">
@@ -629,16 +698,16 @@ model.</p>
 <li><p><a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/ViT4MNIST">Vision Transformer with ImageNet and MNIST on iOS</a></p></li>
 <li><p><a class="reference external" href="https://github.com/pytorch/android-demo-app/tree/master/ViT4MNIST">Vision Transformer with ImageNet and MNIST on Android</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  26.772 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-vt-tutorial-py">
-<div class="sphx-glr-download docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  27.819 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-vt-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/82714b1145e891e2eba191bec427b2dd/vt_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">vt_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b4e406d3f9b5f0552ca1010014ca4164/vt_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">vt_tutorial.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </div>
@@ -685,6 +754,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Optimizing Vision Transformer Model for Deployment</a><ul>
+<li><a class="reference internal" href="#what-is-deit">What is DeiT</a></li>
 <li><a class="reference internal" href="#classifying-images-with-deit">Classifying Images with DeiT</a></li>
 <li><a class="reference internal" href="#scripting-deit">Scripting DeiT</a></li>
 <li><a class="reference internal" href="#quantizing-deit">Quantizing DeiT</a></li>
@@ -862,16 +932,38 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
 </ul>
 </div>
-<div class="footer-links-col follow-us-col">
+<div class="footer-links-col">
 <ul>
-<li class="list-title">Stay Connected</li>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
 </ul>
-<div class="footer-social-icons">
-<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
-<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
-<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
 </div>
 </div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
 </div>
 </div>
 </footer>
