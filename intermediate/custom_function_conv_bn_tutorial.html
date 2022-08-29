@@ -12,10 +12,13 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="../advanced/cpp_extension.html" rel="next" title="Custom C++ and CUDA Extensions"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="fusing-convolution-and-batch-norm-using-custom-function">
 <span id="sphx-glr-intermediate-custom-function-conv-bn-tutorial-py"></span><h1>Fusing Convolution and Batch Norm using Custom Function<a class="headerlink" href="#fusing-convolution-and-batch-norm-using-custom-function" title="Permalink to this heading">¶</a></h1>
@@ -403,10 +405,10 @@ and <cite>groups=1</cite> for Conv2D. For BatchNorm2D, we hardcode <cite>eps=1e-
 <cite>affine=False</cite>, and <cite>track_running_statistics=False</cite>. Another small difference
 is that we add epsilon in the denomator outside of the square root in the computation
 of batch norm.</p>
-<p>[0] <a class="reference external" href="https://nenadmarkus.com/p/fusing-batchnorm-and-conv/">https://nenadmarkus.com/p/fusing-batchnorm-and-conv/</a>
-Backward Formula Implementation for Convolution
-——————————————————————-
-Implementing a custom function requires us to implement the backward
+<p>[0] <a class="reference external" href="https://nenadmarkus.com/p/fusing-batchnorm-and-conv/">https://nenadmarkus.com/p/fusing-batchnorm-and-conv/</a></p>
+<div class="section" id="backward-formula-implementation-for-convolution">
+<h2>Backward Formula Implementation for Convolution<a class="headerlink" href="#backward-formula-implementation-for-convolution" title="Permalink to this heading">¶</a></h2>
+<p>Implementing a custom function requires us to implement the backward
 ourselves. In this case, we need both the backward formulas for Conv2D
 and BatchNorm2D. Eventually we’d chain them together in our unified
 backward function, but below we first implement them as their own
@@ -439,6 +441,10 @@ custom functions so we can validate their correctness individually</p>
 <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span><span class="p">(</span><span class="n">Conv2D</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">weight</span><span class="p">))</span>
 </pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
 </div>
 <div class="section" id="backward-formula-implementation-for-batch-norm">
 <h2>Backward Formula Implementation for Batch Norm<a class="headerlink" href="#backward-formula-implementation-for-batch-norm" title="Permalink to this heading">¶</a></h2>
@@ -514,6 +520,9 @@ we implement and test only the training mode case.</p>
 <p>Testing with gradcheck</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span><span class="p">(</span><span class="n">BatchNorm</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,),</span> <span class="n">fast_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
 </div>
@@ -595,6 +604,9 @@ exact code as the examples above.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span><span class="p">(</span><span class="n">FusedConvBN2DFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">weight</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
 </div>
@@ -712,21 +724,37 @@ The code below is after some light modifications to the example here:
 <span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset2</span><span class="p">,</span> <span class="o">**</span><span class="n">test_kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
+
+  0%|          | 0/9912422 [00:00&lt;?, ?it/s]
+  3%|2         | 262144/9912422 [00:00&lt;00:04, 2302410.71it/s]
+ 19%|#8        | 1867776/9912422 [00:00&lt;00:01, 7728393.84it/s]
+ 54%|#####4    | 5373952/9912422 [00:00&lt;00:00, 17913075.14it/s]
+100%|##########| 9912422/9912422 [00:00&lt;00:00, 22171867.96it/s]
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
+
+  0%|          | 0/28881 [00:00&lt;?, ?it/s]
+100%|##########| 28881/28881 [00:00&lt;00:00, 84651078.84it/s]
 Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
+
+  0%|          | 0/1648877 [00:00&lt;?, ?it/s]
+ 14%|#3        | 229376/1648877 [00:00&lt;00:00, 2160315.34it/s]
+ 68%|######7   | 1114112/1648877 [00:00&lt;00:00, 5995887.43it/s]
+100%|##########| 1648877/1648877 [00:00&lt;00:00, 7092676.35it/s]
 Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+
+  0%|          | 0/4542 [00:00&lt;?, ?it/s]
+100%|##########| 4542/4542 [00:00&lt;00:00, 18317816.12it/s]
 Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 </pre></div>
 </div>
@@ -773,7 +801,6 @@ allocate one fewer buffer per fused conv-bn pair.</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"fused: </span><span class="si">{</span><span class="n">mean</span><span class="p">(</span><span class="n">memory_allocated</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">GB, unfused: </span><span class="si">{</span><span class="n">mean</span><span class="p">(</span><span class="n">memory_allocated</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">GB"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352059
 Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.320500
 Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.263867
@@ -794,21 +821,21 @@ Test set: Average loss: 0.4158, Accuracy: 8631/10000 (86%)
 
 Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352356
 Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.323086
-Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011078
-Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.066446
-Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.217038
-Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890099
-Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.640157
-Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.428691
-Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.321457
-Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.866735
-Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.054310
-Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.871499
-Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.866098
-Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.976124
-Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.766043
+Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011077
+Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.066444
+Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.217041
+Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890094
+Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.640156
+Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.428690
+Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.321746
+Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.874731
+Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.054372
+Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.866679
+Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.815005
+Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.916933
+Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.725582
 
-Test set: Average loss: 0.3528, Accuracy: 9107/10000 (91%)
+Test set: Average loss: 0.3880, Accuracy: 8886/10000 (89%)
 
 CuDNN version: 7605
 
@@ -818,16 +845,16 @@ Memory allocated at end of forward pass:
 fused: 0.58GB, unfused: 0.95GB
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.329 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py">
-<div class="sphx-glr-download docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  38.323 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/187aea79daf1552dd05cdde1f4b4e34d/custom_function_conv_bn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">custom_function_conv_bn_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e42651bf8aa9a118fc1867c909799393/custom_function_conv_bn_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">custom_function_conv_bn_tutorial.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </article>
@@ -873,6 +900,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Fusing Convolution and Batch Norm using Custom Function</a><ul>
+<li><a class="reference internal" href="#backward-formula-implementation-for-convolution">Backward Formula Implementation for Convolution</a></li>
 <li><a class="reference internal" href="#backward-formula-implementation-for-batch-norm">Backward Formula Implementation for Batch Norm</a></li>
 <li><a class="reference internal" href="#fusing-convolution-and-batchnorm">Fusing Convolution and BatchNorm</a></li>
 <li><a class="reference internal" href="#testing-out-our-new-layer">Testing out our new Layer</a></li>

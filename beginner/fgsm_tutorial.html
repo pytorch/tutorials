@@ -12,10 +12,13 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="dcgan_faces_tutorial.html" rel="next" title="DCGAN Tutorial"/>
@@ -246,7 +249,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -279,7 +281,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
@@ -370,7 +371,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-fgsm-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-fgsm-tutorial-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="adversarial-example-generation">
 <span id="sphx-glr-beginner-fgsm-tutorial-py"></span><h1>Adversarial Example Generation<a class="headerlink" href="#adversarial-example-generation" title="Permalink to this heading">¶</a></h1>
@@ -388,9 +390,9 @@ perturbations to an image <em>can</em> cause drastically different model
 performance. Given that this is a tutorial, we will explore the topic
 via example on an image classifier. Specifically we will use one of the
 first and most popular attack methods, the Fast Gradient Sign Attack
-(FGSM), to fool an MNIST classifier.
-Threat Model
-————</p>
+(FGSM), to fool an MNIST classifier.</p>
+<div class="section" id="threat-model">
+<h2>Threat Model<a class="headerlink" href="#threat-model" title="Permalink to this heading">¶</a></h2>
 <p>For context, there are many categories of adversarial attacks, each with
 a different goal and assumption of the attacker’s knowledge. However, in
 general the overarching goal is to add the least amount of perturbation
@@ -411,6 +413,7 @@ specific target class.</p>
 <p>In this case, the FGSM attack is a <em>white-box</em> attack with the goal of
 <em>misclassification</em>. With this background information, we can now
 discuss the attack in detail.</p>
+</div>
 <div class="section" id="fast-gradient-sign-attack">
 <h2>Fast Gradient Sign Attack<a class="headerlink" href="#fast-gradient-sign-attack" title="Permalink to this heading">¶</a></h2>
 <p>One of the first and most popular adversarial attacks to date is
@@ -542,24 +545,48 @@ pretrained weights.</p>
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
+
+  0%|          | 0/9912422 [00:00&lt;?, ?it/s]
+  2%|2         | 229376/9912422 [00:00&lt;00:04, 2133653.00it/s]
+ 10%|9         | 983040/9912422 [00:00&lt;00:01, 5171213.42it/s]
+ 56%|#####5    | 5537792/9912422 [00:00&lt;00:00, 23206152.13it/s]
+100%|##########| 9912422/9912422 [00:00&lt;00:00, 27172513.09it/s]
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
+
+  0%|          | 0/28881 [00:00&lt;?, ?it/s]
+100%|##########| 28881/28881 [00:00&lt;00:00, 6553897.84it/s]
 Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
+
+  0%|          | 0/1648877 [00:00&lt;?, ?it/s]
+ 12%|#1        | 196608/1648877 [00:00&lt;00:00, 1932072.64it/s]
+ 66%|######5   | 1081344/1648877 [00:00&lt;00:00, 5927670.68it/s]
+100%|##########| 1648877/1648877 [00:00&lt;00:00, 7074805.68it/s]
 Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+
+  0%|          | 0/4542 [00:00&lt;?, ?it/s]
+100%|##########| 4542/4542 [00:00&lt;00:00, 17525785.44it/s]
 Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 CUDA Available:  True
+
+Net(
+  (conv1): Conv2d(1, 10, kernel_size=(5, 5), stride=(1, 1))
+  (conv2): Conv2d(10, 20, kernel_size=(5, 5), stride=(1, 1))
+  (conv2_drop): Dropout2d(p=0.5, inplace=False)
+  (fc1): Linear(in_features=320, out_features=50, bias=True)
+  (fc2): Linear(in_features=50, out_features=10, bias=True)
+)
 </pre></div>
 </div>
 </div>
@@ -688,7 +715,6 @@ with no attack.</p>
     <span class="n">examples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epsilon: 0      Test Accuracy = 9810 / 10000 = 0.981
 Epsilon: 0.05   Test Accuracy = 9426 / 10000 = 0.9426
 Epsilon: 0.1    Test Accuracy = 8510 / 10000 = 0.851
@@ -724,8 +750,7 @@ hits random accuracy for a 10-class classifier between
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_fgsm_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_fgsm_tutorial_001.png"/>
-</div>
+<img alt="Accuracy vs Epsilon" class="sphx-glr-single-img" src="../_images/sphx_glr_fgsm_tutorial_001.png" srcset="../_images/sphx_glr_fgsm_tutorial_001.png"/></div>
 <div class="section" id="sample-adversarial-examples">
 <h3>Sample Adversarial Examples<a class="headerlink" href="#sample-adversarial-examples" title="Permalink to this heading">¶</a></h3>
 <p>Remember the idea of no free lunch? In this case, as epsilon increases
@@ -758,8 +783,7 @@ still capable of identifying the correct class despite the added noise.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_fgsm_tutorial_002.png" class="sphx-glr-single-img" src="../_images/sphx_glr_fgsm_tutorial_002.png"/>
-</div>
+<img alt="3 -&gt; 3, 3 -&gt; 3, 7 -&gt; 7, 5 -&gt; 5, 0 -&gt; 0, 9 -&gt; 8, 1 -&gt; 8, 9 -&gt; 5, 8 -&gt; 5, 4 -&gt; 9, 9 -&gt; 5, 8 -&gt; 9, 3 -&gt; 7, 3 -&gt; 5, 2 -&gt; 7, 1 -&gt; 8, 6 -&gt; 8, 8 -&gt; 2, 6 -&gt; 8, 3 -&gt; 5, 9 -&gt; 4, 9 -&gt; 3, 3 -&gt; 8, 4 -&gt; 8, 3 -&gt; 5, 2 -&gt; 9, 3 -&gt; 2, 3 -&gt; 8, 4 -&gt; 9, 7 -&gt; 3, 6 -&gt; 4, 5 -&gt; 0, 6 -&gt; 8, 9 -&gt; 4, 9 -&gt; 8" class="sphx-glr-single-img" src="../_images/sphx_glr_fgsm_tutorial_002.png" srcset="../_images/sphx_glr_fgsm_tutorial_002.png"/></div>
 </div>
 <div class="section" id="where-to-go-next">
 <h2>Where to go next?<a class="headerlink" href="#where-to-go-next" title="Permalink to this heading">¶</a></h2>
@@ -782,16 +806,16 @@ adversarial machine learning is to get your hands dirty. Try to
 implement a different attack from the NIPS 2017 competition, and see how
 it differs from FGSM. Then, try to defend the model from your own
 attacks.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  43.221 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-fgsm-tutorial-py">
-<div class="sphx-glr-download docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  51.555 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-fgsm-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/377bf4a7b1761e5f081e057385870d8e/fgsm_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fgsm_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download docutils container">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/56c122e1c18e5e07666673e900acaed5/fgsm_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fgsm_tutorial.ipynb</span></code></a></p>
 </div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 </article>
@@ -837,6 +861,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Adversarial Example Generation</a><ul>
+<li><a class="reference internal" href="#threat-model">Threat Model</a></li>
 <li><a class="reference internal" href="#fast-gradient-sign-attack">Fast Gradient Sign Attack</a></li>
 <li><a class="reference internal" href="#implementation">Implementation</a><ul>
 <li><a class="reference internal" href="#inputs">Inputs</a></li>
