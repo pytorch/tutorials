@@ -78,6 +78,7 @@ sphinx_gallery_conf = {
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': 'tutorial.py',
+    'ignore_pattern': r'(hyperparameter_tuning_tutorial|flask_rest_api_tutorial).py$',
     'backreferences_dir': None
 }
 
