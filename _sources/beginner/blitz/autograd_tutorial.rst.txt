@@ -60,12 +60,13 @@ shape (1,1000).
 .. note::
     This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-51
+.. GENERATED FROM PYTHON SOURCE LINES 46-52
 
 .. code-block:: default
 
-    import torch, torchvision
-    model = torchvision.models.resnet18(pretrained=True)
+    import torch
+    from torchvision.models import resnet18, ResNet18_Weights
+    model = resnet18(weights=ResNet18_Weights.DEFAULT)
     data = torch.rand(1, 3, 64, 64)
     labels = torch.rand(1, 1000)
 
@@ -77,32 +78,23 @@ shape (1,1000).
 
  .. code-block:: none
 
-    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:209: UserWarning:
-
-    The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
-
-    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:223: UserWarning:
-
-    Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
-
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
 
       0%|          | 0.00/44.7M [00:00<?, ?B/s]
-     12%|#2        | 5.58M/44.7M [00:00<00:00, 58.3MB/s]
-     48%|####7     | 21.3M/44.7M [00:00<00:00, 121MB/s] 
-     84%|########4 | 37.7M/44.7M [00:00<00:00, 144MB/s]
-    100%|##########| 44.7M/44.7M [00:00<00:00, 137MB/s]
+     20%|##        | 9.15M/44.7M [00:00<00:00, 95.9MB/s]
+     64%|######3   | 28.5M/44.7M [00:00<00:00, 159MB/s] 
+    100%|##########| 44.7M/44.7M [00:00<00:00, 166MB/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-55
+.. GENERATED FROM PYTHON SOURCE LINES 53-56
 
 Next, we run the input data through the model through each of its layers to make a prediction.
 This is the **forward pass**.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-58
+.. GENERATED FROM PYTHON SOURCE LINES 56-59
 
 .. code-block:: default
 
@@ -116,7 +108,7 @@ This is the **forward pass**.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-64
+.. GENERATED FROM PYTHON SOURCE LINES 60-65
 
 We use the model's prediction and the corresponding label to calculate the error (``loss``).
 The next step is to backpropagate this error through the network.
@@ -124,7 +116,7 @@ Backward propagation is kicked off when we call ``.backward()`` on the error ten
 Autograd then calculates and stores the gradients for each model parameter in the parameter's ``.grad`` attribute.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-68
+.. GENERATED FROM PYTHON SOURCE LINES 65-69
 
 .. code-block:: default
 
@@ -139,13 +131,13 @@ Autograd then calculates and stores the gradients for each model parameter in th
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-72
+.. GENERATED FROM PYTHON SOURCE LINES 70-73
 
 Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and `momentum <https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d>`__ of 0.9.
 We register all the parameters of the model in the optimizer.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-75
+.. GENERATED FROM PYTHON SOURCE LINES 73-76
 
 .. code-block:: default
 
@@ -159,12 +151,12 @@ We register all the parameters of the model in the optimizer.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-78
+.. GENERATED FROM PYTHON SOURCE LINES 77-79
 
 Finally, we call ``.step()`` to initiate gradient descent. The optimizer adjusts each parameter by its gradient stored in ``.grad``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-81
+.. GENERATED FROM PYTHON SOURCE LINES 79-82
 
 .. code-block:: default
 
@@ -178,18 +170,18 @@ Finally, we call ``.step()`` to initiate gradient descent. The optimizer adjusts
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-85
+.. GENERATED FROM PYTHON SOURCE LINES 83-86
 
 At this point, you have everything you need to train your neural network.
 The below sections detail the workings of autograd - feel free to skip them.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-90
+.. GENERATED FROM PYTHON SOURCE LINES 89-91
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-98
+.. GENERATED FROM PYTHON SOURCE LINES 94-99
 
 Differentiation in Autograd
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,7 +189,7 @@ Let's take a look at how ``autograd`` collects gradients. We create two tensors 
 ``requires_grad=True``. This signals to ``autograd`` that every operation on them should be tracked.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-104
+.. GENERATED FROM PYTHON SOURCE LINES 99-105
 
 .. code-block:: default
 
@@ -214,14 +206,14 @@ Let's take a look at how ``autograd`` collects gradients. We create two tensors 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-109
+.. GENERATED FROM PYTHON SOURCE LINES 106-110
 
 We create another tensor ``Q`` from ``a`` and ``b``.
 
 .. math::
    Q = 3a^3 - b^2
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-113
+.. GENERATED FROM PYTHON SOURCE LINES 110-114
 
 .. code-block:: default
 
@@ -236,7 +228,7 @@ We create another tensor ``Q`` from ``a`` and ``b``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-137
+.. GENERATED FROM PYTHON SOURCE LINES 115-138
 
 Let's assume ``a`` and ``b`` to be parameters of an NN, and ``Q``
 to be the error. In NN training, we want gradients of the error
@@ -262,7 +254,7 @@ gradient of Q w.r.t. itself, i.e.
 Equivalently, we can also aggregate Q into a scalar and call backward implicitly, like ``Q.sum().backward()``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-141
+.. GENERATED FROM PYTHON SOURCE LINES 138-142
 
 .. code-block:: default
 
@@ -277,11 +269,11 @@ Equivalently, we can also aggregate Q into a scalar and call backward implicitly
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-143
+.. GENERATED FROM PYTHON SOURCE LINES 143-144
 
 Gradients are now deposited in ``a.grad`` and ``b.grad``
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-149
+.. GENERATED FROM PYTHON SOURCE LINES 144-150
 
 .. code-block:: default
 
@@ -305,7 +297,7 @@ Gradients are now deposited in ``a.grad`` and ``b.grad``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-210
+.. GENERATED FROM PYTHON SOURCE LINES 151-211
 
 Optional Reading - Vector Calculus using ``autograd``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,7 +360,7 @@ This characteristic of vector-Jacobian product is what we use in the above examp
 ``external_grad`` represents :math:`\vec{v}`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-262
+.. GENERATED FROM PYTHON SOURCE LINES 215-263
 
 Computational Graph
 ~~~~~~~~~~~~~~~~~~~
@@ -419,7 +411,7 @@ The output tensor of an operation will require gradients even if only a
 single input tensor has ``requires_grad=True``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-273
+.. GENERATED FROM PYTHON SOURCE LINES 263-274
 
 .. code-block:: default
 
@@ -448,7 +440,7 @@ single input tensor has ``requires_grad=True``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 274-283
+.. GENERATED FROM PYTHON SOURCE LINES 275-284
 
 In a NN, parameters that don't compute gradients are usually called **frozen parameters**.
 It is useful to "freeze" part of your model if you know in advance that you won't need the gradients of those parameters
@@ -460,14 +452,14 @@ Another common usecase where exclusion from the DAG is important is for
 In finetuning, we freeze most of the model and typically only modify the classifier layers to make predictions on new labels.
 Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-292
+.. GENERATED FROM PYTHON SOURCE LINES 284-293
 
 .. code-block:: default
 
 
     from torch import nn, optim
 
-    model = torchvision.models.resnet18(pretrained=True)
+    model = resnet18(weights=ResNet18_Weights.DEFAULT)
 
     # Freeze all the parameters in the network
     for param in model.parameters():
@@ -477,30 +469,17 @@ Let's walk through a small example to demonstrate this. As before, we load a pre
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:209: UserWarning:
-
-    The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
-
-    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:223: UserWarning:
-
-    Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
 
 
 
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 293-297
+.. GENERATED FROM PYTHON SOURCE LINES 294-298
 
 Let's say we want to finetune the model on a new dataset with 10 labels.
 In resnet, the classifier is the last linear layer ``model.fc``.
 We can simply replace it with a new linear layer (unfrozen by default)
 that acts as our classifier.
 
-.. GENERATED FROM PYTHON SOURCE LINES 297-300
+.. GENERATED FROM PYTHON SOURCE LINES 298-301
 
 .. code-block:: default
 
@@ -514,12 +493,12 @@ that acts as our classifier.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 301-303
+.. GENERATED FROM PYTHON SOURCE LINES 302-304
 
 Now all parameters in the model, except the parameters of ``model.fc``, are frozen.
 The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 303-307
+.. GENERATED FROM PYTHON SOURCE LINES 304-308
 
 .. code-block:: default
 
@@ -534,7 +513,7 @@ The only parameters that compute gradients are the weights and bias of ``model.f
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-315
+.. GENERATED FROM PYTHON SOURCE LINES 309-316
 
 Notice although we register all the parameters in the optimizer,
 the only parameters that are computing gradients (and hence updated in gradient descent)
@@ -544,12 +523,12 @@ The same exclusionary functionality is available as a context manager in
 `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html>`__
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-319
+.. GENERATED FROM PYTHON SOURCE LINES 318-320
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-326
+.. GENERATED FROM PYTHON SOURCE LINES 322-327
 
 Further readings:
 ~~~~~~~~~~~~~~~~~~~
@@ -560,7 +539,7 @@ Further readings:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.116 seconds)
+   **Total running time of the script:** ( 0 minutes  0.893 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_autograd_tutorial.py:
