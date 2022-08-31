@@ -2,9 +2,9 @@
 Language Translation with nn.Transformer and torchtext
 ======================================================
 
-This tutorial shows, how to train a translation model from scratch using
-Transformer. We will be using `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>`__ 
-dataset to train a German to English translation model.
+This tutorial shows:
+    - How to train a translation model from scratch using Transformer. 
+    - Use tochtext library to access  `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>`__ dataset to train a German to English translation model.
 """
 
 
@@ -19,13 +19,19 @@ dataset to train a German to English translation model.
 # `Multi30k dataset from torchtext library <https://pytorch.org/text/stable/datasets.html#multi30k>`__
 # that yields a pair of source-target raw sentences. 
 #
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
 #
 
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
-from torchtext.datasets import Multi30k
+from torchtext.datasets import multi30k, Multi30k
 from typing import Iterable, List
 
+
+# We need to modify the URLs for the dataset since the links to the original dataset are broken
+# Refer to https://github.com/pytorch/text/issues/1756#issuecomment-1163664163 for more info
+multi30k.URL["train"] = "https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/training.tar.gz"
+multi30k.URL["valid"] = "https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/validation.tar.gz"
 
 SRC_LANGUAGE = 'de'
 TGT_LANGUAGE = 'en'
@@ -36,6 +42,7 @@ vocab_transform = {}
 
 
 # Create source and target language tokenizer. Make sure to install the dependencies.
+# pip install -U torchdata
 # pip install -U spacy
 # python -m spacy download en_core_web_sm
 # python -m spacy download de_core_news_sm

@@ -37,8 +37,8 @@ from torchvision import datasets, transforms
 # `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we
 # continue to use the CPU.
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(f'Using {device} device')
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
 
 ##############################################
 # Define the Class
@@ -181,7 +181,7 @@ pred_probab = softmax(logits)
 #
 
 
-print("Model structure: ", model, "\n\n")
+print(f"Model structure: {model}\n\n")
 
 for name, param in model.named_parameters():
     print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")

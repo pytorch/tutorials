@@ -38,6 +38,9 @@ from custom_directives import IncludeDirective, GalleryItemDirective, CustomGall
 import distutils.file_util
 import re
 
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
+
 
 try:
     import torchvision
@@ -45,6 +48,12 @@ except ImportError:
     import warnings
     warnings.warn('unable to load "torchvision" package')
 import pytorch_sphinx_theme
+
+rst_epilog ="""
+.. |edit| image:: /_static/pencil-16.png
+           :width: 16px
+           :height: 16px
+"""
 
 # -- General configuration ------------------------------------------------
 
@@ -69,7 +78,8 @@ sphinx_gallery_conf = {
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': 'tutorial.py',
-    'backreferences_dir': False
+    'ignore_pattern': r'(hyperparameter_tuning_tutorial|flask_rest_api_tutorial).py$',
+    'backreferences_dir': None
 }
 
 if os.getenv('GALLERY_PATTERN'):
@@ -112,7 +122,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'PyTorch Tutorials'
-copyright = '2021, PyTorch'
+copyright = '2022, PyTorch'
 author = 'PyTorch contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -129,7 +139,7 @@ release = torch.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

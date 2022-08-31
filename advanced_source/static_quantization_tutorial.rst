@@ -13,7 +13,7 @@ to easily apply some advanced quantization techniques shown
 `here <https://arxiv.org/abs/1806.08342>`_ so that your quantized models take much less 
 of an accuracy hit than they would otherwise. 
 Warning: we use a lot of boilerplate code from other PyTorch repos to, for example, 
-define the ``MobileNetV2`` model archtecture, define data loaders, and so on. We of course  
+define the ``MobileNetV2`` model architecture, define data loaders, and so on. We of course  
 encourage you to read it; but if you want to get to the quantization features, feel free  
 to skip to the "4. Post-training static quantization" section.  
 We'll start by doing the necessary imports: 

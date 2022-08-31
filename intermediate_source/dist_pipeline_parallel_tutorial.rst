@@ -2,6 +2,9 @@ Distributed Pipeline Parallelism Using RPC
 ==========================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/dist_pipeline_parallel_tutorial.rst>`__.
+
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__

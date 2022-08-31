@@ -850,7 +850,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # We now have a general data pipeline and training loop which you can use for
 # training many types of models using Pytorch. To see how simple training a model
-# can now be, take a look at the `mnist_sample` sample notebook.
+# can now be, take a look at the `mnist_sample notebook <https://github.com/fastai/fastai_dev/blob/master/dev_nb/mnist_sample.ipynb>`__.
 #
 # Of course, there are many things you'll want to add, such as data augmentation,
 # hyperparameter tuning, monitoring training, transfer learning, and so forth.
