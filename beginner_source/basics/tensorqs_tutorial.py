@@ -149,7 +149,7 @@ y3 = torch.rand_like(y1)
 torch.matmul(tensor, tensor.T, out=y3)
 
 
-# This computes the element-wise product. z1, z2, z3 will have the same value
+# This computes the element-wise product. z1 and z2 will have the same value
 z1 = tensor * tensor
 z2 = tensor.mul(tensor)
 
