@@ -74,7 +74,7 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 
-env = gym.make('CartPole-v0').unwrapped
+env = gym.make('CartPole-v0', render_mode='single_rgb_array').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
@@ -461,7 +461,7 @@ for i_episode in range(num_episodes):
     for t in count():
         # Select and perform an action
         action = select_action(state)
-        _, reward, done, _ = env.step(action.item())
+        _, reward, done, _, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
 
         # Observe new state
