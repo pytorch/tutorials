@@ -6,14 +6,14 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v0 task from the `OpenAI Gym <https://www.gymlibrary.ml/>`__.
+on the CartPole-v0 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
 
 **Task**
 
 The agent has to decide between two actions - moving the cart left or
 right - so that the pole attached to it stays upright. You can find an
 official leaderboard with various algorithms and visualizations at the
-`Gym website <https://www.gymlibrary.ml/environments/classic_control/cart_pole>`__.
+`Gym website <https://www.gymlibrary.dev/environments/classic_control/cart_pole>`__.
 
 .. figure:: /_static/img/cartpole.gif
    :alt: cartpole
