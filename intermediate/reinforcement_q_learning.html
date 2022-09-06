@@ -378,12 +378,12 @@ to download the full example code</p>
 <span id="sphx-glr-intermediate-reinforcement-q-learning-py"></span><h1>Reinforcement Learning (DQN) Tutorial<a class="headerlink" href="#reinforcement-learning-dqn-tutorial" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/apaszke">Adam Paszke</a></p>
 <p>This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v0 task from the <a class="reference external" href="https://www.gymlibrary.ml/">OpenAI Gym</a>.</p>
+on the CartPole-v0 task from the <a class="reference external" href="https://www.gymlibrary.dev/">OpenAI Gym</a>.</p>
 <p><strong>Task</strong></p>
 <p>The agent has to decide between two actions - moving the cart left or
 right - so that the pole attached to it stays upright. You can find an
 official leaderboard with various algorithms and visualizations at the
-<a class="reference external" href="https://www.gymlibrary.ml/environments/classic_control/cart_pole">Gym website</a>.</p>
+<a class="reference external" href="https://www.gymlibrary.dev/environments/classic_control/cart_pole">Gym website</a>.</p>
 <div class="figure align-default" id="id1">
 <img alt="cartpole" src="../_images/cartpole.gif"/>
 <p class="caption"><span class="caption-text">cartpole</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
@@ -435,7 +435,7 @@ package</a>).</p></li>
 <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">T</span>
 
 
-<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">'CartPole-v0'</span><span class="p">)</span><span class="o">.</span><span class="n">unwrapped</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">'CartPole-v0'</span><span class="p">,</span> <span class="n">new_step_api</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">'single_rgb_array'</span><span class="p">)</span><span class="o">.</span><span class="n">unwrapped</span>
 
 <span class="c1"># set up matplotlib</span>
 <span class="n">is_ipython</span> <span class="o">=</span> <span class="s1">'inline'</span> <span class="ow">in</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">get_backend</span><span class="p">()</span>
@@ -598,7 +598,7 @@ display an example patch that it extracted.</p>
 <span class="k">def</span> <span class="nf">get_screen</span><span class="p">():</span>
     <span class="c1"># Returned screen requested by gym is 400x600x3, but is sometimes larger</span>
     <span class="c1"># such as 800x1200x3. Transpose it into torch order (CHW).</span>
-    <span class="n">screen</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">'rgb_array'</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">screen</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
     <span class="c1"># Cart is in the lower half, so strip off the top and bottom of the screen</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">screen_height</span><span class="p">,</span> <span class="n">screen_width</span> <span class="o">=</span> <span class="n">screen</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">screen</span> <span class="o">=</span> <span class="n">screen</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">screen_height</span><span class="o">*</span><span class="mf">0.4</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">screen_height</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">)]</span>
@@ -795,7 +795,7 @@ duration improvements.</p>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">count</span><span class="p">():</span>
         <span class="c1"># Select and perform an action</span>
         <span class="n">action</span> <span class="o">=</span> <span class="n">select_action</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">reward</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">reward</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
         <span class="c1"># Observe new state</span>
