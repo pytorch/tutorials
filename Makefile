@@ -90,7 +90,7 @@ download:
 	cp $(DATADIR)/word_language_model_quantize.pth advanced_source/data/word_language_model_quantize.pth
 
 	# Download data for advanced_source/dynamic_quantization_tutorial.py
-	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext-2-v1.zip -P $(DATADIR)
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext-2.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/wikitext-2.zip -d advanced_source/data/
 
 	# Download model for advanced_source/static_quantization_tutorial.py
