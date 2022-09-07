@@ -4,12 +4,16 @@ import re
 
 from bs4 import BeautifulSoup
 
+# files that are ok to have 0 min 0 sec time, probably because they don't have any python code
+OK_TO_NOT_RUN = [
+    "beginner/basics/intro.html",
+]
+
 KNOWN_BAD = [
     "beginner/translation_transformer.html",
     "beginner/torchtext_translation.html",
     "beginner/profiler.html",
     "beginner/saving_loading_models.html",
-    "beginner/basics/intro.html",
     "beginner/introyt/captumyt.html",
     "beginner/introyt/trainingyt.html",
     "beginner/examples_nn/polynomial_module.html",
@@ -61,6 +65,7 @@ KNOWN_BAD = [
     "recipes/recipes/defining_a_neural_network.html",
     "recipes/recipes/timer_quick_start.html",
     "recipes/recipes/amp_recipe.html",
+    "recipes/recipes/Captum_Recipe.html",
 ]
 
 
@@ -83,7 +88,7 @@ def main():
             if (
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
-                and not any(html_file_path.endswith(file) for file in KNOWN_BAD)
+                and not any(html_file_path.endswith(file) for file in KNOWN_BAD + OK_TO_NOT_RUN)
             ):
                 did_not_run.append(html_file_path)
 
