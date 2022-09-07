@@ -328,8 +328,8 @@ target_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
-optimizer = optim.RMSprop(policy_net.parameters())
-memory = ReplayMemory(10000)
+optimizer = optim.AdamW(policy_net.parameters(), lr=0.0003, weight_decay=0.01, amsgrad=True)
+memory = ReplayMemory(100000)
 
 
 steps_done = 0
