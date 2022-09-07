@@ -34,6 +34,7 @@ KNOWN_BAD = [
     "intermediate/parametrizations.html",
     "intermediate/reinforcement_q_learning.html",
     "intermediate/text_to_speech_with_torchaudio.html",
+    "intermediate/mnist_train_nas.html",
     "intermediate/fx_conv_bn_fuser.html",
     "advanced/super_resolution_with_onnxruntime.html",
     "advanced/super_resolution_with_caffe2.html",
@@ -41,6 +42,7 @@ KNOWN_BAD = [
     "prototype/fx_graph_mode_ptq_dynamic.html",
     "prototype/vmap_recipe.html",
     "prototype/torchscript_freezing.html",
+    "prototype/nestedtensor.html",
     "recipes/recipes/saving_and_loading_models_for_inference.html",
     "recipes/recipes/saving_multiple_models_in_one_file.html",
     "recipes/recipes/loading_data_recipe.html",
@@ -87,7 +89,7 @@ def main():
 
     if len(did_not_run) != 0:
         raise RuntimeError(
-            f"Files {' '.join(did_not_run)} are not known bad but ran in 0.000 sec, meaning that any python code in this tutorial probably didn't run"
+            f"File(s) {' '.join(did_not_run)} are not known bad but ran in 0.000 sec, meaning that any python code in this tutorial probably didn't run"
         )
 
 
