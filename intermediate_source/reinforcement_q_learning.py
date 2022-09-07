@@ -461,8 +461,13 @@ for i_episode in range(num_episodes):
     for t in count():
         # Select and perform an action
         action = select_action(state)
-        _, reward, done, _, _ = env.step(action.item())
-        reward = torch.tensor([reward], device=device)
+        _, _, done, _, _ = env.step(action.item())
+        # Reward shaping
+        if i_episode < 100:
+            reward = t * np.clip((i_episode / 500), None, 1)
+        else:
+            reward = (t - 50 * (i_episode / 500)) * np.clip((i_episode / 500), None, 1)
+        reward = torch.tensor([reward], device=device).type(torch.float32)
 
         # Observe new state
         last_screen = current_screen
