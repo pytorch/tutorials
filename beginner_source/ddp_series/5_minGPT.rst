@@ -12,38 +12,46 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
    <embed video>
 
-Multinode training involves deploying a training job across several
-machines. There are two ways to do this: \* running a torchrun command
-on each machine with identical rendezvous arguments \* deploying it on a
-compute cluster using a workload manager (like SLURM)
+Code: https://github.com/suraj813/minGPT-ddp
 
-In both cases, it is essential that the machines can communicate with
-each other over TCP.
+In this video we walk through the process of training a GPT model in multinode DDP.
+We first clone the `minGPT repo <https://github.com/karpathy/minGPT>` and refactor the Trainer
+to resemble the structure we have used in this series. Watch the video for details on these changes.
 
-In a single-node setup, local ranks are sufficient to identify each
-process uniquely. When running a multinode setup, use the global rank
-(given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely
-identify processes.
+We use `hydra <https://hydra.cc/>` to centrally manage all the configurations for our training run. 
 
-Torchrun supports *heteregenous scaling* i.e. each of your multinode
-machines can have different number of workers participating in the
-training job. In the video, I deployed the code on 2 machines with 4 and
-2 GPUs each.
+Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster.
 
-Note
-~~~~
 
-``RANK`` is NOT stable. On restarting a training job, the local workers
-on a node can be assigned a different range of ranks than before. Do not
-use ``RANK`` and ``LOCAL_RANK`` in any functionality that assumes their
-stability.
+Files used for training
+----------------------------
+- `trainer.py <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/trainer.py>` includes the Trainer class that runs the distributed training iterations on the model
+with the provided dataset.
+- `model.py <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/model.py>` defines the model architecture.
+- `char_dataset.py <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/char_dataset.py>` contains the `Dataset`class for a character-level dataset.
+- `gpt2_train_cfg.yaml <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/gpt2_train_cfg.yaml>` contains the configurations for data, model, optimizer and training run.
+- `main.py <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/main.py>` is the entry point to the trainig job. 
+It sets up the DDP process group, reads all the configurations and runs the training job.
 
-Further Reading
----------------
 
--  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
--  `Rendezvous
-   arguments <https://pytorch.org/docs/stable/elastic/run.html#note-on-rendezvous-backend>`__
--  `Setting up a cluster on
-   AWS <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/slurm/setup_pcluster_slurm.md>`__
--  `Slurm docs <https://slurm.schedmd.com/>`__
+Saving and Loading from the cloud
+---------------------------------
+In the video, we save training snapshots directly to the cloud. This gives us the flexibility to continue training
+from any node that has access to the cloud bucket.
+
+
+Using Mixed Precision
+---------------------
+To speed things up, you might be able to use `Mixed Precision <https://pytorch.org/docs/stable/amp.html>` to train your models. 
+In Mixed Precision, some parts of the training process are carried out in FP16 half-precision, while other steps 
+that are more sensitive to precision drops are maintained in FP32 precision. The `use_amp <https://github.com/suraj813/minGPT-ddp/tree/use_amp>`
+branch contains the code for training with Mixed Precision.
+
+
+When is DDP not enough?
+-----------------------
+A typical training run's memory footprint consists of model weights, activations, gradients, the input batch, and the optimizer state.
+Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint. 
+When models grow larger, more aggressive techniques like `FSDP <https://pytorch.org/docs/stable/fsdp.html>` are required; here the model is not replicated but "sharded" across all the GPUs,
+and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`
+to learn how we trained a 1 Trillion parameter model with FSDP.

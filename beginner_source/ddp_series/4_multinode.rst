@@ -12,9 +12,13 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
    <embed video>
 
+Code: https://github.com/suraj813/distributed-pytorch/blob/main/multinode_torchrun.py
+
 Multinode training involves deploying a training job across several
-machines. There are two ways to do this: \* running a torchrun command
-on each machine with identical rendezvous arguments \* deploying it on a
+machines. There are two ways to do this:  
+- running a torchrun command
+on each machine with identical rendezvous arguments, or 
+- deploying it on a
 compute cluster using a workload manager (like SLURM)
 
 In both cases, it is essential that the machines can communicate with
@@ -25,7 +29,7 @@ process uniquely. When running a multinode setup, use the global rank
 (given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely
 identify processes.
 
-Torchrun supports *heteregenous scaling* i.e. each of your multinode
+Torchrun supports *heteregenous scaling* i.e. each of your multinode
 machines can have different number of workers participating in the
 training job. In the video, I deployed the code on 2 machines with 4 and
 2 GPUs each.

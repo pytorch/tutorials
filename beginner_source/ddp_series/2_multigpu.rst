@@ -15,11 +15,19 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 Code:
 https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
 
-Diff for `single_gpu.py <>`__ v/s `multigpu.py <>`__
+
+.. note:: 
+If your model contains any ``BatchNorm`` layer, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm`` 
+layers across replicas.
+
+Use the helper function 
+`torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) <https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm>`__ to convert all ``BatchNorm`` layers in the model to ``SyncBatchNorm``.
+
+
+Diff for `single_gpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/single_gpu.py>`__ v/s `multigpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py>`__
 ----------------------------------------------------
 
-These are the changes you typically make to run a training script with
-DDP.
+These are the changes you typically make to a single-GPU training script to enable DDP.
 
 Imports
 ~~~~~~~
@@ -85,7 +93,7 @@ Distributing input data
    +   sampler=DistributedSampler(train_dataset),
    )
 
--  ```DistributedSampler`` <https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler>`__
+-  `DistributedSampler <https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler>`__
    chunks the input data across all distributed processes.
 -  Each process will receive an input batch of 32 samples; the effective
    batch size is ``32 * nprocs``, or 128 when using 4 GPUs.
