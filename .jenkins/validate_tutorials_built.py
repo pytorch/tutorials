@@ -1,8 +1,9 @@
-import sys
-import glob
-import re
+from pathlib import Path
+from typing import List
 
 from bs4 import BeautifulSoup
+
+REPO_ROOT = Path(__file__).parent.parent
 
 # files that are ok to have 0 min 0 sec time, probably because they don't have any python code
 OK_TO_NOT_RUN = [
@@ -69,14 +70,19 @@ KNOWN_BAD = [
 ]
 
 
-def main():
-    build_dir = sys.argv[1]
+def tutorial_source_dirs() -> List[Path]:
+    return [
+        p.relative_to(REPO_ROOT).with_stem(p.stem[:-7])
+        for p in REPO_ROOT.glob("*_source")
+    ]
 
+
+def main() -> None:
+    docs_dir = REPO_ROOT / "docs"
     html_file_paths = []
-
-    for difficulty in ["beginner", "intermediate", "advanced", "prototype", "recipes"]:
-        glob_path = f"{build_dir}/{difficulty}/**/*.html"
-        html_file_paths += glob.glob(glob_path, recursive=True)
+    for tutorial_source_dir in tutorial_source_dirs():
+        glob_path = f"{tutorial_source_dir}/**/*.html"
+        html_file_paths += docs_dir.glob(glob_path)
 
     did_not_run = []
     for html_file_path in html_file_paths:
@@ -89,10 +95,10 @@ def main():
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
                 and not any(
-                    html_file_path.endswith(file) for file in KNOWN_BAD + OK_TO_NOT_RUN
+                    html_file_path.match(file) for file in KNOWN_BAD + OK_TO_NOT_RUN
                 )
             ):
-                did_not_run.append(html_file_path)
+                did_not_run.append(html_file_path.as_posix())
 
     if len(did_not_run) != 0:
         raise RuntimeError(
