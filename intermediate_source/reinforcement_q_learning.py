@@ -326,7 +326,6 @@ n_actions = env.action_space.n
 policy_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
-target_net.eval()
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=0.0003, weight_decay=0.01, amsgrad=True)
 memory = ReplayMemory(100000)
@@ -422,7 +421,8 @@ def optimize_model():
     # This is merged based on the mask, such that we'll have either the expected
     # state value or 0 in case the state was final.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
-    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
+    with torch.no_grad():
+        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
@@ -460,7 +460,10 @@ for i_episode in range(num_episodes):
     state = current_screen - last_screen
     for t in count():
         # Select and perform an action
+        policy_net.eval()
         action = select_action(state)
+        policy_net.train()
+
         _, _, done, _, _ = env.step(action.item())
         # Reward shaping
         if i_episode < 100:
