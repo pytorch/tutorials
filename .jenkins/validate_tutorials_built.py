@@ -7,34 +7,26 @@ REPO_ROOT = Path(__file__).parent.parent
 
 # files that are ok to have 0 min 0 sec time, probably because they don't have any python code
 OK_TO_NOT_RUN = [
-    "beginner/basics/intro.html",
+    "beginner/basics/intro.html",  # no code
 ]
 
+# when the tutorial is fixed, remove it from this list
 KNOWN_BAD = [
     "beginner/translation_transformer.html",
-    "beginner/torchtext_translation.html",
     "beginner/profiler.html",
     "beginner/saving_loading_models.html",
     "beginner/introyt/captumyt.html",
     "beginner/introyt/trainingyt.html",
     "beginner/examples_nn/polynomial_module.html",
-    "beginner/examples_nn/two_layer_net_optim.html",
     "beginner/examples_nn/dynamic_net.html",
-    "beginner/examples_nn/two_layer_net_module.html",
     "beginner/examples_nn/polynomial_optim.html",
     "beginner/examples_nn/polynomial_nn.html",
-    "beginner/examples_nn/two_layer_net_nn.html",
-    "beginner/examples_tensor/two_layer_net_tensor.html",
-    "beginner/examples_tensor/two_layer_net_numpy.html",
     "beginner/examples_tensor/polynomial_numpy.html",
     "beginner/examples_tensor/polynomial_tensor.html",
     "beginner/former_torchies/autograd_tutorial_old.html",
     "beginner/former_torchies/tensor_tutorial_old.html",
-    "beginner/examples_autograd/two_layer_net_autograd.html",
     "beginner/examples_autograd/polynomial_autograd.html",
-    "beginner/examples_autograd/tf_two_layer_net.html",
     "beginner/examples_autograd/polynomial_custom_function.html",
-    "beginner/examples_autograd/two_layer_net_custom_function.html",
     "intermediate/forward_ad_usage.html",
     "intermediate/parametrizations.html",
     "intermediate/reinforcement_q_learning.html",
@@ -42,7 +34,6 @@ KNOWN_BAD = [
     "intermediate/mnist_train_nas.html",
     "intermediate/fx_conv_bn_fuser.html",
     "advanced/super_resolution_with_onnxruntime.html",
-    "advanced/super_resolution_with_caffe2.html",
     "advanced/ddp_pipeline.html",
     "prototype/fx_graph_mode_ptq_dynamic.html",
     "prototype/vmap_recipe.html",
@@ -60,13 +51,10 @@ KNOWN_BAD = [
     "recipes/recipes/saving_and_loading_a_general_checkpoint.html",
     "recipes/recipes/benchmark.html",
     "recipes/recipes/tuning_guide.html",
-    "recipes/recipes/custom_dataset_transforms_loader.html",
     "recipes/recipes/zeroing_out_gradients.html",
-    "recipes/recipes/intel_extension_for_pytorch.html",
     "recipes/recipes/defining_a_neural_network.html",
     "recipes/recipes/timer_quick_start.html",
     "recipes/recipes/amp_recipe.html",
-    "recipes/recipes/Captum_Recipe.html",
 ]
 
 
