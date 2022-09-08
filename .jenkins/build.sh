@@ -139,6 +139,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py docs
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs

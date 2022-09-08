@@ -88,13 +88,18 @@ def main():
             if (
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
-                and not any(html_file_path.endswith(file) for file in KNOWN_BAD + OK_TO_NOT_RUN)
+                and not any(
+                    html_file_path.endswith(file) for file in KNOWN_BAD + OK_TO_NOT_RUN
+                )
             ):
                 did_not_run.append(html_file_path)
 
     if len(did_not_run) != 0:
         raise RuntimeError(
-            f"File(s) {' '.join(did_not_run)} are not known bad but ran in 0.000 sec, meaning that any python code in this tutorial probably didn't run"
+            "The following file(s) are not known bad but ran in 0.000 sec, meaning that any "
+            + "python code in this tutorial probably didn't run:\n{}".format(
+                "\n".join(did_not_run)
+            )
         )
 
 
