@@ -311,7 +311,7 @@ BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 0.9
 EPS_END = 0.05
-EPS_DECAY = 200
+EPS_DECAY = 2000
 TARGET_UPDATE = 10
 
 # Get screen size so that we can initialize layers correctly based on shape
@@ -451,7 +451,7 @@ def optimize_model():
 # duration improvements.
 #
 
-num_episodes = 50
+num_episodes = 1000
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
