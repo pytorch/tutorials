@@ -72,7 +72,7 @@ KNOWN_BAD = [
 
 def tutorial_source_dirs() -> List[Path]:
     return [
-        p.relative_to(REPO_ROOT).with_stem(p.stem[:-7])
+        p.relative_to(REPO_ROOT).with_name(p.stem[:-7])
         for p in REPO_ROOT.glob("*_source")
     ]
 
