@@ -55,6 +55,7 @@ KNOWN_BAD = [
     "recipes/recipes/defining_a_neural_network.html",
     "recipes/recipes/timer_quick_start.html",
     "recipes/recipes/amp_recipe.html",
+    "recipes/recipes/Captum_Recipe.html",
 ]
 
 
