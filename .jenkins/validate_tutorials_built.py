@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).parent.parent
 # so we create a list of files that look like tutorials but aren't run due to this.
 #
 # For every tutorial on this list, we should determine if it is ok to not run the tutorial (add a comment after
-# the file name to explain why, like how intro.html is now), or fix the tutorial (change the name to end with
+# the file name to explain why, like intro.html), or fix the tutorial (change the name to end with
 # "tutorial.py" and remove it from this list).
 
 NOT_RUN = [
@@ -22,9 +22,6 @@ NOT_RUN = [
     "beginner/examples_nn/polynomial_module.html",
     "beginner/examples_nn/dynamic_net.html",
     "beginner/examples_nn/polynomial_optim.html",
-    "beginner/examples_nn/polynomial_nn.html",
-    "beginner/examples_tensor/polynomial_numpy.html",
-    "beginner/examples_tensor/polynomial_tensor.html",
     "beginner/former_torchies/autograd_tutorial_old.html",
     "beginner/former_torchies/tensor_tutorial_old.html",
     "beginner/examples_autograd/polynomial_autograd.html",
@@ -33,10 +30,10 @@ NOT_RUN = [
     "intermediate/parametrizations.html",
     "intermediate/reinforcement_q_learning.html",
     "intermediate/text_to_speech_with_torchaudio.html",
-    "intermediate/mnist_train_nas.html",
+    "intermediate/mnist_train_nas.html",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate/fx_conv_bn_fuser.html",
     "advanced/super_resolution_with_onnxruntime.html",
-    "advanced/ddp_pipeline.html",
+    "advanced/ddp_pipeline.html",  # requires 4 gpus
     "prototype/fx_graph_mode_ptq_dynamic.html",
     "prototype/vmap_recipe.html",
     "prototype/torchscript_freezing.html",
