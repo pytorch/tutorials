@@ -70,15 +70,14 @@ extensions = [
     'sphinx_gallery.gen_gallery',
 ]
 
-
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source', 'recipes_source', 'prototype_source'],
+                      'advanced_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': 'tutorial.py',
-    'ignore_pattern': r'(hyperparameter_tuning_tutorial|flask_rest_api_tutorial).py$',
+    'filename_pattern': '.py',
+    'ignore_pattern': r'(hyperparameter_tuning_tutorial|flask_rest_api_tutorial|ddp_pipeline).py$',
     'backreferences_dir': None
 }
 

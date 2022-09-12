@@ -5,57 +5,56 @@ from bs4 import BeautifulSoup
 
 REPO_ROOT = Path(__file__).parent.parent
 
-# files that are ok to have 0 min 0 sec time, probably because they don't have any python code
-OK_TO_NOT_RUN = [
-    "beginner/basics/intro.html",  # no code
-]
+# files not ending in "tutorial.py" are not run by sphinx (see sphinx_gallery_conf in conf.py),
+# so we create a list of files that look like tutorials but aren't run due to this.
+#
+# For every tutorial on this list, we should determine if it is ok to not run the tutorial (add a comment after
+# the file name to explain why, like intro.html), or fix the tutorial (change the name to end with
+# "tutorial.py" and remove it from this list).
 
-# when the tutorial is fixed, remove it from this list
-KNOWN_BAD = [
-    "beginner/translation_transformer.html",
-    "beginner/profiler.html",
-    "beginner/saving_loading_models.html",
-    "beginner/introyt/captumyt.html",
-    "beginner/introyt/trainingyt.html",
-    "beginner/examples_nn/polynomial_module.html",
-    "beginner/examples_nn/dynamic_net.html",
-    "beginner/examples_nn/polynomial_optim.html",
-    "beginner/examples_nn/polynomial_nn.html",
-    "beginner/examples_tensor/polynomial_numpy.html",
-    "beginner/examples_tensor/polynomial_tensor.html",
-    "beginner/former_torchies/autograd_tutorial_old.html",
-    "beginner/former_torchies/tensor_tutorial_old.html",
-    "beginner/examples_autograd/polynomial_autograd.html",
-    "beginner/examples_autograd/polynomial_custom_function.html",
-    "intermediate/forward_ad_usage.html",
-    "intermediate/parametrizations.html",
-    "intermediate/reinforcement_q_learning.html",
-    "intermediate/text_to_speech_with_torchaudio.html",
-    "intermediate/mnist_train_nas.html",
-    "intermediate/fx_conv_bn_fuser.html",
-    "advanced/super_resolution_with_onnxruntime.html",
-    "advanced/ddp_pipeline.html",
-    "prototype/fx_graph_mode_ptq_dynamic.html",
-    "prototype/vmap_recipe.html",
-    "prototype/torchscript_freezing.html",
-    "prototype/nestedtensor.html",
-    "recipes/recipes/saving_and_loading_models_for_inference.html",
-    "recipes/recipes/saving_multiple_models_in_one_file.html",
-    "recipes/recipes/loading_data_recipe.html",
-    "recipes/recipes/tensorboard_with_pytorch.html",
-    "recipes/recipes/what_is_state_dict.html",
-    "recipes/recipes/profiler_recipe.html",
-    "recipes/recipes/save_load_across_devices.html",
-    "recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html",
-    "recipes/recipes/dynamic_quantization.html",
-    "recipes/recipes/saving_and_loading_a_general_checkpoint.html",
-    "recipes/recipes/benchmark.html",
-    "recipes/recipes/tuning_guide.html",
-    "recipes/recipes/zeroing_out_gradients.html",
-    "recipes/recipes/defining_a_neural_network.html",
-    "recipes/recipes/timer_quick_start.html",
-    "recipes/recipes/amp_recipe.html",
-    "recipes/recipes/Captum_Recipe.html",
+NOT_RUN = [
+    "basics/intro.html",  # no code
+    "translation_transformer.html",
+    "profiler.html",
+    "saving_loading_models.html",
+    "introyt/captumyt.html",
+    "introyt/trainingyt.html",
+    "examples_nn/polynomial_module.html",
+    "examples_nn/dynamic_net.html",
+    "examples_nn/polynomial_optim.html",
+    "former_torchies/autograd_tutorial_old.html",
+    "former_torchies/tensor_tutorial_old.html",
+    "examples_autograd/polynomial_autograd.html",
+    "examples_autograd/polynomial_custom_function.html",
+    "forward_ad_usage.html",
+    "parametrizations.html",
+    "reinforcement_q_learning.html",
+    "text_to_speech_with_torchaudio.html",
+    "mnist_train_nas.html",  # used by ax_multiobjective_nas_tutorial.py
+    "fx_conv_bn_fuser.html",
+    "super_resolution_with_onnxruntime.html",
+    "ddp_pipeline.html",  # requires 4 gpus
+    "fx_graph_mode_ptq_dynamic.html",
+    "vmap_recipe.html",
+    "torchscript_freezing.html",
+    "nestedtensor.html",
+    "recipes/saving_and_loading_models_for_inference.html",
+    "recipes/saving_multiple_models_in_one_file.html",
+    "recipes/loading_data_recipe.html",
+    "recipes/tensorboard_with_pytorch.html",
+    "recipes/what_is_state_dict.html",
+    "recipes/profiler_recipe.html",
+    "recipes/save_load_across_devices.html",
+    "recipes/warmstarting_model_using_parameters_from_a_different_model.html",
+    "recipes/dynamic_quantization.html",
+    "recipes/saving_and_loading_a_general_checkpoint.html",
+    "recipes/benchmark.html",
+    "recipes/tuning_guide.html",
+    "recipes/zeroing_out_gradients.html",
+    "recipes/defining_a_neural_network.html",
+    "recipes/timer_quick_start.html",
+    "recipes/amp_recipe.html",
+    "recipes/Captum_Recipe.html",
 ]
 
 
@@ -84,7 +83,7 @@ def main() -> None:
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
                 and not any(
-                    html_file_path.match(file) for file in KNOWN_BAD + OK_TO_NOT_RUN
+                    html_file_path.match(file) for file in NOT_RUN
                 )
             ):
                 did_not_run.append(html_file_path.as_posix())
