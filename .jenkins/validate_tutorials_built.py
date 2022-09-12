@@ -5,13 +5,15 @@ from bs4 import BeautifulSoup
 
 REPO_ROOT = Path(__file__).parent.parent
 
-# files that are ok to have 0 min 0 sec time, probably because they don't have any python code
-OK_TO_NOT_RUN = [
-    "beginner/basics/intro.html",  # no code
-]
+# files not ending in "tutorial.py" are not run by sphinx (see sphinx_gallery_conf in conf.py),
+# so we create a list of files that look like tutorials but aren't run due to this.
+#
+# For every tutorial on this list, we should determine if it is ok to not run the tutorial (add a comment after
+# the file name to explain why, like how intro.html is now), or fix the tutorial (change the name to end with
+# "tutorial.py" and remove it from this list).
 
-# when the tutorial is fixed, remove it from this list
-KNOWN_BAD = [
+NOT_RUN = [
+    "beginner/basics/intro.html",  # no code
     "beginner/translation_transformer.html",
     "beginner/profiler.html",
     "beginner/saving_loading_models.html",
@@ -84,7 +86,7 @@ def main() -> None:
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
                 and not any(
-                    html_file_path.match(file) for file in KNOWN_BAD + OK_TO_NOT_RUN
+                    html_file_path.match(file) for file in NOT_RUN
                 )
             ):
                 did_not_run.append(html_file_path.as_posix())
