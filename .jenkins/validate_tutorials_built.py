@@ -5,12 +5,8 @@ from bs4 import BeautifulSoup
 
 REPO_ROOT = Path(__file__).parent.parent
 
-# files not ending in "tutorial.py" are not run by sphinx (see sphinx_gallery_conf in conf.py),
-# so we create a list of files that look like tutorials but aren't run due to this.
-#
 # For every tutorial on this list, we should determine if it is ok to not run the tutorial (add a comment after
-# the file name to explain why, like intro.html), or fix the tutorial (change the name to end with
-# "tutorial.py" and remove it from this list).
+# the file name to explain why, like intro.html), or fix the tutorial and remove it from this list).
 
 NOT_RUN = [
     "basics/intro",  # no code
