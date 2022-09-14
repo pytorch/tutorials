@@ -105,6 +105,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
@@ -138,6 +139,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
