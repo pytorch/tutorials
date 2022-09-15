@@ -66,10 +66,17 @@ rst_epilog ="""
 # ones.
 extensions = [
     'sphinxcontrib.katex',
+    'sphinx.ext.intersphinx',
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
 ]
 
+intersphinx_mapping = {
+    "torch": ("https://pytorch.org/docs/stable/", None),
+    "torchaudio": ("https://pytorch.org/audio/stable/", None),
+    "torchtext": ("https://pytorch.org/text/stable/", None),
+    "torchvision": ("https://pytorch.org/vision/stable/", None),
+}
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
