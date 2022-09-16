@@ -56,29 +56,29 @@ We’ll start by doing the necessary imports:
 
     # Imports and util functions
 
+    import copy
+    import torch
+    import torchvision
+    import torch.quantization
+    import torch.ao.ns._numeric_suite_fx as ns
+    import torch.quantization.quantize_fx as quantize_fx
 
+    import matplotlib.pyplot as plt
+    from tabulate import tabulate
 
-
-
-
-
-
-
-
-
-
-
+    torch.manual_seed(0)
+    plt.style.use('seaborn-whitegrid')
 
 
     # a simple line graph
-
-
-
-
-
-
-
-
+    def plot(xdata, ydata, xlabel, ylabel, title):
+        _ = plt.figure(figsize=(10, 5), dpi=100)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        ax = plt.axes()
+        ax.plot(xdata, ydata)
+        plt.show()
 
 
 
@@ -98,39 +98,66 @@ Then we load the pretrained float MobileNetV2 model, and quantize it.
 
 
     # create float model
-
-
+    mobilenetv2_float = torchvision.models.quantization.mobilenet_v2(
+        pretrained=True, quantize=False).eval()
 
     # create quantized model
-
-
-
-
-
-
-
-
-
-
-
-
+    qconfig_dict = {
+        '': torch.quantization.get_default_qconfig('fbgemm'),
+        # adjust the qconfig to make the results more interesting to explore
+        'module_name': [
+            # turn off quantization for the first couple of layers
+            ('features.0', None),
+            ('features.1', None),
+            # use MinMaxObserver for `features.17`, this should lead to worse
+            # weight SQNR
+            ('features.17', torch.quantization.default_qconfig),
+        ]
+    }
     # Note: quantization APIs are inplace, so we save a copy of the float model for
     # later comparison to the quantized model. This is done throughout the
     # tutorial.
-
-
-
-
+    mobilenetv2_prepared = quantize_fx.prepare_fx(
+        copy.deepcopy(mobilenetv2_float), qconfig_dict)
+    datum = torch.randn(1, 3, 224, 224)
+    mobilenetv2_prepared(datum)
     # Note: there is a long standing issue that we cannot copy.deepcopy a
     # quantized model. Since quantization APIs are inplace and we need to use
     # different copies of the quantized model throughout this tutorial, we call
     # `convert_fx` on a copy, so we have access to the original `prepared_model`
     # later. This is done throughout the tutorial.
+    mobilenetv2_quantized = quantize_fx.convert_fx(
+        copy.deepcopy(mobilenetv2_prepared))
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:209: UserWarning:
+
+    The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+
+    /opt/conda/lib/python3.7/site-packages/torchvision/models/_utils.py:223: UserWarning:
+
+    Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=MobileNet_V2_Weights.IMAGENET1K_V1`. You can also use `weights=MobileNet_V2_Weights.DEFAULT` to get the most up-to-date weights.
+
+    Downloading: "https://download.pytorch.org/models/mobilenet_v2-b0353104.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/mobilenet_v2-b0353104.pth
+      0%|          | 0.00/13.6M [00:00<?, ?B/s]     57%|#####6    | 7.71M/13.6M [00:00<00:00, 80.9MB/s]    100%|##########| 13.6M/13.6M [00:00<00:00, 106MB/s] 
+    /opt/conda/lib/python3.7/site-packages/torch/ao/quantization/observer.py:178: UserWarning:
+
+    Please use quant_min and quant_max to specify the range for observers.                     reduce_range will be deprecated in a future release of PyTorch.
+
+    /opt/conda/lib/python3.7/site-packages/torch/nn/quantized/_reference/modules/utils.py:25: UserWarning:
+
+    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+
+    /opt/conda/lib/python3.7/site-packages/torch/nn/quantized/_reference/modules/utils.py:28: UserWarning:
+
+    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
 
 
 
@@ -159,44 +186,49 @@ PTQ/QAT.
 
     # Extract conv and linear weights from corresponding parts of two models, and
     # save them in `wt_compare_dict`.
-
-
-
-
-
-
+    mobilenetv2_wt_compare_dict = ns.extract_weights(
+        'fp32',  # string name for model A
+        mobilenetv2_prepared,  # model A
+        'int8',  # string name for model B
+        mobilenetv2_quantized,  # model B
+    )
 
     # calculate SQNR between each pair of weights
-
-
-
-
-
-
-
+    ns.extend_logger_results_with_comparison(
+        mobilenetv2_wt_compare_dict,  # results object to modify inplace
+        'fp32',  # string name of model A (from previous step)
+        'int8',  # string name of model B (from previous step)
+        torch.ao.ns.fx.utils.compute_sqnr,  # tensor comparison function
+        'sqnr',  # the name to use to store the results under
+    )
 
     # massage the data into a format easy to graph and print
-
-
-
-
-
-
-
-
-
+    mobilenetv2_wt_to_print = []
+    for idx, (layer_name, v) in enumerate(mobilenetv2_wt_compare_dict.items()):
+        mobilenetv2_wt_to_print.append([
+            idx,
+            layer_name,
+            v['weight']['int8'][0]['prev_node_target_type'],
+            v['weight']['int8'][0]['values'][0].shape,
+            v['weight']['int8'][0]['sqnr'][0],
+        ])
 
     # plot the SQNR between fp32 and int8 weights for each layer
+    plot(
+        [x[0] for x in mobilenetv2_wt_to_print],
+        [x[4] for x in mobilenetv2_wt_to_print],
+        'idx',
+        'sqnr',
+        'weights, idx to sqnr'
+    )
 
 
 
 
-
-
-
-
-
-
+.. image-sg:: /prototype/images/sphx_glr_fx_numeric_suite_tutorial_001.png
+   :alt: weights, idx to sqnr
+   :srcset: /prototype/images/sphx_glr_fx_numeric_suite_tutorial_001.png
+   :class: sphx-glr-single-img
 
 
 
@@ -205,6 +237,83 @@ PTQ/QAT.
 .. GENERATED FROM PYTHON SOURCE LINES 153-154
 
 Also print out the SQNR, so we can inspect the layer name and type:
+
+.. GENERATED FROM PYTHON SOURCE LINES 154-160
+
+.. code-block:: default
+
+
+    print(tabulate(
+        mobilenetv2_wt_to_print,
+        headers=['idx', 'layer_name', 'type', 'shape', 'sqnr']
+    ))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+      idx  layer_name            type                                                       shape                              sqnr
+    -----  --------------------  ---------------------------------------------------------  -----------------------------  --------
+        0  features_0_0          torch.nn.intrinsic.modules.fused.ConvReLU2d                torch.Size([32, 3, 3, 3])      inf
+        1  features_1_conv_0_0   torch.nn.intrinsic.modules.fused.ConvReLU2d                torch.Size([32, 1, 3, 3])      inf
+        2  features_1_conv_1     torch.nn.modules.conv.Conv2d                               torch.Size([16, 32, 1, 1])     inf
+        3  features_2_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([96, 16, 1, 1])      45.3583
+        4  features_2_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([96, 1, 3, 3])       46.3591
+        5  features_2_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([24, 96, 1, 1])      43.1405
+        6  features_3_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([144, 24, 1, 1])     45.1226
+        7  features_3_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([144, 1, 3, 3])      44.8846
+        8  features_3_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([24, 144, 1, 1])     42.2562
+        9  features_4_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([144, 24, 1, 1])     44.7671
+       10  features_4_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([144, 1, 3, 3])      47.5017
+       11  features_4_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([32, 144, 1, 1])     42.4501
+       12  features_5_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 32, 1, 1])     44.8431
+       13  features_5_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 1, 3, 3])      44.955
+       14  features_5_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([32, 192, 1, 1])     43.0342
+       15  features_6_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 32, 1, 1])     44.7193
+       16  features_6_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 1, 3, 3])      45.2428
+       17  features_6_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([32, 192, 1, 1])     42.7734
+       18  features_7_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 32, 1, 1])     44.5686
+       19  features_7_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([192, 1, 3, 3])      47.4552
+       20  features_7_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([64, 192, 1, 1])     42.6587
+       21  features_8_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 64, 1, 1])     44.091
+       22  features_8_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 1, 3, 3])      45.0733
+       23  features_8_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([64, 384, 1, 1])     42.3311
+       24  features_9_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 64, 1, 1])     44.2334
+       25  features_9_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 1, 3, 3])      45.5776
+       26  features_9_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([64, 384, 1, 1])     42.0875
+       27  features_10_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 64, 1, 1])     44.2595
+       28  features_10_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 1, 3, 3])      45.3682
+       29  features_10_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([64, 384, 1, 1])     41.3764
+       30  features_11_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 64, 1, 1])     43.9487
+       31  features_11_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([384, 1, 3, 3])      43.7704
+       32  features_11_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([96, 384, 1, 1])     41.963
+       33  features_12_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 96, 1, 1])     43.8682
+       34  features_12_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 1, 3, 3])      45.3413
+       35  features_12_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([96, 576, 1, 1])     41.8074
+       36  features_13_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 96, 1, 1])     43.9367
+       37  features_13_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 1, 3, 3])      45.3374
+       38  features_13_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([96, 576, 1, 1])     40.3783
+       39  features_14_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 96, 1, 1])     43.3986
+       40  features_14_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([576, 1, 3, 3])      47.4357
+       41  features_14_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([160, 576, 1, 1])    41.8716
+       42  features_15_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 160, 1, 1])    43.4877
+       43  features_15_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 1, 3, 3])      46.1367
+       44  features_15_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([160, 960, 1, 1])    41.2812
+       45  features_16_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 160, 1, 1])    43.5446
+       46  features_16_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 1, 3, 3])      45.7084
+       47  features_16_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([160, 960, 1, 1])    41.2971
+       48  features_17_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 160, 1, 1])    33.8474
+       49  features_17_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([960, 1, 3, 3])      34.8042
+       50  features_17_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([320, 960, 1, 1])    38.6114
+       51  features_18_0         torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1280, 320, 1, 1])   42.8171
+       52  classifier_1          torch.nn.quantized.modules.linear.Linear                   torch.Size([1000, 1280])        42.5315
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 161-171
 
@@ -228,58 +337,80 @@ dynamic quantization as well as PTQ/QAT.
 
     # Create a new copy of the quantized model, because we cannot `copy.deepcopy`
     # a quantized model.
-
-
-
-
-
-
-
-
-
+    mobilenetv2_quantized = quantize_fx.convert_fx(
+        copy.deepcopy(mobilenetv2_prepared))
+    mobilenetv2_float_ns, mobilenetv2_quantized_ns = ns.add_loggers(
+        'fp32',  # string name for model A
+        copy.deepcopy(mobilenetv2_prepared),  # model A
+        'int8',  # string name for model B
+        mobilenetv2_quantized,  # model B
+        ns.OutputLogger,  # logger class to use
+    )
 
     # feed data through network to capture intermediate activations
-
-
+    mobilenetv2_float_ns(datum)
+    mobilenetv2_quantized_ns(datum)
 
     # extract intermediate activations
-
-
-
-
-
-
+    mobilenetv2_act_compare_dict = ns.extract_logger_info(
+        mobilenetv2_float_ns,  # model A, with loggers (from previous step)
+        mobilenetv2_quantized_ns,  # model B, with loggers (from previous step)
+        ns.OutputLogger,  # logger class to extract data from
+        'int8',  # string name of model to use for layer names for the output
+    )
 
     # add SQNR comparison
-
-
-
-
-
-
-
+    ns.extend_logger_results_with_comparison(
+        mobilenetv2_act_compare_dict,  # results object to modify inplace
+        'fp32',  # string name of model A (from previous step)
+        'int8',  # string name of model B (from previous step)
+        torch.ao.ns.fx.utils.compute_sqnr,  # tensor comparison function
+        'sqnr',  # the name to use to store the results under
+    )
 
     # massage the data into a format easy to graph and print
-
-
-
-
-
-
-
-
+    mobilenet_v2_act_to_print = []
+    for idx, (layer_name, v) in enumerate(mobilenetv2_act_compare_dict.items()):
+        mobilenet_v2_act_to_print.append([
+            idx,
+            layer_name,
+            v['node_output']['int8'][0]['prev_node_target_type'],
+            v['node_output']['int8'][0]['values'][0].shape,
+            v['node_output']['int8'][0]['sqnr'][0]])
 
     # plot the SQNR between fp32 and int8 activations for each layer
+    plot(
+        [x[0] for x in mobilenet_v2_act_to_print],
+        [x[4] for x in mobilenet_v2_act_to_print],
+        'idx',
+        'sqnr',
+        'unshadowed activations, idx to sqnr',
+    )
 
 
 
 
+.. image-sg:: /prototype/images/sphx_glr_fx_numeric_suite_tutorial_002.png
+   :alt: unshadowed activations, idx to sqnr
+   :srcset: /prototype/images/sphx_glr_fx_numeric_suite_tutorial_002.png
+   :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
 
+ .. code-block:: none
 
+    /opt/conda/lib/python3.7/site-packages/torch/ao/quantization/observer.py:178: UserWarning:
 
+    Please use quant_min and quant_max to specify the range for observers.                     reduce_range will be deprecated in a future release of PyTorch.
 
+    /opt/conda/lib/python3.7/site-packages/torch/nn/quantized/_reference/modules/utils.py:25: UserWarning:
+
+    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+
+    /opt/conda/lib/python3.7/site-packages/torch/nn/quantized/_reference/modules/utils.py:28: UserWarning:
+
+    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
 
 
 
@@ -289,18 +420,90 @@ dynamic quantization as well as PTQ/QAT.
 
 Also print out the SQNR, so we can inspect the layer name and type:
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-233
+.. GENERATED FROM PYTHON SOURCE LINES 228-232
 
 .. code-block:: default
 
+    print(tabulate(
+        mobilenet_v2_act_to_print,
+        headers=['idx', 'layer_name', 'type', 'shape', 'sqnr']
+    ))
 
 
 
 
+.. rst-class:: sphx-glr-script-out
 
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+ .. code-block:: none
 
-
+      idx  layer_name            type                                                       shape                              sqnr
+    -----  --------------------  ---------------------------------------------------------  -----------------------------  --------
+        0  features_0_0          torch.nn.intrinsic.modules.fused.ConvReLU2d                torch.Size([1, 32, 112, 112])  inf
+        1  features_1_conv_0_0   torch.nn.intrinsic.modules.fused.ConvReLU2d                torch.Size([1, 32, 112, 112])  inf
+        2  features_1_conv_1     torch.nn.modules.conv.Conv2d                               torch.Size([1, 16, 112, 112])  inf
+        3  features_2_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 96, 112, 112])   28.8309
+        4  features_2_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 96, 56, 56])     24.9368
+        5  features_2_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 24, 56, 56])     24.4165
+        6  features_3_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 144, 56, 56])    27.107
+        7  features_3_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 144, 56, 56])    21.9545
+        8  features_3_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 24, 56, 56])     20.6398
+        9  add                   torch._ops.quantized.PyCapsule.add                         torch.Size([1, 24, 56, 56])     19.8776
+       10  features_4_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 144, 56, 56])    21.2428
+       11  features_4_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 144, 28, 28])    22.7864
+       12  features_4_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 32, 28, 28])     21.5417
+       13  features_5_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 28, 28])    26.0933
+       14  features_5_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 28, 28])    19.1135
+       15  features_5_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 32, 28, 28])     16.7305
+       16  add_1                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 32, 28, 28])     19.006
+       17  features_6_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 28, 28])    22.4631
+       18  features_6_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 28, 28])    18.2385
+       19  features_6_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 32, 28, 28])     14.9169
+       20  add_2                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 32, 28, 28])     18.2476
+       21  features_7_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 28, 28])    20.3254
+       22  features_7_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 192, 14, 14])    25.1015
+       23  features_7_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 64, 14, 14])     20.8918
+       24  features_8_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    26.677
+       25  features_8_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    20.4345
+       26  features_8_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 64, 14, 14])     22.3621
+       27  add_3                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 64, 14, 14])     20.5287
+       28  features_9_conv_0_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    24.6026
+       29  features_9_conv_1_0   torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    21.0148
+       30  features_9_conv_2     torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 64, 14, 14])     19.3552
+       31  add_4                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 64, 14, 14])     18.2493
+       32  features_10_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    21.7139
+       33  features_10_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    20.1411
+       34  features_10_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 64, 14, 14])     17.8521
+       35  add_5                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 64, 14, 14])     17.0813
+       36  features_11_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    20.4519
+       37  features_11_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 384, 14, 14])    21.1679
+       38  features_11_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 96, 14, 14])     16.214
+       39  features_12_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 14, 14])    20.0033
+       40  features_12_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 14, 14])    19.7832
+       41  features_12_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 96, 14, 14])     14.2947
+       42  add_6                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 96, 14, 14])     15.3473
+       43  features_13_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 14, 14])    19.4102
+       44  features_13_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 14, 14])    20.4071
+       45  features_13_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 96, 14, 14])     14.3186
+       46  add_7                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 96, 14, 14])     15.0268
+       47  features_14_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 14, 14])    18.1606
+       48  features_14_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 576, 7, 7])      23.4271
+       49  features_14_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 160, 7, 7])      17.0825
+       50  features_15_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      20.3652
+       51  features_15_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      20.1442
+       52  features_15_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 160, 7, 7])      15.9225
+       53  add_8                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 160, 7, 7])      16.314
+       54  features_16_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      19.6192
+       55  features_16_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      19.2511
+       56  features_16_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 160, 7, 7])      14.5584
+       57  add_9                 torch._ops.quantized.PyCapsule.add                         torch.Size([1, 160, 7, 7])      15.0504
+       58  features_17_conv_0_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      16.9288
+       59  features_17_conv_1_0  torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 960, 7, 7])      26.7028
+       60  features_17_conv_2    torch.nn.quantized.modules.conv.Conv2d                     torch.Size([1, 320, 7, 7])      14.9369
+       61  features_18_0         torch.nn.intrinsic.quantized.modules.conv_relu.ConvReLU2d  torch.Size([1, 1280, 7, 7])     14.7848
+       62  adaptive_avg_pool2d   torch.nn.functional.adaptive_avg_pool2d                    torch.Size([1, 1280, 1, 1])     18.3344
+       63  flatten               torch._VariableFunctionsClass.flatten                      torch.Size([1, 1280])           18.3344
+       64  classifier_0          torch.nn.quantized.modules.dropout.Dropout                 torch.Size([1, 1280])           18.3344
+       65  classifier_1          torch.nn.quantized.modules.linear.Linear                   torch.Size([1, 1000])           20.43
 
 
 
@@ -308,7 +511,7 @@ Also print out the SQNR, so we can inspect the layer name and type:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.001 seconds)
+   **Total running time of the script:** ( 0 minutes  7.203 seconds)
 
 
 .. _sphx_glr_download_prototype_fx_numeric_suite_tutorial.py:
