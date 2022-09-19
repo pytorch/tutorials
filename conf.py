@@ -30,6 +30,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
 import glob
@@ -37,6 +38,7 @@ import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
 import re
+from validate_tutorials_built import NOT_RUN
 
 import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
@@ -84,8 +86,8 @@ sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': 'tutorial.py',
-    'ignore_pattern': r'(hyperparameter_tuning_tutorial|flask_rest_api_tutorial).py$',
+    'filename_pattern': '.py',
+    'ignore_pattern': re.compile(f"({'|'.join(NOT_RUN)}).py$"),
     'backreferences_dir': None
 }
 
