@@ -25,9 +25,7 @@ What you will learn
 -  Code changes (and things to keep in mind) when moving from single-node to multinode training.
 
 
-Code used in this video
------------------------------
-https://github.com/suraj813/distributed-pytorch/blob/main/multinode_torchrun.py
+View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multinode_torchrun.py
 
 
 .. raw:: html

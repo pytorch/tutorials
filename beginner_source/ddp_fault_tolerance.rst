@@ -31,9 +31,7 @@ What you will learn
 -  Structuring your training script for graceful restarts
 
 
-Code used in this video
------------------------------
-https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py
+View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py
 
 
 .. raw:: html
@@ -76,11 +74,11 @@ For graceful restarts, it helps to have the following structure:
        if should_checkpoint:
          save_snapshot(snapshot_path)
 
-If a failure occurs, torchrun will kill all the processes and restart them. 
+If a failure occurs, torchrun will terminate all the processes and restart them. 
 Each process entrypoint first loads and initializes the last saved snapshot, and continues training from there.
 So at any failure, you only lose the training progress from the last saved snapshot. 
 
-In elastic training, whenever there are any membership changes (adding or removing nodes), torchrun will kill and spawn processes
+In elastic training, whenever there are any membership changes (adding or removing nodes), torchrun will terminate and spawn processes
 on available devices. Having this structure ensures your training job can continue without manual intervention.
 
 

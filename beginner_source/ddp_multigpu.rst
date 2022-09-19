@@ -22,9 +22,7 @@ What you will learn
 -  Saving and loading models in a distributed setup
 
 
-Code used in this video
------------------------------
-https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
+View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
 
 
 .. raw:: html

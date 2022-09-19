@@ -24,9 +24,7 @@ What you will learn
 -  When is DDP NOT suitable
 
 
-Code used in this video
------------------------------
-https://github.com/suraj813/minGPT-ddp
+View the code used in this video: https://github.com/suraj813/minGPT-ddp
 
 
 .. raw:: html
