@@ -1,35 +1,40 @@
-`Introduction <0_intro.html>`__ \|\| **What is DDP** \|\| `Multi-GPU
-training <2_multigpu.html>`__ \|\| `Fault
-Tolerance <3_fault_tolerance.html>`__ \|\| `Multi-node
-training <4_multinode.html>`__ \|\| `mingpt training <5_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| **What is DDP ** \|\| `Single-node
+Multi-GPU training <ddp_multigpu.html>`__ \|\| `Fault
+Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
+training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
 
 What is Distributed Data Parallel (DDP)
 =======================================
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
+This tutorial is a gentle introduction to PyTorch `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__ (DDP) 
+which enables data parallel training in PyTorch. Data parallelism is a way to 
+process multiple data batches across multiple devices simultaneously 
+to achieve better performance. In PyTorch, the `DistributedSampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.distributed.DistributedSampler>`__ 
+ensures each device gets a non-overlapping input batch. The model is replicated on all the devices; 
+each replica calculates gradients and simultaneously synchronizes with the others using the `ring all-reduce
+algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-deep-learning-allreduce/>`__.
+
+
+What you will learn
+-------------------
+
+-  How DDP works under the hood
+-  What is the DistributedSampler
+-  How gradients are synchronized across GPUs
+
 .. raw:: html
+   
+   <video link goes here>
 
-   <embed video>
 
--  Data parallelism refers to processing multiple data batches on
-   multiple devices simultaneously.
--  PyTorch provides data parallel training across multiple GPUs via
-   `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
-   (DDP)
--  The
-   `DistributedSampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.distributed.DistributedSampler>`__
-   ensures each replica gets a non-overlapping input batch.
--  All the replicas simultaneously calculate gradients and synchronize
-   them with each other, ensuring maximum GPU utilization. See here for
-   a detailed explanation of the `ring all-reduce
-   algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-deep-learning-allreduce/>`__
+Why you should prefer DDP over DataParallel (DP)
+-------------------------------------------------
 
-Use DDP instead of DataParallel (DP)!
--------------------------------------
-
-DP is an older approach to data parallelism. DDP improves upon the
-architecture in a few ways:
+`DataParallel <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html>`__ 
+is an older approach to data parallelism. DP is trivially simple (with just one extra line of code) but it is much less performant.
+DDP improves upon the architecture in a few ways:
 
 +---------------------------------------+------------------------------+
 | DP                                    | DDP                          |
@@ -48,6 +53,7 @@ architecture in a few ways:
 Further Reading
 ---------------
 
+-  `Multi-GPU training with DDP <ddp_multigpu.html>`__ (next tutorial in this series)
 -  `DDP
    API <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
 -  `DDP Internal

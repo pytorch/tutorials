@@ -1,19 +1,35 @@
-`Introduction <0_intro.html>`__ \|\| `What is DDP <1_theory.html>`__
-\|\| **Multi-GPU training** \|\| `Fault
-Tolerance <3_fault_tolerance.html>`__ \|\| `Multi-node
-training <4_multinode.html>`__ \|\| `mingpt training <5_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| **Single-node Multi-GPU training** \|\| `Fault
+Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
+training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
+
 
 Multi GPU training with DDP
 ===========================
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
+In the `previous tutorial <ddp_theory.html>`__, we got a high-level overview of how DDP works; now we see how to use DDP in code.
+In this tutorial we start with a single-GPU training script, and migrate that to running it on 4 GPUs on a single node. 
+Along the way, we will talk through important concepts in distributed training while implementing them in our code.
+
+
+What you will learn
+-------------------
+-  How to migrate a single-GPU training script to multi-GPU via DDP
+-  Setting up the distributed process group
+-  Replicating your model with the DDP constructor
+-  Distributing the input batch via DistributedSampler
+-  Saving and loading models in a distributed setup
+
+
+Code used in this video
+-----------------------------
+https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
+
+
 .. raw:: html
 
    <embed video>
-
-Code:
-https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
 
 
 .. note:: 
@@ -44,7 +60,7 @@ Imports
    + from torch.distributed import init_process_group, destroy_process_group
    + import os
 
--  ``torch.multiprocessing`` is a PyTorch wrapper around python’s native
+-  ``torch.multiprocessing`` is a PyTorch wrapper around python's native
    multiprocessing
 -  The dsitributed process group contains all the processes that can
    communicate and synchronize with each other.
@@ -67,9 +83,9 @@ Constructing the process group
 -  `Choosing a DDP
    backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
 -  The process group can be initialized by TCP (default) or from a
-   shared file-system. `Read more on PG
+   shared file-system. `Read more on process group
    initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__
--  ```init_process_group`` <https://pytorch.org/docs/stable/distributed.html?highlight=init_process_group#torch.distributed.init_process_group>`__
+-  `init_process_group <https://pytorch.org/docs/stable/distributed.html?highlight=init_process_group#torch.distributed.init_process_group>`__
    initializes the distributed process group.
 
 Constructing the DDP model
@@ -146,3 +162,13 @@ Running the distributed training job
    ```mp.spawn`` <https://pytorch.org/docs/stable/multiprocessing.html#spawning-subprocesses>`__.
 -  ``world_size`` is the number of processes/GPUs we want to use
    (typically 1 process per GPU).
+
+
+Further Reading
+---------------
+
+-  `Fault Tolerant distributed training <ddp_fault_tolerance.html>`__  (next tutorial in this series)
+-  `Intro to DDP <ddp_theory.html>`__ (previous tutorial in this series)
+-  `Getting Started with DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`__ 
+-  `Process Group
+   initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__

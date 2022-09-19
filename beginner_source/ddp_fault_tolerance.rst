@@ -1,59 +1,48 @@
-`Introduction <0_intro.html>`__ \|\| `What is DDP <1_theory.html>`__
-\|\| `Multi-GPU training <2_multigpu.html>`__ \|\| **Fault Tolerance**
-\|\| `Multi-node training <4_multinode.html>`__ \|\| `mingpt
-training <5_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-node
+Multi-GPU training <ddp_multigpu.html>`__ \|\| **Fault
+Tolerance** \|\| `Multi-node
+training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
+
 
 Fault-tolerant Distributed Training with ``torchrun``
 =====================================================
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
-.. raw:: html
-
-   <embed video>
-
-Code: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py
-
-When a training job fails, we relaunch it from the last saved
-checkpoint. In distributed training, a single process failing can
-disrupt the entire training job. Manually restarting a training job
-after failure is tedious enough, more so for distributed jobs where the
-susceptibility for failure can be higher.
-
-Especially in multinode training (covered in the next section), you
-might also prefer to be *elastic* i.e. increase or decrease the number
+In distributed training, a single process failure can
+disrupt the entire training job. Since the susceptibility for failure can be higher here, making your training
+script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. the ability to increase or decrease the number
 of processes in realtime while running the training job.
-
-Fault tolerance
-~~~~~~~~~~~~~~~
 
 PyTorch has a utility ``torchrun`` that provides fault-tolerance as well
 as elastic training. When a failure occurs, torchrun logs the errors and
 attempts to automatically restart all the processes from the last saved
-“snapshot” of the training job. It is recommended for your script to
-have the following structure:
+“snapshot” of the training job. 
 
-.. code:: python
-
-   def main():
-     load_checkpoint(checkpoint_path)
-     initialize()
-     train()
-
-   def train():
-     for batch in iter(dataset):
-       train_step(batch)
-
-       if should_checkpoint:
-         save_checkpoint(checkpoint_path)
-
-See the diff below for the functions that implement this. The
-snapshot/checkpoint saves more than just the model state; it can include
+The snapshot saves more than just the model state; it can include
 details about the number of epochs run, optimizer states or any other
 mutable attribute of the training job necessary for its continuity.
 
-Automatic
-~~~~~~~~~
+
+What you will learn
+-------------------
+-  Launching multi-GPU training jobs with ``torchrun``
+-  Saving and loading snapshots of your training job
+-  Structuring your training script for graceful restarts
+
+
+Code used in this video
+-----------------------------
+https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py
+
+
+.. raw:: html
+
+   <embed video>
+
+
+Why use ``torchrun``
+~~~~~~~~~~~~~~~~~~~~
 
 ``torchrun`` handles the minutiae of distributed training so that you
 don't need to. For instance,
@@ -65,8 +54,38 @@ variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variable
 ``main()`` entrypoint, and launch the script with ``torchrun``. This way
 the same script can be run in non-distributed as well as single-node and
 multinode setups. 
-- Gracefully restarting training from the last saved
-checkpoint in case of runtime errors or elastic scaling.
+- Gracefully restarting training from the last saved training
+snapshot
+
+
+Graceful restarts
+~~~~~~~~~~~~~~~~~~~~~
+For graceful restarts, it helps to have the following structure:
+
+.. code:: python
+
+   def main():
+     load_snapshot(snapshot_path)
+     initialize()
+     train()
+
+   def train():
+     for batch in iter(dataset):
+       train_step(batch)
+
+       if should_checkpoint:
+         save_snapshot(snapshot_path)
+
+If a failure occurs, torchrun will kill all the processes and restart them. 
+Each process entrypoint first loads and initializes the last saved snapshot, and continues training from there.
+So at any failure, you only lose the training progress from the last saved snapshot. 
+
+In elastic training, whenever there are any membership changes (adding or removing nodes), torchrun will kill and spawn processes
+on available devices. Having this structure ensures your training job can continue without manual intervention.
+
+
+
+
 
 Diff for `multigpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py>`__
 -----------------------------------------------------------
@@ -173,8 +192,10 @@ spawns the processes.
 Further Reading
 ---------------
 
+-  `Multi-node training with DDP <intermediate/ddp_multinode.html>`__  (next tutorial in this series)
+-  `Multi-GPU training with DDP <ddp_multigpu.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
--  `Torchrun
+-  `Torchrun launch
    options <https://github.com/pytorch/pytorch/blob/bbe803cb35948df77b46a2d38372910c96693dcd/torch/distributed/run.py#L401>`__
 -  `Migrating from torch.distributed.launch to
    torchrun <https://pytorch.org/docs/stable/elastic/train_script.html#elastic-train-script>`__
