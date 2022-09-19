@@ -32,3 +32,7 @@ Intermediate tutorials
 8. flask_rest_api_tutorial.py
 	Deploying PyTorch and Building a REST API using Flask
 	https://pytorch.org/tutorials/intermediate/flask_rest_api_tutorial.html
+
+9. nvfuser_intro_tutorial.py
+        Introduction to nvFuser
+	https://pytorch.org/tutorials/intermediate/nvfuser_intro_tutorial.html

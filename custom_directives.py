@@ -91,8 +91,9 @@ class GalleryItemDirective(Directive):
                 _, blocks = sphinx_gallery.gen_rst.split_code_and_text_blocks(abs_fname)
                 intro, _ = sphinx_gallery.gen_rst.extract_intro_and_title(abs_fname, blocks[0][1])
 
-            thumbnail_rst = sphinx_gallery.backreferences._thumbnail_div(
-                dirname, basename, intro)
+            thumbnail_rst = ''
+            #sphinx_gallery.backreferences._thumbnail_div(
+            #    dirname, basename, intro)
 
             if 'figure' in self.options:
                 rel_figname, figname = env.relfn2path(self.options['figure'])
