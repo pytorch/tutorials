@@ -808,6 +808,15 @@ Additional Resources
    :maxdepth: 2
    :includehidden:
    :hidden:
+   :caption: MaskedTensor
+
+   beginner/maskedtensor_overview
+
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
