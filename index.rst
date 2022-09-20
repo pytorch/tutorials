@@ -811,6 +811,8 @@ Additional Resources
    :caption: MaskedTensor
 
    beginner/maskedtensor_overview
+   beginner/maskedtensor_sparsity
+   beginner/maskedtensor_distinguish_gradient
 
 
 .. toctree::
