@@ -814,6 +814,8 @@ Additional Resources
    beginner/maskedtensor_sparsity
    beginner/maskedtensor_distinguish_gradient
    beginner/maskedtensor_safe_softmax
+   beginner/maskedtensor_missing_nan_ops
+   beginner/maskedtensor_adagrad_sparse_semantics
 
 
 .. toctree::
