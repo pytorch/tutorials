@@ -12,14 +12,23 @@ In the `previous tutorial <ddp_theory.html>`__, we got a high-level overview of 
 In this tutorial we start with a single-GPU training script, and migrate that to running it on 4 GPUs on a single node. 
 Along the way, we will talk through important concepts in distributed training while implementing them in our code.
 
+.. grid:: 2
 
-What you will learn
--------------------
--  How to migrate a single-GPU training script to multi-GPU via DDP
--  Setting up the distributed process group
--  Replicating your model with the DDP constructor
--  Distributing the input batch via DistributedSampler
--  Saving and loading models in a distributed setup
+   .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :shadow: none
+
+      -  How to migrate a single-GPU training script to multi-GPU via DDP
+      -  Setting up the distributed process group
+      -  Replicating your model with the DDP constructor
+      -  Distributing the input batch via DistributedSampler
+      -  Saving and loading models in a distributed setup
+
+   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
+      :shadow: none
+
+      * High-level overview of `how DDP works  <ddp_theory.html>`__
+      * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
+      * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
 
 
 View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py

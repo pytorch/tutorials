@@ -19,10 +19,20 @@ In this video we will go over the (minimal) code changes required to move from s
 multinode training, and run our training script in both of the above ways.
 
 
-What you will learn
--------------------
--  Launching multinode training jobs with ``torchrun``
--  Code changes (and things to keep in mind) when moving from single-node to multinode training.
+.. grid:: 2
+
+   .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :shadow: none
+
+      -  Launching multinode training jobs with ``torchrun``
+      -  Code changes (and things to keep in mind) when moving from single-node to multinode training.
+
+   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
+      :shadow: none
+
+      * Familiarity with `multi-GPU training <beginner/ddp_multigpu.html>`__ and `torchrun <beginner/ddp_fault_tolerance.html>`__ 
+      * 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
+      * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
 
 View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multinode_torchrun.py

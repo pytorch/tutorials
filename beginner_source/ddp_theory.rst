@@ -16,13 +16,21 @@ ensures each device gets a non-overlapping input batch. The model is replicated 
 each replica calculates gradients and simultaneously synchronizes with the others using the `ring all-reduce
 algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-deep-learning-allreduce/>`__.
 
+.. grid:: 2
 
-What you will learn
--------------------
+   .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :shadow: none
 
--  How DDP works under the hood
--  What is the DistributedSampler
--  How gradients are synchronized across GPUs
+      *  How DDP works under the hood
+      *  What is the DistributedSampler
+      *  How gradients are synchronized across GPUs
+
+   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
+      :shadow: none
+
+      * You know `how to train <https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html>`__` a non-distributed model in PyTorch
+
+
 
 .. raw:: html
 

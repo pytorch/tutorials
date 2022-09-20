@@ -16,12 +16,27 @@ We use `hydra <https://hydra.cc/>` to centrally manage all the configurations fo
 Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster.
 
 
-What you will learn
--------------------
--  Refactor a (nicely structured) project to use DDP training
--  Best practices when writing a distributed training script
--  Increased flexibility with saving/loading artifacts in the cloud
--  When is DDP NOT suitable
+.. grid:: 2
+
+   .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :shadow: none
+
+      -  Refactor a (nicely structured) project to use DDP training
+      -  Best practices when writing a distributed training script
+      -  Increased flexibility with saving/loading artifacts in the cloud
+      -  When is DDP NOT suitable
+
+
+   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
+      :shadow: none
+
+      * Familiarity with `multi-GPU training <beginner/ddp_multigpu.html>`__ and `torchrun <beginner/ddp_fault_tolerance.html>`__ 
+      * [Optional] Familiarity with `multinode training <ddp_multinode.html>`__
+      * 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
+      * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
+
+
+
 
 
 View the code used in this video: https://github.com/suraj813/minGPT-ddp
