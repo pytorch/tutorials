@@ -813,6 +813,7 @@ Additional Resources
    beginner/maskedtensor_overview
    beginner/maskedtensor_sparsity
    beginner/maskedtensor_distinguish_gradient
+   beginner/maskedtensor_safe_softmax
 
 
 .. toctree::
