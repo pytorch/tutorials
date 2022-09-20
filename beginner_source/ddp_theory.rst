@@ -25,8 +25,10 @@ What you will learn
 -  How gradients are synchronized across GPUs
 
 .. raw:: html
-   
-   <video link goes here>
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/Cvdhwx-OBBo" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
 
 
 Why you should prefer DDP over DataParallel (DP)

@@ -29,7 +29,9 @@ View the code used in this video: https://github.com/suraj813/minGPT-ddp
 
 .. raw:: html
 
-   <embed video>
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/XFsFDGKZHh4" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
 
 
 
