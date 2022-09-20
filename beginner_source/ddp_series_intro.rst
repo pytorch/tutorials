@@ -33,7 +33,7 @@ this can be done on a cloud instance with multiple GPUs (the tutorials
 use an AWS p3 instance with 4 GPUs).
 
 The tutorial code is hosted at this `github
-repo <https://github.com/suraj813/distributed-pytorch>`__. Clone the repo and
+repo <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series>`__. Clone the repo and
 follow along!
 
 Tutorial sections

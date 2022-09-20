@@ -42,7 +42,7 @@ mutable attribute of the training job necessary for its continuity.
       
 
 
-View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py
+View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu_torchrun.py
 
 
 .. raw:: html
@@ -98,7 +98,7 @@ on available devices. Having this structure ensures your training job can contin
 
 
 
-Diff for `multigpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu_torchrun.py>`__
+Diff for `multigpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
 -----------------------------------------------------------
 
 Process group initialization

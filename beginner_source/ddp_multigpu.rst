@@ -31,7 +31,7 @@ Along the way, we will talk through important concepts in distributed training w
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
 
 
-View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py
+View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multigpu.py
 
 
 .. raw:: html
@@ -48,7 +48,7 @@ Use the helper function
 `torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) <https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm>`__ to convert all ``BatchNorm`` layers in the model to ``SyncBatchNorm``.
 
 
-Diff for `single_gpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/single_gpu.py>`__ v/s `multigpu.py <https://github.com/suraj813/distributed-pytorch/blob/main/multigpu.py>`__
+Diff for `single_gpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multigpu.py>`__
 ----------------------------------------------------
 
 These are the changes you typically make to a single-GPU training script to enable DDP.

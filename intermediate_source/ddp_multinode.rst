@@ -35,7 +35,7 @@ multinode training, and run our training script in both of the above ways.
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
 
-View the code used in this video: https://github.com/suraj813/distributed-pytorch/blob/main/multinode_torchrun.py
+View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multinode_torchrun.py
 
 
 .. raw:: html
