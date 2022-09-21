@@ -1,7 +1,7 @@
 `Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-node
 Multi-GPU training <ddp_multigpu.html>`__ \|\| **Fault
 Tolerance** \|\| `Multi-node
-training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
+training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
 
 
 Fault-tolerant Distributed Training with ``torchrun``
