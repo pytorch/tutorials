@@ -11,10 +11,8 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 Multinode training involves deploying a training job across several
 machines. There are two ways to do this:  
 
--  running a torchrun command
-on each machine with identical rendezvous arguments, or 
--  deploying it on a
-compute cluster using a workload manager (like SLURM)
+-  running a torchrun command on each machine with identical rendezvous arguments, or 
+-  deploying it on a compute cluster using a workload manager (like SLURM)
 
 In this video we will go over the (minimal) code changes required to move from single-node multigpu to 
 multinode training, and run our training script in both of the above ways.
@@ -47,23 +45,13 @@ View the code used in this video: https://github.com/pytorch/examples/blob/main/
 
 
 .. note:: 
-   -  In a single-node setup, local ranks are sufficient to identify each
-   process uniquely. When running a multinode setup, use the global rank
-   (given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely
-   identify processes.
+   -  In a single-node setup, local ranks are sufficient to identify each process uniquely. When running a multinode setup, use the global rank (given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely identify processes.
 
-   - ``RANK`` is NOT stable. On restarting a training job, the local workers
-   on a node can be assigned a different range of ranks than before. Do not
-   use ``RANK`` and ``LOCAL_RANK`` in any functionality that assumes their
-   stability.
+   - ``RANK`` is NOT stable. On restarting a training job, the local workers on a node can be assigned a different range of ranks than before. Do not use ``RANK`` and ``LOCAL_RANK`` in any functionality that assumes their stability.
 
 
 .. note:: 
-   Torchrun supports *heteregenous scaling* i.e. each of your multinode
-   machines can have different number of workers participating in the
-   training job. In the video, I deployed the code on 2 machines with 4 and
-   2 GPUs each.
-
+   Torchrun supports *heteregenous scaling* i.e. each of your multinode machines can have different number of workers participating in the training job. In the video, I deployed the code on 2 machines with 4 and 2 GPUs each.
 
 
 Troubleshooting

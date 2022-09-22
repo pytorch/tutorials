@@ -58,16 +58,9 @@ Why use ``torchrun``
 ``torchrun`` handles the minutiae of distributed training so that you
 don't need to. For instance,
 
--  You don't need to set environment
-variables or explicitly pass the ``rank`` and ``world_size``; torchrun
-assigns this along with several other `environment
-variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__.
--  No need to call ``mp.spawn`` in your script; you only need a generic
-``main()`` entrypoint, and launch the script with ``torchrun``. This way
-the same script can be run in non-distributed as well as single-node and
-multinode setups. 
--  Gracefully restarting training from the last saved training
-snapshot
+-  You don't need to set environment variables or explicitly pass the ``rank`` and ``world_size``; torchrun assigns this along with several other `environment variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__.
+-  No need to call ``mp.spawn`` in your script; you only need a generic ``main()`` entrypoint, and launch the script with ``torchrun``. This way the same script can be run in non-distributed as well as single-node and multinode setups. 
+-  Gracefully restarting training from the last saved training snapshot
 
 
 Graceful restarts
