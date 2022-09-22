@@ -1,6 +1,6 @@
 `Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| **Single-node Multi-GPU training** \|\| `Fault
 Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
+training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
 
 
 Multi GPU training with DDP
@@ -31,7 +31,7 @@ Along the way, we will talk through important concepts in distributed training w
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
 
 
-View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multigpu.py
+View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py
 
 
 .. raw:: html
@@ -48,7 +48,7 @@ Use the helper function
 `torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) <https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm>`__ to convert all ``BatchNorm`` layers in the model to ``SyncBatchNorm``.
 
 
-Diff for `single_gpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multigpu.py>`__
+Diff for `single_gpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
 ----------------------------------------------------
 
 These are the changes you typically make to a single-GPU training script to enable DDP.
@@ -78,7 +78,7 @@ Constructing the process group
 
 .. code:: diff
 
-   + def ddp_setup(rank, world_size):
+   + def ddp_setup(rank: int, world_size: int):
    +   """
    +   Args:
    +       rank: Unique identifier of each process
@@ -168,8 +168,8 @@ Running the distributed training job
    ``world_size``.
 -  ``rank`` is auto-allocated by DDP when calling
    ```mp.spawn`` <https://pytorch.org/docs/stable/multiprocessing.html#spawning-subprocesses>`__.
--  ``world_size`` is the number of processes/GPUs we want to use
-   (typically 1 process per GPU).
+-  ``world_size`` is the number of processes across the training job. For GPU training, 
+this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
 
 
 Further Reading

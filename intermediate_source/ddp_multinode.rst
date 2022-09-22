@@ -1,6 +1,6 @@
-`Introduction <beginner/ddp_series_intro.html>`__ \|\| `What is DDP <beginner/ddp_theory.html>`__ \|\| `Single-node
-Multi-GPU training <beginner/ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <beginner/ddp_fault_tolerance.html>`__ \|\| **Multi-node
+`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-node
+Multi-GPU training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
+Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| **Multi-node
 training** \|\| `mingpt training <ddp_minGPT.html>`__
 
 Multinode Training
@@ -30,12 +30,12 @@ multinode training, and run our training script in both of the above ways.
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * Familiarity with `multi-GPU training <beginner/ddp_multigpu.html>`__ and `torchrun <beginner/ddp_fault_tolerance.html>`__ 
+      * Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
       * 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
 
-View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/blob/main/multinode_torchrun.py
+View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode_torchrun.py
 
 
 .. raw:: html
@@ -82,10 +82,10 @@ Troubleshooting
 Further Reading
 ---------------
 -  `Training a GPT model with DDP <ddp_minGPT.html>`__  (next tutorial in this series)
--  `Fault Tolerant distributed training <beginner/ddp_fault_tolerance.html>`__ (previous tutorial in this series)
+-  `Fault Tolerant distributed training <../beginner/ddp_fault_tolerance.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
 -  `Rendezvous
    arguments <https://pytorch.org/docs/stable/elastic/run.html#note-on-rendezvous-backend>`__
 -  `Setting up a cluster on
-   AWS <https://github.com/suraj813/minGPT-ddp/blob/master/mingpt/slurm/setup_pcluster_slurm.md>`__
+   AWS <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/slurm/setup_pcluster_slurm.md>`__
 -  `Slurm docs <https://slurm.schedmd.com/>`__

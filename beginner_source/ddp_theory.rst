@@ -1,7 +1,7 @@
 `Introduction <ddp_series_intro.html>`__ \|\| **What is DDP ** \|\| `Single-node
 Multi-GPU training <ddp_multigpu.html>`__ \|\| `Fault
 Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <intermediate/ddp_multinode.html>`__ \|\| `mingpt training <intermediate/ddp_minGPT.html>`__
+training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
 
 What is Distributed Data Parallel (DDP)
 =======================================

@@ -11,8 +11,8 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
 In distributed training, a single process failure can
 disrupt the entire training job. Since the susceptibility for failure can be higher here, making your training
-script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. the ability to increase or decrease the number
-of processes in realtime while running the training job.
+script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. 
+the ability to increase or decrease the number of processes during training.
 
 PyTorch has a utility ``torchrun`` that provides fault-tolerance as well
 as elastic training. When a failure occurs, torchrun logs the errors and
@@ -21,7 +21,7 @@ attempts to automatically restart all the processes from the last saved
 
 The snapshot saves more than just the model state; it can include
 details about the number of epochs run, optimizer states or any other
-mutable attribute of the training job necessary for its continuity.
+stateful attribute of the training job necessary for its continuity.
 
 .. grid:: 2
 
@@ -42,7 +42,7 @@ mutable attribute of the training job necessary for its continuity.
       
 
 
-View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu_torchrun.py
+View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py
 
 
 .. raw:: html
@@ -98,7 +98,7 @@ on available devices. Having this structure ensures your training job can contin
 
 
 
-Diff for `multigpu.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
+Diff for `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
 -----------------------------------------------------------
 
 Process group initialization
@@ -203,7 +203,7 @@ spawns the processes.
 Further Reading
 ---------------
 
--  `Multi-node training with DDP <intermediate/ddp_multinode.html>`__  (next tutorial in this series)
+-  `Multi-node training with DDP <../intermediate/ddp_multinode.html>`__  (next tutorial in this series)
 -  `Multi-GPU training with DDP <ddp_multigpu.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
 -  `Torchrun launch
