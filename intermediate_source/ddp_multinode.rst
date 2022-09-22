@@ -10,9 +10,10 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
 Multinode training involves deploying a training job across several
 machines. There are two ways to do this:  
-- running a torchrun command
+
+-  running a torchrun command
 on each machine with identical rendezvous arguments, or 
-- deploying it on a
+-  deploying it on a
 compute cluster using a workload manager (like SLURM)
 
 In this video we will go over the (minimal) code changes required to move from single-node multigpu to 
@@ -30,12 +31,12 @@ multinode training, and run our training script in both of the above ways.
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
-      * 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
-      * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
+      -  Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
+      -  2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
+      -  PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
 
-View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode_torchrun.py
+View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode.py
 
 
 .. raw:: html
@@ -46,22 +47,22 @@ View the code used in this video: https://github.com/pytorch/examples/blob/main/
 
 
 .. note:: 
--  In a single-node setup, local ranks are sufficient to identify each
-process uniquely. When running a multinode setup, use the global rank
-(given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely
-identify processes.
+   -  In a single-node setup, local ranks are sufficient to identify each
+   process uniquely. When running a multinode setup, use the global rank
+   (given by ``os.environ["RANK"]`` when using ``torchrun``) to uniquely
+   identify processes.
 
-- ``RANK`` is NOT stable. On restarting a training job, the local workers
-on a node can be assigned a different range of ranks than before. Do not
-use ``RANK`` and ``LOCAL_RANK`` in any functionality that assumes their
-stability.
+   - ``RANK`` is NOT stable. On restarting a training job, the local workers
+   on a node can be assigned a different range of ranks than before. Do not
+   use ``RANK`` and ``LOCAL_RANK`` in any functionality that assumes their
+   stability.
 
 
 .. note:: 
-Torchrun supports *heteregenous scaling* i.e. each of your multinode
-machines can have different number of workers participating in the
-training job. In the video, I deployed the code on 2 machines with 4 and
-2 GPUs each.
+   Torchrun supports *heteregenous scaling* i.e. each of your multinode
+   machines can have different number of workers participating in the
+   training job. In the video, I deployed the code on 2 machines with 4 and
+   2 GPUs each.
 
 
 

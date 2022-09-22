@@ -41,11 +41,11 @@ View the code used in this video: https://github.com/pytorch/examples/blob/main/
    </div>
 
 .. note:: 
-If your model contains any ``BatchNorm`` layer, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm`` 
-layers across replicas.
+   If your model contains any ``BatchNorm`` layer, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm`` 
+   layers across replicas.
 
-Use the helper function 
-`torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) <https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm>`__ to convert all ``BatchNorm`` layers in the model to ``SyncBatchNorm``.
+   Use the helper function 
+   `torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) <https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm>`__ to convert all ``BatchNorm`` layers in the model to ``SyncBatchNorm``.
 
 
 Diff for `single_gpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
@@ -55,6 +55,10 @@ These are the changes you typically make to a single-GPU training script to enab
 
 Imports
 ~~~~~~~
+-  ``torch.multiprocessing`` is a PyTorch wrapper around python's native
+   multiprocessing
+-  The dsitributed process group contains all the processes that can
+   communicate and synchronize with each other.
 
 .. code:: diff
 
@@ -68,13 +72,17 @@ Imports
    + from torch.distributed import init_process_group, destroy_process_group
    + import os
 
--  ``torch.multiprocessing`` is a PyTorch wrapper around python's native
-   multiprocessing
--  The dsitributed process group contains all the processes that can
-   communicate and synchronize with each other.
 
 Constructing the process group
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  The process group can be initialized by TCP (default) or from a
+   shared file-system. Read more on `process group
+   initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__
+-  `init_process_group <https://pytorch.org/docs/stable/distributed.html?highlight=init_process_group#torch.distributed.init_process_group>`__
+   initializes the distributed process group.
+-  Read more about `choosing a DDP
+   backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
 
 .. code:: diff
 
@@ -88,13 +96,6 @@ Constructing the process group
    +   os.environ["MASTER_PORT"] = "12355"
    +   init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
--  `Choosing a DDP
-   backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
--  The process group can be initialized by TCP (default) or from a
-   shared file-system. `Read more on process group
-   initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__
--  `init_process_group <https://pytorch.org/docs/stable/distributed.html?highlight=init_process_group#torch.distributed.init_process_group>`__
-   initializes the distributed process group.
 
 Constructing the DDP model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +108,11 @@ Constructing the DDP model
 Distributing input data
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+-  `DistributedSampler <https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler>`__
+   chunks the input data across all distributed processes.
+-  Each process will receive an input batch of 32 samples; the effective
+   batch size is ``32 * nprocs``, or 128 when using 4 GPUs.
+
 .. code:: diff
 
    train_data = torch.utils.data.DataLoader(
@@ -117,13 +123,13 @@ Distributing input data
    +   sampler=DistributedSampler(train_dataset),
    )
 
--  `DistributedSampler <https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler>`__
-   chunks the input data across all distributed processes.
--  Each process will receive an input batch of 32 samples; the effective
-   batch size is ``32 * nprocs``, or 128 when using 4 GPUs.
 
 Saving model checkpoints
 ~~~~~~~~~~~~~~~~~~~~~~~~
+-  We only need to save model checkpoints from one process. Without this
+condition, each process would save its copy of the identical mode. Read
+more on `saving and loading models with
+DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
 
 .. code:: diff
 
@@ -135,13 +141,16 @@ Saving model checkpoints
    + if self.gpu_id == 0 and epoch % self.save_every == 0:
       self._save_checkpoint(epoch)
 
-We only need to save model checkpoints from one process. Without this
-condition, each process would save its copy of the identical mode. Read
-more on `saving and loading models with
-DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
 
 Running the distributed training job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  Include new arguments ``rank`` (replacing ``device``) and
+   ``world_size``.
+-  ``rank`` is auto-allocated by DDP when calling
+   `mp.spawn <https://pytorch.org/docs/stable/multiprocessing.html#spawning-subprocesses>`__.
+-  ``world_size`` is the number of processes across the training job. For GPU training, 
+this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
 
 .. code:: diff
 
@@ -164,12 +173,6 @@ Running the distributed training job
    +  world_size = torch.cuda.device_count()
    +  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)
 
--  Include new arguments ``rank`` (replacing ``device``) and
-   ``world_size``.
--  ``rank`` is auto-allocated by DDP when calling
-   ```mp.spawn`` <https://pytorch.org/docs/stable/multiprocessing.html#spawning-subprocesses>`__.
--  ``world_size`` is the number of processes across the training job. For GPU training, 
-this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
 
 
 Further Reading

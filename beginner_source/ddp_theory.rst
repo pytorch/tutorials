@@ -1,4 +1,4 @@
-`Introduction <ddp_series_intro.html>`__ \|\| **What is DDP ** \|\| `Single-node
+`Introduction <ddp_series_intro.html>`__ \|\| **What is DDP** \|\| `Single-node
 Multi-GPU training <ddp_multigpu.html>`__ \|\| `Fault
 Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
 training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
@@ -47,7 +47,7 @@ is an older approach to data parallelism. DP is trivially simple (with just one 
 DDP improves upon the architecture in a few ways:
 
 +---------------------------------------+------------------------------+
-| DP                                    | DDP                          |
+| DataParallel                          | DistributedDataParallel      |
 +=======================================+==============================+
 | More overhead; model is replicated    | Model is replicated only     |
 | and destroyed at each forward pass    | once                         |

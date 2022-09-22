@@ -15,7 +15,7 @@ script robust is particularly important here. You might also prefer your trainin
 the ability to increase or decrease the number of processes during training.
 
 PyTorch has a utility ``torchrun`` that provides fault-tolerance as well
-as elastic training. When a failure occurs, torchrun logs the errors and
+as elastic training. When a failure occurs, ``torchrun`` logs the errors and
 attempts to automatically restart all the processes from the last saved
 “snapshot” of the training job. 
 
@@ -57,15 +57,16 @@ Why use ``torchrun``
 
 ``torchrun`` handles the minutiae of distributed training so that you
 don't need to. For instance,
-- You don't need to set environment
+
+-  You don't need to set environment
 variables or explicitly pass the ``rank`` and ``world_size``; torchrun
 assigns this along with several other `environment
 variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__.
-- No need to call ``mp.spawn`` in your script; you only need a generic
+-  No need to call ``mp.spawn`` in your script; you only need a generic
 ``main()`` entrypoint, and launch the script with ``torchrun``. This way
 the same script can be run in non-distributed as well as single-node and
 multinode setups. 
-- Gracefully restarting training from the last saved training
+-  Gracefully restarting training from the last saved training
 snapshot
 
 
@@ -87,11 +88,11 @@ For graceful restarts, it helps to have the following structure:
        if should_checkpoint:
          save_snapshot(snapshot_path)
 
-If a failure occurs, torchrun will terminate all the processes and restart them. 
+If a failure occurs, ``torchrun`` will terminate all the processes and restart them. 
 Each process entrypoint first loads and initializes the last saved snapshot, and continues training from there.
 So at any failure, you only lose the training progress from the last saved snapshot. 
 
-In elastic training, whenever there are any membership changes (adding or removing nodes), torchrun will terminate and spawn processes
+In elastic training, whenever there are any membership changes (adding or removing nodes), ``torchrun`` will terminate and spawn processes
 on available devices. Having this structure ensures your training job can continue without manual intervention.
 
 
@@ -103,6 +104,10 @@ Diff for `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed
 
 Process group initialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  ``torchrun`` assigns ``RANK`` and ``WORLD_SIZE`` automatically,
+   amongst `other env
+   variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__
 
 .. code:: diff
 
@@ -118,9 +123,6 @@ Process group initialization
    -     init_process_group(backend="nccl", rank=rank, world_size=world_size)
    +     init_process_group(backend="nccl")
 
--  ``torchrun`` assigns ``RANK`` and ``WORLD_SIZE`` automatically,
-   amongst `other env
-   variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__
 
 Use Torchrun-provided env variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,6 +134,9 @@ Use Torchrun-provided env variables
 
 Saving and loading snapshots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regularly storing all the relevant information in snapshots allows our
+training job to seamlessly resume after an interruption.
 
 .. code:: diff
 
@@ -148,11 +153,12 @@ Saving and loading snapshots
    +     self.epochs_run = snapshot["EPOCHS_RUN"]
    +     print(f"Resuming training from snapshot at Epoch {self.epochs_run}")
 
-Regularly storing all the relevant information in snapshots allows our
-training job to seamlessly resume after an interruption.
 
 Loading a snapshot in the Trainer constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When restarting an interrupted training job, your script will first try
+to load a snapshot to resume training from.
 
 .. code:: diff
 
@@ -163,11 +169,12 @@ Loading a snapshot in the Trainer constructor
    +     self._load_snapshot(snapshot_path)
       ...
 
-When restarting an interrupted training job, your script will first try
-to load a snapshot to resume training from.
 
 Resuming training
 ~~~~~~~~~~~~~~~~~
+
+Training can resume from the last epoch run, instead of starting all
+over from scratch.
 
 .. code:: diff
 
@@ -176,11 +183,11 @@ Resuming training
    +  for epoch in range(self.epochs_run, max_epochs):
          self._run_epoch(epoch)
 
-Training can resume from the last epoch run, instead of starting all
-over from scratch.
 
 Running the script
 ~~~~~~~~~~~~~~~~~~
+Simply call your entrypoint function as you would for a non-multiprocessing script; ``torchrun`` automatically
+spawns the processes.
 
 .. code:: diff
 
@@ -192,8 +199,6 @@ Running the script
    -  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)
    +  main(save_every, total_epochs)
 
-Call your entrypoint function as usual; ``torchrun`` automatically
-spawns the processes.
 
 .. code:: diff
 

@@ -1,7 +1,7 @@
 `Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-node
 Multi-GPU training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
 Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <ddp_multinode.html>` \|\| **mingpt training**
+training <ddp_multinode.html>`__ \|\| **mingpt training**
 
 Training “real-world” models with DDP
 =====================================
@@ -9,10 +9,10 @@ Training “real-world” models with DDP
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
 In this video we walk through the process of training a GPT model in multinode DDP.
-We first clone the `minGPT repo <https://github.com/karpathy/minGPT>` and refactor the Trainer
+We first clone the `minGPT repo <https://github.com/karpathy/minGPT>`__ and refactor the Trainer
 to resemble the structure we have used in this series. Watch the video for details on these changes.
 
-We use `hydra <https://hydra.cc/>` to centrally manage all the configurations for our training run.  
+We use `hydra <https://hydra.cc/>`__ to centrally manage all the configurations for our training run.  
 Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster.
 
 
@@ -30,10 +30,10 @@ Once the code has been refactored, we run it first on a single-node with 4 GPUs,
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
-      * [Optional] Familiarity with `multinode training <ddp_multinode.html>`__
-      * 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
-      * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
+      - Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
+      - [Optional] Familiarity with `multinode training <ddp_multinode.html>`__
+      - 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
+      - PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
 
 
@@ -52,13 +52,11 @@ View the code used in this video: https://github.com/pytorch/examples/tree/main/
 
 Files used for training
 ~~~~~~~~~~~~~~~~~~~~~~~~
-- `trainer.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/trainer.py>` includes the Trainer class that runs the distributed training iterations on the model
-with the provided dataset.
-- `model.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/model.py>` defines the model architecture.
-- `char_dataset.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/char_dataset.py>` contains the `Dataset`class for a character-level dataset.
-- `gpt2_train_cfg.yaml <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/gpt2_train_cfg.yaml>` contains the configurations for data, model, optimizer and training run.
-- `main.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/main.py>` is the entry point to the trainig job. 
-It sets up the DDP process group, reads all the configurations and runs the training job.
+- `trainer.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/trainer.py>`__ includes the Trainer class that runs the distributed training iterations on the model with the provided dataset.
+- `model.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/model.py>`__ defines the model architecture.
+- `char_dataset.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/char_dataset.py>`__ contains the `Dataset`class for a character-level dataset.
+- `gpt2_train_cfg.yaml <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/gpt2_train_cfg.yaml>`__ contains the configurations for data, model, optimizer and training run.
+- `main.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/main.py>`__ is the entry point to the trainig job. It sets up the DDP process group, reads all the configurations and runs the training job.
 
 
 Saving and Loading from the cloud
@@ -79,9 +77,9 @@ When is DDP not enough?
 A typical training run's memory footprint consists of model weights, activations, gradients, the input batch, and the optimizer state.
 Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint. 
 When models grow larger, more aggressive techniques might be useful:
-* `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are 
+- `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are 
 recomputed during the backward pass. In this approach, we do more compute but save on memory footprint.
-* `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs,
+- `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs,
 and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__
 to learn how we trained a 1 Trillion parameter model with FSDP.
 
