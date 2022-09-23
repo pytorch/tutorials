@@ -9,7 +9,7 @@ Multi GPU training with DDP
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
 In the `previous tutorial <ddp_theory.html>`__, we got a high-level overview of how DDP works; now we see how to use DDP in code.
-In this tutorial we start with a single-GPU training script, and migrate that to running it on 4 GPUs on a single node. 
+In this tutorial, we start with a single-GPU training script and migrate that to running it on 4 GPUs on a single node. 
 Along the way, we will talk through important concepts in distributed training while implementing them in our code.
 
 .. grid:: 2
