@@ -14,7 +14,7 @@ disrupt the entire training job. Since the susceptibility for failure can be hig
 script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. 
 the ability to increase or decrease the number of processes during training.
 
-PyTorch has a utility ``torchrun`` that provides fault-tolerance as well
+PyTorch offers a utility called``torchrun`` that provides fault-tolerance and
 as elastic training. When a failure occurs, ``torchrun`` logs the errors and
 attempts to automatically restart all the processes from the last saved
 “snapshot” of the training job. 
