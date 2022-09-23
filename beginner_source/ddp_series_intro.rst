@@ -1,7 +1,7 @@
-**Introduction** \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-node
-Multi-GPU training <ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
+**Introduction** \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <ddp_multigpu.html>`__ \|\| `Fault
+Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-Node
+training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
 
 Distributed Data Parallel in PyTorch - Video Tutorials
 ======================================================
@@ -42,11 +42,11 @@ Tutorial sections
 0. Introduction (this page)
 1. `What is DDP? <ddp_theory.html>`__ Gently introduces what DDP is doing
    under the hood
-2. `Single-node Multi-GPU training <ddp_multigpu.html>`__ Training models
+2. `Single-Node Multi-GPU Training <ddp_multigpu.html>`__ Training models
    using multiple GPUs on a single machine
 3. `Fault-tolerant distributed training <ddp_fault_tolerance.html>`__
    Making your distributed training job robust with torchrun
-4. `Multi-node training <./intermediate/ddp_multinode.html>`__ Training models using
+4. `Multi-Node training <./intermediate/ddp_multinode.html>`__ Training models using
    multiple GPUs on multiple machines
 5. `Training a GPT model with DDP <../intermediate/ddp_minGPT.html>`__ “Real-world”
    example of training a `minGPT <https://github.com/karpathy/minGPT>`__

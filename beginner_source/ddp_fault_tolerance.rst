@@ -1,7 +1,7 @@
-`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-node
-Multi-GPU training <ddp_multigpu.html>`__ \|\| **Fault
-Tolerance** \|\| `Multi-node
-training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <ddp_multigpu.html>`__ \|\| **Fault
+Tolerance** \|\| `Multi-Node
+training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
 
 
 Fault-tolerant Distributed Training with ``torchrun``
@@ -14,8 +14,8 @@ disrupt the entire training job. Since the susceptibility for failure can be hig
 script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. 
 the ability to increase or decrease the number of processes during training.
 
-PyTorch offers a utility called``torchrun`` that provides fault-tolerance and
-as elastic training. When a failure occurs, ``torchrun`` logs the errors and
+PyTorch offers a utility called``torchrun`` that provides fault-tolerance and 
+elastic training. When a failure occurs, ``torchrun`` logs the errors and
 attempts to automatically restart all the processes from the last saved
 “snapshot” of the training job. 
 
@@ -65,7 +65,7 @@ don't need to. For instance,
 
 Graceful restarts
 ~~~~~~~~~~~~~~~~~~~~~
-For graceful restarts, it helps to have the following structure:
+For graceful restarts, you should structure your train script like:
 
 .. code:: python
 
@@ -201,8 +201,8 @@ spawns the processes.
 Further Reading
 ---------------
 
--  `Multi-node training with DDP <../intermediate/ddp_multinode.html>`__  (next tutorial in this series)
--  `Multi-GPU training with DDP <ddp_multigpu.html>`__ (previous tutorial in this series)
+-  `Multi-Node training with DDP <../intermediate/ddp_multinode.html>`__  (next tutorial in this series)
+-  `Multi-GPU Training with DDP <ddp_multigpu.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
 -  `Torchrun launch
    options <https://github.com/pytorch/pytorch/blob/bbe803cb35948df77b46a2d38372910c96693dcd/torch/distributed/run.py#L401>`__

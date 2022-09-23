@@ -1,7 +1,7 @@
-`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-node
-Multi-GPU training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <ddp_multinode.html>`__ \|\| **mingpt training**
+`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
+Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| `Multi-Node
+training <ddp_multinode.html>`__ \|\| **minGPT Training**
 
 Training “real-world” models with DDP
 =====================================
@@ -77,16 +77,13 @@ When is DDP not enough?
 A typical training run's memory footprint consists of model weights, activations, gradients, the input batch, and the optimizer state.
 Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint. 
 When models grow larger, more aggressive techniques might be useful:
-- `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are 
-recomputed during the backward pass. In this approach, we do more compute but save on memory footprint.
-- `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs,
-and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__
-to learn how we trained a 1 Trillion parameter model with FSDP.
+-  `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint.
+-  `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ to learn how we trained a 1 Trillion parameter model with FSDP.
 
 
 Further Reading
 ---------------
--  `Multi-node training with DDP <ddp_multinode.html>`__ (previous tutorial in this series)
+-  `Multi-Node training with DDP <ddp_multinode.html>`__ (previous tutorial in this series)
 -  `Mixed Precision training <https://pytorch.org/docs/stable/amp.html>`__
 -  `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__
 -  `Training a 1T parameter model with FSDP <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__

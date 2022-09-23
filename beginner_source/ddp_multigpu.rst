@@ -1,6 +1,6 @@
-`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| **Single-node Multi-GPU training** \|\| `Fault
-Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-node
-training <../intermediate/ddp_multinode.html>`__ \|\| `mingpt training <../intermediate/ddp_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| **Single-Node Multi-GPU Training** \|\| `Fault
+Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-Node
+training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
 
 
 Multi GPU training with DDP
@@ -126,10 +126,10 @@ Distributing input data
 
 Saving model checkpoints
 ~~~~~~~~~~~~~~~~~~~~~~~~
--  We only need to save model checkpoints from one process. Without this
-condition, each process would save its copy of the identical mode. Read
-more on saving and loading models with
-DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
+-  We only need to save model checkpoints from one process. Without this 
+   condition, each process would save its copy of the identical mode. Read
+   more on saving and loading models with
+   DDP `here <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
 
 .. code:: diff
 
@@ -150,7 +150,7 @@ Running the distributed training job
 -  ``rank`` is auto-allocated by DDP when calling
    `mp.spawn <https://pytorch.org/docs/stable/multiprocessing.html#spawning-subprocesses>`__.
 -  ``world_size`` is the number of processes across the training job. For GPU training, 
-this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
+   this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
 
 .. code:: diff
 
