@@ -8,7 +8,7 @@ Training “real-world” models with DDP
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
-In this video we walk through the process of training a GPT model in multinode DDP.
+In this video, we will review the process of training a GPT model in multinode DDP.
 We first clone the `minGPT repo <https://github.com/karpathy/minGPT>`__ and refactor the Trainer
 to resemble the structure we have used in this series. Watch the video for details on these changes.
 
@@ -24,7 +24,7 @@ Once the code has been refactored, we run it first on a single-node with 4 GPUs,
       -  Refactor a (nicely structured) project to use DDP training
       -  Best practices when writing a distributed training script
       -  Increased flexibility with saving/loading artifacts in the cloud
-      -  When is DDP NOT suitable
+      -  When DDP is NOT suitable
 
 
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
@@ -55,13 +55,13 @@ Files used for training
 - `trainer.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/trainer.py>`__ includes the Trainer class that runs the distributed training iterations on the model with the provided dataset.
 - `model.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/model.py>`__ defines the model architecture.
 - `char_dataset.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/char_dataset.py>`__ contains the `Dataset`class for a character-level dataset.
-- `gpt2_train_cfg.yaml <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/gpt2_train_cfg.yaml>`__ contains the configurations for data, model, optimizer and training run.
+- `gpt2_train_cfg.yaml <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/gpt2_train_cfg.yaml>`__ contains the configurations for data, model, optimizer, and training run.
 - `main.py <https://github.com/pytorch/examples/tree/blob/distributed/minGPT-ddp/mingpt/main.py>`__ is the entry point to the trainig job. It sets up the DDP process group, reads all the configurations and runs the training job.
 
 
 Saving and Loading from the cloud
-~~~~~~~~~~~~~~~~~~~~~~~~
-In the video, we save training snapshots directly to the cloud. This gives us the flexibility to continue training
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In the video above, we save training snapshots directly to the cloud. This gives us the flexibility to continue training
 from any node that has access to the cloud bucket.
 
 

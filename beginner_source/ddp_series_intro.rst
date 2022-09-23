@@ -28,9 +28,9 @@ The tutorial assumes a basic familiarity with model training in PyTorch.
 Running the code
 ----------------
 
-You will need multiple CUDA GPUs to run the tutorial code. Typically
+You will need multiple CUDA GPUs to run the tutorial code. Typically,
 this can be done on a cloud instance with multiple GPUs (the tutorials
-use an AWS p3 instance with 4 GPUs).
+use an Amazon EC2 P3 instance with 4 GPUs).
 
 The tutorial code is hosted at this `github
 repo <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series>`__. Clone the repo and
@@ -39,7 +39,7 @@ follow along!
 Tutorial sections
 -----------------
 
-0. Introduction This page
+0. Introduction (this page)
 1. `What is DDP? <ddp_theory.html>`__ Gently introduces what DDP is doing
    under the hood
 2. `Single-node Multi-GPU training <ddp_multigpu.html>`__ Training models

@@ -28,7 +28,7 @@ algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-dee
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * You know `how to train <https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html>`__` a non-distributed model in PyTorch
+      * Familiarity with `basic non-distributed training  <https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html>`__ in PyTorch
 
 
 

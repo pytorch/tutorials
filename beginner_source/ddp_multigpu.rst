@@ -55,7 +55,7 @@ These are the changes you typically make to a single-GPU training script to enab
 
 Imports
 ~~~~~~~
--  ``torch.multiprocessing`` is a PyTorch wrapper around python's native
+-  ``torch.multiprocessing`` is a PyTorch wrapper around Python's native
    multiprocessing
 -  The dsitributed process group contains all the processes that can
    communicate and synchronize with each other.
@@ -128,7 +128,7 @@ Saving model checkpoints
 ~~~~~~~~~~~~~~~~~~~~~~~~
 -  We only need to save model checkpoints from one process. Without this
 condition, each process would save its copy of the identical mode. Read
-more on `saving and loading models with
+more on saving and loading models with
 DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
 
 .. code:: diff
