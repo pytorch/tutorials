@@ -141,6 +141,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/nestedtensor.html
    :tags: NestedTensor
 
+.. MaskedTensor
+
+.. customcarditem::
+   :header: MaskedTensor Overview
+   :card_description: Learn about masked tensors, the source of truth for specified and unspecified values
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_overview.html
+   :tags: MaskedTensor
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -172,3 +181,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
    prototype/nestedtensor.html
+   prototype/maskedtensor_overview.html
