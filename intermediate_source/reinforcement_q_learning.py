@@ -6,7 +6,7 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v0 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
+on the CartPole-v1 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
 
 **Task**
 
@@ -30,30 +30,24 @@ for longer duration, accumulating larger return.
 
 The CartPole task is designed so that the inputs to the agent are 4 real
 values representing the environment state (position, velocity, etc.).
-However, neural networks can solve the task purely by looking at the
-scene, so we'll use a patch of the screen centered on the cart as an
-input. Because of this, our results aren't directly comparable to the
-ones from the official leaderboard - our task is much harder.
-Unfortunately this does slow down the training, because we have to
-render all the frames.
+We take these 4 inputs without any scaling and pass them through a 
+small fully-connected network with 2 outputs, one for each action. 
+The network is trained to predict the expected value for each action, 
+given the input state. The action with the highest expected value is 
+then chosen.
 
-Strictly speaking, we will present the state as the difference between
-the current screen patch and the previous one. This will allow the agent
-to take the velocity of the pole into account from one image.
 
 **Packages**
 
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`).
+(Install using `pip install gym`). Developed on v0.26.1 of gym.
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
 -  optimization (``torch.optim``)
 -  automatic differentiation (``torch.autograd``)
--  utilities for vision tasks (``torchvision`` - `a separate
-   package <https://github.com/pytorch/vision>`__).
 
 """
 
@@ -66,15 +60,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 from itertools import count
-from PIL import Image
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import torchvision.transforms as T
 
-
+# Wrap the environment to limit the number of steps per episode
 env = TimeLimit(gym.make('CartPole-v1'), max_episode_steps=500)
 
 # set up matplotlib
@@ -145,9 +137,11 @@ class ReplayMemory(object):
 # :math:`R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t`, where
 # :math:`R_{t_0}` is also known as the *return*. The discount,
 # :math:`\gamma`, should be a constant between :math:`0` and :math:`1`
-# that ensures the sum converges. It makes rewards from the uncertain far
-# future less important for our agent than the ones in the near future
-# that it can be fairly confident about.
+# that ensures the sum converges. A lower :math:`\gamma` makes 
+# rewards from the uncertain far future less important for our agent 
+# than the ones in the near future that it can be fairly confident 
+# about. It also encourages agents to collect reward closer in time 
+# than equivalent rewards temporally future away.
 #
 # The main idea behind Q-learning is that if we had a function
 # :math:`Q^*: State \times Action \rightarrow \mathbb{R}`, that could tell
@@ -170,7 +164,7 @@ class ReplayMemory(object):
 # The difference between the two sides of the equality is known as the
 # temporal difference error, :math:`\delta`:
 #
-# .. math:: \delta = Q(s, a) - (r + \gamma \max_a Q(s', a))
+# .. math:: \delta = Q(s, a) - (r + \gamma \max_a' Q(s', a))
 #
 # To minimise this error, we will use the `Huber
 # loss <https://en.wikipedia.org/wiki/Huber_loss>`__. The Huber loss acts
@@ -239,6 +233,13 @@ class DQN(nn.Module):
 #    containing the main training loop, and will update after every
 #    episode.
 
+# BATCH_SIZE is the number of transitions sampled from the replay buffer
+# GAMMA is the discount factor as mentioned in the previous section
+# EPS_START is the starting value of epsilon
+# EPS_END is the final value of epsilon
+# EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
+# TAU is the update rate of the target network
+# LR is the learning rate of the AdamW optimizer
 BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
@@ -274,7 +275,7 @@ def select_action(state):
             # found, so we pick action with the larger expected reward.
             return policy_net(state).max(1)[1].view(1, 1)
     else:
-        return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
+        return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
 
 
 episode_durations = []
@@ -312,11 +313,9 @@ def plot_durations():
 # :math:`V(s_{t+1}) = \max_a Q(s_{t+1}, a)`, and combines them into our
 # loss. By definition we set :math:`V(s) = 0` if :math:`s` is a terminal
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
-# added stability. The target network has its weights kept frozen most of
-# the time, but is updated with the policy network's weights every so often.
-# This is usually a set number of steps but we shall use episodes for
-# simplicity.
-#
+# added stability. The target network is updated at every step with a 
+# `soft update <https://arxiv.org/pdf/1509.02971.pdf>`__ controlled by 
+# the hyperparameter ``TAU``, which was previously defined. 
 
 def optimize_model():
     if len(memory) < BATCH_SIZE:
@@ -368,15 +367,13 @@ def optimize_model():
 ######################################################################
 #
 # Below, you can find the main training loop. At the beginning we reset
-# the environment and initialize the ``state`` Tensor. Then, we sample
-# an action, execute it, observe the next screen and the reward (always
+# the environment and obtain the initial ``state`` Tensor. Then, we sample
+# an action, execute it, observe the next state and the reward (always
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.
 #
-# Below, `num_episodes` is set small. You should download
-# the notebook and run lot more epsiodes, such as 300+ for meaningful
-# duration improvements.
-#
+# Below, `num_episodes` to 1000, but you should the model constantly
+# achieve 500 steps within 600 training episodes.
 
 num_episodes = 1000
 for i_episode in range(num_episodes):
@@ -404,8 +401,7 @@ for i_episode in range(num_episodes):
         # Perform one step of the optimization (on the policy network)
         optimize_model()
 
-        # Soft update of the target network's weights at every step
-        # https://arxiv.org/pdf/1509.02971.pdf
+        # Soft update of the target network's weights
         # θ′ ← τ θ + (1 −τ )θ′
         target_net_state_dict = target_net.state_dict()
         policy_net_state_dict = policy_net.state_dict()
