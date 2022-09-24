@@ -66,7 +66,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-# Wrap the environment to limit the number of steps per episode
+# Wrap the environment to limit the maximum number of steps per episode
 env = TimeLimit(gym.make('CartPole-v1'), max_episode_steps=500)
 
 # set up matplotlib
@@ -198,11 +198,11 @@ class ReplayMemory(object):
 
 class DQN(nn.Module):
 
-    def __init__(self, outputs):
+    def __init__(self, n_observations, n_actions):
         super(DQN, self).__init__()
-        self.layer1 = nn.Linear(4, 128)
+        self.layer1 = nn.Linear(n_observations, 128)
         self.layer2 = nn.Linear(128, 128)
-        self.layer3 = nn.Linear(128, outputs)
+        self.layer3 = nn.Linear(128, n_actions)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
@@ -250,9 +250,12 @@ LR = 1e-4
 
 # Get number of actions from gym action space
 n_actions = env.action_space.n
+# Get the number of state observations
+state, _ = env.reset()
+n_observations = len(state)
 
-policy_net = DQN(n_actions).to(device)
-target_net = DQN(n_actions).to(device)
+policy_net = DQN(n_observations, n_actions).to(device)
+target_net = DQN(n_observations, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
