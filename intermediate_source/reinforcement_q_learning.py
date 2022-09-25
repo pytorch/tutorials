@@ -66,8 +66,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-# Wrap the environment to limit the maximum number of steps per episode
-env = TimeLimit(gym.make('CartPole-v1'), max_episode_steps=500)
+env = gym.make('CartPole-v1')
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
