@@ -1,7 +1,7 @@
-`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| `Single-Node
-Multi-GPU Training <ddp_multigpu.html>`__ \|\| **Fault
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_series_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <ddp_series_multigpu.html>`__ \|\| **Fault
 Tolerance** \|\| `Multi-Node
-training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
+training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 
 Fault-tolerant Distributed Training with ``torchrun``
@@ -35,8 +35,8 @@ stateful attribute of the training job necessary for its continuity.
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * High-level `overview <ddp_theory.html>`__ of DDP
-      * Familiarity with `DDP code <ddp_multigpu.html>`__ 
+      * High-level `overview <ddp_series_theory.html>`__ of DDP
+      * Familiarity with `DDP code <ddp_series_multigpu.html>`__ 
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
       
@@ -201,8 +201,8 @@ spawns the processes.
 Further Reading
 ---------------
 
--  `Multi-Node training with DDP <../intermediate/ddp_multinode.html>`__  (next tutorial in this series)
--  `Multi-GPU Training with DDP <ddp_multigpu.html>`__ (previous tutorial in this series)
+-  `Multi-Node training with DDP <../intermediate/ddp_series_multinode.html>`__  (next tutorial in this series)
+-  `Multi-GPU Training with DDP <ddp_series_multigpu.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
 -  `Torchrun launch
    options <https://github.com/pytorch/pytorch/blob/bbe803cb35948df77b46a2d38372910c96693dcd/torch/distributed/run.py#L401>`__

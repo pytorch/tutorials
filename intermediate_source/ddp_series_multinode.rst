@@ -1,7 +1,7 @@
-`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-Node
-Multi-GPU Training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| **Multi-Node
-training** \|\| `minGPT Training <ddp_minGPT.html>`__
+`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_series_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <../beginner/ddp_series_multigpu.html>`__ \|\| `Fault
+Tolerance <../beginner/ddp_series_fault_tolerance.html>`__ \|\| **Multi-Node
+training** \|\| `minGPT Training <ddp_series_minGPT.html>`__
 
 Multinode Training
 ==================
@@ -31,7 +31,7 @@ on 4 GPUs on a single node will be faster than running it on 4 nodes with 1 GPU 
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      -  Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
+      -  Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
       -  2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
       -  PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
@@ -80,8 +80,8 @@ Troubleshooting
 
 Further Reading
 ---------------
--  `Training a GPT model with DDP <ddp_minGPT.html>`__  (next tutorial in this series)
--  `Fault Tolerant distributed training <../beginner/ddp_fault_tolerance.html>`__ (previous tutorial in this series)
+-  `Training a GPT model with DDP <ddp_series_minGPT.html>`__  (next tutorial in this series)
+-  `Fault Tolerant distributed training <../beginner/ddp_series_fault_tolerance.html>`__ (previous tutorial in this series)
 -  `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__
 -  `Rendezvous
    arguments <https://pytorch.org/docs/stable/elastic/run.html#note-on-rendezvous-backend>`__

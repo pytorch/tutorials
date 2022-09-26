@@ -1,7 +1,7 @@
 `Introduction <ddp_series_intro.html>`__ \|\| **What is DDP** \|\| `Single-Node
-Multi-GPU Training <ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-Node
-training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
+Multi-GPU Training <ddp_series_multigpu.html>`__ \|\| `Fault
+Tolerance <ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
+training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 What is Distributed Data Parallel (DDP)
 =======================================
@@ -63,7 +63,7 @@ DDP improves upon the architecture in a few ways:
 Further Reading
 ---------------
 
--  `Multi-GPU training with DDP <ddp_multigpu.html>`__ (next tutorial in this series)
+-  `Multi-GPU training with DDP <ddp_series_multigpu.html>`__ (next tutorial in this series)
 -  `DDP
    API <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
 -  `DDP Internal

@@ -1,7 +1,7 @@
-`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_theory.html>`__ \|\| `Single-Node
-Multi-GPU Training <../beginner/ddp_multigpu.html>`__ \|\| `Fault
-Tolerance <../beginner/ddp_fault_tolerance.html>`__ \|\| `Multi-Node
-training <ddp_multinode.html>`__ \|\| **minGPT Training**
+`Introduction <../beginner/ddp_series_intro.html>`__ \|\| `What is DDP <../beginner/ddp_series_theory.html>`__ \|\| `Single-Node
+Multi-GPU Training <../beginner/ddp_series_multigpu.html>`__ \|\| `Fault
+Tolerance <../beginner/ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
+training <ddp_series_multinode.html>`__ \|\| **minGPT Training**
 
 Training “real-world” models with DDP
 =====================================
@@ -30,8 +30,8 @@ Once the code has been refactored, we run it first on a single-node with 4 GPUs,
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      - Familiarity with `multi-GPU training <../beginner/ddp_multigpu.html>`__ and `torchrun <../beginner/ddp_fault_tolerance.html>`__ 
-      - [Optional] Familiarity with `multinode training <ddp_multinode.html>`__
+      - Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
+      - [Optional] Familiarity with `multinode training <ddp_series_multinode.html>`__
       - 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
       - PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
@@ -84,7 +84,7 @@ When models grow larger, more aggressive techniques might be useful:
 
 Further Reading
 ---------------
--  `Multi-Node training with DDP <ddp_multinode.html>`__ (previous tutorial in this series)
+-  `Multi-Node training with DDP <ddp_series_multinode.html>`__ (previous tutorial in this series)
 -  `Mixed Precision training <https://pytorch.org/docs/stable/amp.html>`__
 -  `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__
 -  `Training a 1T parameter model with FSDP <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__

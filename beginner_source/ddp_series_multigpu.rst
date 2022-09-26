@@ -1,6 +1,6 @@
-`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_theory.html>`__ \|\| **Single-Node Multi-GPU Training** \|\| `Fault
-Tolerance <ddp_fault_tolerance.html>`__ \|\| `Multi-Node
-training <../intermediate/ddp_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_series_theory.html>`__ \|\| **Single-Node Multi-GPU Training** \|\| `Fault
+Tolerance <ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
+training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 
 Multi GPU training with DDP
@@ -8,7 +8,7 @@ Multi GPU training with DDP
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
-In the `previous tutorial <ddp_theory.html>`__, we got a high-level overview of how DDP works; now we see how to use DDP in code.
+In the `previous tutorial <ddp_series_theory.html>`__, we got a high-level overview of how DDP works; now we see how to use DDP in code.
 In this tutorial, we start with a single-GPU training script and migrate that to running it on 4 GPUs on a single node. 
 Along the way, we will talk through important concepts in distributed training while implementing them in our code.
 
@@ -26,7 +26,7 @@ Along the way, we will talk through important concepts in distributed training w
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
 
-      * High-level overview of `how DDP works  <ddp_theory.html>`__
+      * High-level overview of `how DDP works  <ddp_series_theory.html>`__
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
 
@@ -184,8 +184,8 @@ Running the distributed training job
 Further Reading
 ---------------
 
--  `Fault Tolerant distributed training <ddp_fault_tolerance.html>`__  (next tutorial in this series)
--  `Intro to DDP <ddp_theory.html>`__ (previous tutorial in this series)
+-  `Fault Tolerant distributed training <ddp_series_fault_tolerance.html>`__  (next tutorial in this series)
+-  `Intro to DDP <ddp_series_theory.html>`__ (previous tutorial in this series)
 -  `Getting Started with DDP <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`__ 
 -  `Process Group
    initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__
