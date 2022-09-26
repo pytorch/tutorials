@@ -129,7 +129,7 @@ Saving model checkpoints
 -  We only need to save model checkpoints from one process. Without this 
    condition, each process would save its copy of the identical mode. Read
    more on saving and loading models with
-   DDP `here <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__
+   DDP `here <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__  
 
 .. code:: diff
 
@@ -140,6 +140,12 @@ Saving model checkpoints
    - if epoch % self.save_every == 0:
    + if self.gpu_id == 0 and epoch % self.save_every == 0:
       self._save_checkpoint(epoch)
+
+.. warning::
+   `Collective calls <https://pytorch.org/docs/stable/distributed.html#collective-functions>`__ are functions that run on all the distributed processes,
+   and they are used to gather certain states or values to a specific process. Collective calls require all ranks to run the collective code.
+   In this example, `_save_checkpoint` should not have any collective calls because it is only run on the ``rank:0`` process. 
+   If you need to make any collective calls, it should be before the ``if self.gpu_id == 0`` check.
 
 
 Running the distributed training job
