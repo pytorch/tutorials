@@ -31,6 +31,8 @@ stateful attribute of the training job necessary for its continuity.
       -  Launching multi-GPU training jobs with ``torchrun``
       -  Saving and loading snapshots of your training job
       -  Structuring your training script for graceful restarts
+      
+      :octicon:`code;1em; `View the code <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__.
 
    .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
       :shadow: none
@@ -40,10 +42,6 @@ stateful attribute of the training job necessary for its continuity.
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
       
-
-
-View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py
-
 
 .. raw:: html
 
