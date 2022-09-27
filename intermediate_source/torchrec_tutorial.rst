@@ -38,7 +38,7 @@ We highly recommend CUDA when using TorchRec (If using CUDA: cuda >= 11.0).
 
     # install pytorch with cudatoolkit 11.3
     conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
-    # install TorchTec
+    # install TorchRec
     pip3 install torchrec-nightly
 
 
