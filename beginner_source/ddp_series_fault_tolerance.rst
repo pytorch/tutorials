@@ -12,24 +12,38 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
-
+      :margin: 0
+      
       -  Launching multi-GPU training jobs with ``torchrun``
       -  Saving and loading snapshots of your training job
       -  Structuring your training script for graceful restarts
-      +++
-      :octicon:`code-square;1em;sd-text-info` `View the code <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
+
+      .. grid:: 1
+
+         .. grid-item::
+
+            :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :margin: 0
 
       * High-level `overview <ddp_series_theory.html>`__ of DDP
       * Familiarity with `DDP code <ddp_series_multigpu.html>`__
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
       * PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA
 
+Follow along with the video below or on `youtube <https://www.youtube.com/watch/9kIvQOiwYzg>`__.
+
+.. raw:: html
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/9kIvQOiwYzg" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
+
 In distributed training, a single process failure can
 disrupt the entire training job. Since the susceptibility for failure can be higher here, making your training
 script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. 
-the ability to increase or decrease the number of processes during training.
+
 
 PyTorch offers a utility called ``torchrun`` that provides fault-tolerance and 
 elastic training. When a failure occurs, ``torchrun`` logs the errors and
@@ -39,13 +53,6 @@ attempts to automatically restart all the processes from the last saved
 The snapshot saves more than just the model state; it can include
 details about the number of epochs run, optimizer states or any other
 stateful attribute of the training job necessary for its continuity.
-
-.. raw:: html
-
-   <div style="margin-top:10px; margin-bottom:10px;">
-     <iframe width="560" height="315" src="https://www.youtube.com/embed/9kIvQOiwYzg" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-   </div>
-
 
 Why use ``torchrun``
 ~~~~~~~~~~~~~~~~~~~~

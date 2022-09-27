@@ -8,6 +8,8 @@ Distributed Data Parallel in PyTorch - Video Tutorials
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
+Follow along with the video below or on `youtube <https://www.youtube.com/watch/-K3bZYHYHEA>`__.
+
 .. raw:: html
 
    <div style="margin-top:10px; margin-bottom:10px;">

@@ -8,42 +8,44 @@ Multinode Training
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
-Multinode training involves deploying a training job across several
-machines. There are two ways to do this:  
-
--  running a torchrun command on each machine with identical rendezvous arguments, or 
--  deploying it on a compute cluster using a workload manager (like SLURM)
-
-In this video we will go over the (minimal) code changes required to move from single-node multigpu to 
-multinode training, and run our training script in both of the above ways. 
-
-Note that multinode training is bottlenecked by inter-node communication latencies. Running a training job
-on 4 GPUs on a single node will be faster than running it on 4 nodes with 1 GPU each.
-
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
-      :shadow: none
 
       -  Launching multinode training jobs with ``torchrun``
       -  Code changes (and things to keep in mind) when moving from single-node to multinode training.
 
-   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
-      :shadow: none
+      .. grid:: 1
+
+         .. grid-item::
+
+            :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode.py>`__
+
+   .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
 
       -  Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
       -  2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
       -  PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
-
-View the code used in this video: https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode.py
-
+Follow along with the video below or on `youtube <https://www.youtube.com/watch/KaAJtI1T2x4>`__. 
 
 .. raw:: html
 
    <div style="margin-top:10px; margin-bottom:10px;">
      <iframe width="560" height="315" src="https://www.youtube.com/embed/KaAJtI1T2x4" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
+
+Multinode training involves deploying a training job across several
+machines. There are two ways to do this:
+
+-  running a torchrun command on each machine with identical rendezvous arguments, or
+-  deploying it on a compute cluster using a workload manager (like SLURM)
+
+In this video we will go over the (minimal) code changes required to move from single-node multigpu to
+multinode training, and run our training script in both of the above ways.
+
+Note that multinode training is bottlenecked by inter-node communication latencies. Running a training job
+on 4 GPUs on a single node will be faster than running it on 4 nodes with 1 GPU each.
 
 Local and Global ranks
 ~~~~~~~~~~~~~~~~~~~~~~~~

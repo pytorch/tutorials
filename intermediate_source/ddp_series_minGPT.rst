@@ -8,39 +8,28 @@ Training “real-world” models with DDP
 
 Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 
-In this video, we will review the process of training a GPT model in multinode DDP.
-We first clone the `minGPT repo <https://github.com/karpathy/minGPT>`__ and refactor the Trainer
-to resemble the structure we have used in this series. Watch the video for details on these changes.
-
-We use `hydra <https://hydra.cc/>`__ to centrally manage all the configurations for our training run.  
-Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster.
-
-
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
-      :shadow: none
 
-      -  Refactor a (nicely structured) project to use DDP training
       -  Best practices when writing a distributed training script
       -  Increased flexibility with saving/loading artifacts in the cloud
       -  When DDP is NOT suitable
 
+      .. grid:: 1
 
-   .. grid-item-card:: :octicon:list-unordered;1em;` Prerequisites
-      :shadow: none
+         .. grid-item::
+
+            :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/tree/main/distributed/minGPT-ddp>`__
+
+   .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
 
       - Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
       - [Optional] Familiarity with `multinode training <ddp_series_multinode.html>`__
       - 2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)
       - PyTorch `installed <https://pytorch.org/get-started/locally/>`__ with CUDA on all machines
 
-
-
-
-
-View the code used in this video: https://github.com/pytorch/examples/tree/main/distributed/minGPT-ddp
-
+Follow along with the video below or on `youtube <https://www.youtube.com/watch/XFsFDGKZHh4>`__.
 
 .. raw:: html
 
@@ -48,7 +37,12 @@ View the code used in this video: https://github.com/pytorch/examples/tree/main/
      <iframe width="560" height="315" src="https://www.youtube.com/embed/XFsFDGKZHh4" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
 
+In this video, we will review the process of training a GPT model in multinode DDP.
+We first clone the `minGPT repo <https://github.com/karpathy/minGPT>`__ and refactor the Trainer
+to resemble the structure we have used in this series. Watch the video for details on these changes.
 
+We use `hydra <https://hydra.cc/>`__ to centrally manage all the configurations for our training run.
+Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster.
 
 Files used for training
 ~~~~~~~~~~~~~~~~~~~~~~~~
