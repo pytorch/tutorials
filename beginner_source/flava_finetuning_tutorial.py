@@ -22,14 +22,16 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 ######################################################################
 # Installations
 #
+# We will use TextVQA dataset and bert tokenizer from HuggingFace for this
+# tutorial. So you need to install datasets and transformers in addition to TorchMultimodal.
+# When running this tutorial in Google Colab, install the required packages
+# by uncommenting the following:
 #
-# We will use TextVQA dataset from HuggingFace for this
-# tutorial. So we install datasets in addition to TorchMultimodal.
-
-import os
-import sys
-sys.path.append(os.path.join(os.getcwd(),"multimodal"))
-sys.path.append(os.getcwd())
+"""
+!pip install torchmultimodal-nightly
+!pip install datasets
+!pip install transformers
+"""
 
 ######################################################################
 # For this tutorial, we treat VQA as a classification task. So we need to
