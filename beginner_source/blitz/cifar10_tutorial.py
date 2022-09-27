@@ -182,7 +182,7 @@ for epoch in range(2):  # loop over the dataset multiple times
         # print statistics
         running_loss += loss.item()
         if i % 2000 == 1999:    # print every 2000 mini-batches
-            print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+            print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / (i + 1):.3f}')
             running_loss = 0.0
 
 print('Finished Training')
