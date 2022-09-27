@@ -52,7 +52,6 @@ We'll also use the following from PyTorch:
 """
 
 import gym
-from gym.wrappers import TimeLimit
 import math
 import random
 import numpy as np
@@ -386,8 +385,7 @@ for i_episode in range(num_episodes):
         action = select_action(state)
         observation, reward, terminated, truncated, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
-        if truncated:
-            terminated = True
+        done = terminated or truncated
 
         if terminated:
             next_state = None
@@ -411,7 +409,7 @@ for i_episode in range(num_episodes):
             target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
         target_net.load_state_dict(target_net_state_dict)
 
-        if terminated:
+        if done:
             episode_durations.append(t + 1)
             plot_durations()
             break
