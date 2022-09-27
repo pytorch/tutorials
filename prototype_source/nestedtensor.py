@@ -17,13 +17,16 @@ Nested tensors are a natural solution for representing sequential data within va
 In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness
 for operating on sequential data of varying lengths with a real-world example.
 
-The nested tensor operations used here have not been released yet.
-You will have to install the latest nightly to run this tutorial.
+The nested tensor operations used here will be available in the version 1.13 of pytorch. We highly
+encourage you to play around with this tutorial by clicking the "Run in Colab" Button on the
+top left. If you are running this in colab before the 1.13 release, you will have to install the
+latest nightly to run this tutorial.
 """
 
 import torch
 import torch.nn.functional as F
 
+torch.manual_seed(5)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ######################################################################
@@ -33,22 +36,40 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ######################################################################
 # From the Python frontend, a nested tensor can be created from a list of tensors.
-nt = torch.nested_tensor([torch.randn((2, 6)), torch.randn((3, 6))], device=device)
-print(nt)
+nt = torch.nested_tensor([torch.arange(12).reshape((2, 6)),
+                          torch.arange(18).reshape((3, 6))], dtype=torch.float, device=device)
+# nested_tensor([
+#   tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
+#           [ 6.,  7.,  8.,  9., 10., 11.]]),
+#   tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
+#           [ 6.,  7.,  8.,  9., 10., 11.],
+#           [12., 13., 14., 15., 16., 17.]])
+# ])
 
 ######################################################################
 # By padding every underlying tensor to the same shape,
 # a nested tensor can be converted to a regular tensor.
 pt = torch.nested.to_padded_tensor(nt, padding=0.0)
-print(pt)
+# tensor([[[ 0.,  1.,  2.,  3.,  4.,  5.],
+#          [ 6.,  7.,  8.,  9., 10., 11.],
+#          [ 0.,  0.,  0.,  0.,  0.,  0.]],
+#
+#         [[ 0.,  1.,  2.,  3.,  4.,  5.],
+#          [ 6.,  7.,  8.,  9., 10., 11.],
+#          [12., 13., 14., 15., 16., 17.]]])
 
 ######################################################################
 # For practical reasons, conceptually we implement nested tensor
 # as a batch of tensors with different shapes,
 # i.e. dimension 0 is assumed to be the batch dimension.
-# Indexing dimension 0 gives back the underlying tensor.
+# Indexing along dimension 0 returns the underlying tensor.
 print("0th underlying tensor:", nt[0], sep='\n')
 print("last column of 1st underlying tensor:", nt[1, :, -1], sep='\n')
+# 0th underlying tensor:
+# tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
+#         [ 6.,  7.,  8.,  9., 10., 11.]])
+# last column of 1st underlying tensor:
+# tensor([ 5., 11., 17.])
 
 ######################################################################
 # Slicing in dimension 0 has not been supported yet.
@@ -60,10 +81,11 @@ print("last column of 1st underlying tensor:", nt[1, :, -1], sep='\n')
 
 ######################################################################
 # As each operation must be explicitly implemented for nested tensors,
-# operation coverage for nested tensors is currently narrower than that of regular tensors.
+# operator coverage for nested tensors is currently narrower than that of regular tensors.
 # For now, only basic operations such as index, dropout, softmax, transpose, reshape, linear, bmm are covered.
 # However, coverage is being expanded rapidly.
-# If you need certain operations, please file an `issue <https://github.com/pytorch/pytorch>`__
+# If you need certain operations, please file an
+# `issue <https://github.com/pytorch/pytorch/issues/new?assignees=&labels=&template=feature-request.yml>`__
 # to help us prioritize coverage.
 #
 # **reshape**
@@ -75,11 +97,28 @@ print("last column of 1st underlying tensor:", nt[1, :, -1], sep='\n')
 # a single dimension may be -1, in which case it is inferred
 # from the remaining dimensions and the number of elements.
 #
-# The semantics for nested tensors are similar, except that -1 no longer infers.
-# Instead, it inherits the old size (here 2 for ``nt[0]`` and 3 for ``nt[1]``).
-# -1 is the only legal size to specify for a jagged dimension.
+# The semantics for nested tensors are similar, except that -1 does not indicate
+# shape inference.
+# Instead, it indicates that the old size should be inherited
+# (2 for ``nt[0]`` and 3 for ``nt[1]`` in the following example).
+# -1 is the only legal size to specify for a jagged dimension. Further, current
+# nested tensor `reshape` semantics only allow -1 in the proposed shape.
 nt1 = nt.reshape(2, -1, 2, 3)
-print(nt1)
+# nested_tensor([
+#   tensor([[[ 0.,  1.,  2.],
+#            [ 3.,  4.,  5.]],
+#
+#           [[ 6.,  7.,  8.],
+#            [ 9., 10., 11.]]]),
+#   tensor([[[ 0.,  1.,  2.],
+#            [ 3.,  4.,  5.]],
+#
+#           [[ 6.,  7.,  8.],
+#            [ 9., 10., 11.]],
+#
+#           [[12., 13., 14.],
+#            [15., 16., 17.]]])
+# ])
 
 ######################################################################
 # **transpose**
@@ -87,16 +126,29 @@ print(nt1)
 # The transpose op is for swapping two dimensions of a tensor.
 # Its full semantics can be found
 # `here <https://pytorch.org/docs/stable/generated/torch.transpose.html>`__.
-# Note that nested tensor dimension 0 is special;
+# Note that for nested tensors dimension 0 is special;
 # it is assumed to be the batch dimension,
 # so transposes involving nested tensor dimension 0 are forbidden.
 nt2 = nt1.transpose(1, 2)
-print(nt2)
+# nested_tensor([
+#   tensor([[[ 0.,  1.,  2.],
+#            [ 6.,  7.,  8.]],
+#
+#           [[ 3.,  4.,  5.],
+#            [ 9., 10., 11.]]]),
+#   tensor([[[ 0.,  1.,  2.],
+#            [ 6.,  7.,  8.],
+#            [12., 13., 14.]],
+#
+#           [[ 3.,  4.,  5.],
+#            [ 9., 10., 11.],
+#            [15., 16., 17.]]])
+# ])
 
 ######################################################################
 # **others**
 #
-# Other operations have the same semantics as for regular tensors.
+# Other operations have similar semantics to their counterparts on regular tensors.
 # Applying the operation on a nested tensor is equivalent to
 # applying the operation to the underlying tensor components,
 # with the result being a nested tensor as well.
@@ -116,9 +168,9 @@ print("softmax:", nt5, sep='\n')
 #
 
 ######################################################################
-# In the age before nested tensor, one has to manually pad each data tensor
+# In the age before nested tensors, one had to manually pad each data tensor
 # to the same shape to form a batch as a regular tensor.
-# For example, we have 2 sentences and a vocabulary, then pad with 0.
+# In the following example, we have 2 sentences and a vocabulary, then pad with 0.
 sentences = [["goodbye", "padding"],
              ["embrace", "nested", "tensor"]]
 vocabulary = {"goodbye" : 1.0, "padding" : 2.0,
@@ -132,8 +184,9 @@ print(nested_sentences)
 
 ######################################################################
 # Clearly, padding introduces inefficiency.
-# Further, padding with zeros does not correctly treat entries as padding for every operation,
-# e.g. in softmax one has to pad with -inf rather than 0 to ignore specific entries.
+# Further, padding with zeros is bugprone as 0 is not an appropriate init value for
+# every operation. For example, in softmax one has to pad with -inf rather than
+# 0 to ignore specific entries.
 padded_sentences_for_softmax = torch.tensor([[1.0, 2.0, float("-inf")],
                                              [3.0, 4.0, 5.0]])
 print(F.softmax(padded_sentences_for_softmax, -1))
