@@ -230,6 +230,7 @@ class DQN(nn.Module):
 #    the official evaluations). The plot will be underneath the cell
 #    containing the main training loop, and will update after every
 #    episode.
+#
 
 # BATCH_SIZE is the number of transitions sampled from the replay buffer
 # GAMMA is the discount factor as mentioned in the previous section
@@ -316,7 +317,8 @@ def plot_durations():
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
 # added stability. The target network is updated at every step with a 
 # `soft update <https://arxiv.org/pdf/1509.02971.pdf>`__ controlled by 
-# the hyperparameter ``TAU``, which was previously defined. 
+# the hyperparameter ``TAU``, which was previously defined.
+#
 
 def optimize_model():
     if len(memory) < BATCH_SIZE:
@@ -375,6 +377,7 @@ def optimize_model():
 #
 # Below, `num_episodes` to 1000, but you should the model constantly
 # achieve 500 steps within 600 training episodes.
+#
 
 num_episodes = 1000
 for i_episode in range(num_episodes):
