@@ -30,24 +30,30 @@ for longer duration, accumulating larger return.
 
 The CartPole task is designed so that the inputs to the agent are 4 real
 values representing the environment state (position, velocity, etc.).
-We take these 4 inputs without any scaling and pass them through a 
-small fully-connected network with 2 outputs, one for each action. 
-The network is trained to predict the expected value for each action, 
-given the input state. The action with the highest expected value is 
-then chosen.
+However, neural networks can solve the task purely by looking at the
+scene, so we'll use a patch of the screen centered on the cart as an
+input. Because of this, our results aren't directly comparable to the
+ones from the official leaderboard - our task is much harder.
+Unfortunately this does slow down the training, because we have to
+render all the frames.
 
+Strictly speaking, we will present the state as the difference between
+the current screen patch and the previous one. This will allow the agent
+to take the velocity of the pole into account from one image.
 
 **Packages**
 
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`). Developed on v0.26.1 of gym.
+(Install using `pip install gym`).
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
 -  optimization (``torch.optim``)
 -  automatic differentiation (``torch.autograd``)
+-  utilities for vision tasks (``torchvision`` - `a separate
+   package <https://github.com/pytorch/vision>`__).
 
 """
 
@@ -209,6 +215,52 @@ class DQN(nn.Module):
 
 
 ######################################################################
+# Input extraction
+# ^^^^^^^^^^^^^^^^
+#
+# The code below are utilities for extracting and processing rendered
+# images from the environment. It uses the ``torchvision`` package, which
+# makes it easy to compose image transforms. Once you run the cell it will
+# display an example patch that it extracted.
+#
+
+resize = T.Compose([T.ToPILImage(),
+                    T.Resize(40, interpolation=Image.CUBIC),
+                    T.ToTensor()])
+
+
+def get_cart_location(screen_width):
+    world_width = env.x_threshold * 2
+    scale = screen_width / world_width
+    return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
+
+def get_screen():
+    # Returned screen requested by gym is 400x600x3, but is sometimes larger
+    # such as 800x1200x3. Transpose it into torch order (CHW).
+    screen = env.render().transpose((2, 0, 1))
+    # Cart is in the lower half, so strip off the top and bottom of the screen
+    _, screen_height, screen_width = screen.shape
+    screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
+    view_width = int(screen_width * 0.6)
+    cart_location = get_cart_location(screen_width)
+    if cart_location < view_width // 2:
+        slice_range = slice(view_width)
+    elif cart_location > (screen_width - view_width // 2):
+        slice_range = slice(-view_width, None)
+    else:
+        slice_range = slice(cart_location - view_width // 2,
+                            cart_location + view_width // 2)
+    # Strip off the edges, so that we have a square image centered on a cart
+    screen = screen[:, :, slice_range]
+    # Convert to float, rescale, convert to torch tensor
+    # (this doesn't require a copy)
+    screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
+    screen = torch.from_numpy(screen)
+    # Resize, and add a batch dimension (BCHW)
+    return resize(screen).unsqueeze(0)
+
+
+######################################################################
 # Training
 # --------
 #
@@ -362,8 +414,8 @@ def optimize_model():
 ######################################################################
 #
 # Below, you can find the main training loop. At the beginning we reset
-# the environment and obtain the initial ``state`` Tensor. Then, we sample
-# an action, execute it, observe the next state and the reward (always
+# the environment and initialize the ``state`` Tensor. Then, we sample
+# an action, execute it, observe the next screen and the reward (always
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.
 #
