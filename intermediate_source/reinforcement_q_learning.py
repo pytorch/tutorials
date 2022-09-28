@@ -405,7 +405,6 @@ for i_episode in range(num_episodes):
         optimize_model()
 
         # Soft update of the target network's weights
-        # θ′ ← τ θ + (1 −τ )θ′
         target_net_state_dict = target_net.state_dict()
         policy_net_state_dict = policy_net.state_dict()
         for key in policy_net_state_dict:
