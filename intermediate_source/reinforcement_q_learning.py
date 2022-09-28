@@ -135,11 +135,9 @@ class ReplayMemory(object):
 # :math:`R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t`, where
 # :math:`R_{t_0}` is also known as the *return*. The discount,
 # :math:`\gamma`, should be a constant between :math:`0` and :math:`1`
-# that ensures the sum converges. A lower :math:`\gamma` makes 
-# rewards from the uncertain far future less important for our agent 
-# than the ones in the near future that it can be fairly confident 
-# about. It also encourages agents to collect reward closer in time 
-# than equivalent rewards temporally future away.
+# that ensures the sum converges. It makes rewards from the uncertain far
+# future less important for our agent than the ones in the near future
+# that it can be fairly confident about.
 #
 # The main idea behind Q-learning is that if we had a function
 # :math:`Q^*: State \times Action \rightarrow \mathbb{R}`, that could tell
@@ -162,7 +160,7 @@ class ReplayMemory(object):
 # The difference between the two sides of the equality is known as the
 # temporal difference error, :math:`\delta`:
 #
-# .. math:: \delta = Q(s, a) - (r + \gamma \max_a' Q(s', a))
+# .. math:: \delta = Q(s, a) - (r + \gamma \max_a Q(s', a))
 #
 # To minimise this error, we will use the `Huber
 # loss <https://en.wikipedia.org/wiki/Huber_loss>`__. The Huber loss acts
@@ -308,9 +306,10 @@ def plot_durations():
 # :math:`V(s_{t+1}) = \max_a Q(s_{t+1}, a)`, and combines them into our
 # loss. By definition we set :math:`V(s) = 0` if :math:`s` is a terminal
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
-# added stability. The target network is updated at every step with a 
-# `soft update <https://arxiv.org/pdf/1509.02971.pdf>`__ controlled by 
-# the hyperparameter ``TAU``, which was previously defined.
+# added stability. The target network has its weights kept frozen most of
+# the time, but is updated with the policy network's weights every so often.
+# This is usually a set number of steps but we shall use episodes for
+# simplicity.
 #
 
 def optimize_model():
@@ -368,8 +367,9 @@ def optimize_model():
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.
 #
-# Below, `num_episodes` to 1000, but you should the model constantly
-# achieve 500 steps within 600 training episodes.
+# Below, `num_episodes` is set small. You should download
+# the notebook and run lot more epsiodes, such as 300+ for meaningful
+# duration improvements.
 #
 
 num_episodes = 1000
