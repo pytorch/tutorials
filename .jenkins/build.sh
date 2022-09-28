@@ -66,45 +66,54 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
+  set +x
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.rst'); do
     file_basename=$(basename $filename .rst)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.py'); do
     file_basename=$(basename $filename .py)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.ipynb'); do
     file_basename=$(basename $filename .ipynb)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes docs/.doctrees/prototype -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
+  set -x
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
@@ -138,6 +147,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs

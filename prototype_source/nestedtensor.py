@@ -39,7 +39,7 @@ print(nt)
 ######################################################################
 # By padding every underlying tensor to the same shape,
 # a nested tensor can be converted to a regular tensor.
-pt = nt.to_padded_tensor(0.0)
+pt = torch.nested.to_padded_tensor(nt, padding=0.0)
 print(pt)
 
 ######################################################################
@@ -400,9 +400,9 @@ key   = torch.nested_tensor(keys   )
 value = torch.nested_tensor(values )
 
 # pad input
-padded_query = query.to_padded_tensor(0.0, (N, L_t, E_q))
-padded_key   = key  .to_padded_tensor(0.0, (N, L_s, E_k))
-padded_value = value.to_padded_tensor(0.0, (N, L_s, E_v))
+padded_query = torch.nested.to_padded_tensor(query, 0.0, (N, L_t, E_q))
+padded_key   = torch.nested.to_padded_tensor(key, 0.0, (N, L_s, E_k))
+padded_value = torch.nested.to_padded_tensor(value, 0.0, (N, L_s, E_v))
 
 # create attention masks
 attn_mask_q = torch.zeros((N, L_t), dtype=torch.bool)
@@ -436,7 +436,7 @@ out_padded = mha_padded(
     dropout_p=dropout_p)
 t2 = timeit.default_timer()
 
-print("nested and padded calculations differ by", (out_nested.to_padded_tensor(0.0, (N, L_t, E_out)) - out_padded).abs().max().item())
+print("nested and padded calculations differ by", (torch.nested.to_padded_tensor(out_nested, 0.0, (N, L_t, E_out)) - out_padded).abs().max().item())
 print("nested tensor multi-head attention takes", t1 - t0, "seconds")
 print("padded tensor multi-head attention takes", t2 - t1, "seconds")
 
@@ -486,7 +486,7 @@ padded_out = mha_padded(
     dropout_p=dropout_p)
 t3 = timeit.default_timer()
 
-print("nested general and library calculations differ by", (out_nested.to_padded_tensor(0.0) - out_lib.to_padded_tensor(0.0)).abs().max().item())
+print("nested general and library calculations differ by", (torch.nested.to_padded_tensor(out_nested, 0.0) - torch.nested.to_padded_tensor(out_lib, 0.0)).abs().max().item())
 print("nested library multi-head attention takes", t1 - t0, "seconds")
 print("nested general multi-head attention takes", t2 - t1, "seconds")
 print("padded tensor multi-head attention takes", t3 - t2, "seconds")
