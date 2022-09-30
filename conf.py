@@ -89,6 +89,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': '.py',
     'ignore_pattern': re.compile(f"({'|'.join(NOT_RUN)}).py$"),
+    'promote_jupyter_magic': True,
     'backreferences_dir': None
 }
 

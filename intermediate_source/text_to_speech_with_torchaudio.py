@@ -7,9 +7,6 @@ Hira <moto@fb.com>`__
 
 """
 
-# %matplotlib inline
-
-
 ######################################################################
 # Overview
 # --------
@@ -52,8 +49,11 @@ Hira <moto@fb.com>`__
 # encoding.
 # 
 
-# When running this example in notebook, install DeepPhonemizer
-# !pip3 install deep_phonemizer
+# %%
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip3 install deep_phonemizer
 
 import torch
 import torchaudio
