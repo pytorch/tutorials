@@ -25,7 +25,6 @@ NOT_RUN = [
     "forward_ad_usage",
     "parametrizations",
     "reinforcement_q_learning",
-    "text_to_speech_with_torchaudio",
     "mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "fx_conv_bn_fuser",
     "super_resolution_with_onnxruntime",
