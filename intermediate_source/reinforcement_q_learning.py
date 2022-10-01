@@ -284,7 +284,7 @@ episode_durations = []
 
 
 def plot_durations():
-    plt.figure(2)
+    plt.figure(1)
     plt.clf()
     durations_t = torch.tensor(episode_durations, dtype=torch.float)
     plt.title('Training...')
@@ -375,7 +375,7 @@ def optimize_model():
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.
 #
-# Below, `num_episodes` to 1000, but you should the model constantly
+# Below, `num_episodes` to 1000, but you should see the model constantly
 # achieve 500 steps within 600 training episodes.
 #
 
@@ -430,6 +430,6 @@ plt.show()
 # step sample from the gym environment. We record the results in the
 # replay memory and also run optimization step on every iteration.
 # Optimization picks a random batch from the replay memory to do training of the
-# new policy. "Older" target_net is also used in optimization to compute the
-# expected Q values; it is updated occasionally to keep it current.
+# new policy. The "older" target_net is also used in optimization to compute the
+# expected Q values. A soft update of its weights are performed at every step.
 #
