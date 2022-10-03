@@ -37,27 +37,36 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 #       !pip install torchmultimodal-nightly
 #       !pip install datasets
 #       !pip install transformers
+#
 
 ######################################################################
 # Steps 
 # -----
+# 
 # 1. Download the HuggingFace dataset to a directory on your computer by running the following command:
-# wget http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz 
-# tar xf vocab.tar.gz
-# If you are running this tutorial in Google Colab, run these commands
-# in a new cell and prepend these commands with an exclamation mark (!)
+# 
+#    .. code-block::
+# 
+#       wget http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz 
+#       tar xf vocab.tar.gz
+# 
+#    .. note:: 
+#       If you are running this tutorial in Google Colab, run these commands
+#       in a new cell and prepend these commands with an exclamation mark (!)
 #
 #  
-# 2. For this tutorial, we treat VQA as a classification task where the inputs are images and question (text) and the output is an answer class. 
-# So we need to download the vocab file with answer classes and create the answer to
-# label mapping.
+# 2. For this tutorial, we treat VQA as a classification task where
+#    the inputs are images and question (text) and the output is an answer class. 
+#    So we need to download the vocab file with answer classes and create the answer to
+#    label mapping.
 #
-# We also load the `textvqa
-# dataset <https://arxiv.org/pdf/1904.08920.pdf>`__ containing 34602 training samples
-# (images,questions and answers) from HuggingFace
+#    We also load the `textvqa
+#    dataset <https://arxiv.org/pdf/1904.08920.pdf>`__ containing 34602 training samples
+#    (images,questions and answers) from HuggingFace
 #
 # We see there are 3997 answer classes including a class representing
 # unknown answers.
+#
 
 with open("data/vocabs/answers_textvqa_more_than_1.txt") as f:
   vocab = f.readlines()
@@ -68,12 +77,12 @@ for idx, entry in enumerate(vocab):
 print(len(vocab))
 print(vocab[:5])
 
-
 from datasets import load_dataset
 dataset = load_dataset("textvqa")
 
 ######################################################################
-# Lets display a sample entry from the dataset
+# Lets display a sample entry from the dataset:
+#
 
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -91,7 +100,7 @@ plt.show()
 # torchvision to convert to Tensor and resize to uniform sizes - For text,
 # we tokenize (and pad) them using the BertTokenizer from HuggingFace -
 # For answers (i.e. labels), we take the most frequently occuring answer
-# as the label to train with
+# as the label to train with:
 #
 
 import torch
@@ -142,7 +151,7 @@ model = flava_model_for_classification(num_classes=len(vocab))
 
 ######################################################################
 # 5. We put together the dataset and model in a toy training loop to
-# demonstrate how to train the model for 3 iterations.
+# demonstrate how to train the model for 3 iterations:
 #
 
 from torch import nn
@@ -170,6 +179,7 @@ for _ in range(epochs):
 ######################################################################
 # Conclusion
 # -------------------
+#
 # This tutorial introduced the basics around how to finetune on a
 # multimodal task using FLAVA from TorchMultimodal. Please also check out
 # other examples from the library like
