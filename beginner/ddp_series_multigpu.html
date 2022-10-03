@@ -485,6 +485,18 @@ batch size is <code class="docutils literal notranslate"><span class="pre">32</s
 <span class="w">)</span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p>Calling the <code class="docutils literal notranslate"><span class="pre">set_epoch()</span></code> method on the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> at the beginning of each epoch is necessary to make shuffling work
+properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.</p></li>
+</ul>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def _run_epoch(self, epoch):</span>
+<span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])<span class="w"></span>
+<span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span><span class="w"></span>
+<span class="w"> </span>   for source, targets in self.train_data:<span class="w"></span>
+<span class="w"> </span>     ...<span class="w"></span>
+<span class="w"> </span>     self._run_batch(source, targets)<span class="w"></span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="saving-model-checkpoints">
 <h3>Saving model checkpoints<a class="headerlink" href="#saving-model-checkpoints" title="Permalink to this heading">¶</a></h3>
