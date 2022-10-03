@@ -81,7 +81,8 @@ idx = 5
 print("Question: ", dataset["train"][idx]["question"]) 
 print("Answers: " ,dataset["train"][idx]["answers"])
 im = np.asarray(dataset["train"][idx]["image"].resize((500,500)))
-plt.imshow(im) plt.show()
+plt.imshow(im)
+plt.show()
 
 
 ######################################################################
