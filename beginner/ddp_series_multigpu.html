@@ -240,6 +240,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
@@ -255,6 +256,7 @@
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -284,6 +286,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dist_overview.html">PyTorch Distributed Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
@@ -483,6 +486,18 @@ batch size is <code class="docutils literal notranslate"><span class="pre">32</s
 <span class="gi">+   shuffle=False,</span><span class="w"></span>
 <span class="gi">+   sampler=DistributedSampler(train_dataset),</span><span class="w"></span>
 <span class="w">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Calling the <code class="docutils literal notranslate"><span class="pre">set_epoch()</span></code> method on the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> at the beginning of each epoch is necessary to make shuffling work
+properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.</p></li>
+</ul>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def _run_epoch(self, epoch):</span>
+<span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])<span class="w"></span>
+<span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span><span class="w"></span>
+<span class="w"> </span>   for source, targets in self.train_data:<span class="w"></span>
+<span class="w"> </span>     ...<span class="w"></span>
+<span class="w"> </span>     self._run_batch(source, targets)<span class="w"></span>
 </pre></div>
 </div>
 </div>

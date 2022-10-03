@@ -134,6 +134,11 @@ class PositionalEncoding(nn.Module):
 ######################################################################
 # This tutorial uses ``torchtext`` to generate Wikitext-2 dataset.
 # To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+# %%
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip install torchdata
 #
 # The vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Wikitext-2 represents rare tokens as `<unk>`.

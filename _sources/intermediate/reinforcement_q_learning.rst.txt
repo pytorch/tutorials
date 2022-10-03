@@ -64,7 +64,12 @@ to take the velocity of the pole into account from one image.
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`).
+
+.. code-block:: bash
+
+   %%bash
+   pip3 install gym[classic_control]
+
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
@@ -73,7 +78,7 @@ We'll also use the following from PyTorch:
 -  utilities for vision tasks (``torchvision`` - `a separate
    package <https://github.com/pytorch/vision>`__).
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-90
+.. GENERATED FROM PYTHON SOURCE LINES 64-98
 
 .. code-block:: default
 
@@ -95,7 +100,10 @@ We'll also use the following from PyTorch:
     import torchvision.transforms as T
 
 
-    env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
+    if gym.__version__ < '0.26':
+        env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
+    else:
+        env = gym.make('CartPole-v0', render_mode='rgb_array').unwrapped
 
     # set up matplotlib
     is_ipython = 'inline' in matplotlib.get_backend()
@@ -109,7 +117,22 @@ We'll also use the following from PyTorch:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-110
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/lib/python3.7/site-packages/gym/envs/registration.py:594: UserWarning:
+
+    WARN: The environment CartPole-v0 is out of date. You should consider upgrading to version `v1`.
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 99-118
 
 Replay Memory
 -------------
@@ -131,7 +154,7 @@ For this, we're going to need two classses:
    method for selecting a random batch of transitions for training.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-131
+.. GENERATED FROM PYTHON SOURCE LINES 118-139
 
 .. code-block:: default
 
@@ -157,7 +180,13 @@ For this, we're going to need two classses:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-203
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 140-211
 
 Now, let's define our model. But first, let's quickly recap what a DQN is.
 
@@ -231,7 +260,7 @@ network). In effect, the network is trying to predict the *expected return* of
 taking each action given the current input.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-234
+.. GENERATED FROM PYTHON SOURCE LINES 211-242
 
 .. code-block:: default
 
@@ -267,7 +296,13 @@ taking each action given the current input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-243
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 243-251
 
 Input extraction
 ^^^^^^^^^^^^^^^^
@@ -278,7 +313,7 @@ makes it easy to compose image transforms. Once you run the cell it will
 display an example patch that it extracted.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-288
+.. GENERATED FROM PYTHON SOURCE LINES 251-296
 
 .. code-block:: default
 
@@ -328,7 +363,27 @@ display an example patch that it extracted.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 289-309
+
+
+.. image-sg:: /intermediate/images/sphx_glr_reinforcement_q_learning_001.png
+   :alt: Example extracted screen
+   :srcset: /intermediate/images/sphx_glr_reinforcement_q_learning_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/lib/python3.7/site-packages/torchvision/transforms/transforms.py:333: UserWarning:
+
+    Argument 'interpolation' of type int is deprecated since 0.13 and will be removed in 0.15. Please use InterpolationMode enum.
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 297-317
 
 Training
 --------
@@ -351,7 +406,7 @@ utilities:
    episode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-377
+.. GENERATED FROM PYTHON SOURCE LINES 317-385
 
 .. code-block:: default
 
@@ -424,7 +479,13 @@ utilities:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 378-394
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 386-402
 
 Training loop
 ^^^^^^^^^^^^^
@@ -443,7 +504,7 @@ This is usually a set number of steps but we shall use episodes for
 simplicity.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-441
+.. GENERATED FROM PYTHON SOURCE LINES 402-449
 
 .. code-block:: default
 
@@ -495,7 +556,13 @@ simplicity.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 442-452
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 450-460
 
 Below, you can find the main training loop. At the beginning we reset
 the environment and initialize the ``state`` Tensor. Then, we sample
@@ -508,7 +575,7 @@ the notebook and run lot more epsiodes, such as 300+ for meaningful
 duration improvements.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 453-497
+.. GENERATED FROM PYTHON SOURCE LINES 461-505
 
 .. code-block:: default
 
@@ -557,7 +624,24 @@ duration improvements.
     plt.show()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 498-509
+
+
+.. image-sg:: /intermediate/images/sphx_glr_reinforcement_q_learning_002.png
+   :alt: Training...
+   :srcset: /intermediate/images/sphx_glr_reinforcement_q_learning_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Complete
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 506-517
 
 Here is the diagram that illustrates the overall resulting data flow.
 
@@ -574,7 +658,7 @@ expected Q values; it is updated occasionally to keep it current.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  21.274 seconds)
 
 
 .. _sphx_glr_download_intermediate_reinforcement_q_learning.py:
