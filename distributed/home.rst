@@ -27,7 +27,6 @@ Learn DDP
 
      .. grid-item-card:: :octicon:`file-code;1em`
         DDP Intro Video Tutorials
-        :shadow: none
         :link: https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=distr_landing&utm_medium=ddp_series_intro
         :link-type: url
 
@@ -38,7 +37,6 @@ Learn DDP
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Getting Started with Distributed Data Parallel
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html?utm_source=distr_landing&utm_medium=intermediate_ddp_tutorial
         :link-type: url
 
@@ -50,7 +48,6 @@ Learn DDP
      .. grid-item-card:: :octicon:`file-code;1em`
         Distributed Training with Uneven Inputs Using
         the Join Context Manager
-        :shadow: none
         :link: https://pytorch.org/tutorials/advanced/generic_join.html?utm_source=distr_landing&utm_medium=generic_join
         :link-type: url
 
@@ -68,7 +65,6 @@ Learn FSDP
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Getting Started with FSDP
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_getting_started
         :link-type: url
 
@@ -79,7 +75,6 @@ Learn FSDP
 
      .. grid-item-card:: :octicon:`file-code;1em`
         FSDP Advanced
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_advanced
         :link-type: url
 
@@ -97,7 +92,6 @@ Learn RPC
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Getting Started with Distributed RPC Framework
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/rpc_tutorial.html?utm_source=distr_landing&utm_medium=rpc_getting_started
         :link-type: url
 
@@ -108,7 +102,6 @@ Learn RPC
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Implementing a Parameter Server Using Distributed RPC Framework
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/rpc_param_server_tutorial.html?utm_source=distr_landing&utm_medium=rpc_param_server_tutorial
         :link-type: url
 
@@ -119,7 +112,6 @@ Learn RPC
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Implementing Batch RPC Processing Using Asynchronous Executions
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/rpc_async_execution.html?utm_source=distr_landing&utm_medium=rpc_async_execution
         :link-type: url
 
@@ -132,7 +124,6 @@ Learn RPC
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Combining Distributed DataParallel with Distributed RPC Framework
-        :shadow: none
         :link: https://pytorch.org/tutorials/advanced/rpc_ddp_tutorial.html?utm_source=distr_landing&utm_medium=rpc_plus_ddp
         :link-type: url
 
@@ -150,7 +141,6 @@ Custom Extensions
 
      .. grid-item-card:: :octicon:`file-code;1em`
         Customize Process Group Backends Using Cpp Extensions
-        :shadow: none
         :link: https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=distr_landing&utm_medium=custom_extensions_cpp
         :link-type: url
 

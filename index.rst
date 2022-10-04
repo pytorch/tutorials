@@ -3,14 +3,10 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `PyTorch Distributed Series <https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=whats_new_tutorials&utm_medium=ddp_series_intro>`__
 * `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
-* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
-* `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
 * `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
 * `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
-* `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=whats_new_tutorials&utm_medium=cpp_ext>`__
-* `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html?utm_source=whats_new_tutorials&utm_medium=forward_ad>`__ (added functorch API capabilities)
-* `Real Time Inference on Raspberry Pi 4 (30 fps!) <https://pytorch.org/tutorials/intermediate/realtime_rpi.html?utm_source=whats_new_tutorials&utm_medium=rpi>`__
 
 .. raw:: html
 
@@ -516,11 +512,20 @@ What's new in PyTorch tutorials?
 
 .. Parallel-and-Distributed-Training
 
+
+
 .. customcarditem::
    :header: PyTorch Distributed Overview
    :card_description: Briefly go over all concepts and features in the distributed package. Use this document to find the distributed training technology that can best serve your application.
    :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
    :link: beginner/dist_overview.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Distributed Data Parallel in PyTorch - Video Tutorials
+   :card_description: This series of video tutorials walks you through distributed training in PyTorch via DDP.
+   :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
+   :link: beginner/ddp_series_intro.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -888,6 +893,7 @@ Additional Resources
 
    distributed/home
    beginner/dist_overview
+   beginner/ddp_series_intro
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
