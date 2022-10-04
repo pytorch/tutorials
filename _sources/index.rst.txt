@@ -891,6 +891,7 @@ Additional Resources
    :hidden:
    :caption: Parallel and Distributed Training
 
+   distributed/home
    beginner/dist_overview
    beginner/ddp_series_intro
    intermediate/model_parallel_tutorial
