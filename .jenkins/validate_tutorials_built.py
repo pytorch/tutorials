@@ -24,7 +24,6 @@ NOT_RUN = [
     "examples_autograd/polynomial_custom_function",
     "forward_ad_usage",
     "parametrizations",
-    "reinforcement_q_learning",
     "mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "fx_conv_bn_fuser",
     "super_resolution_with_onnxruntime",
