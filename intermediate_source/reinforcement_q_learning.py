@@ -6,7 +6,7 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v1 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
+on the CartPole-v0 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
 
 **Task**
 
@@ -46,7 +46,12 @@ to take the velocity of the pole into account from one image.
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`).
+
+.. code-block:: bash
+
+   %%bash
+   pip3 install gym[classic_control]
+
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
@@ -74,7 +79,7 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 
-env = gym.make('CartPole-v1', new_step_api=True, render_mode='single_rgb_array').unwrapped
+env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
