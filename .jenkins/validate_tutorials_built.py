@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).parent.parent
 NOT_RUN = [
     "basics/intro",  # no code
     "translation_transformer",
+    "mario_rl_tutorial.py", # needs to be updated to work with gym 0.26
     "profiler",
     "saving_loading_models",
     "introyt/captumyt",
