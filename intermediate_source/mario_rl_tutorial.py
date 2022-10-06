@@ -103,9 +103,11 @@ env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
 #   1. jump right
 env = JoypadSpace(env, [["right"], ["right", "A"]])
 
+action = env.action_space.sample()
+
 env.reset()
-next_state, reward, done, truncated, info = env.step(action=0)
-print(f"{next_state.shape},\n {reward},\n {done},\n truncated{},\n {info}")
+obs, reward, terminated, truncated, info = env.step(action)
+print(f"{obs.shape},\n {reward},\n {terminated},\n {truncated},\n {info}")
 
 
 ######################################################################
