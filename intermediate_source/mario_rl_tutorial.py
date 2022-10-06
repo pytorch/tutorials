@@ -104,8 +104,8 @@ env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
 env = JoypadSpace(env, [["right"], ["right", "A"]])
 
 env.reset()
-next_state, reward, done, info = env.step(action=0)
-print(f"{next_state.shape},\n {reward},\n {done},\n {info}")
+next_state, reward, done, truncated, info = env.step(action=0)
+print(f"{next_state.shape},\n {reward},\n {done},\n truncated{},\n {info}")
 
 
 ######################################################################
