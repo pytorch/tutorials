@@ -79,7 +79,7 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 
-env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
+env = gym.make('CartPole-v0', render_mode='rgb_array').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
