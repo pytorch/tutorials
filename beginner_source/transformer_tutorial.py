@@ -202,7 +202,7 @@ def batchify(data: Tensor, bsz: int) -> Tensor:
     """
     seq_len = data.size(0) // bsz
     data = data[:seq_len * bsz]
-    data = data.view(bsz, seq_len).t().contiguous()
+    data = data.view(bsz, seq_len).contiguous()
     return data.to(device)
 
 batch_size = 20
