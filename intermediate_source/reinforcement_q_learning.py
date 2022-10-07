@@ -46,7 +46,12 @@ to take the velocity of the pole into account from one image.
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`).
+
+.. code-block:: bash
+
+   %%bash
+   pip3 install gym[classic_control]
+
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
