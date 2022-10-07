@@ -436,8 +436,8 @@ Audio(bg_added, rate=sample_rate)
 Audio(filtered, rate=sample_rate2)
 
 ######################################################################
-# Codec aplied:
-# ~~~~~~~~~~~~~
+# Codec applied:
+# ~~~~~~~~~~~~~~
 #
 
 Audio(codec_applied, rate=sample_rate2)

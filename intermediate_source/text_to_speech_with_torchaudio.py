@@ -7,9 +7,6 @@ Hira <moto@fb.com>`__
 
 """
 
-# %matplotlib inline
-
-
 ######################################################################
 # Overview
 # --------
@@ -52,8 +49,11 @@ Hira <moto@fb.com>`__
 # encoding.
 # 
 
-# When running this example in notebook, install DeepPhonemizer
-# !pip3 install deep_phonemizer
+# %%
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip3 install deep_phonemizer
 
 import torch
 import torchaudio
@@ -297,8 +297,24 @@ IPython.display.display(IPython.display.Audio("output_griffinlim.wav"))
 # publishe on Torch Hub. One can instantiate the model using ``torch.hub``
 # module.
 # 
+if False:
+  waveglow = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_waveglow', model_math='fp32')
+else:
+  # Workaround to load model mapped on GPU
+  # https://stackoverflow.com/a/61840832
+  waveglow = torch.hub.load(
+      "NVIDIA/DeepLearningExamples:torchhub",
+      "nvidia_waveglow",
+      model_math="fp32",
+      pretrained=False,
+  )
+  checkpoint = torch.hub.load_state_dict_from_url(
+      "https://api.ngc.nvidia.com/v2/models/nvidia/waveglowpyt_fp32/versions/1/files/nvidia_waveglowpyt_fp32_20190306.pth",
+      progress=False,
+      map_location=device,
+  )
+  state_dict = {key.replace("module.", ""): value for key, value in checkpoint["state_dict"].items()}
 
-waveglow = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_waveglow', model_math='fp32')
 waveglow = waveglow.remove_weightnorm(waveglow)
 waveglow = waveglow.to(device)
 waveglow.eval()
