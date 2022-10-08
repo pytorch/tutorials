@@ -43,12 +43,17 @@ as your companion. The full code is available
 .. figure:: /_static/img/mario.gif
    :alt: mario
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-58
+.. GENERATED FROM PYTHON SOURCE LINES 32-36
+
+.. code-block:: bash
+
+    %%bash
+    pip install gym-super-mario-bros==7.4.0
+
+.. GENERATED FROM PYTHON SOURCE LINES 38-60
 
 .. code-block:: default
 
-
-    # !pip install gym-super-mario-bros==7.3.0
 
     import torch
     from torch import nn
@@ -78,7 +83,7 @@ as your companion. The full code is available
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-82
+.. GENERATED FROM PYTHON SOURCE LINES 61-84
 
 RL Definitions
 """"""""""""""""""
@@ -104,7 +109,7 @@ maximizes returns. :math:`Q` can be said to stand for the “quality” of
 the action in a state. We try to approximate this function.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-97
+.. GENERATED FROM PYTHON SOURCE LINES 87-99
 
 Environment
 """"""""""""""""
@@ -119,13 +124,16 @@ When Mario makes an action, the environment responds with the changed
 (next) state, reward and other info.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-111
+.. GENERATED FROM PYTHON SOURCE LINES 99-116
 
 .. code-block:: default
 
 
-    # Initialize Super Mario environment
-    env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
+    # Initialize Super Mario environment (in v0.26 change render mode to 'human' to see results on the screen)
+    if gym.__version__ < '0.26':
+        env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", new_step_api=True)
+    else:
+        env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", render_mode='rgb', apply_api_compatibility=True)
 
     # Limit the action-space to
     #   0. walk right
@@ -133,7 +141,7 @@ When Mario makes an action, the environment responds with the changed
     env = JoypadSpace(env, [["right"], ["right", "A"]])
 
     env.reset()
-    next_state, reward, done, info = env.step(action=0)
+    next_state, reward, done, trunc, info = env.step(action=0)
     print(f"{next_state.shape},\n {reward},\n {done},\n {info}")
 
 
@@ -153,10 +161,6 @@ When Mario makes an action, the environment responds with the changed
 
     WARN: Initializing wrapper in old step API which returns one bool instead of two. It is recommended to set `new_step_api=True` to use new step API. This will be the default behaviour in future.
 
-    /opt/conda/lib/python3.7/site-packages/gym/wrappers/step_api_compatibility.py:40: DeprecationWarning:
-
-    WARN: Initializing environment in old step API which returns one bool instead of two. It is recommended to set `new_step_api=True` to use new step API. This will be the default behaviour in future.
-
     /opt/conda/lib/python3.7/site-packages/gym/utils/passive_env_checker.py:228: DeprecationWarning:
 
     WARN: Core environment is written in old step API which returns one bool instead of two. It is recommended to rewrite the environment with new step API. 
@@ -169,7 +173,7 @@ When Mario makes an action, the environment responds with the changed
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-143
+.. GENERATED FROM PYTHON SOURCE LINES 117-148
 
 Preprocess Environment
 ------------------------
@@ -203,7 +207,7 @@ jumping based on the direction of his movement in the previous several
 frames.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-209
+.. GENERATED FROM PYTHON SOURCE LINES 148-216
 
 .. code-block:: default
 
@@ -218,14 +222,13 @@ frames.
         def step(self, action):
             """Repeat action, and sum reward"""
             total_reward = 0.0
-            done = False
             for i in range(self._skip):
                 # Accumulate reward and repeat the same action
-                obs, reward, done, info = self.env.step(action)
+                obs, reward, done, trunk, info = self.env.step(action)
                 total_reward += reward
                 if done:
                     break
-            return obs, total_reward, done, info
+            return obs, total_reward, done, trunk, info
 
 
     class GrayScaleObservation(gym.ObservationWrapper):
@@ -270,7 +273,10 @@ frames.
     env = SkipFrame(env, skip=4)
     env = GrayScaleObservation(env)
     env = ResizeObservation(env, shape=84)
-    env = FrameStack(env, num_stack=4)
+    if gym.__version__ < '0.26':
+        env = FrameStack(env, num_stack=4, new_step_api=True)
+    else:
+        env = FrameStack(env, num_stack=4)
 
 
 
@@ -289,7 +295,7 @@ frames.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-220
+.. GENERATED FROM PYTHON SOURCE LINES 217-227
 
 After applying the above wrappers to the environment, the final wrapped
 state consists of 4 gray-scaled consecutive frames stacked together, as
@@ -302,7 +308,7 @@ is represented by a 3-D array of size ``[4, 84, 84]``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 223-238
+.. GENERATED FROM PYTHON SOURCE LINES 230-245
 
 Agent
 """""""""
@@ -320,7 +326,7 @@ should be able to:
 -  **Learn** a better action policy over time
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-261
+.. GENERATED FROM PYTHON SOURCE LINES 245-268
 
 .. code-block:: default
 
@@ -354,13 +360,13 @@ should be able to:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-265
+.. GENERATED FROM PYTHON SOURCE LINES 269-272
 
 In the following sections, we will populate Mario’s parameters and
 define his functions.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-278
+.. GENERATED FROM PYTHON SOURCE LINES 275-285
 
 Act
 --------------
@@ -373,7 +379,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 ``Learn`` section) to provide the most optimal action.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 278-333
+.. GENERATED FROM PYTHON SOURCE LINES 285-335
 
 .. code-block:: default
 
@@ -385,12 +391,11 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
             self.action_dim = action_dim
             self.save_dir = save_dir
 
-            self.use_cuda = torch.cuda.is_available()
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             # Mario's DNN to predict the most optimal action - we implement this in the Learn section
             self.net = MarioNet(self.state_dim, self.action_dim).float()
-            if self.use_cuda:
-                self.net = self.net.to(device="cuda")
+            self.net = self.net.to(device=self.device)
 
             self.exploration_rate = 1
             self.exploration_rate_decay = 0.99999975
@@ -414,12 +419,8 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 
             # EXPLOIT
             else:
-                state = state.__array__()
-                if self.use_cuda:
-                    state = torch.tensor(state).cuda()
-                else:
-                    state = torch.tensor(state)
-                state = state.unsqueeze(0)
+                state = state[0].__array__() if isinstance(state, tuple) else state.__array__()
+                state = torch.tensor(state, device=self.device).unsqueeze(0)
                 action_values = self.net(state, model="online")
                 action_idx = torch.argmax(action_values, axis=1).item()
 
@@ -439,7 +440,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 334-347
+.. GENERATED FROM PYTHON SOURCE LINES 336-349
 
 Cache and Recall
 ----------------------
@@ -455,7 +456,7 @@ and whether the game is *done*.
 memory, and uses that to learn the game.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 347-393
+.. GENERATED FROM PYTHON SOURCE LINES 349-390
 
 .. code-block:: default
 
@@ -478,21 +479,16 @@ memory, and uses that to learn the game.
             reward (float),
             done(bool))
             """
-            state = state.__array__()
-            next_state = next_state.__array__()
+            def first_if_tuple(x):
+                return x[0] if isinstance(x, tuple) else x
+            state = first_if_tuple(state).__array__()
+            next_state = first_if_tuple(next_state).__array__()
 
-            if self.use_cuda:
-                state = torch.tensor(state).cuda()
-                next_state = torch.tensor(next_state).cuda()
-                action = torch.tensor([action]).cuda()
-                reward = torch.tensor([reward]).cuda()
-                done = torch.tensor([done]).cuda()
-            else:
-                state = torch.tensor(state)
-                next_state = torch.tensor(next_state)
-                action = torch.tensor([action])
-                reward = torch.tensor([reward])
-                done = torch.tensor([done])
+            state = torch.tensor(state, device=self.device)
+            next_state = torch.tensor(next_state, device=self.device)
+            action = torch.tensor([action], device=self.device)
+            reward = torch.tensor([reward], device=self.device)
+            done = torch.tensor([done], device=self.device)
 
             self.memory.append((state, next_state, action, reward, done,))
 
@@ -512,7 +508,7 @@ memory, and uses that to learn the game.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-411
+.. GENERATED FROM PYTHON SOURCE LINES 391-408
 
 Learn
 --------------
@@ -532,7 +528,7 @@ later).
 Neural Network
 ~~~~~~~~~~~~~~~~~~
 
-.. GENERATED FROM PYTHON SOURCE LINES 411-453
+.. GENERATED FROM PYTHON SOURCE LINES 408-450
 
 .. code-block:: default
 
@@ -585,7 +581,7 @@ Neural Network
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 454-489
+.. GENERATED FROM PYTHON SOURCE LINES 451-486
 
 TD Estimate & TD Target
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -623,7 +619,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 (because we don’t need to backpropagate on :math:`\theta_{target}`).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 489-512
+.. GENERATED FROM PYTHON SOURCE LINES 486-509
 
 .. code-block:: default
 
@@ -657,7 +653,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 513-536
+.. GENERATED FROM PYTHON SOURCE LINES 510-533
 
 Updating the model
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -683,7 +679,7 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 536-555
+.. GENERATED FROM PYTHON SOURCE LINES 533-552
 
 .. code-block:: default
 
@@ -713,13 +709,13 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 556-559
+.. GENERATED FROM PYTHON SOURCE LINES 553-556
 
 Save checkpoint
 ~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 559-573
+.. GENERATED FROM PYTHON SOURCE LINES 556-570
 
 .. code-block:: default
 
@@ -744,13 +740,13 @@ Save checkpoint
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 574-577
+.. GENERATED FROM PYTHON SOURCE LINES 571-574
 
 Putting it all together
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 577-614
+.. GENERATED FROM PYTHON SOURCE LINES 574-611
 
 .. code-block:: default
 
@@ -798,13 +794,13 @@ Putting it all together
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 615-618
+.. GENERATED FROM PYTHON SOURCE LINES 612-615
 
 Logging
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 618-726
+.. GENERATED FROM PYTHON SOURCE LINES 615-723
 
 .. code-block:: default
 
@@ -923,7 +919,7 @@ Logging
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 727-733
+.. GENERATED FROM PYTHON SOURCE LINES 724-730
 
 Let’s play!
 """""""""""""""
@@ -932,7 +928,7 @@ In this example we run the training loop for 10 episodes, but for Mario to truly
 his world, we suggest running the loop for at least 40,000 episodes!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 733-780
+.. GENERATED FROM PYTHON SOURCE LINES 730-777
 
 .. code-block:: default
 
@@ -959,7 +955,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
             action = mario.act(state)
 
             # Agent performs action
-            next_state, reward, done, info = env.step(action)
+            next_state, reward, done, trunc, info = env.step(action)
 
             # Remember
             mario.cache(state, next_state, action, reward, done)
@@ -998,12 +994,12 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
     Using CUDA: True
 
-    Episode 0 - Step 106 - Epsilon 0.9999735003478056 - Mean Reward 609.0 - Mean Length 106.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.144 - Time 2022-10-08T00:10:15
+    Episode 0 - Step 119 - Epsilon 0.9999702504388039 - Mean Reward 587.0 - Mean Length 119.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.119 - Time 2022-10-08T01:54:26
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 781-787
+.. GENERATED FROM PYTHON SOURCE LINES 778-784
 
 Conclusion
 """""""""""""""
@@ -1015,7 +1011,7 @@ to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  22.866 seconds)
+   **Total running time of the script:** ( 0 minutes  13.292 seconds)
 
 
 .. _sphx_glr_download_intermediate_mario_rl_tutorial.py:
