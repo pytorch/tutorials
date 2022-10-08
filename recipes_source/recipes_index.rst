@@ -315,6 +315,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
    /recipes/recipes/profiler_recipe
+   /recipes/recipes/profile_with_itt
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
