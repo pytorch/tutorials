@@ -22,7 +22,6 @@ NOT_RUN = [
     "former_torchies/tensor_tutorial_old",
     "examples_autograd/polynomial_autograd",
     "examples_autograd/polynomial_custom_function",
-    "forward_ad_usage",
     "parametrizations",
     "mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "fx_conv_bn_fuser",
