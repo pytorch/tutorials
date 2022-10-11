@@ -61,7 +61,7 @@ To enable this feature, codes which are expected to be labeled should be invoked
 .. code:: python3
 
    with torch.autograd.profiler.emit_itt():
-     <codes...>
+     <codes-to-be-profiled...>
 
 
 To verify the functionality, you need to start an Intel® VTune™ Profiler instance. Please check the `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/launch.html>`__ for steps to launch Intel® VTune™ Profiler.
@@ -78,7 +78,7 @@ Three sample results are available in the left side navigation bar under `sample
    :width: 100%
    :align: center
 
-The right side of the windows is split into 3 parts: `WHERE` (top left), `WHAT` (bottom left), and `HOW` (right). With `WHERE`, you can assign a machine where you want to run the profiling on. With `WHAT`, you can set the path of the application that you want to profile. To profile a PyTorch script, it is recommended to wrap all manual steps, including activate a conda environment and setting required environment variable, into a bash script, then profile this bash script. In the screenshot above, we wrapped all steps into the `launch.sh` bash script and profile `bash` with the parameter to be `<path_of_launch.sh>`. In the right side `HOW`, you can choose whatever type that you would like to profile. Details can be found at `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html>`__.
+The right side of the windows is split into 3 parts: `WHERE` (top left), `WHAT` (bottom left), and `HOW` (right). With `WHERE`, you can assign a machine where you want to run the profiling on. With `WHAT`, you can set the path of the application that you want to profile. To profile a PyTorch script, it is recommended to wrap all manual steps, including activating a Python environment and setting required environment variables, into a bash script, then profile this bash script. In the screenshot above, we wrapped all steps into the `launch.sh` bash script and profile `bash` with the parameter to be `<path_of_launch.sh>`. In the right side `HOW`, you can choose whatever type that you would like to profile. Details can be found at `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html>`__.
 
 With a successful profiling with ITT, you can open `Platform` tab of the profiling result to see labels in the Intel® VTune™ Profiler timeline. All operators starting with `aten::` are operators labeled implicitly by the ITT feature in PyTorch. Labels `iteration_N` are explicitly labeled with specific APIs `torch.profiler.itt.range_push()`, `torch.profiler.itt.range_pop()` or `torch.profiler.itt.range()` scope. Please check the sample code in the next section for details.
 
@@ -130,7 +130,7 @@ The topology is formed by two operators, `Conv2d` and `Linear`. Three iterations
      main()
 
 
-The `launch.sh` bash script to wrap all manual steps is shown below.
+The `launch.sh` bash script, mentioned in the Intel® VTune™ Profiler GUI screenshot, to wrap all manual steps is shown below.
 
 .. code:: bash
 
@@ -138,9 +138,8 @@ The `launch.sh` bash script to wrap all manual steps is shown below.
 
    #!/bin/bash
    
-   # Retrive the directory path where the path contains both the sample.py and launch.sh so that this script can be invoked from any directory
+   # Retrive the directory path where the path contains both the sample.py and launch.sh so that this bash script can be invoked from any directory
    BASEFOLDER=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-   source ~/miniconda3/bin/activate
-   conda activate ipex_py38
+   <Activate a Python environment>
    cd ${BASEFOLDER}
    python sample.py
