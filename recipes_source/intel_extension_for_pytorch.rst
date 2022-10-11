@@ -98,7 +98,7 @@ Float32
    model.set_state_dict(torch.load(PATH))
    optimizer.set_state_dict(torch.load(PATH))
    # Invoke optimize function against the model object and optimizer object
-   model, optimizer = ipex.optimize(model, optimizer, dtype=torch.float32)
+   model, optimizer = ipex.optimize(model, optimizer=optimizer)
    
    for images, label in train_loader():
        # Setting memory_format to torch.channels_last could improve performance with 4D input data. This is optional.
@@ -131,7 +131,7 @@ BFloat16
    model.set_state_dict(torch.load(PATH))
    optimizer.set_state_dict(torch.load(PATH))
    # Invoke optimize function against the model object and optimizer object with data type set to torch.bfloat16
-   model, optimizer = ipex.optimize(model, optimizer, dtype=torch.bfloat16)
+   model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=torch.bfloat16)
    
    for images, label in train_loader():
        with torch.cpu.amp.autocast():
