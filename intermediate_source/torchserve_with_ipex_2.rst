@@ -7,7 +7,7 @@ Authors: `Min Jean Cho <https://github.com/min-jean-cho>`_, `Jing Xu <https://gi
 In the `Grokking PyTorch Intel CPU Performance From First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex.html>`_ tutorial
 , we have introduced how to tune CPU runtime configurations, how to profile them, and how to integrate them into `TorchServe <https://github.com/pytorch/serve>`_ for optimized CPU performance.
 
-In this blog, we'll demonstrate boosting performance with memory allocator via the `Intel® Extension for PyTorch* Launcher <https://github.com/intel/intel-extension-for-pytorch/blob/master/docs/tutorials/performance_tuning/launch_script.md>`_
+In this tutorial, we will demonstrate boosting performance with memory allocator via the `Intel® Extension for PyTorch* Launcher <https://github.com/intel/intel-extension-for-pytorch/blob/master/docs/tutorials/performance_tuning/launch_script.md>`_
 , and optimized kernels on CPU via `Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`_
 , and apply them to TorchServe showcasing 7.71x throughput speedup for ResNet50, and 2.20x throughput speedup for BERT. 
 
