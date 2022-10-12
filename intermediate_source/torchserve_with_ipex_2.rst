@@ -410,7 +410,7 @@ Let's collect level-1 TMA metrics.
    :width: 100%
    :align: center
    
-Level-1 TMA shows that both are bounded by the backend. As discussed earlier, the majority of un-tuned deep learning workloads will be Back End Bound. Notice the Back End Bound reduced from 70.0 to 54.1. Let's go one level deeper. 
+Level-1 TMA shows that both are bounded by the backend. As discussed earlier, the majority of untuned deep learning workloads will be Back End Bound. Notice the Back End Bound reduced from 70.0 to 54.1. Let's go one level deeper. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/21.png
    :width: 100%
