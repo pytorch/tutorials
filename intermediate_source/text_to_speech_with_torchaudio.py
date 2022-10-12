@@ -293,7 +293,7 @@ IPython.display.display(IPython.display.Audio("output_griffinlim.wav"))
 # Waveglow
 # ~~~~~~~~
 # 
-# Waveglow is a vocoder published by Nvidia. The pretrained weight is
+# Waveglow is a vocoder published by Nvidia. The pretrained weights are
 # published on Torch Hub. One can instantiate the model using ``torch.hub``
 # module.
 # 
