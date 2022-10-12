@@ -191,7 +191,7 @@ In this section, we've demonstrated that JeMalloc can give better performance th
 
 Intel® Extension for PyTorch*
 =============================
-Intel® Extension for PyTorch* is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware. Example optimizations use AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
+`Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`_ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware. Example optimizations use AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
 
 The three major optimization techniques, Operator, Graph, Runtime, are as shown:
 
@@ -321,7 +321,7 @@ Notice that with Intel® Extension for PyTorch*  Conv + ReLU operators are fused
 
 Channels Last Memory Format
 ---------------------------
-When invoking *ipex.optimize* on model, Intel® Extension for PyTorch* automatically converts the model to optimized memory format, channels last. Channels last is a memory format that is more friendly to Intel Architecture. Compared to the default channels first NCHW (batch, channels, height, width) memory format, channels last NHWC memory format generally accelerates convolutional neural networks with better cache locality. 
+When invoking *ipex.optimize* on model, Intel® Extension for PyTorch* automatically converts the model to optimized memory format, channels last. Channels last is a memory format that is more friendly to Intel Architecture. Compared to PyTorch default channels first NCHW (batch, channels, height, width) memory format, channels last NHWC (batch, height, width, channels) memory format generally accelerates convolutional neural networks with better cache locality. 
 
 One thing to note is that it is expensive to convert memory format. So it's better to convert the memory format prior to deployment once, and keep the memory format conversion minimum during deployment. As the data propagates through model's layers the channels last memory format is preserved through consecutive channels last supported layers (e.g., Conv2d -> ReLU -> Conv2d) and conversions are only made in between channels last unsupported layers. Refer to `Memory Format Propagation <https://www.intel.com/content/www/us/en/develop/documentation/onednn-developer-guide-and-reference/top/programming-model/memory-format-propagation.html>`_ for more details.
 
@@ -380,8 +380,8 @@ Intel® Extension for PyTorch* Integration into TorchServe
 ========================================================= 
 Intel® Extension for PyTorch* has already been integrated into TorchServe to improve the performance out-of-box. :superscript:`2` When TorchServe creates single or multiple instances for inference, the launcher from Intel® Extension for PyTorch* is invoked automatically to set CPU affinity to these instances when launcher is enabled. :superscript:`3` This helps to make each instance use its assigned resources as high efficiently as possible, and minimize resource conflict among instances. For custom handler scripts, we recommend adding the *intel_extension_for_pytorch* package in.
 
-2. The feature has to be explicitly enabled by setting ipex_enable=true in  config.properties.
-3. The feature has to be explicitly enabled by setting cpu_launcher_enable=true in  config.properties.
+2. The feature has to be explicitly enabled by setting *ipex_enable=true* in  *config.properties*.
+3. The feature has to be explicitly enabled by setting *cpu_launcher_enable=true* in  *config.properties*.
 
 Performance Boost with Intel® Extension for PyTorch*
 ==================================================== 
@@ -395,7 +395,7 @@ Exercise with TorchServe
 ========================
 Let's profile Intel® Extension for PyTorch* optimizations with TorchServe. 
 
-We'll use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32 TorchScript, batch size 32, concurrency 32, requests 8960. All other parameters (e.g., batch_size, workers, input etc) are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
+We'll use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32 TorchScript, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
 
 As in the previous exercise, we'll use the launcher to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_: 
 
