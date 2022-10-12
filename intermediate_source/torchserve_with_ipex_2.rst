@@ -214,7 +214,7 @@ Exercise
 ^^^^^^^^
 Let's profile optimized operator with Intel® Extension for PyTorch*. We will compare with and without the lines in code changes. 
 
-As in the previous exercises, we'll bind the workload to physical cores of the first socket.
+As in the previous exercises, we will bind the workload to physical cores of the first socket.
 
 .. code:: python
     
