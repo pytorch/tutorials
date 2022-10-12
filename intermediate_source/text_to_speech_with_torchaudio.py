@@ -297,7 +297,7 @@ IPython.display.display(IPython.display.Audio("output_griffinlim.wav"))
 # publishe on Torch Hub. One can instantiate the model using ``torch.hub``
 # module.
 # 
-if False:
+if torch.cuda.is_available():
   waveglow = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_waveglow', model_math='fp32')
 else:
   # Workaround to load model mapped on GPU
@@ -309,7 +309,7 @@ else:
       pretrained=False,
   )
   checkpoint = torch.hub.load_state_dict_from_url(
-      "https://api.ngc.nvidia.com/v2/models/nvidia/waveglowpyt_fp32/versions/1/files/nvidia_waveglowpyt_fp32_20190306.pth",
+      "https://api.ngc.nvidia.com/v2/models/nvidia/waveglow_ckpt_fp32/versions/19.09.0/files/nvidia_waveglowpyt_fp32_20190427",
       progress=False,
       map_location=device,
   )
