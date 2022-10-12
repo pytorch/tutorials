@@ -60,7 +60,7 @@ Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT)
 *********************************************************************
 The ITT APIs of Intel® VTune Profiler is a useful tool to annotate a region of your workload for tracing to profile and visualize at a finer granularity of your annotation – OP/function/sub-function granularity. By annotating at the granularity of your PyTorch model's OPs, Intel® VTune Profiler's ITT enables op-level profiling. Intel® VTune Profiler's ITT has been integrated into `PyTorch Autograd Profiler <https://pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html#autograd-profiler>`_. :superscript:`1`
 
-1. The feature has to be explicitly enabled by with *torch.autograd.profiler.emit_itt()*.
+1. The feature has to be explicitly enabled by *with torch.autograd.profiler.emit_itt()*.
 
 *********************************************
 TorchServe with Intel® Extension for PyTorch*
