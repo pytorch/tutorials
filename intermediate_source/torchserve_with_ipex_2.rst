@@ -397,7 +397,7 @@ Let's profile Intel® Extension for PyTorch* optimizations with TorchServe.
 
 We will use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32 TorchScript, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
 
-As in the previous exercise, we'll use the launcher to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_: 
+As in the previous exercise, we will use the launcher to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_: 
 
 .. code:: python
 
