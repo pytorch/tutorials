@@ -38,7 +38,7 @@ Top-down Microarchitecture Analysis Method (TMA)
 When tuning CPU for optimal performance, it's useful to know where the bottleneck is. Most CPU cores have on-chip Performance Monitoring Units (PMUs). PMUs are dedicated pieces of logic within a CPU core that count specific hardware events as they occur on the system. Examples of these events may be Cache Misses or Branch Mispredictions. PMUs are used for Top-down Microarchitecture Analysis (TMA) to identify the bottlenecks. TMA consists of hierarchical levels as shown: 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/2.png
-   :width: 130%
+   :width: 100%
    :align: center
    
 The top level, level-1, metrics collect *Retiring*, *Bad Speculation*, *Front End Bound*, *Back End Bound*. The pipeline of CPU can conceptually be simplified and divided into two: the frontend and the backend. The *frontend* is responsible for fetching the program code and decoding them into low-level hardware operations called micro-ops (uOps). The uOps are then fed to the *backend* in a process called allocation. Once allocated, the backend is responsible for executing the uOp in an available execution unit. A completion of uOp's execution is called *retirement*. In contrast, a *bad speculation* is when speculatively fetched uOps are canceled before retiring such as in the case of mispredicted branches. Each of these metrics can further be broken down in the subsequent levels to pinpoint the bottleneck.
@@ -259,7 +259,7 @@ Notice the Back End Bound reduced from 68.9 to 38.5 – 1.8x speedup.
 Additionally, let's profile with PyTorch Profiler. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/13.png
-   :width: 150%
+   :width: 100%
    :align: center
    
 Notice the CPU time reduced from 851 us to 310 us – 2.7X speedup. 
@@ -314,7 +314,7 @@ Notice the Back End Bound reduced from 67.1 to 37.5 – 1.8x speedup.
 Additionally, let's profile with PyTorch Profiler. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/15.png
-   :width: 150%
+   :width: 100%
    :align: center
    
 Notice that with Intel® Extension for PyTorch*  Conv + ReLU operators are fused, and the CPU time reduced from 803 us to 248 us – 3.2X speedup. The oneDNN eltwise post-op enables fusing a primitive with an elementwise primitive. This is one of the most popular kinds of fusion: an eltwise (typically an activation function such as ReLU) with preceding convolution or inner product. Have a look at the oneDNN verbose log shown in the next section.
