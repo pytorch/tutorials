@@ -358,7 +358,7 @@ Let's demonstrate channels last optimization.
         model = torch.jit.trace(model, data)
         model = torch.jit.freeze(model)
 
-We'll use `oneDNN verbose mode <https://oneapi-src.github.io/oneDNN/dev_guide_verbose.html>`_, a tool to help collect information at oneDNN graph level such as operator fusions, kernel execution time spent on executing oneDNN primitives. For more information, refer to the `oneDNN Documentation <https://oneapi-src.github.io/oneDNN/index.html>`_.
+We will use `oneDNN verbose mode <https://oneapi-src.github.io/oneDNN/dev_guide_verbose.html>`_, a tool to help collect information at oneDNN graph level such as operator fusions, kernel execution time spent on executing oneDNN primitives. For more information, refer to the `oneDNN Documentation <https://oneapi-src.github.io/oneDNN/index.html>`_.
 
 .. figure:: /_static/img/torchserve-ipex-images-2/16.png
    :width: 15%
