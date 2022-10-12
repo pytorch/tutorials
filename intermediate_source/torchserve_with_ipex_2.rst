@@ -2,7 +2,7 @@
 Grokking PyTorch Intel CPU performance from first principles (Part 2)
 =====================================================================
 
-Authors: Min Jean Cho, Jing Xu, Mark Saroufim
+Authors: `Min Jean Cho <https://github.com/min-jean-cho>`_, `Jing Xu <https://github.com/jingxu10>`_, `Mark Saroufim <https://github.com/msaroufim>`_
 
 In the previous blog, `Grokking PyTorch Intel CPU Performance From First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex.html>`_
 , we have introduced how to tune CPU runtime configurations, how to profile them, and how to integrate them into `TorchServe <https://github.com/pytorch/serve>`_ for optimized CPU performance.
