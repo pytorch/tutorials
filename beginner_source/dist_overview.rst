@@ -3,7 +3,7 @@ PyTorch Distributed Overview
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 .. note::
-   View the source code for this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/beginner_source/dist_overview.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/beginner_source/dist_overview.rst>`__.
 
 This is the overview page for the ``torch.distributed`` package. The goal of
 this page is to categorize documents into different topics and briefly
@@ -49,7 +49,7 @@ three main components:
   after the backward pass instead of using DDP to communicate gradients. This can
   decouple communications from computations and allow finer-grain control over
   what to communicate, but on the other hand, it also gives up the performance
-  optimizations offered by DDP. The
+  optimizations offered by DDP.
   `Writing Distributed Applications with PyTorch <../intermediate/dist_tuto.html>`__
   shows examples of using c10d communication APIs.
 

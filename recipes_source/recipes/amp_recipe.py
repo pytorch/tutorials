@@ -7,11 +7,11 @@ Automatic Mixed Precision
 `torch.cuda.amp <https://pytorch.org/docs/stable/amp.html>`_ provides convenience methods for mixed precision,
 where some operations use the ``torch.float32`` (``float``) datatype and other operations
 use ``torch.float16`` (``half``). Some ops, like linear layers and convolutions,
-are much faster in ``float16``. Other ops, like reductions, often require the dynamic
+are much faster in ``float16`` or ``bfloat16``. Other ops, like reductions, often require the dynamic
 range of ``float32``.  Mixed precision tries to match each op to its appropriate datatype,
 which can reduce your network's runtime and memory footprint.
 
-Ordinarily, "automatic mixed precision training" uses `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_ and
+Ordinarily, "automatic mixed precision training" uses `torch.autocast <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_ and
 `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_ together.
 
 This recipe measures the performance of a simple network in default precision,
@@ -116,7 +116,7 @@ end_timer_and_print("Default precision:")
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         # Runs the forward pass under autocast.
-        with torch.cuda.amp.autocast():
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
             output = net(input)
             # output is float16 because linear layers autocast to float16.
             assert output.dtype is torch.float16
@@ -151,7 +151,7 @@ scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.cuda.amp.autocast():
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
 
@@ -184,7 +184,7 @@ scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 start_timer()
 for epoch in range(epochs):
     for input, target in zip(data, targets):
-        with torch.cuda.amp.autocast(enabled=use_amp):
+        with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=use_amp):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
@@ -202,7 +202,7 @@ end_timer_and_print("Mixed precision:")
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.cuda.amp.autocast():
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
