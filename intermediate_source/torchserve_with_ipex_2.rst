@@ -242,7 +242,7 @@ As in the previous exercises, we will bind the workload to physical cores of the
     
     print(model)
 
-The model consists of 2 operations, Conv2d and ReLU. By printing the model object, we get the following output. 
+The model consists of two operations—Conv2d and ReLU. By printing the model object, we get the following output. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/11.png
    :width: 60%
