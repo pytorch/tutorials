@@ -212,7 +212,7 @@ Optimized operators and kernels are registered through PyTorch dispatching mecha
 
 Exercise
 ^^^^^^^^
-Let's profile optimized operator with Intel® Extension for PyTorch*. We'll compare with and without the lines in code changes. 
+Let's profile optimized operator with Intel® Extension for PyTorch*. We will compare with and without the lines in code changes. 
 
 As in the previous exercises, we'll bind the workload to physical cores of the first socket.
 
