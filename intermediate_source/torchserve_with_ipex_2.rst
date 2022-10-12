@@ -441,7 +441,7 @@ The timeline graph can be expanded to see op-level profiling results. Notice tha
 **********
 Conclusion
 ********** 
-In this blog, we've used Top-down Microarchitecture Analysis (TMA) and Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) to demonstrate that 
+In this tutorial, we have used Top-down Microarchitecture Analysis (TMA) and Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) to demonstrate that 
 
 - Often the primary bottleneck of under-optimized or under-tuned deep learning workloads are Back End Bound, which has two submetrics, Memory Bound and Core Bound. 
 
