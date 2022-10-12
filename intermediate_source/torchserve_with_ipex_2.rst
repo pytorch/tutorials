@@ -272,7 +272,7 @@ Exercise
 ^^^^^^^^ 
 Let's profile FP32 graph optimization with TorchScript. 
 
-As in the previous exercises, we'll bind the workload to physical cores of the first socket.
+As in the previous exercises, we will bind the workload to physical cores of the first socket.
 
 .. code:: python
 
