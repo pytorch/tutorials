@@ -15,7 +15,7 @@ In this tutorial, we will demonstrate boosting performance with memory allocator
    :width: 100%
    :align: center
    
-Throughout this blog, we'll use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We'll also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`_ to profile at finer granularity.
+Throughout this tutorial, we will use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We will also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`_ to profile at finer granularity.
 
 *****************
 Table of Contents
