@@ -4,7 +4,7 @@ Grokking PyTorch Intel CPU performance from first principles (Part 2)
 
 Authors: `Min Jean Cho <https://github.com/min-jean-cho>`_, `Jing Xu <https://github.com/jingxu10>`_, `Mark Saroufim <https://github.com/msaroufim>`_
 
-In the previous blog, `Grokking PyTorch Intel CPU Performance From First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex.html>`_
+In the `Grokking PyTorch Intel CPU Performance From First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex.html>`_ tutorial
 , we have introduced how to tune CPU runtime configurations, how to profile them, and how to integrate them into `TorchServe <https://github.com/pytorch/serve>`_ for optimized CPU performance.
 
 In this blog, we'll demonstrate boosting performance with memory allocator via the `Intel® Extension for PyTorch* Launcher <https://github.com/intel/intel-extension-for-pytorch/blob/master/docs/tutorials/performance_tuning/launch_script.md>`_
