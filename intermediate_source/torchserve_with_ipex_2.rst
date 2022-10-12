@@ -9,7 +9,7 @@ In the `Grokking PyTorch Intel CPU Performance From First Principles <https://py
 
 In this tutorial, we will demonstrate boosting performance with memory allocator via the `Intel® Extension for PyTorch* Launcher <https://github.com/intel/intel-extension-for-pytorch/blob/master/docs/tutorials/performance_tuning/launch_script.md>`_
 , and optimized kernels on CPU via `Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`_
-, and apply them to TorchServe showcasing 7.71x throughput speedup for ResNet50, and 2.20x throughput speedup for BERT. 
+, and apply them to TorchServe showcasing 7.71x throughput speedup for ResNet50 and 2.20x throughput speedup for BERT. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/1.png
    :width: 100%
