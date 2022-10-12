@@ -71,7 +71,7 @@ TCMalloc, JeMalloc, PTMalloc
 ----------------------------
 Memory allocator plays an important role from the performance perspective. For deep learning workloads in practice, especially those running on large multi-core systems or servers like TorchServe, TCMalloc, or JeMalloc can generally get better memory usage than the default PyTorch memory allocator, PTMalloc.
 
-Both TCMalloc and JeMalloc use thread-local caches to reduce overhead on thread synchronization, and lock contention by using spinlocks and per-thread arenas respectively. TCMalloc and JeMalloc reduce overhead on unnecessary memory allocation and deallocation. Both allocators caterozie memory allocations by sizes to reduce overhead on memory fragmentation.
+Both TCMalloc and JeMalloc use thread-local caches to reduce overhead on thread synchronization, and lock contention by using spinlocks and per-thread arenas respectively. TCMalloc and JeMalloc reduce overhead on unnecessary memory allocation and deallocation. Both allocators categorize memory allocations by sizes to reduce overhead on memory fragmentation.
 
 With the launcher, users can easily experiment with different memory allocators by choosing one of the three launcher knobs *--enable_tcmalloc* (TCMalloc), *--enable_jemalloc* (JeMalloc), *--use_default_allocator* (PTMalloc).
 
