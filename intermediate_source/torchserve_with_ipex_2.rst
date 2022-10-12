@@ -191,7 +191,7 @@ In this section, we have demonstrated that JeMalloc can give better performance 
 
 Intel® Extension for PyTorch*
 =============================
-`Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`_ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware. Example optimizations use AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
+`Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`__ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware. Example optimizations use AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
 
 The three major optimization techniques, Operator, Graph, Runtime, are as shown:
 
