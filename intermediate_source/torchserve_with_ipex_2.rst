@@ -439,7 +439,7 @@ Each inference call is traced in the timeline graph. The duration of the last in
 The timeline graph can be expanded to see op-level profiling results. Notice that Conv + ReLU has been fused, and the duration decreased from 6.393 ms + 1.731 ms to 3.408 ms - 2.4x speedup. 
 
 **********
-Take-aways
+Conclusion
 ********** 
 In this blog, we've used Top-down Microarchitecture Analysis (TMA) and Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) to demonstrate that 
 
