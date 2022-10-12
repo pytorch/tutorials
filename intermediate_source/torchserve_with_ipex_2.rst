@@ -201,7 +201,7 @@ The three major optimization techniques, Operator, Graph, Runtime, are as shown:
 | Operator                                             | Graph                                 | Runtime                 |
 +------------------------------------------------------+---------------------------------------+-------------------------+
 | - Vectorization and Multi-threading                  | - Constant folding to reduce compute  | - Thread affinitization |
-| - Low-precision BF16/INT8 Compute                    | - Op fusion for better cache locality | - Memory buffer pooling |
+| - Low-precision BF16/INT8 compute                    | - Op fusion for better cache locality | - Memory buffer pooling |
 | - Data layout optimization for better cache locality |                                       | - GPU runtime           |
 |                                                      |                                       | - Launcher              |
 +------------------------------------------------------+---------------------------------------+-------------------------+
