@@ -187,7 +187,7 @@ Each inference call is traced in the timeline graph. The duration of the last mo
    
 The timeline graph can be expanded to see op-level profiling results. The duration of *aten::conv2d* decreased from 16.401 ms to 6.392 ms - 2.6x speedup. 
 
-In this section, we've demonstrated that JeMalloc can give better performance than the default PyTorch memory allocator, PTMalloc, with efficient thread-local caches improving Back End Bound.
+In this section, we have demonstrated that JeMalloc can give better performance than the default PyTorch memory allocator, PTMalloc, with efficient thread-local caches improving Back-End-Bound.
 
 Intel® Extension for PyTorch*
 =============================
