@@ -1,5 +1,5 @@
 =====================================================================
-Grokking PyTorch Intel CPU performance from first principles (Part 2) 
+Grokking PyTorch Intel CPU performance from first principles (Part 2)
 =====================================================================
 
 Authors: Min Jean Cho, Jing Xu, Mark Saroufim
@@ -441,10 +441,15 @@ The timeline graph can be expanded to see op-level profiling results. Notice tha
 Take-aways
 ********** 
 In this blog, we've used Top-down Microarchitecture Analysis (TMA) and Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) to demonstrate that 
-- Often the primary bottleneck of under-optimized or under-tuned deep learning workloads are Back End Bound, which has two submetrics – Memory Bound and Core Bound. 
+
+- Often the primary bottleneck of under-optimized or under-tuned deep learning workloads are Back End Bound, which has two submetrics, Memory Bound and Core Bound. 
+
 - A more efficient memory allocator, operator fusion, memory layout format optimization by Intel® Extension for PyTorch* improve Memory Bound. 
+
 - Key deep learning primitives, such as convolution, matrix multiplication, dot-product, etc have been well optimized by Intel® Extension for PyTorch* and oneDNN library, improving Core Bound. 
+
 - Intel® Extension for PyTorch* has been integrated into TorchServe with an ease-of-use API.
+
 - TorchServe with Intel® Extension for PyTorch* shows 7.71x throughput speedup for ResNet50, and 2.20x throughput speedup for BERT.
 
 ****************
@@ -459,7 +464,7 @@ Related Readings
 ***************
 Acknowledgement
 ***************
-We would like to thank Ashok Emani (Intel), Jiong Gong (Intel) for their immense guidance and support, and thorough feedback and reviews throughout many steps of this blog. We would also like to thank Hamid Shojanazeri (Meta), and Li Ning (AWS) for their helpful feedback in code review and the blog.
+We would like to thank Ashok Emani (Intel) and Jiong Gong (Intel) for their immense guidance and support, and thorough feedback and reviews throughout many steps of this blog. We would also like to thank Hamid Shojanazeri (Meta) and Li Ning (AWS) for their helpful feedback in code review and the blog.
 
 
 
