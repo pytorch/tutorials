@@ -330,6 +330,7 @@ Exercise
 Let's demonstrate channels last optimization. 
 
 .. code:: python
+
     import torch
 
     class Model(torch.nn.Module):
