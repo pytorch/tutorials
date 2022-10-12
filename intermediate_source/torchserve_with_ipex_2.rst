@@ -47,7 +47,7 @@ In this tutorial, we use  `toplev <https://github.com/andikleen/pmu-tools/wiki/t
 
 Tune for the Back End Bound
 ===========================
-The majority of un-tuned deep learning workloads will be Back End Bound. Resolving Back End bound is often resolving sources of latency causing retirement to take longer than necessary. As shown above, Back End Bound has two submetrics – Core Bound and Memory Bound. 
+The majority of untuned deep learning workloads will be Back End Bound. Resolving Back End bound is often resolving sources of latency causing retirement to take longer than necessary. As shown above, Back End Bound has two sub-metrics – Core Bound and Memory Bound. 
 
 Memory Bound stalls have causes related to the memory subsystem. For example, last-level cache (LLC or L3 cache) miss causing access to DRAM. Scaling deep learning models often requires significant compute. And high compute utilization requires that data is available when the execution units need it to execute the uOps. This requires prefetching the data and reusing the data in cache instead of fetching that same data multiple times from main memory which causes execution units to be starved while data is being returned. Throughout this blog, we'll show that a more efficient memory allocator, operator fusion, memory layout format optimization reduce overhead on Memory Bound with better cache locality. 
 
