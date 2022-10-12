@@ -79,7 +79,7 @@ Exercise
 ^^^^^^^^
 Let's profile PTMalloc vs. JeMalloc.
 
-We'll use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket to avoid any NUMA complication – to profile the effect of memory allocator only.
+We will use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket to avoid any NUMA complication – to profile the effect of memory allocator only.
 
 The following example measures the average inference time of ResNet50:
 
