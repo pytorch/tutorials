@@ -145,7 +145,7 @@ Let's profile PTMalloc vs. JeMalloc with TorchServe.
 
 We will use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
 
-As in the previous exercise, we'll use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://pytorch.org/serve/configuration.html#config-properties-file>`_: 
+As in the previous exercise, we will use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://pytorch.org/serve/configuration.html#config-properties-file>`_: 
 
 PTMalloc
 
