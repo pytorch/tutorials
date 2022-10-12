@@ -11,6 +11,10 @@ In this blog, we'll demonstrate boosting performance with memory allocator via t
 , and optimized kernels on CPU via `Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`_
 , and apply them to TorchServe showcasing 7.71x throughput speedup for ResNet50, and 2.20x throughput speedup for BERT. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/1.png
+   :width: 100%
+   :align: center
+   
 Throughout this blog, we'll use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We'll also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`_ to profile at finer granularity.
 
 *****************
@@ -33,6 +37,10 @@ Top-down Microarchitecture Analysis Method (TMA)
 ************************************************
 When tuning CPU for optimal performance, it's useful to know where the bottleneck is. Most CPU cores have on-chip Performance Monitoring Units (PMUs). PMUs are dedicated pieces of logic within a CPU core that count specific hardware events as they occur on the system. Examples of these events may be Cache Misses or Branch Mispredictions. PMUs are used for Top-down Microarchitecture Analysis (TMA) to identify the bottlenecks. TMA consists of hierarchical levels as shown: 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/2.png
+   :width: 130%
+   :align: center
+   
 The top level, level-1, metrics collect *Retiring*, *Bad Speculation*, *Front End Bound*, *Back End Bound*. The pipeline of CPU can conceptually be simplified and divided into two: the frontend and the backend. The *frontend* is responsible for fetching the program code and decoding them into low-level hardware operations called micro-ops (uOps). The uOps are then fed to the *backend* in a process called allocation. Once allocated, the backend is responsible for executing the uOp in an available execution unit. A completion of uOp's execution is called *retirement*. In contrast, a *bad speculation* is when speculatively fetched uOps are canceled before retiring such as in the case of mis-predicted branches. Each of these metrics can further be broken down in the subsequent levels to pinpoint the bottleneck.
 
 Throughout the blog, we'll use  `toplev <https://github.com/andikleen/pmu-tools/wiki/toplev-manual>`_, a tool part of `pmu-tools <https://github.com/andikleen/pmu-tools>`_ built on top of `Linux perf <https://man7.org/linux/man-pages/man1/perf.1.html>`_, for TMA.
@@ -105,14 +113,30 @@ The following example measures the average inference time of ResNet50:
 
 Let's collect level-1 TMA metrics. 
 
-Level-1 TMA shows that both PTMalloc and JeMalloc are bounded by the backend. More than half of the execution time was stalled by the backend. Let's go one level deeper. 
+.. figure:: /_static/img/torchserve-ipex-images-2/3.png
+   :width: 100%
+   :align: center
+
+Level-1 TMA shows that both PTMalloc and JeMalloc are bounded by the backend. More than half of the execution time was stalled by the backend. Let's go one level deeper.
+
+.. figure:: /_static/img/torchserve-ipex-images-2/4.png
+   :width: 100%
+   :align: center
 
 Level-2 TMA shows that the Back End Bound was caused by Memory Bound. Let's go one level deeper. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/5.png
+   :width: 100%
+   :align: center
+   
 Most of the metrics under the Memory Bound identify which level of the memory hierarchy from the L1 cache to main memory is the bottleneck. A hotspot bounded at a given level indicates that most of the data was being retrieved from that cache or memory-level. Optimizations should focus on moving data closer to the core. Level-3 TMA shows that PTMalloc was bottlenecked by DRAM Bound. On the other hand, JeMalloc was bottlenecked by L1 Bound – JeMalloc moved data closer to the core, and thus faster execution. 
 
 Let's look at Intel® VTune Profiler ITT trace. In the example script, we've annotated each *step_x* of the inference loop.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/6.png
+   :width: 100%
+   :align: center
+   
 Each step is traced in the timeline graph. The duration of model inference on the last step (step_99) decreased from 304.308 ms to 261.843 ms. 
 
 Exercise with TorchServe
@@ -139,12 +163,28 @@ JeMalloc
     
 Let's collect level-1 TMA metrics. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/7.png
+   :width: 100%
+   :align: center
+
 Let's go one level deeper. 
+
+.. figure:: /_static/img/torchserve-ipex-images-2/8.png
+   :width: 100%
+   :align: center
 
 Let's use Intel® VTune Profiler ITT to annotate `TorchServe inference scope <https://github.com/pytorch/serve/blob/master/ts/torch_handler/base_handler.py#L188>`_ to profile at inference-level granularity. As `TorchServe Architecture <https://github.com/pytorch/serve/blob/master/docs/internals.md#torchserve-architecture>`_ consists of several sub-components, including the Java frontend for handling request/response, and the Python backend for running the actual inference on the models, it is helpful to use Intel® VTune Profiler ITT to limit the collection of trace data at inference-level.  
 
+.. figure:: /_static/img/torchserve-ipex-images-2/9.png
+   :width: 100%
+   :align: center
+   
 Each inference call is traced in the timeline graph. The duration of the last model inference decreased from 561.688 ms to 251.287 ms - 2.2x speedup.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/10.png
+   :width: 100%
+   :align: center
+   
 The timeline graph can be expanded to see op-level profiling results. The duration of *aten::conv2d* decreased from 16.401 ms to 6.392 ms - 2.6x speedup. 
 
 In this section, we've demonstrated that JeMalloc can give better performance than the default PyTorch memory allocator, PTMalloc, with efficient thread-local caches improving Back End Bound.
@@ -204,12 +244,24 @@ As in the previous exercises, we'll bind the workload to physical cores of the f
 
 The model consists of 2 operations, Conv2d and ReLU. By printing the model object, we get the following output. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/11.png
+   :width: 60%
+   :align: center
+   
 Let's collect level-1 TMA metrics. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/12.png
+   :width: 100%
+   :align: center
+   
 Notice the Back End Bound reduced from 68.9 to 38.5 – 1.8x speedup.
 
 Additionally, let's profile with PyTorch Profiler. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/13.png
+   :width: 150%
+   :align: center
+   
 Notice the CPU time reduced from 851 us to 310 us – 2.7X speedup. 
 
 Graph Optimization
@@ -253,10 +305,18 @@ As in the previous exercises, we'll bind the workload to physical cores of the f
 
 Let's collect level-1 TMA metrics. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/14.png
+   :width: 100%
+   :align: center
+   
 Notice the Back End Bound reduced from 67.1 to 37.5 – 1.8x speedup.
 
 Additionally, let's profile with PyTorch Profiler. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/15.png
+   :width: 150%
+   :align: center
+   
 Notice that with Intel® Extension for PyTorch*  Conv + ReLU operators are fused, and the CPU time reduced from 803 us to 248 us – 3.2X speedup. The oneDNN eltwise post-op enables fusing a primitive with an elementwise primitive. This is one of the most popular kinds of fusion: an eltwise (typically an activation function such as ReLU) with preceding convolution or inner product. Have a look at the oneDNN verbose log shown in the next section.
 
 Channels Last Memory Format
@@ -299,8 +359,20 @@ Let's demonstrate channels last optimization.
 
 We'll use `oneDNN verbose mode <https://oneapi-src.github.io/oneDNN/dev_guide_verbose.html>`_, a tool to help collect information at oneDNN graph level such as operator fusions, kernel execution time spent on executing oneDNN primitives. For more information, refer to the `oneDNN Documentation <https://oneapi-src.github.io/oneDNN/index.html>`_.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/16.png
+   :width: 15%
+   :align: center
+   
+.. figure:: /_static/img/torchserve-ipex-images-2/17.png
+   :width: 100%
+   :align: center
+   
 Above is oneDNN verbose from channels first. We can verify that there are reorders from weight and data, then do computation, and finally reorder output back.   
 
+.. figure:: /_static/img/torchserve-ipex-images-2/18.png
+   :width: 80%
+   :align: center
+   
 Above is oneDNN verbose from channels last. We can verify that channels last memory format avoids unnecessary reorders.
 
 Intel® Extension for PyTorch* Integration into TorchServe
@@ -314,6 +386,10 @@ Performance Boost with Intel® Extension for PyTorch*
 ==================================================== 
 Below summarizes performance boost of TorchServe with Intel® Extension for PyTorch* for ResNet50 and BERT-base-uncased. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/19.png
+   :width: 100%
+   :align: center
+   
 Exercise with TorchServe
 ========================
 Let's profile Intel® Extension for PyTorch* optimizations with TorchServe. 
@@ -329,16 +405,36 @@ As in the previous exercise, we'll use the launcher to bind the workload to phys
 
 Let's collect level-1 TMA metrics. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/20.png
+   :width: 100%
+   :align: center
+   
 Level-1 TMA shows that both are bounded by the backend. As discussed earlier, the majority of un-tuned deep learning workloads will be Back End Bound. Notice the Back End Bound reduced from 70.0 to 54.1. Let's go one level deeper. 
 
+.. figure:: /_static/img/torchserve-ipex-images-2/21.png
+   :width: 100%
+   :align: center
+   
 As discussed earlier, Back End Bound has two submetrics – Memory Bound and Core Bound. Memory Bound indicates the workload is under-optimized or under-utilized, and ideally memory-bound operations can be improved to core-bound by optimizing the OPs and improving cache locality. Level-2 TMA shows that the Back End Bound improved from Memory Bound to Core Bound. Let's go one level deeper.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/22.png
+   :width: 100%
+   :align: center
+   
 Scaling deep learning models for production on a model serving framework like TorchServe requires high compute utilization. This requires that data is available through prefetching and reusing the data in cache when the execution units need it to execute the uOps. Level-3 TMA shows that the Back End Memory Bound improved from DRAM Bound to Core Bound. 
 
 As in the previous exercise with TorchServe, let's use Intel® VTune Profiler ITT to annotate `TorchServe inference scope <https://github.com/pytorch/serve/blob/master/ts/torch_handler/base_handler.py#L188>`_ to profile at inference-level granularity.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/23.png
+   :width: 100%
+   :align: center
+   
 Each inference call is traced in the timeline graph. The duration of the last inference call decreased from 215.731 ms to 95.634 ms - 2.3x speedup.
 
+.. figure:: /_static/img/torchserve-ipex-images-2/24.png
+   :width: 100%
+   :align: center
+   
 The timeline graph can be expanded to see op-level profiling results. Notice that Conv + ReLU has been fused, and the duration decreased from 6.393 ms + 1.731 ms to 3.408 ms - 2.4x speedup. 
 
 **********
