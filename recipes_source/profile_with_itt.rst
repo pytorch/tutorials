@@ -153,7 +153,7 @@ The `launch.sh` bash script, mentioned in the Intel® VTune™ Profiler GUI scre
 
    #!/bin/bash
    
-   # Retrive the directory path where the path contains both the sample.py and launch.sh so that this bash script can be invoked from any directory
+   # Retrieve the directory path where the path contains both the sample.py and launch.sh so that this bash script can be invoked from any directory
    BASEFOLDER=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
    <Activate a Python environment>
    cd ${BASEFOLDER}
