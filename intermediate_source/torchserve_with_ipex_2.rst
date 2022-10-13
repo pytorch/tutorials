@@ -15,7 +15,7 @@ In this tutorial, we will demonstrate boosting performance with memory allocator
    :width: 100%
    :align: center
    
-Throughout this tutorial, we will use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We will also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`_ to profile at finer granularity.
+Throughout this tutorial, we will use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We will also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`__ to profile at finer granularity.
 
 *****************
 Table of Contents
@@ -145,7 +145,7 @@ Let's profile PTMalloc vs. JeMalloc with TorchServe.
 
 We will use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
 
-As in the previous exercise, we will use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://pytorch.org/serve/configuration.html#config-properties-file>`_: 
+As in the previous exercise, we will use the launcher to designate the memory allocator, and to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://pytorch.org/serve/configuration.html#config-properties-file>`__: 
 
 PTMalloc
 
@@ -397,7 +397,7 @@ Let's profile Intel® Extension for PyTorch* optimizations with TorchServe.
 
 We will use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32 TorchScript, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
 
-As in the previous exercise, we will use the launcher to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_: 
+As in the previous exercise, we will use the launcher to bind the workload to physical cores of the first socket. To do so, user simply needs to add a few lines in `config.properties <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`__: 
 
 .. code:: python
 
