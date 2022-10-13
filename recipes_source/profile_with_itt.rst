@@ -46,12 +46,12 @@ Two types of usage are provided in PyTorch:
 2. Explicit invocation: If customized labeling is needed, users can use APIs mentioned at `PyTorch Docs <https://pytorch.org/docs/stable/profiler.html#intel-instrumentation-and-tracing-technology-apis>`__ explicitly to label a desired range.
 
 
-To enable explicit invocation, codes which are expected to be labeled should be invoked under a `torch.autograd.profiler.emit_itt()` scope. For example:
+To enable explicit invocation, code which are expected to be labeled should be invoked under a `torch.autograd.profiler.emit_itt()` scope. For example:
 
 .. code:: python3
 
    with torch.autograd.profiler.emit_itt():
-     <codes-to-be-profiled...>
+     <code-to-be-profiled...>
 
 Launch Intel® VTune™ Profiler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
