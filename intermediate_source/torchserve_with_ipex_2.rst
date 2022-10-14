@@ -50,10 +50,9 @@ TorchServe with Intel® Extension for PyTorch*
 ---------------------------------------------
 `Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`__ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware.  
 
-Intel® Extension for PyTorch* has already been integrated into TorchServe to improve the performance out-of-box. :superscript:`2` When TorchServe creates single or multiple instances for inference, the launcher from Intel® Extension for PyTorch* is invoked automatically to set CPU affinity to these instances when launcher is enabled. :superscript:`3` This helps to make each instance use its assigned resources as high efficiently as possible, and minimize resource conflict among instances. For custom handler scripts, we recommend adding the *intel_extension_for_pytorch* package in. 
+Intel® Extension for PyTorch* has already been integrated into TorchServe to improve the performance out-of-box. :superscript:`2` For custom handler scripts, we recommend adding the *intel_extension_for_pytorch* package in. 
 
 2. The feature has to be explicitly enabled by setting *ipex_enable=true* in *config.properties*.
-3. The feature has to be explicitly enabled by setting *cpu_launcher_enable=true* in *config.properties*.
 
 Throughout this section, we will show that Back End Bound is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound, which has two submetrics - Memory Bound, and Core Bound. A more efficient memory allocator, operator fusion, memory layout format optimization improve Memory Bound. Ideally, Memory Bound can be improved to Core Bound by optimized operators and better cache locality. And key deep learning primitives, such as convolution, matrix multiplication, dot-product, have been well optimized by Intel® Extension for PyTorch* and oneDNN library, improving Core Bound.
 
