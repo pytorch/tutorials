@@ -1,4 +1,3 @@
-=====================================================================
 Grokking PyTorch Intel CPU performance from first principles (Part 2)
 =====================================================================
 
@@ -14,27 +13,15 @@ In this tutorial, we will demonstrate boosting performance with memory allocator
 .. figure:: /_static/img/torchserve-ipex-images-2/1.png
    :width: 100%
    :align: center
-   
-Throughout this tutorial, we will use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and we'll demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We will also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`__ to profile at finer granularity.
 
-*****************
-Table of Contents
-*****************
-- Prerequisite  
-    - Top-down Microarchitecture Analysis Method (TMA)
-    - Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT)
-- TorchServe with Intel® Extension for PyTorch*
-    - Leveraging Advanced Launcher Configuration: Memory Allocator 	
-        - TCMalloc, JeMalloc, PTMalloc
-        - Exercise
-    - Intel® Extension for PyTorch*
-        - Intel® Extension for PyTorch* Optimizations  
-        - Intel® Extension for PyTorch* with TorchServe 
-        - Exercise
-        
-************************************************
+Prerequisites
+-------------
+Throughout this tutorial, we will use `Top-down Microarchitecture Analysis (TMA) <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_ to profile and show that the Back End Bound (Memory Bound, Core Bound) is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound. We will use  `toplev <https://github.com/andikleen/pmu-tools/wiki/toplev-manual>`_, a tool part of `pmu-tools <https://github.com/andikleen/pmu-tools>`_ built on top of `Linux perf <https://man7.org/linux/man-pages/man1/perf.1.html>`_, for TMA. 
+
+We will also use `Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) <https://github.com/pytorch/pytorch/issues/41001>`__ to profile at finer granularity.
+
 Top-down Microarchitecture Analysis Method (TMA)
-************************************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When tuning CPU for optimal performance, it's useful to know where the bottleneck is. Most CPU cores have on-chip Performance Monitoring Units (PMUs). PMUs are dedicated pieces of logic within a CPU core that count specific hardware events as they occur on the system. Examples of these events may be Cache Misses or Branch Mispredictions. PMUs are used for Top-down Microarchitecture Analysis (TMA) to identify the bottlenecks. TMA consists of hierarchical levels as shown: 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/2.png
@@ -43,10 +30,8 @@ When tuning CPU for optimal performance, it's useful to know where the bottlenec
    
 The top level, level-1, metrics collect *Retiring*, *Bad Speculation*, *Front End Bound*, *Back End Bound*. The pipeline of CPU can conceptually be simplified and divided into two: the frontend and the backend. The *frontend* is responsible for fetching the program code and decoding them into low-level hardware operations called micro-ops (uOps). The uOps are then fed to the *backend* in a process called allocation. Once allocated, the backend is responsible for executing the uOp in an available execution unit. A completion of uOp's execution is called *retirement*. In contrast, a *bad speculation* is when speculatively fetched uOps are canceled before retiring such as in the case of mispredicted branches. Each of these metrics can further be broken down in the subsequent levels to pinpoint the bottleneck.
 
-In this tutorial, we use  `toplev <https://github.com/andikleen/pmu-tools/wiki/toplev-manual>`_, a tool part of `pmu-tools <https://github.com/andikleen/pmu-tools>`_ built on top of `Linux perf <https://man7.org/linux/man-pages/man1/perf.1.html>`_, for TMA.
-
 Tune for the Back End Bound
-===========================
++++++++++++++++++++++++++++
 The majority of untuned deep learning workloads will be Back End Bound. Resolving Back End bound is often resolving sources of latency causing retirement to take longer than necessary. As shown above, Back End Bound has two sub-metrics – Core Bound and Memory Bound. 
 
 Memory Bound stalls have causes related to the memory subsystem. For example, last-level cache (LLC or L3 cache) miss causing access to DRAM. Scaling deep learning models often requires significant compute. And high compute utilization requires that data is available when the execution units need it to execute the uOps. This requires prefetching the data and reusing the data in cache instead of fetching that same data multiple times from main memory which causes execution units to be starved while data is being returned. Throughout this tutorial, we wll show that a more efficient memory allocator, operator fusion, memory layout format optimization reduce overhead on Memory Bound with better cache locality. 
@@ -55,22 +40,29 @@ Core Bound stalls indicate sub-optimal use of available execution units while th
 
 Operations like GEMM, convolution, deconvolution are compute-intensive. While operations like pooling, batch normalization, activation functions like ReLU are memory-bound.
 
-*********************************************************************
 Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT)
-*********************************************************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ITT APIs of Intel® VTune Profiler is a useful tool to annotate a region of your workload for tracing to profile and visualize at a finer granularity of your annotation – OP/function/sub-function granularity. By annotating at the granularity of your PyTorch model's OPs, Intel® VTune Profiler's ITT enables op-level profiling. Intel® VTune Profiler's ITT has been integrated into `PyTorch Autograd Profiler <https://pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html#autograd-profiler>`_. :superscript:`1`
 
 1. The feature has to be explicitly enabled by *with torch.autograd.profiler.emit_itt()*.
 
-*********************************************
 TorchServe with Intel® Extension for PyTorch*
-*********************************************
-Leveraging Advanced Launcher Configuration: Memory Allocator
-============================================================ 
-TCMalloc, JeMalloc, PTMalloc
-----------------------------
-Memory allocator plays an important role from the performance perspective. For deep learning workloads in practice, especially those running on large multi-core systems or servers like TorchServe, TCMalloc, or JeMalloc can generally get better memory usage than the default PyTorch memory allocator, PTMalloc.
+---------------------------------------------
+`Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`__ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware.  
 
+Intel® Extension for PyTorch* has already been integrated into TorchServe to improve the performance out-of-box. :superscript:`2` When TorchServe creates single or multiple instances for inference, the launcher from Intel® Extension for PyTorch* is invoked automatically to set CPU affinity to these instances when launcher is enabled. :superscript:`3` This helps to make each instance use its assigned resources as high efficiently as possible, and minimize resource conflict among instances. For custom handler scripts, we recommend adding the *intel_extension_for_pytorch* package in. 
+
+2. The feature has to be explicitly enabled by setting *ipex_enable=true* in *config.properties*.
+3. The feature has to be explicitly enabled by setting *cpu_launcher_enable=true* in *config.properties*.
+
+Throughout this section, we will show that Back End Bound is often the primary bottleneck for under-optimized or under-tuned deep learning workloads, and demonstrate optimization techniques via Intel® Extension for PyTorch* for improving Back End Bound, which has two submetrics - Memory Bound, and Core Bound. A more efficient memory allocator, operator fusion, memory layout format optimization improve Memory Bound. Ideally, Memory Bound can be improved to Core Bound by optimized operators and better cache locality. And key deep learning primitives, such as convolution, matrix multiplication, dot-product, have been well optimized by Intel® Extension for PyTorch* and oneDNN library, improving Core Bound.
+
+Leveraging Advanced Launcher Configuration: Memory Allocator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Memory allocator plays an important role from performance perspective. A more efficient memory usage reduces overhead on unnecessary memory allocations or destructions, and thus faster execution. For deep learning workloads in practice, especially those running on large multi-core systems or servers like TorchServe, TCMalloc, or JeMalloc can generally get better memory usage than the default PyTorch memory allocator, PTMalloc.
+
+TCMalloc, JeMalloc, PTMalloc
+++++++++++++++++++++++++++++
 Both TCMalloc and JeMalloc use thread-local caches to reduce overhead on thread synchronization, and lock contention by using spinlocks and per-thread arenas respectively. TCMalloc and JeMalloc reduce overhead on unnecessary memory allocation and deallocation. Both allocators categorize memory allocations by sizes to reduce overhead on memory fragmentation.
 
 With the launcher, users can easily experiment with different memory allocators by choosing one of the three launcher knobs *--enable_tcmalloc* (TCMalloc), *--enable_jemalloc* (JeMalloc), *--use_default_allocator* (PTMalloc).
@@ -131,7 +123,7 @@ Level-2 TMA shows that the Back End Bound was caused by Memory Bound. Let's go o
    
 Most of the metrics under the Memory Bound identify which level of the memory hierarchy from the L1 cache to main memory is the bottleneck. A hotspot bounded at a given level indicates that most of the data was being retrieved from that cache or memory-level. Optimizations should focus on moving data closer to the core. Level-3 TMA shows that PTMalloc was bottlenecked by DRAM Bound. On the other hand, JeMalloc was bottlenecked by L1 Bound – JeMalloc moved data closer to the core, and thus faster execution. 
 
-Let's look at Intel® VTune Profiler ITT trace. In the example script, we've annotated each *step_x* of the inference loop.
+Let's look at Intel® VTune Profiler ITT trace. In the example script, we have annotated each *step_x* of the inference loop.
 
 .. figure:: /_static/img/torchserve-ipex-images-2/6.png
    :width: 100%
@@ -190,10 +182,8 @@ The timeline graph can be expanded to see op-level profiling results. The durati
 In this section, we have demonstrated that JeMalloc can give better performance than the default PyTorch memory allocator, PTMalloc, with efficient thread-local caches improving Back-End-Bound.
 
 Intel® Extension for PyTorch*
-=============================
-`Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`__ is a Python package to extend PyTorch with optimizations for extra performance boost on Intel hardware. Example optimizations use AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
-
-The three major optimization techniques, Operator, Graph, Runtime, are as shown:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The three major `Intel® Extension for PyTorch* <https://github.com/intel/intel-extension-for-pytorch>`__ optimization techniques, Operator, Graph, Runtime, are as shown:
 
 +------------------------------------------------------------------------------------------------------------------------+
 |                                  Intel® Extension for PyTorch* Optimization Techniques                                 |
@@ -207,7 +197,7 @@ The three major optimization techniques, Operator, Graph, Runtime, are as shown:
 +------------------------------------------------------+---------------------------------------+-------------------------+
 
 Operator Optimization
----------------------
++++++++++++++++++++++
 Optimized operators and kernels are registered through PyTorch dispatching mechanism. These operators and kernels are accelerated from native vectorization feature and matrix calculation feature of Intel hardware. During execution, Intel® Extension for PyTorch* intercepts invocation of ATen operators, and replaces the original ones with these optimized ones. Popular operators like Convolution, Linear have been optimized in Intel® Extension for PyTorch*. 
 
 Exercise
@@ -265,7 +255,7 @@ Additionally, let's profile with PyTorch Profiler.
 Notice the CPU time reduced from 851 us to 310 us – 2.7X speedup. 
 
 Graph Optimization
-------------------
+++++++++++++++++++
 It is highly recommended for users to take advantage of Intel® Extension for PyTorch* with `TorchScript <https://pytorch.org/docs/stable/jit.html>`_ for further graph optimizations. To optimize performance further with TorchScript, Intel® Extension for PyTorch* supports oneDNN fusion of frequently used FP32/BF16 operator patterns, like Conv2D+ReLU, Linear+ReLU, and more to reduce operator/kernel invocation overheads, and for better cache locality. Some operator fusions allow to maintain temporary calculations, data type conversions, data layouts for better cache locality. As well as for INT8, Intel® Extension for PyTorch* has built-in quantization recipes to deliver good statistical accuracy for popular DL workloads including CNN, NLP and recommendation models. The quantized model is then optimized with oneDNN fusion support. 
 
 Exercise
@@ -320,7 +310,7 @@ Additionally, let's profile with PyTorch Profiler.
 Notice that with Intel® Extension for PyTorch*  Conv + ReLU operators are fused, and the CPU time reduced from 803 us to 248 us – 3.2X speedup. The oneDNN eltwise post-op enables fusing a primitive with an elementwise primitive. This is one of the most popular kinds of fusion: an eltwise (typically an activation function such as ReLU) with preceding convolution or inner product. Have a look at the oneDNN verbose log shown in the next section.
 
 Channels Last Memory Format
----------------------------
++++++++++++++++++++++++++++
 When invoking *ipex.optimize* on model, Intel® Extension for PyTorch* automatically converts the model to optimized memory format, channels last. Channels last is a memory format that is more friendly to Intel Architecture. Compared to PyTorch default channels first NCHW (batch, channels, height, width) memory format, channels last NHWC (batch, height, width, channels) memory format generally accelerates convolutional neural networks with better cache locality. 
 
 One thing to note is that it is expensive to convert memory format. So it's better to convert the memory format prior to deployment once, and keep the memory format conversion minimum during deployment. As the data propagates through model's layers the channels last memory format is preserved through consecutive channels last supported layers (for example, Conv2d -> ReLU -> Conv2d) and conversions are only made in between channels last unsupported layers. See `Memory Format Propagation <https://www.intel.com/content/www/us/en/develop/documentation/onednn-developer-guide-and-reference/top/programming-model/memory-format-propagation.html>`_ for more details.
@@ -376,15 +366,8 @@ Above is oneDNN verbose from channels first. We can verify that there are reorde
    
 Above is oneDNN verbose from channels last. We can verify that channels last memory format avoids unnecessary reorders.
 
-Intel® Extension for PyTorch* Integration into TorchServe
-========================================================= 
-Intel® Extension for PyTorch* has already been integrated into TorchServe to improve the performance out-of-box. :superscript:`2` When TorchServe creates single or multiple instances for inference, the launcher from Intel® Extension for PyTorch* is invoked automatically to set CPU affinity to these instances when launcher is enabled. :superscript:`3` This helps to make each instance use its assigned resources as high efficiently as possible, and minimize resource conflict among instances. For custom handler scripts, we recommend adding the *intel_extension_for_pytorch* package in.
-
-2. The feature has to be explicitly enabled by setting *ipex_enable=true* in  *config.properties*.
-3. The feature has to be explicitly enabled by setting *cpu_launcher_enable=true* in  *config.properties*.
-
-Performance Boost with Intel® Extension for PyTorch*
-==================================================== 
+Performance Boost with Intel® Extension for PyTorch* 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Below summarizes performance boost of TorchServe with Intel® Extension for PyTorch* for ResNet50 and BERT-base-uncased. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/19.png
@@ -392,7 +375,7 @@ Below summarizes performance boost of TorchServe with Intel® Extension for PyTo
    :align: center
    
 Exercise with TorchServe
-========================
+~~~~~~~~~~~~~~~~~~~~~~~~
 Let's profile Intel® Extension for PyTorch* optimizations with TorchServe. 
 
 We will use `TorchServe apache-bench benchmarking <https://github.com/pytorch/serve/tree/master/benchmarks#benchmarking-with-apache-bench>`_ with ResNet50 FP32 TorchScript, batch size 32, concurrency 32, requests 8960. All other parameters are the same as the `default parameters <https://github.com/pytorch/serve/tree/master/benchmarks#benchmark-parameters>`_. 
@@ -438,9 +421,8 @@ Each inference call is traced in the timeline graph. The duration of the last in
    
 The timeline graph can be expanded to see op-level profiling results. Notice that Conv + ReLU has been fused, and the duration decreased from 6.393 ms + 1.731 ms to 3.408 ms - 2.4x speedup. 
 
-**********
 Conclusion
-********** 
+----------- 
 In this tutorial, we have used Top-down Microarchitecture Analysis (TMA) and Intel® VTune™ Profiler's Instrumentation and Tracing Technology (ITT) to demonstrate that 
 
 - Often the primary bottleneck of under-optimized or under-tuned deep learning workloads are Back End Bound, which has two submetrics, Memory Bound and Core Bound. 
@@ -453,19 +435,14 @@ In this tutorial, we have used Top-down Microarchitecture Analysis (TMA) and Int
 
 - TorchServe with Intel® Extension for PyTorch* shows 7.71x throughput speedup for ResNet50, and 2.20x throughput speedup for BERT.
 
-****************
 Related Readings
-****************
+----------------
 `Top-down Microarchitecture Analysis Method <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_
 
 `Top-Down performance analysis methodology <https://easyperf.net/blog/2019/02/09/Top-Down-performance-analysis-methodology>`_
 
 `Accelerating PyTorch with Intel® Extension for PyTorch* <https://medium.com/pytorch/accelerating-pytorch-with-intel-extension-for-pytorch-3aef51ea3722>`_
 
-***************
 Acknowledgement
-***************
+---------------
 We would like to thank Ashok Emani (Intel) and Jiong Gong (Intel) for their immense guidance and support, and thorough feedback and reviews throughout many steps of this blog. We would also like to thank Hamid Shojanazeri (Meta) and Li Ning (AWS) for their helpful feedback in code review and the blog.
-
-
-
