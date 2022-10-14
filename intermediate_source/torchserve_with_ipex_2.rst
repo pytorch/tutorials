@@ -444,4 +444,4 @@ Related Readings
 
 Acknowledgement
 ---------------
-We would like to thank Ashok Emani (Intel) and Jiong Gong (Intel) for their immense guidance and support, and thorough feedback and reviews throughout many steps of this blog. We would also like to thank Hamid Shojanazeri (Meta) and Li Ning (AWS) for their helpful feedback in code review and the blog.
+We would like to thank Ashok Emani (Intel) and Jiong Gong (Intel) for their immense guidance and support, and thorough feedback and reviews throughout many steps of this tutorial. We would also like to thank Hamid Shojanazeri (Meta) and Li Ning (AWS) for their helpful feedback in code review and the tutorial.
