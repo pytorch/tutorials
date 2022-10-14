@@ -46,7 +46,12 @@ to take the velocity of the pole into account from one image.
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`).
+
+.. code-block:: bash
+
+   %%bash
+   pip3 install gym[classic_control]
+
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
@@ -74,7 +79,10 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 
-env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
+if gym.__version__ < '0.26':
+    env = gym.make('CartPole-v0', new_step_api=True, render_mode='single_rgb_array').unwrapped
+else:
+    env = gym.make('CartPole-v0', render_mode='rgb_array').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
