@@ -95,7 +95,7 @@ The timeline shows the main thread as a `python` thread on the top, and individu
 
 As illustrated on the right side navigation bar, brown portions in the timeline rows show CPU usage of individual threads. The percerntage of height of a thread row that the brown portion occupies at a timestamp aligns with that of the CPU usage in that thread at that timestamp. Thus, it is intuitive from this timeline to understand the followings:
 
-1. How well CPU cores are utlized on each thread.
+1. How well CPU cores are utilized on each thread.
 2. How balance CPU cores are utilized on all threads. Do all threads have good CPU usage?
 3. How well OpenMP threads are synchronized. Are there jitters when starting OpenMP threads or OpenMP threads finish.
 
