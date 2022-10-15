@@ -71,7 +71,10 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-env = gym.make('CartPole-v1')
+if gym.__version__ < '0.26':
+    env = gym.make('CartPole-v1', new_step_api=True, render_mode='single_rgb_array').unwrapped
+else:
+    env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
