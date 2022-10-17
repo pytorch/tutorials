@@ -889,6 +889,7 @@ Additional Resources
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
    intermediate/torchserve_with_ipex
+   intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
 
