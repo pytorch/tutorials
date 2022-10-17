@@ -37,28 +37,28 @@ packages installed.
 .. grid:: 4
 
    .. grid-item-card::  :octicon:`file-code;1em` Tensors
-      :link: beginner/blitz/tensor_tutorial.html
+      :link: blitz/tensor_tutorial.html
 
       In this tutorial, you will learn the basics of PyTorch tensors.
       +++
       :octicon:`code;1em` Code
 
    .. grid-item-card::  :octicon:`file-code;1em` A Gentle Introduction to torch.autograd
-      :link: beginner/blitz/autograd_tutorial.html
+      :link: blitz/autograd_tutorial.html
 
       Learn about autograd.
       +++
       :octicon:`code;1em` Code
 
    .. grid-item-card::  :octicon:`file-code;1em` Neural Networks
-      :link: beginner/blitz/neural_networks_tutorial.html
+      :link: blitz/neural_networks_tutorial.html
 
       This tutorial demonstrates how you can train neural networks in PyTorch.
       +++
       :octicon:`code;1em` Code
 
    .. grid-item-card::  :octicon:`file-code;1em` Training a Classifier
-      :link: beginner/blitz/cifar10_tutorial.html
+      :link: blitz/cifar10_tutorial.html
 
       Learn how to train an image classifier in PyTorch by using the
       CIFAR10 dataset.
