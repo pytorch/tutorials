@@ -29,7 +29,7 @@ pip install -r $DIR/../requirements.txt
 
 # Test enabled for PyTorch 1.13 RC Below
 pip uninstall -y torch torchvision torchaudio torchtext
-pip install --pre torch torchdata torchvision torchaudio torchtext -f https://download.pytorch.org/whl/test/cu116/torch_test.html 
+pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu116/torch_test.html torch torchdata torchvision torchaudio torchtext
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
