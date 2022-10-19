@@ -84,9 +84,9 @@ qconfig_dict = {
 # Note: quantization APIs are inplace, so we save a copy of the float model for
 # later comparison to the quantized model. This is done throughout the
 # tutorial.
-mobilenetv2_prepared = quantize_fx.prepare_fx(
-    copy.deepcopy(mobilenetv2_float), qconfig_dict)
 datum = torch.randn(1, 3, 224, 224)
+mobilenetv2_prepared = quantize_fx.prepare_fx(
+    copy.deepcopy(mobilenetv2_float), qconfig_dict, (datum,))
 mobilenetv2_prepared(datum)
 # Note: there is a long standing issue that we cannot copy.deepcopy a
 # quantized model. Since quantization APIs are inplace and we need to use
