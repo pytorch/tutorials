@@ -22,10 +22,7 @@ NOT_RUN = [
     "former_torchies/tensor_tutorial_old",
     "examples_autograd/polynomial_autograd",
     "examples_autograd/polynomial_custom_function",
-    "forward_ad_usage",
     "parametrizations",
-    "reinforcement_q_learning",
-    "text_to_speech_with_torchaudio",
     "mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "fx_conv_bn_fuser",
     "super_resolution_with_onnxruntime",
@@ -53,6 +50,8 @@ NOT_RUN = [
     "recipes/Captum_Recipe",
     "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
+    "fx_numeric_suite_tutorial", # remove when https://github.com/pytorch/tutorials/pull/2089 is fixed
+    "ax_multiobjective_nas_tutorial",
 ]
 
 

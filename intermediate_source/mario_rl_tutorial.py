@@ -31,8 +31,10 @@ as your companion. The full code is available
 ######################################################################
 #
 #
-
-# !pip install gym-super-mario-bros==7.3.0
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip install gym-super-mario-bros==7.4.0
 
 import torch
 from torch import nn
@@ -95,8 +97,11 @@ import gym_super_mario_bros
 # (next) state, reward and other info.
 #
 
-# Initialize Super Mario environment
-env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
+# Initialize Super Mario environment (in v0.26 change render mode to 'human' to see results on the screen)
+if gym.__version__ < '0.26':
+    env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", new_step_api=True)
+else:
+    env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", render_mode='rgb', apply_api_compatibility=True)
 
 # Limit the action-space to
 #   0. walk right
@@ -104,7 +109,7 @@ env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
 env = JoypadSpace(env, [["right"], ["right", "A"]])
 
 env.reset()
-next_state, reward, done, info = env.step(action=0)
+next_state, reward, done, trunc, info = env.step(action=0)
 print(f"{next_state.shape},\n {reward},\n {done},\n {info}")
 
 
@@ -151,14 +156,13 @@ class SkipFrame(gym.Wrapper):
     def step(self, action):
         """Repeat action, and sum reward"""
         total_reward = 0.0
-        done = False
         for i in range(self._skip):
             # Accumulate reward and repeat the same action
-            obs, reward, done, info = self.env.step(action)
+            obs, reward, done, trunk, info = self.env.step(action)
             total_reward += reward
             if done:
                 break
-        return obs, total_reward, done, info
+        return obs, total_reward, done, trunk, info
 
 
 class GrayScaleObservation(gym.ObservationWrapper):
@@ -203,7 +207,10 @@ class ResizeObservation(gym.ObservationWrapper):
 env = SkipFrame(env, skip=4)
 env = GrayScaleObservation(env)
 env = ResizeObservation(env, shape=84)
-env = FrameStack(env, num_stack=4)
+if gym.__version__ < '0.26':
+    env = FrameStack(env, num_stack=4, new_step_api=True)
+else:
+    env = FrameStack(env, num_stack=4)
 
 
 ######################################################################
@@ -283,12 +290,11 @@ class Mario:
         self.action_dim = action_dim
         self.save_dir = save_dir
 
-        self.use_cuda = torch.cuda.is_available()
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Mario's DNN to predict the most optimal action - we implement this in the Learn section
         self.net = MarioNet(self.state_dim, self.action_dim).float()
-        if self.use_cuda:
-            self.net = self.net.to(device="cuda")
+        self.net = self.net.to(device=self.device)
 
         self.exploration_rate = 1
         self.exploration_rate_decay = 0.99999975
@@ -312,12 +318,8 @@ class Mario:
 
         # EXPLOIT
         else:
-            state = state.__array__()
-            if self.use_cuda:
-                state = torch.tensor(state).cuda()
-            else:
-                state = torch.tensor(state)
-            state = state.unsqueeze(0)
+            state = state[0].__array__() if isinstance(state, tuple) else state.__array__()
+            state = torch.tensor(state, device=self.device).unsqueeze(0)
             action_values = self.net(state, model="online")
             action_idx = torch.argmax(action_values, axis=1).item()
 
@@ -363,21 +365,16 @@ class Mario(Mario):  # subclassing for continuity
         reward (float),
         done(bool))
         """
-        state = state.__array__()
-        next_state = next_state.__array__()
+        def first_if_tuple(x):
+            return x[0] if isinstance(x, tuple) else x
+        state = first_if_tuple(state).__array__()
+        next_state = first_if_tuple(next_state).__array__()
 
-        if self.use_cuda:
-            state = torch.tensor(state).cuda()
-            next_state = torch.tensor(next_state).cuda()
-            action = torch.tensor([action]).cuda()
-            reward = torch.tensor([reward]).cuda()
-            done = torch.tensor([done]).cuda()
-        else:
-            state = torch.tensor(state)
-            next_state = torch.tensor(next_state)
-            action = torch.tensor([action])
-            reward = torch.tensor([reward])
-            done = torch.tensor([done])
+        state = torch.tensor(state, device=self.device)
+        next_state = torch.tensor(next_state, device=self.device)
+        action = torch.tensor([action], device=self.device)
+        reward = torch.tensor([reward], device=self.device)
+        done = torch.tensor([done], device=self.device)
 
         self.memory.append((state, next_state, action, reward, done,))
 
@@ -753,7 +750,7 @@ for e in range(episodes):
         action = mario.act(state)
 
         # Agent performs action
-        next_state, reward, done, info = env.step(action)
+        next_state, reward, done, trunc, info = env.step(action)
 
         # Remember
         mario.cache(state, next_state, action, reward, done)
