@@ -49,9 +49,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
   # Temp remove for 1.10 release.
   # python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
- # Temp remove for 1.13 release.
-  python $DIR/remove_runnable_code.py beginner_source/fx_numeric_suite_tutorial.py beginner_source/fx_numeric_suite_tutorial.py || true
-
+  
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
