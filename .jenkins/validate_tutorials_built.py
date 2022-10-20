@@ -50,6 +50,7 @@ NOT_RUN = [
     "recipes/Captum_Recipe",
     "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
+    "fx_numeric_suite_tutorial", # remove when https://github.com/pytorch/tutorials/pull/2089 is fixed
 ]
 
 
