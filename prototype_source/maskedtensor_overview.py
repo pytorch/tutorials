@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-
 """
 (Prototype) MaskedTensor Overview
 =================================
+
+This tutorial is designed to serve as a starting point for using MaskedTensors
+and discuss its masking semantics.
+MaskedTensor serves as an extension to :class:`torch.Tensor` that provides the user with the ability to:
+* use any masked semantics (for example, variable length tensors, nan* operators, etc.)
+* differentiation between 0 and NaN gradients
+* various sparse applications (see tutorial below)
+
+For a more detailed introduction on what MaskedTensors are, please find the
+`torch.masked documentation <https://pytorch.org/docs/master/masked.html>`__.
 """
 
 ######################################################################
-# This tutorial is designed to serve as a starting point for using MaskedTensors
-# and discuss its masking semantics.
-#
-# MaskedTensor serves as an extension to :class:`torch.Tensor` that provides the user with the ability to:
-#
-# * use any masked semantics (for example, variable length tensors, nan* operators, etc.)
-# * differentiation between 0 and NaN gradients
-# * various sparse applications (see tutorial below)
-# 
-# For a more detailed introduction on what MaskedTensors are, please find the
-# `torch.masked documentation <https://pytorch.org/docs/master/masked.html>`__.
-# 
 # Using MaskedTensor
 # ++++++++++++++++++
 # 
@@ -177,7 +174,7 @@ x.grad
 x = torch.tensor([1., 1.], requires_grad=True)
 div = torch.tensor([0., 1.])
 y = x/div # => y is [inf, 1]
-    >>>
+
 mask = (div != 0) # => mask is [0, 1]
 loss = as_masked_tensor(y, mask)
 loss.sum().backward()
