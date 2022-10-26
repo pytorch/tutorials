@@ -383,7 +383,7 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="customize-process-group-backends-using-cpp-extensions">
 <h1>Customize Process Group Backends Using Cpp Extensions<a class="headerlink" href="#customize-process-group-backends-using-cpp-extensions" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/ftian1">Feng Tian</a>, <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a></p>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/ftian1">Feng Tian</a>, <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a>, <a class="reference external" href="https://minsii.github.io/">Min Si</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;"/></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/master/intermediate_source/process_group_cpp_extension_tutorial.rst">github</a>.</p>
@@ -437,7 +437,7 @@ to 0.</p>
 <h2>Step 1: Implement a Subclass of <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code><a class="headerlink" href="#step-1-implement-a-subclass-of-processgroup" title="Permalink to this heading">¶</a></h2>
 <p>This first step is to implement a <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> subclass that overrides
 target collective communication APIs and runs the custom communication algorithm.
-The extension also needs to implement a <code class="docutils literal notranslate"><span class="pre">ProcessGroup::Work</span></code> subclass, which
+The extension also needs to implement a <code class="docutils literal notranslate"><span class="pre">Work</span></code> subclass, which
 serves as a future of communication results and allows asynchronous execution in
 application code. If the extension uses third-party libraries, it can
 include the headers and call into the library APIs from the <code class="docutils literal notranslate"><span class="pre">ProcessGroupDummy</span></code>
@@ -447,10 +447,11 @@ repository for the full implementation.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// file name: dummy.hpp</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/python.h&gt;</span><span class="cp"></span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;c10d/ProcessGroup.hpp&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;c10d/Store.hpp&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;c10d/Types.hpp&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;c10d/Utils.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/ProcessGroup.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Work.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Store.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Types.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Utils.hpp&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/chrono.h&gt;</span><span class="cp"></span>
 
@@ -458,37 +459,36 @@ repository for the full implementation.</p>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ProcessGroupDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ProcessGroup</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">WorkDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
-<span class="w">        </span><span class="n">WorkDummy</span><span class="p">(</span><span class="w"></span>
-<span class="w">            </span><span class="n">OpType</span><span class="w"> </span><span class="n">opType</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future</span><span class="p">)</span><span class="w"> </span><span class="c1">// future of the output</span>
-<span class="w">            </span><span class="o">:</span><span class="w"> </span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="p">(</span><span class="w"></span>
-<span class="w">                </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="c1">// rank, only used by recvAnySource, irrelevant in this demo</span>
-<span class="w">                </span><span class="n">opType</span><span class="p">),</span><span class="w"></span>
-<span class="w">            </span><span class="n">future_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">future</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
-<span class="w">        </span><span class="c1">// There are several additional helper functions that need to be</span>
-<span class="w">        </span><span class="c1">// implemented. Please refer to https://github.com/mrshenli/dummy_collectives</span>
-<span class="w">        </span><span class="c1">// for the full implementation.</span>
-
-<span class="w">      </span><span class="k">private</span><span class="o">:</span><span class="w"></span>
-<span class="w">        </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future_</span><span class="p">;</span><span class="w"></span>
-<span class="w">    </span><span class="p">};</span><span class="w"></span>
-
 <span class="w">    </span><span class="n">ProcessGroupDummy</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">allgather</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">allgather</span><span class="p">(</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&gt;&amp;</span><span class="w"> </span><span class="n">outputTensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">inputTensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllgatherOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">opts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AllgatherOptions</span><span class="p">())</span><span class="w"> </span><span class="k">override</span><span class="p">;</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">allreduce</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">allreduce</span><span class="p">(</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">tensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllreduceOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">opts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AllreduceOptions</span><span class="p">())</span><span class="w"> </span><span class="k">override</span><span class="p">;</span><span class="w"></span>
 
 <span class="w">    </span><span class="c1">// The collective communication APIs without a custom implementation</span>
 <span class="w">    </span><span class="c1">// will error out if invoked by application code.</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">WorkDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Work</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">WorkDummy</span><span class="p">(</span><span class="w"></span>
+<span class="w">      </span><span class="n">OpType</span><span class="w"> </span><span class="n">opType</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future</span><span class="p">)</span><span class="w"> </span><span class="c1">// future of the output</span>
+<span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">Work</span><span class="p">(</span><span class="w"></span>
+<span class="w">          </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="c1">// rank, only used by recvAnySource, irrelevant in this demo</span>
+<span class="w">          </span><span class="n">opType</span><span class="p">),</span><span class="w"></span>
+<span class="w">      </span><span class="n">future_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">future</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// There are several additional helper functions that need to be</span>
+<span class="w">    </span><span class="c1">// implemented. Please refer to https://github.com/mrshenli/dummy_collectives</span>
+<span class="w">    </span><span class="c1">// for the full implementation.</span>
+
+<span class="w">  </span><span class="k">private</span><span class="o">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future_</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 <span class="p">}</span><span class="w"> </span><span class="c1">// namespace c10d</span>
 </pre></div>
@@ -500,7 +500,7 @@ repository for the full implementation.</p>
 
 <span class="c1">// This is a dummy allgather that sets all output tensors to zero</span>
 <span class="c1">// Modify the implementation to conduct real communication asynchronously</span>
-<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allgather</span><span class="p">(</span><span class="w"></span>
+<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allgather</span><span class="p">(</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&gt;&amp;</span><span class="w"> </span><span class="n">outputTensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">inputTensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllgatherOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="cm">/* unused */</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -518,7 +518,7 @@ repository for the full implementation.</p>
 
 <span class="c1">// This is a dummy allreduce that sets all output tensors to zero</span>
 <span class="c1">// Modify the implementation to conduct real communication asynchronously</span>
-<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">::</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allreduce</span><span class="p">(</span><span class="w"></span>
+<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allreduce</span><span class="p">(</span><span class="w"></span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">tensors</span><span class="p">,</span><span class="w"></span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllreduceOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">opts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tensors</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -639,11 +639,11 @@ as if it is an builtin backend.</p>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cpu allreduce: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda allreduce: </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda allreduce: </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
