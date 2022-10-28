@@ -148,6 +148,12 @@ Prototype features are not available as part of binary distributions like PyPI o
    :card_description: Learn about masked tensors, the source of truth for specified and unspecified values
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/maskedtensor_overview.html
+
+.. customcarditem::
+   :header: Masked Tensor Sparsity
+   :card_description: Learn about how to leverage sparse layouts (e.g. COO and CSR) in MaskedTensor
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_sparsity.html
    :tags: MaskedTensor
 
 .. End of tutorial card section
@@ -181,4 +187,8 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
    prototype/nestedtensor.html
+<<<<<<< HEAD
    prototype/maskedtensor_overview.html
+=======
+   prototype/maskedtensor_sparsity.html
+>>>>>>> 271d22be9 ([maskedtensor] Sparsity tutorial [2/4])
