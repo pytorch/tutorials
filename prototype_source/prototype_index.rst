@@ -187,8 +187,5 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
    prototype/nestedtensor.html
-<<<<<<< HEAD
    prototype/maskedtensor_overview.html
-=======
    prototype/maskedtensor_sparsity.html
->>>>>>> 271d22be9 ([maskedtensor] Sparsity tutorial [2/4])
