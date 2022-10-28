@@ -143,12 +143,14 @@ Prototype features are not available as part of binary distributions like PyPI o
 
 .. MaskedTensor
 
+.. customcarditem::
    :header: MaskedTensor Overview
    :card_description: Learn about masked tensors, the source of truth for specified and unspecified values
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/maskedtensor_overview.html
    :tags: MaskedTensor
 
+.. customcarditem::
    :header: MaskedTensor: Simplifying Adagrad Sparse Semantics
    :card_description: See a showcase on how masked tensors can enable sparse semantics and provide for a cleaner dev experience 
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
