@@ -156,6 +156,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/maskedtensor_sparsity.html
    :tags: MaskedTensor
 
+.. customcarditem::
+   :header: MaskedTensor: Simplifying Adagrad Sparse Semantics
+   :card_description: See a showcase on how masked tensors can enable sparse semantics and provide for a cleaner dev experience 
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_adagrad.html
+   :tags: MaskedTensor
+   
 .. End of tutorial card section
 
 .. raw:: html
@@ -189,3 +196,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/nestedtensor.html
    prototype/maskedtensor_overview.html
    prototype/maskedtensor_sparsity.html
+   prototype/maskedtensor_adagrad.html
