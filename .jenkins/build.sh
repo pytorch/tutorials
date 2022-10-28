@@ -25,11 +25,9 @@ pip install -r $DIR/../requirements.txt
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
 # pip uninstall -y torch torchvision torchaudio torchtext
-# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch  torchvision torchaudio torchtext 
-
-# Test enabled for PyTorch 1.13 RC Below
-pip uninstall -y torch torchvision torchaudio torchtext
-pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu116/torch_test.html torch torchdata torchvision torchaudio torchtext
+# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
+# pip uninstall -y torch torchvision torchaudio torchtext
+# pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
