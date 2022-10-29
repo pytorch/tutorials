@@ -154,6 +154,12 @@ Prototype features are not available as part of binary distributions like PyPI o
    :card_description: Learn about how to leverage sparse layouts (e.g. COO and CSR) in MaskedTensor
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/maskedtensor_sparsity.html
+
+.. customcarditem::
+   :header: Masked Tensor Advanced Semantics
+   :card_description: Learn more about Masked Tensor's advanced semantics (reductions and comparing vs. NumPy's MaskedArray)
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_advanced_semantics.html
    :tags: MaskedTensor
 
 .. customcarditem::
@@ -196,4 +202,5 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/nestedtensor.html
    prototype/maskedtensor_overview.html
    prototype/maskedtensor_sparsity.html
+   prototype/maskedtensor_advanced_semantics.html
    prototype/maskedtensor_adagrad.html
