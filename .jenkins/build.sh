@@ -54,7 +54,6 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
   # python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
 
-
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
