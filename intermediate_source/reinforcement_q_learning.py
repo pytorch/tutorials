@@ -65,7 +65,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-env = gym.make('CartPole-v1')
+if gym.__version__[:4] == '0.26':
+    env = gym.make('CartPole-v1')
+elif gym.__version__[:4] == '0.25':
+    env = gym.make('CartPole-v1', new_step_api=True)
+else:
+    raise ImportError(f"Requires gym v25 or v26, actual version: {gym.__version__}")
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
@@ -375,11 +380,19 @@ def optimize_model():
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.
 #
-# Below, `num_episodes` to 1000, but you should see the model constantly
-# achieve 500 steps within 600 training episodes.
+# Below, `num_episodes` is set to 600 if a GPU is available, otherwise 50 
+# episodes are scheduled so training does not take too long. However, 50 
+# episodes is insufficient for to observe good performance on cartpole.
+# You should see the model constantly achieve 500 steps within 600 training 
+# episodes. Training RL agents can be a noisy process, so restarting training
+# can produce better results if convergence is not observed.
 #
 
-num_episodes = 1000
+if torch.cuda.is_available():
+    num_episodes = 600
+else:
+    num_episodes = 50
+
 for i_episode in range(num_episodes):
     # Initialize the environment and get it's state
     state, _ = env.reset()
