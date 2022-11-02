@@ -17,7 +17,7 @@ of ML models, and will give insight into the hot topic of adversarial
 machine learning. You may be surprised to find that adding imperceptible
 perturbations to an image *can* cause drastically different model
 performance. Given that this is a tutorial, we will explore the topic
-via example on an image classifier. Specifically we will use one of the
+via example on an image classifier. Specifically, we will use one of the
 first and most popular attack methods, the Fast Gradient Sign Attack
 (FGSM), to fool an MNIST classifier.
 

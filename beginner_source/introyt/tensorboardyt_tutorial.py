@@ -115,7 +115,7 @@ def matplotlib_imshow(img, one_channel=False):
 
 # Extract a batch of 4 images
 dataiter = iter(training_loader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # Create a grid from the images and show them
 img_grid = torchvision.utils.make_grid(images)
@@ -242,7 +242,7 @@ writer.flush()
 
 # Again, grab a single mini-batch of images
 dataiter = iter(training_loader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # add_graph() will trace the sample input through your model,
 # and render it as a graph.
