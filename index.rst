@@ -497,6 +497,13 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization,Production
 
 .. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex_2
+   :tags: Model-Optimization,Production
+   
+.. customcarditem::
    :header: Introduction to nvFuser
    :card_description: An introduction to nvFuser
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -891,6 +898,7 @@ Additional Resources
    :hidden:
    :caption: Parallel and Distributed Training
 
+   distributed/home
    beginner/dist_overview
    beginner/ddp_series_intro
    intermediate/model_parallel_tutorial

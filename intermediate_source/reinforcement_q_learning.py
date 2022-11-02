@@ -42,7 +42,13 @@ then chosen.
 
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
-(Install using `pip install gym`). Developed on v0.26.1 of gym.
+Install by using `pip`. If you are running this in Google colab, run:
+
+.. code-block:: bash
+
+   %%bash
+   pip3 install gym[classic_control]
+   
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
