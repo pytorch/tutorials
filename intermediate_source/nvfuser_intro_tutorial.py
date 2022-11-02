@@ -557,9 +557,16 @@ profile_workload(
 #
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_5.png
 #
-# .. note:: FuncTorch’s memory efficient pass is still actively in development
-#           and future versions are expected to achieve performance closer
-#           to that of TorchScript with the composite definition.
+# .. note:: FuncTorch’s memory efficient pass is experimental and still
+#           actively in development.
+#           Future versions of the API are expected to achieve performance
+#           closer to that of TorchScript with the composite definition.
+#
+# .. note:: FuncTorch’s memory efficient pass specializes on the shapes of
+#           the inputs to the function. If new inputs are provided with
+#           different shapes, then you need to construct a new function
+#           using `memory_efficient_fusion` and apply it to the new inputs.
+
 
 ######################################################################
 # Transformer Block With a Novel Normalization
