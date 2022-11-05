@@ -261,7 +261,10 @@ LR = 1e-4
 # Get number of actions from gym action space
 n_actions = env.action_space.n
 # Get the number of state observations
-state, _ = env.reset()
+if gym.__version__[:4] == '0.26':
+    state, _ = env.reset()
+elif gym.__version__[:4] == '0.25':
+    state, _ = env.reset(return_info=True)
 n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
@@ -401,7 +404,10 @@ else:
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get it's state
-    state, _ = env.reset()
+    if gym.__version__[:4] == '0.26':
+        state, _ = env.reset()
+    elif gym.__version__[:4] == '0.25':
+        state, _ = env.reset(return_info=True)
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():
         action = select_action(state)
