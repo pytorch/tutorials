@@ -50,6 +50,7 @@ NOT_RUN = [
     "recipes/Captum_Recipe",
     "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
+    "text_to_speech_with_torchaudio",
 ]
 
 

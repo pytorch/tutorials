@@ -658,6 +658,15 @@ What's new in PyTorch tutorials?
    :link: advanced/sharding.html
    :tags: TorchRec,Recommender
 
+.. Multimodality
+
+.. customcarditem::
+   :header: Introduction to TorchMultimodal
+   :card_description: TorchMultimodal is a library that provides models, primitives and examples for training multimodal tasks
+   :image: _static/img/thumbnails/torchrec.png
+   :link: beginner/flava_finetuning_tutorial.html
+   :tags: TorchMultimodal
+
 
 .. End of tutorial card section
 
@@ -889,6 +898,7 @@ Additional Resources
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
    intermediate/torchserve_with_ipex
+   intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
 
@@ -933,3 +943,11 @@ Additional Resources
 
    intermediate/torchrec_tutorial
    advanced/sharding
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Multimodality
+
+   beginner/flava_finetuning_tutorial
