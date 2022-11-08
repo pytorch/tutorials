@@ -12,7 +12,7 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -300,7 +300,7 @@
 <li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul class="current">
@@ -433,9 +433,14 @@ It also comes with considerable engineering complexity to handle the training of
 </div>
 <p>We add the following code snippets to a python script “FSDP_mnist.py”.</p>
 <p>1.2  Import necessary packages</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of <cite>size_based_auto_wrap_policy</cite> with <cite>default_auto_wrap_policy</cite>.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Based on: https://github.com/pytorch/examples/blob/master/mnist/main.py</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -451,14 +456,13 @@ It also comes with considerable engineering complexity to handle the training of
 <span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
 <span class="kn">from</span> <span class="nn">torch.distributed.fsdp</span> <span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
 <span class="kn">from</span> <span class="nn">torch.distributed.fsdp.fully_sharded_data_parallel</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span><span class="p">,</span>
-<span class="n">CPUOffload</span><span class="p">,</span>
-<span class="n">BackwardPrefetch</span><span class="p">,</span>
+    <span class="n">CPUOffload</span><span class="p">,</span>
+    <span class="n">BackwardPrefetch</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">torch.distributed.fsdp.wrap</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="n">default_auto_wrap_policy</span><span class="p">,</span>
-<span class="n">enable_wrap</span><span class="p">,</span>
-<span class="n">wrap</span><span class="p">,</span>
+    <span class="n">size_based_auto_wrap_policy</span><span class="p">,</span>
+    <span class="n">enable_wrap</span><span class="p">,</span>
+    <span class="n">wrap</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -554,7 +558,7 @@ It also comes with considerable engineering complexity to handle the training of
     <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
         <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
         <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
-        <span class="p">])</span>
+    <span class="p">])</span>
 
     <span class="n">dataset1</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">'../data'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
@@ -575,8 +579,8 @@ It also comes with considerable engineering complexity to handle the training of
     <span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset1</span><span class="p">,</span><span class="o">**</span><span class="n">train_kwargs</span><span class="p">)</span>
     <span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset2</span><span class="p">,</span> <span class="o">**</span><span class="n">test_kwargs</span><span class="p">)</span>
     <span class="n">my_auto_wrap_policy</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
-            <span class="n">default_auto_wrap_policy</span><span class="p">,</span> <span class="n">min_num_params</span><span class="o">=</span><span class="mi">100</span>
-        <span class="p">)</span>
+        <span class="n">size_based_auto_wrap_policy</span><span class="p">,</span> <span class="n">min_num_params</span><span class="o">=</span><span class="mi">100</span>
+    <span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 
 
@@ -606,9 +610,9 @@ It also comes with considerable engineering complexity to handle the training of
         <span class="c1"># use a barrier to make sure training is done on all ranks</span>
         <span class="n">dist_barrier</span><span class="p">()</span>
         <span class="c1"># state_dict for FSDP model is only available on Nightlies for now</span>
-        <span class="n">States</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="s2">"mnist_cnn.pt"</span><span class="p">)</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="s2">"mnist_cnn.pt"</span><span class="p">)</span>
 
     <span class="n">cleanup</span><span class="p">()</span>
 </pre></div>
@@ -682,7 +686,7 @@ Then, in the forward, the 1st FSDP unit will allgather parameters for the first 
 If the number of parameters in this layer is smaller than 100, it will be wrapped with other small layers together by FSDP.
 Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_auto_wrap_policy</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
-        <span class="n">default_auto_wrap_policy</span><span class="p">,</span> <span class="n">min_num_params</span><span class="o">=</span><span class="mi">20000</span>
+        <span class="n">size_based_auto_wrap_policy</span><span class="p">,</span> <span class="n">min_num_params</span><span class="o">=</span><span class="mi">20000</span>
     <span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>

@@ -12,7 +12,7 @@
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -300,7 +300,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -452,52 +452,52 @@ Each example comprises a 28×28 grayscale image and an associated label from one
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 32768/26421880 [00:00&lt;01:26, 304190.29it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:27, 302884.26it/s]
-  0%|          | 131072/26421880 [00:00&lt;00:59, 440515.66it/s]
-  1%|          | 196608/26421880 [00:00&lt;00:51, 504485.72it/s]
-  1%|1         | 393216/26421880 [00:00&lt;00:26, 974774.86it/s]
-  3%|3         | 819200/26421880 [00:00&lt;00:12, 1972887.13it/s]
-  6%|6         | 1638400/26421880 [00:00&lt;00:06, 3807606.11it/s]
- 12%|#2        | 3244032/26421880 [00:00&lt;00:03, 7310257.23it/s]
- 24%|##4       | 6356992/26421880 [00:00&lt;00:01, 13991621.21it/s]
- 36%|###5      | 9437184/26421880 [00:01&lt;00:00, 18429041.39it/s]
- 47%|####7     | 12517376/26421880 [00:01&lt;00:00, 21464349.01it/s]
- 59%|#####9    | 15597568/26421880 [00:01&lt;00:00, 23552040.43it/s]
- 71%|#######   | 18677760/26421880 [00:01&lt;00:00, 25001409.32it/s]
- 81%|########1 | 21495808/26421880 [00:01&lt;00:00, 25245099.68it/s]
- 93%|#########3| 24608768/26421880 [00:01&lt;00:00, 26205176.62it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 16128545.44it/s]
+  0%|          | 32768/26421880 [00:00&lt;01:28, 297483.69it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:29, 296003.32it/s]
+  0%|          | 131072/26421880 [00:00&lt;01:01, 430364.14it/s]
+  1%|          | 196608/26421880 [00:00&lt;00:53, 493602.53it/s]
+  2%|1         | 425984/26421880 [00:00&lt;00:24, 1060089.71it/s]
+  3%|3         | 819200/26421880 [00:00&lt;00:13, 1903493.48it/s]
+  6%|6         | 1671168/26421880 [00:00&lt;00:06, 3780399.44it/s]
+ 13%|#2        | 3342336/26421880 [00:00&lt;00:03, 7360397.03it/s]
+ 24%|##4       | 6422528/26421880 [00:00&lt;00:01, 13750623.23it/s]
+ 36%|###6      | 9535488/26421880 [00:01&lt;00:00, 18151761.36it/s]
+ 48%|####7     | 12582912/26421880 [00:01&lt;00:00, 20757100.69it/s]
+ 59%|#####9    | 15663104/26421880 [00:01&lt;00:00, 22858953.42it/s]
+ 71%|#######1  | 18776064/26421880 [00:01&lt;00:00, 24407632.03it/s]
+ 81%|########1 | 21528576/26421880 [00:01&lt;00:00, 24505324.68it/s]
+ 93%|#########3| 24641536/26421880 [00:01&lt;00:00, 25470499.18it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 15747097.72it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 274805.39it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 273220.59it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 265972.74it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 264508.24it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|          | 32768/4422102 [00:00&lt;00:14, 305803.85it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:14, 303902.57it/s]
-  3%|2         | 131072/4422102 [00:00&lt;00:09, 442131.94it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 626529.11it/s]
- 11%|#1        | 491520/4422102 [00:00&lt;00:03, 1274308.35it/s]
- 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2284372.04it/s]
- 44%|####3     | 1933312/4422102 [00:00&lt;00:00, 4508224.56it/s]
- 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 8657495.68it/s]
-100%|##########| 4422102/4422102 [00:00&lt;00:00, 5100680.47it/s]
+  1%|          | 32768/4422102 [00:00&lt;00:14, 302381.97it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:14, 300876.19it/s]
+  3%|2         | 131072/4422102 [00:00&lt;00:09, 437843.16it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 621424.14it/s]
+ 11%|#1        | 491520/4422102 [00:00&lt;00:03, 1263630.82it/s]
+ 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2263178.79it/s]
+ 44%|####3     | 1933312/4422102 [00:00&lt;00:00, 4465524.70it/s]
+ 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 8585010.01it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 5055904.18it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 14911793.50it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 21168899.01it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -530,7 +530,7 @@ We use <code class="docutils literal notranslate"><span class="pre">matplotlib</
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Coat, Coat, Trouser, T-Shirt, Trouser, Trouser, Ankle Boot, Ankle Boot, Coat" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_001.png" srcset="../../_images/sphx_glr_data_tutorial_001.png"/><hr class="docutils"/>
+<img alt="T-Shirt, Ankle Boot, Ankle Boot, Sandal, Dress, Trouser, Sandal, Shirt, Ankle Boot" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_001.png" srcset="../../_images/sphx_glr_data_tutorial_001.png"/><hr class="docutils"/>
 </div>
 <div class="section" id="creating-a-custom-dataset-for-your-files">
 <h2>Creating a Custom Dataset for your files<a class="headerlink" href="#creating-a-custom-dataset-for-your-files" title="Permalink to this heading">¶</a></h2>
@@ -644,7 +644,7 @@ the data loading order, take a look at <a class="reference external" href="https
 </div>
 <img alt="data tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_002.png" srcset="../../_images/sphx_glr_data_tutorial_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Feature batch shape: torch.Size([64, 1, 28, 28])
 Labels batch shape: torch.Size([64])
-Label: 3
+Label: 9
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -654,7 +654,7 @@ Label: 3
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html">torch.utils.data API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.788 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.779 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-data-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/56e3f440fc204e02856f8889c226d2d1/data_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_tutorial.py</span></code></a></p>

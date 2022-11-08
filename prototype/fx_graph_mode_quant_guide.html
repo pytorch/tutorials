@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -365,7 +365,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -502,7 +502,7 @@ We use the FX framework (TODO: link) to convert a symbolically traceable nn.Modu
 and we operate on the IR to execute the quantization passes.
 Please post your question about symbolically tracing your model in <a class="reference external" href="https://discuss.pytorch.org/c/quantization/17">PyTorch Discussion Forum</a></p>
 <p>Quantization will only work on the symbolically traceable parts of your model.
-Data dependent control flow (if statements / for loops etc using symbolically traced values) are one common pattern which is not supported.
+The data dependent control flow-if statements / for loops, and so on using symbolically traced values-are one common pattern which is not supported.
 If your model is not symbolically traceable end to end, you have a couple of options to enable FX Graph Mode Quantization only on a part of the model.
 You can use any combination of these options:</p>
 <ol class="arabic simple">
@@ -530,9 +530,9 @@ symbolically traceable, we can run quantization only on that submodule.
 before:</p>
 <p>after:</p>
 <p>quantization code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="p">()</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig</span><span class="p">)</span>
 <span class="n">model_fp32</span><span class="o">.</span><span class="n">traceable_submodule</span> <span class="o">=</span> \
-  <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_fp32</span><span class="o">.</span><span class="n">traceable_submodule</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>
+  <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_fp32</span><span class="o">.</span><span class="n">traceable_submodule</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note if original model needs to be preserved, you will have to
@@ -572,7 +572,7 @@ we can factor out this part of the code into a submodule and skip symbolically t
 </pre></div>
 </div>
 <p>quantization code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig</span><span class="p">)</span>
 
 <span class="n">prepare_custom_config_dict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># option 1</span>
@@ -582,7 +582,8 @@ we can factor out this part of the code into a submodule and skip symbolically t
 <span class="p">}</span>
 <span class="n">model_prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span>
     <span class="n">model_fp32</span><span class="p">,</span>
-    <span class="n">qconfig_dict</span><span class="p">,</span>
+    <span class="n">qconfig_mapping</span><span class="p">,</span>
+    <span class="n">example_inputs</span><span class="p">,</span>
     <span class="n">prepare_custom_config_dict</span><span class="o">=</span><span class="n">prepare_custom_config_dict</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -681,7 +682,8 @@ to StaticQuantNonTraceable</p>
 
 <span class="n">model_prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span>
     <span class="n">model_fp32</span><span class="p">,</span>
-    <span class="n">qconfig_dict</span><span class="p">,</span>
+    <span class="n">qconfig_mapping</span><span class="p">,</span>
+    <span class="n">example_inputs</span><span class="p">,</span>
     <span class="n">prepare_custom_config_dict</span><span class="o">=</span><span class="n">prepare_custom_config_dict</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -718,7 +720,8 @@ only need to define thee quantized model</p>
 <span class="n">model_fp32</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">model_prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span>
     <span class="n">model_fp32</span><span class="p">,</span>
-    <span class="n">qconfig_dict</span><span class="p">,</span>
+    <span class="n">qconfig_mapping</span><span class="p">,</span>
+    <span class="n">example_inputs</span><span class="p">,</span>
     <span class="n">prepare_custom_config_dict</span><span class="o">=</span><span class="n">prepare_custom_config_dict</span><span class="p">)</span>
 
 <span class="n">convert_custom_config_dict</span> <span class="o">=</span> <span class="p">{</span>

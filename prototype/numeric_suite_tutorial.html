@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -365,7 +365,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -543,9 +543,10 @@ to download the full example code</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: &quot;https://download.pytorch.org/models/resnet18-f37072fd.pth&quot; to /var/lib/jenkins/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
 
   0%|          | 0.00/44.7M [00:00&lt;?, ?B/s]
- 21%|##1       | 9.49M/44.7M [00:00&lt;00:00, 99.5MB/s]
- 74%|#######4  | 33.1M/44.7M [00:00&lt;00:00, 187MB/s]
-100%|##########| 44.7M/44.7M [00:00&lt;00:00, 188MB/s]
+ 21%|##1       | 9.56M/44.7M [00:00&lt;00:00, 100MB/s]
+ 53%|#####3    | 23.9M/44.7M [00:00&lt;00:00, 130MB/s]
+ 93%|#########3| 41.7M/44.7M [00:00&lt;00:00, 156MB/s]
+100%|##########| 44.7M/44.7M [00:00&lt;00:00, 146MB/s]
 </pre></div>
 </div>
 </div>
@@ -663,36 +664,36 @@ torch.Size([2, 64, 5, 5])
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dequantize</span><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.stats tensor(37.4265, grad_fn=&lt;MulBackward0&gt;)
-layer1.0.conv1.stats tensor(29.6568, grad_fn=&lt;MulBackward0&gt;)
-layer1.0.conv2.stats tensor(28.1886, grad_fn=&lt;MulBackward0&gt;)
-layer1.0.add_relu.stats tensor(31.9566, grad_fn=&lt;MulBackward0&gt;)
-layer1.1.conv1.stats tensor(29.3598, grad_fn=&lt;MulBackward0&gt;)
-layer1.1.conv2.stats tensor(25.5398, grad_fn=&lt;MulBackward0&gt;)
-layer1.1.add_relu.stats tensor(29.0879, grad_fn=&lt;MulBackward0&gt;)
-layer2.0.conv1.stats tensor(25.7710, grad_fn=&lt;MulBackward0&gt;)
-layer2.0.conv2.stats tensor(25.4649, grad_fn=&lt;MulBackward0&gt;)
-layer2.0.downsample.0.stats tensor(22.2947, grad_fn=&lt;MulBackward0&gt;)
-layer2.0.add_relu.stats tensor(25.4186, grad_fn=&lt;MulBackward0&gt;)
-layer2.1.conv1.stats tensor(25.3531, grad_fn=&lt;MulBackward0&gt;)
-layer2.1.conv2.stats tensor(24.6280, grad_fn=&lt;MulBackward0&gt;)
-layer2.1.add_relu.stats tensor(25.6313, grad_fn=&lt;MulBackward0&gt;)
-layer3.0.conv1.stats tensor(26.7462, grad_fn=&lt;MulBackward0&gt;)
-layer3.0.conv2.stats tensor(26.8243, grad_fn=&lt;MulBackward0&gt;)
-layer3.0.downsample.0.stats tensor(24.4704, grad_fn=&lt;MulBackward0&gt;)
-layer3.0.add_relu.stats tensor(24.8971, grad_fn=&lt;MulBackward0&gt;)
-layer3.1.conv1.stats tensor(31.3142, grad_fn=&lt;MulBackward0&gt;)
-layer3.1.conv2.stats tensor(26.2067, grad_fn=&lt;MulBackward0&gt;)
-layer3.1.add_relu.stats tensor(25.1341, grad_fn=&lt;MulBackward0&gt;)
-layer4.0.conv1.stats tensor(27.0183, grad_fn=&lt;MulBackward0&gt;)
-layer4.0.conv2.stats tensor(27.1181, grad_fn=&lt;MulBackward0&gt;)
-layer4.0.downsample.0.stats tensor(22.1110, grad_fn=&lt;MulBackward0&gt;)
-layer4.0.add_relu.stats tensor(21.1660, grad_fn=&lt;MulBackward0&gt;)
-layer4.1.conv1.stats tensor(26.1925, grad_fn=&lt;MulBackward0&gt;)
-layer4.1.conv2.stats tensor(17.8506, grad_fn=&lt;MulBackward0&gt;)
-layer4.1.add_relu.stats tensor(18.2825, grad_fn=&lt;MulBackward0&gt;)
-fc.stats tensor(20.0408, grad_fn=&lt;MulBackward0&gt;)
-quant.stats tensor(48.1616)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.stats tensor(37.6430, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.conv1.stats tensor(29.6442, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.conv2.stats tensor(28.6019, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.add_relu.stats tensor(32.6045, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.conv1.stats tensor(29.9701, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.conv2.stats tensor(26.4341, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.add_relu.stats tensor(29.8816, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.conv1.stats tensor(26.8430, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.conv2.stats tensor(26.1298, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.downsample.0.stats tensor(22.2347, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.add_relu.stats tensor(25.8486, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.conv1.stats tensor(24.9804, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.conv2.stats tensor(24.1447, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.add_relu.stats tensor(25.8124, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.conv1.stats tensor(26.4739, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.conv2.stats tensor(26.2936, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.downsample.0.stats tensor(25.0611, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.add_relu.stats tensor(24.5476, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.conv1.stats tensor(31.4535, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.conv2.stats tensor(25.9896, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.add_relu.stats tensor(25.2491, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.conv1.stats tensor(27.3616, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.conv2.stats tensor(27.1450, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.downsample.0.stats tensor(21.8649, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.add_relu.stats tensor(20.9322, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.conv1.stats tensor(26.1800, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.conv2.stats tensor(18.1867, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.add_relu.stats tensor(18.4358, grad_fn=&lt;MulBackward0&gt;)
+fc.stats tensor(20.5532, grad_fn=&lt;MulBackward0&gt;)
+quant.stats tensor(48.3291)
 </pre></div>
 </div>
 <p>If we want to do the comparison for more than one input data, we can do the following.
@@ -793,14 +794,14 @@ torch.Size([64, 3, 3])
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dequantize</span><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>layer1.0.stats tensor(32.7920)
-layer1.1.stats tensor(33.6751)
-layer2.0.stats tensor(28.8530)
-layer2.1.stats tensor(31.0937)
-layer3.0.stats tensor(28.5490)
-layer3.1.stats tensor(31.6791)
-layer4.0.stats tensor(25.5197)
-layer4.1.stats tensor(23.7164)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>layer1.0.stats tensor(33.1218)
+layer1.1.stats tensor(34.1111)
+layer2.0.stats tensor(29.1586)
+layer2.1.stats tensor(31.0329)
+layer3.0.stats tensor(29.2459)
+layer3.1.stats tensor(31.4530)
+layer4.0.stats tensor(25.5159)
+layer4.1.stats tensor(22.7387)
 </pre></div>
 </div>
 <p>If we want to do the comparison for more than one input data, we can do the following.</p>
@@ -909,12 +910,12 @@ layer4.1.stats tensor(23.7164)
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>encoder.weight tensor(inf)
-rnn._all_weight_values.0.param tensor(48.1267)
-rnn._all_weight_values.1.param tensor(48.1042)
-rnn._all_weight_values.2.param tensor(48.1287)
-rnn._all_weight_values.3.param tensor(48.1258)
-rnn._all_weight_values.4.param tensor(48.1232)
-decoder._packed_params._packed_params tensor(48.0591)
+rnn._all_weight_values.0.param tensor(48.1298)
+rnn._all_weight_values.1.param tensor(48.1449)
+rnn._all_weight_values.2.param tensor(48.1211)
+rnn._all_weight_values.3.param tensor(48.1371)
+rnn._all_weight_values.4.param tensor(48.1212)
+decoder._packed_params._packed_params tensor(48.3033)
 </pre></div>
 </div>
 <p>The Inf value in <code class="docutils literal notranslate"><span class="pre">encoder.weight</span></code> entry above is because encoder module is not quantized and the weights are the same in both floating point and quantized models.</p>
@@ -938,8 +939,8 @@ decoder._packed_params._packed_params tensor(48.0591)
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>encoder.stats tensor(inf, grad_fn=&lt;MulBackward0&gt;)
-rnn.stats tensor(55.4287, grad_fn=&lt;MulBackward0&gt;)
-decoder.stats tensor(33.6163, grad_fn=&lt;MulBackward0&gt;)
+rnn.stats tensor(54.9379, grad_fn=&lt;MulBackward0&gt;)
+decoder.stats tensor(42.6593, grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -974,8 +975,8 @@ decoder.stats tensor(33.6163, grad_fn=&lt;MulBackward0&gt;)
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>rnn.stats tensor(55.4525)
-decoder.stats tensor(34.0763)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>rnn.stats tensor(55.2317)
+decoder.stats tensor(43.2702)
 </pre></div>
 </div>
 <p>SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.</p>
@@ -989,7 +990,7 @@ decoder.stats tensor(34.0763)
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
 <p>[1] <a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">DYNAMIC QUANTIZATION ON AN LSTM WORD LANGUAGE MODEL</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.793 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.878 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-prototype-numeric-suite-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/6aefea42cfe1bb0d4cb1b244c3feba1b/numeric_suite_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numeric_suite_tutorial.py</span></code></a></p>

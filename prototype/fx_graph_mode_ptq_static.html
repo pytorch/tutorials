@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -365,7 +365,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -496,37 +496,39 @@
               
   <div class="section" id="prototype-fx-graph-mode-post-training-static-quantization">
 <h1>(prototype) FX Graph Mode Post Training Static Quantization<a class="headerlink" href="#prototype-fx-graph-mode-post-training-static-quantization" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/jerryzh168">Jerry Zhang</a></p>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/jerryzh168">Jerry Zhang</a> <strong>Edited by</strong>: <a class="reference external" href="https://github.com/HDCharles">Charles Hernandez</a></p>
 <p>This tutorial introduces the steps to do post training static quantization in graph mode based on
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/fx/__init__.py">torch.fx</a>.
-The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model
-although there might some effort required to make the model compatible with FX Graph Mode Quantizatiion (symbolically traceable with <code class="docutils literal notranslate"><span class="pre">torch.fx</span></code>),
-we’ll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.
+The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model.
+Although there might be some effort required to make the model compatible with FX Graph Mode Quantization (symbolically traceable with <code class="docutils literal notranslate"><span class="pre">torch.fx</span></code>),
+we’ll have a separate tutorial to show how to make the part of the model we want to quantize compatible with FX Graph Mode Quantization.
 We also have a tutorial for <a class="reference external" href="https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html">FX Graph Mode Post Training Dynamic Quantization</a>.
 tldr; The FX Graph Mode API looks like the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span>
 <span class="kn">from</span> <span class="nn">torch.ao.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="n">QConfigMapping</span>
 <span class="n">float_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">qconfig</span> <span class="o">=</span> <span class="n">get_default_qconfig</span><span class="p">(</span><span class="s2">&quot;fbgemm&quot;</span><span class="p">)</span>
-<span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">):</span>
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
             <span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>  <span class="c1"># fuse modules and insert observers</span>
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># get an example input</span>
+<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>  <span class="c1"># fuse modules and insert observers</span>
 <span class="n">calibrate</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>  <span class="c1"># run calibration on sample data</span>
 <span class="n">quantized_model</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>  <span class="c1"># convert the calibrated model to a quantized model</span>
 </pre></div>
 </div>
 <div class="section" id="motivation-of-fx-graph-mode-quantization">
 <h2>1. Motivation of FX Graph Mode Quantization<a class="headerlink" href="#motivation-of-fx-graph-mode-quantization" title="Permalink to this heading">¶</a></h2>
-<p>Currently PyTorch only has eager mode quantization: <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">Static Quantization with Eager Mode in PyTorch</a>.</p>
-<p>We can see there are multiple manual steps involved in the process, including:</p>
+<p>Currently, PyTorch only has eager mode quantization as an alternative: <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">Static Quantization with Eager Mode in PyTorch</a>.</p>
+<p>We can see there are multiple manual steps involved in the eager mode quantization process, including:</p>
 <ul class="simple">
-<li><p>Explicitly quantize and dequantize activations, this is time consuming when floating point and quantized operations are mixed in a model.</p></li>
-<li><p>Explicitly fuse modules, this requires manually identifying the sequence of convolutions, batch norms and relus and other fusion patterns.</p></li>
+<li><p>Explicitly quantize and dequantize activations-this is time consuming when floating point and quantized operations are mixed in a model.</p></li>
+<li><p>Explicitly fuse modules-this requires manually identifying the sequence of convolutions, batch norms and relus and other fusion patterns.</p></li>
 <li><p>Special handling is needed for pytorch tensor operations (like add, concat etc.)</p></li>
 <li><p>Functionals did not have first class support (functional.conv2d and functional.linear would not get quantized)</p></li>
 </ul>
@@ -551,7 +553,7 @@ These steps are identitcal to <a class="reference external" href="https://pytorc
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span><span class="p">,</span> <span class="n">QConfigMapping</span>
 <span class="kn">from</span> <span class="nn">torch.ao.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span><span class="p">,</span> <span class="n">fuse_fx</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
@@ -689,6 +691,7 @@ These steps are identitcal to <a class="reference external" href="https://pytorc
 <span class="n">eval_batch_size</span> <span class="o">=</span> <span class="mi">50</span>
 
 <span class="n">data_loader</span><span class="p">,</span> <span class="n">data_loader_test</span> <span class="o">=</span> <span class="n">prepare_data_loaders</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 <span class="n">float_model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 <span class="n">float_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -706,72 +709,41 @@ These steps are identitcal to <a class="reference external" href="https://pytorc
 </pre></div>
 </div>
 </div>
-<div class="section" id="specify-how-to-quantize-the-model-with-qconfig-dict">
-<h2>4. Specify how to quantize the model with <code class="docutils literal notranslate"><span class="pre">qconfig_dict</span></code><a class="headerlink" href="#specify-how-to-quantize-the-model-with-qconfig-dict" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span> <span class="p">:</span> <span class="n">default_qconfig</span><span class="p">}</span>
+<div class="section" id="specify-how-to-quantize-the-model-with-qconfigmapping">
+<h2>4. Specify how to quantize the model with <code class="docutils literal notranslate"><span class="pre">QConfigMapping</span></code><a class="headerlink" href="#specify-how-to-quantize-the-model-with-qconfigmapping" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">default_qconfig</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We use the same qconfig used in eager mode quantization, <code class="docutils literal notranslate"><span class="pre">qconfig</span></code> is just a named tuple
-of the observers for activation and weight. <code class="docutils literal notranslate"><span class="pre">qconfig_dict</span></code> is a dictionary with the following configurations:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>qconfig = {
-    &quot;&quot; : qconfig_global,
-    &quot;sub&quot; : qconfig_sub,
-    &quot;sub.fc&quot; : qconfig_fc,
-    &quot;sub.conv&quot;: None
-}
-qconfig_dict = {
-    # qconfig? means either a valid qconfig or None
-    # optional, global config
-    &quot;&quot;: qconfig?,
-    # optional, used for module and function types
-    # could also be split into module_types and function_types if we prefer
-    &quot;object_type&quot;: [
-        (torch.nn.Conv2d, qconfig?),
-        (torch.nn.functional.add, qconfig?),
-        ...,
-    ],
-    # optional, used for module names
-    &quot;module_name&quot;: [
-        (&quot;foo.bar&quot;, qconfig?)
-        ...,
-    ],
-    # optional, matched in order, first match takes precedence
-    &quot;module_name_regex&quot;: [
-        (&quot;foo.*bar.*conv[0-9]+&quot;, qconfig?)
-        ...,
-    ],
-    # priority (in increasing order): global, object_type, module_name_regex, module_name
-    # qconfig == None means fusion and quantization should be skipped for anything
-    # matching the rule
-
-    # **api subject to change**
-    # optional: specify the path for standalone modules
-    # These modules are symbolically traced and quantized as one unit
-    # so that the call to the submodule appears as one call_module
-    # node in the forward graph of the GraphModule
-    &quot;standalone_module_name&quot;: [
-        &quot;submodule.standalone&quot;
-    ],
-    &quot;standalone_module_class&quot;: [
-        StandaloneModuleClass
-    ]
-}
+of the observers for activation and weight. <code class="docutils literal notranslate"><span class="pre">QConfigMapping</span></code> contains mapping information from ops to qconfigs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="p">(</span><span class="n">QConfigMapping</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig_opt</span><span class="p">)</span>  <span class="c1"># qconfig_opt is an optional qconfig, either a valid qconfig or None</span>
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span> <span class="c1"># can be a callable...</span>
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="s2">&quot;torch.nn.functional.add&quot;</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span> <span class="c1"># ...or a string of the class name</span>
+    <span class="o">.</span><span class="n">set_module_name_regex</span><span class="p">(</span><span class="s2">&quot;foo.*bar.*conv[0-9]+&quot;</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span> <span class="c1"># matched in order, first match takes precedence</span>
+    <span class="o">.</span><span class="n">set_module_name</span><span class="p">(</span><span class="s2">&quot;foo.bar&quot;</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_module_name_object_type_order</span><span class="p">()</span>
+<span class="p">)</span>
+    <span class="c1"># priority (in increasing order): global, object_type, module_name_regex, module_name</span>
+    <span class="c1"># qconfig == None means fusion and quantization should be skipped for anything</span>
+    <span class="c1"># matching the rule (unless a higher priority match is found)</span>
 </pre></div>
 </div>
-<p>Utility functions related to <code class="docutils literal notranslate"><span class="pre">qconfig</span></code> can be found in the <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/qconfig.py">qconfig</a> file.</p>
+<p>Utility functions related to <code class="docutils literal notranslate"><span class="pre">qconfig</span></code> can be found in the <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/qconfig.py">qconfig</a> file
+while those for <code class="docutils literal notranslate"><span class="pre">QConfigMapping</span></code> can be found in the <cite>qconfig_mapping &lt;https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/fx/qconfig_mapping.py&gt;</cite></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">get_default_qconfig</span><span class="p">(</span><span class="s2">&quot;fbgemm&quot;</span><span class="p">)</span>
-<span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="p">()</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="prepare-the-model-for-post-training-static-quantization">
 <h2>5. Prepare the Model for Post Training Static Quantization<a class="headerlink" href="#prepare-the-model-for-post-training-static-quantization" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>prepare_fx folds BatchNorm modules into previous Conv2d modules, and insert observers
 in appropriate places in the model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">prepared_model</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -833,14 +805,14 @@ the statistics of the Tensors and we can later use this information to calculate
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[after serialization/deserialization] Evaluation accuracy on test dataset: </span><span class="si">%2.2f</span><span class="s2">, </span><span class="si">%2.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">,</span> <span class="n">top5</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>If you want to get better accuracy or performance,  try changing the <cite>qconfig_dict</cite>.
+<p>If you want to get better accuracy or performance,  try changing the <cite>qconfig_mapping</cite>.
 We plan to add support for graph mode in the Numerical Suite so that you can
-easily determine the sensitivity towards quantization of different modules in a model: <a class="reference external" href="https://pytorch.org/tutorials/prototype/numeric_suite_tutorial.html">PyTorch Numeric Suite Tutorial</a></p>
+easily determine the sensitivity towards quantization of different modules in a model. For more information, see <a class="reference external" href="https://pytorch.org/tutorials/prototype/numeric_suite_tutorial.html">PyTorch Numeric Suite Tutorial</a></p>
 </div>
 <div class="section" id="debugging-quantized-model">
 <h2>9. Debugging Quantized Model<a class="headerlink" href="#debugging-quantized-model" title="Permalink to this heading">¶</a></h2>
-<p>We can also print the weight for quantized an un-quantized conv to see the difference,
-we’ll first call fuse explicitly to fuse the conv and bn in the model:
+<p>We can also print the weight for quantized a non-quantized convolution op to see the difference,
+we’ll first call fuse explicitly to fuse the convolution and batch norm in the model:
 Note that <code class="docutils literal notranslate"><span class="pre">fuse_fx</span></code> only works in eval mode.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fused</span> <span class="o">=</span> <span class="n">fuse_fx</span><span class="p">(</span><span class="n">float_model</span><span class="p">)</span>
 
@@ -863,7 +835,7 @@ Note that <code class="docutils literal notranslate"><span class="pre">fuse_fx</
 <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">float_model</span><span class="p">),</span> <span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">scripted_float_model_file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In this section we compare the model quantized with FX graph mode quantization with the model
+<p>In this section, we compare the model quantized with FX graph mode quantization with the model
 quantized in eager mode. FX graph mode and eager mode produce very similar quantized models,
 so the expectation is that the accuracy and speedup are similar as well.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Size of Fx graph mode quantized model&quot;</span><span class="p">)</span>
@@ -894,7 +866,7 @@ so the expectation is that the accuracy and speedup are similar as well.</p>
 <span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">50.63</span><span class="n">ms</span>
 </pre></div>
 </div>
-<p>As we can see for resnet18 both FX graph mode and eager mode quantized model get similar speed up over the floating point model,
+<p>As we can see for resnet18 both FX graph mode and eager mode quantized model get similar speedup over the floating point model,
 which is around 2-4x faster than the floating point model. But the actual speedup over floating point model may vary
 depending on model, device, build, input batch sizes, threading etc.</p>
 </div>
@@ -956,7 +928,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#motivation-of-fx-graph-mode-quantization">1. Motivation of FX Graph Mode Quantization</a></li>
 <li><a class="reference internal" href="#define-helper-functions-and-prepare-dataset">2. Define Helper Functions and Prepare Dataset</a></li>
 <li><a class="reference internal" href="#set-model-to-eval-mode">3. Set model to eval mode</a></li>
-<li><a class="reference internal" href="#specify-how-to-quantize-the-model-with-qconfig-dict">4. Specify how to quantize the model with <code class="docutils literal notranslate"><span class="pre">qconfig_dict</span></code></a></li>
+<li><a class="reference internal" href="#specify-how-to-quantize-the-model-with-qconfigmapping">4. Specify how to quantize the model with <code class="docutils literal notranslate"><span class="pre">QConfigMapping</span></code></a></li>
 <li><a class="reference internal" href="#prepare-the-model-for-post-training-static-quantization">5. Prepare the Model for Post Training Static Quantization</a></li>
 <li><a class="reference internal" href="#calibration">6. Calibration</a></li>
 <li><a class="reference internal" href="#convert-the-model-to-a-quantized-model">7. Convert the Model to a Quantized Model</a></li>
