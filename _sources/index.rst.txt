@@ -233,7 +233,7 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
-   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials.
+   :card_description: After using character-level RNN to classify names, learn how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
    :tags: Text
