@@ -217,8 +217,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
         test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
         my_auto_wrap_policy = functools.partial(
-                size_based_auto_wrap_policy, min_num_params=100
-            )
+            size_based_auto_wrap_policy, min_num_params=100
+        )
         torch.cuda.set_device(rank)
         
         
