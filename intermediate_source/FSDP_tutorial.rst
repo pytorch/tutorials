@@ -63,7 +63,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 1.2  Import necessary packages
 
 .. note::
-    This tutorial is intended for pytorch versions 1.12 and later. If you are using 1.11 or earlier, replace all instances of `size_based_auto_wrap_policy` with `default_auto_wrap_policy`.
+    This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of `size_based_auto_wrap_policy` with `default_auto_wrap_policy`.
 
 .. code-block:: python
 
