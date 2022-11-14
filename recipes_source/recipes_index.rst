@@ -120,7 +120,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: PyTorch Profiler with Instrumentation and Tracing Technology API (ITT API) support
    :card_description: Learn how to use PyTorch's profiler with Instrumentation and Tracing Technology API (ITT API) to visualize operators labeling in Intel® VTune™ Profiler GUI
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/profile_with_itt.html
+   :link: ../recipes/profile_with_itt.html
    :tags: Basics
 
 .. Interpretability
