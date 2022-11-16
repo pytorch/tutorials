@@ -685,8 +685,8 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
    $ cmake -DCMAKE_PREFIX_PATH=<LIBPYTORCH_PATH> ..
    $ make
 
-If Found INTEL_EXT_PT_CPU is shown as TRUE, the extension had been linked into
-the binary. This can be verified with Linux command ldd.
+If `Found INTEL_EXT_PT_CPU` is shown as `TRUE`, the extension had been linked
+into the binary. This can be verified with the Linux command `ldd`.
 
 ::
 
@@ -735,12 +735,15 @@ Model Zoo (CPU only)
 
 Use cases that had already been optimized by Intel engineers are available at
 `Model Zoo for Intel® Architecture <https://github.com/IntelAI/models/>`_ (with
-branch name in format of `pytorch-r<version>-models`). A bunch of PyTorch use
+the branch name in format of `pytorch-r<version>-models`). Many PyTorch use
 cases for benchmarking are also available on the GitHub page. You can get
-performance benefits out-of-box by simply running scipts in the Model Zoo.
+performance benefits out-of-the-box by simply running scripts in the Model Zoo.
 
 Tutorials
 ---------
 
-More detailed tutorials are available at Github.io for `CPU <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/>`_
-and `GPU <https://intel.github.io/intel-extension-for-pytorch/xpu/latest/>`_.
+More detailed tutorials are available in the official Intel® Extension
+for PyTorch* Documentation:
+
+- `CPU <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/>`_
+- `GPU <https://intel.github.io/intel-extension-for-pytorch/xpu/latest/>`_
