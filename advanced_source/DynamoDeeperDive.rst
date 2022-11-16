@@ -1,5 +1,6 @@
 TorchDynamo Deeper Dive
 =======================
+**Author**: `Jason Ansel <https://github.com/jansel>`_
 
 What is a guard?
 ----------------

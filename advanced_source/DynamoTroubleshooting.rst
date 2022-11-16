@@ -1,3 +1,9 @@
+Dynamo Troubleshooting Guide
+============================
+**Author**: `Michael Lazos <https://github.com/mlazos>`_
+
+
+
 Table of Contents
 =================
 

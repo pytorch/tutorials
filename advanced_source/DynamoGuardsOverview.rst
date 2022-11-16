@@ -1,5 +1,8 @@
 How TorchDynamo Works - Pt1 - From user code to guards
 ======================================================
+**Author**: `Michael Voznesensky <https://github.com/voznesenskym>`_
+
+
 
 Welcome
 -------
