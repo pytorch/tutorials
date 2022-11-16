@@ -1,19 +1,7 @@
-How TorchDynamo Works - Pt1 - From user code to guards
+How TorchDynamo Works from user code to guards
 ======================================================
 **Author**: `Michael Voznesensky <https://github.com/voznesenskym>`_
 
-
-
-Welcome
--------
-
-Welcome to the first entry in a series of technical documents outlining
-how TorchDynamo works.
-
-We assume the reader already has a working knowledge of PyTorch, and
-Python, and a basic understanding of TorchDynamo’s role in the PyTorch
-Ecosystem. The target audience is engineers and researchers looking to
-learn more about how TorchDynamo operates under the hood.
 
 Using Dynamo
 ------------
@@ -531,6 +519,3 @@ traced and tracked internally, organized into ``VariableTracker``\ s
 ``Source``\ s and subsequently ``Guard``\ s, and how those ``Guards`` in
 turn guide cache entry selection and invalidation when handing Python
 code.
-
-Our next writeup will cover the produced ``fx`` graph, ``unimplemented``
-and graph breaks in general, and more.
