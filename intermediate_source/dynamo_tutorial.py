@@ -50,8 +50,9 @@ TorchDynamo and TorchInductor Tutorial
 # Basic Usage
 # ------------
 #
-# TorchDynamo/TorchInductor are included in PyTorch 2.0. Running TorchInductor
-# on GPU requires Triton, which is ???
+# TorchDynamo/TorchInductor are included in the latest PyTorch nightlies.
+# Running TorchInductor on GPU requires Triton, which is included with the nightly
+# binary. If Triton is still missing, try installing ``torchtriton`` via pip.
 #
 
 import torch
