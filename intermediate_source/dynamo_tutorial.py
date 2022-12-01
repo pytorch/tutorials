@@ -40,7 +40,7 @@ TorchDynamo and TorchInductor Tutorial
 #
 # **Required pip Dependencies**
 #
-# - ``torch``
+# - ``torch >= 1.14``
 # - ``torchvision``
 # - ``numpy``
 # - ``scipy``
@@ -257,9 +257,9 @@ def f1(x, y):
         return -y
     return y
 
-# test that `fn1` and `fn2` return the same result, given
+# Test that `fn1` and `fn2` return the same result, given
 # the same arguments `args`. Typically, `fn1` will be an eager function
-# while `fn2` will be a compiled function (TorchDynamo, TorchScript, or FX graph)
+# while `fn2` will be a compiled function (TorchDynamo, TorchScript, or FX graph).
 def test_fns(fn1, fn2, args):
     out1 = fn1(*args)
     out2 = fn2(*args)
@@ -395,7 +395,7 @@ def custom_backend(gm: torch.fx.GraphModule, example_inputs: List[torch.Tensor])
     gm.graph.print_tabular()
     return gm.forward
 
-# reset since we are using a different backend (a custom one)
+# Reset since we are using a different backend (a custom one).
 dynamo.reset()
 opt_model = dynamo.optimize(custom_backend)(init_model())
 opt_model(generate_data(16)[0])

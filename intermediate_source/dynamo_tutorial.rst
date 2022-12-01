@@ -8,9 +8,9 @@ all while requiring minimal code changes.
 
 In this tutorial, we cover basic TorchDynamo/TorchInductor usage,
 and demonstrate the advantages of TorchDynamo/TorchInductor over
-previous PyTorch compiler solutions (i.e.
+previous PyTorch compiler solutions, such as
 `TorchScript <https://pytorch.org/docs/stable/jit.html>`__ and 
-`FX Tracing <https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace>`__).
+`FX Tracing <https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace>`__.
 
 TorchDynamo JIT compiles arbitrary Python code into
 `FX graphs <https://pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__, which can
@@ -26,7 +26,7 @@ optimized C++/`Triton <https://github.com/openai/triton>`__ kernels.
 
 **Required pip Dependencies**
 
-- ``torch`` >= 2.0
+- ``torch >= 1.14``
 - ``torchvision``
 - ``numpy``
 - ``scipy``
@@ -35,8 +35,9 @@ optimized C++/`Triton <https://github.com/openai/triton>`__ kernels.
 Basic Usage
 ------------
 
-TorchDynamo/TorchInductor are included in PyTorch 2.0. Running TorchInductor
-on GPU requires Triton, which is ???
+TorchDynamo/TorchInductor are included in the latest PyTorch nightlies.
+Running TorchInductor on GPU requires Triton, which is included with the nightly
+binary. If Triton is still missing, try installing ``torchtriton`` via pip.
 
 .. code-block:: python
 
@@ -92,12 +93,12 @@ TorchDynamo/TorchInductor by evaluating and training ResNet-18 on random data.
 
 Before we start, we need to define some utility functions.
 
-Returns the result of running `fn()` and the time it took for `fn()` to run,
-in seconds. We use CUDA events and synchronization for the most accurate
-measurements.
 
 .. code-block:: python
 
+   # Returns the result of running `fn()` and the time it took for `fn()` to run,
+   # in seconds. We use CUDA events and synchronization for the most accurate
+   # measurements.
    def timed(fn):
        start = torch.cuda.Event(enable_timing=True)
        end = torch.cuda.Event(enable_timing=True)
@@ -107,11 +108,8 @@ measurements.
        torch.cuda.synchronize()
        return result, start.elapsed_time(end) / 1000
 
-Generates random input and targets data for the model, where `b` is
-batch size.
-
-.. code-block:: python
-
+   # Generates random input and targets data for the model, where `b` is
+   # batch size.
    def generate_data(b):
        return (
            torch.randn(b, 3, 128, 128).to(torch.float32).cuda(),
@@ -225,7 +223,7 @@ Now, let's consider comparing training.
 Again, we can see that TorchDynamo/TorchInductor takes longer in the first
 iteration, as it must compile the model, but afterward, we see
 significant speedups compared to eager. On an NVIDIA A100 GPU, we
-observe a approximate 2x speedup.
+observe a 2x speedup.
 
 One thing to note is that, as of now, we cannot place optimizer code --
 ``opt.zero_grad`` and ``opt.step`` -- inside of an optimized function.
@@ -243,8 +241,8 @@ advantage of TorchDynamo/TorchInductor lies in their ability to handle
 arbitrary Python code with minimal changes to existing code.
 
 One case that TorchDynamo/TorchInductor can handle that other compiler
-solutions struggle with is data-dependent control flow (i.e. 
-``if x.sum() < 0:``).
+solutions struggle with is data-dependent control flow (the line
+``if x.sum() < 0:`` below).
 
 .. code-block:: python
 
@@ -253,13 +251,9 @@ solutions struggle with is data-dependent control flow (i.e.
            return -y
        return y
 
-
-Test that `fn1` and `fn2` return the same result, given
-the same arguments `args`. Typically, `fn1` will be an eager function
-while `fn2` will be a compiled function (TorchDynamo, TorchScript, FX graph, etc.)
-
-.. code-block:: python
-
+   # Test that `fn1` and `fn2` return the same result, given
+   # the same arguments `args`. Typically, `fn1` will be an eager function
+   # while `fn2` will be a compiled function (TorchDynamo, TorchScript, or FX graph).
    def test_fns(fn1, fn2, args):
        out1 = fn1(*args)
        out2 = fn2(*args)
@@ -308,9 +302,6 @@ data-dependent control flow.
    print("dynamo 1, 1:", test_fns(f1, dynamo_f1, (inp1, inp2)))
    print("dynamo 1, 2:", test_fns(f1, dynamo_f1, (-inp1, inp2)))
    print("~" * 10)
-
-Now we can see that TorchDynamo/TorchInductor correctly handles
-data-dependent control flow.
 
 TorchScript scripting can handle data-dependent control flow, but this
 solution comes with its own set of problems. Namely, TorchScript scripting
@@ -392,8 +383,8 @@ TorchDynamo and FX Graphs
 -------------------------
 
 We now cover some topics involving TorchDynamo and FX graphs. In particular, we
-will demonstrate how to view TorchDynamo's outputted FX graphs; discuss
-graph breaks and whole-program graph capture; and show how to export graphs.
+will demonstrate how to view TorchDynamo's outputted FX graphs, discuss
+graph breaks and whole-program graph capture, and show how to export graphs.
 
 TorchDynamo is responsible for outputting FX graphs from traced Python code.
 Normally, TorchInductor further compiles the FX graphs into optimized kernels,
@@ -409,10 +400,7 @@ outputs the FX graph and simply returns the graph's unoptimized forward method.
        gm.graph.print_tabular()
        return gm.forward
 
-Reset since we are using a different backend (a custom one):
-
-.. code-block:: python
-
+   # Reset since we are using a different backend (a custom one).
    dynamo.reset()
    opt_model = dynamo.optimize(custom_backend)(init_model())
    opt_model(generate_data(16)[0])
@@ -442,7 +430,7 @@ corresponding the following code (order may differ from the output above):
 2. ``b = b * -1; return x * b``
 3. ``return x * b``
 
-When TorchDynamo encounters unsupported Python features such as data-dependent
+When TorchDynamo encounters unsupported Python features, such as data-dependent
 control flow, it breaks the computation graph, lets the default Python
 interpreter handle the unsupported code, then resumes capturing the graph.
 
