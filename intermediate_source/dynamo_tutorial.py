@@ -14,9 +14,9 @@ TorchDynamo and TorchInductor Tutorial
 # 
 # In this tutorial, we cover basic TorchDynamo/TorchInductor usage, 
 # and demonstrate the advantages of TorchDynamo/TorchInductor over
-# previous PyTorch compiler solutions (i.e. 
+# previous PyTorch compiler solutions, such as
 # `TorchScript <https://pytorch.org/docs/stable/jit.html>`__ and 
-# `FX Tracing <https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace>`__).
+# `FX Tracing <https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace>`__.
 #
 # TorchDynamo JIT compiles arbitrary Python code into
 # `FX graphs <https://pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__, which can
@@ -97,7 +97,7 @@ print(opt_mod(torch.randn(10, 100)))
 
 ######################################################################
 # Demonstrating Speedups
-# ------------
+# -----------------------
 #
 # Let's now demonstrate that using TorchDynamo/TorchInductor can speed
 # up real models. We will compare standard eager mode and 
@@ -230,7 +230,7 @@ print("~" * 10)
 # Again, we can see that TorchDynamo/TorchInductor takes longer in the first
 # iteration, as it must compile the model, but afterward, we see
 # significant speedups compared to eager. On an NVIDIA A100 GPU, we
-# observe a approximate 2x speedup.
+# observe a 2x speedup.
 #
 # One thing to note is that, as of now, we cannot place optimizer code --
 # ``opt.zero_grad`` and ``opt.step`` -- inside of an optimized function.
@@ -240,7 +240,7 @@ print("~" * 10)
 
 ######################################################################
 # Comparison to TorchScript and FX Tracing
-# ------------
+# -----------------------------------------
 # 
 # We have seen that TorchDynamo/TorchInductor can speed up PyTorch code.
 # Why else should we use TorchDynamo/TorchInductor over existing PyTorch
@@ -249,8 +249,8 @@ print("~" * 10)
 # arbitrary Python code with minimal changes to existing code.
 #
 # One case that TorchDynamo/TorchInductor can handle that other compiler
-# solutions struggle with is data-dependent control flow (i.e. 
-# ``if x.sum() < 0:``).
+# solutions struggle with is data-dependent control flow (the 
+# ``if x.sum() < 0:`` line below).
 
 def f1(x, y):
     if x.sum() < 0:
@@ -259,7 +259,7 @@ def f1(x, y):
 
 # test that `fn1` and `fn2` return the same result, given
 # the same arguments `args`. Typically, `fn1` will be an eager function
-# while `fn2` will be a compiled function (TorchDynamo, TorchScript, FX graph, etc.)
+# while `fn2` will be a compiled function (TorchDynamo, TorchScript, or FX graph)
 def test_fns(fn1, fn2, args):
     out1 = fn1(*args)
     out2 = fn2(*args)
@@ -306,9 +306,6 @@ print("dynamo 1, 2:", test_fns(f1, dynamo_f1, (-inp1, inp2)))
 print("~" * 10)
 
 ######################################################################
-# Now we can see that TorchDynamo/TorchInductor correctly handles
-# data-dependent control flow.
-# 
 # TorchScript scripting can handle data-dependent control flow, but this
 # solution comes with its own set of problems. Namely, TorchScript scripting
 # can require major code changes and will raise errors when unsupported Python
@@ -380,11 +377,11 @@ print("dynamo 3:", test_fns(f3, dynamo_f3, (inp2,)))
 
 ######################################################################
 # TorchDynamo and FX Graphs
-# ------------
+# --------------------------
 # 
 # We now cover some topics involving TorchDynamo and FX graphs. In particular, we
-# will demonstrate how to view TorchDynamo's outputted FX graphs; discuss
-# graph breaks and whole-program graph capture; and show how to export graphs.
+# will demonstrate how to view TorchDynamo's outputted FX graphs, discuss
+# graph breaks and whole-program graph capture, and show how to export graphs.
 #
 # TorchDynamo is responsible for outputting FX graphs from traced Python code.
 # Normally, TorchInductor further compiles the FX graphs into optimized kernels,
@@ -422,13 +419,13 @@ opt_bar(inp1, -inp2)
 
 ######################################################################
 # The output reveals that TorchDynamo extracted 3 different FX graphs
-# corresponding the following code (order may differ from the output above)
+# corresponding the following code (order may differ from the output above):
 #
 # 1. ``x = a / (torch.abs(a) + 1)``
 # 2. ``b = b * -1; return x * b``
 # 3. ``return x * b``
 #
-# When TorchDynamo encounters unsupported Python features such as data-dependent
+# When TorchDynamo encounters unsupported Python features, such as data-dependent
 # control flow, it breaks the computation graph, lets the default Python
 # interpreter handle the unsupported code, then resumes capturing the graph.
 #
