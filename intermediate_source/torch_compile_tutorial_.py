@@ -33,6 +33,8 @@ torch.compile Tutorial
 # - ``numpy``
 # - ``scipy``
 # - ``tabulate``
+#
+# Note: a modern NVIDIA GPU (Volta or Ampere) is recommended for this tutorial.
 
 ######################################################################
 # Basic Usage
@@ -47,6 +49,9 @@ torch.compile Tutorial
 # function in place of the original function.
 
 import torch
+
+import torch._inductor.config
+torch._inductor.config.cpp.cxx = ("g++",)
 
 def foo(x, y):
     a = torch.sin(x)
@@ -118,16 +123,19 @@ def init_model():
 
 ######################################################################
 # First, let's compare inference.
+#
+# Note that in the call to ``torch.compile``, we have have the additional
+# ``mode`` kwarg, which we will discuss below.
 
-def eval(mod, inp):
+def evaluate(mod, inp):
     return mod(inp)
 
 model = init_model()
-eval_opt = torch.compile(eval)
+evaluate_opt = torch.compile(evaluate, mode="reduce-overhead")
 
 inp = generate_data(16)[0]
-print("eager:", timed(lambda: eval(model, inp))[1])
-print("compile:", timed(lambda: eval_opt(model, inp))[1])
+print("eager:", timed(lambda: evaluate(model, inp))[1])
+print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 
 ######################################################################
 # Notice that ``torch.compile`` takes a lot longer to complete
@@ -141,7 +149,7 @@ eager_times = []
 compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, eager_time = timed(lambda: eval(model, inp))
+    _, eager_time = timed(lambda: evaluate(model, inp))
     eager_times.append(eager_time)
     print(f"eager eval time {i}: {eager_time}")
 
@@ -150,7 +158,7 @@ print("~" * 10)
 compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, compile_time = timed(lambda: eval_opt(model, inp))
+    _, compile_time = timed(lambda: evaluate_opt(model, inp))
     compile_times.append(compile_time)
     print(f"compile eval time {i}: {compile_time}")
 print("~" * 10)
@@ -165,11 +173,17 @@ print("~" * 10)
 ######################################################################
 # And indeed, we can see that running our model with ``torch.compile``
 # results in a significant speedup. On an NVIDIA A100 GPU, we observe a
-# 2x speedup. Speedup mainly comes from reducing Python overhead and
+# 2.2x speedup. Speedup mainly comes from reducing Python overhead and
 # GPU read/writes, and so the observed speedup may vary on factors such as model
 # architecture and batch size. For example, if a model's architecture is simple
 # and the amount of data is large, then the bottleneck would be
 # GPU compute and the observed speedup may be less significant.
+#
+# You may also see different speedup results depending on the chosen ``mode``
+# kwarg. Since our model and data are small, we want to reduce overhead as
+# much as possible, and so we chose ``"reduce-overhead"``. For your own models,
+# you may need to experiment with different modes to maximize speedup. You can
+# read more about modes `here <https://pytorch.org/get-started/pytorch-2.0/#user-experience>`__.
 #
 # Now, let's consider comparing training.
 
@@ -193,7 +207,7 @@ print("~" * 10)
 
 model = init_model()
 opt = torch.optim.Adam(model.parameters())
-train_opt = torch.compile(train)
+train_opt = torch.compile(train, mode="reduce-overhead")
 
 compile_times = []
 for i in range(N_ITERS):
@@ -215,7 +229,7 @@ print("~" * 10)
 # Again, we can see that ``torch.compile`` takes longer in the first
 # iteration, as it must compile the model, but afterward, we see
 # significant speedups compared to eager. On an NVIDIA A100 GPU, we
-# observe a 2x speedup.
+# observe a 1.8x speedup.
 #
 # One thing to note is that, as of now, we cannot place optimizer code --
 # ``opt.zero_grad`` and ``opt.step`` -- inside of an optimized function.

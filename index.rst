@@ -518,10 +518,10 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
 .. customcarditem::
-   :header: TorchDynamo and TorchInductor Tutorial
-   :card_description: Speed up your models with minimal code changes using TorchDynamo and TorchInductor, the latest PyTorch compiler solution.
+   :header: torch.compile Tutorial
+   :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/dynamo_tutorial.html
+   :link: intermediate/torch_compile_tutorial.html
    :tags: Model-Optimization
 
 .. Parallel-and-Distributed-Training
@@ -908,7 +908,7 @@ Additional Resources
    intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
-   intermediate/dynamo_tutorial
+   intermediate/torch_compile_tutorial
 
 .. toctree::
    :maxdepth: 2
