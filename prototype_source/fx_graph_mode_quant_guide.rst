@@ -3,13 +3,13 @@
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
-FX Graph Mode Quantization requires a symbolically traceable model. 
+FX Graph Mode Quantization requires a symbolically traceable model.
 We use the FX framework (TODO: link) to convert a symbolically traceable nn.Module instance to IR,
-and we operate on the IR to execute the quantization passes.  
+and we operate on the IR to execute the quantization passes.
 Please post your question about symbolically tracing your model in `PyTorch Discussion Forum <https://discuss.pytorch.org/c/quantization/17>`_
 
-Quantization will only work on the symbolically traceable parts of your model. 
-Data dependent control flow (if statements / for loops etc using symbolically traced values) are one common pattern which is not supported. 
+Quantization will only work on the symbolically traceable parts of your model.
+Data dependent control flow (if statements / for loops etc using symbolically traced values) are one common pattern which is not supported.
 If your model is not symbolically traceable end to end, you have a couple of options to enable FX Graph Mode Quantization only on a part of the model.
 You can use any combination of these options:
 
@@ -27,7 +27,7 @@ If the code that is not symbolically traceable does not need to be quantized, we
 to run FX Graph Mode Quantization:
 1.a. Symbolically trace only the code that needs to be quantized
 -----------------------------------------------------------------
-When the whole model is not symbolically traceable but the submodule we want to quantize is 
+When the whole model is not symbolically traceable but the submodule we want to quantize is
 symbolically traceable, we can run quantization only on that submodule.
 before:
 
@@ -38,7 +38,7 @@ before:
           x = traceable_code(x)
           x = non_traceable_code_2(x)
           return x
-   
+
 after:
 
 .. code:: python
@@ -46,7 +46,7 @@ after:
       def forward(self, x):
           x = traceable_code(x)
           return x
-       
+
   class M(nn.Module):
       def __init__(self):
           self.traceable_submodule = FP32Traceable(...)
@@ -61,9 +61,9 @@ quantization code:
 
 .. code:: python
 
-  qconfig_dict = {"": qconfig}
+  qconfig_mapping = QConfigMapping().set_global(qconfig)
   model_fp32.traceable_submodule = \
-    prepare_fx(model_fp32.traceable_submodule, qconfig_dict)
+    prepare_fx(model_fp32.traceable_submodule, qconfig_mapping, example_inputs)
 
 Note if original model needs to be preserved, you will have to
 copy it yourself before calling the quantization APIs.
@@ -72,7 +72,7 @@ copy it yourself before calling the quantization APIs.
 #####################################################
 1.b. Skip symbolically trace the non-traceable code
 ---------------------------------------------------
-When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized, 
+When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized,
 we can factor out this part of the code into a submodule and skip symbolically trace that submodule.
 
 
@@ -98,7 +98,7 @@ after, non-traceable parts moved to a module and marked as a leaf
       def forward(self, x):
           x = non_traceable_code(x)
           return x
-   
+
   class M(nn.Module):
 
       def __init__(self):
@@ -117,7 +117,7 @@ quantization code:
 
 .. code:: python
 
-  qconfig_dict = {"": qconfig}
+  qconfig_mapping = QConfigMapping.set_global(qconfig)
 
   prepare_custom_config_dict = {
       # option 1
@@ -126,8 +126,9 @@ quantization code:
       "non_traceable_module_class": [MNonTraceable],
   }
   model_prepared = prepare_fx(
-      model_fp32, 
-      qconfig_dict,
+      model_fp32,
+      qconfig_mapping,
+      example_inputs,
       prepare_custom_config_dict=prepare_custom_config_dict,
   )
 
@@ -136,7 +137,7 @@ If the code that is not symbolically traceable needs to be quantized, we have th
 ##########################################################
 2.a Refactor your code to make it symbolically traceable
 --------------------------------------------------------
-If it is easy to refactor the code and make the code symbolically traceable, 
+If it is easy to refactor the code and make the code symbolically traceable,
 we can refactor the code and remove the use of non-traceable constructs in python.
 
 More information about symbolic tracing support can be found in: (TODO: link)
@@ -150,8 +151,8 @@ before:
       x = x.view(*new_x_shape)
       return x.permute(0, 2, 1, 3)
 
-   
-This is not symbolically traceable because in x.view(*new_x_shape) 
+
+This is not symbolically traceable because in x.view(*new_x_shape)
 unpacking is not supported, however, it is easy to remove the unpacking
 since x.view also supports list input.
 
@@ -177,10 +178,10 @@ depends on the model.
 2.b. Write your own observed and quantized submodule
 -----------------------------------------------------
 
-If the non-traceable code can’t be refactored to be symbolically traceable, 
-for example it has some loops that can’t be eliminated, like nn.LSTM, 
-we’ll need to factor out the non-traceable code to a submodule (we call it CustomModule in fx graph mode quantization) and 
-define the observed and quantized version of the submodule (in post training static quantization or quantization aware training for static quantization) 
+If the non-traceable code can’t be refactored to be symbolically traceable,
+for example it has some loops that can’t be eliminated, like nn.LSTM,
+we’ll need to factor out the non-traceable code to a submodule (we call it CustomModule in fx graph mode quantization) and
+define the observed and quantized version of the submodule (in post training static quantization or quantization aware training for static quantization)
 or define the quantized version (in post training dynamic and weight only quantization)
 
 
@@ -228,7 +229,7 @@ to StaticQuantNonTraceable
       @classmethod
       def from_observed(cls, ...):
           ...
- 
+
 
 .. code:: python
 
@@ -245,7 +246,7 @@ to StaticQuantNonTraceable
           x = self.non_traceable_submodule(x)
           x = self.traceable_code_1(x)
           return x
-   
+
 
 quantization code:
 
@@ -263,8 +264,9 @@ quantization code:
   }
 
   model_prepared = prepare_fx(
-      model_fp32, 
-      qconfig_dict, 
+      model_fp32,
+      qconfig_mapping,
+      example_inputs,
       prepare_custom_config_dict=prepare_custom_config_dict)
 
 calibrate / train (not shown)
@@ -283,7 +285,7 @@ calibrate / train (not shown)
       convert_custom_config_dict)
 
 post training dynamic/weight only quantization
-in these two modes we don't need to observe the original model, so we 
+in these two modes we don't need to observe the original model, so we
 only need to define thee quantized model
 
 .. code:: python
@@ -306,8 +308,8 @@ only need to define thee quantized model
   # The example is for post training quantization
   model_fp32.eval()
   model_prepared = prepare_fx(
-      model_fp32, 
-      qconfig_dict, 
+      model_fp32,
+      qconfig_mapping,
       prepare_custom_config_dict=prepare_custom_config_dict)
 
   convert_custom_config_dict = {
