@@ -21,28 +21,17 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
-# export PATH=/opt/conda/bin:$PATH
-# pip install sphinx==1.8.2 pandas
-
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
 # pip uninstall -y torch torchvision torchaudio torchtext
-# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
+# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch  torchvision torchaudio torchtext 
 # pip uninstall -y torch torchvision torchaudio torchtext
-# pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
-
-# For Tensorboard. Until 1.14 moves to the release channel.
-pip install tb-nightly
+# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu116/torch_test.html torch torchdata torchvision torchaudio torchtext
 
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en
-python -m spacy download de
-
-# PyTorch Theme
-rm -rf src
-pip install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==9.0.1
+python -m spacy download en_core_web_sm
+python -m spacy download de_core_news_sm
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
@@ -58,13 +47,12 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
   # Temp remove for 1.10 release.
   # python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
-
+  
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
-  python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
-
+  # python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -77,45 +65,54 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
+  set +x
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.rst'); do
     file_basename=$(basename $filename .rst)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.py'); do
     file_basename=$(basename $filename .py)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.ipynb'); do
     file_basename=$(basename $filename .ipynb)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
   for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes docs/.doctrees/prototype -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
     if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
+      echo "removing $filename"
       rm $filename
     fi
   done
+  set -x
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
@@ -149,6 +146,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
+  python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs

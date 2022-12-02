@@ -5,7 +5,7 @@ The ``autograd`` package is crucial for building highly flexible and dynamic neu
 networks in PyTorch. Most of the autograd APIs in PyTorch Python frontend are also available
 in C++ frontend, allowing easy translation of autograd code from Python to C++.
 
-In this tutorial we'll look at several examples of doing autograd in PyTorch C++ frontend.
+In this tutorial explore several examples of doing autograd in PyTorch C++ frontend.
 Note that this tutorial assumes that you already have a basic understanding of
 autograd in Python frontend. If that's not the case, please first read
 `Autograd: Automatic Differentiation <https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html>`_.

@@ -42,7 +42,7 @@ with high performance requirements. For that:
 # Dependencies
 # ------------
 #
-# Install the required dependenices by running the following command:
+# Install the required dependencies by running the following command:
 #
 # ::
 #
@@ -53,7 +53,7 @@ with high performance requirements. For that:
 # Simple Web Server
 # -----------------
 #
-# Following is a simple webserver, taken from Flask's documentaion
+# Following is a simple webserver, taken from Flask's documentation
 
 
 from flask import Flask
@@ -335,7 +335,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # Next steps
 # --------------
 #
-# The server we wrote is quite trivial and and may not do everything
+# The server we wrote is quite trivial and may not do everything
 # you need for your production application. So, here are some things you
 # can do to make it better:
 #

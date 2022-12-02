@@ -26,9 +26,6 @@ setup_linux_system_environment: &setup_linux_system_environment
   command: |
     set -ex
 
-    # Set up CircleCI GPG keys for apt, if needed
-    curl -L https://packagecloud.io/circleci/trusty/gpgkey | sudo apt-key add -
-
     # Stop background apt updates.  Hypothetically, the kill should not
     # be necessary, because stop is supposed to send a kill signal to
     # the process, but we've added it for good luck.  Also
@@ -93,7 +90,9 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
       command: |
         set -e
 
-        export pyTorchDockerImageTag=c3998772049b8a8ba52cedfa525c9feda04cb2c7
+        # for some reason, pip installs it in a different place than what is looked at in the py file
+        sudo pip3 install requests --target=/opt/circleci/.pyenv/versions/3.9.4/lib/python3.9/site-packages
+        export pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
         echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
 
         cat >/home/circleci/project/ci_build_script.sh \<<EOL
@@ -135,6 +134,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         fi
         set -x
 
+        echo 'rm /opt/cache/bin/*' | docker exec -u root -i "$id" bash
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
@@ -142,14 +142,14 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda10.2-cudnn7-py3-gcc7"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.6-cudnn8-py3-gcc7"
     CUDA_VERSION: "9"
   resource_class: gpu.nvidia.small
   <<: *pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda10.2-cudnn7-py3-gcc7"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.6-cudnn8-py3-gcc7"
   resource_class: medium
   <<: *pytorch_tutorial_build_defaults
 

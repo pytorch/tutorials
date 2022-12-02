@@ -24,9 +24,14 @@ This tutorial shows:
 
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
-from torchtext.datasets import Multi30k
+from torchtext.datasets import multi30k, Multi30k
 from typing import Iterable, List
 
+
+# We need to modify the URLs for the dataset since the links to the original dataset are broken
+# Refer to https://github.com/pytorch/text/issues/1756#issuecomment-1163664163 for more info
+multi30k.URL["train"] = "https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/training.tar.gz"
+multi30k.URL["valid"] = "https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/validation.tar.gz"
 
 SRC_LANGUAGE = 'de'
 TGT_LANGUAGE = 'en'
@@ -37,6 +42,7 @@ vocab_transform = {}
 
 
 # Create source and target language tokenizer. Make sure to install the dependencies.
+# pip install -U torchdata
 # pip install -U spacy
 # python -m spacy download en_core_web_sm
 # python -m spacy download de_core_news_sm
@@ -303,7 +309,7 @@ def train_epoch(model, optimizer):
         optimizer.step()
         losses += loss.item()
 
-    return losses / len(train_dataloader)
+    return losses / len(list(train_dataloader))
 
 
 def evaluate(model):
@@ -327,7 +333,7 @@ def evaluate(model):
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         losses += loss.item()
 
-    return losses / len(val_dataloader)
+    return losses / len(list(val_dataloader))
 
 ######################################################################
 # Now we have all the ingredients to train our model. Let's do it!
