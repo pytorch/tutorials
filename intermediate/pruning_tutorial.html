@@ -300,7 +300,7 @@
 <li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamo_tutorial.html">TorchDynamo and TorchInductor Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -455,35 +455,35 @@ parameters <code class="docutils literal notranslate"><span class="pre">weight</
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight', Parameter containing:
-tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.2289],
-          [ 0.1811,  0.2699,  0.2974]]],
+tensor([[[[ 0.1221,  0.0527, -0.1184],
+          [ 0.0009, -0.0031, -0.1017],
+          [ 0.2898,  0.1458,  0.3117]]],
 
 
-        [[[ 0.1191, -0.0289, -0.3086],
-          [-0.0678,  0.2635,  0.0659],
-          [ 0.1008, -0.2053, -0.0050]]],
+        [[[ 0.1464, -0.2858,  0.2725],
+          [ 0.1242,  0.2406, -0.1216],
+          [-0.2743, -0.2836, -0.2573]]],
 
 
-        [[[-0.0271, -0.2887,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.2852]]],
+        [[[ 0.1395, -0.1180,  0.1413],
+          [ 0.2566, -0.0349,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0931, -0.1528,  0.2497],
-          [-0.1920,  0.0775,  0.0295]]],
+        [[[ 0.1830, -0.0568,  0.1074],
+          [-0.3266, -0.0237,  0.2886],
+          [ 0.0373,  0.2957,  0.0926]]],
 
 
-        [[[-0.0734,  0.2347, -0.0947],
-          [-0.0797, -0.2371,  0.1305],
-          [-0.1627, -0.1723,  0.1138]]],
+        [[[ 0.2350,  0.3108, -0.3084],
+          [ 0.1626,  0.0814, -0.0268],
+          [-0.0267,  0.1739, -0.0532]]],
 
 
-        [[[-0.1825, -0.3127, -0.2358],
-          [-0.1039, -0.2940,  0.1381],
-          [-0.1284, -0.0579, -0.0065]]]], device='cuda:0', requires_grad=True)), ('bias', Parameter containing:
-tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
+        [[[-0.1845, -0.0164,  0.2961],
+          [-0.1816,  0.0746, -0.1320],
+          [-0.1438,  0.2137,  0.0173]]]], device='cuda:0', requires_grad=True)), ('bias', Parameter containing:
+tensor([-0.1680, -0.0225,  0.2586, -0.3261, -0.1515,  0.2928], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
@@ -525,36 +525,36 @@ the tensor. The <code class="docutils literal notranslate"><span class="pre">bia
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias', Parameter containing:
-tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
+tensor([-0.1680, -0.0225,  0.2586, -0.3261, -0.1515,  0.2928], device='cuda:0',
        requires_grad=True)), ('weight_orig', Parameter containing:
-tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.2289],
-          [ 0.1811,  0.2699,  0.2974]]],
+tensor([[[[ 0.1221,  0.0527, -0.1184],
+          [ 0.0009, -0.0031, -0.1017],
+          [ 0.2898,  0.1458,  0.3117]]],
 
 
-        [[[ 0.1191, -0.0289, -0.3086],
-          [-0.0678,  0.2635,  0.0659],
-          [ 0.1008, -0.2053, -0.0050]]],
+        [[[ 0.1464, -0.2858,  0.2725],
+          [ 0.1242,  0.2406, -0.1216],
+          [-0.2743, -0.2836, -0.2573]]],
 
 
-        [[[-0.0271, -0.2887,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.2852]]],
+        [[[ 0.1395, -0.1180,  0.1413],
+          [ 0.2566, -0.0349,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0931, -0.1528,  0.2497],
-          [-0.1920,  0.0775,  0.0295]]],
+        [[[ 0.1830, -0.0568,  0.1074],
+          [-0.3266, -0.0237,  0.2886],
+          [ 0.0373,  0.2957,  0.0926]]],
 
 
-        [[[-0.0734,  0.2347, -0.0947],
-          [-0.0797, -0.2371,  0.1305],
-          [-0.1627, -0.1723,  0.1138]]],
+        [[[ 0.2350,  0.3108, -0.3084],
+          [ 0.1626,  0.0814, -0.0268],
+          [-0.0267,  0.1739, -0.0532]]],
 
 
-        [[[-0.1825, -0.3127, -0.2358],
-          [-0.1039, -0.2940,  0.1381],
-          [-0.1284, -0.0579, -0.0065]]]], device='cuda:0', requires_grad=True))]
+        [[[-0.1845, -0.0164,  0.2961],
+          [-0.1816,  0.0746, -0.1320],
+          [-0.1438,  0.2137,  0.0173]]]], device='cuda:0', requires_grad=True))]
 </pre></div>
 </div>
 <p>The pruning mask generated by the pruning technique selected above is saved
@@ -564,33 +564,33 @@ initial parameter <code class="docutils literal notranslate"><span class="pre">n
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[1., 1., 1.],
-          [1., 1., 0.],
+          [0., 0., 0.],
+          [1., 0., 1.]]],
+
+
+        [[[0., 1., 1.],
+          [1., 0., 1.],
+          [1., 0., 1.]]],
+
+
+        [[[1., 1., 0.],
+          [1., 0., 1.],
           [1., 1., 1.]]],
 
 
         [[[1., 0., 1.],
-          [0., 0., 1.],
+          [1., 1., 0.],
           [0., 1., 1.]]],
 
 
         [[[1., 0., 1.],
-          [1., 1., 1.],
+          [1., 0., 1.],
           [1., 1., 0.]]],
 
 
         [[[1., 1., 1.],
-          [0., 1., 1.],
-          [0., 0., 1.]]],
-
-
-        [[[0., 1., 1.],
-          [0., 1., 1.],
-          [1., 1., 1.]]],
-
-
-        [[[1., 0., 1.],
-          [1., 1., 0.],
-          [1., 0., 0.]]]], device='cuda:0'))]
+          [1., 1., 1.],
+          [0., 1., 1.]]]], device='cuda:0'))]
 </pre></div>
 </div>
 <p>For the forward pass to work without modification, the <code class="docutils literal notranslate"><span class="pre">weight</span></code> attribute
@@ -602,34 +602,34 @@ it is now simply an attribute.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">module</span><span class="o">.</span><span class="n">weight</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.0000],
-          [ 0.1811,  0.2699,  0.2974]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.1221,  0.0527, -0.1184],
+          [ 0.0000, -0.0000, -0.0000],
+          [ 0.2898,  0.0000,  0.3117]]],
 
 
-        [[[ 0.1191, -0.0000, -0.3086],
-          [-0.0000,  0.0000,  0.0659],
-          [ 0.0000, -0.2053, -0.0050]]],
+        [[[ 0.0000, -0.2858,  0.2725],
+          [ 0.1242,  0.0000, -0.1216],
+          [-0.2743, -0.0000, -0.2573]]],
 
 
-        [[[-0.0271, -0.0000,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.0000]]],
+        [[[ 0.1395, -0.1180,  0.0000],
+          [ 0.2566, -0.0000,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0000, -0.1528,  0.2497],
-          [-0.0000,  0.0000,  0.0295]]],
+        [[[ 0.1830, -0.0000,  0.1074],
+          [-0.3266, -0.0237,  0.0000],
+          [ 0.0000,  0.2957,  0.0926]]],
 
 
-        [[[-0.0000,  0.2347, -0.0947],
-          [-0.0000, -0.2371,  0.1305],
-          [-0.1627, -0.1723,  0.1138]]],
+        [[[ 0.2350,  0.0000, -0.3084],
+          [ 0.1626,  0.0000, -0.0268],
+          [-0.0267,  0.1739, -0.0000]]],
 
 
-        [[[-0.1825, -0.0000, -0.2358],
-          [-0.1039, -0.2940,  0.0000],
-          [-0.1284, -0.0000, -0.0000]]]], device='cuda:0',
+        [[[-0.1845, -0.0164,  0.2961],
+          [-0.1816,  0.0746, -0.1320],
+          [-0.0000,  0.2137,  0.0173]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -642,7 +642,7 @@ present.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">module</span></a><span class="o">.</span><span class="n">_forward_pre_hooks</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f2fe60affd0&gt;)])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f4f6a8eff40&gt;)])
 </pre></div>
 </div>
 <p>For completeness, we can now prune the <code class="docutils literal notranslate"><span class="pre">bias</span></code> too, to see how the
@@ -664,35 +664,35 @@ module attributes, and the module will now have two <code class="docutils litera
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_orig', Parameter containing:
-tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.2289],
-          [ 0.1811,  0.2699,  0.2974]]],
+tensor([[[[ 0.1221,  0.0527, -0.1184],
+          [ 0.0009, -0.0031, -0.1017],
+          [ 0.2898,  0.1458,  0.3117]]],
 
 
-        [[[ 0.1191, -0.0289, -0.3086],
-          [-0.0678,  0.2635,  0.0659],
-          [ 0.1008, -0.2053, -0.0050]]],
+        [[[ 0.1464, -0.2858,  0.2725],
+          [ 0.1242,  0.2406, -0.1216],
+          [-0.2743, -0.2836, -0.2573]]],
 
 
-        [[[-0.0271, -0.2887,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.2852]]],
+        [[[ 0.1395, -0.1180,  0.1413],
+          [ 0.2566, -0.0349,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0931, -0.1528,  0.2497],
-          [-0.1920,  0.0775,  0.0295]]],
+        [[[ 0.1830, -0.0568,  0.1074],
+          [-0.3266, -0.0237,  0.2886],
+          [ 0.0373,  0.2957,  0.0926]]],
 
 
-        [[[-0.0734,  0.2347, -0.0947],
-          [-0.0797, -0.2371,  0.1305],
-          [-0.1627, -0.1723,  0.1138]]],
+        [[[ 0.2350,  0.3108, -0.3084],
+          [ 0.1626,  0.0814, -0.0268],
+          [-0.0267,  0.1739, -0.0532]]],
 
 
-        [[[-0.1825, -0.3127, -0.2358],
-          [-0.1039, -0.2940,  0.1381],
-          [-0.1284, -0.0579, -0.0065]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
-tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
+        [[[-0.1845, -0.0164,  0.2961],
+          [-0.1816,  0.0746, -0.1320],
+          [-0.1438,  0.2137,  0.0173]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
+tensor([-0.1680, -0.0225,  0.2586, -0.3261, -0.1515,  0.2928], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
@@ -700,46 +700,46 @@ tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[1., 1., 1.],
-          [1., 1., 0.],
+          [0., 0., 0.],
+          [1., 0., 1.]]],
+
+
+        [[[0., 1., 1.],
+          [1., 0., 1.],
+          [1., 0., 1.]]],
+
+
+        [[[1., 1., 0.],
+          [1., 0., 1.],
           [1., 1., 1.]]],
 
 
         [[[1., 0., 1.],
-          [0., 0., 1.],
+          [1., 1., 0.],
           [0., 1., 1.]]],
 
 
         [[[1., 0., 1.],
-          [1., 1., 1.],
+          [1., 0., 1.],
           [1., 1., 0.]]],
 
 
         [[[1., 1., 1.],
-          [0., 1., 1.],
-          [0., 0., 1.]]],
-
-
-        [[[0., 1., 1.],
-          [0., 1., 1.],
-          [1., 1., 1.]]],
-
-
-        [[[1., 0., 1.],
-          [1., 1., 0.],
-          [1., 0., 0.]]]], device='cuda:0')), ('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
+          [1., 1., 1.],
+          [0., 1., 1.]]]], device='cuda:0')), ('bias_mask', tensor([0., 0., 1., 1., 0., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">module</span><span class="o">.</span><span class="n">bias</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([ 0.0000,  0.1192, -0.0000,  0.0000, -0.2176,  0.3248], device='cuda:0',
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.0000, -0.0000,  0.2586, -0.3261, -0.0000,  0.2928], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">module</span></a><span class="o">.</span><span class="n">_forward_pre_hooks</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f2fe60affd0&gt;), (1, &lt;torch.nn.utils.prune.L1Unstructured object at 0x7f2fe60af5e0&gt;)])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f4f6a8eff40&gt;), (1, &lt;torch.nn.utils.prune.L1Unstructured object at 0x7f4f6a8ef430&gt;)])
 </pre></div>
 </div>
 </div>
@@ -763,34 +763,34 @@ achieved using the <code class="docutils literal notranslate"><span class="pre">
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">module</span><span class="o">.</span><span class="n">weight</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.0000],
-          [ 0.1811,  0.2699,  0.2974]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000]]],
 
 
-        [[[ 0.0000, -0.0000, -0.0000],
-          [-0.0000,  0.0000,  0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
+        [[[ 0.0000, -0.2858,  0.2725],
+          [ 0.1242,  0.0000, -0.1216],
+          [-0.2743, -0.0000, -0.2573]]],
 
 
-        [[[-0.0271, -0.0000,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.0000]]],
+        [[[ 0.1395, -0.1180,  0.0000],
+          [ 0.2566, -0.0000,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0000, -0.1528,  0.2497],
-          [-0.0000,  0.0000,  0.0295]]],
+        [[[ 0.1830, -0.0000,  0.1074],
+          [-0.3266, -0.0237,  0.0000],
+          [ 0.0000,  0.2957,  0.0926]]],
 
 
-        [[[-0.0000,  0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000,  0.0000]]],
+        [[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
 
 
-        [[[-0.0000, -0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000, -0.0000]]]], device='cuda:0',
+        [[[-0.0000, -0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000,  0.0000]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -804,7 +804,7 @@ pruning applied to the <code class="docutils literal notranslate"><span class="p
 <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-utils-prune sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.prune.PruningContainer.html#torch.nn.utils.prune.PruningContainer" title="torch.nn.utils.prune.PruningContainer"><span class="n">hook</span></a><span class="p">))</span>  <span class="c1"># pruning history in the container</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f2fe60affd0&gt;, &lt;torch.nn.utils.prune.LnStructured object at 0x7f2fe60af6d0&gt;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f4f6a8eff40&gt;, &lt;torch.nn.utils.prune.LnStructured object at 0x7f4f6a8ef670&gt;]
 </pre></div>
 </div>
 </div>
@@ -833,59 +833,59 @@ model parameters, in its pruned version.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_orig', Parameter containing:
-tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.2289],
-          [ 0.1811,  0.2699,  0.2974]]],
+tensor([[[[ 0.1221,  0.0527, -0.1184],
+          [ 0.0009, -0.0031, -0.1017],
+          [ 0.2898,  0.1458,  0.3117]]],
 
 
-        [[[ 0.1191, -0.0289, -0.3086],
-          [-0.0678,  0.2635,  0.0659],
-          [ 0.1008, -0.2053, -0.0050]]],
+        [[[ 0.1464, -0.2858,  0.2725],
+          [ 0.1242,  0.2406, -0.1216],
+          [-0.2743, -0.2836, -0.2573]]],
 
 
-        [[[-0.0271, -0.2887,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.2852]]],
+        [[[ 0.1395, -0.1180,  0.1413],
+          [ 0.2566, -0.0349,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0931, -0.1528,  0.2497],
-          [-0.1920,  0.0775,  0.0295]]],
+        [[[ 0.1830, -0.0568,  0.1074],
+          [-0.3266, -0.0237,  0.2886],
+          [ 0.0373,  0.2957,  0.0926]]],
 
 
-        [[[-0.0734,  0.2347, -0.0947],
-          [-0.0797, -0.2371,  0.1305],
-          [-0.1627, -0.1723,  0.1138]]],
+        [[[ 0.2350,  0.3108, -0.3084],
+          [ 0.1626,  0.0814, -0.0268],
+          [-0.0267,  0.1739, -0.0532]]],
 
 
-        [[[-0.1825, -0.3127, -0.2358],
-          [-0.1039, -0.2940,  0.1381],
-          [-0.1284, -0.0579, -0.0065]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
-tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
+        [[[-0.1845, -0.0164,  0.2961],
+          [-0.1816,  0.0746, -0.1320],
+          [-0.1438,  0.2137,  0.0173]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
+tensor([-0.1680, -0.0225,  0.2586, -0.3261, -0.1515,  0.2928], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_buffers" title="torch.nn.Module.named_buffers"><span class="n">module</span><span class="o">.</span><span class="n">named_buffers</span></a><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[1., 1., 1.],
-          [1., 1., 0.],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[0., 0., 0.],
+          [0., 0., 0.],
+          [0., 0., 0.]]],
+
+
+        [[[0., 1., 1.],
+          [1., 0., 1.],
+          [1., 0., 1.]]],
+
+
+        [[[1., 1., 0.],
+          [1., 0., 1.],
           [1., 1., 1.]]],
 
 
-        [[[0., 0., 0.],
-          [0., 0., 0.],
-          [0., 0., 0.]]],
-
-
         [[[1., 0., 1.],
-          [1., 1., 1.],
-          [1., 1., 0.]]],
-
-
-        [[[1., 1., 1.],
-          [0., 1., 1.],
-          [0., 0., 1.]]],
+          [1., 1., 0.],
+          [0., 1., 1.]]],
 
 
         [[[0., 0., 0.],
@@ -895,40 +895,40 @@ tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
 
         [[[0., 0., 0.],
           [0., 0., 0.],
-          [0., 0., 0.]]]], device='cuda:0')), ('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
+          [0., 0., 0.]]]], device='cuda:0')), ('bias_mask', tensor([0., 0., 1., 1., 0., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">module</span><span class="o">.</span><span class="n">weight</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.0000],
-          [ 0.1811,  0.2699,  0.2974]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000]]],
 
 
-        [[[ 0.0000, -0.0000, -0.0000],
-          [-0.0000,  0.0000,  0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
+        [[[ 0.0000, -0.2858,  0.2725],
+          [ 0.1242,  0.0000, -0.1216],
+          [-0.2743, -0.0000, -0.2573]]],
 
 
-        [[[-0.0271, -0.0000,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.0000]]],
+        [[[ 0.1395, -0.1180,  0.0000],
+          [ 0.2566, -0.0000,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0000, -0.1528,  0.2497],
-          [-0.0000,  0.0000,  0.0295]]],
+        [[[ 0.1830, -0.0000,  0.1074],
+          [-0.3266, -0.0237,  0.0000],
+          [ 0.0000,  0.2957,  0.0926]]],
 
 
-        [[[-0.0000,  0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000,  0.0000]]],
+        [[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
 
 
-        [[[-0.0000, -0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000, -0.0000]]]], device='cuda:0',
+        [[[-0.0000, -0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000,  0.0000]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -938,42 +938,42 @@ tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_orig', Parameter containing:
-tensor([ 0.0829,  0.1192, -0.0424,  0.0236, -0.2176,  0.3248], device='cuda:0',
+tensor([-0.1680, -0.0225,  0.2586, -0.3261, -0.1515,  0.2928], device='cuda:0',
        requires_grad=True)), ('weight', Parameter containing:
-tensor([[[[ 0.2035,  0.1693,  0.2030],
-          [-0.1902,  0.1453, -0.0000],
-          [ 0.1811,  0.2699,  0.2974]]],
+tensor([[[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000]]],
 
 
-        [[[ 0.0000, -0.0000, -0.0000],
-          [-0.0000,  0.0000,  0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
+        [[[ 0.0000, -0.2858,  0.2725],
+          [ 0.1242,  0.0000, -0.1216],
+          [-0.2743, -0.0000, -0.2573]]],
 
 
-        [[[-0.0271, -0.0000,  0.1676],
-          [ 0.3034,  0.0351, -0.2060],
-          [-0.1073,  0.3198,  0.0000]]],
+        [[[ 0.1395, -0.1180,  0.0000],
+          [ 0.2566, -0.0000,  0.2973],
+          [-0.0126,  0.2657, -0.2072]]],
 
 
-        [[[-0.3277, -0.0186, -0.3305],
-          [-0.0000, -0.1528,  0.2497],
-          [-0.0000,  0.0000,  0.0295]]],
+        [[[ 0.1830, -0.0000,  0.1074],
+          [-0.3266, -0.0237,  0.0000],
+          [ 0.0000,  0.2957,  0.0926]]],
 
 
-        [[[-0.0000,  0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000,  0.0000]]],
+        [[[ 0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
 
 
-        [[[-0.0000, -0.0000, -0.0000],
-          [-0.0000, -0.0000,  0.0000],
-          [-0.0000, -0.0000, -0.0000]]]], device='cuda:0', requires_grad=True))]
+        [[[-0.0000, -0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000],
+          [-0.0000,  0.0000,  0.0000]]]], device='cuda:0', requires_grad=True))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_buffers" title="torch.nn.Module.named_buffers"><span class="n">module</span><span class="o">.</span><span class="n">named_buffers</span></a><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_mask', tensor([0., 0., 1., 1., 0., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 </div>
@@ -1080,11 +1080,11 @@ not be equal to 20% in each layer. However, the global sparsity will be
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sparsity in conv1.weight: 3.70%
-Sparsity in conv2.weight: 9.14%
-Sparsity in fc1.weight: 22.21%
-Sparsity in fc2.weight: 11.42%
-Sparsity in fc3.weight: 9.17%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sparsity in conv1.weight: 1.85%
+Sparsity in conv2.weight: 8.91%
+Sparsity in fc1.weight: 22.09%
+Sparsity in fc2.weight: 11.94%
+Sparsity in fc3.weight: 9.76%
 Global sparsity: 20.00%
 </pre></div>
 </div>
@@ -1169,7 +1169,7 @@ applies it.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([0., 1., 0., 1., 0., 1., 0., 1., 0., 1.])
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.118 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.131 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pruning-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/ef3541eb2ef78e22efa65b3d6f4ba737/pruning_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pruning_tutorial.py</span></code></a></p>

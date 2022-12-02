@@ -300,7 +300,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/dynamo_tutorial.html">TorchDynamo and TorchInductor Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -470,68 +470,68 @@ Linear(in_features=200, out_features=10, bias=True)
 
 Model params:
 Parameter containing:
-tensor([[-0.0371,  0.0837, -0.0007,  ..., -0.0562, -0.0283,  0.0530],
-        [ 0.0284,  0.0059, -0.0302,  ...,  0.0762,  0.0778,  0.0906],
-        [ 0.0648,  0.0902,  0.0686,  ...,  0.0803, -0.0251,  0.0387],
+tensor([[ 0.0387,  0.0326,  0.0663,  ..., -0.0872, -0.0356,  0.0947],
+        [-0.0986,  0.0259,  0.0288,  ..., -0.0450, -0.0258,  0.0934],
+        [-0.0010, -0.0842, -0.0435,  ...,  0.0772,  0.0562,  0.0232],
         ...,
-        [-0.0842,  0.0274, -0.0707,  ...,  0.0877, -0.0346,  0.0744],
-        [ 0.0168, -0.0934,  0.0892,  ..., -0.0786,  0.0385, -0.0067],
-        [-0.0187, -0.0851, -0.0345,  ...,  0.0820, -0.0425,  0.0355]],
+        [ 0.0962, -0.0464, -0.0974,  ..., -0.0904, -0.0863,  0.0530],
+        [-0.0688, -0.0182,  0.0956,  ..., -0.0445,  0.0288, -0.0529],
+        [-0.0626,  0.0962,  0.0237,  ...,  0.0373,  0.0364,  0.0240]],
        requires_grad=True)
 Parameter containing:
-tensor([-0.0797, -0.0407, -0.0370, -0.0592,  0.0998, -0.0377, -0.0818,  0.0141,
-        -0.0261,  0.0827,  0.0737,  0.0435,  0.0183, -0.0937, -0.0140,  0.0227,
-        -0.0635, -0.0948, -0.0362, -0.0792, -0.0072,  0.0902, -0.0280, -0.0345,
-        -0.0064, -0.0696, -0.0867,  0.0011,  0.0467, -0.0855,  0.0476, -0.0997,
-        -0.0070,  0.0113, -0.0537, -0.0867, -0.0275,  0.0550, -0.0386, -0.0986,
-        -0.0639, -0.0393,  0.0404, -0.0455,  0.0050,  0.0588, -0.0913, -0.0837,
-         0.0127,  0.0448,  0.0176, -0.0808, -0.0183, -0.0915, -0.0487,  0.0166,
-        -0.0297,  0.0855, -0.0224, -0.0309, -0.0235, -0.0093, -0.0637, -0.0565,
-         0.0764, -0.0106,  0.0853,  0.0211,  0.0240,  0.0683, -0.0357, -0.0685,
-         0.0558,  0.0391,  0.0161, -0.0959,  0.0702, -0.0180, -0.0722,  0.0585,
-         0.0727,  0.0069,  0.0710, -0.0558, -0.0772,  0.0882, -0.0348,  0.0639,
-         0.0619,  0.0232,  0.0643, -0.0064, -0.0485,  0.0223, -0.0398,  0.0219,
-        -0.0888,  0.0406,  0.0343,  0.0446,  0.0572,  0.0847, -0.0925,  0.0484,
-         0.0424,  0.0681,  0.0295, -0.0896, -0.0675, -0.0069,  0.0510, -0.0263,
-         0.0007,  0.0341, -0.0818,  0.0338, -0.0780,  0.0938, -0.0879, -0.0124,
-         0.0202, -0.0164, -0.0792,  0.0307, -0.0151, -0.0864,  0.0712,  0.0822,
-        -0.0652, -0.0683,  0.0738, -0.0146, -0.0663,  0.0589,  0.0535, -0.0314,
-        -0.0315, -0.0183, -0.0824, -0.0440, -0.0419,  0.0168, -0.0743,  0.0997,
-         0.0182, -0.0075,  0.0404,  0.0507,  0.0824, -0.0168,  0.0190,  0.0613,
-        -0.0368,  0.0363,  0.0112, -0.0767, -0.0896,  0.0173,  0.0888, -0.0968,
-        -0.0656, -0.0723, -0.0159,  0.0147,  0.0002, -0.0584, -0.0375,  0.0441,
-         0.0823,  0.0223,  0.0251, -0.0768, -0.0737,  0.0999, -0.0789, -0.0886,
-         0.0814, -0.0228,  0.0364,  0.0369,  0.0706, -0.0795,  0.0178,  0.0962,
-        -0.0906, -0.0124,  0.0219, -0.0701, -0.0555,  0.0973, -0.0154,  0.0012,
-         0.0117, -0.0766, -0.0081,  0.0258, -0.0993,  0.0780, -0.0581, -0.0494],
+tensor([ 0.0393,  0.0021, -0.0437, -0.0884,  0.0186,  0.0078, -0.0796,  0.0058,
+        -0.0956,  0.0604,  0.0955,  0.0911,  0.0708,  0.0785, -0.0816,  0.0343,
+        -0.0697, -0.0263, -0.0171, -0.0522,  0.0648, -0.0901,  0.0510, -0.0782,
+         0.0411, -0.0087,  0.0443,  0.0959,  0.0886, -0.0417,  0.0454, -0.0137,
+         0.0836, -0.0058,  0.0855, -0.0095,  0.0092, -0.0519, -0.0744, -0.0186,
+        -0.0467, -0.0132,  0.0922, -0.0572,  0.0950,  0.0464,  0.0934, -0.0729,
+         0.0876, -0.0565,  0.0964,  0.0411,  0.0201, -0.0252, -0.0495, -0.0335,
+         0.0543,  0.0955, -0.0932,  0.0443,  0.0615,  0.0963, -0.0567,  0.0060,
+         0.0003, -0.0855,  0.0086,  0.0333,  0.0602,  0.0829,  0.0565,  0.0557,
+         0.0186,  0.0583, -0.0409,  0.0798, -0.0195, -0.0995,  0.0709, -0.0819,
+         0.0682,  0.0914, -0.0779, -0.0440, -0.0196, -0.0082,  0.0633,  0.0802,
+         0.0264,  0.0119, -0.0427,  0.0065,  0.0981, -0.0800, -0.0047, -0.0094,
+        -0.0654,  0.0310, -0.0379, -0.0857, -0.0989,  0.0488,  0.0292,  0.0297,
+         0.0667,  0.0394, -0.0520,  0.0319,  0.0870,  0.0796, -0.0089,  0.0112,
+         0.0179,  0.0564,  0.0926, -0.0003,  0.0210, -0.0509,  0.0318,  0.0628,
+         0.0274,  0.0099, -0.0725, -0.0273, -0.0254, -0.0107,  0.0108,  0.0638,
+         0.0380, -0.0104, -0.0630,  0.0297,  0.0661, -0.0180,  0.0635, -0.0740,
+         0.0054, -0.0656, -0.0461, -0.0510, -0.0426,  0.0776,  0.0162,  0.0779,
+         0.0963, -0.0764,  0.0762,  0.0344, -0.0942,  0.0304, -0.0054,  0.0697,
+        -0.0798, -0.0642,  0.0906, -0.0524,  0.0597,  0.0515, -0.0751, -0.0867,
+        -0.0928,  0.0084, -0.0235,  0.0456, -0.0689,  0.0229, -0.0292, -0.0107,
+        -0.0090, -0.0333, -0.0687, -0.0138, -0.0846, -0.0502,  0.0498, -0.0059,
+        -0.0031,  0.0393,  0.0212, -0.0790, -0.0157,  0.0615, -0.0301, -0.0043,
+        -0.0779,  0.0040,  0.0392,  0.0453,  0.0510,  0.0358,  0.0244, -0.0997,
+        -0.0481,  0.0814, -0.0624,  0.0927,  0.0570, -0.0288, -0.0153,  0.0669],
        requires_grad=True)
 Parameter containing:
-tensor([[-0.0429,  0.0134,  0.0143,  ..., -0.0354, -0.0304,  0.0041],
-        [ 0.0131,  0.0419,  0.0331,  ..., -0.0699, -0.0142, -0.0502],
-        [ 0.0255,  0.0521,  0.0109,  ..., -0.0596,  0.0203, -0.0487],
+tensor([[-0.0281, -0.0302, -0.0254,  ...,  0.0288, -0.0636, -0.0221],
+        [-0.0376, -0.0356, -0.0563,  ...,  0.0626,  0.0634, -0.0382],
+        [ 0.0605,  0.0453,  0.0671,  ..., -0.0310,  0.0115,  0.0396],
         ...,
-        [-0.0062, -0.0047,  0.0078,  ...,  0.0113,  0.0478, -0.0045],
-        [ 0.0696,  0.0133,  0.0013,  ..., -0.0024, -0.0138,  0.0530],
-        [-0.0045,  0.0144,  0.0632,  ...,  0.0252, -0.0522, -0.0615]],
+        [-0.0441, -0.0404, -0.0224,  ...,  0.0151, -0.0377,  0.0356],
+        [-0.0603, -0.0667,  0.0255,  ...,  0.0011, -0.0276, -0.0687],
+        [ 0.0685, -0.0702,  0.0454,  ...,  0.0107, -0.0034, -0.0705]],
        requires_grad=True)
 Parameter containing:
-tensor([-0.0511,  0.0412, -0.0244,  0.0113, -0.0342, -0.0404, -0.0041,  0.0698,
-         0.0700, -0.0452], requires_grad=True)
+tensor([ 0.0400, -0.0152, -0.0452, -0.0610, -0.0251,  0.0262,  0.0393,  0.0638,
+        -0.0484, -0.0282], requires_grad=True)
 
 
 Layer params:
 Parameter containing:
-tensor([[-0.0429,  0.0134,  0.0143,  ..., -0.0354, -0.0304,  0.0041],
-        [ 0.0131,  0.0419,  0.0331,  ..., -0.0699, -0.0142, -0.0502],
-        [ 0.0255,  0.0521,  0.0109,  ..., -0.0596,  0.0203, -0.0487],
+tensor([[-0.0281, -0.0302, -0.0254,  ...,  0.0288, -0.0636, -0.0221],
+        [-0.0376, -0.0356, -0.0563,  ...,  0.0626,  0.0634, -0.0382],
+        [ 0.0605,  0.0453,  0.0671,  ..., -0.0310,  0.0115,  0.0396],
         ...,
-        [-0.0062, -0.0047,  0.0078,  ...,  0.0113,  0.0478, -0.0045],
-        [ 0.0696,  0.0133,  0.0013,  ..., -0.0024, -0.0138,  0.0530],
-        [-0.0045,  0.0144,  0.0632,  ...,  0.0252, -0.0522, -0.0615]],
+        [-0.0441, -0.0404, -0.0224,  ...,  0.0151, -0.0377,  0.0356],
+        [-0.0603, -0.0667,  0.0255,  ...,  0.0011, -0.0276, -0.0687],
+        [ 0.0685, -0.0702,  0.0454,  ...,  0.0107, -0.0034, -0.0705]],
        requires_grad=True)
 Parameter containing:
-tensor([-0.0511,  0.0412, -0.0244,  0.0113, -0.0342, -0.0404, -0.0041,  0.0698,
-         0.0700, -0.0452], requires_grad=True)
+tensor([ 0.0400, -0.0152, -0.0452, -0.0610, -0.0251,  0.0262,  0.0393,  0.0638,
+        -0.0484, -0.0282], requires_grad=True)
 </pre></div>
 </div>
 <p>This shows the fundamental structure of a PyTorch model: there is an
@@ -564,19 +564,19 @@ matrix. For example:</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Input:
-tensor([[0.5597, 0.2383, 0.0676]])
+tensor([[0.4576, 0.6217, 0.6280]])
 
 
 Weight and Bias parameters:
 Parameter containing:
-tensor([[ 0.4823,  0.1066,  0.5061],
-        [-0.1271,  0.0757, -0.1100]], requires_grad=True)
+tensor([[-0.3901, -0.2603, -0.0718],
+        [ 0.1300, -0.5152, -0.0639]], requires_grad=True)
 Parameter containing:
-tensor([0.4444, 0.0225], requires_grad=True)
+tensor([0.1480, 0.2950], requires_grad=True)
 
 
 Output:
-tensor([[ 0.7739, -0.0381]], grad_fn=&lt;AddmmBackward0&gt;)
+tensor([[-0.2374, -0.0059]], grad_fn=&lt;AddmmBackward0&gt;)
 </pre></div>
 </div>
 <p>If you do the matrix multiplication of <code class="docutils literal notranslate"><span class="pre">x</span></code> by the linear layer’s
@@ -780,14 +780,14 @@ cell (we saw this). For example:</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d" title="torch.nn.MaxPool2d"><span class="n">maxpool_layer</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">my_tensor</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.5179, 0.4312, 0.0166, 0.5529, 0.0736, 0.8812],
-         [0.4408, 0.6913, 0.8723, 0.4753, 0.5385, 0.6828],
-         [0.3275, 0.2302, 0.0271, 0.6003, 0.0058, 0.9568],
-         [0.8485, 0.0732, 0.8017, 0.5120, 0.4015, 0.3793],
-         [0.9140, 0.7599, 0.7802, 0.1542, 0.6468, 0.1525],
-         [0.8271, 0.0755, 0.0828, 0.1331, 0.5791, 0.9611]]])
-tensor([[[0.8723, 0.9568],
-         [0.9140, 0.9611]]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.1075, 0.8458, 0.2064, 0.2115, 0.4757, 0.7017],
+         [0.5787, 0.6120, 0.8897, 0.6460, 0.9258, 0.0106],
+         [0.3456, 0.5596, 0.2682, 0.6103, 0.5850, 0.1491],
+         [0.4740, 0.9452, 0.8606, 0.3554, 0.1294, 0.7324],
+         [0.1381, 0.0502, 0.3383, 0.9849, 0.6162, 0.9353],
+         [0.5510, 0.0093, 0.6280, 0.1895, 0.4688, 0.2901]]])
+tensor([[[0.8897, 0.9258],
+         [0.9452, 0.9849]]])
 </pre></div>
 </div>
 <p>If you look closely at the values above, you’ll see that each of the
@@ -809,17 +809,17 @@ higher learning rates without exploding/vanishing gradients.</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">normed_tensor</span></a><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[ 7.5335, 22.5467, 12.4534, 21.0099],
-         [24.3714, 20.5655, 21.7275, 19.1233],
-         [10.6515, 10.3961, 20.3342, 17.0146],
-         [12.1584, 23.7097, 24.0583, 10.2388]]])
-tensor(17.3683)
-tensor([[[-1.3542,  1.0799, -0.5565,  0.8308],
-         [ 1.5200, -0.4581,  0.1458, -1.2077],
-         [-0.9306, -0.9908,  1.3520,  0.5694],
-         [-0.8437,  0.9668,  1.0215, -1.1446]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[11.6732, 13.6915, 23.5970,  9.9612],
+         [ 7.1166,  9.1142, 14.0546, 22.2738],
+         [18.5726,  7.6300, 16.8308, 16.7998],
+         [17.7574, 21.8620, 16.7222, 14.5340]]])
+tensor(15.1369)
+tensor([[[-0.5784, -0.1966,  1.6772, -0.9022],
+         [-1.0301, -0.6885,  0.1565,  1.5622],
+         [ 0.8422, -1.7077,  0.4363,  0.4291],
+         [ 0.0145,  1.5575, -0.3747, -1.1973]]],
        grad_fn=&lt;NativeBatchNormBackward0&gt;)
-tensor(-2.9802e-07, grad_fn=&lt;MeanBackward0&gt;)
+tensor(-7.8231e-08, grad_fn=&lt;MeanBackward0&gt;)
 </pre></div>
 </div>
 <p>Running the cell above, we’ve added a large scaling factor and offset to
@@ -846,14 +846,14 @@ For example:</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="torch.nn.Dropout"><span class="n">dropout</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">my_tensor</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.9625, 1.1230, 0.0000, 0.4921],
-         [0.6313, 1.5125, 0.2707, 0.7185],
-         [1.1589, 0.4327, 0.0000, 0.0000],
-         [1.0250, 0.0000, 1.5503, 0.9619]]])
-tensor([[[0.9625, 1.1230, 1.6638, 0.4921],
-         [0.6313, 1.5125, 0.2707, 0.7185],
-         [0.0000, 0.4327, 0.0099, 0.0000],
-         [1.0250, 1.5066, 1.5503, 0.9619]]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.0000, 0.0000, 0.5850, 1.4651],
+         [0.0000, 0.0000, 1.0580, 1.1834],
+         [0.0000, 1.6364, 1.0924, 0.0000],
+         [0.0000, 0.3544, 0.2450, 0.0000]]])
+tensor([[[1.3460, 0.0000, 0.5850, 1.4651],
+         [0.0000, 0.9101, 0.0000, 0.0000],
+         [0.8014, 1.6364, 1.0924, 0.0000],
+         [0.0000, 0.3544, 0.0000, 0.0000]]])
 </pre></div>
 </div>
 <p>Above, you can see the effect of dropout on a sample tensor. You can use
@@ -881,7 +881,7 @@ Softmax, that are most useful at the output stage of a model.</p>
 answer. PyTorch contains a variety of loss functions, including common
 MSE (mean squared error = L2 norm), Cross Entropy Loss and Negative
 Likelihood Loss (useful for classifiers), and others.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.162 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.183 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-modelsyt-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/88355d650eb3d5ee6afedaebb57fb9b3/modelsyt_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">modelsyt_tutorial.py</span></code></a></p>
