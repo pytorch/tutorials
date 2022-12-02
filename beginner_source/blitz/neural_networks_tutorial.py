@@ -144,7 +144,7 @@ out.backward(torch.randn(1, 10))
 # `loss functions <https://pytorch.org/docs/nn.html#loss-functions>`_ under the
 # nn package .
 # A simple loss is: ``nn.MSELoss`` which computes the mean-squared error
-# between the input and the target.
+# between the output and the target.
 #
 # For example:
 

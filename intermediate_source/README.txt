@@ -3,7 +3,7 @@ Intermediate tutorials
 
 1. tensorboard_tutorial.py
 	Classifying Names with a Character-Level RNN
-	https://pytorch.org/tutorials/beginner/tensorboard_tutorial.html
+	https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
 
 2. char_rnn_classification_tutorial.py
 	Classifying Names with a Character-Level RNN
@@ -32,3 +32,7 @@ Intermediate tutorials
 8. flask_rest_api_tutorial.py
 	Deploying PyTorch and Building a REST API using Flask
 	https://pytorch.org/tutorials/intermediate/flask_rest_api_tutorial.html
+
+9. nvfuser_intro_tutorial.py
+        Introduction to nvFuser
+	https://pytorch.org/tutorials/intermediate/nvfuser_intro_tutorial.html

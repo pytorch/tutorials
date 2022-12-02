@@ -52,7 +52,7 @@ class PositionalEncoding(nn.Module):
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0, 1)
-        self.register_buffer('pe', pe)
+        self.pe = nn.Parameter(pe, requires_grad=False)
 
     def forward(self, x):
         x = x + self.pe[:x.size(0), :]
@@ -139,8 +139,10 @@ def run_worker(rank, world_size):
 
 
 ######################################################################
-# The training process uses Wikitext-2 dataset from ``torchtext``. The
-# vocab object is built based on the train dataset and is used to numericalize
+# The training process uses Wikitext-2 dataset from ``torchtext``. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
+#
+# The vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
 # function arranges the dataset into columns, trimming off any tokens remaining
 # after the data has been divided into batches of size ``batch_size``.

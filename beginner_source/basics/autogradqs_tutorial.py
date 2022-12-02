@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
-`Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensorqs_tutorial.html>`_ || 
+`Quickstart <quickstart_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
@@ -64,8 +64,8 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
-print('Gradient function for z =',z.grad_fn)
-print('Gradient function for loss =', loss.grad_fn)
+print(f"Gradient function for z = {z.grad_fn}")
+print(f"Gradient function for loss = {loss.grad_fn}")
 
 ######################################################################
 # Computing Gradients
@@ -130,7 +130,7 @@ print(z_det.requires_grad)
 
 ######################################################################
 # There are reasons you might want to disable gradient tracking:
-#   - To mark some parameters in your neural network at **frozen parameters**. This is
+#   - To mark some parameters in your neural network as **frozen parameters**. This is
 #     a very common scenario for
 #     `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
@@ -203,15 +203,15 @@ print(z_det.requires_grad)
 # compute the product:
 #
 
-inp = torch.eye(5, requires_grad=True)
-out = (inp+1).pow(2)
-out.backward(torch.ones_like(inp), retain_graph=True)
-print("First call\n", inp.grad)
-out.backward(torch.ones_like(inp), retain_graph=True)
-print("\nSecond call\n", inp.grad)
+inp = torch.eye(4, 5, requires_grad=True)
+out = (inp+1).pow(2).t()
+out.backward(torch.ones_like(out), retain_graph=True)
+print(f"First call\n{inp.grad}")
+out.backward(torch.ones_like(out), retain_graph=True)
+print(f"\nSecond call\n{inp.grad}")
 inp.grad.zero_()
-out.backward(torch.ones_like(inp), retain_graph=True)
-print("\nCall after zeroing gradients\n", inp.grad)
+out.backward(torch.ones_like(out), retain_graph=True)
+print(f"\nCall after zeroing gradients\n{inp.grad}")
 
 
 ######################################################################
@@ -240,4 +240,3 @@ print("\nCall after zeroing gradients\n", inp.grad)
 # Further Reading
 # ~~~~~~~~~~~~~~~~~
 # - `Autograd Mechanics <https://pytorch.org/docs/stable/notes/autograd.html>`_
-

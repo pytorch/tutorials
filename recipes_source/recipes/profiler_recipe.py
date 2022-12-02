@@ -126,7 +126,7 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 ######################################################################
 # Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
 # for PyTorch compiled with MKL-DNN support).
-# Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time exludes time
+# Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time
 # spent in children operator calls, while total cpu time includes it. You can choose to sort by the self cpu time by passing
 # ``sort_by="self_cpu_time_total"`` into the ``table`` call.
 #

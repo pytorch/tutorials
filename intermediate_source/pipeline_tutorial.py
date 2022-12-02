@@ -122,8 +122,10 @@ class PositionalEncoding(nn.Module):
 
 
 ######################################################################
-# The training process uses Wikitext-2 dataset from ``torchtext``. The
-# vocab object is built based on the train dataset and is used to numericalize
+# The training process uses Wikitext-2 dataset from ``torchtext``. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
+#
+# The vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
 # function arranges the dataset into columns, trimming off any tokens remaining
 # after the data has been divided into batches of size ``batch_size``.
@@ -205,7 +207,7 @@ test_data = batchify(test_data, eval_batch_size)
 # ``N`` is along dimension 1.
 #
 
-bptt = 35
+bptt = 25
 def get_batch(source, i):
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]

@@ -14,9 +14,10 @@ Model Interpretability using Captum
 # attribution algorithms such as \ ``Guided GradCam``\  and
 # \ ``Integrated Gradients``\  in a unified way.
 # 
-# In this recipe you will learn how to use Captum to: \* attribute the
-# predictions of an image classifier to their corresponding image
-# features. \* visualize the attribution results.
+# In this recipe you will learn how to use Captum to: 
+#
+# - Attribute the predictions of an image classifier to their corresponding image features. 
+# - Visualize the attribution results.
 # 
 
 
@@ -141,7 +142,7 @@ vis_signs = ["all", "all"] # "positive", "negative", or "all" to show both
 # negative attribution indicates distractor areas whose absence increases the score
 
 _ = viz.visualize_image_attr_multiple(attribution_dog,
-                                      center_crop(img),
+                                      np.array(center_crop(img)),
                                       vis_types,
                                       vis_signs,
                                       ["attribution for dog", "image"],
@@ -152,7 +153,7 @@ _ = viz.visualize_image_attr_multiple(attribution_dog,
 attribution_cat = np.transpose(attribution_cat.squeeze().cpu().detach().numpy(), (1,2,0))
 
 _ = viz.visualize_image_attr_multiple(attribution_cat,
-                                      center_crop(img),
+                                      np.array(center_crop(img)),
                                       ["heat_map", "original_image"],  
                                       ["all", "all"], # positive/negative attribution or all
                                       ["attribution for cat", "image"],

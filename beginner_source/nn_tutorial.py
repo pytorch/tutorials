@@ -134,8 +134,8 @@ def log_softmax(x):
 def model(xb):
     return log_softmax(xb @ weights + bias)
 
-###############################################################################
-# In the above, the ``@`` stands for the dot product operation. We will call
+######################################################################################
+# In the above, the ``@`` stands for the matrix multiplication operation. We will call
 # our function on one batch of data (in this case, 64 images).  This is
 # one *forward pass*.  Note that our predictions won't be any better than
 # random at this stage, since we start with random weights.
@@ -753,8 +753,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # Our CNN is fairly concise, but it only works with MNIST, because:
 #  - It assumes the input is a 28\*28 long vector
-#  - It assumes that the final CNN grid size is 4\*4 (since that's the average
-# pooling kernel size we used)
+#  - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
 # single channel image. First, we can remove the initial Lambda layer by
@@ -851,7 +850,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # We now have a general data pipeline and training loop which you can use for
 # training many types of models using Pytorch. To see how simple training a model
-# can now be, take a look at the `mnist_sample` sample notebook.
+# can now be, take a look at the `mnist_sample notebook <https://github.com/fastai/fastai_dev/blob/master/dev_nb/mnist_sample.ipynb>`__.
 #
 # Of course, there are many things you'll want to add, such as data augmentation,
 # hyperparameter tuning, monitoring training, transfer learning, and so forth.

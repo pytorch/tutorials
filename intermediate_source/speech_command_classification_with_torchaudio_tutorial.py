@@ -1,6 +1,6 @@
 """
-Speech Command Recognition with torchaudio
-******************************************
+Speech Command Classification with torchaudio
+*********************************************
 
 This tutorial will show you how to correctly format an audio dataset and
 then train/test an audio classifier network on the dataset.
@@ -79,7 +79,7 @@ class SubsetSC(SPEECHCOMMANDS):
         def load_list(filename):
             filepath = os.path.join(self._path, filename)
             with open(filepath) as fileobj:
-                return [os.path.join(self._path, line.strip()) for line in fileobj]
+                return [os.path.normpath(os.path.join(self._path, line.strip())) for line in fileobj]
 
         if subset == "validation":
             self._walker = load_list("validation_list.txt")

@@ -319,7 +319,7 @@ def weights_init(m):
 # .. figure:: /_static/img/dcgan_generator.png
 #    :alt: dcgan_generator
 #
-# Notice, the how the inputs we set in the input section (*nz*, *ngf*, and
+# Notice, how the inputs we set in the input section (*nz*, *ngf*, and
 # *nc*) influence the generator architecture in code. *nz* is the length
 # of the z input vector, *ngf* relates to the size of the feature maps
 # that are propagated through the generator, and *nc* is the number of
@@ -374,7 +374,7 @@ if (device.type == 'cuda') and (ngpu > 1):
     netG = nn.DataParallel(netG, list(range(ngpu)))
 
 # Apply the weights_init function to randomly initialize all weights
-#  to mean=0, stdev=0.2.
+#  to mean=0, stdev=0.02.
 netG.apply(weights_init)
 
 # Print the model
@@ -733,6 +733,6 @@ plt.show()
 # -  Check out some other cool GAN projects
 #    `here <https://github.com/nashory/gans-awesome-applications>`__
 # -  Create GANs that generate
-#    `music <https://deepmind.com/blog/wavenet-generative-model-raw-audio/>`__
+#    `music <https://www.deepmind.com/blog/wavenet-a-generative-model-for-raw-audio/>`__
 # 
 

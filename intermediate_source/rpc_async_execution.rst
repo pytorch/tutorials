@@ -2,6 +2,8 @@ Implementing Batch RPC Processing Using Asynchronous Executions
 ===============================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/rpc_async_execution.rst>`__.
 
 Prerequisites:
 
@@ -14,7 +16,7 @@ This tutorial demonstrates how to build batch-processing RPC applications with
 the `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator, which helps to speed up training by reducing the number of blocked
 RPC threads and consolidating CUDA operations on the callee. This shares the
-same idea as `Batch Inference with TorchServer <https://pytorch.org/serve/batch_inference_with_ts.html>`__.
+same idea as `Batch Inference with TorchServe <https://pytorch.org/serve/batch_inference_with_ts.html>`__.
 
 .. note:: This tutorial requires PyTorch v1.6.0 or above.
 
@@ -199,7 +201,7 @@ Batch-Processing CartPole Solver
 
 This section uses CartPole-v1 from `OpenAI Gym <https://gym.openai.com/>`__ as
 an example to show the performance impact of batch processing RPC. Please note
-that the goal is to demonstrate the usage of
+that since the goal is to demonstrate the usage of
 `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 instead of building the best CartPole solver or solving most different RL
 problems, we use very simple policies and reward calculation strategies and
