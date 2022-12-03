@@ -41,8 +41,10 @@ torch.compile Tutorial
 # ------------
 #
 # ``torch.compile`` is included in the latest PyTorch nightlies.
-# Running TorchInductor on GPU requires Triton, which is included with the nightly
-# binary. If Triton is still missing, try installing ``torchtriton`` via pip.
+# Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
+# binary. If Triton is still missing, try installing ``torchtriton`` via pip 
+# (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
+# for CUDA 11.7).
 #
 # Arbitrary Python functions can be optimized by passing the callable to
 # ``torch.compile``. We can then call the returned optimized
