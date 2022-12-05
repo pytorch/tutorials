@@ -909,11 +909,7 @@ Additional Resources
    intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
-<<<<<<< HEAD
    intermediate/torch_compile_tutorial
-=======
-   intermediate/dynamo_tutorial
->>>>>>> 885d83d1922d298a5b19676558f55ddb181108ed
 
 .. toctree::
    :maxdepth: 2
