@@ -378,8 +378,8 @@ def plot_durations():
 
     plt.pause(0.001)  # pause a bit so that plots are updated
     if is_ipython:
-        display.clear_output(wait=True)
         display.display(plt.gcf())
+        display.clear_output(wait=True)
 
 
 ######################################################################
