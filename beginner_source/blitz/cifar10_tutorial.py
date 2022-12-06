@@ -63,7 +63,7 @@ Using ``torchvision``, it’s extremely easy to load CIFAR10.
 
 if __name__ == '__main__': 
 
-    import torchg
+    import torch
     import torchvision
     import torchvision.transforms as transforms
 
