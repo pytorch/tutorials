@@ -266,7 +266,7 @@ for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
                                                tensor_transform) # Add BOS/EOS and create tensor
 
 
-# function to collate data samples into batch tesors
+# function to collate data samples into batch tensors
 def collate_fn(batch):
     src_batch, tgt_batch = [], []
     for src_sample, tgt_sample in batch:
