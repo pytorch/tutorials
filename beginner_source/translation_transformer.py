@@ -89,7 +89,7 @@ for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
 # encodings to provide position information of input tokens to the model. The second part is the
 # actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model.
 # Finally, the output of the Transformer model is passed through linear layer
-# that give's un-normalized probabilities for each token in the target language.
+# that gives un-normalized probabilities for each token in the target language.
 #
 
 
@@ -179,7 +179,7 @@ class Seq2SeqTransformer(nn.Module):
 
 
 ######################################################################
-# During training, we need a subsequent word mask that will prevent the model to from looking into
+# During training, we need a subsequent word mask that will prevent the model from looking into
 # the future words when making predictions. We will also need masks to hide
 # source and target padding tokens. Below, let's define a function that will take care of both.
 #
