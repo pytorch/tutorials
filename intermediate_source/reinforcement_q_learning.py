@@ -378,8 +378,8 @@ def plot_durations():
 
     plt.pause(0.001)  # pause a bit so that plots are updated
     if is_ipython:
-        display.display(plt.gcf())
         display.clear_output(wait=True)
+        display.display(plt.gcf())
 
 
 ######################################################################
@@ -500,7 +500,12 @@ for i_episode in range(num_episodes):
 print('Complete')
 env.render()
 env.close()
+durations_t = torch.tensor(episode_durations, dtype=torch.float)
+plt.title('Result')
+plt.xlabel('Episode')
+plt.ylabel('Duration')
 plt.ioff()
+plt.plot(durations_t.numpy())
 plt.show()
 
 ######################################################################
