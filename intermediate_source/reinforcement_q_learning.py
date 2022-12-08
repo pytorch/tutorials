@@ -48,7 +48,7 @@ Install by using `pip`. If you are running this in Google colab, run:
 
    %%bash
    pip3 install gym[classic_control]
-   
+
 We'll also use the following from PyTorch:
 
 -  neural networks (``torch.nn``)
