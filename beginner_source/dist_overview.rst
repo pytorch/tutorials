@@ -126,7 +126,7 @@ DDP materials are listed below:
    described in the
    `Single-Machine Model Parallel Best Practices <../intermediate/model_parallel_tutorial.html>`__
    tutorial.
-3. The `Launching and configuring distributed data parallel applications <https://github.com/pytorch/examples/blob/stable/distributed/ddp/README.md>`__
+3. The `Launching and configuring distributed data parallel applications <https://github.com/pytorch/examples/blob/main/distributed/ddp/README.md>`__
    document shows how to use the DDP launching script.
 4. The `Shard Optimizer States With ZeroRedundancyOptimizer <../recipes/zero_redundancy_optimizer.html>`__
    recipe demonstrates how `ZeroRedundancyOptimizer <https://pytorch.org/docs/stable/distributed.optim.html>`__
