@@ -184,6 +184,9 @@ much as possible, and so we chose ``"reduce-overhead"``. For your own models,
 you may need to experiment with different modes to maximize speedup. You can
 read more about modes `here <https://pytorch.org/get-started/pytorch-2.0/#user-experience>`__.
 
+We also note that for general PyTorch benchmarking, we recommend using ``torch.utils.benchmark``.
+We wrote our own timing functions in this tutorial to show ``torch.compile``'s compilation latency.
+
 Now, let's consider comparing training.
 
 .. code-block:: python
