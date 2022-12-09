@@ -300,6 +300,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -469,23 +470,22 @@ the num_worker of torch.utils.data.DataLoader() to 0.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 458752/170498071 [00:00&lt;00:42, 3983721.29it/s]
-  4%|4         | 7176192/170498071 [00:00&lt;00:04, 38956516.65it/s]
- 11%|#1        | 18907136/170498071 [00:00&lt;00:02, 73477035.27it/s]
- 18%|#7        | 30638080/170498071 [00:00&lt;00:01, 90352258.13it/s]
- 25%|##4       | 42369024/170498071 [00:00&lt;00:01, 99854040.47it/s]
- 32%|###1      | 54067200/170498071 [00:00&lt;00:01, 105564958.48it/s]
- 38%|###8      | 65142784/170498071 [00:00&lt;00:00, 107248046.65it/s]
- 45%|####4     | 76120064/170498071 [00:00&lt;00:00, 108010885.22it/s]
- 52%|#####1    | 87851008/170498071 [00:00&lt;00:00, 110884668.32it/s]
- 58%|#####8    | 99581952/170498071 [00:01&lt;00:00, 112774792.56it/s]
- 65%|######5   | 111280128/170498071 [00:01&lt;00:00, 113987097.21it/s]
- 72%|#######2  | 123043840/170498071 [00:01&lt;00:00, 115029773.93it/s]
- 79%|#######9  | 134709248/170498071 [00:01&lt;00:00, 115453377.83it/s]
- 86%|########5 | 146276352/170498071 [00:01&lt;00:00, 115367346.74it/s]
- 93%|#########2| 157843456/170498071 [00:01&lt;00:00, 111010702.38it/s]
- 99%|#########9| 168984576/170498071 [00:01&lt;00:00, 106925448.78it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 102625704.04it/s]
+  0%|          | 458752/170498071 [00:00&lt;00:41, 4110437.99it/s]
+  4%|4         | 7372800/170498071 [00:00&lt;00:04, 40580284.26it/s]
+ 11%|#1        | 19070976/170498071 [00:00&lt;00:02, 74522750.17it/s]
+ 18%|#8        | 30703616/170498071 [00:00&lt;00:01, 90717053.38it/s]
+ 25%|##4       | 42434560/170498071 [00:00&lt;00:01, 100138834.58it/s]
+ 32%|###1      | 54034432/170498071 [00:00&lt;00:01, 105433102.73it/s]
+ 39%|###8      | 65765376/170498071 [00:00&lt;00:00, 109238058.37it/s]
+ 45%|####5     | 77496320/170498071 [00:00&lt;00:00, 111692087.04it/s]
+ 52%|#####2    | 89128960/170498071 [00:00&lt;00:00, 113105986.04it/s]
+ 59%|#####9    | 100827136/170498071 [00:01&lt;00:00, 114270373.95it/s]
+ 66%|######5   | 112459776/170498071 [00:01&lt;00:00, 114842224.29it/s]
+ 73%|#######2  | 124157952/170498071 [00:01&lt;00:00, 115414803.53it/s]
+ 80%|#######9  | 135856128/170498071 [00:01&lt;00:00, 115765197.64it/s]
+ 87%|########6 | 147488768/170498071 [00:01&lt;00:00, 115892269.74it/s]
+ 93%|#########3| 159186944/170498071 [00:01&lt;00:00, 116126533.66it/s]
+100%|##########| 170498071/170498071 [00:01&lt;00:00, 105762513.06it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -514,7 +514,7 @@ Files already downloaded and verified
 <span class="nb">print</span><span class="p">(</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">classes</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">labels</span></a><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="si">:</span><span class="s1">5s</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)))</span>
 </pre></div>
 </div>
-<img alt="cifar10 tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_cifar10_tutorial_001.png" srcset="../../_images/sphx_glr_cifar10_tutorial_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>horse horse cat   dog
+<img alt="cifar10 tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_cifar10_tutorial_001.png" srcset="../../_images/sphx_glr_cifar10_tutorial_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>deer  deer  bird  car
 </pre></div>
 </div>
 </div>
@@ -590,18 +590,18 @@ network and optimize.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Finished Training'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[1,  2000] loss: 2.223
-[1,  4000] loss: 1.840
-[1,  6000] loss: 1.651
-[1,  8000] loss: 1.541
-[1, 10000] loss: 1.499
-[1, 12000] loss: 1.448
-[2,  2000] loss: 1.383
-[2,  4000] loss: 1.345
-[2,  6000] loss: 1.316
-[2,  8000] loss: 1.288
-[2, 10000] loss: 1.264
-[2, 12000] loss: 1.256
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[1,  2000] loss: 2.226
+[1,  4000] loss: 1.859
+[1,  6000] loss: 1.668
+[1,  8000] loss: 1.576
+[1, 10000] loss: 1.544
+[1, 12000] loss: 1.482
+[2,  2000] loss: 1.414
+[2,  4000] loss: 1.395
+[2,  6000] loss: 1.375
+[2,  8000] loss: 1.355
+[2, 10000] loss: 1.316
+[2, 12000] loss: 1.285
 Finished Training
 </pre></div>
 </div>
@@ -655,7 +655,7 @@ So, let’s get the index of the highest energy:</p>
                               <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted:  ship  ship  ship  ship
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted:  cat   plane plane plane
 </pre></div>
 </div>
 <p>The results seem pretty good.</p>
@@ -676,7 +676,7 @@ So, let’s get the index of the highest energy:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Accuracy of the network on the 10000 test images: </span><span class="si">{</span><span class="mi">100</span> <span class="o">*</span> <span class="n">correct</span> <span class="o">//</span> <span class="n">total</span><span class="si">}</span><span class="s1"> %'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy of the network on the 10000 test images: 56 %
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy of the network on the 10000 test images: 51 %
 </pre></div>
 </div>
 <p>That looks way better than chance, which is 10% accuracy (randomly picking
@@ -707,16 +707,16 @@ not perform well:</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Accuracy for class: </span><span class="si">{</span><span class="n">classname</span><span class="si">:</span><span class="s1">5s</span><span class="si">}</span><span class="s1"> is </span><span class="si">{</span><span class="n">accuracy</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> %'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy for class: plane is 50.8 %
-Accuracy for class: car   is 72.2 %
-Accuracy for class: bird  is 41.6 %
-Accuracy for class: cat   is 49.9 %
-Accuracy for class: deer  is 28.8 %
-Accuracy for class: dog   is 53.3 %
-Accuracy for class: frog  is 58.7 %
-Accuracy for class: horse is 63.1 %
-Accuracy for class: ship  is 72.2 %
-Accuracy for class: truck is 70.0 %
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy for class: plane is 80.7 %
+Accuracy for class: car   is 71.8 %
+Accuracy for class: bird  is 32.3 %
+Accuracy for class: cat   is 41.3 %
+Accuracy for class: deer  is 55.4 %
+Accuracy for class: dog   is 26.3 %
+Accuracy for class: frog  is 63.9 %
+Accuracy for class: horse is 54.9 %
+Accuracy for class: ship  is 40.7 %
+Accuracy for class: truck is 50.1 %
 </pre></div>
 </div>
 <p>Okay, so what next?</p>
@@ -781,7 +781,7 @@ please check out <a class="reference internal" href="data_parallel_tutorial.html
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">dataiter</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  48.989 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  51.592 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-cifar10-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c51fcdf96d93a8e4b3f2943cb36bab19/cifar10_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></p>
