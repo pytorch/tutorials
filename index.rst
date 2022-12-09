@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Survey: Let us know how the PyTorch Tutorials are working for you! <https://docs.google.com/forms/d/e/1FAIpQLSfM-n7fF-K8AqkOcdSlzS_0g-xd6ith7U_W36xG-C_6Q2B6Mg/viewform>`__
 * `PyTorch Distributed Series <https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=whats_new_tutorials&utm_medium=ddp_series_intro>`__
 * `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
@@ -233,7 +234,7 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
-   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials.
+   :card_description: After using character-level RNN to classify names, learn how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
    :tags: Text
@@ -516,6 +517,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/ax_logo.png
    :link: intermediate/ax_multiobjective_nas_tutorial.html
    :tags: Model-Optimization,Best-Practice,Ax,TorchX
+
+.. customcarditem::
+   :header: torch.compile Tutorial
+   :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
 
 .. Parallel-and-Distributed-Training
 
@@ -901,6 +909,7 @@ Additional Resources
    intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
+   intermediate/torch_compile_tutorial
 
 .. toctree::
    :maxdepth: 2

@@ -51,8 +51,8 @@ Learn DDP
         :link: https://pytorch.org/tutorials/advanced/generic_join.html?utm_source=distr_landing&utm_medium=generic_join
         :link-type: url
 
-        This tutorial provides a short and gentle intro to the PyTorch
-        DistributedData Parallel.
+        This tutorial describes the Join context manager and 
+        demonstrates it's use with DistributedData Parallel.
         +++
         :octicon:`code;1em` Code
 
