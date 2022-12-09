@@ -3,8 +3,8 @@ Language Translation with nn.Transformer and torchtext
 ======================================================
 
 This tutorial shows:
-    - How to train a translation model from scratch using Transformer. 
-    - Use tochtext library to access  `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>`__ dataset to train a German to English translation model.
+    - How to train a translation model from scratch using Transformer.
+    - Use torchtext library to access  `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>`__ dataset to train a German to English translation model.
 """
 
 
@@ -14,12 +14,12 @@ This tutorial shows:
 #
 # `torchtext library <https://pytorch.org/text/stable/>`__ has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
-# model. In this example, we show how to use torchtext's inbuilt datasets, 
+# model. In this example, we show how to use torchtext's inbuilt datasets,
 # tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor. We will use
 # `Multi30k dataset from torchtext library <https://pytorch.org/text/stable/datasets.html#multi30k>`__
-# that yields a pair of source-target raw sentences. 
+# that yields a pair of source-target raw sentences.
 #
-# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 #
 
 from torchtext.data.utils import get_tokenizer
@@ -61,18 +61,18 @@ def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
 # Make sure the tokens are in order of their indices to properly insert them in vocab
 special_symbols = ['<unk>', '<pad>', '<bos>', '<eos>']
- 
+
 for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
-    # Training data Iterator 
+    # Training data Iterator
     train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-    # Create torchtext's Vocab object 
+    # Create torchtext's Vocab object
     vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                     min_freq=1,
                                                     specials=special_symbols,
                                                     special_first=True)
 
-# Set UNK_IDX as the default index. This index is returned when the token is not found. 
-# If not set, it throws RuntimeError when the queried token is not found in the Vocabulary. 
+# Set UNK_IDX as the default index. This index is returned when the token is not found.
+# If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.
 for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
   vocab_transform[ln].set_default_index(UNK_IDX)
 
@@ -82,14 +82,14 @@ for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
 #
 # Transformer is a Seq2Seq model introduced in `“Attention is all you
 # need” <https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`__
-# paper for solving machine translation tasks. 
+# paper for solving machine translation tasks.
 # Below, we will create a Seq2Seq network that uses Transformer. The network
 # consists of three parts. First part is the embedding layer. This layer converts tensor of input indices
 # into corresponding tensor of input embeddings. These embedding are further augmented with positional
-# encodings to provide position information of input tokens to the model. The second part is the 
-# actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model. 
-# Finally, the output of Transformer model is passed through linear layer
-# that give un-normalized probabilities for each token in the target language. 
+# encodings to provide position information of input tokens to the model. The second part is the
+# actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model.
+# Finally, the output of the Transformer model is passed through linear layer
+# that gives un-normalized probabilities for each token in the target language.
 #
 
 
@@ -130,7 +130,7 @@ class TokenEmbedding(nn.Module):
     def forward(self, tokens: Tensor):
         return self.embedding(tokens.long()) * math.sqrt(self.emb_size)
 
-# Seq2Seq Network 
+# Seq2Seq Network
 class Seq2SeqTransformer(nn.Module):
     def __init__(self,
                  num_encoder_layers: int,
@@ -164,7 +164,7 @@ class Seq2SeqTransformer(nn.Module):
                 memory_key_padding_mask: Tensor):
         src_emb = self.positional_encoding(self.src_tok_emb(src))
         tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
-        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None, 
+        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None,
                                 src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
         return self.generator(outs)
 
@@ -179,9 +179,9 @@ class Seq2SeqTransformer(nn.Module):
 
 
 ######################################################################
-# During training, we need a subsequent word mask that will prevent model to look into
+# During training, we need a subsequent word mask that will prevent the model from looking into
 # the future words when making predictions. We will also need masks to hide
-# source and target padding tokens. Below, let's define a function that will take care of both. 
+# source and target padding tokens. Below, let's define a function that will take care of both.
 #
 
 
@@ -204,7 +204,7 @@ def create_mask(src, tgt):
 
 
 ######################################################################
-# Let's now define the parameters of our model and instantiate the same. Below, we also 
+# Let's now define the parameters of our model and instantiate the same. Below, we also
 # define our loss function which is the cross-entropy loss and the optmizer used for training.
 #
 torch.manual_seed(0)
@@ -218,7 +218,7 @@ BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
 
-transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, 
+transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE,
                                  NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
 
 for p in transformer.parameters():
@@ -234,11 +234,11 @@ optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.
 ######################################################################
 # Collation
 # ---------
-#   
-# As seen in the ``Data Sourcing and Processing`` section, our data iterator yields a pair of raw strings. 
-# We need to convert these string pairs into the batched tensors that can be processed by our ``Seq2Seq`` network 
-# defined previously. Below we define our collate function that convert batch of raw strings into batch tensors that
-# can be fed directly into our model.   
+#
+# As seen in the ``Data Sourcing and Processing`` section, our data iterator yields a pair of raw strings.
+# We need to convert these string pairs into the batched tensors that can be processed by our ``Seq2Seq`` network
+# defined previously. Below we define our collate function that converts a batch of raw strings into batch tensors that
+# can be fed directly into our model.
 #
 
 
@@ -254,8 +254,8 @@ def sequential_transforms(*transforms):
 
 # function to add BOS/EOS and create tensor for input sequence indices
 def tensor_transform(token_ids: List[int]):
-    return torch.cat((torch.tensor([BOS_IDX]), 
-                      torch.tensor(token_ids), 
+    return torch.cat((torch.tensor([BOS_IDX]),
+                      torch.tensor(token_ids),
                       torch.tensor([EOS_IDX])))
 
 # src and tgt language text transforms to convert raw strings into tensors indices
@@ -276,9 +276,9 @@ def collate_fn(batch):
     src_batch = pad_sequence(src_batch, padding_value=PAD_IDX)
     tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_IDX)
     return src_batch, tgt_batch
-    
+
 ######################################################################
-# Let's define training and evaluation loop that will be called for each 
+# Let's define training and evaluation loop that will be called for each
 # epoch.
 #
 
@@ -289,7 +289,7 @@ def train_epoch(model, optimizer):
     losses = 0
     train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
     train_dataloader = DataLoader(train_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
-    
+
     for src, tgt in train_dataloader:
         src = src.to(DEVICE)
         tgt = tgt.to(DEVICE)
@@ -328,7 +328,7 @@ def evaluate(model):
         src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(src, tgt_input)
 
         logits = model(src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask)
-        
+
         tgt_out = tgt[1:, :]
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         losses += loss.item()
@@ -350,7 +350,7 @@ for epoch in range(1, NUM_EPOCHS+1):
     print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
 
-# function to generate output sequence using greedy algorithm 
+# function to generate output sequence using greedy algorithm
 def greedy_decode(model, src, src_mask, max_len, start_symbol):
     src = src.to(DEVICE)
     src_mask = src_mask.to(DEVICE)
