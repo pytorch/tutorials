@@ -315,11 +315,12 @@ def plot_durations(show_result=False):
         plt.plot(means.numpy())
 
     plt.pause(0.001)  # pause a bit so that plots are updated
-    if is_ipython and not show_result:
-        display.display(plt.gcf())
-        display.clear_output(wait=True)
-    else:
-        display.display(plt.gcf())
+    if is_ipython:
+        if not show_result:
+            display.display(plt.gcf())
+            display.clear_output(wait=True)
+        else:
+            display.display(plt.gcf())
 
 
 ######################################################################
