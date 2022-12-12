@@ -3,16 +3,23 @@
 Reinforcement Learning (DQN) Tutorial
 =====================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
+
+
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
 on the CartPole-v1 task from the `OpenAI Gym <https://www.gymlibrary.dev/>`__.
+
 **Task**
+
 The agent has to decide between two actions - moving the cart left or
 right - so that the pole attached to it stays upright. You can find an
 official leaderboard with various algorithms and visualizations at the
 `Gym website <https://www.gymlibrary.dev/environments/classic_control/cart_pole>`__.
+
 .. figure:: /_static/img/cartpole.gif
    :alt: cartpole
+
    cartpole
+
 As the agent observes the current state of the environment and chooses
 an action, the environment *transitions* to a new state, and also
 returns a reward that indicates the consequences of the action. In this
@@ -20,6 +27,7 @@ task, rewards are +1 for every incremental timestep and the environment
 terminates if the pole falls over too far or the cart moves more then 2.4
 units away from center. This means better performing scenarios will run
 for longer duration, accumulating larger return.
+
 The CartPole task is designed so that the inputs to the agent are 4 real
 values representing the environment state (position, velocity, etc.).
 We take these 4 inputs without any scaling and pass them through a 
@@ -27,17 +35,26 @@ small fully-connected network with 2 outputs, one for each action.
 The network is trained to predict the expected value for each action, 
 given the input state. The action with the highest expected value is 
 then chosen.
+
+
 **Packages**
+
+
 First, let's import needed packages. Firstly, we need
 `gym <https://github.com/openai/gym>`__ for the environment
 Install by using `pip`. If you are running this in Google colab, run:
+
 .. code-block:: bash
+
    %%bash
    pip3 install gym[classic_control]
+
 We'll also use the following from PyTorch:
+
 -  neural networks (``torch.nn``)
 -  optimization (``torch.optim``)
 -  automatic differentiation (``torch.autograd``)
+
 """
 
 import gym
