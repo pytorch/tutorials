@@ -297,11 +297,14 @@ def select_action(state):
 episode_durations = []
 
 
-def plot_durations():
+def plot_durations(show_result=False):
     plt.figure(1)
-    plt.clf()
     durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    plt.title('Training...')
+    if show_result:
+        plt.title('Result')
+    else:
+        plt.clf()
+        plt.title('Training...')
     plt.xlabel('Episode')
     plt.ylabel('Duration')
     plt.plot(durations_t.numpy())
@@ -312,9 +315,11 @@ def plot_durations():
         plt.plot(means.numpy())
 
     plt.pause(0.001)  # pause a bit so that plots are updated
-    if is_ipython:
+    if is_ipython and not show_result:
         display.display(plt.gcf())
         display.clear_output(wait=True)
+    else:
+        display.display(plt.gcf())
 
 
 ######################################################################
@@ -443,11 +448,7 @@ for i_episode in range(num_episodes):
             break
 
 print('Complete')
-durations_t = torch.tensor(episode_durations, dtype=torch.float)
-plt.title('Result')
-plt.xlabel('Episode')
-plt.ylabel('Duration')
-plt.plot(durations_t.numpy())
+plot_durations(show_result=True)
 plt.ioff()
 plt.show()
 
