@@ -204,6 +204,7 @@ html_theme_options = {
     'pytorch_project': 'tutorials',
     'collapse_navigation': False,
     'display_version': True,
+    'navigation_with_keys': True,
     'logo_only': False,
     'analytics_id': 'UA-117752657-2',
 }
