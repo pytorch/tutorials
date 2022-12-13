@@ -95,11 +95,13 @@ required data files.
 
 # Python packages used by your tutorial
 
-We recommend that you use only mature, well-supported packages in your
-tutorial. Packages that are obscure or not well-maintained may break as
-a result of, for example, updates to Python or PyTorch or other
-packages. If your tutorial fails to build in our Continuous Integration
-(CI) system, we might contact you in order to resolve the issue.
+If your tutorial has dependencies that are not already defined in
+`requirements.txt`, you should add them to that file. We recommend that
+you use only mature, well-supported packages in your tutorial. Packages
+that are obscure or not well-maintained may break as a result of, for
+example, updates to Python or PyTorch or other packages. If your
+tutorial fails to build in our Continuous Integration (CI) system, we
+might contact you in order to resolve the issue.
 
 
 # Deprecation of tutorials 
@@ -120,7 +122,7 @@ tutorial uses--has a **security or privacy** issue, we will immediately
 take the tutorial off the site.
 
 
-# Guidance for authoring tutorials and recipes #
+# Guidance for authoring tutorials and recipes
 
 In this section, we describe the process for creating tutorials and
 recipes for Pytorch.
@@ -326,7 +328,9 @@ example](https://github.com/pytorch/tutorials/blob/master/_static/img/thumbnails
 
 The following command builds an HTML version of the tutorial website.
 
+    ```
     make html-noplot
+    ```
 
 This command does not run your tutorial code. To build the tutorial in a
 way that executes the code, use `make docs`. However, unless you have a
