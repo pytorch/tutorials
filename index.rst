@@ -270,6 +270,13 @@ What's new in PyTorch tutorials?
    :tags: Reinforcement-Learning
 
 .. customcarditem::
+   :header: Reinforcement Learning (PPO) with TorchRL
+   :card_description: Learn how to use PyTorch and TorchRL to train a Proximal Policy Optimization agent on the cheetah-run task from dm-control.
+   :image: _static/img/cheetah.gif
+   :link: intermediate/reinforcement_ppo.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
    :header: Train a Mario-playing RL Agent
    :card_description: Use PyTorch to train a Double Q-learning agent to play Mario.
    :image: _static/img/mario.gif
@@ -839,6 +846,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
 
 .. toctree::
