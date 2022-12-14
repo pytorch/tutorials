@@ -7,7 +7,7 @@ Reinforcement Learning (PPO) Tutorial
 .. code-block:: bash
 
    %%bash
-   pip3 install git+https://github.com/pytorch/rl.git
+   pip3 install torchrl
    pip3 install dm_control
    pip3 install tqdm
 
@@ -32,6 +32,7 @@ The clipping will put a pessimistic bound on our loss.
 The precise formula of the loss is:
 
 .. math::
+
   L(s,a,\theta_k,\theta) = \min\left(
 \frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
 g(\epsilon, A^{\pi_{\theta_k}}(s,a))
