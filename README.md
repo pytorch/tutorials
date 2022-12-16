@@ -14,7 +14,7 @@ We use sphinx-gallery's [notebook styled examples](https://sphinx-gallery.github
 Here is how you can a new tutorial (for a detailed description, see [CONTRIBUTING.md](./CONTRIBUTING.md)):
 
 1. Create a Python file. If you want it executed while inserted into documentation, save the file with the suffix `tutorial` so that the file name is `your_tutorial.py`.
-2. Put it in one of the beginner_source, intermediate_source, advanced_source directory based on the level of difficulty. If it is a recipe, add to recipes_source.
+2. Put it in one of the `beginner_source`, `intermediate_source`, `advanced_source` directory based on the level of difficulty. If it is a recipe, add to `recipes_source`. For tutorials demonstrating unstable prototype features, add to the `prototype_source`.
 2. For Tutorials (except if it is a prototype feature), include it in the `toctree` directive and create a `customcarditem` in [index.rst](./index.rst).
 3. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/master/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/master/recipes_source/recipes_index.rst)
 
@@ -39,6 +39,7 @@ You can build a single tutorial by using the `GALLERY_PATTERN` environment varia
 
 ```
 GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
+```
 or
 
 ```
