@@ -118,7 +118,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
         # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
         set +x
-        if [[ "$CIRCLE_BRANCH" == master ]]; then
+        if [[ "$CIRCLE_BRANCH" == master || "$CIRCLE_BRANCH" == main ]]; then
           if [ -z "${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
           if [ -z "${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
           if [ -z "${GITHUB_PYTORCHBOT_USERNAME}" ]; then exit 1; fi
@@ -271,14 +271,6 @@ jobs:
   pytorch_tutorial_trunk_build_worker_9:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_windows_master_build_worker_0:
-    <<: *pytorch_windows_build_worker
-  pytorch_tutorial_windows_master_build_worker_1:
-    <<: *pytorch_windows_build_worker
-  pytorch_tutorial_windows_master_build_worker_2:
-    <<: *pytorch_windows_build_worker
-  pytorch_tutorial_windows_master_build_worker_3:
-    <<: *pytorch_windows_build_worker
   pytorch_tutorial_windows_pr_build_worker_0:
     <<: *pytorch_windows_build_worker
   pytorch_tutorial_windows_pr_build_worker_1:
@@ -286,6 +278,14 @@ jobs:
   pytorch_tutorial_windows_pr_build_worker_2:
     <<: *pytorch_windows_build_worker
   pytorch_tutorial_windows_pr_build_worker_3:
+    <<: *pytorch_windows_build_worker
+  pytorch_tutorial_windows_trunk_build_worker_0:
+    <<: *pytorch_windows_build_worker
+  pytorch_tutorial_windows_trunk_build_worker_1:
+    <<: *pytorch_windows_build_worker
+  pytorch_tutorial_windows_trunk_build_worker_2:
+    <<: *pytorch_windows_build_worker
+  pytorch_tutorial_windows_trunk_build_worker_3:
     <<: *pytorch_windows_build_worker
 
 workflows:
@@ -439,7 +439,7 @@ workflows:
           - pytorch_tutorial_pr_build_worker_17
           - pytorch_tutorial_pr_build_worker_18
           - pytorch_tutorial_pr_build_worker_19
-      # Build jobs that only run on master
+      # Build jobs that only run on trunk
       - pytorch_tutorial_trunk_build_worker_0:
           context: org-member
           filters:

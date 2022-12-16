@@ -65,7 +65,7 @@ def windows_jobs(indentation=2, num_workers=4):
         jobs[f"pytorch_tutorial_windows_pr_build_worker_{i}"] = {
             "<<": "*pytorch_windows_build_worker"
         }
-        jobs[f"pytorch_tutorial_windows_master_build_worker_{i}"] = {
+        jobs[f"pytorch_tutorial_windows_trunk_build_worker_{i}"] = {
             "<<": "*pytorch_windows_build_worker"
         }
     return indent(indentation, jobs).replace("'", "")
