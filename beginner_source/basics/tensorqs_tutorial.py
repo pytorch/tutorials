@@ -145,10 +145,11 @@ print(t1)
 # **Arithmetic operations**
 
 # This computes the matrix multiplication between two tensors. y1, y2, y3 will have the same value
+# ``tensor.T`` returns the transpose of a tensor
 y1 = tensor @ tensor.T
 y2 = tensor.matmul(tensor.T)
 
-y3 = torch.rand_like(tensor)
+y3 = torch.rand_like(y1)
 torch.matmul(tensor, tensor.T, out=y3)
 
 

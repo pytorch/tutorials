@@ -37,8 +37,8 @@ from torchvision import datasets, transforms
 # `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we
 # continue to use the CPU.
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(f'Using {device} device')
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
 
 ##############################################
 # Define the Class
@@ -77,7 +77,7 @@ print(model)
 # along with some `background operations <https://github.com/pytorch/pytorch/blob/270111b7b611d174967ed204776985cefca9c144/torch/nn/modules/module.py#L866>`_.
 # Do not call ``model.forward()`` directly!
 #
-# Calling the model on the input returns a 10-dimensional tensor with raw predicted values for each class.
+# Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output.
 # We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
 
 X = torch.rand(1, 28, 28, device=device)
@@ -181,7 +181,7 @@ pred_probab = softmax(logits)
 #
 
 
-print("Model structure: ", model, "\n\n")
+print(f"Model structure: {model}\n\n")
 
 for name, param in model.named_parameters():
     print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")

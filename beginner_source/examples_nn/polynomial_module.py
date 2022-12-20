@@ -4,7 +4,7 @@ PyTorch: Custom nn Modules
 --------------------------
 
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`pi` by minimizing squared Euclidean distance.
+to :math:`\pi` by minimizing squared Euclidean distance.
 
 This implementation defines the model as a custom Module subclass. Whenever you
 want a model more complex than a simple sequence of existing Modules you will

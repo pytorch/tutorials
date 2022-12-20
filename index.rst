@@ -1,5 +1,14 @@
 Welcome to PyTorch Tutorials
 ============================
+
+What's new in PyTorch tutorials?
+
+* `Survey: Let us know how the PyTorch Tutorials are working for you! <https://docs.google.com/forms/d/e/1FAIpQLSfM-n7fF-K8AqkOcdSlzS_0g-xd6ith7U_W36xG-C_6Q2B6Mg/viewform>`__
+* `PyTorch Distributed Series <https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=whats_new_tutorials&utm_medium=ddp_series_intro>`__
+* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
+* `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
+* `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
+
 .. raw:: html
 
     <div class="tutorials-callout-container">
@@ -203,6 +212,13 @@ Welcome to PyTorch Tutorials
 .. Text
 
 .. customcarditem::
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: beginner/bettertransformer_tutorial.html
+   :tags: Production,Text
+
+.. customcarditem::
    :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
    :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
    :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
@@ -218,7 +234,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
-   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials.
+   :card_description: After using character-level RNN to classify names, learn how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
    :tags: Text
@@ -263,6 +279,7 @@ Welcome to PyTorch Tutorials
 
 
 .. Deploying PyTorch Models in Production
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -351,6 +368,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/TorchScript-Parallelism.jpg
    :link: advanced/torch-script-parallelism.html
    :tags: Frontend-APIs,TorchScript,C++
+
+.. customcarditem::
+   :header: Real Time Inference on Raspberry Pi 4
+   :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
+   :image: _static/img/thumbnails/cropped/realtime_rpi.png
+   :link: intermediate/realtime_rpi.html
+   :tags: TorchScript,Model-Optimization,Image/Video,Quantization
 
 .. customcarditem::
    :header: Autograd in C++ Frontend
@@ -466,13 +490,57 @@ Welcome to PyTorch Tutorials
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
 
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex
+   :tags: Model-Optimization,Production
+
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex_2
+   :tags: Model-Optimization,Production
+   
+.. customcarditem::
+   :header: Introduction to nvFuser
+   :card_description: An introduction to nvFuser
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/nvfuser_intro_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Multi-Objective Neural Architecture Search with Ax
+   :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
+   :image: _static/img/ax_logo.png
+   :link: intermediate/ax_multiobjective_nas_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Ax,TorchX
+
+.. customcarditem::
+   :header: torch.compile Tutorial
+   :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
+
 .. Parallel-and-Distributed-Training
+
+
 
 .. customcarditem::
    :header: PyTorch Distributed Overview
    :card_description: Briefly go over all concepts and features in the distributed package. Use this document to find the distributed training technology that can best serve your application.
    :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
    :link: beginner/dist_overview.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Distributed Data Parallel in PyTorch - Video Tutorials
+   :card_description: This series of video tutorials walks you through distributed training in PyTorch via DDP.
+   :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
+   :link: beginner/ddp_series_intro.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -552,6 +620,20 @@ Welcome to PyTorch Tutorials
    :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_adavnced_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -567,6 +649,32 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/android.png
    :link: beginner/deeplabv3_on_android.html
    :tags: Mobile
+
+.. Recommendation Systems
+
+.. customcarditem::
+   :header: Introduction to TorchRec
+   :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: intermediate/torchrec_tutorial.html
+   :tags: TorchRec,Recommender
+
+.. customcarditem::
+   :header: Exploring TorchRec sharding
+   :card_description: This tutorial covers the sharding schemes of embedding tables by using <code>EmbeddingPlanner</code> and <code>DistributedModelParallel</code> API.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: advanced/sharding.html
+   :tags: TorchRec,Recommender
+
+.. Multimodality
+
+.. customcarditem::
+   :header: Introduction to TorchMultimodal
+   :card_description: TorchMultimodal is a library that provides models, primitives and examples for training multimodal tasks
+   :image: _static/img/thumbnails/torchrec.png
+   :link: beginner/flava_finetuning_tutorial.html
+   :tags: TorchMultimodal
+
 
 .. End of tutorial card section
 
@@ -595,9 +703,9 @@ Additional Resources
 
 .. customcalloutitem::
    :header: Examples of PyTorch
-   :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
-   :button_link: https://github.com/pytorch/examples
-   :button_text: Checkout Examples
+   :description: A set of examples around PyTorch in Vision, Text, Reinforcement Learning that you can incorporate in your existing work.
+   :button_link: https://pytorch.org/examples?utm_source=examples&utm_medium=examples-landing
+   :button_text: Check Out Examples
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
@@ -717,6 +825,7 @@ Additional Resources
    :caption: Text
 
    beginner/transformer_tutorial
+   beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
@@ -743,6 +852,7 @@ Additional Resources
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
+   intermediate/realtime_rpi
 
 .. toctree::
    :maxdepth: 2
@@ -795,6 +905,11 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
+   intermediate/torchserve_with_ipex
+   intermediate/torchserve_with_ipex_2
+   intermediate/nvfuser_intro_tutorial
+   intermediate/ax_multiobjective_nas_tutorial
+   intermediate/torch_compile_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -802,10 +917,14 @@ Additional Resources
    :hidden:
    :caption: Parallel and Distributed Training
 
+   distributed/home
    beginner/dist_overview
+   beginner/ddp_series_intro
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/FSDP_adavnced_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
@@ -824,3 +943,20 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Recommendation Systems
+
+   intermediate/torchrec_tutorial
+   advanced/sharding
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Multimodality
+
+   beginner/flava_finetuning_tutorial

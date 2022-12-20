@@ -87,7 +87,7 @@ print(ones)
 twos = torch.ones(2, 3) * 2 # every element is multiplied by 2
 print(twos)
 
-threes = ones + twos       # additon allowed because shapes are similar
+threes = ones + twos       # addition allowed because shapes are similar
 print(threes)              # tensors are added element-wise
 print(threes.shape)        # this has the same dimensions as input tensors
 
@@ -369,7 +369,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))
@@ -446,7 +446,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))

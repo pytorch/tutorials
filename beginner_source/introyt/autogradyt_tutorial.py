@@ -40,7 +40,7 @@ What Do We Need Autograd For?
 
 ###########################################################################
 # A machine learning model is a *function*, with inputs and outputs. For
-# this discussion, we’ll treat the inputs a as an *i*-dimensional vector
+# this discussion, we’ll treat the inputs as an *i*-dimensional vector
 # :math:`\vec{x}`, with elements :math:`x_{i}`. We can then express the
 # model, *M*, as a vector-valued function of the input: :math:`\vec{y} =
 # \vec{M}(\vec{x})`. (We treat the value of M’s output as
@@ -226,7 +226,7 @@ plt.plot(a.detach(), a.grad.detach())
 # of which should be :math:`2 * cos(a)`. Looking at the graph above,
 # that’s just what we see.
 # 
-# Be aware than only *leaf nodes* of the computation have their gradients
+# Be aware that only *leaf nodes* of the computation have their gradients
 # computed. If you tried, for example, ``print(c.grad)`` you’d get back
 # ``None``. In this simple example, only the input is a leaf node, so only
 # it has gradients computed.
@@ -395,7 +395,7 @@ print(c3)
 
 
 ##########################################################################
-# ``torch.no_grad()`` can also be used as a function or method dectorator:
+# ``torch.no_grad()`` can also be used as a function or method decorator:
 # 
 
 def add_tensors1(x, y):
@@ -649,7 +649,7 @@ torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
 # multiplication as ``vjp()`` with the operands reversed. The ``vhp()``
 # and ``hvp()`` methods do the same for a vector-Hessian product.
 # 
-# For more information, including preformance notes on the `docs for the
+# For more information, including performance notes on the `docs for the
 # functional
 # API <https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api>`__
 # 
