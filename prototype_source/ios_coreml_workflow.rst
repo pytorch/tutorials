@@ -26,7 +26,7 @@ Next, since the Core ML delegate is a prototype feature, let's install the PyTor
 
     pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 
-    pip3 install coremltools==5.0b5
+    pip3 install coremltools==5.0b5 protobuf==3.20.1
 
 
 Model Preparation
