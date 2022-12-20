@@ -52,7 +52,6 @@ NOT_RUN = [
     "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
     "text_to_speech_with_torchaudio",
-    "ax_multiobjective_nas_tutorial"
 ]
 
 
