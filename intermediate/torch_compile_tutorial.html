@@ -539,7 +539,7 @@ see a significant improvement compared to eager.</p>
 </div>
 <p>And indeed, we can see that running our model with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>
 results in a significant speedup. On an NVIDIA A100 GPU, we observe a
-2.2x speedup. Speedup mainly comes from reducing Python overhead and
+2.3x speedup. Speedup mainly comes from reducing Python overhead and
 GPU read/writes, and so the observed speedup may vary on factors such as model
 architecture and batch size. For example, if a model’s architecture is simple
 and the amount of data is large, then the bottleneck would be
@@ -557,16 +557,16 @@ function we defined above. We wrote our own timing function in this tutorial to 
 <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 
 <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()(</span><span class="n">pred</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
 <span class="n">eager_times</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
     <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">eager_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">))</span>
-    <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
     <span class="n">eager_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eager_time</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eager train time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">eager_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
@@ -578,9 +578,7 @@ function we defined above. We wrote our own timing function in this tutorial to 
 <span class="n">compile_times</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
     <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">compile_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">train_opt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">))</span>
-    <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
     <span class="n">compile_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compile_time</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"compile train time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">compile_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
@@ -595,12 +593,7 @@ function we defined above. We wrote our own timing function in this tutorial to 
 <p>Again, we can see that <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> takes longer in the first
 iteration, as it must compile the model, but afterward, we see
 significant speedups compared to eager. On an NVIDIA A100 GPU, we
-observe a 1.8x speedup.</p>
-<p>One thing to note is that, as of now, we cannot place optimizer code –
-<code class="docutils literal notranslate"><span class="pre">opt.zero_grad</span></code> and <code class="docutils literal notranslate"><span class="pre">opt.step</span></code> – inside of an optimized function.
-The rest of the training loop – the forward pass and the backward pass –
-can be optimized. We are currently working on enabling optimizers to be
-compatible with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p>
+observe a 2.2x speedup.</p>
 </div>
 <div class="section" id="comparison-to-torchscript-and-fx-tracing">
 <h2>Comparison to TorchScript and FX Tracing<a class="headerlink" href="#comparison-to-torchscript-and-fx-tracing" title="Permalink to this heading">¶</a></h2>
