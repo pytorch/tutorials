@@ -9,11 +9,11 @@ import jinja2
 import yaml
 from jinja2 import select_autoescape
 
-WORKFLOWS_JOBS_PR = {"filters": {"branches": {"ignore": ["master"]}}}
+WORKFLOWS_JOBS_PR = {"filters": {"branches": {"ignore": ["master", "main"]}}}
 
-WORKFLOWS_JOBS_MASTER = {
+WORKFLOWS_JOBS_TRUNK = {
     "context": "org-member",
-    "filters": {"branches": {"only": ["master"]}},
+    "filters": {"branches": {"only": ["master", "main"]}},
 }
 
 
@@ -23,39 +23,39 @@ def indent(indentation, data_list):
     )
 
 
-def jobs(pr_or_master, num_workers=20, indentation=2):
+def jobs(pr_or_trunk, num_workers=20, indentation=2):
     jobs = {}
 
     # all tutorials that need gpu.nvidia.small.multi machines will be routed
     # by get_files_to_run.py to 0th worker
     needs_gpu_nvidia_small_multi = [0]
-    jobs[f"pytorch_tutorial_{pr_or_master}_build_manager"] = {
+    jobs[f"pytorch_tutorial_{pr_or_trunk}_build_manager"] = {
         "<<": "*pytorch_tutorial_build_manager_defaults"
     }
     for i in range(num_workers):
         job_info = {"<<": "*pytorch_tutorial_build_worker_defaults"}
         if i in needs_gpu_nvidia_small_multi:
             job_info["resource_class"] = "gpu.nvidia.small.multi"
-        jobs[f"pytorch_tutorial_{pr_or_master}_build_worker_{i}"] = job_info
+        jobs[f"pytorch_tutorial_{pr_or_trunk}_build_worker_{i}"] = job_info
 
     return indent(indentation, jobs).replace("'", "")
 
 
-def workflows_jobs(pr_or_master, indentation=6, num_workers=20):
+def workflows_jobs(pr_or_trunk, indentation=6, num_workers=20):
     jobs = []
     job_info = deepcopy(
-        WORKFLOWS_JOBS_PR if pr_or_master == "pr" else WORKFLOWS_JOBS_MASTER
+        WORKFLOWS_JOBS_PR if pr_or_trunk == "pr" else WORKFLOWS_JOBS_TRUNK
     )
 
     for i in range(num_workers):
         jobs.append(
-            {f"pytorch_tutorial_{pr_or_master}_build_worker_{i}": deepcopy(job_info)}
+            {f"pytorch_tutorial_{pr_or_trunk}_build_worker_{i}": deepcopy(job_info)}
         )
 
     job_info["requires"] = [
-        f"pytorch_tutorial_{pr_or_master}_build_worker_{i}" for i in range(num_workers)
+        f"pytorch_tutorial_{pr_or_trunk}_build_worker_{i}" for i in range(num_workers)
     ]
-    jobs.append({f"pytorch_tutorial_{pr_or_master}_build_manager": deepcopy(job_info)})
+    jobs.append({f"pytorch_tutorial_{pr_or_trunk}_build_manager": deepcopy(job_info)})
     return indent(indentation, jobs)
 
 
@@ -65,7 +65,7 @@ def windows_jobs(indentation=2, num_workers=4):
         jobs[f"pytorch_tutorial_windows_pr_build_worker_{i}"] = {
             "<<": "*pytorch_windows_build_worker"
         }
-        jobs[f"pytorch_tutorial_windows_master_build_worker_{i}"] = {
+        jobs[f"pytorch_tutorial_windows_trunk_build_worker_{i}"] = {
             "<<": "*pytorch_windows_build_worker"
         }
     return indent(indentation, jobs).replace("'", "")
@@ -79,10 +79,10 @@ def windows_workflows_jobs(indentation=6, num_workers=4):
             {f"pytorch_tutorial_windows_pr_build_worker_{i}": deepcopy(job_info)}
         )
 
-    job_info = WORKFLOWS_JOBS_MASTER
+    job_info = WORKFLOWS_JOBS_TRUNK
     for i in range(num_workers):
         jobs.append(
-            {f"pytorch_tutorial_windows_master_build_worker_{i}": deepcopy(job_info)}
+            {f"pytorch_tutorial_windows_trunk_build_worker_{i}": deepcopy(job_info)}
         )
 
     return ("\n#").join(indent(indentation, jobs).splitlines())
