@@ -150,7 +150,7 @@ class ReplayMemory(object):
 # rewards from the uncertain far future less important for our agent 
 # than the ones in the near future that it can be fairly confident 
 # about. It also encourages agents to collect reward closer in time 
-# than equivalent rewards temporally future away.
+# than equivalent rewards that are temporally far away in the future.
 #
 # The main idea behind Q-learning is that if we had a function
 # :math:`Q^*: State \times Action \rightarrow \mathbb{R}`, that could tell
