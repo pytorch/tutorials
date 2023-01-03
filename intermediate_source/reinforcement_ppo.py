@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Reinforcement Learning (PPO) Tutorial
-=====================================
+Reinforcement Learning (PPO) with TorchRL Tutorial
+==================================================
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
+
+This tutorial shows how to use PyTorch and TorchRL to train a parametric policy
+network to solve the cheetah-run task from the `DeepMind control library
+<https://github.com/deepmind/dm_control>`__.
+
+Key learning items:
+- What is PPO and how to code the loss;
+- How to create an environment in TorchRL, transform its outputs, and collect data from this env;
+- How to compute the advantage signal for policy gradient methods;
+- How to create a dynamic replay buffer and sample from it without repetition.
 
 .. code-block:: bash
 
@@ -98,7 +108,6 @@ max_grad_norm = 1.0
 n_entropy_samples = 10
 entropy_eps = 1e-3
 seed = 0
-
 
 ######################################################################
 # Define a parallel environment
@@ -270,21 +279,14 @@ replay_buffer = ReplayBuffer(
 # For a more explicit description, we unwrap this code in the training loop.
 # Simply put, the objective function of PPO consists in maximising the expected
 # value of an advantage function for the policy parameters given some proximity
-# constraints. Let us first build the advantage module:
-#
+# constraints. Let us first build the advantage module. PPO usually uses the GAE
+# (Generalized Advantage Estimator) function (https://arxiv.org/abs/1506.02438).
+# TorchRL provides a vectorized implementation of this function.
+# The GAE module will update the input tensordict with new "advantage" and "value_target" keys.
+# The value_target is a gradient-free tensor that represents the empirical
+# value that the value network should represent with the input observation.
 
-advantage_module = GAE(gamma=gamma, lmbda=lmbda, value_network=value_module)
-
-# ######################################################################
-# # Reward normalization
-# # --------------------
-# #
-# # To make training more efficient, we normalize the rewards online for the empirical
-# # distribution to approximately match a unit Gaussian.
-# # This somewhat guarantees that our choice of hyperparameter is more robust
-# # to the specifics of the environent we are using.
-# #
-# reward_normalizer = RewardNormalizer(decay=0.9999, scale=0.1)
+advantage_module = GAE(gamma=gamma, lmbda=lmbda, value_network=value_module, average_gae=True)
 
 ######################################################################
 # Training loop
@@ -311,14 +313,12 @@ for i, data in enumerate(collector):
         cum_reward_str,
         lr_str
     ]))
-    # reward_normalizer.update_reward_stats(data)
-    # reward_normalizer.normalize_reward(data)
     for k in range(num_epochs):
-        advantage_module(data)
-        advantage = data["advantage"]
-        data["advantage"] = (advantage - advantage.mean()) / advantage.std().clamp_min(1e-3)
         # we place the data in the replay buffer after removing the time dimension
-        replay_buffer.extend(data.view(-1))
+        # the "mask" key represents the valid data in the batch: by indexing with "mask"
+        # we make sure that we eliminate all the 0-padding values.
+        advantage_module(data)
+        replay_buffer.extend(data[data["mask"]])
         for j in range(frames_per_batch // batch_size):
             subdata, *_ = replay_buffer.sample(batch_size)
             # loss (1): Objective
@@ -326,9 +326,11 @@ for i, data in enumerate(collector):
             advantage = subdata.get("advantage")
             dist = policy_module.get_dist(subdata.clone(recurse=False))
             log_prob = dist.log_prob(action)
-            log_prob = log_prob.unsqueeze(-1)
             prev_log_prob = subdata.get("sample_log_prob")
-            log_weight = log_prob - prev_log_prob
+            # we need to unsqueeze the log_weight for the last dim, as
+            # the advantage has shape [batch, 1] but the log-probability has
+            # just size [batch]
+            log_weight = (log_prob - prev_log_prob).unsqueeze(-1)
 
             gain1 = log_weight.exp() * advantage
             log_weight_clip = torch.empty_like(log_weight)
@@ -378,7 +380,6 @@ for i, data in enumerate(collector):
             eval_reward = eval_rollout["reward"].sum(-2).mean().item()
             logs_eval_rewards.append(eval_reward)
             eval_str = f"eval cumulative reward: {logs_eval_rewards[-1]: 4.4f} (init: {logs_eval_rewards[0]: 4.4f})"
-            print(eval_rollout)
 
 plt.plot(logs)
 plt.savefig("training.png")
