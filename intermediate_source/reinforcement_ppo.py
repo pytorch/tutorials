@@ -12,6 +12,7 @@ Key learning items:
 - What is PPO and how to code the loss;
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
 - How to compute the advantage signal for policy gradient methods;
+- How to create a stochastic policy using a probabilistic neural network;
 - How to create a dynamic replay buffer and sample from it without repetition.
 
 .. code-block:: bash
@@ -220,12 +221,20 @@ value_net = nn.Sequential(
 actor_net = NormalParamWrapper(actor_net)
 policy_module = TensorDictModule(actor_net, in_keys=["observation"],
                                  out_keys=["loc", "scale"])
+
+######################################################################
+# We now need to build a distribution out of the location and scale of our normal
+# distribution. As the action space is bounded, we'll use a TanhNormal distribution
+# to limit the values of the samples withing the accepted range. Here's how to code
+# this in TorchRL:
+#
 policy_module = ProbabilisticActor(
     module=policy_module,
     spec=env.action_spec,
     in_keys=["loc", "scale"],
     distribution_class=TanhNormal,
-    return_log_prob=True,
+    distribution_kwargs={"min": env.action_spec.space.minimum, "max": env.action_spec.space.maximum},
+    return_log_prob=True,  # we'll need the log-prob for the numerator of the importance weights
 )
 value_module = ValueOperator(
     module=value_net,
