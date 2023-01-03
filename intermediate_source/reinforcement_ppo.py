@@ -107,7 +107,7 @@ lr_policy = 3e-4
 lr_value = 1e-3
 max_grad_norm = 1.0
 n_entropy_samples = 10
-entropy_eps = 1e-3
+entropy_eps = 1e-4
 seed = 0
 
 ######################################################################
