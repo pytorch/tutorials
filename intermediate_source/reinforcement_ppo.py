@@ -76,6 +76,7 @@ from torchrl.modules import NormalParamWrapper, TanhNormal, ProbabilisticActor, 
 from torchrl.objectives.value import GAE
 from torchrl.objectives.utils import distance_loss
 from torchrl.data.replay_buffers.storages import LazyTensorStorage
+from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
 from torchrl.data.replay_buffers.rb_prototype import ReplayBuffer
 from tqdm import tqdm
 
@@ -194,7 +195,7 @@ assert (eval_env.transform[1].loc == env.transform[1].loc).all()
 # As the data is continuous, we use a Tanh-Normal distribution to respect the
 # distribution bounds.
 # We design the policy in three steps:
-# 1. Define a neural network D_obs -> 2 D_action
+# 1. Define a neural network D_obs -> 2 D_action (loc and scale both have dimension D_action)
 # 2. Wrap this neural network in a NormalParamWrapper to extract a location and a scale
 # 3. Create a probabilistic TensorDictModule that can create this distribution and sample from it.
 #
@@ -271,7 +272,7 @@ collector.set_seed(seed)
 
 replay_buffer = ReplayBuffer(
     storage=LazyTensorStorage(frames_per_batch),
-    prefetch=10,
+    sampler=SamplerWithoutReplacement(),
 )
 
 ######################################################################
@@ -309,6 +310,7 @@ scheduler_value = torch.optim.lr_scheduler.CosineAnnealingLR(optim_value, total_
 
 logs = []
 logs_eval_rewards = []
+# log-ratio bounds: log(1-eps) and log(1+eps)
 log_clip_bounds = (math.log1p(-clip_epsilon), math.log1p(clip_epsilon))
 pbar = tqdm(total=total_frames * frame_skip)
 eval_str = ""
@@ -342,12 +344,10 @@ for i, data in enumerate(collector):
             log_weight = (log_prob - prev_log_prob).unsqueeze(-1)
 
             gain1 = log_weight.exp() * advantage
-            log_weight_clip = torch.empty_like(log_weight)
-            idx_pos = advantage >= 0
-            log_weight_clip[idx_pos] = log_weight[idx_pos].clamp_max(log_clip_bounds[1])
-            log_weight_clip[~idx_pos] = log_weight[~idx_pos].clamp_min(log_clip_bounds[0])
 
+            log_weight_clip = log_weight.clamp(*log_clip_bounds)
             gain2 = log_weight_clip.exp() * advantage
+
             gain = torch.stack([gain1, gain2], -1).min(dim=-1)[0]
             loss_objective = -gain.mean()
 
@@ -367,12 +367,12 @@ for i, data in enumerate(collector):
             # value network training.
             value_module(subdata)
             value = subdata.get("state_value")
-            advantage_diff = value - subdata["value_target"]
             loss_value = distance_loss(
-                advantage_diff,
-                torch.zeros_like(advantage_diff),
-                loss_function="l2",
+                value,
+                subdata["value_target"],
+                loss_function="smooth_l1",
             ).mean()
+
             # Optim
             loss_value.backward()
             torch.nn.utils.clip_grad_norm_(optim_value.param_groups[0]["params"], max_grad_norm)
