@@ -1,0 +1,1381 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>(prototype) PyTorch BackendConfig Tutorial &mdash; PyTorch Tutorials 1.13.1+cu117 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sg_gallery-dataframe.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+                  <span class="dropdown-title">PyTorch</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+                  <span class="dropdown-title">torchaudio</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+                  <span class="dropdown-title">torchtext</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+                  <span class="dropdown-title">torchvision</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torcharrow">
+                  <span class="dropdown-title">torcharrow</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/data">
+                  <span class="dropdown-title">TorchData</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchrec">
+                  <span class="dropdown-title">TorchRec</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+                  <span class="dropdown-title">TorchServe</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchx/">
+                  <span class="dropdown-title">TorchX</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+                  <span class="dropdown-title">PyTorch on XLA Devices</span>
+                  <p></p>
+                </a>
+            </div>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-arrow">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/features">
+                  <span class="dropdown-title">About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+                  <span class="dropdown-title">PyTorch Foundation</span>
+                  <p>Learn about the PyTorch foundation</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+                  <span class="dropdown-title">Community</span>
+                  <p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/community-stories">
+                  <span class="dropdown-title">Community Stories</span>
+                  <p>Learn how our community solves real, everyday machine learning problems with PyTorch.</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/resources">
+                  <span class="dropdown-title">Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/events">
+                  <span class="dropdown-title">Events</span>
+                  <p>Find events, webinars, and podcasts</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+                  <span class="dropdown-title">Forums</span>
+                  <p>A place to discuss PyTorch code, issues, install, research</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/hub">
+                  <span class="dropdown-title">Models (Beta)</span>
+                  <p>Discover, publish, and reuse pre-trained models</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">GitHub</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+                <div class="version">
+                  1.13.1+cu117
+                </div>
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Tutorials" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_command_classification_with_torchaudio_tutorial.html">Speech Command Classification with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/flava_finetuning_tutorial.html">TorchMultimodal Tutorial: Finetuning FLAVA</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>(prototype) PyTorch BackendConfig Tutorial</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/prototype/backend_config_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+
+          <div class="pytorch-call-to-action-links">
+            <div id="tutorial-type">prototype/backend_config_tutorial</div>
+
+            <div id="google-colab-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+              <div class="call-to-action-desktop-view">Run in Google Colab</div>
+              <div class="call-to-action-mobile-view">Colab</div>
+            </div>
+            <div id="download-notebook-link">
+              <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+              <div class="call-to-action-desktop-view">Download Notebook</div>
+              <div class="call-to-action-mobile-view">Notebook</div>
+            </div>
+            <div id="github-view-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+              <div class="call-to-action-desktop-view">View on GitHub</div>
+              <div class="call-to-action-mobile-view">GitHub</div>
+            </div>
+          </div>
+
+        
+
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="section" id="prototype-pytorch-backendconfig-tutorial">
+<h1>(prototype) PyTorch BackendConfig Tutorial<a class="headerlink" href="#prototype-pytorch-backendconfig-tutorial" title="Permalink to this heading">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/andrewor14">Andrew Or</a></p>
+<p>The BackendConfig API enables developers to integrate their backends
+with PyTorch quantization. It is currently only supported in FX graph
+mode quantization, but support may be extended to other modes of
+quantization in the future. In this tutorial, we will demonstrate how to
+use this API to customize quantization support for specific backends.
+For more information on the motivation and implementation details behind
+BackendConfig, please refer to this
+<a class="reference external" href="https://github.com/pytorch/pytorch/tree/master/torch/ao/quantization/backend_config">README</a>.</p>
+<div class="section" id="backendconfig-api-specification">
+<h2>BackendConfig API Specification<a class="headerlink" href="#backendconfig-api-specification" title="Permalink to this heading">¶</a></h2>
+<p>On a high level, BackendConfig specifies the quantization behavior for
+each supported operator pattern (e.g. linear, conv-bn-relu). The API is
+broken down into the following class hierarchy:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.BackendConfig.html">BackendConfig</a>:
+The main class to be passed to prepare and convert functions.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.BackendPatternConfig.html">BackendPatternConfig</a>:
+Config object that specifies quantization behavior for a given
+operator pattern. Each BackendConfig consists of many of these.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.DTypeConfig.html">DTypeConfig</a>:
+Config object that specifies the supported data types passed as
+arguments to quantize ops in the reference model spec, for input
+and output activations, weights, and biases. This object also
+optionally specifies constraints associated with the data types.
+Each BackendPatternConfig consists of one or more of these.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.DTypeWithConstraints.html">DTypeWithConstraints</a>:
+Constraints imposed by the backend on the quantization parameters
+(scale and zero point) and ranges when quantizing to a given data
+type. Each DTypeConfig consists of many of these.</p></li>
+</ul>
+<p>The pattern specified in BackendPatternConfig follows the format
+described <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/README.md#pattern-specification">here</a>.</p>
+<div class="section" id="backendpatternconfig-specification">
+<h3>BackendPatternConfig Specification<a class="headerlink" href="#backendpatternconfig-specification" title="Permalink to this heading">¶</a></h3>
+<div class="section" id="set-observation-type">
+<h4>set_observation_type<a class="headerlink" href="#set-observation-type" title="Permalink to this heading">¶</a></h4>
+<p>Observation type here refers to how observers (or quant-dequant ops)
+will be placed in the graph. This is used to produce the desired
+reference patterns understood by the backend. Weighted ops such as
+linear and conv require different observers (or quantization parameters
+passed to quantize ops in the reference model) for the input and the
+output (see <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.ObservationType.html">ObservationType</a>).</p>
+<p>Note: This will be renamed in the near future, since we will soon insert
+QuantDeQuantStubs with observers (and fake quantizes) attached instead
+of observers themselves.</p>
+</div>
+<div class="section" id="set-dtype-configs-add-type-config">
+<h4>set_dtype_configs / add_type_config<a class="headerlink" href="#set-dtype-configs-add-type-config" title="Permalink to this heading">¶</a></h4>
+<p>Each operator pattern may support one or more sets of
+input/output/weight/bias data types, and each set may have their own
+constraints. These requirements are captured in DTypeConfigs, which will
+be described in more detail in the next section.</p>
+</div>
+<div class="section" id="set-root-module-set-reference-quantized-module">
+<h4>set_root_module / set_reference_quantized_module<a class="headerlink" href="#set-root-module-set-reference-quantized-module" title="Permalink to this heading">¶</a></h4>
+<p>When we construct the reference quantized model during the convert
+phase, the root modules (e.g. <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> for
+<code class="docutils literal notranslate"><span class="pre">torch.ao.nn.intrinsic.LinearReLU</span></code>) will be swapped to the
+corresponding reference quantized modules (e.g.
+<code class="docutils literal notranslate"><span class="pre">torch.ao.nn.reference.quantized.Linear</span></code>). This allows custom backends
+to specify custom reference quantized module implementations to match
+the numerics of their lowered operators. Since this is a one-to-one
+mapping, both the root module and the reference quantized module must be
+specified in the same BackendPatternConfig in order for the conversion
+to take place.</p>
+</div>
+<div class="section" id="set-fuser-method">
+<h4>set_fuser_method<a class="headerlink" href="#set-fuser-method" title="Permalink to this heading">¶</a></h4>
+<p>As an optimization, operator patterns such as (<code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code>,
+<code class="docutils literal notranslate"><span class="pre">torch.nn.ReLU</span></code>) may be fused into <code class="docutils literal notranslate"><span class="pre">nni.LinearReLU</span></code>.
+<code class="docutils literal notranslate"><span class="pre">set_fuser_method</span></code> specifies the function through which this is
+performed. The first argument of this function is <code class="docutils literal notranslate"><span class="pre">is_qat</span></code>, and the
+rest of the arguments are the items in the tuple pattern, e.g. the fuser
+method for the above pattern will have three arguments, <code class="docutils literal notranslate"><span class="pre">is_qat</span></code>,
+<code class="docutils literal notranslate"><span class="pre">linear</span></code>, and <code class="docutils literal notranslate"><span class="pre">relu</span></code>. See <a class="reference external" href="https://gist.github.com/jerryzh168/8bea7180a8ba3c279f2c9b050f2a69a6">this
+example</a>
+for a slightly more complicated usage.</p>
+</div>
+<div class="section" id="set-fused-module">
+<h4>set_fused_module<a class="headerlink" href="#set-fused-module" title="Permalink to this heading">¶</a></h4>
+<p>This is used to identify fused weighted modules (e.g.
+<code class="docutils literal notranslate"><span class="pre">torch.ao.nn.intrinsic.LinearReLU</span></code>) that need to be converted to
+reference quantized modules.</p>
+</div>
+</div>
+<div class="section" id="data-type-restrictions">
+<h3>Data Type Restrictions<a class="headerlink" href="#data-type-restrictions" title="Permalink to this heading">¶</a></h3>
+<p>Each DTypeConfig attached to a BackendPatternConfig represents a set of
+supported data types passed as arguments to quantize ops in the reference
+model spec. For example, consider the following reference model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quant1</span> <span class="o">-</span> <span class="p">[</span><span class="n">dequant1</span> <span class="o">-</span> <span class="n">fp32_linear</span> <span class="o">-</span> <span class="n">quant2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dequant2</span>
+</pre></div>
+</div>
+<p>The pattern in the square brackets refers to the reference pattern of
+statically quantized linear. Setting the input dtype as <cite>torch.quint8</cite>
+in the DTypeConfig means we pass in <cite>torch.quint8</cite> as the dtype argument
+to the first quantize op (quant1). Similarly, setting the output dtype as
+<cite>torch.quint8</cite> means we pass in <cite>torch.quint8</cite> as the dtype argument to
+the second quantize op (quant2).</p>
+<p>Note that the dtype here does not refer to the interface dtypes of the
+op. For example, the “input dtype” here is not the dtype of the input
+tensor passed to the quantized linear op. Though it can still be the
+same as the interface dtype, this is not always the case, e.g. the
+interface dtype is fp32 in dynamic quantization but the “input dtype”
+specified in the DTypeConfig would still be quint8. The semantics of
+dtypes here are the same as the semantics of the dtypes specified in
+the observers.</p>
+<p>These dtypes are matched against the ones specified in the user’s
+QConfig. If there is a match, and the QConfig satisfies the constraints
+specified in the DTypeConfig (if any), then we will quantize the given
+pattern using this DTypeConfig. Otherwise, the QConfig is ignored and
+the pattern will not be quantized.</p>
+<p>There are two ways of specifying <code class="docutils literal notranslate"><span class="pre">input_dtype</span></code>, <code class="docutils literal notranslate"><span class="pre">output_dtype</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">weight_dtype</span></code>, as simple <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code> or as
+<code class="docutils literal notranslate"><span class="pre">DTypeWithConstraints</span></code>. The constraints currently supported are:</p>
+<ul class="simple">
+<li><p><strong>quant_min_lower_bound</strong> and <strong>quant_max_upper_bound</strong>: Lower and upper
+bounds for the minimum and maximum quantized values respectively. If the
+QConfig’s <code class="docutils literal notranslate"><span class="pre">quant_min</span></code> and <code class="docutils literal notranslate"><span class="pre">quant_max</span></code> fall outside this range, then
+the QConfig will be ignored.</p></li>
+<li><p><strong>scale_min_lower_bound</strong> and <strong>scale_max_upper_bound</strong>: Lower and
+upper bounds for the minimum and  aximum scale values respectively. If
+the QConfig’s minimum scale value (currently exposed as <code class="docutils literal notranslate"><span class="pre">eps</span></code>) falls
+below the lower bound, then the QConfig will be ignored. Note that the
+upper bound is currently not enforced.</p></li>
+<li><p><strong>scale_exact_match</strong> and <strong>zero_point_exact_match</strong>: Exact match
+requirements for scale and zero point, to be used for operators with
+fixed quantization parameters such as sigmoid and tanh. If the observer
+specified in the QConfig is neither <code class="docutils literal notranslate"><span class="pre">FixedQParamsObserver</span></code> nor
+<code class="docutils literal notranslate"><span class="pre">FixedQParamsFakeQuantize</span></code>, or if the quantization parameters don’t
+match, then the QConfig will be ignored.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="end-to-end-example">
+<h2>End-to-End Example<a class="headerlink" href="#end-to-end-example" title="Permalink to this heading">¶</a></h2>
+<p>Suppose we are a backend developer and we wish to integrate our backend
+with PyTorch’s quantization APIs. Our backend consists of two ops only:
+quantized linear and quantized conv-relu. In this section, we will walk
+through how to achieve this by quantizing an example model using a custom
+BackendConfig through <cite>prepare_fx</cite> and <cite>convert_fx</cite>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">default_weight_observer</span><span class="p">,</span>
+    <span class="n">get_default_qconfig_mapping</span><span class="p">,</span>
+    <span class="n">MinMaxObserver</span><span class="p">,</span>
+    <span class="n">QConfig</span><span class="p">,</span>
+    <span class="n">QConfigMapping</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization.backend_config</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BackendConfig</span><span class="p">,</span>
+    <span class="n">BackendPatternConfig</span><span class="p">,</span>
+    <span class="n">DTypeConfig</span><span class="p">,</span>
+    <span class="n">DTypeWithConstraints</span><span class="p">,</span>
+    <span class="n">ObservationType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span>
+</pre></div>
+</div>
+<p>For quantized linear, suppose our backend expects the reference pattern
+<cite>[dequant - fp32_linear - quant]</cite> and lowers it into a single quantized
+linear op. The way to achieve this is to first insert quant-dequant ops
+before and after the float linear op, such that we produce the following
+reference model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quant1</span> <span class="o">-</span> <span class="p">[</span><span class="n">dequant1</span> <span class="o">-</span> <span class="n">fp32_linear</span> <span class="o">-</span> <span class="n">quant2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dequant2</span>
+</pre></div>
+</div>
+<p>Here we specify using different observers (will be renamed) for the input
+and output for the linear op, so the quantization params passed to the two
+quantize ops (quant1 and quant2) will be different. This is commonly the
+case for weighted ops like linear and conv.</p>
+<p>The input dtype specified in the DTypeConfig will be passed as the dtype
+argument to quant1, while the output dtype will be passed as the dtype
+argument to quant2. If the output dtype is fp32, as in the case of dynamic
+quantization, then the output quant-dequant pair will not be inserted.
+This example also shows how to specify restrictions on quantization and
+scale ranges on a particular dtype.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">quint8_with_constraints</span> <span class="o">=</span> <span class="n">DTypeWithConstraints</span><span class="p">(</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">quint8</span><span class="p">,</span>
+    <span class="n">quant_min_lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quant_max_upper_bound</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+    <span class="n">scale_min_lower_bound</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Specify the dtypes passed to the quantized ops in the reference model spec</span>
+<span class="n">weighted_int8_dtype_config</span> <span class="o">=</span> <span class="n">DTypeConfig</span><span class="p">(</span>
+    <span class="n">input_dtype</span><span class="o">=</span><span class="n">quint8_with_constraints</span><span class="p">,</span>
+    <span class="n">output_dtype</span><span class="o">=</span><span class="n">quint8_with_constraints</span><span class="p">,</span>
+    <span class="n">weight_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span><span class="p">,</span>
+    <span class="n">bias_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+<span class="n">linear_config</span> <span class="o">=</span> <span class="n">BackendPatternConfig</span><span class="p">()</span> \
+    <span class="o">.</span><span class="n">set_pattern</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_observation_type</span><span class="p">(</span><span class="n">ObservationType</span><span class="o">.</span><span class="n">OUTPUT_USE_DIFFERENT_OBSERVER_AS_INPUT</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">add_dtype_config</span><span class="p">(</span><span class="n">weighted_int8_dtype_config</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_root_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_qat_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">qat</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_reference_quantized_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For quantized conv-relu, the observation type and DTypeConfig settings
+are the same, since we wish to produce the following reference model,
+where the reference pattern in the square brackets will be lowered into
+a single quantized conv-relu op:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quant1</span> <span class="o">-</span> <span class="p">[</span><span class="n">dequant1</span> <span class="o">-</span> <span class="n">fp32_conv_relu</span> <span class="o">-</span> <span class="n">quant2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dequant2</span>
+</pre></div>
+</div>
+<p>However, first we need to fuse the conv and relu ops into a single
+conv-relu op (<cite>fp32_conv_relu</cite>), and then quantize this op similar to
+how the linear op is quantized. Thus, we need two BackendPatternConfigs
+to support this op, one for fusion and one for quantization:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fuse_conv2d_relu</span><span class="p">(</span><span class="n">is_qat</span><span class="p">,</span> <span class="n">conv</span><span class="p">,</span> <span class="n">relu</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a fused ConvReLU2d from individual conv and relu modules.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">ConvReLU2d</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">relu</span><span class="p">)</span>
+
+ <span class="c1"># For fusing Conv2d + ReLU into ConvReLU2d</span>
+ <span class="c1"># No need to set observation type and dtype config here, since we are not</span>
+ <span class="c1"># inserting quant-dequant ops in this step yet</span>
+ <span class="n">conv_relu_config</span> <span class="o">=</span> <span class="n">BackendPatternConfig</span><span class="p">()</span> \
+     <span class="o">.</span><span class="n">set_pattern</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">))</span> \
+     <span class="o">.</span><span class="n">set_fused_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">ConvReLU2d</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">set_fuser_method</span><span class="p">(</span><span class="n">fuse_conv2d_relu</span><span class="p">)</span>
+
+ <span class="c1"># For quantizing ConvReLU2d</span>
+ <span class="n">fused_conv_relu_config</span> <span class="o">=</span> <span class="n">BackendPatternConfig</span><span class="p">()</span> \
+     <span class="o">.</span><span class="n">set_pattern</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">ConvReLU2d</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">set_observation_type</span><span class="p">(</span><span class="n">ObservationType</span><span class="o">.</span><span class="n">OUTPUT_USE_DIFFERENT_OBSERVER_AS_INPUT</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">add_dtype_config</span><span class="p">(</span><span class="n">weighted_int8_dtype_config</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">set_root_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">set_qat_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">qat</span><span class="o">.</span><span class="n">ConvReLU2d</span><span class="p">)</span> \
+     <span class="o">.</span><span class="n">set_reference_quantized_module</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ao</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we have all the necessary pieces, so we go ahead and define our
+BackendConfig and test it out on an example model. Here we see that
+both linear and conv-relu are quantized.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">backend_config</span> <span class="o">=</span> <span class="n">BackendConfig</span><span class="p">(</span><span class="s2">&quot;my_backend&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_backend_pattern_config</span><span class="p">(</span><span class="n">linear_config</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_backend_pattern_config</span><span class="p">(</span><span class="n">conv_relu_config</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_backend_pattern_config</span><span class="p">(</span><span class="n">fused_conv_relu_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ====================</span>
+<span class="c1">#  Example user model</span>
+<span class="c1"># ====================</span>
+
+<span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_bn</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_bn</span> <span class="o">=</span> <span class="n">use_bn</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_bn</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># =======================</span>
+<span class="c1">#  Custom QConfigMapping</span>
+<span class="c1"># =======================</span>
+
+<span class="c1"># Define a QConfig that satisfies the constraints specified in DTypeConfig</span>
+<span class="c1"># Note: Here we use a quant_max of 127, but this could be up to 255 (see `quint8_with_constraints`)</span>
+<span class="n">activation_observer</span> <span class="o">=</span> <span class="n">MinMaxObserver</span><span class="o">.</span><span class="n">with_args</span><span class="p">(</span><span class="n">quant_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">quant_max</span><span class="o">=</span><span class="mi">127</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">qconfig</span> <span class="o">=</span> <span class="n">QConfig</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">activation_observer</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">default_weight_observer</span><span class="p">)</span>
+
+<span class="c1"># Note: All individual items of a fused pattern, e.g. Conv2d and ReLU in</span>
+<span class="c1"># (Conv2d, ReLU), must have the same QConfig</span>
+<span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="p">()</span> \
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">,</span> <span class="n">qconfig</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">qconfig</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span> <span class="n">qconfig</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">qconfig</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># =====================</span>
+<span class="c1">#  Prepare and Convert</span>
+<span class="c1"># =====================</span>
+
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">),)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="n">use_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+<span class="n">prepared</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>  <span class="c1"># calibrate</span>
+<span class="n">converted</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span>
+
+<span class="go">GraphModule(</span>
+<span class="go">  (linear): QuantizedLinear(in_features=10, out_features=3, scale=0.012136868201196194, zero_point=67, qscheme=torch.per_tensor_affine)</span>
+<span class="go">  (conv): QuantizedConvReLU2d(3, 3, kernel_size=(3, 3), stride=(1, 1), scale=0.0029353597201406956, zero_point=0)</span>
+<span class="go">  (sigmoid): Sigmoid()</span>
+<span class="go">)</span>
+
+<span class="go">def forward(self, x):</span>
+<span class="go">    linear_input_scale_0 = self.linear_input_scale_0</span>
+<span class="go">    linear_input_zero_point_0 = self.linear_input_zero_point_0</span>
+<span class="go">    quantize_per_tensor = torch.quantize_per_tensor(x, linear_input_scale_0, linear_input_zero_point_0, torch.quint8);  x = linear_input_scale_0 = linear_input_zero_point_0 = None</span>
+<span class="go">    linear = self.linear(quantize_per_tensor);  quantize_per_tensor = None</span>
+<span class="go">    conv = self.conv(linear);  linear = None</span>
+<span class="go">    dequantize_2 = conv.dequantize();  conv = None</span>
+<span class="go">    sigmoid = self.sigmoid(dequantize_2);  dequantize_2 = None</span>
+<span class="go">    return sigmoid</span>
+</pre></div>
+</div>
+<p>As an experiment, here we modify the model to use conv-bn-relu
+instead of conv-relu, but use the same BackendConfig, which doesn’t
+know how to quantize conv-bn-relu. As a result, only linear is
+quantized, but conv-bn-relu is neither fused nor quantized.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ================================================</span>
+<span class="c1">#  Prepare and Convert (only linear is quantized)</span>
+<span class="c1"># ================================================</span>
+
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">),)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qconfig_mapping</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+<span class="n">prepared</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>  <span class="c1"># calibrate</span>
+<span class="n">converted</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span>
+
+<span class="go">GraphModule(</span>
+<span class="go">  (linear): QuantizedLinear(in_features=10, out_features=3, scale=0.015307803638279438, zero_point=95, qscheme=torch.per_tensor_affine)</span>
+<span class="go">  (conv): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1))</span>
+<span class="go">  (bn): BatchNorm2d(3, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)</span>
+<span class="go">  (relu): ReLU()</span>
+<span class="go">  (sigmoid): Sigmoid()</span>
+<span class="go">)</span>
+
+<span class="go">def forward(self, x):</span>
+<span class="go">    linear_input_scale_0 = self.linear_input_scale_0</span>
+<span class="go">    linear_input_zero_point_0 = self.linear_input_zero_point_0</span>
+<span class="go">    quantize_per_tensor = torch.quantize_per_tensor(x, linear_input_scale_0, linear_input_zero_point_0, torch.quint8);  x = linear_input_scale_0 = linear_input_zero_point_0 = None</span>
+<span class="go">    linear = self.linear(quantize_per_tensor);  quantize_per_tensor = None</span>
+<span class="go">    dequantize_1 = linear.dequantize();  linear = None</span>
+<span class="go">    conv = self.conv(dequantize_1);  dequantize_1 = None</span>
+<span class="go">    bn = self.bn(conv);  conv = None</span>
+<span class="go">    relu = self.relu(bn);  bn = None</span>
+<span class="go">    sigmoid = self.sigmoid(relu);  relu = None</span>
+<span class="go">    return sigmoid</span>
+</pre></div>
+</div>
+<p>As another experiment, here we use the default QConfigMapping that
+doesn’t satisfy the dtype constraints specified in the backend. As
+a result, nothing is quantized since the QConfigs are simply ignored.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ============================================</span>
+<span class="c1">#  Prepare and Convert (nothing is quantized)</span>
+<span class="c1"># ============================================</span>
+
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">),)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">prepared</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">get_default_qconfig_mapping</span><span class="p">(),</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+<span class="n">prepared</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>  <span class="c1"># calibrate</span>
+<span class="n">converted</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="n">backend_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span>
+
+<span class="go">GraphModule(</span>
+<span class="go">  (linear): Linear(in_features=10, out_features=3, bias=True)</span>
+<span class="go">  (conv): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1))</span>
+<span class="go">  (bn): BatchNorm2d(3, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)</span>
+<span class="go">  (relu): ReLU()</span>
+<span class="go">  (sigmoid): Sigmoid()</span>
+<span class="go">)</span>
+
+<span class="go">def forward(self, x):</span>
+<span class="go">    linear = self.linear(x);  x = None</span>
+<span class="go">    conv = self.conv(linear);  linear = None</span>
+<span class="go">    bn = self.bn(conv);  conv = None</span>
+<span class="go">    relu = self.relu(bn);  bn = None</span>
+<span class="go">    sigmoid = self.sigmoid(relu);  relu = None</span>
+<span class="go">    return sigmoid</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="built-in-backendconfigs">
+<h2>Built-in BackendConfigs<a class="headerlink" href="#built-in-backendconfigs" title="Permalink to this heading">¶</a></h2>
+<p>PyTorch quantization supports a few built-in native BackendConfigs under
+the <code class="docutils literal notranslate"><span class="pre">torch.ao.quantization.backend_config</span></code> namespace:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/fbgemm.py">get_fbgemm_backend_config</a>:
+for server target settings</p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/qnnpack.py">get_qnnpack_backend_config</a>:
+for mobile and edge device target settings, also supports XNNPACK
+quantized ops</p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/native.py">get_native_backend_config</a>
+(default): a BackendConfig that supports a union of the operator
+patterns supported in the FBGEMM and QNNPACK BackendConfigs</p></li>
+</ul>
+<p>There are also other BackendConfigs under development (e.g. for
+TensorRT and x86), but these are still mostly experimental at the
+moment. If the user wishes to integrate a new, custom backend with
+PyTorch’s quantization API, they may define their own BackendConfigs
+using the same set of APIs used to define the natively supported
+ones as in the example above.</p>
+</div>
+<div class="section" id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h2>
+<p>How BackendConfig is used in FX graph mode quantization:
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/fx/README.md">https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/fx/README.md</a></p>
+<p>Motivation and implementation details behind BackendConfig:
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/README.md">https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/backend_config/README.md</a></p>
+<p>Early design of BackendConfig:
+<a class="reference external" href="https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md">https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md</a></p>
+</div>
+</div>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  
+
+    <hr class="rating-hr hr-top">
+      <div class="rating-container">
+        <div class="rating-prompt">Rate this Tutorial</div>
+        <div class="stars-outer">
+          <i class="far fa-star" title="1 Star" data-behavior="tutorial-rating" data-count="1"></i>
+          <i class="far fa-star" title="2 Stars" data-behavior="tutorial-rating" data-count="2"></i>
+          <i class="far fa-star" title="3 Stars" data-behavior="tutorial-rating" data-count="3"></i>
+          <i class="far fa-star" title="4 Stars" data-behavior="tutorial-rating" data-count="4"></i>
+          <i class="far fa-star" title="5 Stars" data-behavior="tutorial-rating" data-count="5"></i>
+        </div>
+      </div>
+    <hr class="rating-hr hr-bottom"/>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, PyTorch.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">(prototype) PyTorch BackendConfig Tutorial</a><ul>
+<li><a class="reference internal" href="#backendconfig-api-specification">BackendConfig API Specification</a><ul>
+<li><a class="reference internal" href="#backendpatternconfig-specification">BackendPatternConfig Specification</a><ul>
+<li><a class="reference internal" href="#set-observation-type">set_observation_type</a></li>
+<li><a class="reference internal" href="#set-dtype-configs-add-type-config">set_dtype_configs / add_type_config</a></li>
+<li><a class="reference internal" href="#set-root-module-set-reference-quantized-module">set_root_module / set_reference_quantized_module</a></li>
+<li><a class="reference internal" href="#set-fuser-method">set_fuser_method</a></li>
+<li><a class="reference internal" href="#set-fused-module">set_fused_module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-type-restrictions">Data Type Restrictions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#end-to-end-example">End-to-End Example</a></li>
+<li><a class="reference internal" href="#built-in-backendconfigs">Built-in BackendConfigs</a></li>
+<li><a class="reference internal" href="#further-reading">Further Reading</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/clipboard.min.js"></script>
+         <script src="../_static/copybutton.js"></script>
+         <script src="../_static/katex.min.js"></script>
+         <script src="../_static/auto-render.min.js"></script>
+         <script src="../_static/katex_autorenderer.js"></script>
+         <script src="../_static/design-tabs.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; isplay: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+
+<noscript>
+  <img height="1" width="1"
+  src="https://www.facebook.com/tr?id=243028289693773&ev=PageView
+  &noscript=1"/>
+</noscript>
+
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+
+<img height="1" width="1" style="border-style:none;" alt="" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0"/>
+
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://pytorch.org/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+            <li><a href="https://pytorch.org/get-started">Get Started</a></li>
+            <li><a href="https://pytorch.org/features">Features</a></li>
+            <li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+            <li><a href="https://pytorch.org/blog/">Blog</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+            <li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+            <li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title">Stay up to date</li>
+            <li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+            <li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+            <li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+            <li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
+          </ul>  
+          </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title">PyTorch Podcasts</li>
+            <li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+            <li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+            <li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+            <li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+          </ul>
+         </div>
+        </div>
+        
+        <div class="privacy-policy">
+          <ul>
+            <li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+            <li class="privacy-policy-links">|</li>
+            <li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+          </ul>
+        </div>
+        <div class="copyright">
+        <p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
+      </div>
+     </div>
+
+  </footer>
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+            
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li class="resources-mobile-menu-title">
+            Docs
+          </li>
+
+          <ul class="resources-mobile-menu-items">
+            <li>
+              <a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/torcharrow">torcharrow</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/data">TorchData</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/torchrec">TorchRec</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/serve/">TorchServe</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/torchx/">TorchX</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+            </li>
+          </ul>
+
+          <li class="resources-mobile-menu-title">
+            Resources
+          </li>
+            
+           <ul class="resources-mobile-menu-items">
+
+            <li>
+              <a href="https://pytorch.org/features">About</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/#community-module">Community</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/community-stories">Community Stories</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/resources">Developer Resources</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/events">Events</a>
+            </li>
+
+            <li>
+              <a href="https://discuss.pytorch.org/">Forums</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/hub">Models (Beta)</a>
+            </li>
+          </ul>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
