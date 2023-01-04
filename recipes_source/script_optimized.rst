@@ -194,7 +194,7 @@ The optimized model can then be saved and deployed in mobile apps:
 
     optimized_torchscript_model.save("optimized_torchscript_model.pth")
 
-For CPU backend, by default, `optimize_for_mobile` will perform the following types of optimizations:
+By default, for the CPU backend, `optimize_for_mobile` performs the following types of optimizations:
 
 * `Conv2D and BatchNorm fusion` which folds Conv2d-BatchNorm2d into Conv2d;
 
