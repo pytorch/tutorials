@@ -206,7 +206,7 @@ By default, for the CPU backend, `optimize_for_mobile` performs the following ty
 
 * `Conv packed params hoisting` which moves convolution packed params to the root module, so that the convolution structs can be deleted. This decreases model size without impacting numerics.
 
-For Vulkan backend, by default, `optimize_for_mobile` will perform the following type of optimization:
+For the Vulkan backend,`optimize_for_mobile` performs the following type of optimization:
 
 * `Automatic GPU transfer` which rewrites the graph such that inputs are transferred to Vulkan backend, and outputs are transferred to CPU backend.
 
