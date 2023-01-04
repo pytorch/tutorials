@@ -61,6 +61,9 @@ updates that would produce significant shifts from the previous configuration
 are being discouraged.
 
 """
+import os
+os.environ["MUJOCO_GL"] = "egl"
+
 import math
 
 import matplotlib.pyplot as plt
@@ -97,7 +100,7 @@ num_cells = 128
 frame_skip = 2
 frames_per_batch = 2000 // frame_skip
 max_frames_per_traj = 1000 // frame_skip
-total_frames = 1000000 // frame_skip
+total_frames = 100_000 // frame_skip
 device = "cpu"
 gamma = 0.99
 lmbda = 0.95
