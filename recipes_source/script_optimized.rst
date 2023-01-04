@@ -208,7 +208,7 @@ By default, for the CPU backend, `optimize_for_mobile` performs the following ty
 
 For the Vulkan backend,`optimize_for_mobile` performs the following type of optimization:
 
-* `Automatic GPU transfer` which rewrites the graph such that inputs are transferred to Vulkan backend, and outputs are transferred to CPU backend.
+* `Automatic GPU transfer` which rewrites the graph so that moving input and output data to and from the GPU becomes part of the model.
 
 Optimization types can be disabled by passing an optimization blocklist as an argument to `optimize_for_mobile`.
 
