@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -643,13 +643,19 @@ def forward(self,
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimized_torchscript_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;optimized_torchscript_model.pth&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>By default, <cite>optimize_for_mobile</cite> will perform the following types of optimizations:</p>
+<p>By default, for the CPU backend, <cite>optimize_for_mobile</cite> performs the following types of optimizations:</p>
 <ul class="simple">
-<li><p>Conv2D and BatchNorm fusion which folds Conv2d-BatchNorm2d into Conv2d;</p></li>
-<li><p>Insert and fold prepacked ops which rewrites the model graph to replace 2D convolutions and linear ops with their prepacked counterparts.</p></li>
-<li><p>ReLU and hardtanh fusion which rewrites graph by finding ReLU/hardtanh ops and fuses them together.</p></li>
-<li><p>Dropout removal which removes dropout nodes from this module when training is false.</p></li>
+<li><p><cite>Conv2D and BatchNorm fusion</cite> which folds Conv2d-BatchNorm2d into Conv2d;</p></li>
+<li><p><cite>Insert and fold prepacked ops</cite> which rewrites the model graph to replace 2D convolutions and linear ops with their prepacked counterparts.</p></li>
+<li><p><cite>ReLU and hardtanh fusion</cite> which rewrites graph by finding ReLU/hardtanh ops and fuses them together.</p></li>
+<li><p><cite>Dropout removal</cite> which removes dropout nodes from this module when training is false.</p></li>
+<li><p><cite>Conv packed params hoisting</cite> which moves convolution packed params to the root module, so that the convolution structs can be deleted. This decreases model size without impacting numerics.</p></li>
 </ul>
+<p>For the Vulkan backend,`optimize_for_mobile` performs the following type of optimization:</p>
+<ul class="simple">
+<li><p><cite>Automatic GPU transfer</cite> which rewrites the graph so that moving input and output data to and from the GPU becomes part of the model.</p></li>
+</ul>
+<p>Optimization types can be disabled by passing an optimization blocklist as an argument to <cite>optimize_for_mobile</cite>.</p>
 </div>
 <div class="section" id="learn-more">
 <h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
