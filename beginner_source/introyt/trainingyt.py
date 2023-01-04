@@ -112,7 +112,7 @@ def matplotlib_imshow(img, one_channel=False):
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 dataiter = iter(training_loader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # Create a grid from the images and show them
 img_grid = torchvision.utils.make_grid(images)

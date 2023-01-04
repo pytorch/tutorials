@@ -40,7 +40,7 @@ What Do We Need Autograd For?
 
 ###########################################################################
 # A machine learning model is a *function*, with inputs and outputs. For
-# this discussion, we’ll treat the inputs a as an *i*-dimensional vector
+# this discussion, we’ll treat the inputs as an *i*-dimensional vector
 # :math:`\vec{x}`, with elements :math:`x_{i}`. We can then express the
 # model, *M*, as a vector-valued function of the input: :math:`\vec{y} =
 # \vec{M}(\vec{x})`. (We treat the value of M’s output as
@@ -226,7 +226,7 @@ plt.plot(a.detach(), a.grad.detach())
 # of which should be :math:`2 * cos(a)`. Looking at the graph above,
 # that’s just what we see.
 # 
-# Be aware than only *leaf nodes* of the computation have their gradients
+# Be aware that only *leaf nodes* of the computation have their gradients
 # computed. If you tried, for example, ``print(c.grad)`` you’d get back
 # ``None``. In this simple example, only the input is a leaf node, so only
 # it has gradients computed.
