@@ -112,7 +112,7 @@ PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default mode
 
 The result model can be used only on Vulkan backend as it contains specific to the Vulkan backend operators.
 
-By default, ``optimize_for_mobile`` with ``backend='vulkan'`` rewrites the graph such that inputs are transferred to Vulkan backend, and outputs are transferred to CPU backend, so the model can be run on CPU inputs and produce CPU outputs. To disable this, add the argument ``optimization_blocklist={MobileOptimizerType.VULKAN_AUTOMATIC_GPU_TRANSFER}`` to ``optimize_for_mobile``. (``MobileOptimizerType`` can be imported from ``torch.utils.mobile_optimizer``)
+By default, ``optimize_for_mobile`` with ``backend='vulkan'`` rewrites the graph so  that inputs are transferred to the Vulkan backend, and outputs are transferred to the CPU backend, therefore, the model can be run on CPU inputs and produce CPU outputs. To disable this, add the argument ``optimization_blocklist={MobileOptimizerType.VULKAN_AUTOMATIC_GPU_TRANSFER}`` to ``optimize_for_mobile``. (``MobileOptimizerType`` can be imported from ``torch.utils.mobile_optimizer``)
 
 For more information, see the `torch.utils.mobile_optimizer` `API documentation <https://pytorch.org/docs/stable/mobile_optimizer.html>`_.
 
