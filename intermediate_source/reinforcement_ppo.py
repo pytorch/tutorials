@@ -185,7 +185,7 @@ print("normalization constant shape:", env.transform[1].loc.shape)
 eval_env = TransformedEnv(
     ParallelEnv(
         num_procs,
-        EnvCreator(lambda: env_maker(from_pixels=True))
+        EnvCreator(lambda: env_maker(from_pixels=False))
     ),
     env.transform.clone())
 assert (eval_env.transform[1].loc == env.transform[1].loc).all()
