@@ -46,7 +46,7 @@ This tutorial makes use of the following PyTorch libraries:
 # -----------------------
 #
 # Our goal is to optimize the PyTorch Lightning training job defined in
-# `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/master/intermediate_source/mnist_train_nas.py>`__.
+# `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/main/intermediate_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
 # the values of the architcture and hyperparameters of the training
 # job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
