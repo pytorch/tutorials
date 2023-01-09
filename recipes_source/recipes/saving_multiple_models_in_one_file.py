@@ -54,7 +54,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
