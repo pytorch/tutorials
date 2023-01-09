@@ -48,7 +48,7 @@ We welcome your pull requests (PR) for updates and fixes.
 1. If you haven't already, complete the Contributor License Agreement
    ("CLA").
 1. Fork the repo and create a branch from
-   [`master`](https://github.com/pytorch/tutorials).
+   [`main`](https://github.com/pytorch/tutorials).
 1. Test your code.
 1. Lint your code with a tool such as
    [Pylint](https://pylint.pycqa.org/en/latest/).
@@ -88,7 +88,7 @@ commonly-used storage service, such as Amazon S3, and instructing your
 users to download the data at the beginning of your tutorial. 
 
 The
-[Makefile](https://github.com/pytorch/tutorials/blob/master/Makefile)
+[Makefile](https://github.com/pytorch/tutorials/blob/main/Makefile)
 that we use to build the tutorials contains automation that downloads
 required data files.
 
@@ -248,14 +248,14 @@ For Python files, our CI system runs your code during each build.
    [https://github.com/pytorch/tutorials](https://github.com/pytorch/tutorials)
 
 1. Put the tutorial in one of the
-   [`beginner_source`](https://github.com/pytorch/tutorials/tree/master/beginner_source),
-   [`intermediate_source`](https://github.com/pytorch/tutorials/tree/master/intermediate_source),
-   [`advanced_source`](https://github.com/pytorch/tutorials/tree/master/advanced_source)
+   [`beginner_source`](https://github.com/pytorch/tutorials/tree/main/beginner_source),
+   [`intermediate_source`](https://github.com/pytorch/tutorials/tree/main/intermediate_source),
+   [`advanced_source`](https://github.com/pytorch/tutorials/tree/main/advanced_source)
    based on the technical level of the content. For recipes, put the
    recipe in
-   [`recipes_source`](https://github.com/pytorch/tutorials/tree/master/recipes_source).
+   [`recipes_source`](https://github.com/pytorch/tutorials/tree/main/recipes_source).
    In addition, for recipes, add the recipe in the recipes
-   [README.txt](https://github.com/pytorch/tutorials/blob/master/recipes_source/recipes/README.txt)
+   [README.txt](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes/README.txt)
    file.
 
 
@@ -266,9 +266,9 @@ search, you need to include it in `index.rst`, or for recipes, in
 `recipes_index.rst`. 
 
 1. Open the relevant file
-   [`index.rst`](https://github.com/pytorch/tutorials/blob/master/index.rst)
+   [`index.rst`](https://github.com/pytorch/tutorials/blob/main/index.rst)
    or
-   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/master/recipes_source/recipes_index.rst)
+   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
 1. Add a _card_ in reStructuredText format similar to the following:
 
 ```
@@ -300,10 +300,10 @@ might fail to build, and the cards will not display properly.
 ### Image ###
 
 Add a thumbnail to the
-[`_static/img/thumbnails/cropped`](https://github.com/pytorch/tutorials/tree/master/_static/img/thumbnails/cropped)
+[`_static/img/thumbnails/cropped`](https://github.com/pytorch/tutorials/tree/main/_static/img/thumbnails/cropped)
 directory. Images that render the best are square--that is, they have
 equal `x` and `y` dimensions--and also have high resolution. [Here is an
-example](https://github.com/pytorch/tutorials/blob/master/_static/img/thumbnails/cropped/loading-data.PNG).
+example](https://github.com/pytorch/tutorials/blob/main/_static/img/thumbnails/cropped/loading-data.PNG).
 
 ## `toctree` ##
 
@@ -344,7 +344,7 @@ test your tutorial when you submit your PR.
 NOTE: Please do not use [ghstack](https://github.com/ezyang/ghstack). We
 do not support ghstack in the [`pytorch/tutorials`](https://github.com/pytorch/tutorials) repo.
 
-Submit the changes as a PR to the master branch of
+Submit the changes as a PR to the main branch of
 [`pytorch/tutorials`](https://github.com/pytorch/tutorials).
 
 1. Add your changes, commit, and push:

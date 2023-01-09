@@ -5,7 +5,7 @@ Getting Started with Distributed Data Parallel
 **Edited by**: `Joe Zhu <https://github.com/gunandrose4u>`_
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/ddp_tutorial.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/ddp_tutorial.rst>`__.
 
 Prerequisites:
 

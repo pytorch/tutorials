@@ -5,7 +5,7 @@ Implementing a Parameter Server Using Distributed RPC Framework
 **Author**\ : `Rohan Varma <https://github.com/rohan-varma>`_
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/rpc_param_server_tutorial.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/rpc_param_server_tutorial.rst>`__.
 
 Prerequisites:
 
