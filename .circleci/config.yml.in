@@ -118,7 +118,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
         # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
         set +x
-        if [[ "$CIRCLE_BRANCH" == master ]]; then
+        if [[ "$CIRCLE_BRANCH" == master || "$CIRCLE_BRANCH" == main ]]; then
           if [ -z "${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
           if [ -z "${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
           if [ -z "${GITHUB_PYTORCHBOT_USERNAME}" ]; then exit 1; fi
@@ -134,6 +134,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         fi
         set -x
 
+        echo 'rm /opt/cache/bin/*' | docker exec -u root -i "$id" bash
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
@@ -184,7 +185,7 @@ pytorch_windows_build_worker: &pytorch_windows_build_worker
 jobs:
   {{ jobs("pr") }}
 
-  {{ jobs("master") }}
+  {{ jobs("trunk") }}
 
   {{ windows_jobs() }}
 
@@ -193,6 +194,6 @@ workflows:
     jobs:
       # Build jobs that only run on PR
       {{ workflows_jobs("pr") }}
-      # Build jobs that only run on master
-      {{ workflows_jobs("master") }}
+      # Build jobs that only run on trunk
+      {{ workflows_jobs("trunk") }}
 #      {{ windows_workflows_jobs() }}

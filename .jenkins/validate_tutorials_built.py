@@ -39,6 +39,7 @@ NOT_RUN = [
     "recipes/profiler_recipe",
     "recipes/save_load_across_devices",
     "recipes/warmstarting_model_using_parameters_from_a_different_model",
+    "torch_compile_tutorial_",
     "recipes/dynamic_quantization",
     "recipes/saving_and_loading_a_general_checkpoint",
     "recipes/benchmark",
@@ -50,6 +51,7 @@ NOT_RUN = [
     "recipes/Captum_Recipe",
     "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
+    "text_to_speech_with_torchaudio",
 ]
 
 
