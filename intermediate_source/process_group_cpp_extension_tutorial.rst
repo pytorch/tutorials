@@ -4,7 +4,7 @@ Customize Process Group Backends Using Cpp Extensions
 **Author**: `Feng Tian <https://github.com/ftian1>`__, `Shen Li <https://mrshenli.github.io/>`__, `Min Si <https://minsii.github.io/>`__
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/process_group_cpp_extension_tutorial.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/process_group_cpp_extension_tutorial.rst>`__.
 
 Prerequisites:
 
