@@ -87,7 +87,7 @@ for X, y in test_dataloader:
 # operations in the neural network, we move it to the GPU if available.
 
 # Get cpu or gpu device for training.
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"Using {device} device")
 
 # Define model
