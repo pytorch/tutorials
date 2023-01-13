@@ -417,6 +417,34 @@ What's new in PyTorch tutorials?
    :link: intermediate/forward_ad_usage.html
    :tags: Frontend-APIs
 
+.. customcarditem::
+   :header: Jacobians, Hessians, hvp, vhp, and more
+   :card_description: Learn how to compute advanced autodiff quantities using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/jacobians_hessians.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Model Ensembling
+   :card_description: Learn how to ensemble models using torch.vmap
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/ensembling.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Per-Sample-Gradients
+   :card_description: Learn how to compute per-sample-gradients using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/per_sample_grads.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Neural Tangent Kernels
+   :card_description: Learn how to compute neural tangent kernels using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/neural_tangent_kernels.html
+   :tags: Frontend-APIs
+
 .. Model Optimization
 
 .. customcarditem::
@@ -870,6 +898,10 @@ Additional Resources
 
    intermediate/memory_format_tutorial
    intermediate/forward_ad_usage
+   intermediate/jacobians_hessians
+   intermediate/ensembling
+   intermediate/per_sample_grads
+   intermediate/neural_tangent_kernels.py
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
