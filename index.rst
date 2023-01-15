@@ -441,12 +441,12 @@ What's new in PyTorch tutorials?
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
 
- .. customcarditem::
-    :header: Optimizing Vision Transformer Model
-    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
-    :image: _static/img/thumbnails/cropped/mobile.png
-    :link: beginner/vt_tutorial.html
-    :tags: Model-Optimization,Best-Practice,Mobile
+.. customcarditem::
+   :header: Optimizing Vision Transformer Model
+   :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+   :image: _static/img/thumbnails/cropped/mobile.png
+   :link: beginner/vt_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Mobile
 
 .. customcarditem::
    :header: Parametrizations Tutorial
