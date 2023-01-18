@@ -159,7 +159,7 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
            masks = torch.as_tensor(masks, dtype=torch.uint8)
 
            image_id = torch.tensor([idx])
-           area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+           area = ((boxes[:, 3] - boxes[:, 1]) + 1) * ((boxes[:, 2] - boxes[:, 0]) + 1)
            # suppose all instances are not crowd
            iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
 
