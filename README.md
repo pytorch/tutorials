@@ -1,8 +1,11 @@
 # PyTorch Tutorials
 
-All the tutorials are now presented as Sphinx style documentation at:
+
+All the tutorials are now presented as sphinx style documentation at:
 
 ## [https://pytorch.org/tutorials](https://pytorch.org/tutorials)
+
+
 
 # Contributing
 
@@ -19,7 +22,7 @@ If you are starting off with a Jupyter notebook, you can use [this script](https
 
 ## Building locally
 
-The tutorial build is very large and requires a GPU. If your machine does not have a GPU device, you can preview your HTML build without actually downloading the data and running the tutorial code:
+The tutorial build is very large and requires a GPU. If your machine does not have a GPU device, you can preview your HTML build without actually downloading the data and running the tutorial code: 
 
 1. Install required dependencies by running: `pip install -r requirements.txt`.
 
@@ -46,6 +49,6 @@ GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 The `GALLERY_PATTERN` variable respects regular expressions.
 
 ## About contributing to PyTorch Documentation and Tutorials
-* You can find information about contributing to PyTorch documentation in the.
-PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file.
+* You can find information about contributing to PyTorch documentation in the 
+PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file. 
 * Additional information can be found in [PyTorch CONTRIBUTING.md](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md).
