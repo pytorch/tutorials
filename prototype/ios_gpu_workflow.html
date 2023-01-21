@@ -508,14 +508,14 @@
 <div class="section" id="pytorch-with-metal">
 <h3>PyTorch with Metal<a class="headerlink" href="#pytorch-with-metal" title="Permalink to this heading">¶</a></h3>
 <p>To do that, we’ll install a pytorch nightly binary that includes the Metal backend. Go ahead run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda install pytorch -c pytorch-nightly
-// or
-pip3 install --pre torch -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>pytorch<span class="w"> </span>-c<span class="w"> </span>pytorch-nightly
+//<span class="w"> </span>or
+pip3<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>torch<span class="w"> </span>-f<span class="w"> </span>https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 </pre></div>
 </div>
 <p>Also, you can build a custom pytorch binary from source that includes the Metal backend. Just checkout the pytorch source code from github and run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> PYTORCH_ROOT
-<span class="nv">USE_PYTORCH_METAL_EXPORT</span><span class="o">=</span>ON python setup.py install --cmake
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>PYTORCH_ROOT
+<span class="nv">USE_PYTORCH_METAL_EXPORT</span><span class="o">=</span>ON<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install<span class="w"> </span>--cmake
 </pre></div>
 </div>
 <p>The command above will build a custom pytorch binary from master. The <code class="docutils literal notranslate"><span class="pre">install</span></code> argument simply tells <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is <code class="docutils literal notranslate"><span class="pre">1.8.0a0+41237a4</span></code>. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.</p>
@@ -556,9 +556,9 @@ pip3 install --pre torch -f https://download.pytorch.org/whl/nightly/cpu/torch_n
 <p>The PyTorch iOS library with Metal support <code class="docutils literal notranslate"><span class="pre">LibTorch-Lite-Nightly</span></code> is available in Cocoapods. You can read the <a class="reference external" href="https://pytorch.org/mobile/ios/#using-the-nightly-pytorch-ios-libraries-in-cocoapods">Using the Nightly PyTorch iOS Libraries in CocoaPods</a> section from the iOS tutorial for more detail about its usage.</p>
 <p>We also have the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-Metal">HelloWorld-Metal example</a> that shows how to conect all pieces together.</p>
 <p>Note that if you run the HelloWorld-Metal example, you may notice that the results are slighly different from the <a class="reference external" href="https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods">results</a> we got from the CPU model as shown in the iOS tutorial.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>- timber wolf, grey wolf, gray wolf, Canis lupus
-- malamute, malemute, Alaskan malamute
-- Eskimo dog, husky
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>-<span class="w"> </span>timber<span class="w"> </span>wolf,<span class="w"> </span>grey<span class="w"> </span>wolf,<span class="w"> </span>gray<span class="w"> </span>wolf,<span class="w"> </span>Canis<span class="w"> </span>lupus
+-<span class="w"> </span>malamute,<span class="w"> </span>malemute,<span class="w"> </span>Alaskan<span class="w"> </span>malamute
+-<span class="w"> </span>Eskimo<span class="w"> </span>dog,<span class="w"> </span>husky
 </pre></div>
 </div>
 <p>This is because by default Metal uses fp16 rather than fp32 to compute. The precision loss is expected.</p>
@@ -567,27 +567,27 @@ pip3 install --pre torch -f https://download.pytorch.org/whl/nightly/cpu/torch_n
 <h2>Use LibTorch-Lite Built from Source<a class="headerlink" href="#use-libtorch-lite-built-from-source" title="Permalink to this heading">¶</a></h2>
 <p>You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we’ll be using the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld">HelloWorld example</a> to demonstrate this process.</p>
 <p>First, make sure you have deleted the <strong>build</strong> folder from the “Model Preparation” step in PyTorch root directory. Then run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">IOS_ARCH</span><span class="o">=</span>arm64 <span class="nv">USE_PYTORCH_METAL</span><span class="o">=</span><span class="m">1</span> ./scripts/build_ios.sh
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">IOS_ARCH</span><span class="o">=</span>arm64<span class="w"> </span><span class="nv">USE_PYTORCH_METAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./scripts/build_ios.sh
 </pre></div>
 </div>
 <p>Note <code class="docutils literal notranslate"><span class="pre">IOS_ARCH</span></code> tells the script to build a arm64 version of Libtorch-Lite. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the <a class="reference external" href="https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source">Build PyTorch iOS libraries from source</a> section from the iOS tutorial to setup the XCode settings properly. Don’t forget to copy the <code class="docutils literal notranslate"><span class="pre">./mobilenetv2_metal.pt</span></code> to your XCode project and modify the model file path accordingly.</p>
 <p>Next we need to make some changes in <code class="docutils literal notranslate"><span class="pre">TorchModule.mm</span></code></p>
-<div class="highlight-objective-c notranslate"><div class="highlight"><pre><span></span><span class="p">...</span><span class="w"></span>
+<div class="highlight-objective-c notranslate"><div class="highlight"><pre><span></span><span class="p">...</span>
 <span class="c1">// #import &lt;Libtorch-Lite/Libtorch-Lite.h&gt;</span>
 <span class="c1">// If it&#39;s built from source with Xcode, comment out the line above</span>
 <span class="c1">// and use following headers</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/import.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/module.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span><span class="cp"></span>
-<span class="p">...</span><span class="w"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/import.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/module.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span>
+<span class="p">...</span>
 
-<span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="bp">NSArray</span><span class="o">&lt;</span><span class="bp">NSNumber</span><span class="o">*&gt;*</span><span class="p">)</span><span class="n">predictImage</span><span class="o">:</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">imageBuffer</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="n">c10</span><span class="o">::</span><span class="n">InferenceMode</span><span class="w"> </span><span class="n">mode</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">imageBuffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">kFloat</span><span class="p">).</span><span class="n">metal</span><span class="p">();</span><span class="w"></span>
-<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">outputTensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_impl</span><span class="p">.</span><span class="n">forward</span><span class="p">({</span><span class="n">tensor</span><span class="p">}).</span><span class="n">toTensor</span><span class="p">().</span><span class="n">cpu</span><span class="p">();</span><span class="w"></span>
-<span class="w">  </span><span class="p">...</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
-<span class="p">...</span><span class="w"></span>
+<span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="bp">NSArray</span><span class="o">&lt;</span><span class="bp">NSNumber</span><span class="o">*&gt;*</span><span class="p">)</span><span class="n">predictImage</span><span class="o">:</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">imageBuffer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">c10</span><span class="o">::</span><span class="n">InferenceMode</span><span class="w"> </span><span class="n">mode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">imageBuffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">kFloat</span><span class="p">).</span><span class="n">metal</span><span class="p">();</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">outputTensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_impl</span><span class="p">.</span><span class="n">forward</span><span class="p">({</span><span class="n">tensor</span><span class="p">}).</span><span class="n">toTensor</span><span class="p">().</span><span class="n">cpu</span><span class="p">();</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="p">}</span>
+<span class="p">...</span>
 </pre></div>
 </div>
 <p>As you can see, we simply just call <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> to move our input tensor from CPU to GPU, and then call <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> to move the result back. Internally, <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> is invoked, the GPU command buffer will be flushed and synced. After <cite>forward</cite> finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.</p>

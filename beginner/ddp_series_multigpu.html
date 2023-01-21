@@ -454,11 +454,11 @@ communicate and synchronize with each other.</p></li>
 <span class="w">import torch.nn.functional as F</span>
 <span class="w">from utils import MyTrainDataset</span>
 
-<span class="gi">+ import torch.multiprocessing as mp</span><span class="w"></span>
-<span class="gi">+ from torch.utils.data.distributed import DistributedSampler</span><span class="w"></span>
-<span class="gi">+ from torch.nn.parallel import DistributedDataParallel as DDP</span><span class="w"></span>
-<span class="gi">+ from torch.distributed import init_process_group, destroy_process_group</span><span class="w"></span>
-<span class="gi">+ import os</span><span class="w"></span>
+<span class="gi">+ import torch.multiprocessing as mp</span>
+<span class="gi">+ from torch.utils.data.distributed import DistributedSampler</span>
+<span class="gi">+ from torch.nn.parallel import DistributedDataParallel as DDP</span>
+<span class="gi">+ from torch.distributed import init_process_group, destroy_process_group</span>
+<span class="gi">+ import os</span>
 </pre></div>
 </div>
 </div>
@@ -473,22 +473,22 @@ initializes the distributed process group.</p></li>
 <li><p>Read more about <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#which-backend-to-use">choosing a DDP
 backend</a></p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def ddp_setup(rank: int, world_size: int):</span><span class="w"></span>
-<span class="gi">+   """</span><span class="w"></span>
-<span class="gi">+   Args:</span><span class="w"></span>
-<span class="gi">+       rank: Unique identifier of each process</span><span class="w"></span>
-<span class="gi">+      world_size: Total number of processes</span><span class="w"></span>
-<span class="gi">+   """</span><span class="w"></span>
-<span class="gi">+   os.environ["MASTER_ADDR"] = "localhost"</span><span class="w"></span>
-<span class="gi">+   os.environ["MASTER_PORT"] = "12355"</span><span class="w"></span>
-<span class="gi">+   init_process_group(backend="nccl", rank=rank, world_size=world_size)</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def ddp_setup(rank: int, world_size: int):</span>
+<span class="gi">+   """</span>
+<span class="gi">+   Args:</span>
+<span class="gi">+       rank: Unique identifier of each process</span>
+<span class="gi">+      world_size: Total number of processes</span>
+<span class="gi">+   """</span>
+<span class="gi">+   os.environ["MASTER_ADDR"] = "localhost"</span>
+<span class="gi">+   os.environ["MASTER_PORT"] = "12355"</span>
+<span class="gi">+   init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="constructing-the-ddp-model">
 <h3>Constructing the DDP model<a class="headerlink" href="#constructing-the-ddp-model" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.model = model.to(gpu_id)</span><span class="w"></span>
-<span class="gi">+ self.model = DDP(model, device_ids=[gpu_id])</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.model = model.to(gpu_id)</span>
+<span class="gi">+ self.model = DDP(model, device_ids=[gpu_id])</span>
 </pre></div>
 </div>
 </div>
@@ -501,11 +501,11 @@ chunks the input data across all distributed processes.</p></li>
 batch size is <code class="docutils literal notranslate"><span class="pre">32</span> <span class="pre">*</span> <span class="pre">nprocs</span></code>, or 128 when using 4 GPUs.</p></li>
 </ul>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">train_data = torch.utils.data.DataLoader(</span>
-<span class="w"> </span>   dataset=train_dataset,<span class="w"></span>
-<span class="w"> </span>   batch_size=32,<span class="w"></span>
-<span class="gd">-   shuffle=True,</span><span class="w"></span>
-<span class="gi">+   shuffle=False,</span><span class="w"></span>
-<span class="gi">+   sampler=DistributedSampler(train_dataset),</span><span class="w"></span>
+<span class="w"> </span>   dataset=train_dataset,
+<span class="w"> </span>   batch_size=32,
+<span class="gd">-   shuffle=True,</span>
+<span class="gi">+   shuffle=False,</span>
+<span class="gi">+   sampler=DistributedSampler(train_dataset),</span>
 <span class="w">)</span>
 </pre></div>
 </div>
@@ -514,11 +514,11 @@ batch size is <code class="docutils literal notranslate"><span class="pre">32</s
 properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.</p></li>
 </ul>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def _run_epoch(self, epoch):</span>
-<span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])<span class="w"></span>
-<span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span><span class="w"></span>
-<span class="w"> </span>   for source, targets in self.train_data:<span class="w"></span>
-<span class="w"> </span>     ...<span class="w"></span>
-<span class="w"> </span>     self._run_batch(source, targets)<span class="w"></span>
+<span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])
+<span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span>
+<span class="w"> </span>   for source, targets in self.train_data:
+<span class="w"> </span>     ...
+<span class="w"> </span>     self._run_batch(source, targets)
 </pre></div>
 </div>
 </div>
@@ -530,13 +530,13 @@ condition, each process would save its copy of the identical mode. Read
 more on saving and loading models with
 DDP <a class="reference external" href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints">here</a></p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- ckp = self.model.state_dict()</span><span class="w"></span>
-<span class="gi">+ ckp = self.model.module.state_dict()</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- ckp = self.model.state_dict()</span>
+<span class="gi">+ ckp = self.model.module.state_dict()</span>
 <span class="w">...</span>
 <span class="w">...</span>
-<span class="gd">- if epoch % self.save_every == 0:</span><span class="w"></span>
-<span class="gi">+ if self.gpu_id == 0 and epoch % self.save_every == 0:</span><span class="w"></span>
-<span class="w"> </span>  self._save_checkpoint(epoch)<span class="w"></span>
+<span class="gd">- if epoch % self.save_every == 0:</span>
+<span class="gi">+ if self.gpu_id == 0 and epoch % self.save_every == 0:</span>
+<span class="w"> </span>  self._save_checkpoint(epoch)
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -557,24 +557,24 @@ If you need to make any collective calls, it should be before the <code class="d
 <li><p><code class="docutils literal notranslate"><span class="pre">world_size</span></code> is the number of processes across the training job. For GPU training,
 this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- def main(device, total_epochs, save_every):</span><span class="w"></span>
-<span class="gi">+ def main(rank, world_size, total_epochs, save_every):</span><span class="w"></span>
-<span class="gi">+  ddp_setup(rank, world_size)</span><span class="w"></span>
-<span class="w"> </span>  dataset, model, optimizer = load_train_objs()<span class="w"></span>
-<span class="w"> </span>  train_data = prepare_dataloader(dataset, batch_size=32)<span class="w"></span>
-<span class="gd">-  trainer = Trainer(model, dataset, optimizer, device, save_every)</span><span class="w"></span>
-<span class="gi">+  trainer = Trainer(model, dataset, optimizer, rank, save_every)</span><span class="w"></span>
-<span class="w"> </span>  trainer.train(total_epochs)<span class="w"></span>
-<span class="gi">+  destroy_process_group()</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- def main(device, total_epochs, save_every):</span>
+<span class="gi">+ def main(rank, world_size, total_epochs, save_every):</span>
+<span class="gi">+  ddp_setup(rank, world_size)</span>
+<span class="w"> </span>  dataset, model, optimizer = load_train_objs()
+<span class="w"> </span>  train_data = prepare_dataloader(dataset, batch_size=32)
+<span class="gd">-  trainer = Trainer(model, dataset, optimizer, device, save_every)</span>
+<span class="gi">+  trainer = Trainer(model, dataset, optimizer, rank, save_every)</span>
+<span class="w"> </span>  trainer.train(total_epochs)
+<span class="gi">+  destroy_process_group()</span>
 
 <span class="w">if __name__ == "__main__":</span>
-<span class="w"> </span>  import sys<span class="w"></span>
-<span class="w"> </span>  total_epochs = int(sys.argv[1])<span class="w"></span>
-<span class="w"> </span>  save_every = int(sys.argv[2])<span class="w"></span>
-<span class="gd">-  device = 0      # shorthand for cuda:0</span><span class="w"></span>
-<span class="gd">-  main(device, total_epochs, save_every)</span><span class="w"></span>
-<span class="gi">+  world_size = torch.cuda.device_count()</span><span class="w"></span>
-<span class="gi">+  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span><span class="w"></span>
+<span class="w"> </span>  import sys
+<span class="w"> </span>  total_epochs = int(sys.argv[1])
+<span class="w"> </span>  save_every = int(sys.argv[2])
+<span class="gd">-  device = 0      # shorthand for cuda:0</span>
+<span class="gd">-  main(device, total_epochs, save_every)</span>
+<span class="gi">+  world_size = torch.cuda.device_count()</span>
+<span class="gi">+  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span>
 </pre></div>
 </div>
 </div>

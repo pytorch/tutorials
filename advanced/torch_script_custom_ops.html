@@ -417,31 +417,31 @@ function, which applies a perspective transformation to an image, from OpenCV to
 TorchScript as a custom operator. The first step is to write the implementation
 of our custom operator in C++. Let’s call the file for this implementation
 <code class="docutils literal notranslate"><span class="pre">op.cpp</span></code> and make it look like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="nf">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">image</span><span class="p">,</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">warp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="nf">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">image</span><span class="p">,</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">warp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="c1">// BEGIN image_mat</span>
-<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*data=*/</span><span class="n">image</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span><span class="w"></span>
+<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">                    </span><span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+<span class="w">                    </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
+<span class="w">                    </span><span class="cm">/*data=*/</span><span class="n">image</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
 <span class="w">  </span><span class="c1">// END image_mat</span>
 
 <span class="w">  </span><span class="c1">// BEGIN warp_mat</span>
-<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*cols=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*data=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span><span class="w"></span>
+<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">                   </span><span class="cm">/*cols=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+<span class="w">                   </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
+<span class="w">                   </span><span class="cm">/*data=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
 <span class="w">  </span><span class="c1">// END warp_mat</span>
 
 <span class="w">  </span><span class="c1">// BEGIN output_mat</span>
-<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">output_mat</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">warpPerspective</span><span class="p">(</span><span class="n">image_mat</span><span class="p">,</span><span class="w"> </span><span class="n">output_mat</span><span class="p">,</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">,</span><span class="w"> </span><span class="cm">/*dsize=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span><span class="w"></span>
+<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">output_mat</span><span class="p">;</span>
+<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">warpPerspective</span><span class="p">(</span><span class="n">image_mat</span><span class="p">,</span><span class="w"> </span><span class="n">output_mat</span><span class="p">,</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">,</span><span class="w"> </span><span class="cm">/*dsize=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span>
 <span class="w">  </span><span class="c1">// END output_mat</span>
 
 <span class="w">  </span><span class="c1">// BEGIN output_tensor</span>
-<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">output_mat</span><span class="p">.</span><span class="n">ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="cm">/*sizes=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span><span class="w"></span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">output_mat</span><span class="p">.</span><span class="n">ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="cm">/*sizes=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
 <span class="w">  </span><span class="c1">// END output_tensor</span>
-<span class="p">}</span><span class="w"></span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>The code for this operator is quite short. At the top of the file, we include
@@ -474,10 +474,10 @@ can be used as arguments to your custom operator. Currently these types are:
 tensors to OpenCV matrices, as OpenCV’s <code class="docutils literal notranslate"><span class="pre">warpPerspective</span></code> expects <code class="docutils literal notranslate"><span class="pre">cv::Mat</span></code>
 objects as inputs. Fortunately, there is a way to do this <strong>without copying
 any</strong> data. In the first few lines,</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="nf">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="cm">/*data=*/</span><span class="n">image</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">                    </span><span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+<span class="w">                    </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
+<span class="w">                    </span><span class="cm">/*data=*/</span><span class="n">image</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
 </pre></div>
 </div>
 <p>we are calling <a class="reference external" href="https://docs.opencv.org/trunk/d3/d63/classcv_1_1Mat.html#a922de793eabcec705b3579c5f95a643e">this constructor</a>
@@ -492,10 +492,10 @@ the original <code class="docutils literal notranslate"><span class="pre">image<
 subsequent OpenCV routines with the library’s native matrix type, even though
 we’re actually storing the data in a PyTorch tensor. We repeat this procedure to
 convert the <code class="docutils literal notranslate"><span class="pre">warp</span></code> PyTorch tensor to the <code class="docutils literal notranslate"><span class="pre">warp_mat</span></code> OpenCV matrix:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="nf">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*cols=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span><span class="w"></span>
-<span class="w">                   </span><span class="cm">/*data=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">                   </span><span class="cm">/*cols=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+<span class="w">                   </span><span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
+<span class="w">                   </span><span class="cm">/*data=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
 </pre></div>
 </div>
 <p>Next, we are ready to call the OpenCV function we were so eager to use in
@@ -503,8 +503,8 @@ TorchScript: <code class="docutils literal notranslate"><span class="pre">warpPe
 <code class="docutils literal notranslate"><span class="pre">image_mat</span></code> and <code class="docutils literal notranslate"><span class="pre">warp_mat</span></code> matrices, as well as an empty output matrix
 called <code class="docutils literal notranslate"><span class="pre">output_mat</span></code>. We also specify the size <code class="docutils literal notranslate"><span class="pre">dsize</span></code> we want the output
 matrix (image) to be. It is hardcoded to <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">x</span> <span class="pre">8</span></code> for this example:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">output_mat</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">warpPerspective</span><span class="p">(</span><span class="n">image_mat</span><span class="p">,</span><span class="w"> </span><span class="n">output_mat</span><span class="p">,</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">,</span><span class="w"> </span><span class="cm">/*dsize=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">Mat</span><span class="w"> </span><span class="n">output_mat</span><span class="p">;</span>
+<span class="w">  </span><span class="n">cv</span><span class="o">::</span><span class="n">warpPerspective</span><span class="p">(</span><span class="n">image_mat</span><span class="p">,</span><span class="w"> </span><span class="n">output_mat</span><span class="p">,</span><span class="w"> </span><span class="n">warp_mat</span><span class="p">,</span><span class="w"> </span><span class="cm">/*dsize=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span>
 </pre></div>
 </div>
 <p>The final step in our custom operator implementation is to convert the
@@ -514,8 +514,8 @@ other direction. In this case, PyTorch provides a <code class="docutils literal 
 <em>blob</em> in this case is intended to mean some opaque, flat pointer to memory that
 we want to interpret as a PyTorch tensor. The call to <code class="docutils literal notranslate"><span class="pre">torch::from_blob</span></code> looks
 like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">output_mat</span><span class="p">.</span><span class="n">ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="cm">/*sizes=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span><span class="w"></span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">output_mat</span><span class="p">.</span><span class="n">ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="cm">/*sizes=*/</span><span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">});</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>We use the <code class="docutils literal notranslate"><span class="pre">.ptr&lt;float&gt;()</span></code> method on the OpenCV <code class="docutils literal notranslate"><span class="pre">Mat</span></code> class to get a raw
@@ -541,9 +541,9 @@ compiler to resolve references to our custom operator in TorchScript code.
 If you have ever used the pybind11 library, our syntax for registration
 resembles the pybind11 syntax very closely.  To register a single function,
 we write:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TORCH_LIBRARY</span><span class="p">(</span><span class="n">my_ops</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"warp_perspective"</span><span class="p">,</span><span class="w"> </span><span class="n">warp_perspective</span><span class="p">);</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TORCH_LIBRARY</span><span class="p">(</span><span class="n">my_ops</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"warp_perspective"</span><span class="p">,</span><span class="w"> </span><span class="n">warp_perspective</span><span class="p">);</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>somewhere at the top level of our <code class="docutils literal notranslate"><span class="pre">op.cpp</span></code> file.  The <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code> macro
@@ -588,59 +588,59 @@ a directory structure that looks like this:</p>
 </pre></div>
 </div>
 <p>The contents of our <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file should then be the following:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span><span class="w"> </span><span class="mf">3.1</span><span class="w"> </span><span class="n">FATAL_ERROR</span><span class="p">)</span><span class="w"></span>
-<span class="n">project</span><span class="p">(</span><span class="n">warp_perspective</span><span class="p">)</span><span class="w"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span><span class="w"> </span><span class="mf">3.1</span><span class="w"> </span><span class="n">FATAL_ERROR</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">warp_perspective</span><span class="p">)</span>
 
-<span class="n">find_package</span><span class="p">(</span><span class="n">Torch</span><span class="w"> </span><span class="n">REQUIRED</span><span class="p">)</span><span class="w"></span>
-<span class="n">find_package</span><span class="p">(</span><span class="n">OpenCV</span><span class="w"> </span><span class="n">REQUIRED</span><span class="p">)</span><span class="w"></span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">Torch</span><span class="w"> </span><span class="n">REQUIRED</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">OpenCV</span><span class="w"> </span><span class="n">REQUIRED</span><span class="p">)</span>
 
 <span class="cp"># Define our library target</span>
-<span class="n">add_library</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">SHARED</span><span class="w"> </span><span class="n">op</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span><span class="w"></span>
+<span class="n">add_library</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">SHARED</span><span class="w"> </span><span class="n">op</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span>
 <span class="cp"># Enable C++14</span>
-<span class="n">target_compile_features</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">PRIVATE</span><span class="w"> </span><span class="n">cxx_std_14</span><span class="p">)</span><span class="w"></span>
+<span class="n">target_compile_features</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">PRIVATE</span><span class="w"> </span><span class="n">cxx_std_14</span><span class="p">)</span>
 <span class="cp"># Link against LibTorch</span>
-<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="s">"${TORCH_LIBRARIES}"</span><span class="p">)</span><span class="w"></span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="s">"${TORCH_LIBRARIES}"</span><span class="p">)</span>
 <span class="cp"># Link against OpenCV</span>
-<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">opencv_core</span><span class="w"> </span><span class="n">opencv_imgproc</span><span class="p">)</span><span class="w"></span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">warp_perspective</span><span class="w"> </span><span class="n">opencv_core</span><span class="w"> </span><span class="n">opencv_imgproc</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To now build our operator, we can run the following commands from our
 <code class="docutils literal notranslate"><span class="pre">warp_perspective</span></code> folder:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ mkdir build
-$ <span class="nb">cd</span> build
-$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
--- The C compiler identification is GNU <span class="m">5</span>.4.0
--- The CXX compiler identification is GNU <span class="m">5</span>.4.0
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - <span class="k">done</span>
--- Detecting C compile features
--- Detecting C compile features - <span class="k">done</span>
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - <span class="k">done</span>
--- Detecting CXX compile features
--- Detecting CXX compile features - <span class="k">done</span>
--- Looking <span class="k">for</span> pthread.h
--- Looking <span class="k">for</span> pthread.h - found
--- Looking <span class="k">for</span> pthread_create
--- Looking <span class="k">for</span> pthread_create - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
--- Found Threads: TRUE
--- Found torch: /libtorch/lib/libtorch.so
--- Configuring <span class="k">done</span>
--- Generating <span class="k">done</span>
--- Build files have been written to: /warp_perspective/build
-$ make -j
-Scanning dependencies of target warp_perspective
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/warp_perspective.dir/op.cpp.o
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX shared library libwarp_perspective.so
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target warp_perspective
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span>..
+--<span class="w"> </span>The<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>The<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Found<span class="w"> </span>Threads:<span class="w"> </span>TRUE
+--<span class="w"> </span>Found<span class="w"> </span>torch:<span class="w"> </span>/libtorch/lib/libtorch.so
+--<span class="w"> </span>Configuring<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Generating<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Build<span class="w"> </span>files<span class="w"> </span>have<span class="w"> </span>been<span class="w"> </span>written<span class="w"> </span>to:<span class="w"> </span>/warp_perspective/build
+$<span class="w"> </span>make<span class="w"> </span>-j
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>warp_perspective
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>CMakeFiles/warp_perspective.dir/op.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>shared<span class="w"> </span>library<span class="w"> </span>libwarp_perspective.so
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>warp_perspective
 </pre></div>
 </div>
 <p>which will place a <code class="docutils literal notranslate"><span class="pre">libwarp_perspective.so</span></code> shared library file in the
@@ -930,29 +930,29 @@ equivalents on other platforms.</p>
 <p>Building on the C++ execution tutorial linked above, let’s start with a minimal
 C++ application in one file, <code class="docutils literal notranslate"><span class="pre">main.cpp</span></code> in a different folder from our
 custom operator, that loads and executes a serialized TorchScript model:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span><span class="c1"> // One-stop header.</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span><span class="c1"> // One-stop header.</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
 
 
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"usage: example-app &lt;path-to-exported-script-module&gt;</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"></span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"usage: example-app &lt;path-to-exported-script-module&gt;</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
 
 <span class="w">  </span><span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
-<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="k">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w"></span>
+<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="k">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
 
-<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">IValue</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">randn</span><span class="p">({</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">}));</span><span class="w"></span>
-<span class="w">  </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">randn</span><span class="p">({</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">}));</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">IValue</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span>
+<span class="w">  </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">randn</span><span class="p">({</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">}));</span>
+<span class="w">  </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">randn</span><span class="p">({</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">}));</span>
 
-<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">inputs</span><span class="p">)).</span><span class="n">toTensor</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">inputs</span><span class="p">)).</span><span class="n">toTensor</span><span class="p">();</span>
 
-<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>Along with a small <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file:</p>
@@ -967,46 +967,46 @@ custom operator, that loads and executes a serialized TorchScript model:</p>
 </pre></div>
 </div>
 <p>At this point, we should be able to build the application:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ mkdir build
-$ <span class="nb">cd</span> build
-$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
--- The C compiler identification is GNU <span class="m">5</span>.4.0
--- The CXX compiler identification is GNU <span class="m">5</span>.4.0
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - <span class="k">done</span>
--- Detecting C compile features
--- Detecting C compile features - <span class="k">done</span>
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - <span class="k">done</span>
--- Detecting CXX compile features
--- Detecting CXX compile features - <span class="k">done</span>
--- Looking <span class="k">for</span> pthread.h
--- Looking <span class="k">for</span> pthread.h - found
--- Looking <span class="k">for</span> pthread_create
--- Looking <span class="k">for</span> pthread_create - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
--- Found Threads: TRUE
--- Found torch: /libtorch/lib/libtorch.so
--- Configuring <span class="k">done</span>
--- Generating <span class="k">done</span>
--- Build files have been written to: /example_app/build
-$ make -j
-Scanning dependencies of target example_app
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example_app.dir/main.cpp.o
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example_app
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example_app
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span>..
+--<span class="w"> </span>The<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>The<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Found<span class="w"> </span>Threads:<span class="w"> </span>TRUE
+--<span class="w"> </span>Found<span class="w"> </span>torch:<span class="w"> </span>/libtorch/lib/libtorch.so
+--<span class="w"> </span>Configuring<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Generating<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Build<span class="w"> </span>files<span class="w"> </span>have<span class="w"> </span>been<span class="w"> </span>written<span class="w"> </span>to:<span class="w"> </span>/example_app/build
+$<span class="w"> </span>make<span class="w"> </span>-j
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>example_app
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>CMakeFiles/example_app.dir/main.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>executable<span class="w"> </span>example_app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>example_app
 </pre></div>
 </div>
 <p>And run it without passing a model just yet:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app
-usage: example_app &lt;path-to-exported-script-module&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./example_app
+usage:<span class="w"> </span>example_app<span class="w"> </span>&lt;path-to-exported-script-module&gt;
 </pre></div>
 </div>
 <p>Next, let’s serialize the script function we wrote earlier that uses our custom
@@ -1028,11 +1028,11 @@ operator:</p>
 <p>The last line will serialize the script function into a file called
 “example.pt”. If we then pass this serialized model to our C++ application, we
 can run it straight away:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app example.pt
-terminate called after throwing an instance of <span class="s1">'torch::jit::script::ErrorReport'</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./example_app<span class="w"> </span>example.pt
+terminate<span class="w"> </span>called<span class="w"> </span>after<span class="w"> </span>throwing<span class="w"> </span>an<span class="w"> </span>instance<span class="w"> </span>of<span class="w"> </span><span class="s1">'torch::jit::script::ErrorReport'</span>
 what<span class="o">()</span>:
-Schema not found <span class="k">for</span> node. File a bug report.
-Node: %16 : <span class="nv">Dynamic</span> <span class="o">=</span> my_ops::warp_perspective<span class="o">(</span>%0, %19<span class="o">)</span>
+Schema<span class="w"> </span>not<span class="w"> </span>found<span class="w"> </span><span class="k">for</span><span class="w"> </span>node.<span class="w"> </span>File<span class="w"> </span>a<span class="w"> </span>bug<span class="w"> </span>report.
+Node:<span class="w"> </span>%16<span class="w"> </span>:<span class="w"> </span><span class="nv">Dynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>my_ops::warp_perspective<span class="o">(</span>%0,<span class="w"> </span>%19<span class="o">)</span>
 </pre></div>
 </div>
 <p>Or maybe not. Maybe not just yet. Of course! We haven’t linked the custom
@@ -1097,59 +1097,59 @@ shortened a bit. It should look like this:</p>
 </div>
 <p>Let’s re-build our example app, which will also link with the custom operator
 library. In the top level <code class="docutils literal notranslate"><span class="pre">example_app</span></code> directory:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ mkdir build
-$ <span class="nb">cd</span> build
-$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
--- The C compiler identification is GNU <span class="m">5</span>.4.0
--- The CXX compiler identification is GNU <span class="m">5</span>.4.0
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - <span class="k">done</span>
--- Detecting C compile features
--- Detecting C compile features - <span class="k">done</span>
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - <span class="k">done</span>
--- Detecting CXX compile features
--- Detecting CXX compile features - <span class="k">done</span>
--- Looking <span class="k">for</span> pthread.h
--- Looking <span class="k">for</span> pthread.h - found
--- Looking <span class="k">for</span> pthread_create
--- Looking <span class="k">for</span> pthread_create - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
--- Found Threads: TRUE
--- Found torch: /libtorch/lib/libtorch.so
--- Configuring <span class="k">done</span>
--- Generating <span class="k">done</span>
--- Build files have been written to: /warp_perspective/example_app/build
-$ make -j
-Scanning dependencies of target warp_perspective
-<span class="o">[</span> <span class="m">25</span>%<span class="o">]</span> Building CXX object warp_perspective/CMakeFiles/warp_perspective.dir/op.cpp.o
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Linking CXX shared library libwarp_perspective.so
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Built target warp_perspective
-Scanning dependencies of target example_app
-<span class="o">[</span> <span class="m">75</span>%<span class="o">]</span> Building CXX object CMakeFiles/example_app.dir/main.cpp.o
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example_app
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example_app
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span>..
+--<span class="w"> </span>The<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>The<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Found<span class="w"> </span>Threads:<span class="w"> </span>TRUE
+--<span class="w"> </span>Found<span class="w"> </span>torch:<span class="w"> </span>/libtorch/lib/libtorch.so
+--<span class="w"> </span>Configuring<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Generating<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Build<span class="w"> </span>files<span class="w"> </span>have<span class="w"> </span>been<span class="w"> </span>written<span class="w"> </span>to:<span class="w"> </span>/warp_perspective/example_app/build
+$<span class="w"> </span>make<span class="w"> </span>-j
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>warp_perspective
+<span class="o">[</span><span class="w"> </span><span class="m">25</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>warp_perspective/CMakeFiles/warp_perspective.dir/op.cpp.o
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>shared<span class="w"> </span>library<span class="w"> </span>libwarp_perspective.so
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>warp_perspective
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>example_app
+<span class="o">[</span><span class="w"> </span><span class="m">75</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>CMakeFiles/example_app.dir/main.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>executable<span class="w"> </span>example_app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>example_app
 </pre></div>
 </div>
 <p>If we now run the <code class="docutils literal notranslate"><span class="pre">example_app</span></code> binary and hand it our serialized model, we
 should arrive at a happy ending:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app example.pt
-<span class="m">11</span>.4125   <span class="m">5</span>.8262   <span class="m">9</span>.5345   <span class="m">8</span>.6111  <span class="m">12</span>.3997
- <span class="m">7</span>.4683  <span class="m">13</span>.5969   <span class="m">9</span>.0850  <span class="m">11</span>.0698   <span class="m">9</span>.4008
- <span class="m">7</span>.4597  <span class="m">15</span>.0926  <span class="m">12</span>.5727   <span class="m">8</span>.9319   <span class="m">9</span>.0666
- <span class="m">9</span>.4834  <span class="m">11</span>.1747   <span class="m">9</span>.0162  <span class="m">10</span>.9521   <span class="m">8</span>.6269
-<span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000
-<span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000
-<span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000
-<span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000  <span class="m">10</span>.0000
-<span class="o">[</span> Variable<span class="o">[</span>CPUFloatType<span class="o">]{</span><span class="m">8</span>,5<span class="o">}</span> <span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./example_app<span class="w"> </span>example.pt
+<span class="m">11</span>.4125<span class="w">   </span><span class="m">5</span>.8262<span class="w">   </span><span class="m">9</span>.5345<span class="w">   </span><span class="m">8</span>.6111<span class="w">  </span><span class="m">12</span>.3997
+<span class="w"> </span><span class="m">7</span>.4683<span class="w">  </span><span class="m">13</span>.5969<span class="w">   </span><span class="m">9</span>.0850<span class="w">  </span><span class="m">11</span>.0698<span class="w">   </span><span class="m">9</span>.4008
+<span class="w"> </span><span class="m">7</span>.4597<span class="w">  </span><span class="m">15</span>.0926<span class="w">  </span><span class="m">12</span>.5727<span class="w">   </span><span class="m">8</span>.9319<span class="w">   </span><span class="m">9</span>.0666
+<span class="w"> </span><span class="m">9</span>.4834<span class="w">  </span><span class="m">11</span>.1747<span class="w">   </span><span class="m">9</span>.0162<span class="w">  </span><span class="m">10</span>.9521<span class="w">   </span><span class="m">8</span>.6269
+<span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000
+<span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000
+<span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000
+<span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000<span class="w">  </span><span class="m">10</span>.0000
+<span class="o">[</span><span class="w"> </span>Variable<span class="o">[</span>CPUFloatType<span class="o">]{</span><span class="m">8</span>,5<span class="o">}</span><span class="w"> </span><span class="o">]</span>
 </pre></div>
 </div>
 <p>Success! You are now ready to inference away.</p>
@@ -1313,33 +1313,33 @@ Otherwise, on Python 3.7 for example, the library may be called
 be called <code class="docutils literal notranslate"><span class="pre">warp_perspective.so</span></code></p>
 <p>If we now run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span> <span class="pre">develop</span></code> in a terminal from within the
 folder in which <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> is situated, we should see something like:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python setup.py build develop
-running build
-running build_ext
-building <span class="s1">'warp_perspective'</span> extension
-creating build
-creating build/temp.linux-x86_64-3.7
-gcc -pthread -B /root/local/miniconda/compiler_compat -Wl,--sysroot<span class="o">=</span>/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include -I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/torch/csrc/api/include -I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/TH -I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/THC -I/root/local/miniconda/include/python3.7m -c op.cpp -o build/temp.linux-x86_64-3.7/op.o -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME<span class="o">=</span>warp_perspective -D_GLIBCXX_USE_CXX11_ABI<span class="o">=</span><span class="m">0</span> -std<span class="o">=</span>c++11
-cc1plus: warning: <span class="nb">command</span> line option ‘-Wstrict-prototypes’ is valid <span class="k">for</span> C/ObjC but not <span class="k">for</span> C++
-creating build/lib.linux-x86_64-3.7
-g++ -pthread -shared -B /root/local/miniconda/compiler_compat -L/root/local/miniconda/lib -Wl,-rpath<span class="o">=</span>/root/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot<span class="o">=</span>/ build/temp.linux-x86_64-3.7/op.o -lopencv_core -lopencv_imgproc -o build/lib.linux-x86_64-3.7/warp_perspective.so
-running develop
-running egg_info
-creating warp_perspective.egg-info
-writing warp_perspective.egg-info/PKG-INFO
-writing dependency_links to warp_perspective.egg-info/dependency_links.txt
-writing top-level names to warp_perspective.egg-info/top_level.txt
-writing manifest file <span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
-reading manifest file <span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
-writing manifest file <span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
-running build_ext
-copying build/lib.linux-x86_64-3.7/warp_perspective.so -&gt;
-Creating /root/local/miniconda/lib/python3.7/site-packages/warp-perspective.egg-link <span class="o">(</span>link to .<span class="o">)</span>
-Adding warp-perspective <span class="m">0</span>.0.0 to easy-install.pth file
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>build<span class="w"> </span>develop
+running<span class="w"> </span>build
+running<span class="w"> </span>build_ext
+building<span class="w"> </span><span class="s1">'warp_perspective'</span><span class="w"> </span>extension
+creating<span class="w"> </span>build
+creating<span class="w"> </span>build/temp.linux-x86_64-3.7
+gcc<span class="w"> </span>-pthread<span class="w"> </span>-B<span class="w"> </span>/root/local/miniconda/compiler_compat<span class="w"> </span>-Wl,--sysroot<span class="o">=</span>/<span class="w"> </span>-Wsign-compare<span class="w"> </span>-DNDEBUG<span class="w"> </span>-g<span class="w"> </span>-fwrapv<span class="w"> </span>-O3<span class="w"> </span>-Wall<span class="w"> </span>-Wstrict-prototypes<span class="w"> </span>-fPIC<span class="w"> </span>-I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include<span class="w"> </span>-I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/torch/csrc/api/include<span class="w"> </span>-I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/TH<span class="w"> </span>-I/root/local/miniconda/lib/python3.7/site-packages/torch/lib/include/THC<span class="w"> </span>-I/root/local/miniconda/include/python3.7m<span class="w"> </span>-c<span class="w"> </span>op.cpp<span class="w"> </span>-o<span class="w"> </span>build/temp.linux-x86_64-3.7/op.o<span class="w"> </span>-DTORCH_API_INCLUDE_EXTENSION_H<span class="w"> </span>-DTORCH_EXTENSION_NAME<span class="o">=</span>warp_perspective<span class="w"> </span>-D_GLIBCXX_USE_CXX11_ABI<span class="o">=</span><span class="m">0</span><span class="w"> </span>-std<span class="o">=</span>c++11
+cc1plus:<span class="w"> </span>warning:<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>option<span class="w"> </span>‘-Wstrict-prototypes’<span class="w"> </span>is<span class="w"> </span>valid<span class="w"> </span><span class="k">for</span><span class="w"> </span>C/ObjC<span class="w"> </span>but<span class="w"> </span>not<span class="w"> </span><span class="k">for</span><span class="w"> </span>C++
+creating<span class="w"> </span>build/lib.linux-x86_64-3.7
+g++<span class="w"> </span>-pthread<span class="w"> </span>-shared<span class="w"> </span>-B<span class="w"> </span>/root/local/miniconda/compiler_compat<span class="w"> </span>-L/root/local/miniconda/lib<span class="w"> </span>-Wl,-rpath<span class="o">=</span>/root/local/miniconda/lib<span class="w"> </span>-Wl,--no-as-needed<span class="w"> </span>-Wl,--sysroot<span class="o">=</span>/<span class="w"> </span>build/temp.linux-x86_64-3.7/op.o<span class="w"> </span>-lopencv_core<span class="w"> </span>-lopencv_imgproc<span class="w"> </span>-o<span class="w"> </span>build/lib.linux-x86_64-3.7/warp_perspective.so
+running<span class="w"> </span>develop
+running<span class="w"> </span>egg_info
+creating<span class="w"> </span>warp_perspective.egg-info
+writing<span class="w"> </span>warp_perspective.egg-info/PKG-INFO
+writing<span class="w"> </span>dependency_links<span class="w"> </span>to<span class="w"> </span>warp_perspective.egg-info/dependency_links.txt
+writing<span class="w"> </span>top-level<span class="w"> </span>names<span class="w"> </span>to<span class="w"> </span>warp_perspective.egg-info/top_level.txt
+writing<span class="w"> </span>manifest<span class="w"> </span>file<span class="w"> </span><span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
+reading<span class="w"> </span>manifest<span class="w"> </span>file<span class="w"> </span><span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
+writing<span class="w"> </span>manifest<span class="w"> </span>file<span class="w"> </span><span class="s1">'warp_perspective.egg-info/SOURCES.txt'</span>
+running<span class="w"> </span>build_ext
+copying<span class="w"> </span>build/lib.linux-x86_64-3.7/warp_perspective.so<span class="w"> </span>-&gt;
+Creating<span class="w"> </span>/root/local/miniconda/lib/python3.7/site-packages/warp-perspective.egg-link<span class="w"> </span><span class="o">(</span>link<span class="w"> </span>to<span class="w"> </span>.<span class="o">)</span>
+Adding<span class="w"> </span>warp-perspective<span class="w"> </span><span class="m">0</span>.0.0<span class="w"> </span>to<span class="w"> </span>easy-install.pth<span class="w"> </span>file
 
-Installed /warp_perspective
-Processing dependencies <span class="k">for</span> warp-perspective<span class="o">==</span><span class="m">0</span>.0.0
-Finished processing dependencies <span class="k">for</span> warp-perspective<span class="o">==</span><span class="m">0</span>.0.0
+Installed<span class="w"> </span>/warp_perspective
+Processing<span class="w"> </span>dependencies<span class="w"> </span><span class="k">for</span><span class="w"> </span>warp-perspective<span class="o">==</span><span class="m">0</span>.0.0
+Finished<span class="w"> </span>processing<span class="w"> </span>dependencies<span class="w"> </span><span class="k">for</span><span class="w"> </span>warp-perspective<span class="o">==</span><span class="m">0</span>.0.0
 </pre></div>
 </div>
 <p>This will produce a shared library called <code class="docutils literal notranslate"><span class="pre">warp_perspective.so</span></code>, which we can

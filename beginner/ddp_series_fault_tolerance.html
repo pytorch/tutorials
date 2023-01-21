@@ -483,24 +483,24 @@ on available devices. Having this structure ensures your training job can contin
 amongst <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">other env
 variables</a></p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- def ddp_setup(rank, world_size):</span><span class="w"></span>
-<span class="gi">+ def ddp_setup():</span><span class="w"></span>
-<span class="gd">-     """</span><span class="w"></span>
-<span class="gd">-     Args:</span><span class="w"></span>
-<span class="gd">-         rank: Unique identifier of each process</span><span class="w"></span>
-<span class="gd">-         world_size: Total number of processes</span><span class="w"></span>
-<span class="gd">-     """</span><span class="w"></span>
-<span class="gd">-     os.environ["MASTER_ADDR"] = "localhost"</span><span class="w"></span>
-<span class="gd">-     os.environ["MASTER_PORT"] = "12355"</span><span class="w"></span>
-<span class="gd">-     init_process_group(backend="nccl", rank=rank, world_size=world_size)</span><span class="w"></span>
-<span class="gi">+     init_process_group(backend="nccl")</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- def ddp_setup(rank, world_size):</span>
+<span class="gi">+ def ddp_setup():</span>
+<span class="gd">-     """</span>
+<span class="gd">-     Args:</span>
+<span class="gd">-         rank: Unique identifier of each process</span>
+<span class="gd">-         world_size: Total number of processes</span>
+<span class="gd">-     """</span>
+<span class="gd">-     os.environ["MASTER_ADDR"] = "localhost"</span>
+<span class="gd">-     os.environ["MASTER_PORT"] = "12355"</span>
+<span class="gd">-     init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
+<span class="gi">+     init_process_group(backend="nccl")</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="use-torchrun-provided-env-variables">
 <h2>Use Torchrun-provided env variables<a class="headerlink" href="#use-torchrun-provided-env-variables" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.gpu_id = gpu_id</span><span class="w"></span>
-<span class="gi">+ self.gpu_id = int(os.environ["LOCAL_RANK"])</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.gpu_id = gpu_id</span>
+<span class="gi">+ self.gpu_id = int(os.environ["LOCAL_RANK"])</span>
 </pre></div>
 </div>
 </div>
@@ -508,18 +508,18 @@ variables</a></p></li>
 <h2>Saving and loading snapshots<a class="headerlink" href="#saving-and-loading-snapshots" title="Permalink to this heading">¶</a></h2>
 <p>Regularly storing all the relevant information in snapshots allows our
 training job to seamlessly resume after an interruption.</p>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def _save_snapshot(self, epoch):</span><span class="w"></span>
-<span class="gi">+     snapshot = {}</span><span class="w"></span>
-<span class="gi">+     snapshot["MODEL_STATE"] = self.model.module.state_dict()</span><span class="w"></span>
-<span class="gi">+     snapshot["EPOCHS_RUN"] = epoch</span><span class="w"></span>
-<span class="gi">+     torch.save(snapshot, "snapshot.pt")</span><span class="w"></span>
-<span class="gi">+     print(f"Epoch {epoch} | Training snapshot saved at snapshot.pt")</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def _save_snapshot(self, epoch):</span>
+<span class="gi">+     snapshot = {}</span>
+<span class="gi">+     snapshot["MODEL_STATE"] = self.model.module.state_dict()</span>
+<span class="gi">+     snapshot["EPOCHS_RUN"] = epoch</span>
+<span class="gi">+     torch.save(snapshot, "snapshot.pt")</span>
+<span class="gi">+     print(f"Epoch {epoch} | Training snapshot saved at snapshot.pt")</span>
 
-<span class="gi">+ def _load_snapshot(self, snapshot_path):</span><span class="w"></span>
-<span class="gi">+     snapshot = torch.load(snapshot_path)</span><span class="w"></span>
-<span class="gi">+     self.model.load_state_dict(snapshot["MODEL_STATE"])</span><span class="w"></span>
-<span class="gi">+     self.epochs_run = snapshot["EPOCHS_RUN"]</span><span class="w"></span>
-<span class="gi">+     print(f"Resuming training from snapshot at Epoch {self.epochs_run}")</span><span class="w"></span>
+<span class="gi">+ def _load_snapshot(self, snapshot_path):</span>
+<span class="gi">+     snapshot = torch.load(snapshot_path)</span>
+<span class="gi">+     self.model.load_state_dict(snapshot["MODEL_STATE"])</span>
+<span class="gi">+     self.epochs_run = snapshot["EPOCHS_RUN"]</span>
+<span class="gi">+     print(f"Resuming training from snapshot at Epoch {self.epochs_run}")</span>
 </pre></div>
 </div>
 </div>
@@ -528,11 +528,11 @@ training job to seamlessly resume after an interruption.</p>
 <p>When restarting an interrupted training job, your script will first try
 to load a snapshot to resume training from.</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">class Trainer:</span>
-<span class="w"> </span>  def __init__(self, snapshot_path, ...):<span class="w"></span>
-<span class="w"> </span>  ...<span class="w"></span>
-<span class="gi">+  if os.path.exists(snapshot_path):</span><span class="w"></span>
-<span class="gi">+     self._load_snapshot(snapshot_path)</span><span class="w"></span>
-<span class="w"> </span>  ...<span class="w"></span>
+<span class="w"> </span>  def __init__(self, snapshot_path, ...):
+<span class="w"> </span>  ...
+<span class="gi">+  if os.path.exists(snapshot_path):</span>
+<span class="gi">+     self._load_snapshot(snapshot_path)</span>
+<span class="w"> </span>  ...
 </pre></div>
 </div>
 </div>
@@ -541,9 +541,9 @@ to load a snapshot to resume training from.</p>
 <p>Training can resume from the last epoch run, instead of starting all
 over from scratch.</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def train(self, max_epochs: int):</span>
-<span class="gd">-  for epoch in range(max_epochs):</span><span class="w"></span>
-<span class="gi">+  for epoch in range(self.epochs_run, max_epochs):</span><span class="w"></span>
-<span class="w"> </span>     self._run_epoch(epoch)<span class="w"></span>
+<span class="gd">-  for epoch in range(max_epochs):</span>
+<span class="gi">+  for epoch in range(self.epochs_run, max_epochs):</span>
+<span class="w"> </span>     self._run_epoch(epoch)
 </pre></div>
 </div>
 </div>
@@ -552,16 +552,16 @@ over from scratch.</p>
 <p>Simply call your entrypoint function as you would for a non-multiprocessing script; <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> automatically
 spawns the processes.</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">if __name__ == "__main__":</span>
-<span class="w"> </span>  import sys<span class="w"></span>
-<span class="w"> </span>  total_epochs = int(sys.argv[1])<span class="w"></span>
-<span class="w"> </span>  save_every = int(sys.argv[2])<span class="w"></span>
-<span class="gd">-  world_size = torch.cuda.device_count()</span><span class="w"></span>
-<span class="gd">-  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span><span class="w"></span>
-<span class="gi">+  main(save_every, total_epochs)</span><span class="w"></span>
+<span class="w"> </span>  import sys
+<span class="w"> </span>  total_epochs = int(sys.argv[1])
+<span class="w"> </span>  save_every = int(sys.argv[2])
+<span class="gd">-  world_size = torch.cuda.device_count()</span>
+<span class="gd">-  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span>
+<span class="gi">+  main(save_every, total_epochs)</span>
 </pre></div>
 </div>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- python multigpu.py 50 10</span><span class="w"></span>
-<span class="gi">+ torchrun --standalone --nproc_per_node=4 multigpu_torchrun.py 50 10</span><span class="w"></span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- python multigpu.py 50 10</span>
+<span class="gi">+ torchrun --standalone --nproc_per_node=4 multigpu_torchrun.py 50 10</span>
 </pre></div>
 </div>
 <div class="section" id="further-reading">

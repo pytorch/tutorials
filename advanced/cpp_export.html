@@ -527,30 +527,30 @@ CMake and LibTorch that simply loads and executes a serialized PyTorch model.</p
 <h3>A Minimal C++ Application<a class="headerlink" href="#a-minimal-c-application" title="Permalink to this heading">¶</a></h3>
 <p>Let’s begin by discussing the code to load a module. The following will already
 do:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span><span class="c1"> // One-stop header.</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span><span class="c1"> // One-stop header.</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
 
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"usage: example-app &lt;path-to-exported-script-module&gt;</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"></span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"usage: example-app &lt;path-to-exported-script-module&gt;</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
 
 
-<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="k">module</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="k">module</span><span class="p">;</span>
+<span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
-<span class="w">    </span><span class="k">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">Error</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"error loading the model</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"></span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">Error</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"error loading the model</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ok</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ok</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">&lt;torch/script.h&gt;</span></code> header encompasses all relevant includes from the
@@ -580,10 +580,10 @@ page</a> on the PyTorch website. If you download and unzip
 the latest archive, you should receive a folder with the following directory
 structure:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>libtorch/
-  bin/
-  include/
-  lib/
-  share/
+<span class="w">  </span>bin/
+<span class="w">  </span>include/
+<span class="w">  </span>lib/
+<span class="w">  </span>share/
 </pre></div>
 </div>
 <ul class="simple">
@@ -601,61 +601,61 @@ line below.</p>
 <p>The last step is building the application. For this, assume our example
 directory is laid out like this:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>example-app/
-  CMakeLists.txt
-  example-app.cpp
+<span class="w">  </span>CMakeLists.txt
+<span class="w">  </span>example-app.cpp
 </pre></div>
 </div>
 <p>We can now run the following commands to build the application from within the
 <code class="docutils literal notranslate"><span class="pre">example-app/</span></code> folder:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir build
-<span class="nb">cd</span> build
-cmake -DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch ..
-cmake --build . --config Release
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>build
+<span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch<span class="w"> </span>..
+cmake<span class="w"> </span>--build<span class="w"> </span>.<span class="w"> </span>--config<span class="w"> </span>Release
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">/path/to/libtorch</span></code> should be the full path to the unzipped LibTorch
 distribution. If all goes well, it will look something like this:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app# mkdir build
-root@4b5a67132e81:/example-app# <span class="nb">cd</span> build
-root@4b5a67132e81:/example-app/build# cmake -DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch ..
--- The C compiler identification is GNU <span class="m">5</span>.4.0
--- The CXX compiler identification is GNU <span class="m">5</span>.4.0
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc
--- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - <span class="k">done</span>
--- Detecting C compile features
--- Detecting C compile features - <span class="k">done</span>
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
--- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - <span class="k">done</span>
--- Detecting CXX compile features
--- Detecting CXX compile features - <span class="k">done</span>
--- Looking <span class="k">for</span> pthread.h
--- Looking <span class="k">for</span> pthread.h - found
--- Looking <span class="k">for</span> pthread_create
--- Looking <span class="k">for</span> pthread_create - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
--- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
--- Found Threads: TRUE
--- Configuring <span class="k">done</span>
--- Generating <span class="k">done</span>
--- Build files have been written to: /example-app/build
-root@4b5a67132e81:/example-app/build# make
-Scanning dependencies of target example-app
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example-app
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example-app
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app#<span class="w"> </span>mkdir<span class="w"> </span>build
+root@4b5a67132e81:/example-app#<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+root@4b5a67132e81:/example-app/build#<span class="w"> </span>cmake<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch<span class="w"> </span>..
+--<span class="w"> </span>The<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>The<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>identification<span class="w"> </span>is<span class="w"> </span>GNU<span class="w"> </span><span class="m">5</span>.4.0
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>C<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/cc<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>C<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++
+--<span class="w"> </span>Check<span class="w"> </span><span class="k">for</span><span class="w"> </span>working<span class="w"> </span>CXX<span class="w"> </span>compiler:<span class="w"> </span>/usr/bin/c++<span class="w"> </span>--<span class="w"> </span>works
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compiler<span class="w"> </span>ABI<span class="w"> </span>info<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features
+--<span class="w"> </span>Detecting<span class="w"> </span>CXX<span class="w"> </span>compile<span class="w"> </span>features<span class="w"> </span>-<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread.h<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthreads<span class="w"> </span>-<span class="w"> </span>not<span class="w"> </span>found
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread
+--<span class="w"> </span>Looking<span class="w"> </span><span class="k">for</span><span class="w"> </span>pthread_create<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread<span class="w"> </span>-<span class="w"> </span>found
+--<span class="w"> </span>Found<span class="w"> </span>Threads:<span class="w"> </span>TRUE
+--<span class="w"> </span>Configuring<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Generating<span class="w"> </span><span class="k">done</span>
+--<span class="w"> </span>Build<span class="w"> </span>files<span class="w"> </span>have<span class="w"> </span>been<span class="w"> </span>written<span class="w"> </span>to:<span class="w"> </span>/example-app/build
+root@4b5a67132e81:/example-app/build#<span class="w"> </span>make
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>example-app
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>CMakeFiles/example-app.dir/example-app.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>executable<span class="w"> </span>example-app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>example-app
 </pre></div>
 </div>
 <p>If we supply the path to the traced <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model <code class="docutils literal notranslate"><span class="pre">traced_resnet_model.pt</span></code>  we created earlier
 to the resulting <code class="docutils literal notranslate"><span class="pre">example-app</span></code> binary, we should be rewarded with a friendly
 “ok”. Please note, if try to run this example with <code class="docutils literal notranslate"><span class="pre">my_module_model.pt</span></code> you will get an error saying that
 your input is of an incompatible shape. <code class="docutils literal notranslate"><span class="pre">my_module_model.pt</span></code> expects 1D instead of 4D.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build# ./example-app &lt;path_to_model&gt;/traced_resnet_model.pt
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build#<span class="w"> </span>./example-app<span class="w"> </span>&lt;path_to_model&gt;/traced_resnet_model.pt
 ok
 </pre></div>
 </div>
@@ -667,12 +667,12 @@ ok
 couple lines of code away from executing it! Let’s add those lines to our C++
 application’s <code class="docutils literal notranslate"><span class="pre">main()</span></code> function:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Create a vector of inputs.</span>
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">IValue</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span><span class="w"></span>
-<span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">ones</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">}));</span><span class="w"></span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">IValue</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span>
+<span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">ones</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">}));</span>
 
 <span class="c1">// Execute the model and turn its output into a tensor.</span>
-<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">).</span><span class="n">toTensor</span><span class="p">();</span><span class="w"></span>
-<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="cm">/*start=*/</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="cm">/*end=*/</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"></span>
+<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">).</span><span class="n">toTensor</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="cm">/*start=*/</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="cm">/*end=*/</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>The first two lines set up the inputs to our model. We create a vector of
@@ -693,14 +693,14 @@ you to further manipulate and process tensors just like in Python.</p>
 supplied the same input to our model in Python earlier in this tutorial, we
 should ideally see the same output. Let’s try it out by re-compiling our
 application and running it with the same serialized model:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build# make
-Scanning dependencies of target example-app
-<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example-app
-<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example-app
-root@4b5a67132e81:/example-app/build# ./example-app traced_resnet_model.pt
--0.2698 -0.0381  <span class="m">0</span>.4023 -0.3010 -0.0448
-<span class="o">[</span> Variable<span class="o">[</span>CPUFloatType<span class="o">]{</span><span class="m">1</span>,5<span class="o">}</span> <span class="o">]</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build#<span class="w"> </span>make
+Scanning<span class="w"> </span>dependencies<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>example-app
+<span class="o">[</span><span class="w"> </span><span class="m">50</span>%<span class="o">]</span><span class="w"> </span>Building<span class="w"> </span>CXX<span class="w"> </span>object<span class="w"> </span>CMakeFiles/example-app.dir/example-app.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Linking<span class="w"> </span>CXX<span class="w"> </span>executable<span class="w"> </span>example-app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span><span class="w"> </span>Built<span class="w"> </span>target<span class="w"> </span>example-app
+root@4b5a67132e81:/example-app/build#<span class="w"> </span>./example-app<span class="w"> </span>traced_resnet_model.pt
+-0.2698<span class="w"> </span>-0.0381<span class="w">  </span><span class="m">0</span>.4023<span class="w"> </span>-0.3010<span class="w"> </span>-0.0448
+<span class="o">[</span><span class="w"> </span>Variable<span class="o">[</span>CPUFloatType<span class="o">]{</span><span class="m">1</span>,5<span class="o">}</span><span class="w"> </span><span class="o">]</span>
 </pre></div>
 </div>
 <p>For reference, the output in Python previously was:</p>
