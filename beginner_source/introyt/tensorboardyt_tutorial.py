@@ -4,8 +4,8 @@
 `Autograd <autogradyt_tutorial.html>`_ ||
 `Building Models <modelsyt_tutorial.html>`_ ||
 **TensorBoard Support** ||
-`Training Models <trainingyt.html>`_ ||
-`Model Understanding <captumyt.html>`_
+`Training Models <trainingyt_tutorial.html>`_ ||
+`Model Understanding <captumyt_tutorial.html>`_
 
 PyTorch TensorBoard Support
 ===========================

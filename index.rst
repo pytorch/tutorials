@@ -774,8 +774,8 @@ Additional Resources
    beginner/introyt/autogradyt_tutorial
    beginner/introyt/modelsyt_tutorial
    beginner/introyt/tensorboardyt_tutorial
-   beginner/introyt/trainingyt
-   beginner/introyt/captumyt
+   beginner/introyt/trainingyt_tutorial
+   beginner/introyt/captumyt_tutorial
 
 .. toctree::
    :maxdepth: 2

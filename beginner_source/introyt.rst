@@ -3,8 +3,8 @@
 `Autograd <introyt/autogradyt_tutorial.html>`_ ||
 `Building Models <introyt/modelsyt_tutorial.html>`_ ||
 `TensorBoard Support <introyt/tensorboardyt_tutorial.html>`_ ||
-`Training Models <introyt/trainingyt.html>`_ ||
-`Model Understanding <introyt/captumyt.html>`_
+`Training Models <introyt/trainingyt_tutorial.html>`_ ||
+`Model Understanding <introyt/captumyt_tutorial.html>`_
 
 Introduction to PyTorch - YouTube Series
 ========================================
