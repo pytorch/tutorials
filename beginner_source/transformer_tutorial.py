@@ -45,6 +45,8 @@ can be easily adapted/composed.
 #
 
 import math
+import os
+from tempfile import TemporaryDirectory
 from typing import Tuple
 
 import torch
@@ -346,8 +348,9 @@ def evaluate(model: nn.Module, eval_data: Tensor) -> float:
 
 best_val_loss = float('inf')
 epochs = 3
-best_model = None
 
+tempdir = TemporaryDirectory()
+best_model_params_path = os.path.join(tempdir.path, "best_model_params.pt")
 for epoch in range(1, epochs + 1):
     epoch_start_time = time.time()
     train(model)
@@ -356,12 +359,12 @@ for epoch in range(1, epochs + 1):
     elapsed = time.time() - epoch_start_time
     print('-' * 89)
     print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
-          f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
+        f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
     print('-' * 89)
 
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        best_model = copy.deepcopy(model)
+        torch.save(model.state_dict(), best_model_params_path)
 
     scheduler.step()
 
@@ -371,7 +374,10 @@ for epoch in range(1, epochs + 1):
 # -------------------------------------------
 #
 
-test_loss = evaluate(best_model, test_data)
+model = torch.load(best_model_params_path) # load best model states
+tempdir.cleanup()
+
+test_loss = evaluate(model, test_data)
 test_ppl = math.exp(test_loss)
 print('=' * 89)
 print(f'| End of training | test loss {test_loss:5.2f} | '
