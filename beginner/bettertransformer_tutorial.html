@@ -401,7 +401,7 @@ been updated to use the core library modules to benefit from fastpath accelerati
 (Additional modules may be enabled with fastpath execution in the future.)</p>
 <p>Better Transformer offers two types of acceleration:</p>
 <ul class="simple">
-<li><p>Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.</p></li>
+<li><p>Native multihead attention (MHA) implementation for CPU and GPU to improve overall execution efficiency.</p></li>
 <li><p>Exploiting sparsity in NLP inference.  Because of variable input lengths, input
 tokens may contain a large number of padding tokens for which processing may be
 skipped, delivering significant speedups.</p></li>
@@ -492,9 +492,11 @@ on-accelerator tests.  (Enable GPU execution for your environment as appropriate
 <li><p>Execution</p></li>
 </ol>
 <p>2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)</p>
-<p>We run the model on CPU, and collect profile information:
-* The first run uses traditional (“slow path”) execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</p>
+<p>We run the model on CPU, and collect profile information:</p>
+<ul class="simple">
+<li><p>The first run uses traditional (“slow path”) execution.</p></li>
+<li><p>The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</p></li>
+</ul>
 <p>You can see an improvement (whose magnitude will depend on the CPU model) when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
 in the native <cite>TransformerEncoderLayer</cite> implementation <cite>aten::_transformer_encoder_layer_fwd</cite>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
@@ -524,12 +526,12 @@ in the native <cite>TransformerEncoderLayer</cite> implementation <cite>aten::_t
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span><span class="o">=</span><span class="kc">False</span>
 </pre></div>
 </div>
-<p>We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:
-* The first run uses traditional (“slow path”) execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite></p>
-<blockquote>
-<div><p>and disables gradient collection with <cite>torch.no_grad()</cite>.</p>
-</div></blockquote>
+<p>We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:</p>
+<ul class="simple">
+<li><p>The first run uses traditional (“slow path”) execution.</p></li>
+<li><p>The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite>
+and disables gradient collection with <cite>torch.no_grad()</cite>.</p></li>
+</ul>
 <p>When executing on a GPU, you should see a significant speedup, in particular for the small input batch setting:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">model_input</span> <span class="o">=</span> <span class="n">model_input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
