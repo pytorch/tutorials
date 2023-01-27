@@ -34,12 +34,21 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch import optim
+
 import torchvision
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
+
 import numpy as np
+import matplotlib.pyplot as plt
 
 plt.ion()   # interactive mode
+
+
+######################################################################
+# Show GPU specifications, if available
+# 
+
+!nvidia-smi
 
 
 ######################################################################
@@ -50,9 +59,6 @@ plt.ion()   # interactive mode
 # standard convolutional network augmented with a spatial transformer
 # network.
 # 
-
-# Show GPU specifications, if available
-!nvidia-smi
 
 import os
 
@@ -140,6 +146,12 @@ class STN(nn.Module):
 
         return x
 
+
+######################################################################
+# Creating a CNN Classifier inlcluding a STN within
+# -------------------------------------------------
+# 
+
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
@@ -175,12 +187,28 @@ model = Net().to(device)
 # Training the model
 # ------------------
 # 
-# Now, let’s use the Adam optimizer to train the model. The network is
-# learning the classification task in a supervised way. In the same time
-# the model is learning STN automatically in an end-to-end fashion.
+# The network is learning the classification task in a supervised way. In
+# the same time the model is learning STN automatically in an end-to-end
+# fashion.
+# 
+
+
+######################################################################
+# Defining Optimizer
+# ~~~~~~~~~~~~~~~~~~
+# 
+# Now, let’s use the Adam optimizer to train the model
 # 
 
 optimizer = optim.Adam(model.parameters(), lr=2e-3)
+
+
+######################################################################
+# Defining Train Function
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# Runs for every epoch
+# 
 
 def train(epoch: int):
     model.train()
@@ -198,31 +226,43 @@ def train(epoch: int):
 
 
 ######################################################################
+# Defining Test Function
+# ~~~~~~~~~~~~~~~~~~~~~~
+# 
 # A simple test procedure to measure the STN performances on MNIST.
 # 
 
+@torch.inference_mode()
 def test():
     model.eval()
-    with torch.inference_mode():
-        test_loss = 0
-        correct = 0
-        for data, target in test_loader:
-            output = model(data.to(device))
+    
+    test_loss = 0
+    correct = 0
+    for data, target in test_loader:
+        output = model(data.to(device))
 
-            target = target.to(device)
+        target = target.to(device)
 
-            # sum up batch loss
-            test_loss += F.cross_entropy(output, target, reduction="sum").item()
+        # sum up batch loss
+        test_loss += F.cross_entropy(output, target, reduction="sum").item()
 
-            # get the index of the max log-probability
-            pred = output.argmax(1, keepdim=True)
+        # get the index of the max log-probability
+        pred = output.argmax(1, keepdim=True)
 
-            correct += pred.eq(target.view_as(pred)).sum().item()
+        correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_ds)
     print(f"\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_ds)} ({100 * correct / len(test_ds):.0f}%)\n")
 
-for epoch in range(1, 20 + 1):
+
+######################################################################
+# Running Training Loop
+# ~~~~~~~~~~~~~~~~~~~~~
+# 
+# Training the model and testing it for each epoch
+# 
+
+for epoch in range(1, 21):
     train(epoch)
     test()
 
@@ -234,49 +274,64 @@ for epoch in range(1, 20 + 1):
 # Now, we will inspect the results of our learned visual attention
 # mechanism.
 # 
-# We define a small helper function in order to visualize the
-# transformations while training.
-# 
 
-def convert_image_np(inp: torch.Tensor):
-    """Convert a Tensor to numpy image."""
-    inp = inp.permute(1, 2, 0).numpy()
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
-    inp = std * inp + mean
-    inp = np.clip(inp, 0, 1)
-    return inp
 
 ######################################################################
+# Defining function to convert Tensor to Numpy Image
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+
+mean = np.array([0.485, 0.456, 0.406])
+std = np.array([0.229, 0.224, 0.225])
+
+def convert_image_np(inp: torch.Tensor):
+    """Convert a Tensor in CPU to numpy image."""
+    numpy_inp = inp.permute(1, 2, 0).numpy()
+    scaled_inp = std * numpy_inp + mean
+    clipped_inp = np.clip(scaled_inp, 0, 1)
+    return clipped_inp
+
+
+######################################################################
+# Defining Visualization Function
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
 # We want to visualize the output of the spatial transformers layer after
 # the training, we visualize a batch of input images and the corresponding
 # transformed batch using STN.
 # 
 
+@torch.inference_mode()
 def visualize_stn():
-    with torch.inference_mode():
-        # Get a batch of training data
-        images, _ = next(iter(test_loader))
-        
-        input_tensor = images.to(device)
+    # Get a batch of training data
+    images, _ = next(iter(test_loader))
+    
+    input_tensor = images.to(device)
 
-        transformed_input_tensor = model.stn(input_tensor)
+    transformed_input_tensor = model.stn(input_tensor)
 
-        in_grid = convert_image_np(
-            torchvision.utils.make_grid(images))
+    in_grid = convert_image_np(
+        torchvision.utils.make_grid(images))
 
-        out_grid = convert_image_np(
-            torchvision.utils.make_grid(transformed_input_tensor.cpu()))
+    out_grid = convert_image_np(
+        torchvision.utils.make_grid(transformed_input_tensor.cpu()))
 
-        # Plot the results side-by-side
-        f, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.imshow(in_grid)
-        ax1.set_title('Dataset Images')
+    # Plot the results side-by-side
+    f, (ax1, ax2) = plt.subplots(1, 2)
+    ax1.imshow(in_grid)
+    ax1.set_title('Dataset Images')
 
-        ax2.imshow(out_grid)
-        ax2.set_title('Transformed Images')
+    ax2.imshow(out_grid)
+    ax2.set_title('Transformed Images')
 
+
+######################################################################
+# Runing Visualization Function
+# -----------------------------
+# 
 # Visualize the STN transformation on some input batch
+# 
+
 visualize_stn()
 
 plt.ioff()
