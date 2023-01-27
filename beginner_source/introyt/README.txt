@@ -28,7 +28,7 @@ Introduction to PyTorch on YouTube
 7. trainingyt_tutorial.py
     Training with PyTorch
     https://pytorch.org/tutorials/beginner/introyt/trainingyt_tutorial.html
-
+    
 8. captumyt_tutorial.py
     Model Understanding with Captum
     https://pytorch.org/tutorials/beginner/introyt/captumyt_tutorial.html

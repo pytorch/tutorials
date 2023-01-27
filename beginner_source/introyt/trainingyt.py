@@ -5,7 +5,7 @@
 `Building Models <modelsyt_tutorial.html>`_ ||
 `TensorBoard Support <tensorboardyt_tutorial.html>`_ ||
 **Training Models** ||
-`Model Understanding <captumyt_tutorial.html>`_
+`Model Understanding <captumyt.html>`_
 
 Training with PyTorch
 =====================
