@@ -219,7 +219,9 @@ print(net.conv1.bias.grad)
 # The simplest update rule used in practice is the Stochastic Gradient
 # Descent (SGD):
 #
-#      ``weight = weight - learning_rate * gradient``
+# .. code:: python
+#
+#     weight = weight - learning_rate * gradient
 #
 # We can implement this using simple Python code:
 #
@@ -233,18 +235,21 @@ print(net.conv1.bias.grad)
 # update rules such as SGD, Nesterov-SGD, Adam, RMSProp, etc.
 # To enable this, we built a small package: ``torch.optim`` that
 # implements all these methods. Using it is very simple:
-
-import torch.optim as optim
-
-# create your optimizer
-optimizer = optim.SGD(net.parameters(), lr=0.01)
-
-# in your training loop:
-optimizer.zero_grad()   # zero the gradient buffers
-output = net(input)
-loss = criterion(output, target)
-loss.backward()
-optimizer.step()    # Does the update
+#
+# .. code:: python
+#
+#     import torch.optim as optim
+#
+#     # create your optimizer
+#     optimizer = optim.SGD(net.parameters(), lr=0.01)
+#
+#     # in your training loop:
+#     optimizer.zero_grad()   # zero the gradient buffers
+#     output = net(input)
+#     loss = criterion(output, target)
+#     loss.backward()
+#     optimizer.step()    # Does the update
+#
 
 
 ###############################################################
