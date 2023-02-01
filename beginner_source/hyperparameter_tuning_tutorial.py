@@ -424,6 +424,12 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
 
 if __name__ == "__main__":
+    # sphinx_gallery_start_ignore
+    # Fixes AttributeError: '_LoggingTee' object has no attribute 'fileno'.
+    # This is only needed to run with sphinx-build.
+    import sys
+    sys.stdout.fileno = lambda: False
+    # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
     main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
 
