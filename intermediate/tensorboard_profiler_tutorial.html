@@ -23,7 +23,7 @@
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="pruning_tutorial.html" rel="next" title="Pruning Tutorial"/>
+<link href="../beginner/hyperparameter_tuning_tutorial.html" rel="next" title="Hyperparameter tuning with Ray Tune"/>
 <link href="../advanced/extend_dispatcher.html" rel="prev" title="Extending dispatcher for a new backend in C++"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
@@ -291,6 +291,7 @@
 <p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
@@ -446,24 +447,25 @@ Transform it to the desired format and use DataLoader to load each batch.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 360448/170498071 [00:00&lt;00:47, 3591340.11it/s]
-  2%|2         | 3833856/170498071 [00:00&lt;00:07, 21806589.24it/s]
-  6%|5         | 9699328/170498071 [00:00&lt;00:04, 38475660.59it/s]
- 10%|#         | 17137664/170498071 [00:00&lt;00:02, 52558372.36it/s]
- 16%|#5        | 26542080/170498071 [00:00&lt;00:02, 67448961.08it/s]
- 22%|##2       | 37748736/170498071 [00:00&lt;00:01, 82569062.07it/s]
- 29%|##8       | 49381376/170498071 [00:00&lt;00:01, 93567896.58it/s]
- 36%|###5      | 61079552/170498071 [00:00&lt;00:01, 100971714.58it/s]
- 43%|####2     | 72777728/170498071 [00:00&lt;00:00, 105931520.35it/s]
- 50%|####9     | 84443136/170498071 [00:01&lt;00:00, 109181439.53it/s]
- 56%|#####6    | 96075776/170498071 [00:01&lt;00:00, 111341506.65it/s]
- 63%|######3   | 107773952/170498071 [00:01&lt;00:00, 113046238.91it/s]
- 70%|#######   | 119472128/170498071 [00:01&lt;00:00, 114158316.32it/s]
- 77%|#######6  | 131137536/170498071 [00:01&lt;00:00, 114848916.21it/s]
- 84%|########3 | 142835712/170498071 [00:01&lt;00:00, 115481975.34it/s]
- 91%|######### | 154501120/170498071 [00:01&lt;00:00, 115747632.70it/s]
- 97%|#########7| 166166528/170498071 [00:01&lt;00:00, 115965626.38it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 97878521.81it/s]
+  0%|          | 458752/170498071 [00:00&lt;00:41, 4107217.93it/s]
+  4%|4         | 6946816/170498071 [00:00&lt;00:04, 38212666.55it/s]
+ 10%|9         | 16842752/170498071 [00:00&lt;00:02, 65186565.49it/s]
+ 16%|#5        | 27066368/170498071 [00:00&lt;00:01, 79532697.57it/s]
+ 22%|##1       | 36929536/170498071 [00:00&lt;00:01, 86329338.92it/s]
+ 27%|##7       | 46792704/170498071 [00:00&lt;00:01, 90446616.93it/s]
+ 33%|###3      | 56852480/170498071 [00:00&lt;00:01, 93720614.20it/s]
+ 39%|###9      | 66879488/170498071 [00:00&lt;00:01, 95718830.49it/s]
+ 45%|####5     | 76840960/170498071 [00:00&lt;00:00, 96924547.05it/s]
+ 51%|#####     | 86605824/170498071 [00:01&lt;00:00, 97015809.85it/s]
+ 57%|#####6    | 96927744/170498071 [00:01&lt;00:00, 98872621.52it/s]
+ 63%|######2   | 106889216/170498071 [00:01&lt;00:00, 99049846.56it/s]
+ 69%|######8   | 116981760/170498071 [00:01&lt;00:00, 99563095.42it/s]
+ 74%|#######4  | 126943232/170498071 [00:01&lt;00:00, 98558679.72it/s]
+ 80%|########  | 137166848/170498071 [00:01&lt;00:00, 99618845.54it/s]
+ 86%|########6 | 147161088/170498071 [00:01&lt;00:00, 99648006.98it/s]
+ 92%|#########2| 157155328/170498071 [00:01&lt;00:00, 99620347.37it/s]
+ 98%|#########8| 167149568/170498071 [00:01&lt;00:00, 98858861.40it/s]
+100%|##########| 170498071/170498071 [00:01&lt;00:00, 91965399.74it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 </pre></div>
 </div>
@@ -816,7 +818,7 @@ and feel free to open an issue <a class="reference external" href="https://githu
 <li><p><a class="reference external" href="https://github.com/pytorch/kineto/tree/master/tb_plugin">Pytorch TensorBoard Profiler github</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/master/profiler.html">torch.profiler API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  28.317 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  26.322 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-tensorboard-profiler-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/67e47b6d6793c700666471b688068f72/tensorboard_profiler_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensorboard_profiler_tutorial.py</span></code></a></p>
@@ -832,7 +834,7 @@ and feel free to open an issue <a class="reference external" href="https://githu
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="pruning_tutorial.html" rel="next" title="Pruning Tutorial">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/hyperparameter_tuning_tutorial.html" rel="next" title="Hyperparameter tuning with Ray Tune">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="../advanced/extend_dispatcher.html" rel="prev" title="Extending dispatcher for a new backend in C++"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>
