@@ -49,7 +49,6 @@ NOT_RUN = [
     "recipes/timer_quick_start",
     "recipes/amp_recipe",
     "recipes/Captum_Recipe",
-    "hyperparameter_tuning_tutorial",
     "flask_rest_api_tutorial",
     "text_to_speech_with_torchaudio",
 ]
