@@ -18,7 +18,7 @@ tldr; The FX Graph Mode API looks like the following:
   from torch.ao.quantization import QConfigMapping
   float_model.eval()
   qconfig = get_default_qconfig("fbgemm")
-  qconfig_mapping = QConfigMapping.set_global(qconfig)
+  qconfig_mapping = QConfigMapping().set_global(qconfig)
   def calibrate(model, data_loader):
       model.eval()
       with torch.no_grad():
