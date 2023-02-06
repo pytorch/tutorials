@@ -33,7 +33,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ######################################################################
 # From the Python frontend, a nested tensor can be created from a list of tensors.
-nt = torch.nested_tensor([torch.randn((2, 6)), torch.randn((3, 6))], device=device)
+nt = torch.nested.nested_tensor([torch.randn((2, 6)), torch.randn((3, 6))], device=device)
 print(nt)
 
 ######################################################################
@@ -100,7 +100,7 @@ print(nt2)
 # Applying the operation on a nested tensor is equivalent to
 # applying the operation to the underlying tensor components,
 # with the result being a nested tensor as well.
-nt_mm = torch.nested_tensor([torch.randn((2, 3, 4)), torch.randn((2, 3, 5))], device=device)
+nt_mm = torch.nested.nested_tensor([torch.randn((2, 3, 4)), torch.randn((2, 3, 5))], device=device)
 nt3 = torch.matmul(nt2, nt_mm)
 print("matmul:", nt3, sep='\n')
 
@@ -125,7 +125,7 @@ vocabulary = {"goodbye" : 1.0, "padding" : 2.0,
               "embrace" : 3.0, "nested" : 4.0, "tensor" : 5.0}
 padded_sentences = torch.tensor([[1.0, 2.0, 0.0],
                                  [3.0, 4.0, 5.0]])
-nested_sentences = torch.nested_tensor([torch.tensor([1.0, 2.0]),
+nested_sentences = torch.nested.nested_tensor([torch.tensor([1.0, 2.0]),
                                         torch.tensor([3.0, 4.0, 5.0])])
 print(padded_sentences)
 print(nested_sentences)
@@ -395,9 +395,9 @@ for i in range(N):
     queries.append(torch.randn((l, E_q), device=device))
     keys   .append(torch.randn((s, E_k), device=device))
     values .append(torch.randn((s, E_v), device=device))
-query = torch.nested_tensor(queries)
-key   = torch.nested_tensor(keys   )
-value = torch.nested_tensor(values )
+query = torch.nested.nested_tensor(queries)
+key   = torch.nested.nested_tensor(keys   )
+value = torch.nested.nested_tensor(values )
 
 # pad input
 padded_query = torch.nested.to_padded_tensor(query, 0.0, (N, L_t, E_q))
