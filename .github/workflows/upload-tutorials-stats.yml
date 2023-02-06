@@ -1,0 +1,35 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Page age
+
+# Controls when the workflow will run
+on:
+  schedule:
+    # Run this once per day, towards the end of the day for keeping the most
+    # recent data point most meaningful (hours are interpreted in UTC).
+    - cron: "55 23 * * 0"
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  get-tutorials-stats:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out this repository under $GITHUB_WORKSPACE, so the job can access it
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name:
+        run: |
+           pip3 install sqlite3
+           pip3 install pandas
+           pip3 install boto3
+           pip3 install typing
+           pip3 install awswrangler
+      secrets:
+        aws-access-key-id: ${{ secrets.AWS_PYTORCH_UPLOADER_ACCESS_KEY_ID }}
+        aws-pytorch-uploader-secret-access-key: ${{ secrets.AWS_PYTORCH_UPLOADER_SECRET_ACCESS_KEY }}
+      - name: Run the script
+        run: python3 ./scripts/get-tutorials-stats.py
