@@ -279,13 +279,13 @@ print("Shape of the rollout TensorDict:", rollout.batch_size)
 #
 
 actor_net = nn.Sequential(
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(2 * env.action_spec.shape[-1]),
+    nn.LazyLinear(2 * env.action_spec.shape[-1], device=device),
     NormalParamExtractor(),
 )
 
@@ -327,13 +327,13 @@ policy_module = ProbabilisticActor(
 # parameters.
 #
 value_net = nn.Sequential(
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(num_cells),
+    nn.LazyLinear(num_cells, device=device),
     nn.Tanh(),
-    nn.LazyLinear(1),
+    nn.LazyLinear(1, device=device),
 )
 
 value_module = ValueOperator(
