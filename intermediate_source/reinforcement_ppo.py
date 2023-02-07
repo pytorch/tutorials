@@ -120,8 +120,8 @@ num_procs = 4
 num_cells = 256
 frame_skip = 1
 frames_per_batch = 2000 // frame_skip
-total_frames = 5_000 // frame_skip
-device = "cpu"
+total_frames = 500_000 // frame_skip
+device = "cpu" if not torch.has_cuda else "cuda:0"
 gamma = 0.99
 lmbda = 0.95
 batch_size = 64  # total batch-size to compute the loss
@@ -421,8 +421,8 @@ advantage_module = GAE(gamma=gamma, lmbda=lmbda, value_network=value_module, ave
 loss_module = ClipPPOLoss(actor=policy_module,
                           critic=value_module,
                           advantage_key= "advantage",
-                          clip_epsilon = 0.1,
-                          entropy_bonus = True,
+                          clip_epsilon = clip_epsilon,
+                          entropy_bonus = bool(entropy_eps),
                           entropy_coef = entropy_eps,
                           # these keys match by default but we set this for completeness
                           value_target_key=advantage_module.value_target_key,
