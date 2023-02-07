@@ -53,10 +53,10 @@ models (policy and value function), loss modules, data collectors and replay buf
 #
 # .. math::
 #
-#    L(s,a,\theta_k,\theta) = \min\left(
-# \frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
-# g(\epsilon, A^{\pi_{\theta_k}}(s,a))
-# \right),
+#     L(s,a,\theta_k,\theta) = \min\left(
+#     \frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
+#     g(\epsilon, A^{\pi_{\theta_k}}(s,a))
+#     \right),
 #
 # There are two components in that loss: in the first part of the minimum operator,
 # we simply compute an importance-weighted version of the REINFORCE loss (i.e. a
@@ -83,7 +83,6 @@ models (policy and value function), loss modules, data collectors and replay buf
 # and care less about the specific data description and more about the algorithm itself.
 
 
-import math
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
@@ -92,17 +91,16 @@ from tensordict.nn import TensorDictModule
 from tensordict.nn.distributions import NormalParamExtractor
 from torch import nn
 from torchrl.collectors import SyncDataCollector
-from torchrl.envs import ParallelEnv, TransformedEnv, ObservationNorm, Compose, \
-    CatTensors, DoubleToFloat, EnvCreator, CatFrames, StepCounter
+from torchrl.data.replay_buffers import ReplayBuffer
+from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
+from torchrl.data.replay_buffers.storages import LazyTensorStorage
+from torchrl.envs import TransformedEnv, ObservationNorm, Compose, \
+    DoubleToFloat, StepCounter
 from torchrl.envs.libs.gym import GymEnv
 from torchrl.envs.utils import set_exploration_mode, check_env_specs
 from torchrl.modules import TanhNormal, ProbabilisticActor, ValueOperator
-from torchrl.objectives.value import GAE
 from torchrl.objectives import ClipPPOLoss
-from torchrl.objectives.utils import distance_loss
-from torchrl.data.replay_buffers.storages import LazyTensorStorage
-from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
-from torchrl.data.replay_buffers import ReplayBuffer
+from torchrl.objectives.value import GAE
 from tqdm import tqdm
 
 ######################################################################
@@ -147,7 +145,10 @@ seed = 0
 # with another. For example, creating a wrapped gym environment can be achieved with few characters:
 #
 
-base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_skip)
+base_env = GymEnv(
+    "InvertedDoublePendulum-v4", device=device,
+    frame_skip=frame_skip
+    )
 torch.manual_seed(seed)
 base_env.set_seed(seed)
 
@@ -212,7 +213,6 @@ env.transform[0].init_stats(num_iter=1000, reduce_dim=0, cat_dim=0)
 
 # A little sanity check for the shape of our summary stats:
 print("normalization constant shape:", env.transform[0].loc.shape)
-
 
 ######################################################################
 # An environment is not only defined by its simulator and transforms, but also
@@ -300,8 +300,10 @@ actor_net = nn.Sequential(
 # class will simply ready the ``in_keys`` it is provided with and write the
 # outputs in-place at the registered ``out_keys``.
 #
-policy_module = TensorDictModule(actor_net, in_keys=["observation"],
-                                 out_keys=["loc", "scale"])
+policy_module = TensorDictModule(
+    actor_net, in_keys=["observation"],
+    out_keys=["loc", "scale"]
+    )
 
 ######################################################################
 # We now need to build a distribution out of the location and scale of our normal
@@ -315,8 +317,10 @@ policy_module = ProbabilisticActor(
     spec=env.action_spec,
     in_keys=["loc", "scale"],
     distribution_class=TanhNormal,
-    distribution_kwargs={"min": env.action_spec.space.minimum, "max": env.action_spec.space.maximum},
-    return_log_prob=True,  # we'll need the log-prob for the numerator of the importance weights
+    distribution_kwargs={"min": env.action_spec.space.minimum,
+                         "max": env.action_spec.space.maximum},
+    return_log_prob=True,
+    # we'll need the log-prob for the numerator of the importance weights
 )
 
 ######################################################################
@@ -421,23 +425,31 @@ replay_buffer = ReplayBuffer(
 # return the policy and value losses.
 #
 
-advantage_module = GAE(gamma=gamma, lmbda=lmbda, value_network=value_module, average_gae=True)
+advantage_module = GAE(
+    gamma=gamma, lmbda=lmbda, value_network=value_module,
+    average_gae=True
+)
 
-loss_module = ClipPPOLoss(actor=policy_module,
-                          critic=value_module,
-                          advantage_key= "advantage",
-                          clip_epsilon = clip_epsilon,
-                          entropy_bonus = bool(entropy_eps),
-                          entropy_coef = entropy_eps,
-                          # these keys match by default but we set this for completeness
-                          value_target_key=advantage_module.value_target_key,
-                          critic_coef = 1.0,
-                          gamma = 0.99,
-                          loss_critic_type = "smooth_l1",
-                          )
+loss_module = ClipPPOLoss(
+    actor=policy_module,
+    critic=value_module,
+    advantage_key="advantage",
+    clip_epsilon=clip_epsilon,
+    entropy_bonus=bool(entropy_eps),
+    entropy_coef=entropy_eps,
+    # these keys match by default but we set this for completeness
+    value_target_key=advantage_module.value_target_key,
+    critic_coef=1.0,
+    gamma=0.99,
+    loss_critic_type="smooth_l1",
+)
 
 optim = torch.optim.Adam(loss_module.parameters(), lr)
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, total_frames // frames_per_batch, 0.0)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    optim,
+    total_frames // frames_per_batch,
+    0.0
+    )
 
 ######################################################################
 # Training loop
@@ -462,11 +474,15 @@ for i, data in enumerate(collector):
         for j in range(frames_per_batch // batch_size):
             subdata, *_ = replay_buffer.sample(batch_size)
             loss_vals = loss_module(subdata)
-            loss_value = loss_vals["loss_objective"] + loss_vals["loss_critic"] + loss_vals["loss_entropy"]
+            loss_value = loss_vals["loss_objective"] + loss_vals[
+                "loss_critic"] + loss_vals["loss_entropy"]
 
             # Optim
             loss_value.backward()
-            torch.nn.utils.clip_grad_norm_(loss_module.parameters(), max_grad_norm)
+            torch.nn.utils.clip_grad_norm_(
+                loss_module.parameters(),
+                max_grad_norm
+                )
             optim.step()
             optim.zero_grad()
 
@@ -482,20 +498,27 @@ for i, data in enumerate(collector):
             # execute a rollout with the trained policy
             eval_rollout = env.rollout(1000, policy_module)
             logs["eval reward"].append(eval_rollout["reward"].mean().item())
-            logs["eval reward (sum)"].append(eval_rollout["reward"].sum().item())
-            logs["eval step_count"].append(eval_rollout["step_count"].max().item())
+            logs["eval reward (sum)"].append(
+                eval_rollout["reward"].sum().item()
+            )
+            logs["eval step_count"].append(
+                eval_rollout["step_count"].max().item()
+            )
             eval_str = f"eval cumulative reward: {logs['eval reward (sum)'][-1]: 4.4f} (init: {logs['eval reward (sum)'][0]: 4.4f}), eval step-count: {logs['eval step_count'][-1]}"
             del eval_rollout
-    pbar.set_description(", ".join([
-        eval_str,
-        cum_reward_str,
-        stepcount_str,
-        lr_str
-    ]))
+    pbar.set_description(
+        ", ".join(
+            [
+                eval_str,
+                cum_reward_str,
+                stepcount_str,
+                lr_str
+            ]
+        )
+    )
 
     collector.update_policy_weights_()
     scheduler.step()
-
 
 collector.shutdown()
 del collector
