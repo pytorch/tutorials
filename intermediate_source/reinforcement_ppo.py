@@ -125,7 +125,7 @@ from tqdm import tqdm
 num_procs = 4
 num_cells = 256
 frame_skip = 1
-frames_per_batch = 2000 // frame_skip
+frames_per_batch = 1000 // frame_skip
 total_frames = 50_000 // frame_skip
 device = "cpu" if not torch.has_cuda else "cuda:0"
 gamma = 0.99
