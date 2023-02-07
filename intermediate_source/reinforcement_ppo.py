@@ -101,6 +101,7 @@ from torchrl.envs.utils import set_exploration_mode, check_env_specs
 from torchrl.modules import TanhNormal, ProbabilisticActor, ValueOperator
 from torchrl.objectives import ClipPPOLoss
 from torchrl.objectives.value import GAE
+from torchrl.record import VideoRecorder
 from tqdm import tqdm
 
 ######################################################################
@@ -465,9 +466,6 @@ pbar = tqdm(total=total_frames * frame_skip)
 eval_str = ""
 for i, data in enumerate(collector):
     for k in range(num_epochs):
-        # we place the data in the replay buffer after removing the time dimension
-        # the "mask" key represents the valid data in the batch: by indexing with "mask"
-        # we make sure that we eliminate all the 0-padding values.
         advantage_module(data)
         data_view = data.reshape(-1)
         replay_buffer.extend(data_view)
@@ -544,8 +542,7 @@ plt.legend("Return (test)")
 plt.subplot(2, 2, 4)
 plt.plot(logs["eval step_count"])
 plt.legend("Max step count (test)")
-
-plt.savefig("training.png")
+plt.show()
 
 ######################################################################
 # Next steps
@@ -560,3 +557,4 @@ plt.savefig("training.png")
 # inverted pendulum in action. Check :obj:`torchrl.record.VideoRecorder` to
 # know more.
 #
+
