@@ -5,8 +5,8 @@ Reinforcement Learning (PPO) with TorchRL Tutorial
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
 This tutorial shows how to use PyTorch and TorchRL to train a parametric policy
-network to solve the Ant task from the
-<OpenAI-Gym/Farama-Gymnasium control library https://github.com/Farama-Foundation/Gymnasium>`_.
+network to solve the Ant task from the OpenAI-Gym/Farama-Gymnasium control library
+https://github.com/Farama-Foundation/Gymnasium.
 
 Key learning items:
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
@@ -532,16 +532,16 @@ del collector
 plt.figure(figsize=(10, 10))
 plt.subplot(2, 2, 1)
 plt.plot(logs["reward"])
-plt.legend("training rewards (average)")
+plt.title("training rewards (average)")
 plt.subplot(2, 2, 2)
 plt.plot(logs["step_count"])
-plt.legend("Max step count (training)")
+plt.title("Max step count (training)")
 plt.subplot(2, 2, 3)
 plt.plot(logs["eval reward (sum)"])
-plt.legend("Return (test)")
+plt.title("Return (test)")
 plt.subplot(2, 2, 4)
 plt.plot(logs["eval step_count"])
-plt.legend("Max step count (test)")
+plt.title("Max step count (test)")
 plt.show()
 
 ######################################################################
