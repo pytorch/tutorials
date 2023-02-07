@@ -42,7 +42,7 @@ Follow along with the video below or on `youtube <https://www.youtube.com/watch/
 
 In distributed training, a single process failure can
 disrupt the entire training job. Since the susceptibility for failure can be higher here, making your training
-script robust is particularly important here. You might also prefer your training job to be *elastic*, i.e.,
+script robust is particularly important here. You might also prefer your training job to be *elastic*, for example,
 compute resources can join and leave dynamically over the course of the job.
 
 PyTorch offers a utility called ``torchrun`` that provides fault-tolerance and 
