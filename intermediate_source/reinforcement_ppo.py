@@ -8,6 +8,11 @@ This tutorial shows how to use PyTorch and TorchRL to train a parametric policy
 network to solve the Ant task from the OpenAI-Gym/Farama-Gymnasium control library
 https://github.com/Farama-Foundation/Gymnasium.
 
+.. figure:: /_static/img/invpendulum.gif
+   :alt: Inverted pendulum
+
+   Inverted pendulum
+
 Key learning items:
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
 - How to make your classes talk to each other using :class:`TensorDict`;
