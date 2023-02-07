@@ -5,8 +5,8 @@ Reinforcement Learning (PPO) with TorchRL Tutorial
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
 This tutorial shows how to use PyTorch and TorchRL to train a parametric policy
-network to solve the Ant task from the OpenAI-Gym/Farama-Gymnasium control library
-<https://github.com/Farama-Foundation/Gymnasium>`__.
+network to solve the Ant task from the
+<OpenAI-Gym/Farama-Gymnasium control library https://github.com/Farama-Foundation/Gymnasium>`_.
 
 Key learning items:
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
@@ -21,65 +21,67 @@ models (policy and value function), loss modules, data collectors and replay buf
 
 .. code-block:: bash
 
-   %%bash
    pip3 install torchrl
    pip3 install gym[mujoco]
    pip3 install tqdm
 
-Proximal Policy Optimization (PPO) is a policy-gradient algorithm (think of it
-as an elaborated version of REINFORCE) where a batch of data is being
-collected and directly consumed to train the policy to maximise
-the expected return given some proximality constraints.
-
-Ref: https://arxiv.org/abs/1707.06347
-
-PPO is usually regarded as a fast and efficient method for online, on-policy
-reinforcement algorithm. TorchRL provides a loss-module that does all the work
-for you, so that you can rely on this implementation and focus on solving your
-problem rather than re-inventing the wheel every time you want to train a policy.
-
-For completeness, here is a brief overview of what the loss computes, even though
-this is taken care of by our :class:`ClipPPOLoss` module:
-The algorithm works as follows: we will sample a batch of data by playing the
-policy in the environment for a given number of steps. Then, we will perform a
-given number of optimization steps with random sub-samples of this batch using
-a clipped version of the REINFORCE loss.
-The clipping will put a pessimistic bound on our loss: lower return estimates will
-be favoured compared to higher ones.
-The precise formula of the loss is:
-
-.. math::
-
-  L(s,a,\theta_k,\theta) = \min\left(
-\frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
-g(\epsilon, A^{\pi_{\theta_k}}(s,a))
-\right),
-
-There are two components in that loss: in the first part of the minimum operator,
-we simply compute an importance-weighted version of the REINFORCE loss (i.e. a
-REINFORCE loss that we have corrected for the fact that the current policy
-configuration lags the one that was used for the data collection).
-The second part of that minimum operator is a similar loss where we have clipped
-the ratios when they exceeded or were below a given pair of thresholds.
-
-This loss ensures that whether the advantage is positive or negative, policy
-updates that would produce significant shifts from the previous configuration
-are being discouraged.
-
-This tutorial is structured as follows: first, we will define the set of hyperparameters
-we will be using for training.
-Next, we will focus on creating our environment, or simulator, using TorchRL's
-wrappers and transforms. We will design the policy network and the value model,
-which is indispensable to the loss function. These modules will be used to configure
-our loss module, and finally we will be creating the replay buffer and data loader.
-
-Once all these elements are on stage, we will be able to run our training loop.
-
-Throughout this tutorial, we'll be using the :py:mod:`tensordict` library. :class:`TensorDict`
-is the lingua franca of TorchRL: it helps us abstract what a module reads and writes
-and care less about the specific data description and more about the algorithm itself.
-
 """
+
+######################################################################
+#
+# Proximal Policy Optimization (PPO) is a policy-gradient algorithm (think of it
+# as an elaborated version of REINFORCE) where a batch of data is being
+# collected and directly consumed to train the policy to maximise
+# the expected return given some proximality constraints.
+#
+# Ref: https://arxiv.org/abs/1707.06347
+#
+# PPO is usually regarded as a fast and efficient method for online, on-policy
+# reinforcement algorithm. TorchRL provides a loss-module that does all the work
+# for you, so that you can rely on this implementation and focus on solving your
+# problem rather than re-inventing the wheel every time you want to train a policy.
+#
+# For completeness, here is a brief overview of what the loss computes, even though
+# this is taken care of by our :class:`ClipPPOLoss` module:
+# The algorithm works as follows: we will sample a batch of data by playing the
+# policy in the environment for a given number of steps. Then, we will perform a
+# given number of optimization steps with random sub-samples of this batch using
+# a clipped version of the REINFORCE loss.
+# The clipping will put a pessimistic bound on our loss: lower return estimates will
+# be favoured compared to higher ones.
+# The precise formula of the loss is:
+#
+# .. math::
+#
+#    L(s,a,\theta_k,\theta) = \min\left(
+# \frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}  A^{\pi_{\theta_k}}(s,a), \;\;
+# g(\epsilon, A^{\pi_{\theta_k}}(s,a))
+# \right),
+#
+# There are two components in that loss: in the first part of the minimum operator,
+# we simply compute an importance-weighted version of the REINFORCE loss (i.e. a
+# REINFORCE loss that we have corrected for the fact that the current policy
+# configuration lags the one that was used for the data collection).
+# The second part of that minimum operator is a similar loss where we have clipped
+# the ratios when they exceeded or were below a given pair of thresholds.
+#
+# This loss ensures that whether the advantage is positive or negative, policy
+# updates that would produce significant shifts from the previous configuration
+# are being discouraged.
+#
+# This tutorial is structured as follows: first, we will define the set of hyperparameters
+# we will be using for training.
+# Next, we will focus on creating our environment, or simulator, using TorchRL's
+# wrappers and transforms. We will design the policy network and the value model,
+# which is indispensable to the loss function. These modules will be used to configure
+# our loss module, and finally we will be creating the replay buffer and data loader.
+#
+# Once all these elements are on stage, we will be able to run our training loop.
+#
+# Throughout this tutorial, we'll be using the :py:mod:`tensordict` library. :class:`TensorDict`
+# is the lingua franca of TorchRL: it helps us abstract what a module reads and writes
+# and care less about the specific data description and more about the algorithm itself.
+
 
 import math
 from collections import defaultdict
@@ -272,9 +274,12 @@ print("Shape of the rollout TensorDict:", rollout.batch_size)
 # parameters for the policy to work with.
 #
 # We design the policy in three steps:
+#
 # 1. Define a neural network D_obs -> 2 D_action (loc and scale both have dimension D_action);
+#
 # 2. Append a :class:`NormalParamExtractor` to extract a location and a scale (ie splits the input in two equal parts
 #   and applies a positive transformation to the scale parameter);
+#
 # 3. Create a probabilistic :class:`TensorDictModule` that can create this distribution and sample from it.
 #
 
@@ -491,6 +496,10 @@ for i, data in enumerate(collector):
     collector.update_policy_weights_()
     scheduler.step()
 
+
+collector.shutdown()
+del collector
+
 ######################################################################
 # Results
 # -------
@@ -514,9 +523,6 @@ plt.plot(logs["eval step_count"])
 plt.legend("Max step count (test)")
 
 plt.savefig("training.png")
-
-collector.shutdown()
-del collector
 
 ######################################################################
 # Next steps
