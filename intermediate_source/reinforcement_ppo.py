@@ -128,15 +128,10 @@ from tqdm import tqdm
 # actually return ``frame_skip`` frames).
 #
 
-num_procs = 4
-num_cells = 256
 device = "cpu" if not torch.has_cuda else "cuda:0"
-gamma = 0.99
-lmbda = 0.95
+num_cells = 256  # number of cells in each layer
 lr = 3e-4
 max_grad_norm = 1.0
-entropy_eps = 1e-4
-seed = 0
 
 ######################################################################
 # Data collection parameters
@@ -153,6 +148,12 @@ seed = 0
 # the behaviour more consistent and less erratic. However, a "skipping"
 # too many frames will hamper training by reducing the reactivity of the actor
 # to observation changes.
+#
+# If we want to be honest, when using ``frame_skip`` it is good practice to
+# correct the other frame counts by the number of frames we are grouping
+# together. If we allow ourselves a total count of X frames for training but
+# use a frame_skip of Y, we will be actually collecting XY frames in total
+# which exceeds our predefined budget.
 #
 frame_skip = 1
 frames_per_batch = 1000 // frame_skip
@@ -174,6 +175,9 @@ total_frames = 50_000 // frame_skip
 sub_batch_size = 64  # total batch-size to compute the loss
 num_epochs = 10  # optimisation steps per batch of data collected
 clip_epsilon = 0.2  # clip value for PPO loss: see the equation in the intro for more context.
+gamma = 0.99
+lmbda = 0.95
+entropy_eps = 1e-4
 
 ######################################################################
 # Define an environment
@@ -192,8 +196,6 @@ base_env = GymEnv(
     "InvertedDoublePendulum-v4", device=device,
     frame_skip=frame_skip
 )
-torch.manual_seed(seed)
-base_env.set_seed(seed)
 
 ######################################################################
 # There are already a few things to notice in this code: first, we created
@@ -479,7 +481,6 @@ collector = SyncDataCollector(
     split_trajs=False,
     device=device,
 )
-collector.set_seed(seed)
 
 ######################################################################
 # Replay buffer
