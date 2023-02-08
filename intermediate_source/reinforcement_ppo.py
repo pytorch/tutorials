@@ -172,7 +172,7 @@ total_frames = 50_000 // frame_skip
 # we will further split in smaller sub-batches during the inner training loop.
 # The size of these sub-batches is controlled by ``sub_batch_size``.
 #
-sub_batch_size = 64  # total batch-size to compute the loss
+sub_batch_size = 64  # cardinality of the sub-samples gathered from the current data in the inner loop
 num_epochs = 10  # optimisation steps per batch of data collected
 clip_epsilon = 0.2  # clip value for PPO loss: see the equation in the intro for more context.
 gamma = 0.99
