@@ -687,6 +687,7 @@ plt.show()
 # -------------------------
 #
 # In this tutorial, we have learned:
+#
 # 1. How to create and customize an environment with :py:mod:`torchrl`;
 # 2. How to write a model and a loss function;
 # 3. How to set up a typical training loop.
