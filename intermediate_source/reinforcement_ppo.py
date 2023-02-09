@@ -51,7 +51,8 @@ If you are running this in Google Colab, make sure you install the following dep
 # Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a
 # batch of data is being collected and directly consumed to train the policy to maximise
 # the expected return given some proximality constraints. You can think of it
-# as a sophisticated version of REINFORCE. For more information, see the
+# as a sophisticated version of `REINFORCE <https://link.springer.com/content/pdf/10.1007/BF00992696.pdf>`__,
+# the foundational policy-optimization algorithm. For more information, see the
 # `Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>`__ paper.
 #
 # PPO is usually regarded as a fast and efficient method for online, on-policy
@@ -60,13 +61,13 @@ If you are running this in Google Colab, make sure you install the following dep
 # problem rather than re-inventing the wheel every time you want to train a policy.
 #
 # For completeness, here is a brief overview of what the loss computes, even though
-# this is taken care of by our :class:`ClipPPOLoss` module:
-# The algorithm works as follows: we will sample a batch of data by playing the
-# policy in the environment for a given number of steps. Then, we will perform a
-# given number of optimization steps with random sub-samples of this batch using
+# this is taken care of by our :class:`ClipPPOLoss` module—the algorithm works as follows:
+# 1. we will sample a batch of data by playing the
+# policy in the environment for a given number of steps.
+# 2. Then, we will perform a given number of optimization steps with random sub-samples of this batch using
 # a clipped version of the REINFORCE loss.
-# The clipping will put a pessimistic bound on our loss: lower return estimates will
-# be favoured compared to higher ones.
+# 3. The clipping will put a pessimistic bound on our loss: lower return estimates will
+# be favored compared to higher ones.
 # The precise formula of the loss is:
 #
 # .. math::
@@ -77,7 +78,7 @@ If you are running this in Google Colab, make sure you install the following dep
 #     \right),
 #
 # There are two components in that loss: in the first part of the minimum operator,
-# we simply compute an importance-weighted version of the REINFORCE loss (i.e. a
+# we simply compute an importance-weighted version of the REINFORCE loss (for example, a
 # REINFORCE loss that we have corrected for the fact that the current policy
 # configuration lags the one that was used for the data collection).
 # The second part of that minimum operator is a similar loss where we have clipped
@@ -129,8 +130,8 @@ from torchrl.objectives.value import GAE
 from tqdm import tqdm
 
 ######################################################################
-# Hyperparameters
-# ---------------
+# Define Hyperparameters
+# ----------------------
 #
 # We set the hyperparameters for our algorithm. Depending on the resources
 # available, one may choose to execute the policy on GPU or on another
@@ -152,20 +153,20 @@ max_grad_norm = 1.0
 #
 # When collecting data, we will be able to choose how big each batch will be
 # by defining a ``frames_per_batch`` parameter. We will also define how many
-# frames (ie number of interactions with the simulator) we allow ourselves to
+# frames (such as the number of interactions with the simulator) we will allow ourselves to
 # use. In general, the goal of an RL algorithm is to learn to solve the task
-# as fast as we can in terms of environment interactions: the lowere the ``total_frames``
+# as fast as it can in terms of environment interactions: the lower the ``total_frames``
 # the better.
 # We also define a ``frame_skip``: in some contexts, repeating the same action
 # multiple times over the course of a trajectory may be beneficial as it makes
-# the behaviour more consistent and less erratic. However, a "skipping"
+# the behavior more consistent and less erratic. However, "skipping"
 # too many frames will hamper training by reducing the reactivity of the actor
 # to observation changes.
 #
-# If we want to be honest, when using ``frame_skip`` it is good practice to
+# When using ``frame_skip`` it is good practice to
 # correct the other frame counts by the number of frames we are grouping
-# together. If we allow ourselves a total count of X frames for training but
-# use a frame_skip of Y, we will be actually collecting XY frames in total
+# together. If we configure a total count of X frames for training but
+# use a ``frame_skip`` of Y, we will be actually collecting XY frames in total
 # which exceeds our predefined budget.
 #
 frame_skip = 1
@@ -178,7 +179,7 @@ total_frames = 50_000 // frame_skip
 # ~~~~~~~~~~~~~~
 #
 # At each data collection (or batch collection) we will run the optimization
-# over a certain number of "epochs", each time consuming the entire data we just
+# over a certain number of *epochs*, each time consuming the entire data we just
 # acquired in a nested training loop. Here, the ``sub_batch_size`` is different from the
 # ``frames_per_batch`` here above: recall that we are working with a "batch of data"
 # coming from our collector, which size is defined by ``frames_per_batch``, and that
@@ -196,7 +197,7 @@ entropy_eps = 1e-4
 # Define an environment
 # ---------------------
 #
-# In RL, an 'environment' is usually the way we refer to a simulator or a
+# In RL, an *environment* is usually the way we refer to a simulator or a
 # control system. Various libraries provide simulation environments for reinforcement
 # learning, including Gymnasium (previously OpenAI Gym), DeepMind control suite, and
 # many others.
@@ -211,14 +212,14 @@ base_env = GymEnv(
 )
 
 ######################################################################
-# There are already a few things to notice in this code: first, we created
+# There are a few things to notice in this code: first, we created
 # the environment by calling the ``GymEnv`` wrapper. If extra keyword arguments
 # are passed, they will be transmitted to the ``gym.make`` method, hence covering
 # the most common env construction commands.
 # Alternatively, one could also directly create a gym environment using ``gym.make(env_name, **kwargs)``
 # and wrap it in a `GymWrapper` class.
 #
-# Notice also the ``device`` argument: for gym, this only controls the device where
+# Also the ``device`` argument: for gym, this only controls the device where
 # input action and observered states will be stored, but the execution will always
 # be done on CPU. The reason for this is simply that gym does not support on-device
 # execution, unless specified otherwise. For other libraries, we have control over
@@ -226,7 +227,7 @@ base_env = GymEnv(
 # storing and execution backends.
 #
 # Transforms
-# ----------
+# ~~~~~~~~~~
 #
 # We will append some transforms to our environments to prepare the data for
 # the policy. In Gym, this is usually achieved via wrappers. TorchRL takes a different
@@ -237,7 +238,7 @@ base_env = GymEnv(
 # of transforms it contains.
 #
 # Normalization
-# -------------
+# ~~~~~~~~~~~~~
 #
 # The first to encode is a normalization transform.
 # As a rule of thumbs, it is preferable to have data that loosely
@@ -525,7 +526,7 @@ replay_buffer = ReplayBuffer(
 # -------------
 #
 # The PPO loss can be directly imported from torchrl for convenience using the
-# :class:`ClipPPOLoss` class. This is the easiest way of utilising PPO:
+# :class:`ClipPPOLoss` class. This is the easiest way of utilizing PPO:
 # it hides away the mathematical operations of PPO and the control flow that
 # goes with it.
 #
@@ -533,7 +534,7 @@ replay_buffer = ReplayBuffer(
 # is a value that reflects an expectancy over the return value while dealing with
 # the bias / variance tradeoff.
 # To compute the advantage, one just needs to (1) build the advantage module, which
-# utilises our value operator, and (2) pass each batch of data through it before each
+# utilizes our value operator, and (2) pass each batch of data through it before each
 # epoch.
 # The GAE module will update the input tensordict with new ``"advantage"`` and
 # ``"value_target"`` entries.
@@ -573,8 +574,16 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
 # Training loop
 # -------------
 # We now have all the pieces needed to code our training loop.
-# The steps are quite easy: collect data, compute advantage, loop over the collected
-# data to compute loss values, backpropagate, optimize and repeat.
+# The steps include:
+#
+# * Collect data
+#   * Compute advantage
+#     * Loop over the collected to compute loss values
+#     * Back propagate
+#     * Optimize
+#     * Repeat
+#   * Repeat
+# * Repeat
 #
 
 
@@ -675,15 +684,22 @@ plt.title("Max step count (test)")
 plt.show()
 
 ######################################################################
-# Next steps
-# ----------
+# Conclusion and next steps
+# -------------------------
 #
-# This algorithm could be improved in several way: from an efficiency perspective,
-# we could run several simulations in parallel to speed up data collection.
-# Check :obj:`torchrl.envs.ParallelEnv` for further information.
+# In this tutorial, we have learned:
+# 1.
+# 2.
+# 3.
 #
-# From a logging perspective, one could add a :class:`VideoRecorder` transform to
-# the environment after asking for rendering to get a visual rendering of the
-# inverted pendulum in action. Check :obj:`torchrl.record.VideoRecorder` to
-# know more.
+# If you want to experiment with this tutorial a bit more, you can apply the following modifications:
+#
+# * From an efficiency perspective,
+#   we could run several simulations in parallel to speed up data collection.
+#   Check :obj:`torchrl.envs.ParallelEnv` for further information.
+#
+# * From a logging perspective, one could add a :class:`VideoRecorder` transform to
+#   the environment after asking for rendering to get a visual rendering of the
+#   inverted pendulum in action. Check :obj:`torchrl.record.VideoRecorder` to
+#   know more.
 #
