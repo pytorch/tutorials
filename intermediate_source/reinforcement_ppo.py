@@ -5,41 +5,54 @@ Reinforcement Learning (PPO) with TorchRL Tutorial
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
 This tutorial demonstrates how to use PyTorch and TorchRL to train a parametric policy
-network to solve the Ant task from the OpenAI-Gym/Farama-Gymnasium control library
-https://github.com/Farama-Foundation/Gymnasium.
+network to solve the Inverted Pendulum task from the OpenAI-Gym/Farama-Gymnasium
+control library `<https://github.com/Farama-Foundation/Gymnasium>`__.
 
 .. figure:: /_static/img/invpendulum.gif
    :alt: Inverted pendulum
 
    Inverted pendulum
 
-Key learning items:
+Key learnings:
+
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
 - How to make your classes talk to each other using :class:`TensorDict`;
 - The basics of building your training loop with TorchRL:
+
   - How to compute the advantage signal for policy gradient methods;
   - How to create a stochastic policy using a probabilistic neural network;
   - How to create a dynamic replay buffer and sample from it without repetition.
 
-We will cover six crucial components of TorchRL: environments, transforms,
-models (policy and value function), loss modules, data collectors and replay buffers.
+We will cover six crucial components of TorchRL:
 
+* `environments <https://pytorch.org/rl/reference/envs.html>`__
+* `transforms <https://pytorch.org/rl/reference/envs.html#transforms>`__
+* `models (policy and value function) <>`__
+* `loss modules <https://pytorch.org/rl/reference/modules.html>`__
+* `data collectors <https://pytorch.org/rl/reference/collectors.html>`__
+* `replay buffers <https://pytorch.org/rl/reference/data.html#replay-buffers>`__
+
+If you are running this in Google Colab, make sure you install the following dependencies:
 .. code-block:: bash
 
-   pip3 install torchrl
-   pip3 install gym[mujoco]
-   pip3 install tqdm
+   !pip3 install torchrl
+   !pip3 install gym[mujoco]
+   !pip3 install tqdm
 
 """
 
 ######################################################################
 #
-# Proximal Policy Optimization (PPO) is a policy-gradient algorithm (think of it
-# as an elaborated version of REINFORCE) where a batch of data is being
-# collected and directly consumed to train the policy to maximise
-# the expected return given some proximality constraints.
-#
-# Ref: https://arxiv.org/abs/1707.06347
+# Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a batch of data is
+# collected and directly consumed to train the policy to maximiZe
+# the expected return given some proximality constraints. You can think of it
+# as an elaborated version of REINFORCE. For more information, see the Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>__ paper.
+
+# Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a
+# batch of data is being collected and directly consumed to train the policy to maximise
+# the expected return given some proximality constraints. You can think of it
+# as a sophisticated version of REINFORCE. For more information, see the
+# `Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>`__ paper.
 #
 # PPO is usually regarded as a fast and efficient method for online, on-policy
 # reinforcement algorithm. TorchRL provides a loss-module that does all the work
@@ -81,7 +94,7 @@ models (policy and value function), loss modules, data collectors and replay buf
 # 2. Next, we will focus on creating our environment, or simulator, using TorchRL's
 #    wrappers and transforms.
 #
-# 3. Next, We will design the policy network and the value model,
+# 3. Next, we will design the policy network and the value model,
 #    which is indispensable to the loss function. These modules will be used
 #    to configure our loss module.
 #
@@ -89,7 +102,7 @@ models (policy and value function), loss modules, data collectors and replay buf
 #
 # 5. Finally, we will run our training loop and analyze the results.
 #
-# Throughout this tutorial, we'll be using the :py:mod:`tensordict` library.
+# Throughout this tutorial, we'll be using the :py:mod:`tensordict <https://pytorch-labs.github.io/tensordict/>`__ library.
 # :class:`TensorDict` is the lingua franca of TorchRL: it helps us abstract
 # what a module reads and writes and care less about the specific data
 # description and more about the algorithm itself.
@@ -120,7 +133,7 @@ from tqdm import tqdm
 # ---------------
 #
 # We set the hyperparameters for our algorithm. Depending on the resources
-# available, one may choose to execute the policy on CUDA or on another
+# available, one may choose to execute the policy on GPU or on another
 # device.
 # The ``frame_skip`` will control how for how many frames is a single
 # action being executed. The rest of the arguments that count frames
