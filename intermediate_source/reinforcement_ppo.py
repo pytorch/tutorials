@@ -32,17 +32,17 @@ We will cover six crucial components of TorchRL:
 * `data collectors <https://pytorch.org/rl/reference/collectors.html>`__
 * `replay buffers <https://pytorch.org/rl/reference/data.html#replay-buffers>`__
 
-If you are running this in Google Colab, make sure you install the following dependencies:
-
-.. code-block:: bash
-
-   !pip3 install torchrl
-   !pip3 install gym[mujoco]
-   !pip3 install tqdm
-
 """
 
 ######################################################################
+# If you are running this in Google Colab, make sure you install the following dependencies:
+#
+# .. code-block:: bash
+#
+#    !pip3 install torchrl
+#    !pip3 install gym[mujoco]
+#    !pip3 install tqdm
+#
 # Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a batch of data is
 # collected and directly consumed to train the policy to maximiZe
 # the expected return given some proximality constraints. You can think of it
