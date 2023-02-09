@@ -22,7 +22,6 @@ You can use any combination of these options:
     b. Write your own observed and quantized submodule
 
 
-####################################################################
 If the code that is not symbolically traceable does not need to be quantized, we have the following two options
 to run FX Graph Mode Quantization:
 1.a. Symbolically trace only the code that needs to be quantized
@@ -69,7 +68,6 @@ Note if original model needs to be preserved, you will have to
 copy it yourself before calling the quantization APIs.
 
 
-#####################################################
 1.b. Skip symbolically trace the non-traceable code
 ---------------------------------------------------
 When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized,
@@ -134,7 +132,6 @@ quantization code:
 
 If the code that is not symbolically traceable needs to be quantized, we have the following two options:
 
-##########################################################
 2.a Refactor your code to make it symbolically traceable
 --------------------------------------------------------
 If it is easy to refactor the code and make the code symbolically traceable,
@@ -174,7 +171,6 @@ depends on the model.
 
 
 
-#######################################################
 2.b. Write your own observed and quantized submodule
 -----------------------------------------------------
 
