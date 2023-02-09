@@ -43,17 +43,12 @@ We will cover six crucial components of TorchRL:
 #    !pip3 install gym[mujoco]
 #    !pip3 install tqdm
 #
-# Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a batch of data is
-# collected and directly consumed to train the policy to maximiZe
-# the expected return given some proximality constraints. You can think of it
-# as an elaborated version of REINFORCE. For more information, see the Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>__ paper.
-
 # Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a
 # batch of data is being collected and directly consumed to train the policy to maximise
 # the expected return given some proximality constraints. You can think of it
-# as a sophisticated version of `REINFORCE <https://link.springer.com/content/pdf/10.1007/BF00992696.pdf>`__,
+# as a sophisticated version of `REINFORCE <https://link.springer.com/content/pdf/10.1007/BF00992696.pdf>`_,
 # the foundational policy-optimization algorithm. For more information, see the
-# `Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>`__ paper.
+# `Proximal Policy Optimization Algorithms <https://arxiv.org/abs/1707.06347>`_ paper.
 #
 # PPO is usually regarded as a fast and efficient method for online, on-policy
 # reinforcement algorithm. TorchRL provides a loss-module that does all the work
