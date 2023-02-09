@@ -5,8 +5,8 @@ Reinforcement Learning (PPO) with TorchRL Tutorial
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
 This tutorial demonstrates how to use PyTorch and TorchRL to train a parametric policy
-network to solve the Inverted Pendulum task from the OpenAI-Gym/Farama-Gymnasium
-control library `<https://github.com/Farama-Foundation/Gymnasium>`__.
+network to solve the Inverted Pendulum task from the `OpenAI-Gym/Farama-Gymnasium
+control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
 .. figure:: /_static/img/invpendulum.gif
    :alt: Inverted pendulum
@@ -27,8 +27,8 @@ We will cover six crucial components of TorchRL:
 
 * `environments <https://pytorch.org/rl/reference/envs.html>`__
 * `transforms <https://pytorch.org/rl/reference/envs.html#transforms>`__
-* `models (policy and value function) <>`__
-* `loss modules <https://pytorch.org/rl/reference/modules.html>`__
+* `models (policy and value function) <https://pytorch.org/rl/reference/modules.html>`__
+* `loss modules <https://pytorch.org/rl/reference/objectives.html>`__
 * `data collectors <https://pytorch.org/rl/reference/collectors.html>`__
 * `replay buffers <https://pytorch.org/rl/reference/data.html#replay-buffers>`__
 
