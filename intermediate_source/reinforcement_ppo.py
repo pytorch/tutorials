@@ -16,7 +16,7 @@ control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 Key learnings:
 
 - How to create an environment in TorchRL, transform its outputs, and collect data from this env;
-- How to make your classes talk to each other using :class:`TensorDict`;
+- How to make your classes talk to each other using :class:`tensordict.TensorDict`;
 - The basics of building your training loop with TorchRL:
 
   - How to compute the advantage signal for policy gradient methods;
@@ -247,7 +247,7 @@ base_env = GymEnv(
 # the environment is terminated. We will use this measure as a supplementary measure
 # of performance.
 #
-# As we will see later, many of the TorchRL's classes rely on :class:`TensorDict`
+# As we will see later, many of the TorchRL's classes rely on :class:`tensordict.TensorDict`
 # to communicate. You could think of it as a python dictionary with some extra
 # tensor features. In practice, this means that many modules we will be working
 # with need to be told what key to read (``in_keys``) and what key to write
@@ -323,9 +323,9 @@ check_env_specs(env)
 # action as input, and outputs an observation, a reward and a done state. The
 # observation may be composite, meaning that it could be composed of more than one
 # tensor. This is not a problem for TorchRL, since the whole set of observations
-# is automatically packed in the output :class:`TensorDict`. After executing a rollout
+# is automatically packed in the output :class:`tensordict.TensorDict`. After executing a rollout
 # (ie a sequence of environment steps and random action generations) over a given
-# number of steps, we will retrieve a :class:`TensorDict` instance with a shape
+# number of steps, we will retrieve a :class:`tensordict.TensorDict` instance with a shape
 # that matches this trajectory length:
 #
 rollout = env.rollout(3)
@@ -477,8 +477,8 @@ print("Running value:", value_module(env.reset()))
 # and asynchronous manner over a set of multiprocessed workers.
 #
 # As for the policy and environment before, the data collector will return
-# :class:`TensorDict` instances with a total number of elements that will
-# match ``frames_per_batch``. Using :class:`TensorDict` to pass data to the
+# :class:`tensordict.TensorDict` instances with a total number of elements that will
+# match ``frames_per_batch``. Using :class:`tensordict.TensorDict` to pass data to the
 # training loop allows you to write dataloading pipelines
 # that are 100% oblivious to the actual specificities of the rollout content.
 #
