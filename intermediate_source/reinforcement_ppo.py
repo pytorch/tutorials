@@ -4,7 +4,7 @@ Reinforcement Learning (PPO) with TorchRL Tutorial
 ==================================================
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
-This tutorial demonstrates how to use PyTorch and :mod:`torchrl` to train a parametric policy
+This tutorial demonstrates how to use PyTorch and :py:mod:`torchrl` to train a parametric policy
 network to solve the Inverted Pendulum task from the `OpenAI-Gym/Farama-Gymnasium
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
@@ -98,7 +98,7 @@ We will cover six crucial components of TorchRL:
 #
 # 5. Finally, we will run our training loop and analyze the results.
 #
-# Throughout this tutorial, we'll be using the :mod:`tensordict` library.
+# Throughout this tutorial, we'll be using the :py:mod:`tensordict` library.
 # :class:`TensorDict` is the lingua franca of TorchRL: it helps us abstract
 # what a module reads and writes and care less about the specific data
 # description and more about the algorithm itself.
@@ -687,18 +687,18 @@ plt.show()
 # -------------------------
 #
 # In this tutorial, we have learned:
-# 1.
-# 2.
-# 3.
+# 1. How to create and customize an environment with :py:mod:`torchrl`;
+# 2. How to write a model and a loss function;
+# 3. How to set up a typical training loop.
 #
 # If you want to experiment with this tutorial a bit more, you can apply the following modifications:
 #
 # * From an efficiency perspective,
 #   we could run several simulations in parallel to speed up data collection.
-#   Check :obj:`torchrl.envs.ParallelEnv` for further information.
+#   Check :class:`torchrl.envs.ParallelEnv` for further information.
 #
-# * From a logging perspective, one could add a :class:`VideoRecorder` transform to
+# * From a logging perspective, one could add a :class:`torchrl.record.VideoRecorder` transform to
 #   the environment after asking for rendering to get a visual rendering of the
-#   inverted pendulum in action. Check :obj:`torchrl.record.VideoRecorder` to
+#   inverted pendulum in action. Check :obj:`torchrl.record` to
 #   know more.
 #
