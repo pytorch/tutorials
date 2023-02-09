@@ -699,6 +699,6 @@ plt.show()
 #
 # * From a logging perspective, one could add a :class:`torchrl.record.VideoRecorder` transform to
 #   the environment after asking for rendering to get a visual rendering of the
-#   inverted pendulum in action. Check :obj:`torchrl.record` to
+#   inverted pendulum in action. Check :py:mod:`torchrl.record` to
 #   know more.
 #
