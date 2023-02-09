@@ -572,12 +572,16 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
 # The steps include:
 #
 # * Collect data
+#
 #   * Compute advantage
+#
 #     * Loop over the collected to compute loss values
 #     * Back propagate
 #     * Optimize
 #     * Repeat
+#
 #   * Repeat
+#
 # * Repeat
 #
 
