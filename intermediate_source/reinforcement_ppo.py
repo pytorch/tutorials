@@ -330,7 +330,7 @@ check_env_specs(env)
 #
 rollout = env.rollout(3)
 print("rollout of three steps:", rollout)
-print("Shape of the rollout TensorDict:", rollout.sub_batch_size)
+print("Shape of the rollout TensorDict:", rollout.batch_size)
 
 ######################################################################
 # Our rollout data has a shape of ``torch.Size([3])`, which matches the number of steps
