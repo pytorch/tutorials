@@ -33,6 +33,7 @@ We will cover six crucial components of TorchRL:
 * `replay buffers <https://pytorch.org/rl/reference/data.html#replay-buffers>`__
 
 If you are running this in Google Colab, make sure you install the following dependencies:
+
 .. code-block:: bash
 
    !pip3 install torchrl
