@@ -42,7 +42,6 @@ If you are running this in Google Colab, make sure you install the following dep
 """
 
 ######################################################################
-#
 # Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a batch of data is
 # collected and directly consumed to train the policy to maximiZe
 # the expected return given some proximality constraints. You can think of it
