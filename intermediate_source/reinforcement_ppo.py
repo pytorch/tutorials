@@ -98,7 +98,7 @@ We will cover six crucial components of TorchRL:
 #
 # 5. Finally, we will run our training loop and analyze the results.
 #
-# Throughout this tutorial, we'll be using the :py:mod:`tensordict <https://pytorch-labs.github.io/tensordict/>`__ library.
+# Throughout this tutorial, we'll be using the :py:mod:`tensordict <https://pytorch-labs.github.io/tensordict/>`_ library.
 # :class:`TensorDict` is the lingua franca of TorchRL: it helps us abstract
 # what a module reads and writes and care less about the specific data
 # description and more about the algorithm itself.
