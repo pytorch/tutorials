@@ -250,7 +250,8 @@ def visualize_model(model, num_images=6):
 # Load a pretrained model and reset final fully connected layer.
 #
 
-model_ft = models.resnet18(pretrained=True)
+weights = models.ResNet18_Weights.DEFAULT
+model_ft = models.resnet18(weights=weights)
 num_ftrs = model_ft.fc.in_features
 # Here the size of each output sample is set to 2.
 # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
@@ -295,7 +296,8 @@ visualize_model(model_ft)
 # `here <https://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
 #
 
-model_conv = torchvision.models.resnet18(pretrained=True)
+weights = torchvision.models.ResNet18_Weights.DEFAULT
+model_conv = torchvision.models.resnet18(weights=weights)
 for param in model_conv.parameters():
     param.requires_grad = False
 
