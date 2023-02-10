@@ -38,7 +38,7 @@ Follow along with the video below or on `youtube <https://www.youtube.com/watch/
 Multinode training involves deploying a training job across several
 machines. There are two ways to do this:
 
--  running a torchrun command on each machine with identical rendezvous arguments, or
+-  running a ``torchrun`` command on each machine with identical rendezvous arguments, or
 -  deploying it on a compute cluster using a workload manager (like SLURM)
 
 In this video we will go over the (minimal) code changes required to move from single-node multigpu to
@@ -50,7 +50,7 @@ on 4 GPUs on a single node will be faster than running it on 4 nodes with 1 GPU 
 Local and Global ranks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 In single-node settings, we were tracking the 
-``gpu_id``s of the devices running our training processes. ``torchrun`` tracks this value in an environment variable ``LOCAL_RANK``
+``gpu_id`` of each device running our training process. ``torchrun`` tracks this value in an environment variable ``LOCAL_RANK``
 which uniquely identifies each GPU-process on a node. For a unique identifier across all the nodes, ``torchrun`` provides another variable
 ``RANK`` which refers to the global rank of a process.
 
