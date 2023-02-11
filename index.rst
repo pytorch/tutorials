@@ -271,8 +271,8 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: Reinforcement Learning (PPO) with TorchRL
-   :card_description: Learn how to use PyTorch and TorchRL to train a Proximal Policy Optimization agent on the cheetah-run task from dm-control.
-   :image: _static/img/cheetah.gif
+   :card_description: Learn how to use PyTorch and TorchRL to train a Proximal Policy Optimization agent on the Inverted Pendulum task from Gym.
+   :image: _static/img/invpendulum.gif
    :link: intermediate/reinforcement_ppo.html
    :tags: Reinforcement-Learning
 
