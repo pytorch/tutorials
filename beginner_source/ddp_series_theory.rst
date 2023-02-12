@@ -54,8 +54,8 @@ DDP improves upon the architecture in a few ways:
 |                                       | machines                     |
 +---------------------------------------+------------------------------+
 | Slower; uses multithreading on a      | Faster (no GIL contention)   |
-| single process and runs into GIL      | because it uses              |
-| contention                            | multiprocessing              |
+| single process and runs into Global   | because it uses              |
+| Interpreter Lock (GIL) contention     | multiprocessing              |
 +---------------------------------------+------------------------------+
 
 Further Reading
