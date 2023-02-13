@@ -48,9 +48,9 @@ Files used for training
 ~~~~~~~~~~~~~~~~~~~~~~~~
 - `trainer.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/trainer.py>`__ includes the Trainer class that runs the distributed training iterations on the model with the provided dataset.
 - `model.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/model.py>`__ defines the model architecture.
-- `char_dataset.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/char_dataset.py>`__ contains the `Dataset`class for a character-level dataset.
+- `char_dataset.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/char_dataset.py>`__ contains the ``Dataset`` class for a character-level dataset.
 - `gpt2_train_cfg.yaml <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/gpt2_train_cfg.yaml>`__ contains the configurations for data, model, optimizer, and training run.
-- `main.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/main.py>`__ is the entry point to the trainig job. It sets up the DDP process group, reads all the configurations and runs the training job.
+- `main.py <https://github.com/pytorch/examples/blob/main/distributed/minGPT-ddp/mingpt/main.py>`__ is the entry point to the training job. It sets up the DDP process group, reads all the configurations and runs the training job.
 
 
 Saving and Loading from the cloud
@@ -72,8 +72,8 @@ A typical training run's memory footprint consists of model weights, activations
 Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint. 
 When models grow larger, more aggressive techniques might be useful:
 
-   -  `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint.
-   -  `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ to learn how we trained a 1 Trillion parameter model with FSDP.
+-  `activation checkpointing <https://pytorch.org/docs/stable/checkpoint.html>`__: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint.
+-  `Fully-Sharded Data Parallel <https://pytorch.org/docs/stable/fsdp.html>`__: Here the model is not replicated but "sharded" across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our `blog <https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ to learn how we trained a 1 Trillion parameter model with FSDP.
 
 
 Further Reading

@@ -41,7 +41,7 @@ In this tutorial, we start with a single-GPU training script and migrate that to
 Along the way, we will talk through important concepts in distributed training while implementing them in our code.
 
 .. note:: 
-   If your model contains any ``BatchNorm`` layer, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm`` 
+   If your model contains any ``BatchNorm`` layers, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm``
    layers across replicas.
 
    Use the helper function 
@@ -57,7 +57,7 @@ Imports
 ~~~~~~~
 -  ``torch.multiprocessing`` is a PyTorch wrapper around Python's native
    multiprocessing
--  The dsitributed process group contains all the processes that can
+-  The distributed process group contains all the processes that can
    communicate and synchronize with each other.
 
 .. code:: diff
