@@ -1,6 +1,6 @@
 set -ex
 
-if [[ "$COMMIT_SOURCE" == master ]]; then
+if [[ "$COMMIT_SOURCE" == master || "$COMMIT_SOURCE" == main ]]; then
   export BUCKET_NAME=pytorch-tutorial-build-master
 else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
@@ -153,7 +153,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
 
   # Step 7: push new HTML files and static files to gh-pages
-  if [[ "$COMMIT_SOURCE" == master ]]; then
+  if [[ "$COMMIT_SOURCE" == master || "$COMMIT_SOURCE" == main ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     cp -r docs/* gh-pages/
     pushd gh-pages
