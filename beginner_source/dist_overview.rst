@@ -3,7 +3,7 @@ PyTorch Distributed Overview
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/beginner_source/dist_overview.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst>`__.
 
 This is the overview page for the ``torch.distributed`` package. The goal of
 this page is to categorize documents into different topics and briefly

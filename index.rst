@@ -3,7 +3,6 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Survey: Let us know how the PyTorch Tutorials are working for you! <https://docs.google.com/forms/d/e/1FAIpQLSfM-n7fF-K8AqkOcdSlzS_0g-xd6ith7U_W36xG-C_6Q2B6Mg/viewform>`__
 * `PyTorch Distributed Series <https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=whats_new_tutorials&utm_medium=ddp_series_intro>`__
 * `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
@@ -441,12 +440,12 @@ What's new in PyTorch tutorials?
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
 
- .. customcarditem::
-    :header: Optimizing Vision Transformer Model
-    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
-    :image: _static/img/thumbnails/cropped/mobile.png
-    :link: beginner/vt_tutorial.html
-    :tags: Model-Optimization,Best-Practice,Mobile
+.. customcarditem::
+   :header: Optimizing Vision Transformer Model
+   :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+   :image: _static/img/thumbnails/cropped/mobile.png
+   :link: beginner/vt_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Mobile
 
 .. customcarditem::
    :header: Parametrizations Tutorial
