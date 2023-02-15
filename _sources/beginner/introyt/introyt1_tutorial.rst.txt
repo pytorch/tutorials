@@ -371,12 +371,12 @@ How do we express this simple neural network in code?
 
         def __init__(self):
             super(LeNet, self).__init__()
-            # 1 input image channel (black & white), 6 output channels, 3x3 square convolution
+            # 1 input image channel (black & white), 6 output channels, 5x5 square convolution
             # kernel
-            self.conv1 = nn.Conv2d(1, 6, 3)
-            self.conv2 = nn.Conv2d(6, 16, 3)
+            self.conv1 = nn.Conv2d(1, 6, 5)
+            self.conv2 = nn.Conv2d(6, 16, 5)
             # an affine operation: y = Wx + b
-            self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension
+            self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5*5 from image dimension
             self.fc2 = nn.Linear(120, 84)
             self.fc3 = nn.Linear(84, 10)
 
@@ -456,9 +456,9 @@ Let’s instantiate this object and run a sample input through it.
  .. code-block:: none
 
     LeNet(
-      (conv1): Conv2d(1, 6, kernel_size=(3, 3), stride=(1, 1))
-      (conv2): Conv2d(6, 16, kernel_size=(3, 3), stride=(1, 1))
-      (fc1): Linear(in_features=576, out_features=120, bias=True)
+      (conv1): Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1))
+      (conv2): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
+      (fc1): Linear(in_features=400, out_features=120, bias=True)
       (fc2): Linear(in_features=120, out_features=84, bias=True)
       (fc3): Linear(in_features=84, out_features=10, bias=True)
     )
@@ -467,8 +467,8 @@ Let’s instantiate this object and run a sample input through it.
     torch.Size([1, 1, 32, 32])
 
     Raw output:
-    tensor([[ 0.0639, -0.0646, -0.0593, -0.0054, -0.0212, -0.0529, -0.1144,  0.0339,
-              0.0838,  0.0405]], grad_fn=<AddmmBackward0>)
+    tensor([[ 0.0898,  0.0318,  0.1485,  0.0301, -0.0085, -0.1135, -0.0296,  0.0164,
+              0.0039,  0.0616]], grad_fn=<AddmmBackward0>)
     torch.Size([1, 10])
 
 
@@ -579,25 +579,23 @@ automobile, ship, truck):
     Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
       0%|          | 0/170498071 [00:00<?, ?it/s]
-      0%|          | 458752/170498071 [00:00<00:41, 4083335.66it/s]
-      4%|4         | 6848512/170498071 [00:00<00:04, 37562185.18it/s]
-     10%|9         | 16941056/170498071 [00:00<00:02, 65698232.12it/s]
-     16%|#5        | 26836992/170498071 [00:00<00:01, 78603257.26it/s]
-     22%|##1       | 37060608/170498071 [00:00<00:01, 86953358.17it/s]
-     28%|##7       | 46891008/170498071 [00:00<00:01, 90748516.89it/s]
-     33%|###3      | 56688640/170498071 [00:00<00:01, 93064570.22it/s]
-     40%|###9      | 67371008/170498071 [00:00<00:01, 97398005.11it/s]
-     45%|####5     | 77234176/170498071 [00:00<00:00, 97724391.34it/s]
-     51%|#####1    | 87031808/170498071 [00:01<00:00, 96815824.54it/s]
-     57%|#####6    | 96796672/170498071 [00:01<00:00, 96999616.53it/s]
-     63%|######2   | 106758144/170498071 [00:01<00:00, 97711036.40it/s]
-     68%|######8   | 116555776/170498071 [00:01<00:00, 96632444.77it/s]
-     74%|#######4  | 126681088/170498071 [00:01<00:00, 98002630.97it/s]
-     80%|########  | 136773632/170498071 [00:01<00:00, 98864242.01it/s]
-     86%|########6 | 146800640/170498071 [00:01<00:00, 99221483.83it/s]
-     92%|#########2| 156893184/170498071 [00:01<00:00, 99636884.82it/s]
-     98%|#########8| 167247872/170498071 [00:01<00:00, 100755973.95it/s]
-    100%|##########| 170498071/170498071 [00:01<00:00, 91852981.07it/s] 
+      0%|          | 458752/170498071 [00:00<00:41, 4125738.35it/s]
+      4%|4         | 7372800/170498071 [00:00<00:04, 40679080.63it/s]
+     11%|#         | 18743296/170498071 [00:00<00:02, 73195021.93it/s]
+     18%|#7        | 30179328/170498071 [00:00<00:01, 89180319.04it/s]
+     24%|##4       | 41091072/170498071 [00:00<00:01, 96286508.32it/s]
+     30%|##9       | 50823168/170498071 [00:00<00:01, 96159399.46it/s]
+     36%|###5      | 61210624/170498071 [00:00<00:01, 98644473.15it/s]
+     42%|####2     | 71696384/170498071 [00:00<00:00, 100504443.88it/s]
+     48%|####8     | 82083840/170498071 [00:00<00:00, 101546531.17it/s]
+     54%|#####4    | 92405760/170498071 [00:01<00:00, 101979092.95it/s]
+     61%|######    | 103677952/170498071 [00:01<00:00, 105243729.02it/s]
+     67%|######7   | 114917376/170498071 [00:01<00:00, 107373241.21it/s]
+     74%|#######4  | 126320640/170498071 [00:01<00:00, 109352507.42it/s]
+     81%|########  | 137723904/170498071 [00:01<00:00, 110665525.31it/s]
+     87%|########7 | 149094400/170498071 [00:01<00:00, 111532024.91it/s]
+     94%|#########4| 160563200/170498071 [00:01<00:00, 112370582.53it/s]
+    100%|##########| 170498071/170498071 [00:01<00:00, 100125610.69it/s]
     Extracting ./data/cifar-10-python.tar.gz to ./data
 
 
@@ -698,7 +696,7 @@ It’s good practice to visualize the batches your ``DataLoader`` serves:
 
  .. code-block:: none
 
-     ship truck   cat  bird
+     ship   car horse  ship
 
 
 
@@ -832,7 +830,7 @@ We’ll run our check on the output from ``DataLoader``:
 
  .. code-block:: none
 
-     bird plane horse   car
+      cat   cat  deer  frog
 
 
 
@@ -956,18 +954,18 @@ run this cell, as it will likely take a few minutes to execute:
 
  .. code-block:: none
 
-    [1,  2000] loss: 2.174
-    [1,  4000] loss: 1.810
-    [1,  6000] loss: 1.673
-    [1,  8000] loss: 1.598
-    [1, 10000] loss: 1.542
-    [1, 12000] loss: 1.475
-    [2,  2000] loss: 1.395
-    [2,  4000] loss: 1.364
-    [2,  6000] loss: 1.334
-    [2,  8000] loss: 1.321
-    [2, 10000] loss: 1.300
-    [2, 12000] loss: 1.269
+    [1,  2000] loss: 2.195
+    [1,  4000] loss: 1.876
+    [1,  6000] loss: 1.654
+    [1,  8000] loss: 1.577
+    [1, 10000] loss: 1.515
+    [1, 12000] loss: 1.464
+    [2,  2000] loss: 1.422
+    [2,  4000] loss: 1.370
+    [2,  6000] loss: 1.336
+    [2,  8000] loss: 1.330
+    [2, 10000] loss: 1.317
+    [2, 12000] loss: 1.263
     Finished Training
 
 
@@ -1059,7 +1057,7 @@ data it hasn’t trained on:
 
  .. code-block:: none
 
-    Accuracy of the network on the 10000 test images: 55 %
+    Accuracy of the network on the 10000 test images: 54 %
 
 
 
@@ -1075,7 +1073,7 @@ demonstrates that some general learning did happen in the model.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  44.095 seconds)
+   **Total running time of the script:** ( 1 minutes  43.613 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_introyt1_tutorial.py:
