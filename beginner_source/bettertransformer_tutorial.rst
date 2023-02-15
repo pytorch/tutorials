@@ -18,7 +18,7 @@ been updated to use the core library modules to benefit from fastpath accelerati
 
 Better Transformer offers two types of acceleration:
 
-* Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.  
+* Native multihead attention (MHA) implementation for CPU and GPU to improve overall execution efficiency.  
 * Exploiting sparsity in NLP inference.  Because of variable input lengths, input
   tokens may contain a large number of padding tokens for which processing may be
   skipped, delivering significant speedups.
@@ -124,6 +124,7 @@ Finally, we set the benchmark iteration count:
 2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)
 
 We run the model on CPU, and collect profile information:  
+
 * The first run uses traditional ("slow path") execution.
 * The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()` and disables gradient collection with `torch.no_grad()`.
 
@@ -167,6 +168,7 @@ We disable the BT sparsity:
     
  
 We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:  
+
 * The first run uses traditional ("slow path") execution.
 * The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()`
   and disables gradient collection with `torch.no_grad()`.
