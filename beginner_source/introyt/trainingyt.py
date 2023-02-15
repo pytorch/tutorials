@@ -321,12 +321,12 @@ for epoch in range(EPOCHS):
 
 #########################################################################
 # To load a saved version of the model:
-# 
-# ::
-# 
-#    saved_model = GarmentClassifier()
-#    saved_model.load_state_dict(torch.load(PATH))
-# 
+#
+# .. code:: python
+#
+#     saved_model = GarmentClassifier()
+#     saved_model.load_state_dict(torch.load(PATH))
+#
 # Once you’ve loaded the model, it’s ready for whatever you need it for -
 # more training, inference, or analysis.
 # 
