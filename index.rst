@@ -412,9 +412,9 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: Forward-mode Automatic Differentiation
-   :card_description: Learn how to use forward-mode automatic differentiation.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/forward_ad_usage.html
+   :card_description: Learn how to use forward-mode automatic differentiation
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/forward_ad_tutorial.html
    :tags: Frontend-APIs
 
 .. Model Optimization
@@ -869,7 +869,7 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
-   intermediate/forward_ad_usage
+   intermediate/forward_ad_tutorial
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
