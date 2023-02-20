@@ -38,8 +38,8 @@ For example, 10x3x16x16 batch in Channels last format will have strides equal to
 # Classic PyTorch contiguous tensor
 import torch
 
-N, C, H, W = 10, 3, 32, 32
-x = torch.empty(N, C, H, W)
+B, C, H, W = 10, 3, 32, 32
+x = torch.empty(B, C, H, W)
 print(x.stride())  # Ouputs: (3072, 1024, 32, 1)
 
 ######################################################################
@@ -99,7 +99,7 @@ print(special_x.is_contiguous(memory_format=torch.contiguous_format))  # Ouputs:
 
 ######################################################################
 # Create as channels last
-x = torch.empty(N, C, H, W, memory_format=torch.channels_last)
+x = torch.empty(B, C, H, W, memory_format=torch.channels_last)
 print(x.stride())  # Ouputs: (3072, 1, 96, 3)
 
 ######################################################################

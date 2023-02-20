@@ -164,7 +164,7 @@ torch.autograd.gradcheck(BatchNorm.apply, (a,), fast_mode=False)
 class FusedConvBN2DFunction(torch.autograd.Function):
     @staticmethod
     def forward(ctx, X, conv_weight, eps=1e-3):
-        assert X.ndim == 4  # N, C, H, W
+        assert X.ndim == 4  # B, C, H, W
         # (1) Only need to save this single buffer for backward!
         ctx.save_for_backward(X, conv_weight)
 
