@@ -98,8 +98,8 @@ for i in range(1, cols * rows + 1):
 plt.show()
 
 #################################################################
-# ..
-#  .. figure:: /_static/img/basics/fashion_mnist.png
+#
+# .. image:: ../../_static/img/basics/fashion_mnist.png
 #    :alt: fashion_mnist
 
 

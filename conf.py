@@ -90,7 +90,8 @@ sphinx_gallery_conf = {
     'filename_pattern': '.py',
     'ignore_pattern': re.compile(f"({'|'.join(NOT_RUN)}).py$"),
     'promote_jupyter_magic': True,
-    'backreferences_dir': None
+    'backreferences_dir': None,
+    'notebook_images': 'https://pytorch.org/tutorials/'
 }
 
 if os.getenv('GALLERY_PATTERN'):

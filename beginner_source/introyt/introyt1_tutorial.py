@@ -145,8 +145,8 @@ import torch.nn.functional as F  # for the activation function
 
 
 #########################################################################
-# .. figure:: /_static/img/mnist.png
-#    :alt: le-net-5 diagram
+# .. image:: ../../_static/img/mnist.png
+#    :alt: le-net-5 diagram2
 #
 # *Figure: LeNet-5*
 # 
