@@ -502,7 +502,7 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torchserve_with_ipex_2
    :tags: Model-Optimization,Production
-   
+
 .. customcarditem::
    :header: Introduction to nvFuser
    :card_description: An introduction to nvFuser
@@ -523,6 +523,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
    :tags: Model-Optimization
+
+.. customcarditem::
+   :header: (beta) An overview of torch.nn.functional.scaled_dot_product_attention
+   :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: beginner/scaled_dot_product_attention_tutorial.html
+   :tags: Model-Optimization,Attention,Transformer
 
 .. Parallel-and-Distributed-Training
 
@@ -909,6 +916,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   beginner/scaled_dot_product_attention_tutorial
 
 .. toctree::
    :maxdepth: 2
