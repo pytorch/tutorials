@@ -357,7 +357,7 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
 
     memory = model.encode(src, src_mask)
     ys = torch.ones(1, 1).fill_(start_symbol).type(torch.long).to(DEVICE)
-    for i in range(max_len-1):
+    for i in range(max_len):
         memory = memory.to(DEVICE)
         tgt_mask = (generate_square_subsequent_mask(ys.size(0))
                     .type(torch.bool)).to(DEVICE)
@@ -371,7 +371,8 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
                         torch.ones(1, 1).type_as(src.data).fill_(next_word)], dim=0)
         if next_word == EOS_IDX:
             break
-    return ys
+    # Return the target sequence without the start symbol
+    return ys[:, 1:]
 
 
 # actual function to translate input sentence into target language
