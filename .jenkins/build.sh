@@ -31,7 +31,7 @@ pip install -r $DIR/../requirements.txt
 
 # Install 2.0 nightly
 
-pip uninstall -y torch torchvision torchaudio torchtext
+pip uninstall -y torch torchvision torchaudio torchtext torchdata
 #pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu118/torch_test.html torch torchdata torchvision torchaudio torchtext
 pip install torch torchdata torchvision torchaudio torchtext --index-url https://download.pytorch.org/whl/test/cpu
 
