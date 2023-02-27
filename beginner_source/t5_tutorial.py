@@ -2,8 +2,7 @@
 T5-Base Model for Summarization, Sentiment Classification, and Translation
 ==========================================================================
 
-**Author**: `Pendo Abbo <pabbo@fb.com>`__
-**Author**: `Joe Cummings <jrcummings@fb.com>`__
+**Author**: `Pendo Abbo <pabbo@fb.com>`__ , `Joe Cummings <jrcummings@fb.com>`__
 
 """
 
