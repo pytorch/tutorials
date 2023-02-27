@@ -1,6 +1,6 @@
 """
-An overview of torch.nn.functional.scaled_dot_product_attention
-===============================================================
+Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
+================================================================================
 
 """
 
@@ -8,38 +8,32 @@ An overview of torch.nn.functional.scaled_dot_product_attention
 ######################################################################
 # Summary
 # ~~~~~~~~
-# 
-# In this tutorial we want to highlight a new ``torch.nn.functional`` function
+#
+# In this tutorial, we want to highlight a new ``torch.nn.functional`` function
 # that can be helpful for implementing transformer architectures. The
 # function is named ``torch.nn.functional.scaled_dot_product_attention``.
-# There is some extensive documentation on the function in the `PyTorch
-# documentation <https://pytorch.org/docs/master/generated/torch.nn.functional.scaled_dot_product_attention.html#torch.nn.functional.scaled_dot_product_attention>`__.
-# This function has already been incorporated into torch.nn.MHA
-# (Multi-Head Attention) and ``torch.nn.TransformerEncoderLayer``.
-# 
+# For detailed description of the function, see the `PyTorch documentation <https://pytorch.org/docs/master/generated/torch.nn.functional.scaled_dot_product_attention.html#torch.nn.functional.scaled_dot_product_attention>`__.
+# This function has already been incorporated into ``torch.nn.MultiheadAttention`` and ``torch.nn.TransformerEncoderLayer``.
+#
 # Overview
-# ~~~~~~~ 
-# At a high level this PyTorch function calculates the
-# scaled dot product attention between query, key, and value according to
+# ~~~~~~~~~
+# At a high level, this PyTorch function calculates the
+# scaled dot product attention (SDPA) between query, key, and value according to
 # the definition found in the paper `Attention is all you
-# need <https://arxiv.org/abs/1706.03762>`__. While this function can be
-# written in PyTorch using existing functions, for GPU tensors this
-# function will implicitly dispatch to an optimized implementation. The
-# function is also highly modular and can be used to implement other
-# attention mechanisms such as
-# `Linformer <https://arxiv.org/abs/2006.04768>`__
-# 
-# Fused implementations:
+# need <https://arxiv.org/abs/1706.03762>`__. While this function can
+# be written in PyTorch using existing functions, a fused implementation can provide
+# large performance benefits over a naive implementation.
+#
+# Fused implementations
 # ~~~~~~~~~~~~~~~~~~~~~~
-# 
-# For CUDA tensor inputs the function will dispatch into one of three
-# implementations: 
+#
+# For CUDA tensor inputs, the function will dispatch into one of the following
+# implementations:
+#
 # * `FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness <https://arxiv.org/abs/2205.14135>`__
-# Attention with IO-Awareness <https://arxiv.org/abs/2205.14135>`__ \*
-# `Memory-Efficient
-# Attention <https://github.com/facebookresearch/xformers>`__ \* A PyTorch
-# implementation defined in C++
-# 
+# * `Memory-Efficient Attention <https://github.com/facebookresearch/xformers>`__
+# * A PyTorch implementation defined in C++
+#
 
 import torch
 import torch.nn as nn
@@ -54,15 +48,15 @@ F.scaled_dot_product_attention(query, key, value)
 ######################################################################
 # Explicit Dispatcher Control
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # While the function will implicitly dispatch to one of the three
 # implementations, the user can also explicitly control the dispatch via
 # the use of a context manager. This context manager allows users to
 # explicitly disable certain implementations. If a user wants to ensure
-# the function is indeed using the fasted implementation for their
-# specific inputs the context manager can be used to sweep through
+# the function is indeed using the fastest implementation for their
+# specific inputs, the context manager can be used to sweep through
 # measuring performance.
-# 
+#
 
 # Lets define a helpful benchmarking function:
 import torch.utils.benchmark as benchmark
@@ -102,35 +96,38 @@ with sdp_kernel(**backend_map[SDPBackend.MATH]):
 
 
 with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
-    print(f"The flash attention implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
-
+    try:
+        print(f"The flash attention implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+    except RuntimeError:
+        print("FlashAttention is not supported. See warnings for reasons.")
 
 with sdp_kernel(**backend_map[SDPBackend.EFFICIENT_ATTENTION]):
-    print(f"The memory efficient implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+    try:
+        print(f"The memory efficient implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+    except RuntimeError:
+        print("EfficientAttention is not supported. See warnings for reasons.")
 
 
 ######################################################################
 # Hardware dependence
 # ~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Depending on what machine you ran the above cell on and what hardware is
-# available your results might be different. 
-# - If you don’t have a GPU and are running on CPU then the context manager will have no effect and all
-# are running on CPU then the context manager will have no effect and all
-# three run should return similar timings. - Depending on what Compute
-# Capability your graphics card supports FlashAttention or memory
-# efficient might have failed.
-# 
+# available, your results might be different.
+# - If you don’t have a GPU and are running on CPU then the context manager
+# will have no effect and all three runs should return similar timings.
+# - Depending on what compute capability your graphics card supports
+# flash attention or memory efficient might have failed.
 
 
 ######################################################################
 # Causal Self Attention
 # ~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Below is an example implementation of a multi-headed causal self
 # attention block inspired by Andrej Karpathy’s
 # `NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository.
-# 
+#
 
 class CausalSelfAttention(nn.Module):
 
@@ -187,7 +184,11 @@ print(model)
 ######################################################################
 # NestedTensor and Dense tensor support
 # -------------------------------------
-# 
+#
+# SDPA supports both NestedTensor and Dense tensor inputs. NestedTensors handle the case where the input is a batch of variable length sequences
+# without needing to pad each sequence to the maximum length in the batch. For more information about NestedTensors see
+# `torch.nested <https://pytorch.org/docs/stable/nested.html>`__ and `NestedTensors Tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`__.
+#
 
 import random
 def generate_rand_batch(
@@ -227,21 +228,31 @@ def generate_rand_batch(
         seq_len_list,
     )
 
-# Currently the fastpaths don't support NestedTensor for training
 random_nt, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=0.5, dtype=dtype, device=device)
 random_dense, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=None, dtype=dtype, device=device)
-model.requires_grad_(False)
-print(f"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds")
-print(f"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds")
+
+# Currently the fused implementations don't support NestedTensor for training
+model.eval()
+
+with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
+    try:
+        print(f"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds")
+        print(f"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds")
+    except RuntimeError:
+        print("FlashAttention is not supported. See warnings for reasons.")
 
 
 ######################################################################
-# Composable with 2.0 Features
+# Using SDPA with torch.compile
 # ============================
-# 
-# Scaled dot product attention is composable with torch.compile(). Lets
-# try compiling the above CausalSelfAttention module
-# 
+#
+# With the release of PyTorch 2.0, a new feature called
+# ``torch.compile()`` has been introduced, which can provide
+# significant performance improvements over eager mode.
+# Scaled dot product attention is fully composable with ``torch.compile()``.
+# To demonstrate this, let's compile the CausalSelfAttention module using
+# ``torch.compile()`` and observe the resulting performance improvements.
+#
 
 batch_size = 32
 max_sequence_len = 256
@@ -252,20 +263,21 @@ print(
 
 
 compiled_model = torch.compile(model)
-# Lets warm it up once
+# Let's compile it
 compiled_model(x)
 print(
     f"The compiled module runs in  {benchmark_torch_function_in_microseconds(compiled_model, x):.3f} microseconds")
 
 
 ######################################################################
-# HMM..
-# ~~~~~
-# 
-# That is not what we were expecting. Let's dig a little deeper. 
+#
+# The exact execution time is dependent on machine, however the results for mine:
+# The non compiled module runs in  166.616 microseconds
+# The compiled module runs in  166.726 microseconds
+# That is not what we were expecting. Let's dig a little deeper.
 # PyTorch comes with an amazing built-in profiler that you can use to
 # inspect the performance characteristics of your code.
-# 
+#
 
 from torch.profiler import profile, record_function, ProfilerActivity
 activities = [ProfilerActivity.CPU]
@@ -276,39 +288,44 @@ with profile(activities=activities, record_shapes=False) as prof:
     with record_function(" Non-Compilied Causal Attention"):
         for _ in range(25):
             model(x)
-print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=20))
+print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 
 with profile(activities=activities, record_shapes=False) as prof:
     with record_function("Compiled Causal Attention"):
         for _ in range(25):
             compiled_model(x)
-print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=20))
+print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 # For even more insights, you can export the trace and use ``chrome://tracing`` to view the results
-# prof.export_chrome_trace("compiled_causal_attention_trace.json")
+# prof.export_chrome_trace("compiled_causal_attention_trace.json").
 
 
 
 
 ######################################################################
-# The problem here is that ``torch.compile`` is very good at removing the
+# The previous code snippet generates a report of the top 10 PyTorch functions
+# that consumed the most GPU execution time, for both the compiled and non-compiled module.
+# The analysis reveals that the majority of time spent on the GPU is concentrated
+# on the same set of functions for both modules.
+# The reason for this here is that ``torch.compile`` is very good at removing the
 # framework overhead associated with PyTorch. If your model is launching
 # large, efficient CUDA kernels, which in this case CausaulSelfAttention
-# is, then the overhead of ``torch.compile`` can hurt performance.
-# 
+# is, then the overhead of PyTorch can be hidden.
+#
 # In reality, your module does not normally consist of a singular
 # CausalSelfAttention block. When experimenting with Andrej Karpathy’s
 # `NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository, compiling
-# the module took the time per train step from: ``902.01ms`` to
-# ``552.06ms``!
-# 
+# the module took the time per train step from: ``6090.49ms`` to
+# ``3273.17ms``! This was done on commit: ae3a8d5 of NanoGPT training on
+# the shakespeare dataset.
+#
 
 
 ######################################################################
 # Conclusion
 # ==========
-# 
+#
 # In this tutorial, we have demonstrated the basic usage of
 # ``torch.nn.functional.scaled_dot_product_attention``. We have shown how
 # the ``sdp_kernel`` context manager can be used to assert a certain
@@ -317,4 +334,4 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=20))
 # compilable. In the process we have shown how to the profiling tools can
 # be used to explore the performance characteristics of a user defined
 # module.
-# 
+#
