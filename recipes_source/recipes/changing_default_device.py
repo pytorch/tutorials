@@ -4,7 +4,7 @@ Changing default device
 
 It is common practice to write PyTorch code in a device-agnostic way,
 and then switch between CPU and CUDA depending on what hardware is available.
-Typically, to do this you might have used if-statements and cuda() calls
+Typically, to do this you might have used if-statements and ``cuda()`` calls
 to do this:
 
 """
