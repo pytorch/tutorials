@@ -233,7 +233,7 @@ print("~" * 10)
 
 ######################################################################
 # Again, we can see that ``torch.compile`` takes longer in the first
-# iteration, as it must compile the model, but afterward, we see
+# iteration, as it must compile the model, but in subsequent iterations, we see
 # significant speedups compared to eager. On an NVIDIA A100 GPU, we
 # observe a ~1.8x speedup.
 
