@@ -63,7 +63,7 @@ with fwAD.dual_level():
     dual_input_alt = fwAD.make_dual(primal, tangent.T)
     assert fwAD.unpack_dual(dual_input_alt).tangent is not tangent
 
-    # Tensors that do not not have an associated tangent are automatically
+    # Tensors that do not have an associated tangent are automatically
     # considered to have a zero-filled tangent of the same shape.
     plain_tensor = torch.randn(10, 10)
     dual_output = fn(dual_input, plain_tensor)
