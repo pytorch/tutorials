@@ -284,7 +284,7 @@ torch._C._jit_set_autocast_mode(False)
 with torch.no_grad(), torch.cpu.amp.autocast():
     model = torch.jit.trace(model, (example_input))
     model = torch.jit.freeze(model)
-    # speedup would be observed after warmup runs
+    # a couple of warmup runs
     model(example_input)
     model(example_input)
     # speedup would be observed in subsequent runs.
