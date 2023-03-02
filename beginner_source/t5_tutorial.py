@@ -93,7 +93,7 @@ model.to(DEVICE)
 # GenerationUtils
 # ------------------
 #
-# We can use torchtext's `GenerationUtils` to produce an output sequence based on the input sequence provided. This calls on the
+# We can use torchtext's ``GenerationUtils`` to produce an output sequence based on the input sequence provided. This calls on the
 # model's encoder and decoder, and iteratively expands the decoded sequences until the end-of-sequence token is generated
 # for all sequences in the batch. The `generate` method shown below uses greedy search to generate the sequences. Beam search and
 # other decoding strategies are also supported.
