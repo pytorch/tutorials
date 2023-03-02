@@ -63,7 +63,7 @@ transform = T5Transform(
 #######################################################################
 # Alternatively, we can also use the transform shipped with the pre-trained models that does all of the above out-of-the-box
 #
-# ::
+# .. code-block::
 #
 #   from torchtext.models import T5_BASE_GENERATION
 #   transform = T5_BASE_GENERATION.transform()
