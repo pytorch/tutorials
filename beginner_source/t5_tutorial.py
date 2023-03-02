@@ -42,7 +42,7 @@ DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 #
 # T5 uses a SentencePiece model for text tokenization. Below, we use a pre-trained SentencePiece model to build
 # the text pre-processing pipeline using torchtext's T5Transform. Note that the transform supports both
-# batched and non-batched text input (i.e. one can either pass a single sentence or a list of sentences), however
+# batched and non-batched text input (for example, one can either pass a single sentence or a list of sentences), however
 # the T5 model expects the input to be batched.
 #
 
