@@ -112,7 +112,7 @@ sequence_generator = GenerationUtils(model)
 # datapipes and hence support standard flow-control and mapping/transformation using user defined
 # functions and transforms.
 #
-# Below, we demonstrate how to pre-process the CNNDM dataset to include the prefix necessary for the
+# Below we demonstrate how to pre-process the CNNDM dataset to include the prefix necessary for the
 # model to indentify the task it is performing. The CNNDM dataset has a train, validation, and test
 # split. Below we demo on the test split.
 #
