@@ -235,7 +235,7 @@ for i in range(cnndm_batch_size):
 # Summarization Output
 # --------------------
 #
-# ::
+# .. code-block::
 #
 #    Example 1:
 #
