@@ -147,7 +147,7 @@ cnndm_dataloader = DataLoader(cnndm_datapipe, batch_size=None)
 #######################################################################
 # Alternately, we can also use batched API, for example, apply the prefix on the whole batch:
 #
-# ::
+# .. code-block::
 #
 #   def batch_prefix(task, x):
 #    return {
