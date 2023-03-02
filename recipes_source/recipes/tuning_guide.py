@@ -240,7 +240,7 @@ def fused_gelu(x):
 # Use oneDNN Graph with TorchScript for inference
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
-# Currently, it's supported as an experimental feature for Float32 data-type.
+# In PyTorch 2.0, it is supported as a beta feature for Float32 & BFloat16 data-types.
 # oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
 # A model should be JIT-traced using an example input.
 # Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
@@ -250,7 +250,7 @@ def fused_gelu(x):
 torch.jit.enable_onednn_fusion(True)
 
 ###############################################################################
-# Using the oneDNN Graph API requires just one extra line of code.
+# Using the oneDNN Graph API requires just one extra line of code for inference with Float32.
 # If you are using oneDNN Graph, please avoid calling ``torch.jit.optimize_for_inference``.
 
 # sample input should be of the same shape as expected inputs
