@@ -406,7 +406,7 @@ target = batch["german"]
 beam_size = 4
 
 model_input = transform(input_text)
-model_output = sequence_generator.generate(model_input, eos_idx=eos_idx, beam_size=beam_size)
+model_output = sequence_generator.generate(model_input, eos_idx=eos_idx, num_beams=beam_size)
 output_text = transform.decode(model_output.tolist())
 
 for i in range(multi_batch_size):
