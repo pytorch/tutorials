@@ -118,7 +118,7 @@ sequence_generator = GenerationUtils(model)
 # split. Below we demo on the test split.
 #
 # The T5 model uses the prefix "summarize" for text summarization. For more information on task
-# prefixes, please visit Appendix D of the T5 Paper at https://arxiv.org/pdf/1910.10683.pdf
+# prefixes, please visit Appendix D of the `T5 Paper <https://arxiv.org/pdf/1910.10683.pdf>`__
 #
 # .. note::
 #       Using datapipes is still currently subject to a few caveats. If you wish
