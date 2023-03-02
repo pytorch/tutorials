@@ -145,7 +145,7 @@ cnndm_datapipe = cnndm_datapipe.rows2columnar(["article", "abstract"])
 cnndm_dataloader = DataLoader(cnndm_datapipe, batch_size=None)
 
 #######################################################################
-# Alternately we can also use batched API (i.e apply the prefix on the whole batch)
+# Alternately, we can also use batched API, for example, apply the prefix on the whole batch:
 #
 # ::
 #
