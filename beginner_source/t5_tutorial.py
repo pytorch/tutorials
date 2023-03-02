@@ -76,7 +76,7 @@ transform = T5Transform(
 #
 # torchtext provides SOTA pre-trained models that can be used directly for NLP tasks or fine-tuned on downstream tasks. Below
 # we use the pre-trained T5 model with standard base configuration to perform text summarization, sentiment classification, and
-# translation. For additional details on available pre-trained models, please refer to documentation at
+# translation. For additional details on available pre-trained models, see `the torchtext documentation <https://pytorch.org/text/main/models.html>`__
 # https://pytorch.org/text/main/models.html
 #
 #
