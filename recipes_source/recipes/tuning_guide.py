@@ -274,6 +274,24 @@ with torch.no_grad():
     traced_model(*sample_input)
 
 ###############################################################################
+# While the JIT fuser for oneDNN Graph also supports inference with BFloat16 datatype, 
+# performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16 ISA.
+# The following code snippets serves as an example of using BFloat16 datatype for inference with oneDNN Graph:
+
+# AMP for JIT mode is enabled by default, and is divergent with its eager mode counterpart
+torch._C._jit_set_autocast_mode(False)
+
+with torch.no_grad(), torch.cpu.amp.autocast():
+    model = torch.jit.trace(model, (example_input))
+    model = torch.jit.freeze(model)
+    # speedup would be observed after warmup runs
+    model(example_input)
+    model(example_input)
+    # speedup would be observed in subsequent runs.
+    model(example_input)
+
+
+###############################################################################
 # Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.
