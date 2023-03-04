@@ -81,8 +81,8 @@ training_set = torchvision.datasets.FashionMNIST('./data', train=True, transform
 validation_set = torchvision.datasets.FashionMNIST('./data', train=False, transform=transform, download=True)
 
 # Create data loaders for our datasets; shuffle for training, not for validation
-training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True, num_workers=2)
-validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=4, shuffle=False, num_workers=2)
+training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True)
+validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=4, shuffle=False)
 
 # Class labels
 classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
@@ -112,7 +112,7 @@ def matplotlib_imshow(img, one_channel=False):
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 dataiter = iter(training_loader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # Create a grid from the images and show them
 img_grid = torchvision.utils.make_grid(images)
@@ -321,12 +321,12 @@ for epoch in range(EPOCHS):
 
 #########################################################################
 # To load a saved version of the model:
-# 
-# ::
-# 
-#    saved_model = GarmentClassifier()
-#    saved_model.load_state_dict(torch.load(PATH))
-# 
+#
+# .. code:: python
+#
+#     saved_model = GarmentClassifier()
+#     saved_model.load_state_dict(torch.load(PATH))
+#
 # Once you’ve loaded the model, it’s ready for whatever you need it for -
 # more training, inference, or analysis.
 # 
