@@ -33,7 +33,7 @@ pip install -r $DIR/../requirements.txt
 
 pip uninstall -y torch torchvision torchaudio torchtext torchdata
 #pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu118/torch_test.html torch torchdata torchvision torchaudio torchtext
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu117
+pip3 install torch torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu117
 pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
 
 # Install two language tokenizers for Translation with TorchText tutorial
