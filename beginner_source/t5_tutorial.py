@@ -168,11 +168,11 @@ from torchtext.datasets import IMDB
 imdb_batch_size = 3
 imdb_datapipe = IMDB(split="test")
 task = "sst2 sentence"
-labels = {"neg": "negative", "pos": "positive"}
+labels = {"1": "negative", "2": "positive"}
 
 
 def process_labels(labels, x):
-    return x[1], labels[x[0]]
+    return x[1], labels[str(x[0])]
 
 
 imdb_datapipe = imdb_datapipe.map(partial(process_labels, labels))
@@ -361,7 +361,7 @@ for i in range(imdb_batch_size):
 #    really annoying was the constant cuts to VDs daughter during the last fight scene.<br /><br />
 #    Not bad. Not good. Passable 4.
 #
-#    prediction: negative
+#    prediction: positive
 #
 #    target: negative
 #
@@ -388,13 +388,12 @@ for i in range(imdb_batch_size):
 # ---------------------
 #
 # Finally, we can also use the model to generate English to German translations on the first batch of examples from the Multi30k
-# test set using a beam size of 4.
+# test set.
 #
 
 batch = next(iter(multi_dataloader))
 input_text = batch["english"]
 target = batch["german"]
-beam_size = 4
 
 model_input = transform(input_text)
 model_output = sequence_generator.generate(model_input, eos_idx=eos_idx, num_beams=beam_size)
