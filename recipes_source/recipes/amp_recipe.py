@@ -19,7 +19,7 @@ then walks through adding ``autocast`` and ``GradScaler`` to run the same networ
 mixed precision with improved performance.
 
 You may download and run this recipe as a standalone Python script.
-The only requirements are Pytorch 1.6+ and a CUDA-capable GPU.
+The only requirements are PyTorch 1.6 or later and a CUDA-capable GPU.
 
 Mixed precision primarily benefits Tensor Core-enabled architectures (Volta, Turing, Ampere).
 This recipe should show significant (2-3X) speedup on those architectures.
