@@ -20,14 +20,6 @@ T5-Base Model for Summarization, Sentiment Classification, and Translation
 #
 #
 
-######################################################################
-# Common imports
-# --------------
-import torch
-
-DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-
 #######################################################################
 # Data Transformation
 # -------------------
@@ -86,7 +78,6 @@ t5_base = T5_BASE_GENERATION
 transform = t5_base.transform()
 model = t5_base.get_model()
 model.eval()
-model.to(DEVICE)
 
 
 #######################################################################
