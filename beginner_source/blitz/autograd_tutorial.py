@@ -40,7 +40,7 @@ and its corresponding ``label`` initialized to some random values. Label in pret
 shape (1,1000).
 
 .. note::
-    This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
+    This tutorial work only on CPU and will not work on GPU (even if tensors are moved to CUDA).
 
 """
 import torch
@@ -275,9 +275,6 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 # In a NN, parameters that don't compute gradients are usually called **frozen parameters**.
 # It is useful to "freeze" part of your model if you know in advance that you won't need the gradients of those parameters
 # (this offers some performance benefits by reducing autograd computations).
-#
-# Another common usecase where exclusion from the DAG is important is for
-# `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #
 # In finetuning, we freeze most of the model and typically only modify the classifier layers to make predictions on new labels.
 # Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
