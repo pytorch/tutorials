@@ -176,8 +176,7 @@ print("~" * 10)
 
 ######################################################################
 # And indeed, we can see that running our model with ``torch.compile``
-# results in a significant speedup. On an NVIDIA A100 GPU, we observe a
-# ~1.5x speedup. Speedup mainly comes from reducing Python overhead and
+# results in a significant speedup. Speedup mainly comes from reducing Python overhead and
 # GPU read/writes, and so the observed speedup may vary on factors such as model
 # architecture and batch size. For example, if a model's architecture is simple
 # and the amount of data is large, then the bottleneck would be
@@ -234,8 +233,7 @@ print("~" * 10)
 ######################################################################
 # Again, we can see that ``torch.compile`` takes longer in the first
 # iteration, as it must compile the model, but in subsequent iterations, we see
-# significant speedups compared to eager. On an NVIDIA A100 GPU, we
-# observe a ~1.8x speedup.
+# significant speedups compared to eager.
 
 ######################################################################
 # Comparison to TorchScript and FX Tracing
