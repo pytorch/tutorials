@@ -3,7 +3,7 @@ TorchVision Object Detection Finetuning Tutorial
 
 .. tip::
    To get the most of this tutorial, we suggest using this 
-   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/torchvision_finetuning_instance_segmentation.ipynb>`__. 
+   `Colab Version <https://colab.research.google.com/drive/1uqRjLis3g6vcVUa21SzzQ0cS0gpip0Jm?usp=sharing>`__. 
    This will allow you to experiment with the information presented below. 
 
 For this tutorial, we will be finetuning a pre-trained `Mask
