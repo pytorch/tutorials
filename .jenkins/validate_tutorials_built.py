@@ -14,7 +14,6 @@ NOT_RUN = [
     "profiler",
     "saving_loading_models",
     "introyt/captumyt",
-    "introyt/trainingyt",
     "examples_nn/polynomial_module",
     "examples_nn/dynamic_net",
     "examples_nn/polynomial_optim",
