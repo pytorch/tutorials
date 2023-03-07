@@ -133,7 +133,7 @@ def apply_prefix(task, x):
 cnndm_datapipe = cnndm_datapipe.map(partial(apply_prefix, task))
 cnndm_datapipe = cnndm_datapipe.batch(cnndm_batch_size)
 cnndm_datapipe = cnndm_datapipe.rows2columnar(["article", "abstract"])
-cnndm_dataloader = DataLoader(cnndm_datapipe, batch_size=None)
+cnndm_dataloader = DataLoader(cnndm_datapipe, shuffle=True, batch_size=None)
 
 #######################################################################
 # Alternately, we can also use batched API, for example, apply the prefix on the whole batch:
@@ -223,21 +223,19 @@ for i in range(cnndm_batch_size):
 
 
 #######################################################################
-# Summarization Output
+# Summarization Output (Might vary since we shuffle the dataloader)
 # --------------------
 #
 # .. code-block::
 #
 #    Example 1:
 #
-#    prediction: the Palestinians become the 123rd member of the international criminal
-#    court . the accession was marked by a ceremony at the Hague, where the court is based .
-#    the ICC opened a preliminary examination into the situation in the occupied
-#    Palestinian territory .
+#    prediction: the 24-year-old has been tattooed for over a decade . he has landed in australia
+#    to start work on a new campaign . he says he is 'taking it in your stride' to be honest .
 #
-#    target: Membership gives the ICC jurisdiction over alleged crimes committed in
-#    Palestinian territories since last June . Israel and the United States opposed the
-#    move, which could open the door to war crimes investigations against Israelis .
+#    target: London-based model Stephen James Hendry famed for his full body tattoo . The supermodel
+#    is in Sydney for a new modelling campaign . Australian fans understood to have already located
+#    him at his hotel . The 24-year-old heartthrob is recently single .
 #
 #
 #    Example 2:
