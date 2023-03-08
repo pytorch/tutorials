@@ -54,7 +54,6 @@ NOT_RUN = [
     "tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "nvfuser_intro_tutorial", # reenable after 2.0 release.
     "memory_format_tutorial" # reenable after 2.0 release.
-    
 ]
 
 
@@ -72,6 +71,7 @@ def main() -> None:
         glob_path = f"{tutorial_source_dir}/**/*.html"
         html_file_paths += docs_dir.glob(glob_path)
 
+    should_not_run = [f'{x.replace("_source", "")}.html' for x in NOT_RUN]
     did_not_run = []
     for html_file_path in html_file_paths:
         with open(html_file_path, "r", encoding="utf-8") as html_file:
@@ -82,9 +82,7 @@ def main() -> None:
             if (
                 "Total running time of the script: ( 0 minutes  0.000 seconds)"
                 in elem.text
-                and not any(
-                    html_file_path.match(file) for file in NOT_RUN
-                )
+                and not any(html_file_path.match(file) for file in should_not_run)
             ):
                 did_not_run.append(html_file_path.as_posix())
 
