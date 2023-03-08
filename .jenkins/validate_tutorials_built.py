@@ -38,7 +38,6 @@ NOT_RUN = [
     "recipes_source/recipes/profiler_recipe",
     "recipes_source/recipes/save_load_across_devices",
     "recipes_source/recipes/warmstarting_model_using_parameters_from_a_different_model",
-    "intermediate_source/torch_compile_tutorial_",
     "recipes_source/recipes/dynamic_quantization",
     "recipes_source/recipes/saving_and_loading_a_general_checkpoint",
     "recipes_source/recipes/benchmark",
@@ -49,9 +48,8 @@ NOT_RUN = [
     "recipes_source/recipes/amp_recipe",
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
-    "intermediate_source/text_to_speech_with_torchaudio",
+    "intermediate_source/text_to_speech_with_torchaudio"
 ]
-
 
 def tutorial_source_dirs() -> List[Path]:
     return [
