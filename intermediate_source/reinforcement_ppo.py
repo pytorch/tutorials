@@ -115,11 +115,16 @@ from torchrl.collectors import SyncDataCollector
 from torchrl.data.replay_buffers import ReplayBuffer
 from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
 from torchrl.data.replay_buffers.storages import LazyTensorStorage
-from torchrl.envs import TransformedEnv, ObservationNorm, Compose, \
-    DoubleToFloat, StepCounter
+from torchrl.envs import (
+    Compose,
+    DoubleToFloat,
+    ObservationNorm,
+    StepCounter,
+    TransformedEnv,
+)
 from torchrl.envs.libs.gym import GymEnv
-from torchrl.envs.utils import set_exploration_mode, check_env_specs
-from torchrl.modules import TanhNormal, ProbabilisticActor, ValueOperator
+from torchrl.envs.utils import check_env_specs, set_exploration_mode
+from torchrl.modules import ProbabilisticActor, TanhNormal, ValueOperator
 from torchrl.objectives import ClipPPOLoss
 from torchrl.objectives.value import GAE
 from tqdm import tqdm
@@ -183,7 +188,9 @@ total_frames = 50_000 // frame_skip
 #
 sub_batch_size = 64  # cardinality of the sub-samples gathered from the current data in the inner loop
 num_epochs = 10  # optimisation steps per batch of data collected
-clip_epsilon = 0.2  # clip value for PPO loss: see the equation in the intro for more context.
+clip_epsilon = (
+    0.2  # clip value for PPO loss: see the equation in the intro for more context.
+)
 gamma = 0.99
 lmbda = 0.95
 entropy_eps = 1e-4
@@ -201,10 +208,7 @@ entropy_eps = 1e-4
 # with another. For example, creating a wrapped gym environment can be achieved with few characters:
 #
 
-base_env = GymEnv(
-    "InvertedDoublePendulum-v4", device=device,
-    frame_skip=frame_skip
-)
+base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_skip)
 
 ######################################################################
 # There are a few things to notice in this code: first, we created
@@ -263,9 +267,9 @@ env = TransformedEnv(
     Compose(
         # normalize observations
         ObservationNorm(in_keys=["observation"]),
-        DoubleToFloat(in_keys=["observation"], ),
+        DoubleToFloat(in_keys=["observation"]),
         StepCounter(),
-    )
+    ),
 )
 
 ######################################################################
@@ -386,8 +390,7 @@ actor_net = nn.Sequential(
 # outputs in-place at the registered ``out_keys``.
 #
 policy_module = TensorDictModule(
-    actor_net, in_keys=["observation"],
-    out_keys=["loc", "scale"]
+    actor_net, in_keys=["observation"], out_keys=["loc", "scale"]
 )
 
 ######################################################################
@@ -410,8 +413,10 @@ policy_module = ProbabilisticActor(
     spec=env.action_spec,
     in_keys=["loc", "scale"],
     distribution_class=TanhNormal,
-    distribution_kwargs={"min": env.action_spec.space.minimum,
-                         "max": env.action_spec.space.maximum},
+    distribution_kwargs={
+        "min": env.action_spec.space.minimum,
+        "max": env.action_spec.space.maximum,
+    },
     return_log_prob=True,
     # we'll need the log-prob for the numerator of the importance weights
 )
@@ -540,8 +545,7 @@ replay_buffer = ReplayBuffer(
 #
 
 advantage_module = GAE(
-    gamma=gamma, lmbda=lmbda, value_network=value_module,
-    average_gae=True
+    gamma=gamma, lmbda=lmbda, value_network=value_module, average_gae=True
 )
 
 loss_module = ClipPPOLoss(
@@ -560,9 +564,7 @@ loss_module = ClipPPOLoss(
 
 optim = torch.optim.Adam(loss_module.parameters(), lr)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    optim,
-    total_frames // frames_per_batch,
-    0.0
+    optim, total_frames // frames_per_batch, 0.0
 )
 
 ######################################################################
@@ -594,36 +596,38 @@ eval_str = ""
 # designed to collect:
 for i, tensordict_data in enumerate(collector):
     # we now have a batch of data to work with. Let's learn something from it.
-    for k in range(num_epochs):
+    for _ in range(num_epochs):
         # We'll need an "advantage" signal to make PPO work.
         # We re-compute it at each epoch as its value depends on the value
         # network which is updated in the inner loop.
         advantage_module(tensordict_data)
         data_view = tensordict_data.reshape(-1)
         replay_buffer.extend(data_view.cpu())
-        for j in range(frames_per_batch // sub_batch_size):
+        for _ in range(frames_per_batch // sub_batch_size):
             subdata, *_ = replay_buffer.sample(sub_batch_size)
             loss_vals = loss_module(subdata.to(device))
-            loss_value = loss_vals["loss_objective"] + loss_vals[
-                "loss_critic"] + loss_vals["loss_entropy"]
+            loss_value = (
+                loss_vals["loss_objective"]
+                + loss_vals["loss_critic"]
+                + loss_vals["loss_entropy"]
+            )
 
             # Optimization: backward, grad clipping and optim step
             loss_value.backward()
             # this is not strictly mandatory but it's good practice to keep
             # your gradient norm bounded
-            torch.nn.utils.clip_grad_norm_(
-                loss_module.parameters(),
-                max_grad_norm
-            )
+            torch.nn.utils.clip_grad_norm_(loss_module.parameters(), max_grad_norm)
             optim.step()
             optim.zero_grad()
 
-    logs["reward"].append(tensordict_data["reward"].mean().item())
+    logs["reward"].append(tensordict_data["next", "reward"].mean().item())
     pbar.update(tensordict_data.numel() * frame_skip)
-    cum_reward_str = f"average reward={logs['reward'][-1]: 4.4f} (init={logs['reward'][0]: 4.4f})"
-    logs["step_count"].append(tensordict_data['step_count'].max().item())
+    cum_reward_str = (
+        f"average reward={logs['reward'][-1]: 4.4f} (init={logs['reward'][0]: 4.4f})"
+    )
+    logs["step_count"].append(tensordict_data["step_count"].max().item())
     stepcount_str = f"step count (max): {logs['step_count'][-1]}"
-    logs["lr"].append(optim.param_groups[0]['lr'])
+    logs["lr"].append(optim.param_groups[0]["lr"])
     lr_str = f"lr policy: {logs['lr'][-1]: 4.4f}"
     if i % 10 == 0:
         # We evaluate the policy once every 10 batches of data.
@@ -635,25 +639,18 @@ for i, tensordict_data in enumerate(collector):
         with set_exploration_mode("mean"), torch.no_grad():
             # execute a rollout with the trained policy
             eval_rollout = env.rollout(1000, policy_module)
-            logs["eval reward"].append(eval_rollout["reward"].mean().item())
+            logs["eval reward"].append(eval_rollout["next", "reward"].mean().item())
             logs["eval reward (sum)"].append(
-                eval_rollout["reward"].sum().item()
+                eval_rollout["next", "reward"].sum().item()
             )
-            logs["eval step_count"].append(
-                eval_rollout["step_count"].max().item()
+            logs["eval step_count"].append(eval_rollout["step_count"].max().item())
+            eval_str = (
+                f"eval cumulative reward: {logs['eval reward (sum)'][-1]: 4.4f} "
+                f"(init: {logs['eval reward (sum)'][0]: 4.4f}), "
+                f"eval step-count: {logs['eval step_count'][-1]}"
             )
-            eval_str = f"eval cumulative reward: {logs['eval reward (sum)'][-1]: 4.4f} (init: {logs['eval reward (sum)'][0]: 4.4f}), eval step-count: {logs['eval step_count'][-1]}"
             del eval_rollout
-    pbar.set_description(
-        ", ".join(
-            [
-                eval_str,
-                cum_reward_str,
-                stepcount_str,
-                lr_str
-            ]
-        )
-    )
+    pbar.set_description(", ".join([eval_str, cum_reward_str, stepcount_str, lr_str]))
 
     # We're also using a learning rate scheduler. Like the gradient clipping,
     # this is a nice-to-have but nothing necessary for PPO to work.
