@@ -52,7 +52,6 @@ NOT_RUN = [
     "forward_ad_usage", # remove after #2218 is resolved.
     "text_sentiment_ngrams_tutorial", # reenable after 2.0 release.
     "tensorboard_profiler_tutorial", # reenable after 2.0 release.
-    "nvfuser_intro_tutorial" # reenable after 2.0 release.
 ]
 
 
