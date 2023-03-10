@@ -49,9 +49,7 @@ NOT_RUN = [
     "recipes/Captum_Recipe",
     "flask_rest_api_tutorial",
     "text_to_speech_with_torchaudio",
-    "forward_ad_usage", # remove after #2218 is resolved.
-    "text_sentiment_ngrams_tutorial", # reenable after 2.0 release.
-    "tensorboard_profiler_tutorial", # reenable after 2.0 release.
+    "forward_ad_usage" # remove after #2218 is resolved.
 ]
 
 
