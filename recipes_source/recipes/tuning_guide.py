@@ -281,7 +281,7 @@ with torch.no_grad():
 # AMP for JIT mode is enabled by default, and is divergent with its eager mode counterpart
 torch._C._jit_set_autocast_mode(False)
 
-with torch.no_grad(), torch.cpu.amp.autocast():
+with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bfloat16):
     model = torch.jit.trace(model, (example_input))
     model = torch.jit.freeze(model)
     # a couple of warmup runs
