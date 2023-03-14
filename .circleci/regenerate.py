@@ -9,7 +9,7 @@ import jinja2
 import yaml
 from jinja2 import select_autoescape
 
-WORKFLOWS_JOBS_PR = {"filters": {"branches": {"ignore": ["master", "main"]}}}
+WORKFLOWS_JOBS_PR = {"filters": {"branches": {"only": ["master", "main"]}}}
 
 WORKFLOWS_JOBS_TRUNK = {
     "context": "org-member",
