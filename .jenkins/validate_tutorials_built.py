@@ -50,7 +50,7 @@ NOT_RUN = [
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
-    "intermediate_source/ax_multiobjective_nas_tutorial.py",
+    "intermediate_source/ax_multiobjective_nas_tutorial",
     "intermediate_source/tensorboard_profiler_tutorial" # reenable after 2.0 release.
 ]
 
