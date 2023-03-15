@@ -21,14 +21,14 @@ jobs:
       - name: Checkout Tutorials
         uses: actions/checkout@v3
 
+      - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
+        uses: pytorch/test-infra/.github/actions/setup-nvidia@main
+        if: contains(inputs.build-environment, 'cuda') && !contains(matrix.config, 'nogpu')
+
       - name: Set Up CI Environment
         shell: bash
         run: |
           set -e
-
-          if [ -n "${CUDA_VERSION}" ]; then
-            nvidia-smi
-          fi
 
       - name: Pull docker image
         shell: bash
@@ -51,13 +51,9 @@ jobs:
         run: |
           set -ex
 
-          if [ -n "${CUDA_VERSION}" ]; then
-            gpu_flag=--gpus all
-          fi
-
           # shellcheck disable=SC2086,SC2090
           container_name=$(docker run \
-            ${gpu_flag:-} \
+            ${GPU_FLAG:-} \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
