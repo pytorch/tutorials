@@ -279,6 +279,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -310,6 +313,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -655,104 +661,91 @@ Arguments other than a weight enum or `None` for 'weights' are deprecated since 
 Downloading: "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/vgg19-dcbb9e9d.pth
 
   0%|          | 0.00/548M [00:00&lt;?, ?B/s]
-  1%|          | 3.06M/548M [00:00&lt;00:17, 32.1MB/s]
-  1%|1         | 7.55M/548M [00:00&lt;00:13, 40.7MB/s]
-  2%|2         | 12.8M/548M [00:00&lt;00:12, 46.8MB/s]
-  3%|3         | 18.7M/548M [00:00&lt;00:10, 52.6MB/s]
-  4%|4         | 23.7M/548M [00:00&lt;00:11, 47.8MB/s]
-  6%|5         | 30.2M/548M [00:00&lt;00:10, 53.9MB/s]
-  6%|6         | 35.4M/548M [00:00&lt;00:10, 50.2MB/s]
-  7%|7         | 40.9M/548M [00:00&lt;00:10, 52.3MB/s]
-  8%|8         | 45.9M/548M [00:00&lt;00:11, 47.2MB/s]
- 10%|9         | 52.5M/548M [00:01&lt;00:09, 52.9MB/s]
- 11%|#         | 57.6M/548M [00:01&lt;00:09, 53.2MB/s]
- 11%|#1        | 62.8M/548M [00:01&lt;00:10, 49.3MB/s]
- 13%|#2        | 69.1M/548M [00:01&lt;00:09, 53.9MB/s]
- 14%|#3        | 74.4M/548M [00:01&lt;00:09, 53.9MB/s]
- 15%|#4        | 79.6M/548M [00:01&lt;00:09, 51.7MB/s]
- 16%|#5        | 86.5M/548M [00:01&lt;00:08, 57.2MB/s]
- 17%|#6        | 93.1M/548M [00:01&lt;00:07, 60.6MB/s]
- 18%|#8        | 99.0M/548M [00:01&lt;00:08, 57.9MB/s]
- 19%|#9        | 105M/548M [00:02&lt;00:07, 58.1MB/s]
- 20%|##        | 110M/548M [00:02&lt;00:08, 57.2MB/s]
- 21%|##1       | 116M/548M [00:02&lt;00:09, 48.1MB/s]
- 22%|##1       | 121M/548M [00:02&lt;00:10, 44.4MB/s]
- 23%|##2       | 125M/548M [00:02&lt;00:10, 41.0MB/s]
- 24%|##3       | 129M/548M [00:02&lt;00:10, 41.0MB/s]
- 24%|##4       | 133M/548M [00:02&lt;00:10, 39.9MB/s]
- 25%|##5       | 137M/548M [00:02&lt;00:10, 40.1MB/s]
- 26%|##6       | 143M/548M [00:03&lt;00:09, 43.6MB/s]
- 27%|##7       | 148M/548M [00:03&lt;00:08, 47.9MB/s]
- 28%|##7       | 153M/548M [00:03&lt;00:09, 45.3MB/s]
- 29%|##8       | 159M/548M [00:03&lt;00:08, 48.8MB/s]
- 30%|##9       | 164M/548M [00:03&lt;00:08, 50.1MB/s]
- 31%|###       | 169M/548M [00:03&lt;00:07, 52.4MB/s]
- 32%|###1      | 174M/548M [00:03&lt;00:07, 52.0MB/s]
- 33%|###2      | 179M/548M [00:03&lt;00:07, 50.7MB/s]
- 34%|###3      | 184M/548M [00:03&lt;00:08, 47.6MB/s]
- 35%|###4      | 190M/548M [00:04&lt;00:08, 45.8MB/s]
- 36%|###5      | 196M/548M [00:04&lt;00:07, 49.9MB/s]
- 37%|###6      | 201M/548M [00:04&lt;00:07, 51.2MB/s]
- 38%|###7      | 206M/548M [00:04&lt;00:06, 51.7MB/s]
- 39%|###8      | 213M/548M [00:04&lt;00:06, 56.9MB/s]
- 40%|###9      | 218M/548M [00:04&lt;00:06, 53.2MB/s]
- 41%|####      | 224M/548M [00:04&lt;00:06, 52.8MB/s]
- 42%|####1     | 230M/548M [00:04&lt;00:05, 56.4MB/s]
- 43%|####3     | 236M/548M [00:04&lt;00:05, 59.3MB/s]
- 44%|####4     | 242M/548M [00:05&lt;00:05, 57.2MB/s]
- 45%|####5     | 248M/548M [00:05&lt;00:05, 59.0MB/s]
- 46%|####6     | 254M/548M [00:05&lt;00:06, 50.6MB/s]
- 47%|####7     | 259M/548M [00:05&lt;00:05, 51.5MB/s]
- 48%|####8     | 264M/548M [00:05&lt;00:05, 53.0MB/s]
- 49%|####9     | 270M/548M [00:05&lt;00:05, 54.3MB/s]
- 50%|#####     | 277M/548M [00:05&lt;00:04, 57.8MB/s]
- 51%|#####1    | 282M/548M [00:05&lt;00:05, 54.6MB/s]
- 52%|#####2    | 288M/548M [00:05&lt;00:05, 53.1MB/s]
- 53%|#####3    | 293M/548M [00:06&lt;00:05, 53.4MB/s]
- 54%|#####4    | 298M/548M [00:06&lt;00:04, 53.0MB/s]
- 55%|#####5    | 303M/548M [00:06&lt;00:04, 53.7MB/s]
- 56%|#####6    | 309M/548M [00:06&lt;00:04, 55.2MB/s]
- 57%|#####7    | 315M/548M [00:06&lt;00:04, 55.9MB/s]
- 59%|#####8    | 322M/548M [00:06&lt;00:03, 62.2MB/s]
- 60%|######    | 329M/548M [00:06&lt;00:03, 66.4MB/s]
- 61%|######1   | 336M/548M [00:06&lt;00:03, 67.6MB/s]
- 62%|######2   | 342M/548M [00:06&lt;00:03, 65.6MB/s]
- 64%|######3   | 349M/548M [00:07&lt;00:04, 50.9MB/s]
- 65%|######4   | 355M/548M [00:07&lt;00:03, 53.9MB/s]
- 66%|######5   | 360M/548M [00:07&lt;00:03, 55.2MB/s]
- 67%|######6   | 366M/548M [00:07&lt;00:03, 52.4MB/s]
- 68%|######7   | 371M/548M [00:07&lt;00:04, 41.4MB/s]
- 69%|######8   | 378M/548M [00:07&lt;00:03, 48.1MB/s]
- 70%|#######   | 384M/548M [00:07&lt;00:03, 52.4MB/s]
- 71%|#######1  | 390M/548M [00:07&lt;00:03, 47.1MB/s]
- 72%|#######2  | 396M/548M [00:08&lt;00:03, 52.2MB/s]
- 74%|#######3  | 403M/548M [00:08&lt;00:02, 57.0MB/s]
- 75%|#######4  | 409M/548M [00:08&lt;00:02, 56.3MB/s]
- 76%|#######5  | 414M/548M [00:08&lt;00:02, 56.4MB/s]
- 77%|#######6  | 420M/548M [00:08&lt;00:02, 57.9MB/s]
- 78%|#######7  | 426M/548M [00:08&lt;00:02, 57.9MB/s]
- 79%|#######8  | 432M/548M [00:08&lt;00:02, 50.2MB/s]
- 80%|########  | 438M/548M [00:08&lt;00:02, 55.6MB/s]
- 81%|########1 | 444M/548M [00:08&lt;00:01, 56.6MB/s]
- 82%|########2 | 450M/548M [00:09&lt;00:01, 53.7MB/s]
- 83%|########3 | 456M/548M [00:09&lt;00:01, 55.8MB/s]
- 84%|########4 | 462M/548M [00:09&lt;00:01, 59.8MB/s]
- 85%|########5 | 468M/548M [00:09&lt;00:01, 54.8MB/s]
- 87%|########6 | 474M/548M [00:09&lt;00:01, 57.6MB/s]
- 88%|########7 | 480M/548M [00:09&lt;00:01, 56.9MB/s]
- 89%|########8 | 485M/548M [00:09&lt;00:01, 56.4MB/s]
- 90%|########9 | 491M/548M [00:09&lt;00:01, 46.0MB/s]
- 91%|######### | 496M/548M [00:09&lt;00:01, 47.7MB/s]
- 92%|#########1| 503M/548M [00:10&lt;00:00, 53.0MB/s]
- 93%|#########2| 509M/548M [00:10&lt;00:00, 56.5MB/s]
- 94%|#########3| 515M/548M [00:10&lt;00:00, 56.8MB/s]
- 95%|#########4| 520M/548M [00:10&lt;00:00, 55.5MB/s]
- 96%|#########5| 526M/548M [00:10&lt;00:00, 53.5MB/s]
- 97%|#########6| 531M/548M [00:10&lt;00:00, 52.4MB/s]
- 98%|#########7| 536M/548M [00:10&lt;00:00, 52.7MB/s]
- 99%|#########8| 541M/548M [00:10&lt;00:00, 52.7MB/s]
-100%|#########9| 546M/548M [00:10&lt;00:00, 50.5MB/s]
-100%|##########| 548M/548M [00:10&lt;00:00, 52.5MB/s]
+  2%|1         | 10.5M/548M [00:00&lt;00:05, 110MB/s]
+  6%|6         | 32.9M/548M [00:00&lt;00:02, 184MB/s]
+  9%|9         | 50.4M/548M [00:00&lt;00:04, 109MB/s]
+ 12%|#1        | 63.2M/548M [00:00&lt;00:05, 87.5MB/s]
+ 13%|#3        | 73.2M/548M [00:00&lt;00:06, 80.1MB/s]
+ 15%|#4        | 81.8M/548M [00:00&lt;00:06, 76.5MB/s]
+ 16%|#6        | 89.7M/548M [00:01&lt;00:06, 72.0MB/s]
+ 18%|#7        | 96.9M/548M [00:01&lt;00:06, 72.0MB/s]
+ 19%|#8        | 104M/548M [00:01&lt;00:07, 66.1MB/s]
+ 20%|##        | 111M/548M [00:01&lt;00:07, 58.1MB/s]
+ 21%|##1       | 118M/548M [00:01&lt;00:07, 62.0MB/s]
+ 23%|##2       | 124M/548M [00:01&lt;00:07, 62.3MB/s]
+ 24%|##3       | 130M/548M [00:01&lt;00:07, 60.4MB/s]
+ 25%|##4       | 136M/548M [00:01&lt;00:07, 59.6MB/s]
+ 26%|##5       | 142M/548M [00:02&lt;00:07, 58.2MB/s]
+ 27%|##6       | 148M/548M [00:02&lt;00:06, 60.2MB/s]
+ 28%|##8       | 155M/548M [00:02&lt;00:06, 64.2MB/s]
+ 29%|##9       | 161M/548M [00:02&lt;00:07, 57.8MB/s]
+ 30%|###       | 167M/548M [00:02&lt;00:07, 52.7MB/s]
+ 31%|###1      | 172M/548M [00:02&lt;00:07, 51.3MB/s]
+ 32%|###2      | 177M/548M [00:02&lt;00:07, 50.8MB/s]
+ 34%|###3      | 184M/548M [00:02&lt;00:06, 57.1MB/s]
+ 35%|###4      | 191M/548M [00:02&lt;00:06, 60.4MB/s]
+ 36%|###5      | 197M/548M [00:03&lt;00:05, 61.5MB/s]
+ 37%|###6      | 203M/548M [00:03&lt;00:06, 59.9MB/s]
+ 38%|###8      | 209M/548M [00:03&lt;00:06, 58.3MB/s]
+ 39%|###9      | 215M/548M [00:03&lt;00:05, 59.0MB/s]
+ 40%|####      | 221M/548M [00:03&lt;00:05, 59.4MB/s]
+ 41%|####1     | 227M/548M [00:03&lt;00:05, 56.5MB/s]
+ 42%|####2     | 232M/548M [00:03&lt;00:05, 56.5MB/s]
+ 43%|####3     | 237M/548M [00:03&lt;00:05, 55.6MB/s]
+ 44%|####4     | 243M/548M [00:03&lt;00:05, 57.7MB/s]
+ 46%|####5     | 250M/548M [00:03&lt;00:05, 60.0MB/s]
+ 47%|####6     | 255M/548M [00:04&lt;00:05, 55.3MB/s]
+ 48%|####7     | 261M/548M [00:04&lt;00:05, 56.4MB/s]
+ 49%|####8     | 266M/548M [00:04&lt;00:05, 55.3MB/s]
+ 50%|####9     | 272M/548M [00:04&lt;00:05, 55.0MB/s]
+ 51%|#####     | 277M/548M [00:04&lt;00:05, 50.0MB/s]
+ 51%|#####1    | 282M/548M [00:04&lt;00:07, 39.0MB/s]
+ 52%|#####2    | 287M/548M [00:04&lt;00:06, 41.1MB/s]
+ 53%|#####3    | 292M/548M [00:04&lt;00:06, 44.0MB/s]
+ 54%|#####4    | 296M/548M [00:05&lt;00:06, 43.6MB/s]
+ 55%|#####4    | 301M/548M [00:05&lt;00:05, 44.4MB/s]
+ 56%|#####5    | 306M/548M [00:05&lt;00:05, 47.0MB/s]
+ 57%|#####6    | 312M/548M [00:05&lt;00:04, 53.0MB/s]
+ 58%|#####7    | 318M/548M [00:05&lt;00:04, 54.1MB/s]
+ 59%|#####8    | 323M/548M [00:05&lt;00:04, 55.2MB/s]
+ 60%|######    | 329M/548M [00:05&lt;00:03, 57.8MB/s]
+ 61%|######1   | 335M/548M [00:05&lt;00:04, 55.7MB/s]
+ 62%|######2   | 341M/548M [00:05&lt;00:03, 57.1MB/s]
+ 63%|######3   | 347M/548M [00:06&lt;00:03, 58.2MB/s]
+ 64%|######4   | 353M/548M [00:06&lt;00:03, 60.4MB/s]
+ 65%|######5   | 359M/548M [00:06&lt;00:03, 61.4MB/s]
+ 67%|######6   | 365M/548M [00:06&lt;00:03, 61.1MB/s]
+ 68%|######7   | 371M/548M [00:06&lt;00:03, 61.2MB/s]
+ 69%|######8   | 377M/548M [00:06&lt;00:02, 60.0MB/s]
+ 70%|######9   | 383M/548M [00:06&lt;00:02, 61.0MB/s]
+ 71%|#######   | 388M/548M [00:06&lt;00:02, 60.3MB/s]
+ 72%|#######1  | 394M/548M [00:06&lt;00:02, 58.3MB/s]
+ 73%|#######3  | 400M/548M [00:06&lt;00:02, 59.3MB/s]
+ 74%|#######4  | 406M/548M [00:07&lt;00:02, 54.2MB/s]
+ 75%|#######5  | 412M/548M [00:07&lt;00:02, 57.6MB/s]
+ 76%|#######6  | 418M/548M [00:07&lt;00:02, 55.9MB/s]
+ 77%|#######7  | 424M/548M [00:07&lt;00:02, 60.0MB/s]
+ 79%|#######8  | 431M/548M [00:07&lt;00:01, 61.6MB/s]
+ 80%|#######9  | 437M/548M [00:07&lt;00:01, 63.2MB/s]
+ 81%|########  | 443M/548M [00:07&lt;00:01, 60.3MB/s]
+ 82%|########2 | 450M/548M [00:07&lt;00:01, 59.4MB/s]
+ 83%|########3 | 456M/548M [00:07&lt;00:01, 59.5MB/s]
+ 84%|########4 | 463M/548M [00:08&lt;00:01, 62.1MB/s]
+ 86%|########5 | 469M/548M [00:08&lt;00:01, 60.9MB/s]
+ 87%|########6 | 474M/548M [00:08&lt;00:01, 59.2MB/s]
+ 88%|########7 | 480M/548M [00:08&lt;00:01, 57.2MB/s]
+ 89%|########8 | 486M/548M [00:08&lt;00:01, 57.7MB/s]
+ 90%|########9 | 492M/548M [00:08&lt;00:01, 56.6MB/s]
+ 91%|######### | 498M/548M [00:08&lt;00:00, 59.3MB/s]
+ 92%|#########1| 504M/548M [00:08&lt;00:00, 58.3MB/s]
+ 93%|#########2| 509M/548M [00:08&lt;00:00, 54.5MB/s]
+ 94%|#########4| 515M/548M [00:09&lt;00:00, 56.9MB/s]
+ 95%|#########5| 521M/548M [00:09&lt;00:00, 56.7MB/s]
+ 96%|#########6| 526M/548M [00:09&lt;00:00, 57.5MB/s]
+ 97%|#########7| 532M/548M [00:09&lt;00:00, 56.3MB/s]
+ 98%|#########8| 538M/548M [00:09&lt;00:00, 54.9MB/s]
+ 99%|#########9| 544M/548M [00:09&lt;00:00, 57.2MB/s]
+100%|##########| 548M/548M [00:09&lt;00:00, 59.6MB/s]
 </pre></div>
 </div>
 <p>Additionally, VGG networks are trained on images with each channel
@@ -962,25 +955,25 @@ To copy construct from a tensor, it is recommended to use sourceTensor.clone().d
 
 Optimizing..
 run [50]:
-Style Loss : 3.936165 Content Loss: 4.126220
+Style Loss : 4.171512 Content Loss: 4.095929
 
 run [100]:
-Style Loss : 1.112638 Content Loss: 3.009411
+Style Loss : 1.143797 Content Loss: 3.036428
 
 run [150]:
-Style Loss : 0.690684 Content Loss: 2.637748
+Style Loss : 0.717276 Content Loss: 2.649373
 
 run [200]:
-Style Loss : 0.472806 Content Loss: 2.489171
+Style Loss : 0.482002 Content Loss: 2.493251
 
 run [250]:
-Style Loss : 0.344554 Content Loss: 2.401296
+Style Loss : 0.350696 Content Loss: 2.404071
 
 run [300]:
-Style Loss : 0.262747 Content Loss: 2.349334
+Style Loss : 0.267088 Content Loss: 2.350568
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  44.749 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  40.276 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b3bcd49c4dd9be3a44c6c5d2e2a8b0cd/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></p>

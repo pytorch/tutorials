@@ -346,6 +346,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -377,6 +380,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -631,14 +637,14 @@ to motivate our strict requirements around matching masks from above.</p>
         [ 4.,  5.,  6.,  7.],
         [ 8.,  9., 10., 11.]])
 mask:
- tensor([[ True,  True,  True, False],
-        [False, False, False, False],
+ tensor([[ True,  True, False, False],
+        [ True, False, False, False],
         [False,  True,  True,  True]])
 mt:
  MaskedTensor(
   [
-    [  0.0000,   1.0000,   2.0000,       --],
-    [      --,       --,       --,       --],
+    [  0.0000,   1.0000,       --,       --],
+    [  4.0000,       --,       --,       --],
     [      --,   9.0000,  10.0000,  11.0000]
   ]
 )
@@ -654,23 +660,23 @@ mt:
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.sum:
  MaskedTensor(
-  [  3.0000,       --,  30.0000]
+  [  1.0000,   4.0000,  30.0000]
 )
 torch.mean:
  MaskedTensor(
-  [  1.0000,       --,  10.0000]
+  [  0.5000,   4.0000,  10.0000]
 )
 torch.prod:
  MaskedTensor(
-  [  0.0000,       --, 990.0000]
+  [  0.0000,   4.0000, 990.0000]
 )
 torch.amin:
  MaskedTensor(
-  [  0.0000,       --,   9.0000]
+  [  0.0000,   4.0000,   9.0000]
 )
 torch.amax:
  MaskedTensor(
-  [  2.0000,       --,  11.0000]
+  [  1.0000,   4.0000,  11.0000]
 )
 </pre></div>
 </div>
@@ -731,7 +737,7 @@ In general, MaskedTensor is designed to avoid ambiguity and confusing semantics 
 the associative property amongst binary operations), which in turn can necessitate the user
 to be more intentional with their code at times, but we believe this to be the better move.
 If you have any thoughts on this, please <a class="reference external" href="https://github.com/pytorch/pytorch/issues">let us know</a>!</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.058 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.086 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-prototype-maskedtensor-advanced-semantics-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/d58dcaa8f603e286a2501a4e2a87d1b7/maskedtensor_advanced_semantics.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">maskedtensor_advanced_semantics.py</span></code></a></p>

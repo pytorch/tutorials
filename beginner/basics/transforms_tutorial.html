@@ -281,6 +281,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -312,6 +315,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -439,52 +445,52 @@ To make these transformations, we use <code class="docutils literal notranslate"
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 32768/26421880 [00:00&lt;01:26, 304758.23it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:27, 300369.02it/s]
-  0%|          | 131072/26421880 [00:00&lt;01:00, 435503.79it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:42, 616483.10it/s]
-  2%|1         | 491520/26421880 [00:00&lt;00:20, 1253042.43it/s]
-  4%|3         | 950272/26421880 [00:00&lt;00:11, 2243519.49it/s]
-  7%|7         | 1933312/26421880 [00:00&lt;00:05, 4423444.78it/s]
- 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 8504871.73it/s]
- 26%|##6       | 6979584/26421880 [00:00&lt;00:01, 14742960.85it/s]
- 38%|###8      | 10125312/26421880 [00:01&lt;00:00, 18969164.88it/s]
- 50%|####9     | 13205504/26421880 [00:01&lt;00:00, 21753109.81it/s]
- 62%|######1   | 16318464/26421880 [00:01&lt;00:00, 23719918.09it/s]
- 73%|#######3  | 19398656/26421880 [00:01&lt;00:00, 24978565.97it/s]
- 84%|########3 | 22151168/26421880 [00:01&lt;00:00, 24950515.23it/s]
- 96%|#########5| 25296896/26421880 [00:01&lt;00:00, 25984396.57it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 15923685.24it/s]
+  0%|          | 32768/26421880 [00:00&lt;01:27, 301356.27it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:27, 300654.00it/s]
+  0%|          | 131072/26421880 [00:00&lt;01:00, 437271.22it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:42, 620004.10it/s]
+  2%|1         | 491520/26421880 [00:00&lt;00:20, 1260912.69it/s]
+  4%|3         | 950272/26421880 [00:00&lt;00:11, 2259121.75it/s]
+  7%|7         | 1933312/26421880 [00:00&lt;00:05, 4456353.23it/s]
+ 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 8575751.49it/s]
+ 26%|##6       | 6881280/26421880 [00:00&lt;00:01, 14609553.69it/s]
+ 36%|###6      | 9568256/26421880 [00:01&lt;00:00, 17651602.10it/s]
+ 45%|####5     | 11960320/26421880 [00:01&lt;00:00, 18944325.72it/s]
+ 56%|#####6    | 14876672/26421880 [00:01&lt;00:00, 21323086.04it/s]
+ 68%|######8   | 17989632/26421880 [00:01&lt;00:00, 23479262.31it/s]
+ 79%|#######8  | 20873216/26421880 [00:01&lt;00:00, 24241221.77it/s]
+ 91%|######### | 23986176/26421880 [00:01&lt;00:00, 25474213.33it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 15969623.94it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 273021.14it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 271967.88it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 270836.77it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 269314.86it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|          | 32768/4422102 [00:00&lt;00:14, 303373.81it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:14, 302673.87it/s]
-  3%|2         | 131072/4422102 [00:00&lt;00:09, 440315.54it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 624589.14it/s]
- 11%|#1        | 491520/4422102 [00:00&lt;00:03, 1270927.88it/s]
- 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2276508.69it/s]
- 44%|####3     | 1933312/4422102 [00:00&lt;00:00, 4491859.72it/s]
- 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 8634575.71it/s]
-100%|##########| 4422102/4422102 [00:00&lt;00:00, 5075346.36it/s]
+  1%|          | 32768/4422102 [00:00&lt;00:14, 297758.25it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:14, 296162.10it/s]
+  3%|2         | 131072/4422102 [00:00&lt;00:09, 430301.73it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 610030.92it/s]
+ 11%|#1        | 491520/4422102 [00:00&lt;00:03, 1242865.82it/s]
+ 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2224790.60it/s]
+ 44%|####3     | 1933312/4422102 [00:00&lt;00:00, 4398973.00it/s]
+ 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 8463305.48it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 4974442.09it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 23572354.79it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 23444383.27it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -511,7 +517,7 @@ It first creates a zero tensor of size 10 (the number of labels in our dataset) 
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">torchvision.transforms API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.265 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.205 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-transforms-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/2f1ec3031a7101e25403c5d53a40a401/transforms_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transforms_tutorial.py</span></code></a></p>

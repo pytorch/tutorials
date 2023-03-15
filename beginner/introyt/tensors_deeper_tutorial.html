@@ -281,6 +281,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -312,6 +315,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -431,9 +437,9 @@ Python’s math module to facilitate some of the examples.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;class 'torch.Tensor'&gt;
-tensor([[1.1327e-33, 0.0000e+00, 3.7623e-34, 0.0000e+00],
+tensor([[3.5830e-34, 0.0000e+00, 3.6695e-34, 0.0000e+00],
         [1.1210e-43, 0.0000e+00, 8.9683e-44, 0.0000e+00],
-        [1.0593e-33, 0.0000e+00, 5.2229e-24, 4.5857e-41]])
+        [3.6114e-34, 0.0000e+00, 8.4078e-45, 0.0000e+00]])
 </pre></div>
 </div>
 <p>Let’s unpack what we just did:</p>
@@ -554,17 +560,17 @@ have the <code class="docutils literal notranslate"><span class="pre">torch.*_li
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([2, 2, 3])
-tensor([[[ 1.1065e-33,  0.0000e+00,  3.7623e-34],
-         [ 0.0000e+00,  1.4013e-45,  0.0000e+00]],
+tensor([[[7.2837e-35, 0.0000e+00, 3.5945e-34],
+         [0.0000e+00, 8.9683e-44, 0.0000e+00]],
 
-        [[ 3.6074e-34,  0.0000e+00, -5.0817e-19],
-         [ 4.5856e-41,  3.6074e-34,  0.0000e+00]]])
+        [[1.1210e-43, 0.0000e+00, 3.5914e-34],
+         [0.0000e+00, 0.0000e+00, 0.0000e+00]]])
 torch.Size([2, 2, 3])
-tensor([[[ 1.1371e-33,  0.0000e+00,  1.0616e-33],
-         [ 0.0000e+00,  1.4013e-45,  0.0000e+00]],
+tensor([[[-1.6325e+22,  4.5607e-41, -1.6325e+22],
+         [ 4.5607e-41,  4.4842e-44,  0.0000e+00]],
 
-        [[ 1.1174e-33,  0.0000e+00, -5.0817e-19],
-         [ 4.5856e-41,  1.1174e-33,  0.0000e+00]]])
+        [[ 1.5695e-43,  0.0000e+00,  1.4503e-34],
+         [ 0.0000e+00,  1.0842e-19,  1.7735e+00]]])
 torch.Size([2, 2, 3])
 tensor([[[0., 0., 0.],
          [0., 0., 0.]],
@@ -1518,7 +1524,7 @@ are reflected in the other:</p>
  [ 0.2853077  17.          0.5695162 ]]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.028 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.075 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-tensors-deeper-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/be017e7b39198fdf668c138fd8d57abe/tensors_deeper_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensors_deeper_tutorial.py</span></code></a></p>

@@ -281,6 +281,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -312,6 +315,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -649,65 +655,65 @@ is used here to adjust the learning rate through epochs.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">59</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   500/ 1782 batches | accuracy    0.674
-| epoch   1 |  1000/ 1782 batches | accuracy    0.851
-| epoch   1 |  1500/ 1782 batches | accuracy    0.877
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   500/ 1782 batches | accuracy    0.696
+| epoch   1 |  1000/ 1782 batches | accuracy    0.855
+| epoch   1 |  1500/ 1782 batches | accuracy    0.875
 -----------------------------------------------------------
-| end of epoch   1 | time: 13.57s | valid accuracy    0.884
+| end of epoch   1 | time: 13.19s | valid accuracy    0.886
 -----------------------------------------------------------
-| epoch   2 |   500/ 1782 batches | accuracy    0.895
+| epoch   2 |   500/ 1782 batches | accuracy    0.899
 | epoch   2 |  1000/ 1782 batches | accuracy    0.903
-| epoch   2 |  1500/ 1782 batches | accuracy    0.904
+| epoch   2 |  1500/ 1782 batches | accuracy    0.902
 -----------------------------------------------------------
-| end of epoch   2 | time: 11.66s | valid accuracy    0.898
+| end of epoch   2 | time: 11.58s | valid accuracy    0.905
 -----------------------------------------------------------
-| epoch   3 |   500/ 1782 batches | accuracy    0.913
-| epoch   3 |  1000/ 1782 batches | accuracy    0.913
-| epoch   3 |  1500/ 1782 batches | accuracy    0.917
+| epoch   3 |   500/ 1782 batches | accuracy    0.915
+| epoch   3 |  1000/ 1782 batches | accuracy    0.915
+| epoch   3 |  1500/ 1782 batches | accuracy    0.914
 -----------------------------------------------------------
-| end of epoch   3 | time: 11.58s | valid accuracy    0.898
+| end of epoch   3 | time: 11.36s | valid accuracy    0.906
 -----------------------------------------------------------
-| epoch   4 |   500/ 1782 batches | accuracy    0.926
+| epoch   4 |   500/ 1782 batches | accuracy    0.925
 | epoch   4 |  1000/ 1782 batches | accuracy    0.923
-| epoch   4 |  1500/ 1782 batches | accuracy    0.922
+| epoch   4 |  1500/ 1782 batches | accuracy    0.920
 -----------------------------------------------------------
-| end of epoch   4 | time: 11.35s | valid accuracy    0.904
+| end of epoch   4 | time: 11.43s | valid accuracy    0.914
 -----------------------------------------------------------
 | epoch   5 |   500/ 1782 batches | accuracy    0.930
-| epoch   5 |  1000/ 1782 batches | accuracy    0.926
-| epoch   5 |  1500/ 1782 batches | accuracy    0.929
+| epoch   5 |  1000/ 1782 batches | accuracy    0.930
+| epoch   5 |  1500/ 1782 batches | accuracy    0.928
 -----------------------------------------------------------
-| end of epoch   5 | time: 11.35s | valid accuracy    0.910
+| end of epoch   5 | time: 11.48s | valid accuracy    0.912
 -----------------------------------------------------------
-| epoch   6 |   500/ 1782 batches | accuracy    0.936
-| epoch   6 |  1000/ 1782 batches | accuracy    0.934
-| epoch   6 |  1500/ 1782 batches | accuracy    0.932
+| epoch   6 |   500/ 1782 batches | accuracy    0.941
+| epoch   6 |  1000/ 1782 batches | accuracy    0.945
+| epoch   6 |  1500/ 1782 batches | accuracy    0.942
 -----------------------------------------------------------
-| end of epoch   6 | time: 11.52s | valid accuracy    0.901
+| end of epoch   6 | time: 11.47s | valid accuracy    0.914
 -----------------------------------------------------------
-| epoch   7 |   500/ 1782 batches | accuracy    0.948
-| epoch   7 |  1000/ 1782 batches | accuracy    0.946
-| epoch   7 |  1500/ 1782 batches | accuracy    0.947
+| epoch   7 |   500/ 1782 batches | accuracy    0.944
+| epoch   7 |  1000/ 1782 batches | accuracy    0.948
+| epoch   7 |  1500/ 1782 batches | accuracy    0.943
 -----------------------------------------------------------
-| end of epoch   7 | time: 11.64s | valid accuracy    0.914
+| end of epoch   7 | time: 11.47s | valid accuracy    0.915
 -----------------------------------------------------------
-| epoch   8 |   500/ 1782 batches | accuracy    0.947
-| epoch   8 |  1000/ 1782 batches | accuracy    0.949
-| epoch   8 |  1500/ 1782 batches | accuracy    0.949
+| epoch   8 |   500/ 1782 batches | accuracy    0.948
+| epoch   8 |  1000/ 1782 batches | accuracy    0.944
+| epoch   8 |  1500/ 1782 batches | accuracy    0.944
 -----------------------------------------------------------
-| end of epoch   8 | time: 11.79s | valid accuracy    0.912
+| end of epoch   8 | time: 11.35s | valid accuracy    0.916
 -----------------------------------------------------------
-| epoch   9 |   500/ 1782 batches | accuracy    0.951
-| epoch   9 |  1000/ 1782 batches | accuracy    0.951
-| epoch   9 |  1500/ 1782 batches | accuracy    0.950
+| epoch   9 |   500/ 1782 batches | accuracy    0.946
+| epoch   9 |  1000/ 1782 batches | accuracy    0.946
+| epoch   9 |  1500/ 1782 batches | accuracy    0.947
 -----------------------------------------------------------
-| end of epoch   9 | time: 11.50s | valid accuracy    0.914
+| end of epoch   9 | time: 11.45s | valid accuracy    0.915
 -----------------------------------------------------------
-| epoch  10 |   500/ 1782 batches | accuracy    0.951
-| epoch  10 |  1000/ 1782 batches | accuracy    0.950
-| epoch  10 |  1500/ 1782 batches | accuracy    0.952
+| epoch  10 |   500/ 1782 batches | accuracy    0.949
+| epoch  10 |  1000/ 1782 batches | accuracy    0.948
+| epoch  10 |  1500/ 1782 batches | accuracy    0.947
 -----------------------------------------------------------
-| end of epoch  10 | time: 11.36s | valid accuracy    0.913
+| end of epoch  10 | time: 11.31s | valid accuracy    0.915
 -----------------------------------------------------------
 </pre></div>
 </div>
@@ -721,7 +727,7 @@ is used here to adjust the learning rate through epochs.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Checking the results of test dataset.
-test accuracy    0.907
+test accuracy    0.908
 </pre></div>
 </div>
 </div>
@@ -759,7 +765,7 @@ test accuracy    0.907
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>This is a Sports news
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  14.430 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  12.916 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-text-sentiment-ngrams-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/f003f262713c341f497ab4d8dd9be880/text_sentiment_ngrams_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">text_sentiment_ngrams_tutorial.py</span></code></a></p>
