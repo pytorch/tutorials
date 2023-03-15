@@ -334,7 +334,7 @@ for i in range(0, 5):
     
 print(model.layer2.weight.grad[0][0:10])
 
-optimizer.zero_grad(set_to_none=False)
+optimizer.zero_grad()
 
 print(model.layer2.weight.grad[0][0:10])
 
