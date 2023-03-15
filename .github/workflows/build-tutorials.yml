@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - { shard: 1, num_shards: 2, runner: "linux.4xlarge.nvidia.gpu" }
-          - { shard: 2, num_shards: 2, runner: "linux.4xlarge.nvidia.gpu" }
+          - { shard: 2, num_shards: 2, runner: "linux.2xlarg" }
     runs-on: ${{ matrix.runner }}
     env:
       DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.7-cudnn8-py3-gcc7"
@@ -42,10 +42,10 @@ jobs:
 
           # for some reason, pip installs it in a different place than what is looked at in the py file
           sudo pip3 install requests --target=/opt/circleci/.pyenv/versions/3.9.4/lib/python3.9/site-packages
-          export pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
+          pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
 
-          export DOCKER_IMAGE="${DOCKER_IMAGE}:${pyTorchDockerImageTag}"
-          docker pull ${DOCKER_IMAGE} >/dev/null
+          DOCKER_IMAGE="${DOCKER_IMAGE}:${pyTorchDockerImageTag}"
+          docker pull "${DOCKER_IMAGE}" >/dev/null
           echo "docker_image=${DOCKER_IMAGE}" >> "${GITHUB_OUTPUT}"
 
       - name: Build
@@ -56,16 +56,23 @@ jobs:
           set -ex
 
           if [ -n "${CUDA_VERSION}" ]; then
-            export id=$(docker run --gpus all -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
-          else
-            export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
+            gpu_flag=--gpus all
           fi
 
-          echo 'rm /opt/cache/bin/*' | docker exec -u root -i "$id" bash
-          docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
+          # shellcheck disable=SC2086,SC2090
+          container_name=$(docker run \
+            ${gpu_flag:-} \
+            --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
+            --tty \
+            --detach \
+            --user jenkins \
+            -v "${GITHUB_WORKSPACE}:/var/lib/jenkins/workspace" \
+            -w /var/lib/jenkins/workspace \
+            "${DOCKER_IMAGE}"
+          )
 
-          export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./jenkins/worker.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
-          echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
+          docker exec -t "${container_name}" sh -c ".jenkins/worker.sh"
+
 
       - name: Upload Python Docs Preview
         uses: seemethere/upload-artifact-s3@v5
@@ -76,12 +83,10 @@ jobs:
           path: worker_${{ matrix.shard }}
           s3-prefix: temp/${{ github.event.pull_request.number }}
 
-  manager:
-    name: pytorch_tutorial_build_manager
-    needs: pytorch_tutorial_build_worker
-    runs-on: [self-hosted, linux.large]
-    steps:
-      - name: Checkout Tutorials
-        uses: actions/checkout@v3
-
-      - name:
+  # manager:
+  #   name: pytorch_tutorial_build_manager
+  #   needs: pytorch_tutorial_build_worker
+  #   runs-on: [self-hosted, linux.large]
+  #   steps:
+  #     - name: Checkout Tutorials
+  #       uses: actions/checkout@v3
