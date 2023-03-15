@@ -38,7 +38,6 @@ NOT_RUN = [
     "recipes_source/recipes/profiler_recipe",
     "recipes_source/recipes/save_load_across_devices",
     "recipes_source/recipes/warmstarting_model_using_parameters_from_a_different_model",
-    "intermediate_source/torch_compile_tutorial_",
     "recipes_source/recipes/dynamic_quantization",
     "recipes_source/recipes/saving_and_loading_a_general_checkpoint",
     "recipes_source/recipes/benchmark",
@@ -53,7 +52,6 @@ NOT_RUN = [
     "intermediate_source/ax_multiobjective_nas_tutorial",
     "intermediate_source/tensorboard_profiler_tutorial" # reenable after 2.0 release.
 ]
-
 
 def tutorial_source_dirs() -> List[Path]:
     return [
