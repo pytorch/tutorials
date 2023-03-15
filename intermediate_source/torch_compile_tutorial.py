@@ -28,7 +28,7 @@ torch.compile Tutorial
 #
 # **Required pip Dependencies**
 #
-# - ``torch >= 1.14``
+# - ``torch >= 2.0``
 # - ``torchvision``
 # - ``numpy``
 # - ``scipy``
@@ -51,9 +51,6 @@ torch.compile Tutorial
 # function in place of the original function.
 
 import torch
-
-import torch._inductor.config
-torch._inductor.config.cpp.cxx = ("g++",)
 
 def foo(x, y):
     a = torch.sin(x)
@@ -133,6 +130,11 @@ def evaluate(mod, inp):
     return mod(inp)
 
 model = init_model()
+
+# Reset since we are using a different mode.
+import torch._dynamo
+torch._dynamo.reset()
+
 evaluate_opt = torch.compile(evaluate, mode="reduce-overhead")
 
 inp = generate_data(16)[0]
@@ -174,8 +176,7 @@ print("~" * 10)
 
 ######################################################################
 # And indeed, we can see that running our model with ``torch.compile``
-# results in a significant speedup. On an NVIDIA A100 GPU, we observe a
-# 2.3x speedup. Speedup mainly comes from reducing Python overhead and
+# results in a significant speedup. Speedup mainly comes from reducing Python overhead and
 # GPU read/writes, and so the observed speedup may vary on factors such as model
 # architecture and batch size. For example, if a model's architecture is simple
 # and the amount of data is large, then the bottleneck would be
@@ -231,9 +232,8 @@ print("~" * 10)
 
 ######################################################################
 # Again, we can see that ``torch.compile`` takes longer in the first
-# iteration, as it must compile the model, but afterward, we see
-# significant speedups compared to eager. On an NVIDIA A100 GPU, we
-# observe a 2.2x speedup.
+# iteration, as it must compile the model, but in subsequent iterations, we see
+# significant speedups compared to eager.
 
 ######################################################################
 # Comparison to TorchScript and FX Tracing
@@ -296,6 +296,9 @@ print("fx 1, 2:", test_fns(f1, fx_f1, (-inp1, inp2)))
 ######################################################################
 # Now we can see that ``torch.compile`` correctly handles
 # data-dependent control flow.
+
+# Reset since we are using a different mode.
+torch._dynamo.reset()
 
 compile_f1 = torch.compile(f1)
 print("compile 1, 1:", test_fns(f1, compile_f1, (inp1, inp2)))
@@ -394,7 +397,6 @@ def custom_backend(gm: torch.fx.GraphModule, example_inputs: List[torch.Tensor])
     gm.graph.print_tabular()
     return gm.forward
 
-import torch._dynamo
 # Reset since we are using a different backend.
 torch._dynamo.reset()
 
