@@ -424,6 +424,34 @@ What's new in PyTorch tutorials?
    :link: intermediate/forward_ad_usage.html
    :tags: Frontend-APIs
 
+.. customcarditem::
+   :header: Jacobians, Hessians, hvp, vhp, and more
+   :card_description: Learn how to compute advanced autodiff quantities using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/jacobians_hessians.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Model Ensembling
+   :card_description: Learn how to ensemble models using torch.vmap
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/ensembling.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Per-Sample-Gradients
+   :card_description: Learn how to compute per-sample-gradients using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/per_sample_grads.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Neural Tangent Kernels
+   :card_description: Learn how to compute neural tangent kernels using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/neural_tangent_kernels.html
+   :tags: Frontend-APIs
+
 .. Model Optimization
 
 .. customcarditem::
@@ -509,7 +537,7 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torchserve_with_ipex_2
    :tags: Model-Optimization,Production
-   
+
 .. customcarditem::
    :header: Introduction to nvFuser
    :card_description: An introduction to nvFuser
@@ -530,6 +558,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
    :tags: Model-Optimization
+
+.. customcarditem::
+   :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
+   :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/scaled_dot_product_attention_tutorial.html
+   :tags: Model-Optimization,Attention,Transformer
 
 .. Parallel-and-Distributed-Training
 
@@ -878,6 +913,10 @@ Additional Resources
 
    intermediate/memory_format_tutorial
    intermediate/forward_ad_usage
+   intermediate/jacobians_hessians
+   intermediate/ensembling
+   intermediate/per_sample_grads
+   intermediate/neural_tangent_kernels.py
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
@@ -917,6 +956,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/scaled_dot_product_attention_tutorial
 
 .. toctree::
    :maxdepth: 2
