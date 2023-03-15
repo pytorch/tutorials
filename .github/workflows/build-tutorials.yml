@@ -35,7 +35,7 @@ jobs:
       - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
         uses: pytorch/test-infra/.github/actions/setup-nvidia@main
 
-      - name: Pull docker image
+      - name: Calculate docker image
         shell: bash
         id: docker-image
         run: |
@@ -45,14 +45,17 @@ jobs:
           pip3 install requests
           pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
 
-          DOCKER_IMAGE="${DOCKER_IMAGE}:${pyTorchDockerImageTag}"
-          docker pull "${DOCKER_IMAGE}" >/dev/null
-          echo "docker_image=${DOCKER_IMAGE}" >> "${GITHUB_OUTPUT}"
+          echo "docker-image=${DOCKER_IMAGE}:${pyTorchDockerImageTag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Pull docker image
+        uses: pytorch/test-infra/.github/actions/pull-docker-image@main
+        with:
+          docker-image: ${{ steps.docker-image.outputs.docker-image }}
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker_image }}
+          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
         run: |
           set -ex
 
@@ -63,6 +66,7 @@ jobs:
             --tty \
             --detach \
             --user jenkins \
+            --name="${container_name}" \
             -v "${GITHUB_WORKSPACE}:/var/lib/jenkins/workspace" \
             -w /var/lib/jenkins/workspace \
             "${DOCKER_IMAGE}"
