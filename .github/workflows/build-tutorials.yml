@@ -18,16 +18,22 @@ jobs:
       DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.7-cudnn8-py3-gcc7"
       CUDA_VERSION: "9"
     steps:
+      - name: Setup SSH (Click me for login details)
+        uses: pytorch/test-infra/.github/actions/setup-ssh@main
+        with:
+          github-secret: ${{ secrets.GITHUB_TOKEN }}
+          instructions: |
+            All testing is done inside the container, to start an interactive session run:
+              docker exec -it $(docker container ps --format '{{.ID}}') bash
+
       - name: Checkout Tutorials
         uses: actions/checkout@v3
 
+      - name: Setup Linux
+        uses: pytorch/pytorch/.github/actions/setup-linux@master
+
       - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
         uses: pytorch/test-infra/.github/actions/setup-nvidia@main
-
-      - name: Set Up CI Environment
-        shell: bash
-        run: |
-          set -e
 
       - name: Pull docker image
         shell: bash
