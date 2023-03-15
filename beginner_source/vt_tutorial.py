@@ -138,8 +138,8 @@ scripted_model.save("fbdeit_scripted.pt")
 # Now run the code below:
 #
 
-# Use 'fbgemm' for server inference and 'qnnpack' for mobile inference
-backend = "fbgemm" # replaced with qnnpack causing much worse inference speed for quantized model on this notebook
+# Use 'x86' for server inference (the old 'fbgemm' is still available but 'x86' is the recommended default) and 'qnnpack' for mobile inference.
+backend = "x86" # replaced with qnnpack causing much worse inference speed for quantized model on this notebook
 model.qconfig = torch.quantization.get_default_qconfig(backend)
 torch.backends.quantized.engine = backend
 
