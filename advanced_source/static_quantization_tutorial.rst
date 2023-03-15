@@ -458,7 +458,8 @@ quantizing for x86 architectures. This configuration does the following:
     per_channel_quantized_model = load_model(saved_model_dir + float_model_file)  
     per_channel_quantized_model.eval()  
     per_channel_quantized_model.fuse_model()  
-    per_channel_quantized_model.qconfig = torch.ao.quantization.get_default_qconfig('fbgemm')
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    per_channel_quantized_model.qconfig = torch.ao.quantization.get_default_qconfig('x86')
     print(per_channel_quantized_model.qconfig)  
 
     torch.ao.quantization.prepare(per_channel_quantized_model, inplace=True)
@@ -534,8 +535,9 @@ We fuse modules as before
     qat_model = load_model(saved_model_dir + float_model_file)  
     qat_model.fuse_model()  
 
-    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001)  
-    qat_model.qconfig = torch.ao.quantization.get_default_qat_qconfig('fbgemm')
+    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001) 
+    # The old 'fbgemm' is still available but 'x86' is the recommended default. 
+    qat_model.qconfig = torch.ao.quantization.get_default_qat_qconfig('x86')
   
 Finally, ``prepare_qat`` performs the "fake quantization", preparing the model for quantization-aware training
 
