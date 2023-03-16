@@ -70,7 +70,7 @@ mobilenetv2_float = torchvision.models.quantization.mobilenet_v2(
 
 # create quantized model
 qconfig_dict = {
-    '': torch.quantization.get_default_qconfig('fbgemm'),
+    '': torch.quantization.get_default_qconfig('x86'), # The old 'fbgemm' is still available but 'x86' is the recommended default.
     # adjust the qconfig to make the results more interesting to explore
     'module_name': [
         # turn off quantization for the first couple of layers
