@@ -16,6 +16,9 @@ dimensions of the input tensors. One of its use cases is eliminating
 for-loops and speeding them up through vectorization.
 
 Let's demonstrate how to do this using an ensemble of simple MLPs.
+
+.. include:: ../beginner_source/new-release-colab.rst
+
 """
 
 import torch
