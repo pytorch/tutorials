@@ -239,7 +239,7 @@ print(-2*b == b.grad)
 # the arrows are in the direction of the forward pass. The nodes represent the backward functions
 # of each operation in the forward pass. The leaf nodes in blue represent our leaf tensors ``a`` and ``b``.
 #
-# .. figure:: /_static/img/dag_autograd.png
+# .. image:: ../../_static/img/dag_autograd.png
 #
 # .. note::
 #   **DAGs are dynamic in PyTorch**

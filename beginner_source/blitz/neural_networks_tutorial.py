@@ -12,10 +12,10 @@ returns the ``output``.
 
 For example, look at this network that classifies digit images:
 
-.. figure:: /_static/img/mnist.png
+.. image:: ../../_static/img/mnist.png
    :alt: convnet
 
-   convnet
+*convnet*
 
 It is a simple feed-forward network. It takes the input, feeds it
 through several layers one after the other, and then finally gives the

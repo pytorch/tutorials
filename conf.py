@@ -91,7 +91,8 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
     'promote_jupyter_magic': True,
-    'backreferences_dir': None
+    'backreferences_dir': None,
+    'notebook_images': 'https://pytorch.org/tutorials/'
 }
 
 if os.getenv('GALLERY_PATTERN'):
