@@ -59,7 +59,6 @@ jobs:
         run: |
           set -ex
 
-          # shellcheck disable=SC2086,SC2090
           container_name=$(docker run \
             ${GPU_FLAG:-} \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
@@ -72,7 +71,7 @@ jobs:
             "${DOCKER_IMAGE}"
           )
 
-          docker exec -t "${container_name}" sh -c ".jenkins/worker.sh"
+          docker exec -t "${container_name}" sh -c "rm /opt/cache/bin/* && .jenkins/worker.sh"
 
 
       - name: Upload Python Docs Preview
@@ -83,6 +82,10 @@ jobs:
           if-no-files-found: error
           path: worker_${{ matrix.shard }}
           s3-prefix: temp/${{ github.event.pull_request.number }}
+
+      - name: Teardown Linux
+        uses: pytorch/test-infra/.github/actions/teardown-linux@main
+        if: always()
 
   # manager:
   #   name: pytorch_tutorial_build_manager
