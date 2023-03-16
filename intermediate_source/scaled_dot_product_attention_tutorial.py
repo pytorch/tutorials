@@ -1,9 +1,10 @@
 """
-Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
-================================================================================
+(Beta) Implementing High-Performance Transformers with Scaled Dot Production Attention (SDPA)
+=============================================================================================
 
+
+**Author:** `Driss Guessous <https://github.com/drisspg>`_
 """
-
 
 ######################################################################
 # Summary
