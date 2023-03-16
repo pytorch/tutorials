@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -ex
 
 # set locale for click dependency in spacy
