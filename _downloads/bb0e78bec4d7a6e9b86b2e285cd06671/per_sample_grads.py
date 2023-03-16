@@ -9,6 +9,9 @@ What is it?
 Per-sample-gradient computation is computing the gradient for each and every
 sample in a batch of data. It is a useful quantity in differential privacy,
 meta-learning, and optimization research.
+
+.. include:: ../beginner_source/new-release-colab.rst
+
 """
 
 import torch

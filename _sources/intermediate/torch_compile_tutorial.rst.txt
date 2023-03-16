@@ -22,7 +22,7 @@ torch.compile Tutorial
 ================
 **Author:** William Wen
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-38
+.. GENERATED FROM PYTHON SOURCE LINES 10-41
 
 ``torch.compile`` is the latest method to speed up your PyTorch code!
 ``torch.compile`` makes PyTorch code run faster by
@@ -53,7 +53,10 @@ previous PyTorch compiler solutions, such as
 
 Note: a modern NVIDIA GPU (Volta or Ampere) is recommended for this tutorial.
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-52
+.. include:: ../beginner_source/new-release-colab.rst
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 43-55
 
 Basic Usage
 ------------
@@ -68,7 +71,7 @@ Arbitrary Python functions can be optimized by passing the callable to
 ``torch.compile``. We can then call the returned optimized
 function in place of the original function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-62
+.. GENERATED FROM PYTHON SOURCE LINES 55-65
 
 .. code-block:: default
 
@@ -114,11 +117,11 @@ function in place of the original function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-64
+.. GENERATED FROM PYTHON SOURCE LINES 66-67
 
 Alternatively, we can decorate the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-72
+.. GENERATED FROM PYTHON SOURCE LINES 67-75
 
 .. code-block:: default
 
@@ -162,11 +165,11 @@ Alternatively, we can decorate the function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-74
+.. GENERATED FROM PYTHON SOURCE LINES 76-77
 
 We can also optimize ``torch.nn.Module`` instances.
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-87
+.. GENERATED FROM PYTHON SOURCE LINES 77-90
 
 .. code-block:: default
 
@@ -215,7 +218,7 @@ We can also optimize ``torch.nn.Module`` instances.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-96
+.. GENERATED FROM PYTHON SOURCE LINES 91-99
 
 Demonstrating Speedups
 -----------------------
@@ -226,7 +229,7 @@ up real models. We will compare standard eager mode and
 
 Before we start, we need to define some utility functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-123
+.. GENERATED FROM PYTHON SOURCE LINES 99-126
 
 .. code-block:: default
 
@@ -264,14 +267,14 @@ Before we start, we need to define some utility functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-128
+.. GENERATED FROM PYTHON SOURCE LINES 127-131
 
 First, let's compare inference.
 
 Note that in the call to ``torch.compile``, we have have the additional
 ``mode`` kwarg, which we will discuss below.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-144
+.. GENERATED FROM PYTHON SOURCE LINES 131-147
 
 .. code-block:: default
 
@@ -299,13 +302,13 @@ Note that in the call to ``torch.compile``, we have have the additional
 
  .. code-block:: none
 
-    eager: 1.8745037841796874
-    compile: 9.8383955078125
+    eager: 2.044353271484375
+    compile: 10.306087890625
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-151
+.. GENERATED FROM PYTHON SOURCE LINES 148-154
 
 Notice that ``torch.compile`` takes a lot longer to complete
 compared to eager. This is because ``torch.compile`` compiles
@@ -314,7 +317,7 @@ structure of the model doesn't change, and so recompilation is not
 needed. So if we run our optimized model several more times, we should
 see a significant improvement compared to eager.
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-177
+.. GENERATED FROM PYTHON SOURCE LINES 154-180
 
 .. code-block:: default
 
@@ -352,35 +355,35 @@ see a significant improvement compared to eager.
 
  .. code-block:: none
 
-    eager eval time 0: 0.009007072448730469
-    eager eval time 1: 0.008963104248046874
-    eager eval time 2: 0.00894972801208496
-    eager eval time 3: 0.008937376022338867
-    eager eval time 4: 0.008926400184631348
-    eager eval time 5: 0.00893894386291504
-    eager eval time 6: 0.008963968276977539
-    eager eval time 7: 0.008921055793762208
-    eager eval time 8: 0.008937664031982422
-    eager eval time 9: 0.00893609619140625
+    eager eval time 0: 0.008833056449890136
+    eager eval time 1: 0.008812159538269042
+    eager eval time 2: 0.00878166389465332
+    eager eval time 3: 0.0087990083694458
+    eager eval time 4: 0.00878649616241455
+    eager eval time 5: 0.008779392242431641
+    eager eval time 6: 0.00878707218170166
+    eager eval time 7: 0.008793888092041015
+    eager eval time 8: 0.008771200180053711
+    eager eval time 9: 0.008782464027404785
     ~~~~~~~~~~
-    compile eval time 0: 0.009415200233459473
-    compile eval time 1: 0.009111519813537597
-    compile eval time 2: 0.007299456119537353
-    compile eval time 3: 0.007298783779144287
-    compile eval time 4: 0.007289055824279785
-    compile eval time 5: 0.0072639999389648435
-    compile eval time 6: 0.007274496078491211
-    compile eval time 7: 0.007280640125274658
-    compile eval time 8: 0.007274303913116455
-    compile eval time 9: 0.007274879932403565
+    compile eval time 0: 0.009251775741577149
+    compile eval time 1: 0.009239968299865722
+    compile eval time 2: 0.007342080116271973
+    compile eval time 3: 0.007245823860168457
+    compile eval time 4: 0.007310463905334473
+    compile eval time 5: 0.007271008014678955
+    compile eval time 6: 0.007224607944488526
+    compile eval time 7: 0.007220960140228271
+    compile eval time 8: 0.007245664119720459
+    compile eval time 9: 0.0072130560874938965
     ~~~~~~~~~~
-    (eval) eager median: 0.00893830394744873, compile median: 0.007284847974777221, speedup: 1.2269719256182656x
+    (eval) eager median: 0.008786784172058106, compile median: 0.007258415937423705, speedup: 1.2105649838492003x
     ~~~~~~~~~~
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-196
+.. GENERATED FROM PYTHON SOURCE LINES 181-199
 
 And indeed, we can see that running our model with ``torch.compile``
 results in a significant speedup. Speedup mainly comes from reducing Python overhead and
@@ -401,7 +404,7 @@ function we defined above. We wrote our own timing function in this tutorial to 
 
 Now, let's consider comparing training.
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-233
+.. GENERATED FROM PYTHON SOURCE LINES 199-236
 
 .. code-block:: default
 
@@ -450,41 +453,41 @@ Now, let's consider comparing training.
 
  .. code-block:: none
 
-    eager train time 0: 0.38284902954101563
-    eager train time 1: 0.02621004867553711
-    eager train time 2: 0.026166336059570312
-    eager train time 3: 0.026111967086791994
-    eager train time 4: 0.02442723274230957
-    eager train time 5: 0.02286988830566406
-    eager train time 6: 0.02286566352844238
-    eager train time 7: 0.02287615966796875
-    eager train time 8: 0.022625951766967772
-    eager train time 9: 0.02259833526611328
+    eager train time 0: 0.42877716064453125
+    eager train time 1: 0.02587107276916504
+    eager train time 2: 0.025831647872924805
+    eager train time 3: 0.025776128768920898
+    eager train time 4: 0.025745216369628905
+    eager train time 5: 0.025721920013427733
+    eager train time 6: 0.025753631591796874
+    eager train time 7: 0.025804000854492186
+    eager train time 8: 0.025790111541748047
+    eager train time 9: 0.02243587112426758
     ~~~~~~~~~~
-    compile train time 0: 22.95908203125
-    compile train time 1: 0.021642751693725586
-    compile train time 2: 0.021133567810058592
-    compile train time 3: 0.021127103805541992
-    compile train time 4: 0.020951040267944337
-    compile train time 5: 0.02126540756225586
-    compile train time 6: 0.021318368911743164
-    compile train time 7: 0.02105411148071289
-    compile train time 8: 0.021358591079711914
-    compile train time 9: 0.021127775192260743
+    compile train time 0: 22.947669921875
+    compile train time 1: 0.02188649559020996
+    compile train time 2: 0.02168070411682129
+    compile train time 3: 0.021566463470458985
+    compile train time 4: 0.022121280670166017
+    compile train time 5: 0.022034751892089845
+    compile train time 6: 0.021901311874389647
+    compile train time 7: 0.022176448822021484
+    compile train time 8: 0.021614688873291016
+    compile train time 9: 0.02189423942565918
     ~~~~~~~~~~
-    (train) eager median: 0.023651696205139162, compile median: 0.021199487686157224, speedup: 1.115673008484218x
+    (train) eager median: 0.025783120155334474, compile median: 0.021897775650024414, speedup: 1.1774310125104295x
     ~~~~~~~~~~
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-237
+.. GENERATED FROM PYTHON SOURCE LINES 237-240
 
 Again, we can see that ``torch.compile`` takes longer in the first
 iteration, as it must compile the model, but in subsequent iterations, we see
 significant speedups compared to eager.
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-251
+.. GENERATED FROM PYTHON SOURCE LINES 242-254
 
 Comparison to TorchScript and FX Tracing
 -----------------------------------------
@@ -499,7 +502,7 @@ One case that ``torch.compile`` can handle that other compiler
 solutions struggle with is data-dependent control flow (the 
 ``if x.sum() < 0:`` line below).
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-268
+.. GENERATED FROM PYTHON SOURCE LINES 254-271
 
 .. code-block:: default
 
@@ -527,13 +530,13 @@ solutions struggle with is data-dependent control flow (the
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 269-272
+.. GENERATED FROM PYTHON SOURCE LINES 272-275
 
 TorchScript tracing ``f1`` results in
 silently incorrect results, since only the actual control flow path
 is traced.
 
-.. GENERATED FROM PYTHON SOURCE LINES 272-277
+.. GENERATED FROM PYTHON SOURCE LINES 275-280
 
 .. code-block:: default
 
@@ -550,7 +553,7 @@ is traced.
 
  .. code-block:: none
 
-    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:253: TracerWarning:
+    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:256: TracerWarning:
 
     Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
@@ -560,12 +563,12 @@ is traced.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 278-280
+.. GENERATED FROM PYTHON SOURCE LINES 281-283
 
 FX tracing ``f1`` results in an error due to the presence of
 data-dependent control flow.
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-287
+.. GENERATED FROM PYTHON SOURCE LINES 283-290
 
 .. code-block:: default
 
@@ -585,7 +588,7 @@ data-dependent control flow.
  .. code-block:: none
 
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 283, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 286, in <module>
         torch.fx.symbolic_trace(f1)
       File "/opt/conda/lib/python3.10/site-packages/torch/fx/_symbolic_trace.py", line 1109, in symbolic_trace
         graph = tracer.trace(root, concrete_args)
@@ -593,7 +596,7 @@ data-dependent control flow.
         return fn(*args, **kwargs)
       File "/opt/conda/lib/python3.10/site-packages/torch/fx/_symbolic_trace.py", line 778, in trace
         (self.create_arg(fn(*args)),),
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 253, in f1
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 256, in f1
         if x.sum() < 0:
       File "/opt/conda/lib/python3.10/site-packages/torch/fx/proxy.py", line 413, in __bool__
         return self.tracer.to_bool(self)
@@ -604,13 +607,13 @@ data-dependent control flow.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 288-291
+.. GENERATED FROM PYTHON SOURCE LINES 291-294
 
 If we provide a value for ``x`` as we try to FX trace ``f1``, then
 we run into the same problem as TorchScript tracing, as the data-dependent
 control flow is removed in the traced function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 291-296
+.. GENERATED FROM PYTHON SOURCE LINES 294-299
 
 .. code-block:: default
 
@@ -637,12 +640,12 @@ control flow is removed in the traced function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 297-299
+.. GENERATED FROM PYTHON SOURCE LINES 300-302
 
 Now we can see that ``torch.compile`` correctly handles
 data-dependent control flow.
 
-.. GENERATED FROM PYTHON SOURCE LINES 299-308
+.. GENERATED FROM PYTHON SOURCE LINES 302-311
 
 .. code-block:: default
 
@@ -670,7 +673,7 @@ data-dependent control flow.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-317
+.. GENERATED FROM PYTHON SOURCE LINES 312-320
 
 TorchScript scripting can handle data-dependent control flow, but this
 solution comes with its own set of problems. Namely, TorchScript scripting
@@ -681,7 +684,7 @@ In the example below, we forget TorchScript type annotations and we receive
 a TorchScript error because the input type for argument ``y``, an ``int``,
 does not match with the default argument type, ``torch.Tensor``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-330
+.. GENERATED FROM PYTHON SOURCE LINES 320-333
 
 .. code-block:: default
 
@@ -707,7 +710,7 @@ does not match with the default argument type, ``torch.Tensor``.
  .. code-block:: none
 
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 326, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 329, in <module>
         script_f2(inp1, inp2)
     RuntimeError: f2() Expected a value of type 'Tensor (inferred)' for argument 'y' but instead found type 'int'.
     Inferred 'y' to be of type 'Tensor' because it was not annotated with an explicit type.
@@ -719,11 +722,11 @@ does not match with the default argument type, ``torch.Tensor``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 331-332
+.. GENERATED FROM PYTHON SOURCE LINES 334-335
 
 However, ``torch.compile`` is easily able to handle ``f2``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-337
+.. GENERATED FROM PYTHON SOURCE LINES 335-340
 
 .. code-block:: default
 
@@ -746,12 +749,12 @@ However, ``torch.compile`` is easily able to handle ``f2``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 338-340
+.. GENERATED FROM PYTHON SOURCE LINES 341-343
 
 Another case that ``torch.compile`` handles well compared to
 previous compilers solutions is the usage of non-PyTorch functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 340-349
+.. GENERATED FROM PYTHON SOURCE LINES 343-352
 
 .. code-block:: default
 
@@ -771,12 +774,12 @@ previous compilers solutions is the usage of non-PyTorch functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 350-352
+.. GENERATED FROM PYTHON SOURCE LINES 353-355
 
 TorchScript tracing treats results from non-PyTorch function calls
 as constants, and so our results can be silently wrong.
 
-.. GENERATED FROM PYTHON SOURCE LINES 352-358
+.. GENERATED FROM PYTHON SOURCE LINES 355-361
 
 .. code-block:: default
 
@@ -794,11 +797,11 @@ as constants, and so our results can be silently wrong.
 
  .. code-block:: none
 
-    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:344: TracerWarning:
+    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:347: TracerWarning:
 
     Converting a tensor to a NumPy array might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
-    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:345: TracerWarning:
+    /var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py:348: TracerWarning:
 
     torch.from_numpy results are registered as constants in the trace. You can safely ignore this warning if you use this function to create tensors out of constant variables that would be the same every time you call this function. In any other case, this might cause the trace to be incorrect.
 
@@ -807,11 +810,11 @@ as constants, and so our results can be silently wrong.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 359-360
+.. GENERATED FROM PYTHON SOURCE LINES 362-363
 
 TorchScript scripting and FX tracing disallow non-PyTorch function calls.
 
-.. GENERATED FROM PYTHON SOURCE LINES 360-371
+.. GENERATED FROM PYTHON SOURCE LINES 363-374
 
 .. code-block:: default
 
@@ -835,7 +838,7 @@ TorchScript scripting and FX tracing disallow non-PyTorch function calls.
  .. code-block:: none
 
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 362, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 365, in <module>
         torch.jit.script(f3)
       File "/opt/conda/lib/python3.10/site-packages/torch/jit/_script.py", line 1341, in script
         fn = torch._C._jit_script_compile(
@@ -845,7 +848,7 @@ TorchScript scripting and FX tracing disallow non-PyTorch function calls.
         return self.data.get(ref(key),default)
     TypeError: cannot create weak reference to 'uarray._Function' object
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 367, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 370, in <module>
         torch.fx.symbolic_trace(f3)
       File "/opt/conda/lib/python3.10/site-packages/torch/fx/_symbolic_trace.py", line 1109, in symbolic_trace
         graph = tracer.trace(root, concrete_args)
@@ -853,7 +856,7 @@ TorchScript scripting and FX tracing disallow non-PyTorch function calls.
         return fn(*args, **kwargs)
       File "/opt/conda/lib/python3.10/site-packages/torch/fx/_symbolic_trace.py", line 778, in trace
         (self.create_arg(fn(*args)),),
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 344, in f3
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 347, in f3
         x = scipy.fft.dct(x.numpy())
       File "/opt/conda/lib/python3.10/site-packages/scipy/fft/_backend.py", line 25, in __ua_function__
         return fn(*args, **kwargs)
@@ -880,12 +883,12 @@ TorchScript scripting and FX tracing disallow non-PyTorch function calls.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-374
+.. GENERATED FROM PYTHON SOURCE LINES 375-377
 
 In comparison, ``torch.compile`` is easily able to handle
 the non-PyTorch function call.
 
-.. GENERATED FROM PYTHON SOURCE LINES 374-378
+.. GENERATED FROM PYTHON SOURCE LINES 377-381
 
 .. code-block:: default
 
@@ -906,7 +909,7 @@ the non-PyTorch function call.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 379-393
+.. GENERATED FROM PYTHON SOURCE LINES 382-396
 
 TorchDynamo and FX Graphs
 --------------------------
@@ -923,7 +926,7 @@ but TorchDynamo allows for different backends to be used. In order to inspect
 the FX graphs that TorchDynamo outputs, let us create a custom backend that
 outputs the FX graph and simply returns the graph's unoptimized forward method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 393-406
+.. GENERATED FROM PYTHON SOURCE LINES 396-409
 
 .. code-block:: default
 
@@ -1019,7 +1022,7 @@ outputs the FX graph and simply returns the graph's unoptimized forward method.
     call_function  iadd_7                      <built-in function iadd>                                    (self_layer4_1_bn2, self_layer4_0_relu_1)        {}
     call_module    self_layer4_1_relu_1        self_layer4_1_relu                                          (iadd_7,)                                        {}
     call_module    self_avgpool                self_avgpool                                                (self_layer4_1_relu_1,)                          {}
-    call_function  flatten                     <built-in method flatten of type object at 0x7f0aaec72540>  (self_avgpool, 1)                                {}
+    call_function  flatten                     <built-in method flatten of type object at 0x7fed26502540>  (self_avgpool, 1)                                {}
     call_module    self_fc                     self_fc                                                     (flatten,)                                       {}
     output         output                      output                                                      ((self_fc,),)                                    {}
 
@@ -1034,13 +1037,13 @@ outputs the FX graph and simply returns the graph's unoptimized forward method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 407-410
+.. GENERATED FROM PYTHON SOURCE LINES 410-413
 
 Using our custom backend, we can now see how TorchDynamo is able to handle
 data-dependent control flow. Consider the function below, where the line
 ``if b.sum() < 0`` is the source of data-dependent control flow.
 
-.. GENERATED FROM PYTHON SOURCE LINES 410-423
+.. GENERATED FROM PYTHON SOURCE LINES 413-426
 
 .. code-block:: default
 
@@ -1070,7 +1073,7 @@ data-dependent control flow. Consider the function below, where the line
     -------------  -------  ------------------------------------------------------  ----------------  --------
     placeholder    a        a                                                       ()                {}
     placeholder    b        b                                                       ()                {}
-    call_function  abs_1    <built-in method abs of type object at 0x7f0aaec72540>  (a,)              {}
+    call_function  abs_1    <built-in method abs of type object at 0x7fed26502540>  (a,)              {}
     call_function  add      <built-in function add>                                 (abs_1, 1)        {}
     call_function  truediv  <built-in function truediv>                             (a, add)          {}
     call_method    sum_1    sum                                                     (b,)              {}
@@ -1097,7 +1100,7 @@ data-dependent control flow. Consider the function below, where the line
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 424-448
+.. GENERATED FROM PYTHON SOURCE LINES 427-451
 
 The output reveals that TorchDynamo extracted 3 different FX graphs
 corresponding the following code (order may differ from the output above):
@@ -1124,7 +1127,7 @@ TorchDynamo, on the other hand, will break the computation graph.
 
 We can see where TorchDynamo breaks the graph by using ``torch._dynamo.explain``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 448-456
+.. GENERATED FROM PYTHON SOURCE LINES 451-459
 
 .. code-block:: default
 
@@ -1148,29 +1151,29 @@ We can see where TorchDynamo breaks the graph by using ``torch._dynamo.explain``
      Break reasons: 
 
     1. generic_jump TensorVariable()
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 413, in bar
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 416, in bar
         if b.sum() < 0:
  
     2. return_value
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 415, in <graph break in bar>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 418, in <graph break in bar>
         return x * b
  
     TorchDynamo compilation metrics:
     Function                        Runtimes (s)
     ------------------------------  --------------
-    _compile                        0.0124, 0.0053
+    _compile                        0.0131, 0.0055
     OutputGraph.call_user_compiler  0.0001, 0.0000
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 457-460
+.. GENERATED FROM PYTHON SOURCE LINES 460-463
 
 In order to maximize speedup, graph breaks should be limited.
 We can force TorchDynamo to raise an error upon the first graph
 break encountered by using ``fullgraph=True``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 460-467
+.. GENERATED FROM PYTHON SOURCE LINES 463-470
 
 .. code-block:: default
 
@@ -1190,7 +1193,7 @@ break encountered by using ``fullgraph=True``:
  .. code-block:: none
 
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 463, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 466, in <module>
         opt_bar(torch.randn(10), torch.randn(10))
       File "/opt/conda/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 209, in _fn
         return fn(*args, **kwargs)
@@ -1221,7 +1224,7 @@ break encountered by using ``fullgraph=True``:
     torch._dynamo.exc.Unsupported: generic_jump TensorVariable()
 
     from user code:
-       File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 413, in bar
+       File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 416, in bar
         if b.sum() < 0:
 
     Set torch._dynamo.config.verbose=True for more information
@@ -1234,12 +1237,12 @@ break encountered by using ``fullgraph=True``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 468-470
+.. GENERATED FROM PYTHON SOURCE LINES 471-473
 
 And below, we demonstrate that TorchDynamo does not break the graph on
 the model we used above for demonstrating speedups.
 
-.. GENERATED FROM PYTHON SOURCE LINES 470-474
+.. GENERATED FROM PYTHON SOURCE LINES 473-477
 
 .. code-block:: default
 
@@ -1267,13 +1270,13 @@ the model we used above for demonstrating speedups.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 475-478
+.. GENERATED FROM PYTHON SOURCE LINES 478-481
 
 Finally, if we simply want TorchDynamo to output the FX graph for export,
 we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
 ``fullgraph=True``, raises an error if TorchDynamo breaks the graph.
 
-.. GENERATED FROM PYTHON SOURCE LINES 478-487
+.. GENERATED FROM PYTHON SOURCE LINES 481-490
 
 .. code-block:: default
 
@@ -1295,7 +1298,7 @@ we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
  .. code-block:: none
 
     Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 480, in <module>
+      File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 483, in <module>
         torch._dynamo.export(bar, torch.randn(10), torch.randn(10))
       File "/opt/conda/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 601, in export
         result_traced = opt_f(*args, **kwargs)
@@ -1328,7 +1331,7 @@ we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
     torch._dynamo.exc.Unsupported: generic_jump TensorVariable()
 
     from user code:
-       File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 413, in bar
+       File "/var/lib/jenkins/workspace/intermediate_source/torch_compile_tutorial.py", line 416, in bar
         if b.sum() < 0:
 
     Set torch._dynamo.config.verbose=True for more information
@@ -1349,7 +1352,7 @@ we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 488-495
+.. GENERATED FROM PYTHON SOURCE LINES 491-498
 
 Conclusion
 ------------
@@ -1362,7 +1365,7 @@ with FX graphs. We hope that you will give ``torch.compile`` a try!
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  0.487 seconds)
+   **Total running time of the script:** ( 1 minutes  3.159 seconds)
 
 
 .. _sphx_glr_download_intermediate_torch_compile_tutorial.py:

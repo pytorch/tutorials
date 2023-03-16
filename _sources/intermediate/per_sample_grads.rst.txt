@@ -28,7 +28,9 @@ Per-sample-gradient computation is computing the gradient for each and every
 sample in a batch of data. It is a useful quantity in differential privacy,
 meta-learning, and optimization research.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-47
+.. include:: ../beginner_source/new-release-colab.rst
+
+.. GENERATED FROM PYTHON SOURCE LINES 16-50
 
 .. code-block:: default
 
@@ -73,12 +75,12 @@ meta-learning, and optimization research.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-50
+.. GENERATED FROM PYTHON SOURCE LINES 51-53
 
 Let’s generate a batch of dummy data and pretend that we’re working with an MNIST dataset.
 The dummy images are 28 by 28 and we use a minibatch of size 64.
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-59
+.. GENERATED FROM PYTHON SOURCE LINES 53-62
 
 .. code-block:: default
 
@@ -98,13 +100,13 @@ The dummy images are 28 by 28 and we use a minibatch of size 64.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-63
+.. GENERATED FROM PYTHON SOURCE LINES 63-66
 
 In regular model training, one would forward the minibatch through the model,
 and then call .backward() to compute gradients.  This would generate an
 'average' gradient of the entire mini-batch:
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-70
+.. GENERATED FROM PYTHON SOURCE LINES 66-73
 
 .. code-block:: default
 
@@ -122,7 +124,7 @@ and then call .backward() to compute gradients.  This would generate an
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-76
+.. GENERATED FROM PYTHON SOURCE LINES 74-79
 
 In contrast to the above approach, per-sample-gradient computation is
 equivalent to:
@@ -130,7 +132,7 @@ equivalent to:
 - for each individual sample of the data, perform a forward and a backward
   pass to get an individual (per-sample) gradient.
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-96
+.. GENERATED FROM PYTHON SOURCE LINES 79-99
 
 .. code-block:: default
 
@@ -161,13 +163,13 @@ equivalent to:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-100
+.. GENERATED FROM PYTHON SOURCE LINES 100-103
 
 ``sample_grads[0]`` is the per-sample-grad for model.conv1.weight.
 ``model.conv1.weight.shape`` is ``[32, 1, 3, 3]``; notice how there is one
 gradient, per sample, in the batch for a total of 64.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-103
+.. GENERATED FROM PYTHON SOURCE LINES 103-106
 
 .. code-block:: default
 
@@ -187,7 +189,7 @@ gradient, per sample, in the batch for a total of 64.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-118
+.. GENERATED FROM PYTHON SOURCE LINES 107-121
 
 Per-sample-grads, *the efficient way*, using function transforms
 ----------------------------------------------------------------
@@ -204,7 +206,7 @@ First, let’s extract the state from ``model`` into two dictionaries,
 parameters and buffers. We'll be detaching them because we won't use
 regular PyTorch autograd (e.g. Tensor.backward(), torch.autograd.grad).
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-124
+.. GENERATED FROM PYTHON SOURCE LINES 121-127
 
 .. code-block:: default
 
@@ -221,7 +223,7 @@ regular PyTorch autograd (e.g. Tensor.backward(), torch.autograd.grad).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-132
+.. GENERATED FROM PYTHON SOURCE LINES 128-135
 
 Next, let's define a function to compute the loss of the model given a
 single input rather than a batch of inputs. It is important that this
@@ -231,7 +233,7 @@ be transforming over them.
 Note - because the model was originally written to handle batches, we’ll
 use ``torch.unsqueeze`` to add a batch dimension.
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-141
+.. GENERATED FROM PYTHON SOURCE LINES 135-144
 
 .. code-block:: default
 
@@ -251,13 +253,13 @@ use ``torch.unsqueeze`` to add a batch dimension.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-145
+.. GENERATED FROM PYTHON SOURCE LINES 145-148
 
 Now, let’s use the ``grad`` transform to create a new function that computes
 the gradient with respect to the first argument of ``compute_loss``
 (i.e. the params).
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-148
+.. GENERATED FROM PYTHON SOURCE LINES 148-151
 
 .. code-block:: default
 
@@ -271,7 +273,7 @@ the gradient with respect to the first argument of ``compute_loss``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-155
+.. GENERATED FROM PYTHON SOURCE LINES 152-158
 
 The ``ft_compute_grad`` function computes the gradient for a single
 (sample, target) pair. We can use vmap to get it to compute the gradient
@@ -280,7 +282,7 @@ over an entire batch of samples and targets. Note that
 the 0th dimension of the data and targets, and use the same params and
 buffers for each.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-158
+.. GENERATED FROM PYTHON SOURCE LINES 158-161
 
 .. code-block:: default
 
@@ -294,11 +296,11 @@ buffers for each.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-160
+.. GENERATED FROM PYTHON SOURCE LINES 162-163
 
 Finally, let's used our transformed function to compute per-sample-gradients:
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-163
+.. GENERATED FROM PYTHON SOURCE LINES 163-166
 
 .. code-block:: default
 
@@ -312,12 +314,12 @@ Finally, let's used our transformed function to compute per-sample-gradients:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-166
+.. GENERATED FROM PYTHON SOURCE LINES 167-169
 
 we can double check that the results using ``grad`` and ``vmap`` match the
 results of hand processing each one individually:
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-170
+.. GENERATED FROM PYTHON SOURCE LINES 169-173
 
 .. code-block:: default
 
@@ -332,7 +334,7 @@ results of hand processing each one individually:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-186
+.. GENERATED FROM PYTHON SOURCE LINES 174-189
 
 A quick note: there are limitations around what types of functions can be
 transformed by vmap. The best functions to transform are ones that are pure
@@ -350,7 +352,7 @@ Currently the best results are obtained on newer GPU's such as the A100
 (Ampere) where we've seen up to 25x speedups on this example, but here are
 some results on our build machines:
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-210
+.. GENERATED FROM PYTHON SOURCE LINES 189-213
 
 .. code-block:: default
 
@@ -386,20 +388,20 @@ some results on our build machines:
 
  .. code-block:: none
 
-    Per-sample-grads without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f9e31c78850>
+    Per-sample-grads without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f8aa02e0850>
     compute_sample_grads(data, targets)
-      65.13 ms
+      66.59 ms
       1 measurement, 100 runs , 1 thread
-    Per-sample-grads with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f9e32f3fdf0>
+    Per-sample-grads with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f8aa0243d30>
     ft_compute_sample_grad(params, buffers, data, targets)
-      7.27 ms
+      7.26 ms
       1 measurement, 100 runs , 1 thread
-    Performance delta: 796.4445 percent improvement with vmap 
+    Performance delta: 816.9184 percent improvement with vmap 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-222
+.. GENERATED FROM PYTHON SOURCE LINES 214-225
 
 There are other optimized solutions (like in https://github.com/pytorch/opacus)
 to computing per-sample-gradients in PyTorch that also perform better than
@@ -416,7 +418,7 @@ at on GitHub.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  13.807 seconds)
+   **Total running time of the script:** ( 0 minutes  14.263 seconds)
 
 
 .. _sphx_glr_download_intermediate_per_sample_grads.py:

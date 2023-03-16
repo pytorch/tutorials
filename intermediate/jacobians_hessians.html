@@ -418,8 +418,22 @@ efficiently using PyTorch’s regular autodiff APIs
 <a class="reference external" href="https://pytorch.org/docs/master/func.html">function transforms API</a>
 provides ways of computing various higher-order autodiff quantities
 efficiently.</p>
+<div class="section" id="notes-for-running-in-colab">
+<h2>Notes for Running in Colab<a class="headerlink" href="#notes-for-running-in-colab" title="Permalink to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial requires PyTorch 2.0.0 or later. If you are running this
+in Google Colab, verify that you have the required <code class="docutils literal notranslate"><span class="pre">torch</span></code> and
+compatible domain libraties installed by running <code class="docutils literal notranslate"><span class="pre">!pip</span> <span class="pre">list</span></code>.
+If the installed version of PyTorch is lower than required,
+unistall it and reinstall again by running the following commands:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!pip3 uninstall --yes torch torchaudio torchvision torchtext torchdata
+!pip3 install torch torchaudio torchvision torchtext torchdata
+</pre></div>
+</div>
+</div>
 <div class="section" id="computing-the-jacobian">
-<h2>Computing the Jacobian<a class="headerlink" href="#computing-the-jacobian" title="Permalink to this heading">¶</a></h2>
+<h3>Computing the Jacobian<a class="headerlink" href="#computing-the-jacobian" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
@@ -527,13 +541,13 @@ microseconds and milliseconds measurements:</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">with_vmap_timer</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c367a0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec704865c0&gt;
 compute_jac(xp)
   1.33 ms
   1 measurement, 500 runs , 1 thread
-&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cbbf70&gt;
+&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec70414190&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  638.76 us
+  641.12 us
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -541,7 +555,7 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">no_vmap_timer</span></a><span class="p">,</span> <span class="s2">"without vmap"</span><span class="p">,</span>  <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">with_vmap_timer</span></a><span class="p">,</span> <span class="s2">"vmap"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 51.9509 percent improvement with vmap
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 51.6415 percent improvement with vmap
 </pre></div>
 </div>
 <p>Furthemore, it’s pretty easy to flip the problem around and say we want to
@@ -552,7 +566,7 @@ compute Jacobians of the parameters to our model (weight, bias) instead of the i
 </div>
 </div>
 <div class="section" id="reverse-mode-jacobian-jacrev-vs-forward-mode-jacobian-jacfwd">
-<h2>reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)<a class="headerlink" href="#reverse-mode-jacobian-jacrev-vs-forward-mode-jacobian-jacfwd" title="Permalink to this heading">¶</a></h2>
+<h3>reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)<a class="headerlink" href="#reverse-mode-jacobian-jacrev-vs-forward-mode-jacobian-jacfwd" title="Permalink to this heading">¶</a></h3>
 <p>We offer two APIs to compute jacobians: <code class="docutils literal notranslate"><span class="pre">jacrev</span></code> and <code class="docutils literal notranslate"><span class="pre">jacfwd</span></code>:</p>
 <ul class="simple">
 <li><p>jacrev uses reverse-mode AD. As you saw above it is a composition of our
@@ -596,13 +610,13 @@ rows or columns.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([2048, 32])
-jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cba980&gt;
+jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec704f35e0&gt;
 jacfwd(predict, argnums=2)(weight, bias, x)
-  1.20 ms
+  1.18 ms
   1 measurement, 500 runs , 1 thread
-jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c6e980&gt;
+jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec70416fe0&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  8.73 ms
+  9.39 ms
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -610,7 +624,7 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacfwd_timing</span></a><span class="p">,</span> <span class="s2">"jacfwd"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="p">,</span> <span class="s2">"jacrev"</span><span class="p">,</span> <span class="p">);</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 626.2961 percent improvement with jacrev
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 694.2145 percent improvement with jacrev
 </pre></div>
 </div>
 <p>and now the reverse - more outputs (M) than inputs (N):</p>
@@ -630,13 +644,13 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'jacrev time: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c786d0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec704f0190&gt;
 jacfwd(predict, argnums=2)(weight, bias, x)
-  5.91 ms
+  6.23 ms
   1 measurement, 500 runs , 1 thread
-jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cb95a0&gt;
+jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fec70613cd0&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  739.38 us
+  763.73 us
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -644,12 +658,12 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="p">,</span> <span class="s2">"jacrev"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacfwd_timing</span></a><span class="p">,</span> <span class="s2">"jacfwd"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 699.1819 percent improvement with jacfwd
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 716.3046 percent improvement with jacfwd
 </pre></div>
 </div>
 </div>
 <div class="section" id="hessian-computation-with-functorch-hessian">
-<h2>Hessian computation with functorch.hessian<a class="headerlink" href="#hessian-computation-with-functorch-hessian" title="Permalink to this heading">¶</a></h2>
+<h3>Hessian computation with functorch.hessian<a class="headerlink" href="#hessian-computation-with-functorch-hessian" title="Permalink to this heading">¶</a></h3>
 <p>We offer a convenience API to compute hessians: <code class="docutils literal notranslate"><span class="pre">torch.func.hessiani</span></code>.
 Hessians are the jacobian of the jacobian (or the partial derivative of
 the partial derivative, aka second order).</p>
@@ -684,7 +698,7 @@ using jacfwd(jacfwd())</p>
 </div>
 </div>
 <div class="section" id="batch-jacobian-and-batch-hessian">
-<h2>Batch Jacobian and Batch Hessian<a class="headerlink" href="#batch-jacobian-and-batch-hessian" title="Permalink to this heading">¶</a></h2>
+<h3>Batch Jacobian and Batch Hessian<a class="headerlink" href="#batch-jacobian-and-batch-hessian" title="Permalink to this heading">¶</a></h3>
 <p>In the above examples we’ve been operating with a single feature vector.
 In some cases you might want to take the Jacobian of a batch of outputs
 with respect to a batch of inputs. That is, given a batch of inputs of
@@ -736,7 +750,7 @@ cases the sum trick also works.</p>
 </div>
 </div>
 <div class="section" id="computing-hessian-vector-products">
-<h2>Computing Hessian-vector products<a class="headerlink" href="#computing-hessian-vector-products" title="Permalink to this heading">¶</a></h2>
+<h3>Computing Hessian-vector products<a class="headerlink" href="#computing-hessian-vector-products" title="Permalink to this heading">¶</a></h3>
 <p>The naive way to compute a Hessian-vector product (hvp) is to materialize
 the full Hessian and perform a dot-product with a vector. We can do better:
 it turns out we don’t need to materialize the full Hessian to do this. We’ll
@@ -773,7 +787,7 @@ instead compose reverse-mode AD with reverse-mode AD:</p>
 <span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">,</span> <span class="n">result_hvp_revrev</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  10.966 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  11.525 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-jacobians-hessians-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/089b69a49b6eb4080d35c4b983b939a5/jacobians_hessians.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">jacobians_hessians.py</span></code></a></p>
@@ -783,6 +797,7 @@ instead compose reverse-mode AD with reverse-mode AD:</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
 </div>
 </div>
 </article>
@@ -828,11 +843,14 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a><ul>
+<li><a class="reference internal" href="#notes-for-running-in-colab">Notes for Running in Colab</a><ul>
 <li><a class="reference internal" href="#computing-the-jacobian">Computing the Jacobian</a></li>
 <li><a class="reference internal" href="#reverse-mode-jacobian-jacrev-vs-forward-mode-jacobian-jacfwd">reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)</a></li>
 <li><a class="reference internal" href="#hessian-computation-with-functorch-hessian">Hessian computation with functorch.hessian</a></li>
 <li><a class="reference internal" href="#batch-jacobian-and-batch-hessian">Batch Jacobian and Batch Hessian</a></li>
 <li><a class="reference internal" href="#computing-hessian-vector-products">Computing Hessian-vector products</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

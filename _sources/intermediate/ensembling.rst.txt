@@ -35,7 +35,9 @@ for-loops and speeding them up through vectorization.
 
 Let's demonstrate how to do this using an ensemble of simple MLPs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-43
+.. include:: ../beginner_source/new-release-colab.rst
+
+.. GENERATED FROM PYTHON SOURCE LINES 23-46
 
 .. code-block:: default
 
@@ -69,14 +71,14 @@ Let's demonstrate how to do this using an ensemble of simple MLPs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-48
+.. GENERATED FROM PYTHON SOURCE LINES 47-51
 
 Let’s generate a batch of dummy data and pretend that we’re working with
 an MNIST dataset. Thus, the dummy images are 28 by 28, and we have a
 minibatch of size 64. Furthermore, lets say we want to combine the predictions
 from 10 different models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-57
+.. GENERATED FROM PYTHON SOURCE LINES 51-60
 
 .. code-block:: default
 
@@ -96,18 +98,18 @@ from 10 different models.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-62
+.. GENERATED FROM PYTHON SOURCE LINES 61-65
 
 We have a couple of options for generating predictions. Maybe we want to
 give each model a different randomized minibatch of data. Alternatively,
 maybe we want to run the same minibatch of data through each model (e.g.
 if we were testing the effect of different model initializations).
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-65
+.. GENERATED FROM PYTHON SOURCE LINES 67-68
 
 Option 1: different minibatch for each model
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-69
+.. GENERATED FROM PYTHON SOURCE LINES 68-72
 
 .. code-block:: default
 
@@ -122,11 +124,11 @@ Option 1: different minibatch for each model
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-71
+.. GENERATED FROM PYTHON SOURCE LINES 73-74
 
 Option 2: Same minibatch
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-75
+.. GENERATED FROM PYTHON SOURCE LINES 74-78
 
 .. code-block:: default
 
@@ -141,7 +143,7 @@ Option 2: Same minibatch
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-89
+.. GENERATED FROM PYTHON SOURCE LINES 79-92
 
 Using vmap to vectorize the ensemble
 ------------------------------------
@@ -157,7 +159,7 @@ weight of shape ``[10, 784, 128]``.
 PyTorch offers the ``torch.func.stack_module_state`` convenience function to do
 this.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-93
+.. GENERATED FROM PYTHON SOURCE LINES 92-96
 
 .. code-block:: default
 
@@ -172,14 +174,14 @@ this.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-98
+.. GENERATED FROM PYTHON SOURCE LINES 97-101
 
 Next, we need to define a function to vmap over. The function should,
 given parameters and buffers and inputs, run the model using those
 parameters, buffers, and inputs. We'll use ``torch.func.functional_call``
 to help out:
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-110
+.. GENERATED FROM PYTHON SOURCE LINES 101-113
 
 .. code-block:: default
 
@@ -202,7 +204,7 @@ to help out:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-117
+.. GENERATED FROM PYTHON SOURCE LINES 114-120
 
 Option 1: get predictions using a different minibatch for each model.
 
@@ -211,7 +213,7 @@ the passed-in function. After using ``stack_module_state``, each of
 the params and buffers have an additional dimension of size 'num_models' at
 the front, and minibatches has a dimension of size 'num_models'.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-129
+.. GENERATED FROM PYTHON SOURCE LINES 120-132
 
 .. code-block:: default
 
@@ -240,7 +242,7 @@ the front, and minibatches has a dimension of size 'num_models'.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-135
+.. GENERATED FROM PYTHON SOURCE LINES 133-138
 
 Option 2: get predictions using the same minibatch of data.
 
@@ -248,7 +250,7 @@ vmap has an in_dims arg that specifies which dimensions to map over.
 By using ``None``, we tell vmap we want the same minibatch to apply for all of
 the 10 models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-140
+.. GENERATED FROM PYTHON SOURCE LINES 138-143
 
 .. code-block:: default
 
@@ -264,7 +266,7 @@ the 10 models.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-147
+.. GENERATED FROM PYTHON SOURCE LINES 144-150
 
 A quick note: there are limitations around what types of functions can be
 transformed by vmap. The best functions to transform are ones that are pure
@@ -273,13 +275,13 @@ that have no side effects (e.g. mutation). vmap is unable to handle mutation
 of arbitrary Python data structures, but it is able to handle many in-place
 PyTorch operations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-152
+.. GENERATED FROM PYTHON SOURCE LINES 152-155
 
 Performance
 -----------
 Curious about performance numbers? Here's how the numbers look.
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-163
+.. GENERATED FROM PYTHON SOURCE LINES 155-166
 
 .. code-block:: default
 
@@ -302,19 +304,19 @@ Curious about performance numbers? Here's how the numbers look.
 
  .. code-block:: none
 
-    Predictions without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f1e0bed5120>
+    Predictions without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f2955661660>
     [model(minibatch) for model, minibatch in zip(models, minibatches)]
-      1.59 ms
+      1.70 ms
       1 measurement, 100 runs , 1 thread
-    Predictions with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f1e0bed5480>
+    Predictions with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f29556619c0>
     vmap(fmodel)(params, buffers, minibatches)
-      645.85 us
+      667.28 us
       1 measurement, 100 runs , 1 thread
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-172
+.. GENERATED FROM PYTHON SOURCE LINES 167-175
 
 There's a large speedup using vmap!
 
@@ -328,7 +330,7 @@ on GitHub.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  2.550 seconds)
+   **Total running time of the script:** ( 0 minutes  2.615 seconds)
 
 
 .. _sphx_glr_download_intermediate_ensembling.py:

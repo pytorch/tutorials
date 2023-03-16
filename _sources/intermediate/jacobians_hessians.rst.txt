@@ -30,10 +30,12 @@ efficiently using PyTorch's regular autodiff APIs
 provides ways of computing various higher-order autodiff quantities
 efficiently.
 
+.. include:: ../beginner_source/new-release-colab.rst
+
 Computing the Jacobian
 ----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-24
+.. GENERATED FROM PYTHON SOURCE LINES 20-26
 
 .. code-block:: default
 
@@ -50,12 +52,12 @@ Computing the Jacobian
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-27
+.. GENERATED FROM PYTHON SOURCE LINES 27-29
 
 Let's start with a function that we'd like to compute the jacobian of.
 This is a simple linear function with non-linear activation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-31
+.. GENERATED FROM PYTHON SOURCE LINES 29-33
 
 .. code-block:: default
 
@@ -70,11 +72,11 @@ This is a simple linear function with non-linear activation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-33
+.. GENERATED FROM PYTHON SOURCE LINES 34-35
 
 Let's add some dummy data: a weight, a bias, and a feature vector x.
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-39
+.. GENERATED FROM PYTHON SOURCE LINES 35-41
 
 .. code-block:: default
 
@@ -91,14 +93,14 @@ Let's add some dummy data: a weight, a bias, and a feature vector x.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-44
+.. GENERATED FROM PYTHON SOURCE LINES 42-46
 
 Let's think of ``predict`` as a function that maps the input ``x`` from :math:`R^D \to R^D`.
 PyTorch Autograd computes vector-Jacobian products. In order to compute the full
 Jacobian of this :math:`R^D \to R^D` function, we would have to compute it row-by-row
 by using a different unit vector each time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-58
+.. GENERATED FROM PYTHON SOURCE LINES 46-60
 
 .. code-block:: default
 
@@ -131,7 +133,7 @@ by using a different unit vector each time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-64
+.. GENERATED FROM PYTHON SOURCE LINES 61-66
 
 Instead of computing the jacobian row-by-row, we can use PyTorch's
 ``torch.vmap`` function transform to get rid of the for-loop and vectorize the
@@ -139,7 +141,7 @@ computation. We can’t directly apply vmap to ``torch.autograd.grad``;
 instead, PyTorch provides a ``torch.func.vjp`` transform that composes with
 ``torch.vmap``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-74
+.. GENERATED FROM PYTHON SOURCE LINES 66-76
 
 .. code-block:: default
 
@@ -160,7 +162,7 @@ instead, PyTorch provides a ``torch.func.vjp`` transform that composes with
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-86
+.. GENERATED FROM PYTHON SOURCE LINES 77-88
 
 In a later tutorial a composition of reverse-mode AD and vmap will give us
 per-sample-gradients.
@@ -174,7 +176,7 @@ the vmap-vjp composition to compute jacobians. ``jacrev`` accepts an argnums
 argument that says which argument we would like to compute Jacobians with
 respect to.
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-94
+.. GENERATED FROM PYTHON SOURCE LINES 88-96
 
 .. code-block:: default
 
@@ -193,7 +195,7 @@ respect to.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-107
+.. GENERATED FROM PYTHON SOURCE LINES 97-109
 
 Let's compare the performance of the two ways to compute the jacobian.
 The function transform version is much faster (and becomes even faster the
@@ -208,7 +210,7 @@ primitive operations in order to obtain better performance.
 Let's make a quick function to evaluate performance and deal with
 microseconds and milliseconds measurements:
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-117
+.. GENERATED FROM PYTHON SOURCE LINES 109-119
 
 .. code-block:: default
 
@@ -229,11 +231,11 @@ microseconds and milliseconds measurements:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-119
+.. GENERATED FROM PYTHON SOURCE LINES 120-121
 
 And then run the performance comparison:
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-131
+.. GENERATED FROM PYTHON SOURCE LINES 121-133
 
 .. code-block:: default
 
@@ -257,23 +259,23 @@ And then run the performance comparison:
 
  .. code-block:: none
 
-    <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c367a0>
+    <torch.utils.benchmark.utils.common.Measurement object at 0x7fec704865c0>
     compute_jac(xp)
       1.33 ms
       1 measurement, 500 runs , 1 thread
-    <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cbbf70>
+    <torch.utils.benchmark.utils.common.Measurement object at 0x7fec70414190>
     jacrev(predict, argnums=2)(weight, bias, x)
-      638.76 us
+      641.12 us
       1 measurement, 500 runs , 1 thread
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-133
+.. GENERATED FROM PYTHON SOURCE LINES 134-135
 
 Let's do a relative performance comparison of the above with our get_perf function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-136
+.. GENERATED FROM PYTHON SOURCE LINES 135-138
 
 .. code-block:: default
 
@@ -288,17 +290,17 @@ Let's do a relative performance comparison of the above with our get_perf functi
 
  .. code-block:: none
 
-     Performance delta: 51.9509 percent improvement with vmap 
+     Performance delta: 51.6415 percent improvement with vmap 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-139
+.. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 Furthemore, it’s pretty easy to flip the problem around and say we want to
 compute Jacobians of the parameters to our model (weight, bias) instead of the input
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-143
+.. GENERATED FROM PYTHON SOURCE LINES 141-145
 
 .. code-block:: default
 
@@ -313,7 +315,7 @@ compute Jacobians of the parameters to our model (weight, bias) instead of the i
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-167
+.. GENERATED FROM PYTHON SOURCE LINES 146-169
 
 reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)
 --------------------------------------------------------------------
@@ -339,7 +341,7 @@ it column-by-column. The Jacobian matrix has M rows and N columns, so if it
 is taller or wider one way we may prefer the method that deals with fewer
 rows or columns.
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-170
+.. GENERATED FROM PYTHON SOURCE LINES 169-172
 
 .. code-block:: default
 
@@ -353,11 +355,11 @@ rows or columns.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-172
+.. GENERATED FROM PYTHON SOURCE LINES 173-174
 
 First, let's benchmark with more inputs than outputs:
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-192
+.. GENERATED FROM PYTHON SOURCE LINES 174-194
 
 .. code-block:: default
 
@@ -390,23 +392,23 @@ First, let's benchmark with more inputs than outputs:
  .. code-block:: none
 
     torch.Size([2048, 32])
-    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cba980>
+    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7fec704f35e0>
     jacfwd(predict, argnums=2)(weight, bias, x)
-      1.20 ms
+      1.18 ms
       1 measurement, 500 runs , 1 thread
-    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c6e980>
+    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7fec70416fe0>
     jacrev(predict, argnums=2)(weight, bias, x)
-      8.73 ms
+      9.39 ms
       1 measurement, 500 runs , 1 thread
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-194
+.. GENERATED FROM PYTHON SOURCE LINES 195-196
 
 and then do a relative benchmark:
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-197
+.. GENERATED FROM PYTHON SOURCE LINES 196-199
 
 .. code-block:: default
 
@@ -421,16 +423,16 @@ and then do a relative benchmark:
 
  .. code-block:: none
 
-     Performance delta: 626.2961 percent improvement with jacrev 
+     Performance delta: 694.2145 percent improvement with jacrev 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-199
+.. GENERATED FROM PYTHON SOURCE LINES 200-201
 
 and now the reverse - more outputs (M) than inputs (N):
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-215
+.. GENERATED FROM PYTHON SOURCE LINES 201-217
 
 .. code-block:: default
 
@@ -458,23 +460,23 @@ and now the reverse - more outputs (M) than inputs (N):
 
  .. code-block:: none
 
-    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5c786d0>
+    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7fec704f0190>
     jacfwd(predict, argnums=2)(weight, bias, x)
-      5.91 ms
+      6.23 ms
       1 measurement, 500 runs , 1 thread
-    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f09d5cb95a0>
+    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7fec70613cd0>
     jacrev(predict, argnums=2)(weight, bias, x)
-      739.38 us
+      763.73 us
       1 measurement, 500 runs , 1 thread
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-217
+.. GENERATED FROM PYTHON SOURCE LINES 218-219
 
 and a relative perf comparison:
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-220
+.. GENERATED FROM PYTHON SOURCE LINES 219-222
 
 .. code-block:: default
 
@@ -489,12 +491,12 @@ and a relative perf comparison:
 
  .. code-block:: none
 
-     Performance delta: 699.1819 percent improvement with jacfwd 
+     Performance delta: 716.3046 percent improvement with jacfwd 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-234
+.. GENERATED FROM PYTHON SOURCE LINES 223-236
 
 Hessian computation with functorch.hessian
 ------------------------------------------
@@ -510,7 +512,7 @@ Note: to boost performance: depending on your model, you may also want to
 use ``jacfwd(jacfwd(f))`` or ``jacrev(jacrev(f))`` instead to compute hessians
 leveraging the rule of thumb above regarding wider vs taller matrices.
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-249
+.. GENERATED FROM PYTHON SOURCE LINES 236-251
 
 .. code-block:: default
 
@@ -536,12 +538,12 @@ leveraging the rule of thumb above regarding wider vs taller matrices.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-252
+.. GENERATED FROM PYTHON SOURCE LINES 252-254
 
 Let's verify we have the same result regardless of using hessian api or
 using jacfwd(jacfwd())
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-255
+.. GENERATED FROM PYTHON SOURCE LINES 254-257
 
 .. code-block:: default
 
@@ -561,7 +563,7 @@ using jacfwd(jacfwd())
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 256-265
+.. GENERATED FROM PYTHON SOURCE LINES 258-267
 
 Batch Jacobian and Batch Hessian
 --------------------------------
@@ -573,7 +575,7 @@ a Jacobian of shape ``(B, M, N)``.
 
 The easiest way to do this is to use vmap:
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-280
+.. GENERATED FROM PYTHON SOURCE LINES 267-282
 
 .. code-block:: default
 
@@ -605,14 +607,14 @@ The easiest way to do this is to use vmap:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-285
+.. GENERATED FROM PYTHON SOURCE LINES 283-287
 
 If you have a function that goes from (B, N) -> (B, M) instead and are
 certain that each input produces an independent output, then it's also
 sometimes possible to do this without using vmap by summing the outputs
 and then computing the Jacobian of that function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-292
+.. GENERATED FROM PYTHON SOURCE LINES 287-294
 
 .. code-block:: default
 
@@ -630,7 +632,7 @@ and then computing the Jacobian of that function:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 293-299
+.. GENERATED FROM PYTHON SOURCE LINES 295-301
 
 If you instead have a function that goes from :math:`R^N \to R^M` but inputs that
 are batched, you compose vmap with jacrev to compute batched jacobians:
@@ -639,7 +641,7 @@ Finally, batch hessians can be computed similarly. It's easiest to think
 about them by using vmap to batch over hessian computation, but in some
 cases the sum trick also works.
 
-.. GENERATED FROM PYTHON SOURCE LINES 299-305
+.. GENERATED FROM PYTHON SOURCE LINES 301-307
 
 .. code-block:: default
 
@@ -662,7 +664,7 @@ cases the sum trick also works.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-319
+.. GENERATED FROM PYTHON SOURCE LINES 308-321
 
 Computing Hessian-vector products
 ---------------------------------
@@ -678,7 +680,7 @@ with reverse-mode) is generally the more memory efficient way to compute a
 hvp because forward-mode AD doesn't need to construct an Autograd graph and
 save intermediates for backward:
 
-.. GENERATED FROM PYTHON SOURCE LINES 319-325
+.. GENERATED FROM PYTHON SOURCE LINES 321-327
 
 .. code-block:: default
 
@@ -695,11 +697,11 @@ save intermediates for backward:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 326-327
+.. GENERATED FROM PYTHON SOURCE LINES 328-329
 
 Here's some sample usage.
 
-.. GENERATED FROM PYTHON SOURCE LINES 327-336
+.. GENERATED FROM PYTHON SOURCE LINES 329-338
 
 .. code-block:: default
 
@@ -719,12 +721,12 @@ Here's some sample usage.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 337-339
+.. GENERATED FROM PYTHON SOURCE LINES 339-341
 
 If PyTorch forward-AD does not have coverage for your operations, then we can
 instead compose reverse-mode AD with reverse-mode AD:
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-346
+.. GENERATED FROM PYTHON SOURCE LINES 341-348
 
 .. code-block:: default
 
@@ -745,7 +747,7 @@ instead compose reverse-mode AD with reverse-mode AD:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  10.966 seconds)
+   **Total running time of the script:** ( 0 minutes  11.525 seconds)
 
 
 .. _sphx_glr_download_intermediate_jacobians_hessians.py:
