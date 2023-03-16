@@ -1,9 +1,10 @@
 """
-Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
-================================================================================
+(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+==========================================================================================
 
+
+**Author:** `Driss Guessous <https://github.com/drisspg>`_
 """
-
 
 ######################################################################
 # Summary
@@ -34,6 +35,8 @@ Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
 # * `Memory-Efficient Attention <https://github.com/facebookresearch/xformers>`__
 # * A PyTorch implementation defined in C++
 #
+# .. literalinclude:: ../beginner_source/new-release-colab.rst
+#    :language: rst
 
 import torch
 import torch.nn as nn

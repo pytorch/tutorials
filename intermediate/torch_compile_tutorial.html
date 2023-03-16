@@ -23,7 +23,7 @@
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="scaled_dot_product_attention_tutorial.html" rel="next" title="Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION"/>
+<link href="scaled_dot_product_attention_tutorial.html" rel="next" title="(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)"/>
 <link href="ax_multiobjective_nas_tutorial.html" rel="prev" title="Multi-Objective NAS with Ax"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
@@ -316,7 +316,7 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">torch.compile Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
@@ -446,8 +446,8 @@ in Google Colab, verify that you have the required <code class="docutils literal
 compatible domain libraties installed by running <code class="docutils literal notranslate"><span class="pre">!pip</span> <span class="pre">list</span></code>.
 If the installed version of PyTorch is lower than required,
 unistall it and reinstall again by running the following commands:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!pip3 uninstall --yes torch torchaudio torchvideo torchdata
-!pip3 install torch torchaudio torchvideo torchdata
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!pip3 uninstall --yes torch torchaudio torchvision torchtext torchdata
+!pip3 install torch torchaudio torchvision torchtext torchdata
 </pre></div>
 </div>
 </div>
@@ -613,8 +613,8 @@ up real models. We will compare standard eager mode and
 <span class="nb">print</span><span class="p">(</span><span class="s2">"compile:"</span><span class="p">,</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">evaluate_opt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">))[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager: 2.0397445068359374
-compile: 10.001078125
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager: 2.33173828125
+compile: 10.094111328125
 </pre></div>
 </div>
 <p>Notice that <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> takes a lot longer to complete
@@ -649,29 +649,29 @@ see a significant improvement compared to eager.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager eval time 0: 0.008994048118591308
-eager eval time 1: 0.00896777629852295
-eager eval time 2: 0.008933440208435058
-eager eval time 3: 0.008922944068908692
-eager eval time 4: 0.008949343681335448
-eager eval time 5: 0.008947456359863281
-eager eval time 6: 0.008946208000183106
-eager eval time 7: 0.008931327819824218
-eager eval time 8: 0.008970208168029785
-eager eval time 9: 0.008936736106872558
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager eval time 0: 0.008972288131713867
+eager eval time 1: 0.008957951545715333
+eager eval time 2: 0.008922464370727539
+eager eval time 3: 0.008914943695068359
+eager eval time 4: 0.008939743995666504
+eager eval time 5: 0.008922816276550293
+eager eval time 6: 0.008929759979248046
+eager eval time 7: 0.008939680099487304
+eager eval time 8: 0.008932607650756836
+eager eval time 9: 0.008918016433715821
 ~~~~~~~~~~
-compile eval time 0: 0.009366047859191895
-compile eval time 1: 0.009324607849121093
-compile eval time 2: 0.009273247718811035
-compile eval time 3: 0.009259200096130371
-compile eval time 4: 0.00924950408935547
-compile eval time 5: 0.009242624282836913
-compile eval time 6: 0.009258912086486817
-compile eval time 7: 0.009315679550170899
-compile eval time 8: 0.00925648021697998
-compile eval time 9: 0.008013312339782714
+compile eval time 0: 0.009367391586303711
+compile eval time 1: 0.00930611228942871
+compile eval time 2: 0.00925369644165039
+compile eval time 3: 0.009248895645141602
+compile eval time 4: 0.006958367824554443
+compile eval time 5: 0.006980703830718994
+compile eval time 6: 0.006945343971252441
+compile eval time 7: 0.006956863880157471
+compile eval time 8: 0.006973440170288086
+compile eval time 9: 0.006971392154693603
 ~~~~~~~~~~
-(eval) eager median: 0.008946832180023193, compile median: 0.009259056091308594, speedup: 0.9662790776720228x
+(eval) eager median: 0.008931183815002441, compile median: 0.00697707200050354, speedup: 1.280076200210901x
 ~~~~~~~~~~
 </pre></div>
 </div>
@@ -727,29 +727,29 @@ function we defined above. We wrote our own timing function in this tutorial to 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager train time 0: 0.45052069091796876
-eager train time 1: 0.02595020866394043
-eager train time 2: 0.02571455955505371
-eager train time 3: 0.025655296325683592
-eager train time 4: 0.025625568389892578
-eager train time 5: 0.02268339157104492
-eager train time 6: 0.021596128463745118
-eager train time 7: 0.021378143310546875
-eager train time 8: 0.021151424407958985
-eager train time 9: 0.021550048828125
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager train time 0: 0.43461016845703127
+eager train time 1: 0.025151487350463866
+eager train time 2: 0.025069311141967775
+eager train time 3: 0.025021791458129883
+eager train time 4: 0.024536544799804688
+eager train time 5: 0.024522016525268555
+eager train time 6: 0.02454528045654297
+eager train time 7: 0.02418569564819336
+eager train time 8: 0.02406403160095215
+eager train time 9: 0.02408448028564453
 ~~~~~~~~~~
-compile train time 0: 22.745830078125
-compile train time 1: 0.021712896347045898
-compile train time 2: 0.021127647399902343
-compile train time 3: 0.021432319641113282
-compile train time 4: 0.021327871322631836
-compile train time 5: 0.021754079818725586
-compile train time 6: 0.021340831756591797
-compile train time 7: 0.02117510414123535
-compile train time 8: 0.02148953628540039
-compile train time 9: 0.021235712051391603
+compile train time 0: 22.56190625
+compile train time 1: 0.021937887191772462
+compile train time 2: 0.020654272079467774
+compile train time 3: 0.02072844886779785
+compile train time 4: 0.021266496658325196
+compile train time 5: 0.021188608169555666
+compile train time 6: 0.02085856056213379
+compile train time 7: 0.021129695892333985
+compile train time 8: 0.021123071670532227
+compile train time 9: 0.020891584396362305
 ~~~~~~~~~~
-(train) eager median: 0.024154479980468747, compile median: 0.02138657569885254, speedup: 1.129422508801384x
+(train) eager median: 0.02454091262817383, compile median: 0.021126383781433104, speedup: 1.1616239145357938x
 ~~~~~~~~~~
 </pre></div>
 </div>
@@ -1092,7 +1092,7 @@ call_module    self_layer4_1_bn2           self_layer4_1_bn2                    
 call_function  iadd_7                      &lt;built-in function iadd&gt;                                    (self_layer4_1_bn2, self_layer4_0_relu_1)        {}
 call_module    self_layer4_1_relu_1        self_layer4_1_relu                                          (iadd_7,)                                        {}
 call_module    self_avgpool                self_avgpool                                                (self_layer4_1_relu_1,)                          {}
-call_function  flatten                     &lt;built-in method flatten of type object at 0x7f82719eb540&gt;  (self_avgpool, 1)                                {}
+call_function  flatten                     &lt;built-in method flatten of type object at 0x7f6676253540&gt;  (self_avgpool, 1)                                {}
 call_module    self_fc                     self_fc                                                     (flatten,)                                       {}
 output         output                      output                                                      ((self_fc,),)                                    {}
 
@@ -1127,7 +1127,7 @@ opcode         name     target                                                  
 -------------  -------  ------------------------------------------------------  ----------------  --------
 placeholder    a        a                                                       ()                {}
 placeholder    b        b                                                       ()                {}
-call_function  abs_1    &lt;built-in method abs of type object at 0x7f82719eb540&gt;  (a,)              {}
+call_function  abs_1    &lt;built-in method abs of type object at 0x7f6676253540&gt;  (a,)              {}
 call_function  add      &lt;built-in function add&gt;                                 (abs_1, 1)        {}
 call_function  truediv  &lt;built-in function truediv&gt;                             (a, add)          {}
 call_method    sum_1    sum                                                     (b,)              {}
@@ -1196,7 +1196,7 @@ TorchDynamo, on the other hand, will break the computation graph.</p>
 TorchDynamo compilation metrics:
 Function                        Runtimes (s)
 ------------------------------  --------------
-_compile                        0.0122, 0.0052
+_compile                        0.0124, 0.0054
 OutputGraph.call_user_compiler  0.0000, 0.0000
 </pre></div>
 </div>
@@ -1340,7 +1340,7 @@ tensor([[ 0.1920, -0.1323,  0.9817,  ...,  0.5318, -0.5725,  0.6707],
 basic usage, demonstrating speedups over eager mode, comparing to previous
 PyTorch compiler solutions, and briefly investigating TorchDynamo and its interactions
 with FX graphs. We hope that you will give <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> a try!</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.261 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.954 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torch-compile-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/6b019e0b5f84b568fcca1120bd28e230/torch_compile_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_compile_tutorial.py</span></code></a></p>
@@ -1357,7 +1357,7 @@ with FX graphs. We hope that you will give <code class="docutils literal notrans
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="scaled_dot_product_attention_tutorial.html" rel="next" title="Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="scaled_dot_product_attention_tutorial.html" rel="next" title="(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="ax_multiobjective_nas_tutorial.html" rel="prev" title="Multi-Objective NAS with Ax"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>

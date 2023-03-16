@@ -12,5 +12,5 @@ Notes for Running in Colab
 
    .. code-block:: python
 
-      !pip3 uninstall --yes torch torchaudio torchvideo torchdata
-      !pip3 install torch torchaudio torchvideo torchdata
+      !pip3 uninstall --yes torch torchaudio torchvision torchtext torchdata
+      !pip3 install torch torchaudio torchvision torchtext torchdata
