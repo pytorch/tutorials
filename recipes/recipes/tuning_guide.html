@@ -726,7 +726,7 @@ Use environment variable LD_PRELOAD to take advantage of one of them.</p>
 <div class="section" id="use-onednn-graph-with-torchscript-for-inference">
 <h3>Use oneDNN Graph with TorchScript for inference<a class="headerlink" href="#use-onednn-graph-with-torchscript-for-inference" title="Permalink to this heading">¶</a></h3>
 <p>oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
-In PyTorch 2.0, it is supported as a beta feature for Float32 &amp; BFloat16 data-types.
+Currently, it’s supported as an experimental feature for Float32 data-type.
 oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
 A model should be JIT-traced using an example input.
 Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
@@ -735,7 +735,7 @@ The example code-snippets below are for resnet50, but they can very well be exte
 <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">enable_onednn_fusion</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Using the oneDNN Graph API requires just one extra line of code for inference with Float32.
+<p>Using the oneDNN Graph API requires just one extra line of code.
 If you are using oneDNN Graph, please avoid calling <code class="docutils literal notranslate"><span class="pre">torch.jit.optimize_for_inference</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># sample input should be of the same shape as expected inputs</span>
 <span class="n">sample_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)]</span>
@@ -755,22 +755,6 @@ If you are using oneDNN Graph, please avoid calling <code class="docutils litera
     <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
     <span class="c1"># speedup would be observed after warmup runs</span>
     <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>While the JIT fuser for oneDNN Graph also supports inference with BFloat16 datatype,
-performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16 ISA.
-The following code snippets serves as an example of using BFloat16 datatype for inference with oneDNN Graph:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># AMP for JIT mode is enabled by default, and is divergent with its eager mode counterpart</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_jit_set_autocast_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">):</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">example_input</span><span class="p">))</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="c1"># a couple of warmup runs</span>
-    <span class="n">model</span><span class="p">(</span><span class="n">example_input</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">(</span><span class="n">example_input</span><span class="p">)</span>
-    <span class="c1"># speedup would be observed in subsequent runs.</span>
-    <span class="n">model</span><span class="p">(</span><span class="n">example_input</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
