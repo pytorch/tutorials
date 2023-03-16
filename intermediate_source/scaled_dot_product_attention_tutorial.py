@@ -35,7 +35,7 @@
 # * `Memory-Efficient Attention <https://github.com/facebookresearch/xformers>`__
 # * A PyTorch implementation defined in C++
 #
-# .. include:: ../beginner_source/new-release-colab.rst
+# .. literalinclude:: ../beginner_source/new-release-colab.rst
 
 import torch
 import torch.nn as nn
