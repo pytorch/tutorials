@@ -1,7 +1,7 @@
-.. _new-release_colab:
+.. _new-release_colab::
 
 Notes for Running in Colab
-==========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
    This tutorial requires PyTorch 2.0.0 or later. If you are running this
@@ -10,6 +10,7 @@ Notes for Running in Colab
    If the installed version of PyTorch is lower than required,
    unistall it and reinstall again by running the following commands:
 
-   .. code-block::
+   .. code-block:: python
+
       !pip3 uninstall --yes torch torchaudio torchvideo torchdata
       !pip3 install torch torchaudio torchvideo torchdata
