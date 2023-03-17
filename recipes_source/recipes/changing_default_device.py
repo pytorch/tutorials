@@ -7,6 +7,9 @@ and then switch between CPU and CUDA depending on what hardware is available.
 Typically, to do this you might have used if-statements and ``cuda()`` calls
 to do this:
 
+.. note::
+   This recipe requires PyTorch 2.0.0 or later.
+
 """
 import torch
 

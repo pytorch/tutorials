@@ -36,8 +36,6 @@ torch.compile Tutorial
 #
 # Note: a modern NVIDIA GPU (Volta or Ampere) is recommended for this tutorial.
 #
-# .. include:: ../beginner_source/new-release-colab.rst
-#
 
 ######################################################################
 # Basic Usage

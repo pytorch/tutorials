@@ -18,7 +18,10 @@ T5-Base Model for Summarization, Sentiment Classification, and Translation
 # 3. Read in the CNNDM, IMDB, and Multi30k datasets and pre-process their texts in preparation for the model
 # 4. Perform text summarization, sentiment classification, and translation
 #
+# Prerequisites
+# -------------
 #
+# * PyTorch 2.0.0 or later
 
 #######################################################################
 # Data Transformation
@@ -34,8 +37,7 @@ T5-Base Model for Summarization, Sentiment Classification, and Translation
 #
 # T5 uses a SentencePiece model for text tokenization. Below, we use a pre-trained SentencePiece model to build
 # the text pre-processing pipeline using torchtext's T5Transform. Note that the transform supports both
-# batched and non-batched text input (for example, one can either pass a single sentence or a list of sentences), however
-# the T5 model expects the input to be batched.
+# batched and non-batched text input (for example, one can either pass a single sentence or a list of sentences), however the T5 model expects the input to be batched.
 #
 
 from torchtext.models import T5Transform

@@ -1,5 +1,28 @@
+Running Tutorials in Google Colab
+=================================
+
+When you run a tutorial in Google Colab, there might be additional
+requirements and dependencies that you need to meet in order
+for the tutorial to work properly. This section contains notes on how to
+configure various setting in order to run the tutorials in Google Colab.
+
+PyTorch Version in Google Colab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you are running a tutorial that requires a very new version of PyTorch,
+that version might not be yet available in Google Colab. To check that you
+have the required ``torch`` and compatible domain libraries installed, run
+``!pip list``.
+If the installed version of PyTorch is lower than required,
+uninstall it and reinstall again by running the following commands:
+
+.. code-block:: python
+
+   !pip3 uninstall --yes torch torchaudio torchvision torchtext torchdata
+   !pip3 install torch torchaudio torchvision torchtext torchdata
+
 Using Tutorial Data from Google Drive in Colab
-==============================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We've added a new feature to tutorials that allows users to open the
 notebook associated with a tutorial in Google Colab. You may need to
