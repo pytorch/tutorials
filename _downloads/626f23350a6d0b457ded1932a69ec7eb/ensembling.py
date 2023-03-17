@@ -17,8 +17,9 @@ for-loops and speeding them up through vectorization.
 
 Let's demonstrate how to do this using an ensemble of simple MLPs.
 
-.. include:: ../beginner_source/new-release-colab.rst
+.. note::
 
+   This tutorial requires PyTorch 2.0.0 or later.
 """
 
 import torch

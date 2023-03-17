@@ -23,38 +23,37 @@ T5-Base Model for Summarization, Sentiment Classification, and Translation
 
 **Author**: `Pendo Abbo <pabbo@fb.com>`__, `Joe Cummings <jrcummings@fb.com>`__
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-22
+.. GENERATED FROM PYTHON SOURCE LINES 10-40
 
 Overview
---------
+ --------
 
-This tutorial demonstrates how to use a pre-trained T5 Model for summarization, sentiment classification, and
-translation tasks. We will demonstrate how to use the torchtext library to:
+ This tutorial demonstrates how to use a pre-trained T5 Model for summarization, sentiment classification, and
+ translation tasks. We will demonstrate how to use the torchtext library to:
 
-1. Build a text pre-processing pipeline for a T5 model
-2. Instantiate a pre-trained T5 model with base configuration
-3. Read in the CNNDM, IMDB, and Multi30k datasets and pre-process their texts in preparation for the model
-4. Perform text summarization, sentiment classification, and translation
+ 1. Build a text pre-processing pipeline for a T5 model
+ 2. Instantiate a pre-trained T5 model with base configuration
+ 3. Read in the CNNDM, IMDB, and Multi30k datasets and pre-process their texts in preparation for the model
+ 4. Perform text summarization, sentiment classification, and translation
 
+ .. note::
+    This tutorial requires PyTorch 2.0.0 or later.
 
+######################################################################
+ Data Transformation
+ -------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 24-40
+ The T5 model does not work with raw text. Instead, it requires the text to be transformed into numerical form
+ in order to perform training and inference. The following transformations are required for the T5 model:
 
-Data Transformation
--------------------
+ 1. Tokenize text
+ 2. Convert tokens into (integer) IDs
+ 3. Truncate the sequences to a specified maximum length
+ 4. Add end-of-sequence (EOS) and padding token IDs
 
-The T5 model does not work with raw text. Instead, it requires the text to be transformed into numerical form
-in order to perform training and inference. The following transformations are required for the T5 model:
-
-1. Tokenize text
-2. Convert tokens into (integer) IDs
-3. Truncate the sequences to a specified maximum length
-4. Add end-of-sequence (EOS) and padding token IDs
-
-T5 uses a SentencePiece model for text tokenization. Below, we use a pre-trained SentencePiece model to build
-the text pre-processing pipeline using torchtext's T5Transform. Note that the transform supports both
-batched and non-batched text input (for example, one can either pass a single sentence or a list of sentences), however
-the T5 model expects the input to be batched.
+ T5 uses a SentencePiece model for text tokenization. Below, we use a pre-trained SentencePiece model to build
+ the text pre-processing pipeline using torchtext's T5Transform. Note that the transform supports both
+ batched and non-batched text input (for example, one can either pass a single sentence or a list of sentences), however the T5 model expects the input to be batched.
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 40-55
@@ -86,7 +85,7 @@ the T5 model expects the input to be batched.
 
 
       0%|          | 0.00/792k [00:00<?, ?B/s]
-    100%|##########| 792k/792k [00:00<00:00, 11.5MB/s]
+    100%|##########| 792k/792k [00:00<00:00, 17.7MB/s]
 
 
 
@@ -136,56 +135,264 @@ translation. For additional details on available pre-trained models, see `the to
     Downloading: "https://download.pytorch.org/models/text/t5.base.generation.v2.pt" to /var/lib/jenkins/.cache/torch/hub/checkpoints/t5.base.generation.v2.pt
 
       0%|          | 0.00/945M [00:00<?, ?B/s]
-      1%|          | 8.99M/945M [00:00<00:10, 94.3MB/s]
-      3%|3         | 30.4M/945M [00:00<00:05, 171MB/s] 
-      5%|5         | 49.1M/945M [00:00<00:05, 182MB/s]
-      7%|7         | 68.9M/945M [00:00<00:04, 192MB/s]
-      9%|9         | 87.1M/945M [00:00<00:04, 183MB/s]
-     11%|#1        | 105M/945M [00:00<00:04, 176MB/s] 
-     13%|#3        | 124M/945M [00:00<00:04, 185MB/s]
-     15%|#5        | 142M/945M [00:00<00:04, 180MB/s]
-     17%|#6        | 160M/945M [00:00<00:04, 183MB/s]
-     19%|#8        | 179M/945M [00:01<00:04, 163MB/s]
-     21%|##        | 198M/945M [00:01<00:04, 174MB/s]
-     23%|##2       | 215M/945M [00:01<00:06, 116MB/s]
-     25%|##4       | 236M/945M [00:01<00:05, 137MB/s]
-     27%|##7       | 260M/945M [00:01<00:04, 163MB/s]
-     29%|##9       | 278M/945M [00:01<00:04, 160MB/s]
-     32%|###1      | 298M/945M [00:01<00:03, 173MB/s]
-     34%|###4      | 321M/945M [00:01<00:03, 191MB/s]
-     36%|###6      | 342M/945M [00:02<00:03, 198MB/s]
-     38%|###8      | 362M/945M [00:02<00:03, 186MB/s]
-     40%|####      | 382M/945M [00:02<00:03, 194MB/s]
-     43%|####2     | 401M/945M [00:02<00:02, 195MB/s]
-     45%|####4     | 424M/945M [00:02<00:02, 205MB/s]
-     47%|####6     | 443M/945M [00:02<00:02, 206MB/s]
-     49%|####9     | 463M/945M [00:02<00:02, 194MB/s]
-     51%|#####1    | 486M/945M [00:02<00:02, 205MB/s]
-     54%|#####3    | 508M/945M [00:02<00:02, 215MB/s]
-     56%|#####6    | 532M/945M [00:03<00:01, 224MB/s]
-     59%|#####8    | 553M/945M [00:03<00:01, 224MB/s]
-     61%|######    | 575M/945M [00:03<00:01, 195MB/s]
-     63%|######2   | 594M/945M [00:03<00:03, 118MB/s]
-     65%|######4   | 612M/945M [00:03<00:02, 132MB/s]
-     67%|######6   | 629M/945M [00:04<00:04, 80.0MB/s]
-     68%|######7   | 641M/945M [00:04<00:04, 78.7MB/s]
-     70%|#######   | 664M/945M [00:04<00:02, 105MB/s] 
-     73%|#######3  | 690M/945M [00:04<00:01, 135MB/s]
-     75%|#######5  | 713M/945M [00:04<00:01, 158MB/s]
-     78%|#######7  | 733M/945M [00:04<00:01, 171MB/s]
-     80%|#######9  | 753M/945M [00:04<00:01, 175MB/s]
-     82%|########2 | 776M/945M [00:04<00:00, 193MB/s]
-     84%|########4 | 797M/945M [00:05<00:00, 198MB/s]
-     87%|########6 | 817M/945M [00:05<00:00, 185MB/s]
-     89%|########8 | 837M/945M [00:05<00:00, 192MB/s]
-     91%|######### | 857M/945M [00:05<00:00, 129MB/s]
-     92%|#########2| 872M/945M [00:05<00:00, 115MB/s]
-     94%|#########3| 885M/945M [00:06<00:00, 92.5MB/s]
-     95%|#########4| 896M/945M [00:06<00:00, 67.6MB/s]
-     96%|#########5| 905M/945M [00:06<00:00, 63.0MB/s]
-     98%|#########8| 926M/945M [00:06<00:00, 88.3MB/s]
-    100%|#########9| 944M/945M [00:06<00:00, 107MB/s] 
-    100%|##########| 945M/945M [00:06<00:00, 146MB/s]
+      0%|          | 3.81M/945M [00:00<00:25, 38.7MB/s]
+      1%|          | 7.51M/945M [00:00<00:25, 38.0MB/s]
+      1%|1         | 11.1M/945M [00:00<00:28, 34.7MB/s]
+      2%|1         | 14.5M/945M [00:00<00:30, 32.5MB/s]
+      2%|1         | 17.6M/945M [00:00<00:30, 32.0MB/s]
+      2%|2         | 20.7M/945M [00:00<00:37, 25.6MB/s]
+      2%|2         | 23.3M/945M [00:00<00:38, 25.0MB/s]
+      3%|2         | 25.8M/945M [00:00<00:42, 22.9MB/s]
+      3%|2         | 28.0M/945M [00:01<00:50, 18.9MB/s]
+      3%|3         | 31.0M/945M [00:01<00:44, 21.7MB/s]
+      4%|3         | 33.5M/945M [00:01<00:44, 21.4MB/s]
+      4%|3         | 37.4M/945M [00:01<00:36, 26.2MB/s]
+      4%|4         | 41.5M/945M [00:01<00:30, 30.6MB/s]
+      5%|4         | 44.6M/945M [00:01<00:32, 29.0MB/s]
+      5%|5         | 48.1M/945M [00:01<00:30, 31.0MB/s]
+      5%|5         | 51.1M/945M [00:01<00:34, 27.5MB/s]
+      6%|5         | 53.9M/945M [00:02<00:33, 27.9MB/s]
+      6%|6         | 56.7M/945M [00:02<00:34, 27.1MB/s]
+      6%|6         | 59.4M/945M [00:02<00:34, 26.5MB/s]
+      7%|6         | 61.9M/945M [00:02<00:34, 26.6MB/s]
+      7%|7         | 66.6M/945M [00:02<00:28, 32.9MB/s]
+      8%|7         | 71.3M/945M [00:02<00:25, 36.4MB/s]
+      8%|8         | 77.9M/945M [00:02<00:20, 45.2MB/s]
+      9%|8         | 83.9M/945M [00:02<00:18, 50.1MB/s]
+      9%|9         | 88.7M/945M [00:02<00:18, 48.7MB/s]
+     10%|9         | 93.4M/945M [00:03<00:19, 46.9MB/s]
+     11%|#         | 99.5M/945M [00:03<00:17, 51.7MB/s]
+     11%|#1        | 105M/945M [00:03<00:18, 48.9MB/s] 
+     12%|#1        | 110M/945M [00:03<00:17, 50.7MB/s]
+     12%|#2        | 116M/945M [00:03<00:15, 54.3MB/s]
+     13%|#2        | 122M/945M [00:03<00:17, 50.5MB/s]
+     13%|#3        | 127M/945M [00:03<00:20, 41.9MB/s]
+     14%|#3        | 131M/945M [00:03<00:21, 39.3MB/s]
+     14%|#4        | 135M/945M [00:04<00:21, 40.0MB/s]
+     15%|#4        | 139M/945M [00:04<00:24, 35.0MB/s]
+     15%|#5        | 142M/945M [00:04<00:25, 33.6MB/s]
+     16%|#5        | 147M/945M [00:04<00:22, 36.6MB/s]
+     16%|#6        | 152M/945M [00:04<00:20, 41.0MB/s]
+     17%|#6        | 156M/945M [00:04<00:19, 42.3MB/s]
+     17%|#7        | 161M/945M [00:04<00:18, 45.2MB/s]
+     18%|#7        | 166M/945M [00:04<00:19, 41.0MB/s]
+     18%|#7        | 170M/945M [00:04<00:19, 40.8MB/s]
+     18%|#8        | 174M/945M [00:05<00:26, 30.2MB/s]
+     19%|#8        | 177M/945M [00:05<00:25, 32.0MB/s]
+     19%|#9        | 184M/945M [00:05<00:19, 40.4MB/s]
+     20%|#9        | 188M/945M [00:05<00:19, 41.4MB/s]
+     20%|##        | 193M/945M [00:05<00:18, 41.8MB/s]
+     21%|##        | 198M/945M [00:05<00:17, 46.0MB/s]
+     21%|##1       | 203M/945M [00:05<00:17, 45.5MB/s]
+     22%|##1       | 207M/945M [00:05<00:17, 44.6MB/s]
+     22%|##2       | 212M/945M [00:06<00:16, 45.3MB/s]
+     23%|##3       | 218M/945M [00:06<00:17, 43.6MB/s]
+     23%|##3       | 222M/945M [00:06<00:20, 36.1MB/s]
+     24%|##3       | 226M/945M [00:06<00:19, 38.5MB/s]
+     24%|##4       | 230M/945M [00:06<00:19, 39.1MB/s]
+     25%|##4       | 236M/945M [00:06<00:17, 42.4MB/s]
+     25%|##5       | 240M/945M [00:06<00:22, 32.4MB/s]
+     26%|##5       | 245M/945M [00:06<00:19, 37.1MB/s]
+     27%|##6       | 251M/945M [00:07<00:16, 42.8MB/s]
+     27%|##7       | 256M/945M [00:07<00:16, 45.0MB/s]
+     28%|##7       | 261M/945M [00:07<00:16, 44.1MB/s]
+     28%|##8       | 266M/945M [00:07<00:15, 46.7MB/s]
+     29%|##8       | 271M/945M [00:07<00:14, 49.1MB/s]
+     29%|##9       | 276M/945M [00:07<00:15, 44.9MB/s]
+     30%|##9       | 280M/945M [00:07<00:15, 44.4MB/s]
+     30%|###       | 285M/945M [00:07<00:15, 45.7MB/s]
+     31%|###       | 290M/945M [00:07<00:14, 48.4MB/s]
+     31%|###1      | 295M/945M [00:08<00:14, 48.6MB/s]
+     32%|###1      | 300M/945M [00:08<00:16, 42.1MB/s]
+     32%|###2      | 304M/945M [00:08<00:18, 36.7MB/s]
+     33%|###2      | 308M/945M [00:08<00:19, 33.9MB/s]
+     33%|###2      | 311M/945M [00:08<00:20, 32.7MB/s]
+     33%|###3      | 314M/945M [00:08<00:21, 30.6MB/s]
+     34%|###3      | 318M/945M [00:08<00:20, 32.7MB/s]
+     34%|###4      | 321M/945M [00:08<00:19, 33.6MB/s]
+     35%|###4      | 328M/945M [00:09<00:15, 41.8MB/s]
+     35%|###5      | 332M/945M [00:09<00:14, 43.4MB/s]
+     36%|###5      | 336M/945M [00:09<00:14, 43.6MB/s]
+     36%|###6      | 341M/945M [00:09<00:16, 39.3MB/s]
+     37%|###6      | 345M/945M [00:09<00:15, 41.5MB/s]
+     37%|###7      | 350M/945M [00:09<00:14, 44.0MB/s]
+     38%|###7      | 354M/945M [00:09<00:19, 31.0MB/s]
+     38%|###8      | 360M/945M [00:09<00:17, 36.1MB/s]
+     39%|###8      | 364M/945M [00:10<00:15, 39.8MB/s]
+     39%|###9      | 369M/945M [00:10<00:17, 34.3MB/s]
+     39%|###9      | 372M/945M [00:10<00:20, 29.4MB/s]
+     40%|###9      | 376M/945M [00:10<00:19, 29.8MB/s]
+     40%|####      | 382M/945M [00:10<00:15, 38.4MB/s]
+     41%|####      | 387M/945M [00:10<00:14, 41.6MB/s]
+     42%|####1     | 392M/945M [00:10<00:12, 45.4MB/s]
+     42%|####2     | 397M/945M [00:10<00:12, 46.7MB/s]
+     43%|####2     | 403M/945M [00:11<00:11, 49.5MB/s]
+     43%|####3     | 408M/945M [00:11<00:11, 48.1MB/s]
+     44%|####3     | 413M/945M [00:11<00:10, 51.4MB/s]
+     44%|####4     | 418M/945M [00:11<00:11, 49.7MB/s]
+     45%|####4     | 423M/945M [00:11<00:11, 47.4MB/s]
+     45%|####5     | 428M/945M [00:11<00:11, 48.5MB/s]
+     46%|####5     | 433M/945M [00:11<00:10, 49.9MB/s]
+     46%|####6     | 438M/945M [00:11<00:10, 50.2MB/s]
+     47%|####6     | 443M/945M [00:11<00:10, 50.1MB/s]
+     47%|####7     | 448M/945M [00:12<00:13, 39.0MB/s]
+     48%|####7     | 452M/945M [00:12<00:15, 34.3MB/s]
+     48%|####8     | 457M/945M [00:12<00:13, 38.6MB/s]
+     49%|####8     | 461M/945M [00:12<00:13, 36.7MB/s]
+     49%|####9     | 465M/945M [00:12<00:13, 37.4MB/s]
+     50%|####9     | 469M/945M [00:12<00:12, 38.4MB/s]
+     50%|#####     | 473M/945M [00:12<00:12, 39.6MB/s]
+     51%|#####     | 478M/945M [00:12<00:11, 43.4MB/s]
+     51%|#####1    | 484M/945M [00:12<00:09, 50.4MB/s]
+     52%|#####1    | 489M/945M [00:13<00:10, 44.4MB/s]
+     52%|#####2    | 495M/945M [00:13<00:09, 48.1MB/s]
+     53%|#####2    | 500M/945M [00:13<00:10, 45.9MB/s]
+     53%|#####3    | 504M/945M [00:13<00:09, 46.2MB/s]
+     54%|#####3    | 509M/945M [00:13<00:10, 44.5MB/s]
+     54%|#####4    | 514M/945M [00:13<00:09, 48.5MB/s]
+     55%|#####4    | 519M/945M [00:13<00:13, 34.2MB/s]
+     55%|#####5    | 523M/945M [00:14<00:12, 35.9MB/s]
+     56%|#####5    | 527M/945M [00:14<00:14, 30.4MB/s]
+     56%|#####6    | 530M/945M [00:14<00:13, 31.5MB/s]
+     57%|#####6    | 534M/945M [00:14<00:14, 30.1MB/s]
+     57%|#####6    | 537M/945M [00:14<00:17, 24.7MB/s]
+     57%|#####7    | 540M/945M [00:14<00:17, 24.4MB/s]
+     57%|#####7    | 542M/945M [00:14<00:18, 23.1MB/s]
+     58%|#####7    | 544M/945M [00:15<00:19, 21.4MB/s]
+     58%|#####8    | 549M/945M [00:15<00:14, 28.3MB/s]
+     58%|#####8    | 552M/945M [00:15<00:15, 26.8MB/s]
+     59%|#####8    | 555M/945M [00:15<00:16, 25.4MB/s]
+     59%|#####9    | 557M/945M [00:15<00:16, 24.6MB/s]
+     59%|#####9    | 560M/945M [00:15<00:15, 26.3MB/s]
+     60%|#####9    | 564M/945M [00:15<00:13, 29.6MB/s]
+     60%|######    | 567M/945M [00:15<00:15, 25.7MB/s]
+     60%|######    | 570M/945M [00:15<00:14, 27.4MB/s]
+     61%|######    | 574M/945M [00:16<00:13, 29.3MB/s]
+     61%|######1   | 577M/945M [00:16<00:14, 25.9MB/s]
+     61%|######1   | 579M/945M [00:16<00:15, 24.1MB/s]
+     62%|######1   | 582M/945M [00:16<00:18, 21.1MB/s]
+     62%|######1   | 584M/945M [00:16<00:17, 21.4MB/s]
+     62%|######2   | 588M/945M [00:16<00:13, 26.8MB/s]
+     63%|######2   | 591M/945M [00:16<00:14, 25.9MB/s]
+     63%|######2   | 593M/945M [00:17<00:15, 23.2MB/s]
+     63%|######3   | 596M/945M [00:17<00:17, 20.5MB/s]
+     63%|######3   | 599M/945M [00:17<00:16, 22.6MB/s]
+     64%|######3   | 601M/945M [00:17<00:15, 22.7MB/s]
+     64%|######3   | 604M/945M [00:17<00:14, 24.9MB/s]
+     64%|######4   | 606M/945M [00:17<00:15, 23.2MB/s]
+     64%|######4   | 609M/945M [00:17<00:16, 21.7MB/s]
+     65%|######4   | 611M/945M [00:17<00:15, 22.5MB/s]
+     65%|######4   | 613M/945M [00:18<00:16, 20.5MB/s]
+     65%|######5   | 615M/945M [00:18<00:16, 20.7MB/s]
+     65%|######5   | 618M/945M [00:18<00:15, 22.5MB/s]
+     66%|######5   | 621M/945M [00:18<00:14, 24.0MB/s]
+     66%|######5   | 623M/945M [00:18<00:14, 23.5MB/s]
+     66%|######6   | 627M/945M [00:18<00:11, 28.8MB/s]
+     67%|######6   | 630M/945M [00:18<00:11, 28.6MB/s]
+     67%|######6   | 633M/945M [00:18<00:12, 27.2MB/s]
+     67%|######7   | 636M/945M [00:18<00:11, 28.2MB/s]
+     68%|######7   | 638M/945M [00:18<00:11, 27.0MB/s]
+     68%|######7   | 641M/945M [00:19<00:13, 23.6MB/s]
+     68%|######8   | 645M/945M [00:19<00:11, 27.7MB/s]
+     69%|######8   | 648M/945M [00:19<00:12, 24.8MB/s]
+     69%|######9   | 652M/945M [00:19<00:10, 30.6MB/s]
+     69%|######9   | 655M/945M [00:19<00:09, 31.4MB/s]
+     70%|######9   | 658M/945M [00:19<00:10, 29.2MB/s]
+     70%|#######   | 662M/945M [00:19<00:09, 31.5MB/s]
+     70%|#######   | 665M/945M [00:19<00:10, 27.2MB/s]
+     71%|#######   | 668M/945M [00:20<00:10, 27.7MB/s]
+     71%|#######1  | 671M/945M [00:20<00:10, 27.7MB/s]
+     71%|#######1  | 673M/945M [00:20<00:11, 24.7MB/s]
+     72%|#######1  | 676M/945M [00:20<00:11, 24.5MB/s]
+     72%|#######1  | 678M/945M [00:20<00:12, 23.0MB/s]
+     72%|#######2  | 681M/945M [00:20<00:13, 21.1MB/s]
+     72%|#######2  | 683M/945M [00:20<00:18, 14.8MB/s]
+     73%|#######2  | 686M/945M [00:21<00:14, 19.2MB/s]
+     73%|#######2  | 689M/945M [00:21<00:13, 19.5MB/s]
+     73%|#######3  | 691M/945M [00:21<00:14, 18.2MB/s]
+     74%|#######3  | 695M/945M [00:21<00:10, 24.3MB/s]
+     74%|#######3  | 698M/945M [00:21<00:09, 26.0MB/s]
+     74%|#######4  | 701M/945M [00:21<00:09, 26.2MB/s]
+     74%|#######4  | 703M/945M [00:21<00:10, 24.9MB/s]
+     75%|#######4  | 706M/945M [00:21<00:09, 26.7MB/s]
+     75%|#######5  | 709M/945M [00:21<00:08, 27.9MB/s]
+     75%|#######5  | 713M/945M [00:22<00:08, 30.2MB/s]
+     76%|#######5  | 716M/945M [00:22<00:09, 26.0MB/s]
+     76%|#######6  | 718M/945M [00:22<00:09, 25.5MB/s]
+     76%|#######6  | 721M/945M [00:22<00:09, 24.6MB/s]
+     77%|#######6  | 725M/945M [00:22<00:07, 30.1MB/s]
+     77%|#######7  | 728M/945M [00:22<00:08, 26.7MB/s]
+     78%|#######7  | 732M/945M [00:22<00:07, 30.6MB/s]
+     78%|#######7  | 736M/945M [00:22<00:06, 32.3MB/s]
+     78%|#######8  | 739M/945M [00:23<00:06, 31.3MB/s]
+     79%|#######8  | 742M/945M [00:23<00:07, 28.6MB/s]
+     79%|#######8  | 745M/945M [00:23<00:07, 27.9MB/s]
+     79%|#######9  | 748M/945M [00:23<00:07, 27.7MB/s]
+     79%|#######9  | 751M/945M [00:23<00:07, 25.5MB/s]
+     80%|#######9  | 755M/945M [00:23<00:06, 31.2MB/s]
+     80%|########  | 759M/945M [00:23<00:06, 32.0MB/s]
+     81%|########  | 762M/945M [00:23<00:06, 31.1MB/s]
+     81%|########1 | 766M/945M [00:23<00:05, 33.0MB/s]
+     81%|########1 | 769M/945M [00:24<00:06, 29.3MB/s]
+     82%|########1 | 772M/945M [00:24<00:07, 24.7MB/s]
+     82%|########1 | 774M/945M [00:24<00:08, 20.7MB/s]
+     82%|########2 | 776M/945M [00:24<00:09, 19.0MB/s]
+     82%|########2 | 778M/945M [00:24<00:09, 18.9MB/s]
+     83%|########2 | 781M/945M [00:24<00:08, 20.3MB/s]
+     83%|########2 | 783M/945M [00:24<00:08, 19.7MB/s]
+     83%|########3 | 785M/945M [00:25<00:08, 20.2MB/s]
+     83%|########3 | 788M/945M [00:25<00:07, 23.0MB/s]
+     84%|########3 | 791M/945M [00:25<00:06, 24.8MB/s]
+     84%|########4 | 794M/945M [00:25<00:06, 26.1MB/s]
+     84%|########4 | 797M/945M [00:25<00:05, 26.8MB/s]
+     85%|########4 | 800M/945M [00:25<00:05, 28.7MB/s]
+     85%|########5 | 803M/945M [00:25<00:05, 28.2MB/s]
+     85%|########5 | 806M/945M [00:25<00:04, 30.1MB/s]
+     86%|########5 | 809M/945M [00:25<00:05, 27.8MB/s]
+     86%|########5 | 812M/945M [00:26<00:05, 27.4MB/s]
+     86%|########6 | 815M/945M [00:26<00:05, 27.1MB/s]
+     87%|########6 | 817M/945M [00:26<00:05, 24.4MB/s]
+     87%|########6 | 820M/945M [00:26<00:05, 25.8MB/s]
+     87%|########7 | 823M/945M [00:26<00:04, 26.3MB/s]
+     87%|########7 | 825M/945M [00:26<00:04, 25.7MB/s]
+     88%|########7 | 830M/945M [00:26<00:03, 31.1MB/s]
+     88%|########8 | 833M/945M [00:26<00:04, 27.0MB/s]
+     88%|########8 | 836M/945M [00:26<00:04, 28.5MB/s]
+     89%|########8 | 839M/945M [00:27<00:03, 28.6MB/s]
+     89%|########9 | 841M/945M [00:27<00:04, 27.0MB/s]
+     89%|########9 | 845M/945M [00:27<00:03, 29.8MB/s]
+     90%|########9 | 848M/945M [00:27<00:03, 30.1MB/s]
+     90%|######### | 851M/945M [00:27<00:03, 29.3MB/s]
+     90%|######### | 854M/945M [00:27<00:03, 27.7MB/s]
+     91%|######### | 859M/945M [00:27<00:02, 36.1MB/s]
+     91%|#########1| 863M/945M [00:27<00:02, 29.4MB/s]
+     92%|#########1| 866M/945M [00:27<00:02, 31.2MB/s]
+     92%|#########2| 872M/945M [00:28<00:02, 37.3MB/s]
+     93%|#########2| 876M/945M [00:28<00:01, 40.1MB/s]
+     93%|#########3| 880M/945M [00:28<00:02, 33.1MB/s]
+     94%|#########3| 884M/945M [00:28<00:02, 25.7MB/s]
+     94%|#########3| 887M/945M [00:28<00:02, 25.3MB/s]
+     94%|#########4| 890M/945M [00:28<00:01, 28.4MB/s]
+     95%|#########4| 893M/945M [00:28<00:01, 27.8MB/s]
+     95%|#########4| 896M/945M [00:29<00:01, 27.3MB/s]
+     95%|#########5| 899M/945M [00:29<00:01, 27.7MB/s]
+     96%|#########5| 902M/945M [00:29<00:01, 29.9MB/s]
+     96%|#########5| 906M/945M [00:29<00:01, 30.2MB/s]
+     96%|#########6| 908M/945M [00:29<00:01, 23.6MB/s]
+     96%|#########6| 911M/945M [00:29<00:01, 21.2MB/s]
+     97%|#########6| 913M/945M [00:29<00:01, 22.2MB/s]
+     97%|#########6| 916M/945M [00:30<00:01, 19.5MB/s]
+     97%|#########7| 918M/945M [00:30<00:01, 20.3MB/s]
+     97%|#########7| 920M/945M [00:30<00:01, 21.1MB/s]
+     98%|#########7| 922M/945M [00:30<00:01, 19.5MB/s]
+     98%|#########7| 924M/945M [00:30<00:01, 18.2MB/s]
+     98%|#########8| 926M/945M [00:30<00:01, 18.5MB/s]
+     98%|#########8| 928M/945M [00:30<00:01, 16.9MB/s]
+     99%|#########8| 932M/945M [00:30<00:00, 24.6MB/s]
+     99%|#########9| 936M/945M [00:30<00:00, 26.5MB/s]
+     99%|#########9| 939M/945M [00:31<00:00, 23.7MB/s]
+    100%|#########9| 942M/945M [00:31<00:00, 26.0MB/s]
+    100%|##########| 945M/945M [00:31<00:00, 31.7MB/s]
 
     T5Model(
       (token_embeddings): Embedding(32128, 768, padding_idx=0)
@@ -481,37 +688,37 @@ using a beam size of 1.
     `max_length` was not specified. Defaulting to 256 tokens.
     Example 1:
 
-    prediction: a 12-year-old girl was last seen in Stratford, london, at 10.30pm yesterday . she was spotted with an unknown man in a street close to where her mother had last seen her at 9.30pm . she was found this morning and is safe and well .
+    prediction: the former cycling champion has said the world anti-doping agency and others are 'owed an apology' from him . but director general of the agency, David Howman, said this week that he was disappointed Armstrong hadn't apologised . howman initially indicted Armstrong but then backed off under advice from WADA lawyers .
 
-    target: Hungarian national Evelin Mezei, 12, has been found safe and well . She had gone missing from the Stratford area in London last night . Evelin had been seen on CCTV footage with an unknown man .
+    target: WADA director general David Howman said he was disappointed the disgraced former cyclist hadn't yet apologised for drug offences . Lance Armstrong showed 2013 email chain attempting to meet Howman . Howman broke off the email discussions after advice from lawyers . Armstrong was stripped of seven Tour de France wins from 1999-2005 .
 
 
     Example 2:
 
-    prediction: police have released photos of 13 people they are trying to track down . a touch judge suffered a broken shoulder when he slipped at ANZ Stadium in Sydney as he tried to dodge bottles being thrown by angry Canterbury fans . referees had penalised Bulldogs captain James Graham in the final minute of the game .
+    prediction: the Visa Restrictions Index analyses countries ability to travel visa-free . the latest results were based on results from results from may 20, 2014 . countries such as north Korea and possibly Cuba could take the bottom spots for the most restricted travel freedom .
 
-    target: Police release 13 photos as they investigate NRL bottle-throwing incident . Fans pelted officials with bottles as they left stadium on Good Friday . Referee awarded South Sydney last minute penalty over the Bulldogs . Fans reacted angrily when South Sydney sealed a 18-17 victory . One official sustained a broken shoulder when he slipped dodging bottle .
+    target: Henley and Partners's Visa Restrictions Index calculates travel freedom . It is based on the number of countries citizens can visit visa-free . The best passports include those from Finland, USA, Germany and the UK . Lowest ranking countries include Iraq, Afghanistan and Pakistan .
 
 
     Example 3:
 
-    prediction: the GR20 trail runs down the mountainous spine of the island . it is the toughest trek in Europe and is the longest in the world . the trail is used by shepherds leading their animals to summer pastures .
+    prediction: cnn's john sutter recalls a violent riot in 1980 . he says the riots of 1980 were the first major "race riots" since the 1960s .
 
-    target: Sentiers de Transhumance track's been used by shepherd for centuries . Sign-posted route is an easier equivalent to the famed GR20 hiking trail . Accommodation ranged from small auberges to family-run hotels . In the seaside resort of Porto a 16th Century Genoese tower stands guard .
+    target: Johnita Due: The anger and frustration I saw in 1980 Miami is repeated in 2015 Baltimore . She says teaching the power of nonviolent protest is essential .
 
 
     Example 4:
 
-    prediction: survivors say the vessel flipped after men on the deck ran to one side . dozens of women and children were trapped in the hull and died . italian naval vessel arrived at the site 80 miles south of island of Lampedusa .
+    prediction: the young couple share their amazing travel photos on their tumblr and Instagram pages . the adventurers travel from their home state of California to Hawaii and Indonesia . the pair also capture intimate shots of themselves enjoying beach time .
 
-    target: Overloaded ship capsized off the Libyan coast on the treacherous journey across the Mediterranean on Sunday . Around 150 were brought to Italy after being rescued – but survivors said at least 400 other migrants had died . Amnesty International accuses EU of 'clearly threatening thousands of lives' after scrapping rescue operations .
+    target: Jay Alvarrez and Alexis Rene snap amazing photos of their glamorous travel around the world . The sportsman and model enjoy a sunkissed life of beaches, surfing and travel . The pair share their snaps on tumblr and Instagram and have almost two million followers between them .
 
 
     Example 5:
 
-    prediction: the 223ft Explorer is a concept yacht from designer Tony Castro . it comes with its own helipad, infinity pool and space for a submarine . the superyacht costs around 40million euros (around £29million/$43million) to build .
+    prediction: dele alli has impressed for the likes of Milton keynes dons this season . the 19-year-old has been loaned back to the premier league by tottenham . alli has scored 14 goals for the dons this season .
 
-    target: The Tony Castro design is estimated to cost 40million euros (£29m/$43m) to build and more to buy . The British designer has created the yacht to withstand a circumnavigation around the world . Luxurious touches include a cinema, wine cellar, gym, sauna and beach club as well as the infinity pool . There is also space for submarines, supercars and jetskis on board .
+    target: Dele Alli is hoping to be selected to play for England Under 20s next month . The midfielder was signed by Tottenham in January for £5million . Alli was loaned back to former club MK Dons for the rest of the season .
 
 
 
@@ -865,7 +1072,7 @@ Translation Output
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 3 minutes  45.057 seconds)
+   **Total running time of the script:** ( 3 minutes  56.497 seconds)
 
 
 .. _sphx_glr_download_beginner_t5_tutorial.py:
