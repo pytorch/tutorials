@@ -87,8 +87,8 @@ def parse_args() -> Any:
     from argparse import ArgumentParser
     parser = ArgumentParser("Select files to run")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--num-shards", type=int, default=int(os.environ.get("NUM_WORKERS", 20)))
-    parser.add_argument("--shard-num", type=int, default=int(os.environ.get("WORKER_ID", 0)))
+    parser.add_argument("--num-shards", type=int, default=int(os.environ.get("NUM_WORKERS", "20")))
+    parser.add_argument("--shard-num", type=int, default=int(os.environ.get("WORKER_ID", "0")))
     return parser.parse_args()
 
 
