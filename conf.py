@@ -76,6 +76,8 @@ extensions = [
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
+    "tensordict": ("https://pytorch-labs.github.io/tensordict/", None),
+    "torchrl": ("https://pytorch.org/rl/", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
     "torchtext": ("https://pytorch.org/text/stable/", None),
     "torchvision": ("https://pytorch.org/vision/stable/", None),
@@ -89,7 +91,10 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
     'promote_jupyter_magic': True,
-    'backreferences_dir': None
+    'backreferences_dir': None,
+    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
+                            "# https://pytorch.org/tutorials/beginner/colab\n"
+                            "%matplotlib inline")
 }
 
 if os.getenv('GALLERY_PATTERN'):
