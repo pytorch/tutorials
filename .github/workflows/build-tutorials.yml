@@ -56,6 +56,8 @@ jobs:
         shell: bash
         env:
           DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
+          NUM_WORKERS: ${{ matrix.num_shards }}
+          WORKER_ID: ${{ matrix.shard }}
         run: |
           set -ex
 
@@ -63,6 +65,8 @@ jobs:
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
+            -e WORKER_ID \
+            -e NUM_WORKERS \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
