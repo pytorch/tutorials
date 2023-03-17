@@ -12,7 +12,9 @@ efficiently using PyTorch's regular autodiff APIs
 provides ways of computing various higher-order autodiff quantities
 efficiently.
 
-.. include:: ../beginner_source/new-release-colab.rst
+.. note::
+
+   This tutorial requires PyTorch 2.0.0 or later.
 
 Computing the Jacobian
 ----------------------
