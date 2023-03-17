@@ -24,7 +24,6 @@ python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tut
 
 # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
 # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
-export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
 FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
 echo "FILES_TO_RUN: " ${FILES_TO_RUN}
 
