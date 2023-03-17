@@ -18,11 +18,9 @@ T5-Base Model for Summarization, Sentiment Classification, and Translation
 # 3. Read in the CNNDM, IMDB, and Multi30k datasets and pre-process their texts in preparation for the model
 # 4. Perform text summarization, sentiment classification, and translation
 #
-# Prerequisites
-# -------------
+# .. note::
+#    This tutorial requires PyTorch 2.0.0 or later.
 #
-# * PyTorch 2.0.0 or later
-
 #######################################################################
 # Data Transformation
 # -------------------
