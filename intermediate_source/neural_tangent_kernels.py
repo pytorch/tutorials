@@ -11,7 +11,9 @@ This tutorial, inspired by the implementation of `NTKs in JAX <https://github.co
 demonstrates how to easily compute this quantity using ``torch.func``,
 composable function transforms for PyTorch.
 
-.. include:: ../beginner_source/new-release-colab.rst
+.. note::
+
+   This tutorial requires PyTorch 2.0.0 or later.
 
 Setup
 -----
