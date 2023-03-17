@@ -4,15 +4,17 @@ Running Tutorials in Google Colab
 When you run a tutorial in Google Colab, there might be additional
 requirements and dependencies that you need to meet in order
 for the tutorial to work properly. This section contains notes on how to
-configure various setting in order to run the tutorials in Google Colab.
+configure various settings in order to successfully
+run PyTorch tutorials in Google Colab.
 
 PyTorch Version in Google Colab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you are running a tutorial that requires a very new version of PyTorch,
-that version might not be yet available in Google Colab. To check that you
-have the required ``torch`` and compatible domain libraries installed, run
-``!pip list``.
+When you are running a tutorial that requires a version of PyTorch that has
+just been released, that version might not be yet available in Google Colab.
+To check that you have the required ``torch`` and compatible domain libraries
+installed, run ``!pip list``.
+
 If the installed version of PyTorch is lower than required,
 uninstall it and reinstall again by running the following commands:
 
