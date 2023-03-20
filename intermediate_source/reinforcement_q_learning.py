@@ -194,7 +194,7 @@ class ReplayMemory(object):
 # Q-network
 # ^^^^^^^^^
 #
-# Our model will be a convolutional neural network that takes in the
+# Our model will be a feed forward  neural network that takes in the
 # difference between the current and previous screen patches. It has two
 # outputs, representing :math:`Q(s, \mathrm{left})` and
 # :math:`Q(s, \mathrm{right})` (where :math:`s` is the input to the
