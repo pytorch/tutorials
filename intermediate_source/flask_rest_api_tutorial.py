@@ -161,7 +161,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 
 from torchvision import models
 
-# Make sure set `weights` as `'IMAGENET1K_V1'` to use the pretrained weights:
+# Make sure to set `weights` as `'IMAGENET1K_V1'` to use the pretrained weights:
 model = models.densenet121(weights='IMAGENET1K_V1')
 # Since we are using our model only for inference, switch to `eval` mode:
 model.eval()
