@@ -2,7 +2,7 @@
 
 """
 Template Tutorial
-================
+=================
 
 **Author:** `FirstName LastName <https://github.com/username>`_
 
@@ -28,8 +28,8 @@ If you have a video, add it here like this:
      <iframe width="560" height="315" src="https://www.youtube.com/embed/IC0_FRiX-sw" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
 
-To test your tutorial locally, make a copy of the repo and add only your
-tutorial. Then run make html. Verify that all outputs were generated correctly
+To test your tutorial locally, make a copy of this repo and add only your
+tutorial removing everything. Then run ``make html``. Verify that all outputs were generated correctly
 in the created HTML.
 
 """
