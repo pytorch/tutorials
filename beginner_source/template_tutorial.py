@@ -31,20 +31,20 @@ If you have a video, add it here like this:
 To test your tutorial locally, you can do one of the following:
 
 *  You can control specific files that generate the results by using
-   ``GALLERY_PATTERN`` environment variable, For example to run only ``neural_style_transfer_tutorial.py``,
-   run the following command:
+   ``GALLERY_PATTERN`` environment variable. The GALLERY_PATTERN variable
+   respects regular expressions.
+   For example to run only ``neural_style_transfer_tutorial.py``,
+   use the following command:
    
-   .. code-block::
+   .. code-block:: sh
    
       GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
     
    or
    
-   .. code-block::
+   .. code-block:: sh
       
       GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
-
-  The GALLERY_PATTERN variable respects regular expressions.
   
 * Make a copy of this repo and add only your
   tutorial removing everything. Then run ``make html``.
