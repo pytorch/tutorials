@@ -28,10 +28,28 @@ If you have a video, add it here like this:
      <iframe width="560" height="315" src="https://www.youtube.com/embed/IC0_FRiX-sw" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
 
-To test your tutorial locally, make a copy of this repo and add only your
-tutorial removing everything. Then run ``make html``. Verify that all outputs were generated correctly
-in the created HTML.
+To test your tutorial locally, you can do one of the following:
 
+*  You can control specific files that generate the results by using
+   ``GALLERY_PATTERN`` environment variable, For example to run only ``neural_style_transfer_tutorial.py``,
+   run the following command:
+   
+   .. code-block::
+   
+      GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
+    
+   or
+   
+   .. code-block::
+      
+      GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
+
+  The GALLERY_PATTERN variable respects regular expressions.
+  
+* Make a copy of this repo and add only your
+  tutorial removing everything. Then run ``make html``.
+  
+Verify that all outputs were generated correctly in the created HTML.
 """
 
 #########################################################################
