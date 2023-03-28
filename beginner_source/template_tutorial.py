@@ -47,7 +47,8 @@ To test your tutorial locally, you can do one of the following:
       GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
   
 * Make a copy of this repo and add only your
-  tutorial removing everything. Then run ``make html``.
+  tutorial to the `beginner_source` directory removing all other tutorials.
+  Then run ``make html``.
   
 Verify that all outputs were generated correctly in the created HTML.
 """
