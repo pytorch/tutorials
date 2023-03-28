@@ -123,6 +123,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/profile_with_itt.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Reasoning about Shapes in PyTorch
+   :card_description: Learn how to use the meta device to reason about shapes in your model.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/reasoning_about_shapes.html
+   :tags: Basics
+
 .. Interpretability
 
 .. customcarditem::
