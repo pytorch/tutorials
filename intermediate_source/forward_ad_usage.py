@@ -63,7 +63,7 @@ with fwAD.dual_level():
     dual_input_alt = fwAD.make_dual(primal, tangent.T)
     assert fwAD.unpack_dual(dual_input_alt).tangent is not tangent
 
-    # Tensors that do not not have an associated tangent are automatically
+    # Tensors that do not have an associated tangent are automatically
     # considered to have a zero-filled tangent of the same shape.
     plain_tensor = torch.randn(10, 10)
     dual_output = fn(dual_input, plain_tensor)
@@ -100,13 +100,12 @@ with fwAD.dual_level():
     jvp = fwAD.unpack_dual(out).tangent
 
 ######################################################################
-# Using Modules stateless API (experimental)
+# Using the functional Module API (beta)
 # --------------------------------------------------------------------
 # Another way to use ``nn.Module`` with forward AD is to utilize
-# the stateless API. NB: At the time of writing the stateless API is still
-# experimental and may be subject to change.
+# the functional Module API (also known as the stateless Module API).
 
-from torch.nn.utils._stateless import functional_call
+from torch.func import functional_call
 
 # We need a fresh module because the functional call requires the
 # the model to have parameters registered.
