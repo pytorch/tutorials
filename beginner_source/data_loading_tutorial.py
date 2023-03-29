@@ -124,7 +124,7 @@ class FaceLandmarksDataset(Dataset):
 
     def __init__(self, csv_file, root_dir, transform=None):
         """
-        Args:
+        Arguments:
             csv_file (string): Path to the csv file with annotations.
             root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
@@ -197,7 +197,7 @@ for i in range(len(face_dataset)):
 #    swap axes).
 #
 # We will write them as callable classes instead of simple functions so
-# that parameters of the transform need not be passed everytime it's
+# that parameters of the transform need not be passed every time it's
 # called. For this, we just need to implement ``__call__`` method and
 # if required, ``__init__`` method. We can then use a transform like this:
 #
@@ -291,12 +291,12 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-    
+
 ######################################################################
 # .. note::
 #     In the example above, `RandomCrop` uses an external library's random number generator 
-#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
-#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader`
+#     (see `here <https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers>`_).
 #     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
@@ -404,7 +404,7 @@ def show_landmarks_batch(sample_batched):
         plt.title('Batch from dataloader')
 
 # if you are using Windows, uncomment the next line and indent the for loop.
-# you might need to go back and change "num_workers" to 0. 
+# you might need to go back and change ``num_workers`` to 0.
 
 # if __name__ == '__main__':
 for i_batch, sample_batched in enumerate(dataloader):
@@ -444,21 +444,21 @@ for i_batch, sample_batched in enumerate(dataloader):
 # which operate on ``PIL.Image`` like  ``RandomHorizontalFlip``, ``Scale``,
 # are also available. You can use these to write a dataloader like this: ::
 #
-#   import torch
-#   from torchvision import transforms, datasets
+#    import torch
+#    from torchvision import transforms, datasets
 #
-#   data_transform = transforms.Compose([
-#           transforms.RandomSizedCrop(224),
-#           transforms.RandomHorizontalFlip(),
-#           transforms.ToTensor(),
-#           transforms.Normalize(mean=[0.485, 0.456, 0.406],
-#                                std=[0.229, 0.224, 0.225])
-#       ])
-#   hymenoptera_dataset = datasets.ImageFolder(root='hymenoptera_data/train',
-#                                              transform=data_transform)
-#   dataset_loader = torch.utils.data.DataLoader(hymenoptera_dataset,
-#                                                batch_size=4, shuffle=True,
-#                                                num_workers=4)
+#    data_transform = transforms.Compose([
+#            transforms.RandomSizedCrop(224),
+#            transforms.RandomHorizontalFlip(),
+#            transforms.ToTensor(),
+#            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                 std=[0.229, 0.224, 0.225])
+#        ])
+#    hymenoptera_dataset = datasets.ImageFolder(root='hymenoptera_data/train',
+#                                               transform=data_transform)
+#    dataset_loader = torch.utils.data.DataLoader(hymenoptera_dataset,
+#                                                 batch_size=4, shuffle=True,
+#                                                 num_workers=4)
 #
 # For an example with training code, please see
 # :doc:`transfer_learning_tutorial`.
