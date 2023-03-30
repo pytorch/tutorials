@@ -36,7 +36,13 @@ from torchvision import datasets, transforms
 # if available. Let's check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_
 # or `torch.backends.mps <https://pytorch.org/docs/stable/notes/mps.html>` are available, otherwise we use the CPU.
 
-device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 print(f"Using {device} device")
 
 ##############################################
