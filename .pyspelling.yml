@@ -2,12 +2,7 @@ spellchecker: aspell
 matrix:
 - name: python
   sources:
-    - beginner_source/data_loading_tutorial.py
-    - beginner_source/chatbot_tutorial.py
-    - beginner_source/Intro_to_TorchScript_tutorial.py
-    - beginner_source/dcgan_faces_tutorial.py
-    - beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py
-    - beginner_source/flava_finetuning_tutorial.py
+    - beginner_source/*.py
   dictionary:
     wordlists:
       - en-wordlist.txt
@@ -18,7 +13,7 @@ matrix:
       context_visible_first: true
       delimiters:
         # Exclude figure rST tags
-        - open: '\.\.\s+(figure|literalinclude|math)::'
+        - open: '\.\.\s+(figure|literalinclude|math|image)::'
           close: '\n'
         # Exclude Python coding directives
         - open: '-\*- coding:'
@@ -29,6 +24,13 @@ matrix:
         # Exclude .rst directives:
         - open: ':math:`.*`'
           close: ' '
+        # Ignore multiline content in codeblock
+        - open: '(?s)^::\n\n  '
+          close: '^\n'
+        # Ignore reStructuredText block directives
+        - open: '\.\. (code-block)::.*$\n*'
+          content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
+          close: '(^(?![ \t]+.*$))'
   - pyspelling.filters.markdown:
   - pyspelling.filters.html:
       ignores:

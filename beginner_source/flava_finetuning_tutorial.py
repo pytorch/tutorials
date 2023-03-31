@@ -24,7 +24,7 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 ######################################################################
 # Installation
 # -----------------
-# We will use TextVQA dataset and bert tokenizer from Hugging Face for this
+# We will use TextVQA dataset and ``bert tokenizer`` from Hugging Face for this
 # tutorial. So you need to install datasets and transformers in addition to TorchMultimodal.
 #
 # .. note::
