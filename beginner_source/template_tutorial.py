@@ -8,13 +8,13 @@ Template Tutorial
 
 .. grid:: 2
 
-   .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
 
       * Item 1
       * Item 2
       * Item 3
 
-   .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
 
       * PyTorch v2.0.0
       * GPU ???
@@ -35,18 +35,18 @@ To test your tutorial locally, you can do one of the following:
    respects regular expressions.
    For example to run only ``neural_style_transfer_tutorial.py``,
    use the following command:
-   
+
    .. code-block:: sh
-   
+
       GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
-    
+
    or
-   
+
    .. code-block:: sh
-      
+
       GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
-  
-* Make a copy of this repo and add only your
+
+* Make a copy of this repository and add only your
   tutorial to the `beginner_source` directory removing all other tutorials.
   Then run ``make html``.
   
