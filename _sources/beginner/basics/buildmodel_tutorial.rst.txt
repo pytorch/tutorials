@@ -58,21 +58,26 @@ In the following sections, we'll build a neural network to classify images in th
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-39
+.. GENERATED FROM PYTHON SOURCE LINES 33-38
 
 Get Device for Training
 -----------------------
-We want to be able to train our model on a hardware accelerator like the GPU,
-if it is available. Let's check to see if
-`torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we
-continue to use the CPU.
+We want to be able to train our model on a hardware accelerator like the GPU or MPS,
+if available. Let's check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_
+or `torch.backends.mps <https://pytorch.org/docs/stable/notes/mps.html>`_ are available, otherwise we use the CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-43
+.. GENERATED FROM PYTHON SOURCE LINES 38-48
 
 .. code-block:: default
 
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
     print(f"Using {device} device")
 
 
@@ -88,7 +93,7 @@ continue to use the CPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-49
+.. GENERATED FROM PYTHON SOURCE LINES 49-54
 
 Define the Class
 -------------------------
@@ -96,7 +101,7 @@ We define our neural network by subclassing ``nn.Module``, and
 initialize the neural network layers in ``__init__``. Every ``nn.Module`` subclass implements
 the operations on input data in the ``forward`` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-67
+.. GENERATED FROM PYTHON SOURCE LINES 54-72
 
 .. code-block:: default
 
@@ -125,12 +130,12 @@ the operations on input data in the ``forward`` method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-70
+.. GENERATED FROM PYTHON SOURCE LINES 73-75
 
 We create an instance of ``NeuralNetwork``, and move it to the ``device``, and print
 its structure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-75
+.. GENERATED FROM PYTHON SOURCE LINES 75-80
 
 .. code-block:: default
 
@@ -161,7 +166,7 @@ its structure.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-82
+.. GENERATED FROM PYTHON SOURCE LINES 81-87
 
 To use the model, we pass it the input data. This executes the model's ``forward``,
 along with some `background operations <https://github.com/pytorch/pytorch/blob/270111b7b611d174967ed204776985cefca9c144/torch/nn/modules/module.py#L866>`_.
@@ -170,7 +175,7 @@ Do not call ``model.forward()`` directly!
 Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output.
 We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-90
+.. GENERATED FROM PYTHON SOURCE LINES 87-95
 
 .. code-block:: default
 
@@ -190,17 +195,17 @@ We get the prediction probabilities by passing it through an instance of the ``n
 
  .. code-block:: none
 
-    Predicted class: tensor([5], device='cuda:0')
+    Predicted class: tensor([1], device='cuda:0')
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-93
+.. GENERATED FROM PYTHON SOURCE LINES 96-98
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-102
+.. GENERATED FROM PYTHON SOURCE LINES 101-107
 
 Model Layers
 -------------------------
@@ -209,7 +214,7 @@ Let's break down the layers in the FashionMNIST model. To illustrate it, we
 will take a sample minibatch of 3 images of size 28x28 and see what happens to it as
 we pass it through the network.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-106
+.. GENERATED FROM PYTHON SOURCE LINES 107-111
 
 .. code-block:: default
 
@@ -230,7 +235,7 @@ we pass it through the network.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-112
+.. GENERATED FROM PYTHON SOURCE LINES 112-117
 
 nn.Flatten
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -238,7 +243,7 @@ We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.
 layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values (
 the minibatch dimension (at dim=0) is maintained).
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 117-122
 
 .. code-block:: default
 
@@ -260,7 +265,7 @@ the minibatch dimension (at dim=0) is maintained).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-123
+.. GENERATED FROM PYTHON SOURCE LINES 123-128
 
 nn.Linear
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -268,7 +273,7 @@ The `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.htm
 is a module that applies a linear transformation on the input using its stored weights and biases.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-128
+.. GENERATED FROM PYTHON SOURCE LINES 128-133
 
 .. code-block:: default
 
@@ -290,7 +295,7 @@ is a module that applies a linear transformation on the input using its stored w
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-137
+.. GENERATED FROM PYTHON SOURCE LINES 134-142
 
 nn.ReLU
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -301,7 +306,7 @@ learn a wide variety of phenomena.
 In this model, we use `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ between our
 linear layers, but there's other activations to introduce non-linearity in your model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-144
+.. GENERATED FROM PYTHON SOURCE LINES 142-149
 
 .. code-block:: default
 
@@ -320,31 +325,31 @@ linear layers, but there's other activations to introduce non-linearity in your 
 
  .. code-block:: none
 
-    Before ReLU: tensor([[-0.0126,  0.5830, -0.1509, -0.3283,  0.0763,  0.4657, -0.4540,  0.2340,
-             -0.6796,  0.4024, -0.0202, -0.1623,  0.2103,  0.3540, -0.5023, -0.4929,
-             -0.0716,  0.3979, -0.2192,  0.1900],
-            [-0.0889,  0.4976,  0.2407, -0.0266,  0.5611,  0.1135, -0.1972,  0.0800,
-             -0.7419,  0.5529, -0.2901, -0.0438,  0.5138,  0.5038, -0.2930, -0.3592,
-             -0.4606,  0.4130,  0.1003,  0.0844],
-            [ 0.0228,  0.4196, -0.1615, -0.0978,  0.3711,  0.2891, -0.2024,  0.0209,
-             -0.4980,  0.5414, -0.1248, -0.1277,  0.2290,  0.1154, -0.4263, -0.1512,
-             -0.5231,  0.5575,  0.2433,  0.1755]], grad_fn=<AddmmBackward0>)
+    Before ReLU: tensor([[ 0.2555, -0.1864, -0.4441, -0.0032, -0.2238, -0.7095,  0.6712,  0.5162,
+              0.0444, -0.0978,  0.0026, -0.0047, -0.0327, -0.1385,  0.2564, -0.1647,
+              0.0867,  0.2520,  0.7063, -0.6029],
+            [ 0.2702, -0.1296, -0.5340, -0.0018,  0.2729, -0.5844,  0.4730,  0.7855,
+             -0.2760,  0.0227,  0.0621, -0.1931, -0.1209, -0.2590, -0.2731,  0.4342,
+              0.4536,  0.3579,  1.0263, -0.2817],
+            [ 0.2909,  0.2568, -0.6679, -0.1842,  0.3388, -0.3023,  0.1845,  0.6128,
+             -0.3732, -0.0132,  0.0496, -0.3165, -0.3043, -0.0583,  0.2569,  0.2036,
+              0.3353,  0.1745,  0.6757, -0.0591]], grad_fn=<AddmmBackward0>)
 
 
-    After ReLU: tensor([[0.0000, 0.5830, 0.0000, 0.0000, 0.0763, 0.4657, 0.0000, 0.2340, 0.0000,
-             0.4024, 0.0000, 0.0000, 0.2103, 0.3540, 0.0000, 0.0000, 0.0000, 0.3979,
-             0.0000, 0.1900],
-            [0.0000, 0.4976, 0.2407, 0.0000, 0.5611, 0.1135, 0.0000, 0.0800, 0.0000,
-             0.5529, 0.0000, 0.0000, 0.5138, 0.5038, 0.0000, 0.0000, 0.0000, 0.4130,
-             0.1003, 0.0844],
-            [0.0228, 0.4196, 0.0000, 0.0000, 0.3711, 0.2891, 0.0000, 0.0209, 0.0000,
-             0.5414, 0.0000, 0.0000, 0.2290, 0.1154, 0.0000, 0.0000, 0.0000, 0.5575,
-             0.2433, 0.1755]], grad_fn=<ReluBackward0>)
+    After ReLU: tensor([[0.2555, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.6712, 0.5162, 0.0444,
+             0.0000, 0.0026, 0.0000, 0.0000, 0.0000, 0.2564, 0.0000, 0.0867, 0.2520,
+             0.7063, 0.0000],
+            [0.2702, 0.0000, 0.0000, 0.0000, 0.2729, 0.0000, 0.4730, 0.7855, 0.0000,
+             0.0227, 0.0621, 0.0000, 0.0000, 0.0000, 0.0000, 0.4342, 0.4536, 0.3579,
+             1.0263, 0.0000],
+            [0.2909, 0.2568, 0.0000, 0.0000, 0.3388, 0.0000, 0.1845, 0.6128, 0.0000,
+             0.0000, 0.0496, 0.0000, 0.0000, 0.0000, 0.2569, 0.2036, 0.3353, 0.1745,
+             0.6757, 0.0000]], grad_fn=<ReluBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-150
+.. GENERATED FROM PYTHON SOURCE LINES 150-155
 
 nn.Sequential
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -352,7 +357,7 @@ nn.Sequential
 container of modules. The data is passed through all the modules in the same order as defined. You can use
 sequential containers to put together a quick network like ``seq_modules``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-160
+.. GENERATED FROM PYTHON SOURCE LINES 155-165
 
 .. code-block:: default
 
@@ -373,7 +378,7 @@ sequential containers to put together a quick network like ``seq_modules``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-167
+.. GENERATED FROM PYTHON SOURCE LINES 166-172
 
 nn.Softmax
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -382,7 +387,7 @@ The last linear layer of the neural network returns `logits` - raw values in [-\
 [0, 1] representing the model's predicted probabilities for each class. ``dim`` parameter indicates the dimension along
 which the values must sum to 1.
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-172
+.. GENERATED FROM PYTHON SOURCE LINES 172-177
 
 .. code-block:: default
 
@@ -398,7 +403,7 @@ which the values must sum to 1.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-182
+.. GENERATED FROM PYTHON SOURCE LINES 178-187
 
 Model Parameters
 -------------------------
@@ -410,7 +415,7 @@ accessible using your model's ``parameters()`` or ``named_parameters()`` methods
 In this example, we iterate over each parameter, and print its size and a preview of its values.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-189
+.. GENERATED FROM PYTHON SOURCE LINES 187-194
 
 .. code-block:: default
 
@@ -441,34 +446,34 @@ In this example, we iterate over each parameter, and print its size and a previe
     )
 
 
-    Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[-0.0130, -0.0350, -0.0261,  ..., -0.0140,  0.0027,  0.0313],
-            [ 0.0148,  0.0231, -0.0059,  ...,  0.0007,  0.0141, -0.0022]],
+    Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0097, -0.0131,  0.0354,  ...,  0.0122, -0.0060, -0.0023],
+            [ 0.0340,  0.0314,  0.0284,  ...,  0.0287,  0.0147, -0.0091]],
            device='cuda:0', grad_fn=<SliceBackward0>) 
 
-    Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([-0.0043, -0.0090], device='cuda:0', grad_fn=<SliceBackward0>) 
+    Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([0.0046, 0.0116], device='cuda:0', grad_fn=<SliceBackward0>) 
 
-    Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[ 0.0376, -0.0241,  0.0398,  ...,  0.0165,  0.0050, -0.0345],
-            [ 0.0159, -0.0386,  0.0249,  ...,  0.0415,  0.0222,  0.0196]],
+    Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[ 0.0375, -0.0152, -0.0310,  ...,  0.0366, -0.0412, -0.0126],
+            [ 0.0123, -0.0105,  0.0085,  ...,  0.0271, -0.0218,  0.0040]],
            device='cuda:0', grad_fn=<SliceBackward0>) 
 
-    Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([-0.0197,  0.0371], device='cuda:0', grad_fn=<SliceBackward0>) 
+    Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0354, -0.0424], device='cuda:0', grad_fn=<SliceBackward0>) 
 
-    Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0263,  0.0141,  0.0354,  ..., -0.0090, -0.0306, -0.0358],
-            [-0.0103, -0.0374, -0.0008,  ..., -0.0244,  0.0192,  0.0061]],
+    Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0093,  0.0311, -0.0403,  ..., -0.0199,  0.0011,  0.0194],
+            [ 0.0390, -0.0240, -0.0045,  ...,  0.0086,  0.0287, -0.0428]],
            device='cuda:0', grad_fn=<SliceBackward0>) 
 
-    Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0219,  0.0397], device='cuda:0', grad_fn=<SliceBackward0>) 
+    Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0391,  0.0104], device='cuda:0', grad_fn=<SliceBackward0>) 
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-192
+.. GENERATED FROM PYTHON SOURCE LINES 195-197
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-197
+.. GENERATED FROM PYTHON SOURCE LINES 199-202
 
 Further Reading
 --------------
@@ -477,7 +482,7 @@ Further Reading
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.057 seconds)
+   **Total running time of the script:** ( 0 minutes  0.053 seconds)
 
 
 .. _sphx_glr_download_beginner_basics_buildmodel_tutorial.py:
