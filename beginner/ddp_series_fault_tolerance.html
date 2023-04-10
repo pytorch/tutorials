@@ -546,7 +546,7 @@ training job to seamlessly resume after an interruption.</p>
 <h2>Loading a snapshot in the Trainer constructor<a class="headerlink" href="#loading-a-snapshot-in-the-trainer-constructor" title="Permalink to this heading">¶</a></h2>
 <p>When restarting an interrupted training job, your script will first try
 to load a snapshot to resume training from.</p>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">class Trainer:</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>class Trainer:
 <span class="w"> </span>  def __init__(self, snapshot_path, ...):
 <span class="w"> </span>  ...
 <span class="gi">+  if os.path.exists(snapshot_path):</span>
@@ -559,7 +559,7 @@ to load a snapshot to resume training from.</p>
 <h2>Resuming training<a class="headerlink" href="#resuming-training" title="Permalink to this heading">¶</a></h2>
 <p>Training can resume from the last epoch run, instead of starting all
 over from scratch.</p>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def train(self, max_epochs: int):</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>def train(self, max_epochs: int):
 <span class="gd">-  for epoch in range(max_epochs):</span>
 <span class="gi">+  for epoch in range(self.epochs_run, max_epochs):</span>
 <span class="w"> </span>     self._run_epoch(epoch)
@@ -570,7 +570,7 @@ over from scratch.</p>
 <h2>Running the script<a class="headerlink" href="#running-the-script" title="Permalink to this heading">¶</a></h2>
 <p>Simply call your entrypoint function as you would for a non-multiprocessing script; <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> automatically
 spawns the processes.</p>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">if __name__ == "__main__":</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>if __name__ == "__main__":
 <span class="w"> </span>  import sys
 <span class="w"> </span>  total_epochs = int(sys.argv[1])
 <span class="w"> </span>  save_every = int(sys.argv[2])

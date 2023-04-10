@@ -468,9 +468,9 @@ multiprocessing</p></li>
 <li><p>The distributed process group contains all the processes that can
 communicate and synchronize with each other.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">import torch</span>
-<span class="w">import torch.nn.functional as F</span>
-<span class="w">from utils import MyTrainDataset</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>import torch
+import torch.nn.functional as F
+from utils import MyTrainDataset
 
 <span class="gi">+ import torch.multiprocessing as mp</span>
 <span class="gi">+ from torch.utils.data.distributed import DistributedSampler</span>
@@ -518,20 +518,20 @@ chunks the input data across all distributed processes.</p></li>
 <li><p>Each process will receive an input batch of 32 samples; the effective
 batch size is <code class="docutils literal notranslate"><span class="pre">32</span> <span class="pre">*</span> <span class="pre">nprocs</span></code>, or 128 when using 4 GPUs.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">train_data = torch.utils.data.DataLoader(</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>train_data = torch.utils.data.DataLoader(
 <span class="w"> </span>   dataset=train_dataset,
 <span class="w"> </span>   batch_size=32,
 <span class="gd">-   shuffle=True,</span>
 <span class="gi">+   shuffle=False,</span>
 <span class="gi">+   sampler=DistributedSampler(train_dataset),</span>
-<span class="w">)</span>
+)
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>Calling the <code class="docutils literal notranslate"><span class="pre">set_epoch()</span></code> method on the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> at the beginning of each epoch is necessary to make shuffling work
 properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="w">def _run_epoch(self, epoch):</span>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>def _run_epoch(self, epoch):
 <span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])
 <span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span>
 <span class="w"> </span>   for source, targets in self.train_data:
@@ -550,8 +550,8 @@ DDP <a class="reference external" href="https://pytorch.org/tutorials/intermedia
 </ul>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- ckp = self.model.state_dict()</span>
 <span class="gi">+ ckp = self.model.module.state_dict()</span>
-<span class="w">...</span>
-<span class="w">...</span>
+...
+...
 <span class="gd">- if epoch % self.save_every == 0:</span>
 <span class="gi">+ if self.gpu_id == 0 and epoch % self.save_every == 0:</span>
 <span class="w"> </span>  self._save_checkpoint(epoch)
@@ -585,7 +585,7 @@ this corresponds to the number of GPUs in use, and each process works on a dedic
 <span class="w"> </span>  trainer.train(total_epochs)
 <span class="gi">+  destroy_process_group()</span>
 
-<span class="w">if __name__ == "__main__":</span>
+if __name__ == "__main__":
 <span class="w"> </span>  import sys
 <span class="w"> </span>  total_epochs = int(sys.argv[1])
 <span class="w"> </span>  save_every = int(sys.argv[2])
