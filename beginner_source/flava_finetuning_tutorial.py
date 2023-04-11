@@ -172,7 +172,7 @@ for _ in range(epochs):
     loss.backward()
     optimizer.step()
     print(f"Loss at step {idx} = {loss}")
-    if idx > MAX_STEPS-1:
+    if idx >= MAX_STEPS-1:
       break
 
 
