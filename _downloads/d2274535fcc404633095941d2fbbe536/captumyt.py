@@ -155,7 +155,7 @@ from matplotlib.colors import LinearSegmentedColormap
 # now.
 # 
 
-model = models.resnet101(pretrained=True)
+model = models.resnet101(weights='IMAGENET1K_V1')
 model = model.eval()
 
 
