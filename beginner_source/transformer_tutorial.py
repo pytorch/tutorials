@@ -1,5 +1,5 @@
 """
-Language Modeling with nn.Transformer and TorchText
+Language Modeling with ``nn.Transformer`` and torchtext
 ===============================================================
 
 This is a tutorial on training a sequence-to-sequence model that uses the
@@ -78,12 +78,12 @@ class TransformerModel(nn.Module):
 
     def forward(self, src: Tensor, src_mask: Tensor) -> Tensor:
         """
-        Args:
-            src: Tensor, shape [seq_len, batch_size]
-            src_mask: Tensor, shape [seq_len, seq_len]
+        Arguments:
+            src: Tensor, shape ``[seq_len, batch_size]``
+            src_mask: Tensor, shape ``[seq_len, seq_len]``
 
         Returns:
-            output Tensor of shape [seq_len, batch_size, ntoken]
+            output Tensor of shape ``[seq_len, batch_size, ntoken]``
         """
         src = self.encoder(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
@@ -93,7 +93,7 @@ class TransformerModel(nn.Module):
 
 
 def generate_square_subsequent_mask(sz: int) -> Tensor:
-    """Generates an upper-triangular matrix of -inf, with zeros on diag."""
+    """Generates an upper-triangular matrix of ``-inf``, with zeros on ``diag``."""
     return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
 
 
@@ -120,8 +120,8 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """
-        Args:
-            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
         """
         x = x + self.pe[:x.size(0)]
         return self.dropout(x)
@@ -182,7 +182,7 @@ def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
     data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-# train_iter was "consumed" by the process of building the vocab,
+# ``train_iter`` was "consumed" by the process of building the vocab,
 # so we have to create it again
 train_iter, val_iter, test_iter = WikiText2()
 train_data = data_process(train_iter)
@@ -192,15 +192,15 @@ test_data = data_process(test_iter)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def batchify(data: Tensor, bsz: int) -> Tensor:
-    """Divides the data into bsz separate sequences, removing extra elements
+    """Divides the data into ``bsz`` separate sequences, removing extra elements
     that wouldn't cleanly fit.
 
-    Args:
+    Arguments:
         data: Tensor, shape [N]
         bsz: int, batch size
 
     Returns:
-        Tensor of shape [N // bsz, bsz]
+        Tensor of shape ``[N // bsz, bsz]``
     """
     seq_len = data.size(0) // bsz
     data = data[:seq_len * bsz]
@@ -209,7 +209,7 @@ def batchify(data: Tensor, bsz: int) -> Tensor:
 
 batch_size = 20
 eval_batch_size = 10
-train_data = batchify(train_data, batch_size)  # shape [seq_len, batch_size]
+train_data = batchify(train_data, batch_size)  # shape ``[seq_len, batch_size]``
 val_data = batchify(val_data, eval_batch_size)
 test_data = batchify(test_data, eval_batch_size)
 
@@ -238,12 +238,12 @@ bptt = 35
 def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
     """
     Args:
-        source: Tensor, shape [full_seq_len, batch_size]
+        source: Tensor, shape ``[full_seq_len, batch_size]``
         i: int
 
     Returns:
-        tuple (data, target), where data has shape [seq_len, batch_size] and
-        target has shape [seq_len * batch_size]
+        tuple (data, target), where data has shape ``[seq_len, batch_size]`` and
+        target has shape ``[seq_len * batch_size]``
     """
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]
@@ -258,15 +258,15 @@ def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
 
 
 ######################################################################
-# The model hyperparameters are defined below. The vocab size is
+# The model hyperparameters are defined below. The ``vocab`` size is
 # equal to the length of the vocab object.
 #
 
 ntokens = len(vocab)  # size of vocabulary
 emsize = 200  # embedding dimension
-d_hid = 200  # dimension of the feedforward network model in nn.TransformerEncoder
-nlayers = 2  # number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-nhead = 2  # number of heads in nn.MultiheadAttention
+d_hid = 200  # dimension of the feedforward network model in ``nn.TransformerEncoder``
+nlayers = 2  # number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``
+nhead = 2  # number of heads in ``nn.MultiheadAttention``
 dropout = 0.2  # dropout probability
 model = TransformerModel(ntokens, emsize, nhead, d_hid, nlayers, dropout).to(device)
 
