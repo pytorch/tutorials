@@ -20,7 +20,7 @@ Quoting these notes,
 
 These two major transfer learning scenarios look as follows:
 
--  **Finetuning the convnet**: Instead of random initialization, we
+-  **Finetuning the ConvNet**: Instead of random initialization, we
    initialize the network with a pretrained network, like the one that is
    trained on imagenet 1000 dataset. Rest of the training looks as
    usual.
@@ -108,7 +108,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # augmentations.
 
 def imshow(inp, title=None):
-    """Imshow for Tensor."""
+    """Display image for Tensor."""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -244,16 +244,16 @@ def visualize_model(model, num_images=6):
         model.train(mode=was_training)
 
 ######################################################################
-# Finetuning the convnet
+# Finetuning the ConvNet
 # ----------------------
 #
 # Load a pretrained model and reset final fully connected layer.
 #
 
-model_ft = models.resnet18(pretrained=True)
+model_ft = models.resnet18(weights='IMAGENET1K_V1')
 num_ftrs = model_ft.fc.in_features
 # Here the size of each output sample is set to 2.
-# Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
+# Alternatively, it can be generalized to ``nn.Linear(num_ftrs, len(class_names))``.
 model_ft.fc = nn.Linear(num_ftrs, 2)
 
 model_ft = model_ft.to(device)
@@ -295,7 +295,7 @@ visualize_model(model_ft)
 # `here <https://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
 #
 
-model_conv = torchvision.models.resnet18(pretrained=True)
+model_conv = torchvision.models.resnet18(weights='IMAGENET1K_V1')
 for param in model_conv.parameters():
     param.requires_grad = False
 

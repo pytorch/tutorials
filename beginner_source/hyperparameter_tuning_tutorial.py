@@ -389,7 +389,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         grace_period=1,
         reduction_factor=2)
     reporter = CLIReporter(
-        # parameter_columns=["l1", "l2", "lr", "batch_size"],
+        # ``parameter_columns=["l1", "l2", "lr", "batch_size"]``,
         metric_columns=["loss", "accuracy", "training_iteration"])
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
@@ -425,7 +425,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
 if __name__ == "__main__":
     # sphinx_gallery_start_ignore
-    # Fixes AttributeError: '_LoggingTee' object has no attribute 'fileno'.
+    # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
     # This is only needed to run with sphinx-build.
     import sys
     sys.stdout.fileno = lambda: False
