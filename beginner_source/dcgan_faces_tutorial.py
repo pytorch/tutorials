@@ -459,7 +459,7 @@ print(netD)
 # With :math:`D` and :math:`G` setup, we can specify how they learn
 # through the loss functions and optimizers. We will use the Binary Cross
 # Entropy loss
-# (`BCELoss <https://pytorch.org/docs/stable/nn.html#torch.nn.BCELoss>`__)
+# (`BCELoss <https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss>`__)
 # function which is defined in PyTorch as:
 # 
 # .. math:: \ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad l_n = - \left[ y_n \cdot \log x_n + (1 - y_n) \cdot \log (1 - x_n) \right]
