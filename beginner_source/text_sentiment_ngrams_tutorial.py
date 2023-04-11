@@ -1,6 +1,6 @@
 """
 Text classification with the torchtext library
-==================================
+==============================================
 
 In this tutorial, we will show how to use the torchtext library to build the dataset for the text classification analysis. Users will have the flexibility to
 
@@ -133,7 +133,7 @@ dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=coll
 # Define the model
 # ----------------
 #
-# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` with the default mode of "mean" computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, nn.EmbeddingBag module requires no padding here since the text lengths are saved in offsets.
+# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` with the default mode of "mean" computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, ``nn.EmbeddingBag`` module requires no padding here since the text lengths are saved in offsets.
 #
 # Additionally, since ``nn.EmbeddingBag`` accumulates the average across
 # the embeddings on the fly, ``nn.EmbeddingBag`` can enhance the
