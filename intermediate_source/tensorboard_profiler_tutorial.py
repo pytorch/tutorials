@@ -68,7 +68,7 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=Tru
 # To run on GPU, move model and loss to GPU device.
 
 device = torch.device("cuda:0")
-model = torchvision.models.resnet18(pretrained=True).cuda(device)
+model = torchvision.models.resnet18(weights='IMAGENET1K_V1').cuda(device)
 criterion = torch.nn.CrossEntropyLoss().cuda(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 model.train()
