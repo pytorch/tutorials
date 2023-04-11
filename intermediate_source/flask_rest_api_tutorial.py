@@ -161,8 +161,8 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 
 from torchvision import models
 
-# Make sure to pass `pretrained` as `True` to use the pretrained weights:
-model = models.densenet121(pretrained=True)
+# Make sure to set `weights` as `'IMAGENET1K_V1'` to use the pretrained weights:
+model = models.densenet121(weights='IMAGENET1K_V1')
 # Since we are using our model only for inference, switch to `eval` mode:
 model.eval()
 
@@ -269,7 +269,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 #   app = Flask(__name__)
 #   imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
-#   model = models.densenet121(pretrained=True)
+#   model = models.densenet121(weights='IMAGENET1K_V1')
 #   model.eval()
 #
 #
