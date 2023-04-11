@@ -20,11 +20,12 @@
 
 What is `torch.nn` *really*?
 ============================
-by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-41
+**Authors:** Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 
-We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
+.. GENERATED FROM PYTHON SOURCE LINES 10-43
+
+We recommend running this tutorial as a notebook, not a script. To download the notebook (``.ipynb``) file,
 click the link at the top of the page.
 
 PyTorch provides the elegantly designed modules and classes `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ ,
@@ -58,7 +59,7 @@ download the dataset using
 import modules when we use them, so you can see exactly what's being
 used at each point.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-57
+.. GENERATED FROM PYTHON SOURCE LINES 43-59
 
 .. code-block:: default
 
@@ -85,12 +86,12 @@ used at each point.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-60
+.. GENERATED FROM PYTHON SOURCE LINES 60-62
 
 This dataset is in numpy array format, and has been stored using pickle,
 a python-specific format for serializing data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-67
+.. GENERATED FROM PYTHON SOURCE LINES 62-69
 
 .. code-block:: default
 
@@ -108,13 +109,13 @@ a python-specific format for serializing data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-71
+.. GENERATED FROM PYTHON SOURCE LINES 70-73
 
 Each image is 28 x 28, and is being stored as a flattened row of length
 784 (=28x28). Let's take a look at one; we need to reshape it to 2d
 first.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-78
+.. GENERATED FROM PYTHON SOURCE LINES 73-80
 
 .. code-block:: default
 
@@ -143,12 +144,12 @@ first.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-81
+.. GENERATED FROM PYTHON SOURCE LINES 81-83
 
 PyTorch uses ``torch.tensor``, rather than numpy arrays, so we need to
 convert our data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-92
+.. GENERATED FROM PYTHON SOURCE LINES 83-94
 
 .. code-block:: default
 
@@ -184,9 +185,9 @@ convert our data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-113
+.. GENERATED FROM PYTHON SOURCE LINES 95-115
 
-Neural net from scratch (no torch.nn)
+Neural net from scratch (without ``torch.nn``)
 ---------------------------------------------
 
 Let's first create a model using nothing but PyTorch tensor operations. We're assuming
@@ -205,9 +206,9 @@ PyTorch signifies that the operation is performed in-place.)
 
 .. note:: We are initializing the weights here with
    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
-   (by multiplying with 1/sqrt(n)).
+   (by multiplying with ``1/sqrt(n)``).
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-120
+.. GENERATED FROM PYTHON SOURCE LINES 115-122
 
 .. code-block:: default
 
@@ -225,19 +226,19 @@ PyTorch signifies that the operation is performed in-place.)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-130
+.. GENERATED FROM PYTHON SOURCE LINES 123-132
 
 Thanks to PyTorch's ability to calculate gradients automatically, we can
 use any standard Python function (or callable object) as a model! So
 let's just write a plain matrix multiplication and broadcasted addition
 to create a simple linear model. We also need an activation function, so
 we'll write `log_softmax` and use it. Remember: although PyTorch
-provides lots of pre-written loss functions, activation functions, and
+provides lots of prewritten loss functions, activation functions, and
 so forth, you can easily write your own using plain python. PyTorch will
 even create fast GPU or vectorized CPU code for your function
 automatically.
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-137
+.. GENERATED FROM PYTHON SOURCE LINES 132-139
 
 .. code-block:: default
 
@@ -255,14 +256,14 @@ automatically.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-142
+.. GENERATED FROM PYTHON SOURCE LINES 140-144
 
 In the above, the ``@`` stands for the matrix multiplication operation. We will call
 our function on one batch of data (in this case, 64 images).  This is
 one *forward pass*.  Note that our predictions won't be any better than
 random at this stage, since we start with random weights.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-150
+.. GENERATED FROM PYTHON SOURCE LINES 144-152
 
 .. code-block:: default
 
@@ -282,13 +283,13 @@ random at this stage, since we start with random weights.
 
  .. code-block:: none
 
-    tensor([-2.7070, -1.9452, -1.4850, -2.7382, -2.5646, -2.8739, -2.3161, -2.5033,
-            -2.4677, -2.2982], grad_fn=<SelectBackward0>) torch.Size([64, 10])
+    tensor([-2.0223, -2.2679, -2.0556, -2.4981, -2.6943, -2.6059, -2.2708, -2.0981,
+            -2.0583, -2.8327], grad_fn=<SelectBackward0>) torch.Size([64, 10])
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-156
+.. GENERATED FROM PYTHON SOURCE LINES 153-158
 
 As you see, the ``preds`` tensor contains not only the tensor values, but also a
 gradient function. We'll use this later to do backprop.
@@ -296,7 +297,7 @@ gradient function. We'll use this later to do backprop.
 Let's implement negative log-likelihood to use as the loss function
 (again, we can just use standard Python):
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-163
+.. GENERATED FROM PYTHON SOURCE LINES 158-165
 
 .. code-block:: default
 
@@ -314,12 +315,12 @@ Let's implement negative log-likelihood to use as the loss function
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-166
+.. GENERATED FROM PYTHON SOURCE LINES 166-168
 
 Let's check our loss with our random model, so we can see if we improve
 after a backprop pass later.
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-171
+.. GENERATED FROM PYTHON SOURCE LINES 168-173
 
 .. code-block:: default
 
@@ -336,18 +337,18 @@ after a backprop pass later.
 
  .. code-block:: none
 
-    tensor(2.4384, grad_fn=<NegBackward0>)
+    tensor(2.4495, grad_fn=<NegBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-175
+.. GENERATED FROM PYTHON SOURCE LINES 174-177
 
 Let's also implement a function to calculate the accuracy of our model.
 For each prediction, if the index with the largest value matches the
 target value, then the prediction was correct.
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-180
+.. GENERATED FROM PYTHON SOURCE LINES 177-182
 
 .. code-block:: default
 
@@ -363,12 +364,12 @@ target value, then the prediction was correct.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-183
+.. GENERATED FROM PYTHON SOURCE LINES 183-185
 
 Let's check the accuracy of our random model, so we can see if our
 accuracy improves as our loss improves.
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-186
+.. GENERATED FROM PYTHON SOURCE LINES 185-188
 
 .. code-block:: default
 
@@ -383,12 +384,12 @@ accuracy improves as our loss improves.
 
  .. code-block:: none
 
-    tensor(0.0156)
+    tensor(0.0469)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-211
+.. GENERATED FROM PYTHON SOURCE LINES 189-213
 
 We can now run a training loop.  For each iteration, we will:
 
@@ -415,7 +416,7 @@ already stored, rather than replacing them).
    Uncomment ``set_trace()`` below to try it out.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-234
+.. GENERATED FROM PYTHON SOURCE LINES 213-236
 
 .. code-block:: default
 
@@ -449,7 +450,7 @@ already stored, rather than replacing them).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-241
+.. GENERATED FROM PYTHON SOURCE LINES 237-243
 
 That's it: we've created and trained a minimal neural network (in this case, a
 logistic regression, since we have no hidden layers) entirely from scratch!
@@ -458,7 +459,7 @@ Let's check the loss and accuracy and compare those to what we got
 earlier. We expect that the loss will have decreased and accuracy to
 have increased, and they have.
 
-.. GENERATED FROM PYTHON SOURCE LINES 241-244
+.. GENERATED FROM PYTHON SOURCE LINES 243-246
 
 .. code-block:: default
 
@@ -473,14 +474,14 @@ have increased, and they have.
 
  .. code-block:: none
 
-    tensor(0.0807, grad_fn=<NegBackward0>) tensor(1.)
+    tensor(0.0850, grad_fn=<NegBackward0>) tensor(1.)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-266
+.. GENERATED FROM PYTHON SOURCE LINES 247-268
 
-Using torch.nn.functional
+Using ``torch.nn.functional``
 ------------------------------
 
 We will now refactor our code, so that it does the same thing as before, only
@@ -502,7 +503,7 @@ If you're using negative log likelihood loss and log softmax activation,
 then Pytorch provides a single function ``F.cross_entropy`` that combines
 the two. So we can even remove the activation function from our model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-274
+.. GENERATED FROM PYTHON SOURCE LINES 268-276
 
 .. code-block:: default
 
@@ -521,12 +522,12 @@ the two. So we can even remove the activation function from our model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-277
+.. GENERATED FROM PYTHON SOURCE LINES 277-279
 
 Note that we no longer call ``log_softmax`` in the ``model`` function. Let's
 confirm that our loss and accuracy are the same as before:
 
-.. GENERATED FROM PYTHON SOURCE LINES 277-280
+.. GENERATED FROM PYTHON SOURCE LINES 279-282
 
 .. code-block:: default
 
@@ -541,14 +542,14 @@ confirm that our loss and accuracy are the same as before:
 
  .. code-block:: none
 
-    tensor(0.0807, grad_fn=<NllLossBackward0>) tensor(1.)
+    tensor(0.0850, grad_fn=<NllLossBackward0>) tensor(1.)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-294
+.. GENERATED FROM PYTHON SOURCE LINES 283-296
 
-Refactor using nn.Module
+Refactor using ``nn.Module``
 -----------------------------
 Next up, we'll use ``nn.Module`` and ``nn.Parameter``, for a clearer and more
 concise training loop. We subclass ``nn.Module`` (which itself is a class and
@@ -562,7 +563,7 @@ which we will be using.
    concept of a (lowercase ``m``) `module <https://docs.python.org/3/tutorial/modules.html>`_,
    which is a file of Python code that can be imported.
 
-.. GENERATED FROM PYTHON SOURCE LINES 294-306
+.. GENERATED FROM PYTHON SOURCE LINES 296-308
 
 .. code-block:: default
 
@@ -585,12 +586,12 @@ which we will be using.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-309
+.. GENERATED FROM PYTHON SOURCE LINES 309-311
 
 Since we're now using an object instead of just using a function, we
 first have to instantiate our model:
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-312
+.. GENERATED FROM PYTHON SOURCE LINES 311-314
 
 .. code-block:: default
 
@@ -604,14 +605,14 @@ first have to instantiate our model:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 313-317
+.. GENERATED FROM PYTHON SOURCE LINES 315-319
 
 Now we can calculate the loss in the same way as before. Note that
 ``nn.Module`` objects are used as if they are functions (i.e they are
 *callable*), but behind the scenes Pytorch will call our ``forward``
 method automatically.
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-320
+.. GENERATED FROM PYTHON SOURCE LINES 319-322
 
 .. code-block:: default
 
@@ -626,37 +627,41 @@ method automatically.
 
  .. code-block:: none
 
-    tensor(2.3166, grad_fn=<NllLossBackward0>)
+    tensor(2.2913, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-343
+.. GENERATED FROM PYTHON SOURCE LINES 323-349
 
 Previously for our training loop we had to update the values for each parameter
 by name, and manually zero out the grads for each parameter separately, like this:
+
 ::
-  with torch.no_grad():
-      weights -= weights.grad * lr
-      bias -= bias.grad * lr
-      weights.grad.zero_()
-      bias.grad.zero_()
+
+   with torch.no_grad():
+       weights -= weights.grad * lr
+       bias -= bias.grad * lr
+       weights.grad.zero_()
+       bias.grad.zero_()
 
 
 Now we can take advantage of model.parameters() and model.zero_grad() (which
 are both defined by PyTorch for ``nn.Module``) to make those steps more concise
 and less prone to the error of forgetting some of our parameters, particularly
 if we had a more complicated model:
+
 ::
-  with torch.no_grad():
-      for p in model.parameters(): p -= p.grad * lr
-      model.zero_grad()
+
+   with torch.no_grad():
+       for p in model.parameters(): p -= p.grad * lr
+       model.zero_grad()
 
 
 We'll wrap our little training loop in a ``fit`` function so we can run it
 again later.
 
-.. GENERATED FROM PYTHON SOURCE LINES 343-362
+.. GENERATED FROM PYTHON SOURCE LINES 349-368
 
 .. code-block:: default
 
@@ -686,11 +691,11 @@ again later.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 363-364
+.. GENERATED FROM PYTHON SOURCE LINES 369-370
 
 Let's double-check that our loss has gone down:
 
-.. GENERATED FROM PYTHON SOURCE LINES 364-367
+.. GENERATED FROM PYTHON SOURCE LINES 370-373
 
 .. code-block:: default
 
@@ -705,15 +710,15 @@ Let's double-check that our loss has gone down:
 
  .. code-block:: none
 
-    tensor(0.0810, grad_fn=<NllLossBackward0>)
+    tensor(0.0811, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 368-378
+.. GENERATED FROM PYTHON SOURCE LINES 374-384
 
-Refactor using nn.Linear
--------------------------
+Refactor using ``nn.Linear``
+----------------------------
 
 We continue to refactor our code.  Instead of manually defining and
 initializing ``self.weights`` and ``self.bias``, and calculating ``xb  @
@@ -723,7 +728,7 @@ linear layer, which does all that for us. Pytorch has many types of
 predefined layers that can greatly simplify our code, and often makes it
 faster too.
 
-.. GENERATED FROM PYTHON SOURCE LINES 378-387
+.. GENERATED FROM PYTHON SOURCE LINES 384-393
 
 .. code-block:: default
 
@@ -743,11 +748,11 @@ faster too.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 388-389
+.. GENERATED FROM PYTHON SOURCE LINES 394-395
 
 We instantiate our model and calculate the loss in the same way as before:
 
-.. GENERATED FROM PYTHON SOURCE LINES 389-393
+.. GENERATED FROM PYTHON SOURCE LINES 395-399
 
 .. code-block:: default
 
@@ -763,16 +768,16 @@ We instantiate our model and calculate the loss in the same way as before:
 
  .. code-block:: none
 
-    tensor(2.4006, grad_fn=<NllLossBackward0>)
+    tensor(2.3805, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-395
+.. GENERATED FROM PYTHON SOURCE LINES 400-401
 
 We are still able to use our same ``fit`` method as before.
 
-.. GENERATED FROM PYTHON SOURCE LINES 395-400
+.. GENERATED FROM PYTHON SOURCE LINES 401-406
 
 .. code-block:: default
 
@@ -789,14 +794,14 @@ We are still able to use our same ``fit`` method as before.
 
  .. code-block:: none
 
-    tensor(0.0809, grad_fn=<NllLossBackward0>)
+    tensor(0.0815, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 401-421
+.. GENERATED FROM PYTHON SOURCE LINES 407-431
 
-Refactor using optim
+Refactor using ``torch.optim``
 ------------------------------
 
 Pytorch also has a package with various optimization algorithms, ``torch.optim``.
@@ -804,20 +809,24 @@ We can use the ``step`` method from our optimizer to take a forward step, instea
 of manually updating each parameter.
 
 This will let us replace our previous manually coded optimization step:
+
 ::
-  with torch.no_grad():
-      for p in model.parameters(): p -= p.grad * lr
-      model.zero_grad()
+
+   with torch.no_grad():
+       for p in model.parameters(): p -= p.grad * lr
+       model.zero_grad()
 
 and instead use just:
+
 ::
-  opt.step()
-  opt.zero_grad()
+
+   opt.step()
+   opt.zero_grad()
 
 (``optim.zero_grad()`` resets the gradient to 0 and we need to call it before
 computing the gradient for the next minibatch.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 421-424
+.. GENERATED FROM PYTHON SOURCE LINES 431-434
 
 .. code-block:: default
 
@@ -831,12 +840,12 @@ computing the gradient for the next minibatch.)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 425-427
+.. GENERATED FROM PYTHON SOURCE LINES 435-437
 
 We'll define a little function to create our model and optimizer so we
 can reuse it in the future.
 
-.. GENERATED FROM PYTHON SOURCE LINES 427-450
+.. GENERATED FROM PYTHON SOURCE LINES 437-460
 
 .. code-block:: default
 
@@ -871,13 +880,13 @@ can reuse it in the future.
 
  .. code-block:: none
 
-    tensor(2.3025, grad_fn=<NllLossBackward0>)
-    tensor(0.0819, grad_fn=<NllLossBackward0>)
+    tensor(2.3393, grad_fn=<NllLossBackward0>)
+    tensor(0.0818, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-466
+.. GENERATED FROM PYTHON SOURCE LINES 461-476
 
 Refactor using Dataset
 ------------------------------
@@ -895,7 +904,7 @@ this also gives us a way to iterate, index, and slice along the first
 dimension of a tensor. This will make it easier to access both the
 independent and dependent variables in the same line as we train.
 
-.. GENERATED FROM PYTHON SOURCE LINES 466-469
+.. GENERATED FROM PYTHON SOURCE LINES 476-479
 
 .. code-block:: default
 
@@ -909,12 +918,12 @@ independent and dependent variables in the same line as we train.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 470-472
+.. GENERATED FROM PYTHON SOURCE LINES 480-482
 
 Both ``x_train`` and ``y_train`` can be combined in a single ``TensorDataset``,
 which will be easier to iterate over and slice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 472-475
+.. GENERATED FROM PYTHON SOURCE LINES 482-485
 
 .. code-block:: default
 
@@ -928,20 +937,24 @@ which will be easier to iterate over and slice.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 476-486
+.. GENERATED FROM PYTHON SOURCE LINES 486-500
 
-Previously, we had to iterate through minibatches of x and y values separately:
+Previously, we had to iterate through minibatches of ``x`` and ``y`` values separately:
+
 ::
-    xb = x_train[start_i:end_i]
-    yb = y_train[start_i:end_i]
+
+   xb = x_train[start_i:end_i]
+   yb = y_train[start_i:end_i]
 
 
 Now, we can do these two steps together:
+
 ::
-    xb,yb = train_ds[i*bs : i*bs+bs]
+
+   xb,yb = train_ds[i*bs : i*bs+bs]
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 486-501
+.. GENERATED FROM PYTHON SOURCE LINES 500-515
 
 .. code-block:: default
 
@@ -968,22 +981,22 @@ Now, we can do these two steps together:
 
  .. code-block:: none
 
-    tensor(0.0807, grad_fn=<NllLossBackward0>)
+    tensor(0.0819, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 502-509
+.. GENERATED FROM PYTHON SOURCE LINES 516-523
 
-Refactor using DataLoader
+Refactor using ``DataLoader``
 ------------------------------
 
-Pytorch's ``DataLoader`` is responsible for managing batches. You can
+PyTorch's ``DataLoader`` is responsible for managing batches. You can
 create a ``DataLoader`` from any ``Dataset``. ``DataLoader`` makes it easier
 to iterate over batches. Rather than having to use ``train_ds[i*bs : i*bs+bs]``,
-the DataLoader gives us each minibatch automatically.
+the ``DataLoader`` gives us each minibatch automatically.
 
-.. GENERATED FROM PYTHON SOURCE LINES 509-515
+.. GENERATED FROM PYTHON SOURCE LINES 523-529
 
 .. code-block:: default
 
@@ -1000,20 +1013,24 @@ the DataLoader gives us each minibatch automatically.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 516-526
+.. GENERATED FROM PYTHON SOURCE LINES 530-544
 
-Previously, our loop iterated over batches (xb, yb) like this:
+Previously, our loop iterated over batches ``(xb, yb)`` like this:
+
 ::
-      for i in range((n-1)//bs + 1):
-          xb,yb = train_ds[i*bs : i*bs+bs]
-          pred = model(xb)
 
-Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the data loader:
+   for i in range((n-1)//bs + 1):
+       xb,yb = train_ds[i*bs : i*bs+bs]
+       pred = model(xb)
+
+Now, our loop is much cleaner, as ``(xb, yb)`` are loaded automatically from the data loader:
+
 ::
-      for xb,yb in train_dl:
-          pred = model(xb)
 
-.. GENERATED FROM PYTHON SOURCE LINES 526-540
+   for xb,yb in train_dl:
+       pred = model(xb)
+
+.. GENERATED FROM PYTHON SOURCE LINES 544-558
 
 .. code-block:: default
 
@@ -1039,14 +1056,14 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
 
  .. code-block:: none
 
-    tensor(0.0804, grad_fn=<NllLossBackward0>)
+    tensor(0.0807, grad_fn=<NllLossBackward0>)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 541-564
+.. GENERATED FROM PYTHON SOURCE LINES 559-582
 
-Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
+Thanks to PyTorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
 our training loop is now dramatically smaller and easier to understand. Let's
 now try to add the basic features necessary to create effective models in practice.
 
@@ -1070,7 +1087,7 @@ need backpropagation and thus takes less memory (it doesn't need to
 store the gradients). We take advantage of this to use a larger batch
 size and compute the loss more quickly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 564-571
+.. GENERATED FROM PYTHON SOURCE LINES 582-589
 
 .. code-block:: default
 
@@ -1088,15 +1105,15 @@ size and compute the loss more quickly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 572-577
+.. GENERATED FROM PYTHON SOURCE LINES 590-595
 
 We will calculate and print the validation loss at the end of each epoch.
 
 (Note that we always call ``model.train()`` before training, and ``model.eval()``
 before inference, because these are used by layers such as ``nn.BatchNorm2d``
-and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
+and ``nn.Dropout`` to ensure appropriate behavior for these different phases.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 577-596
+.. GENERATED FROM PYTHON SOURCE LINES 595-614
 
 .. code-block:: default
 
@@ -1127,13 +1144,13 @@ and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
 
  .. code-block:: none
 
-    0 tensor(0.3358)
-    1 tensor(0.2887)
+    0 tensor(0.2886)
+    1 tensor(0.3175)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 597-608
+.. GENERATED FROM PYTHON SOURCE LINES 615-626
 
 Create fit() and get_data()
 ----------------------------------
@@ -1147,7 +1164,7 @@ We pass an optimizer in for the training set, and use it to perform
 backprop.  For the validation set, we don't pass an optimizer, so the
 method doesn't perform backprop.
 
-.. GENERATED FROM PYTHON SOURCE LINES 608-620
+.. GENERATED FROM PYTHON SOURCE LINES 626-638
 
 .. code-block:: default
 
@@ -1170,12 +1187,12 @@ method doesn't perform backprop.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 621-623
+.. GENERATED FROM PYTHON SOURCE LINES 639-641
 
 ``fit`` runs the necessary operations to train our model and compute the
 training and validation losses for each epoch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 623-641
+.. GENERATED FROM PYTHON SOURCE LINES 641-659
 
 .. code-block:: default
 
@@ -1204,11 +1221,11 @@ training and validation losses for each epoch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 642-643
+.. GENERATED FROM PYTHON SOURCE LINES 660-661
 
 ``get_data`` returns dataloaders for the training and validation sets.
 
-.. GENERATED FROM PYTHON SOURCE LINES 643-651
+.. GENERATED FROM PYTHON SOURCE LINES 661-669
 
 .. code-block:: default
 
@@ -1227,12 +1244,12 @@ training and validation losses for each epoch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 652-654
+.. GENERATED FROM PYTHON SOURCE LINES 670-672
 
 Now, our whole process of obtaining the data loaders and fitting the
 model can be run in 3 lines of code:
 
-.. GENERATED FROM PYTHON SOURCE LINES 654-659
+.. GENERATED FROM PYTHON SOURCE LINES 672-677
 
 .. code-block:: default
 
@@ -1249,13 +1266,13 @@ model can be run in 3 lines of code:
 
  .. code-block:: none
 
-    0 0.3262555530548096
-    1 0.2858052865087986
+    0 0.32212248779535296
+    1 0.2947414198100567
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 660-676
+.. GENERATED FROM PYTHON SOURCE LINES 678-694
 
 You can use these basic 3 lines of code to train a wide variety of models.
 Let's see if we can use them to train a convolutional neural network (CNN)!
@@ -1267,14 +1284,14 @@ We are now going to build our neural network with three convolutional layers.
 Because none of the functions in the previous section assume anything about
 the model form, we'll be able to use them to train a CNN without any modification.
 
-We will use Pytorch's predefined
+We will use PyTorch's predefined
 `Conv2d <https://pytorch.org/docs/stable/nn.html#torch.nn.Conv2d>`_ class
 as our convolutional layer. We define a CNN with 3 convolutional layers.
 Each convolution is followed by a ReLU.  At the end, we perform an
-average pooling.  (Note that ``view`` is PyTorch's version of numpy's
+average pooling.  (Note that ``view`` is PyTorch's version of Numpy's
 ``reshape``)
 
-.. GENERATED FROM PYTHON SOURCE LINES 676-694
+.. GENERATED FROM PYTHON SOURCE LINES 694-712
 
 .. code-block:: default
 
@@ -1303,13 +1320,13 @@ average pooling.  (Note that ``view`` is PyTorch's version of numpy's
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 695-698
+.. GENERATED FROM PYTHON SOURCE LINES 713-716
 
 `Momentum <https://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
 stochastic gradient descent that takes previous updates into account as well
 and generally leads to faster training.
 
-.. GENERATED FROM PYTHON SOURCE LINES 698-704
+.. GENERATED FROM PYTHON SOURCE LINES 716-722
 
 .. code-block:: default
 
@@ -1327,15 +1344,15 @@ and generally leads to faster training.
 
  .. code-block:: none
 
-    0 0.3475762358665466
-    1 0.31346495995521545
+    0 0.4838535932779312
+    1 0.2528762514531612
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 705-718
+.. GENERATED FROM PYTHON SOURCE LINES 723-736
 
-nn.Sequential
+Using ``nn.Sequential``
 ------------------------
 
 ``torch.nn`` has another handy class we can use to simplify our code:
@@ -1349,7 +1366,7 @@ have a `view` layer, and we need to create one for our network. ``Lambda``
 will create a layer that we can then use when defining a network with
 ``Sequential``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 718-731
+.. GENERATED FROM PYTHON SOURCE LINES 736-749
 
 .. code-block:: default
 
@@ -1373,11 +1390,11 @@ will create a layer that we can then use when defining a network with
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 732-733
+.. GENERATED FROM PYTHON SOURCE LINES 750-751
 
-The model created with ``Sequential`` is simply:
+The model created with ``Sequential`` is simple:
 
-.. GENERATED FROM PYTHON SOURCE LINES 733-750
+.. GENERATED FROM PYTHON SOURCE LINES 751-768
 
 .. code-block:: default
 
@@ -1406,15 +1423,15 @@ The model created with ``Sequential`` is simply:
 
  .. code-block:: none
 
-    0 0.3145950961112976
-    1 0.24506511437892914
+    0 0.4047030241250992
+    1 0.23095886179208755
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 751-761
+.. GENERATED FROM PYTHON SOURCE LINES 769-779
 
-Wrapping DataLoader
+Wrapping ``DataLoader``
 -----------------------------
 
 Our CNN is fairly concise, but it only works with MNIST, because:
@@ -1425,7 +1442,7 @@ Let's get rid of these two assumptions, so our model works with any 2d
 single channel image. First, we can remove the initial Lambda layer by
 moving the data preprocessing into a generator:
 
-.. GENERATED FROM PYTHON SOURCE LINES 761-783
+.. GENERATED FROM PYTHON SOURCE LINES 779-801
 
 .. code-block:: default
 
@@ -1458,14 +1475,14 @@ moving the data preprocessing into a generator:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 784-788
+.. GENERATED FROM PYTHON SOURCE LINES 802-806
 
 Next, we can replace ``nn.AvgPool2d`` with ``nn.AdaptiveAvgPool2d``, which
 allows us to define the size of the *output* tensor we want, rather than
 the *input* tensor we have. As a result, our model will work with any
 size input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 788-802
+.. GENERATED FROM PYTHON SOURCE LINES 806-820
 
 .. code-block:: default
 
@@ -1490,11 +1507,11 @@ size input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 803-804
+.. GENERATED FROM PYTHON SOURCE LINES 821-822
 
 Let's try it out:
 
-.. GENERATED FROM PYTHON SOURCE LINES 804-807
+.. GENERATED FROM PYTHON SOURCE LINES 822-825
 
 .. code-block:: default
 
@@ -1509,13 +1526,13 @@ Let's try it out:
 
  .. code-block:: none
 
-    0 0.3678531034231186
-    1 0.324243478345871
+    0 0.34875961802005767
+    1 0.2315192507147789
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 808-815
+.. GENERATED FROM PYTHON SOURCE LINES 826-833
 
 Using your GPU
 ---------------
@@ -1525,7 +1542,7 @@ rent one for about $0.50/hour from most cloud providers) you can
 use it to speed up your code. First check that your GPU is working in
 Pytorch:
 
-.. GENERATED FROM PYTHON SOURCE LINES 815-818
+.. GENERATED FROM PYTHON SOURCE LINES 833-836
 
 .. code-block:: default
 
@@ -1545,11 +1562,11 @@ Pytorch:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 819-820
+.. GENERATED FROM PYTHON SOURCE LINES 837-838
 
 And then create a device object for it:
 
-.. GENERATED FROM PYTHON SOURCE LINES 820-824
+.. GENERATED FROM PYTHON SOURCE LINES 838-842
 
 .. code-block:: default
 
@@ -1564,11 +1581,11 @@ And then create a device object for it:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 825-826
+.. GENERATED FROM PYTHON SOURCE LINES 843-844
 
 Let's update ``preprocess`` to move batches to the GPU:
 
-.. GENERATED FROM PYTHON SOURCE LINES 826-836
+.. GENERATED FROM PYTHON SOURCE LINES 844-854
 
 .. code-block:: default
 
@@ -1589,11 +1606,11 @@ Let's update ``preprocess`` to move batches to the GPU:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 837-838
+.. GENERATED FROM PYTHON SOURCE LINES 855-856
 
 Finally, we can move our model to the GPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 838-842
+.. GENERATED FROM PYTHON SOURCE LINES 856-860
 
 .. code-block:: default
 
@@ -1608,11 +1625,11 @@ Finally, we can move our model to the GPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 843-844
+.. GENERATED FROM PYTHON SOURCE LINES 861-862
 
 You should find it runs faster now:
 
-.. GENERATED FROM PYTHON SOURCE LINES 844-847
+.. GENERATED FROM PYTHON SOURCE LINES 862-865
 
 .. code-block:: default
 
@@ -1627,13 +1644,13 @@ You should find it runs faster now:
 
  .. code-block:: none
 
-    0 0.2155240202307701
-    1 0.19149742987155915
+    0 0.2081247575879097
+    1 0.20595972864627837
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 848-880
+.. GENERATED FROM PYTHON SOURCE LINES 866-898
 
 Closing thoughts
 -----------------
@@ -1652,7 +1669,7 @@ We promised at the start of this tutorial we'd explain through example each of
 ``torch.nn``, ``torch.optim``, ``Dataset``, and ``DataLoader``. So let's summarize
 what we've seen:
 
- - **torch.nn**
+ - ``torch.nn``:
 
    + ``Module``: creates a callable which behaves like a function, but can also
      contain state(such as neural net layer weights). It knows what ``Parameter`` (s) it
@@ -1671,7 +1688,7 @@ what we've seen:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  42.589 seconds)
+   **Total running time of the script:** ( 0 minutes  43.421 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:

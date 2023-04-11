@@ -56,7 +56,7 @@ that Torch uses to represent deep learning programs independently from
 the Python runtime.
 
 The API for converting eager-mode PyTorch programs into TorchScript is
-found in the torch.jit module. This module has two core modalities for
+found in the ``torch.jit`` module. This module has two core modalities for
 converting an eager-mode model to a TorchScript graph representation:
 **tracing** and **scripting**. The ``torch.jit.trace`` function takes a
 module or function and a set of example inputs. It then runs the example
@@ -90,18 +90,18 @@ be applied incrementally.
 
 .. GENERATED FROM PYTHON SOURCE LINES 77-91
 
-Acknowledgements
+Acknowledgments
 ----------------
 
 This tutorial was inspired by the following sources:
 
-1) Yuan-Kuei Wu’s pytorch-chatbot implementation:
+1) Yuan-Kuei Wu's pytorch-chatbot implementation:
    https://github.com/ywk991112/pytorch-chatbot
 
-2) Sean Robertson’s practical-pytorch seq2seq-translation example:
+2) Sean Robertson's practical-pytorch seq2seq-translation example:
    https://github.com/spro/practical-pytorch/tree/master/seq2seq-translation
 
-3) FloydHub’s Cornell Movie Corpus preprocessing code:
+3) FloydHub's Cornell Movie Corpus preprocessing code:
    https://github.com/floydhub/textutil-preprocess-cornell-movie-corpus
 
 
@@ -337,7 +337,7 @@ before we run evaluations.
             self.hidden_size = hidden_size
             self.embedding = embedding
 
-            # Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'
+            # Initialize GRU; the ``input_size`` and ``hidden_size`` parameters are both set to 'hidden_size'
             #   because our input size is a word embedding with number of features == hidden_size
             self.gru = nn.GRU(hidden_size, hidden_size, n_layers,
                               dropout=(0 if n_layers == 1 else dropout), bidirectional=True)
@@ -606,7 +606,7 @@ Changes:
       we can use function type annotations as introduced in `PEP
       3107 <https://www.python.org/dev/peps/pep-3107/>`__. In addition,
       it is possible to declare arguments of different types using
-      MyPy-style type annotations (see
+      Mypy-style type annotations (see
       `doc <https://pytorch.org/docs/master/jit.html#types>`__).
 
 
@@ -717,7 +717,7 @@ an argument, normalizes it, evaluates it, and prints the response.
         return decoded_words
 
 
-    # Evaluate inputs from user input (stdin)
+    # Evaluate inputs from user input (``stdin``)
     def evaluateInput(searcher, voc):
         input_sentence = ''
         while(1):
@@ -737,7 +737,7 @@ an argument, normalizes it, evaluates it, and prints the response.
             except KeyError:
                 print("Error: Encountered unknown word.")
 
-    # Normalize input sentence and call evaluate()
+    # Normalize input sentence and call ``evaluate()``
     def evaluateExample(sentence, searcher, voc):
         print("> " + sentence)
         # Normalize sentence
@@ -760,7 +760,7 @@ an argument, normalizes it, evaluates it, and prints the response.
 Load Pretrained Parameters
 --------------------------
 
-Ok, its time to load our model!
+No, let's load our model!
 
 Use hosted model
 ~~~~~~~~~~~~~~~~
@@ -778,7 +778,7 @@ To load the hosted model:
 Use your own model
 ~~~~~~~~~~~~~~~~~~
 
-To load your own pre-trained model:
+To load your own pretrained model:
 
 1) Set the ``loadFilename`` variable to the path to the checkpoint file
    that you wish to load. Note that if you followed the convention for
@@ -798,16 +798,16 @@ TorchScript Notes:
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Notice that we initialize and load parameters into our encoder and
-decoder models as usual. If you are using tracing mode(`torch.jit.trace`)
-for some part of your models, you must call .to(device) to set the device
-options of the models and .eval() to set the dropout layers to test mode
+decoder models as usual. If you are using tracing mode(``torch.jit.trace``)
+for some part of your models, you must call ``.to(device)`` to set the device
+options of the models and ``.eval()`` to set the dropout layers to test mode
 **before** tracing the models. `TracedModule` objects do not inherit the
 ``to`` or ``eval`` methods. Since in this tutorial we are only using
 scripting instead of tracing, we only need to do this before we do
 evaluation (which is the same as we normally do in eager mode).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 702-758
+.. GENERATED FROM PYTHON SOURCE LINES 702-721
 
 .. code-block:: default
 
@@ -818,7 +818,7 @@ evaluation (which is the same as we normally do in eager mode).
     # Configure models
     model_name = 'cb_model'
     attn_model = 'dot'
-    #attn_model = 'general'
+    #attn_model = 'general'``
     #attn_model = 'concat'
     hidden_size = 500
     encoder_n_layers = 2
@@ -829,9 +829,28 @@ evaluation (which is the same as we normally do in eager mode).
     # If you're loading your own model
     # Set checkpoint to load from
     checkpoint_iter = 4000
-    # loadFilename = os.path.join(save_dir, model_name, corpus_name,
-    #                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-    #                             '{}_checkpoint.tar'.format(checkpoint_iter))
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 722-729
+
+Sample code to load from a checkpoint:
+
+.. code-block:: python
+
+   loadFilename = os.path.join(save_dir, model_name, corpus_name,
+                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+                            '{}_checkpoint.tar'.format(checkpoint_iter))
+
+.. GENERATED FROM PYTHON SOURCE LINES 729-764
+
+.. code-block:: default
+
 
     # If you're loading the hosted model
     loadFilename = 'data/4000_checkpoint.tar'
@@ -855,13 +874,13 @@ evaluation (which is the same as we normally do in eager mode).
     # Initialize encoder & decoder models
     encoder = EncoderRNN(hidden_size, embedding, encoder_n_layers, dropout)
     decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.num_words, decoder_n_layers, dropout)
-    # Load trained model params
+    # Load trained model parameters
     encoder.load_state_dict(encoder_sd)
     decoder.load_state_dict(decoder_sd)
     # Use appropriate device
     encoder = encoder.to(device)
     decoder = decoder.to(device)
-    # Set dropout layers to eval mode
+    # Set dropout layers to ``eval`` mode
     encoder.eval()
     decoder.eval()
     print('Models built and ready to go!')
@@ -881,7 +900,7 @@ evaluation (which is the same as we normally do in eager mode).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 759-799
+.. GENERATED FROM PYTHON SOURCE LINES 765-805
 
 Convert Model to TorchScript
 -----------------------------
@@ -921,10 +940,10 @@ Recall that we scripted our searcher module due to the presence of
 data-dependent control flow. In the case of scripting, we do necessary
 language changes to make sure the implementation complies with
 TorchScript. We initialize the scripted searcher the same way that we
-would initialize an un-scripted variant.
+would initialize an unscripted variant.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 799-821
+.. GENERATED FROM PYTHON SOURCE LINES 805-827
 
 .. code-block:: default
 
@@ -966,7 +985,7 @@ would initialize an un-scripted variant.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 822-830
+.. GENERATED FROM PYTHON SOURCE LINES 828-836
 
 Print Graphs
 ------------
@@ -977,7 +996,7 @@ Since TorchScript allow us to recursively compile the whole model
 hierarchy and inline the ``encoder`` and ``decoder`` graph into a single
 graph, we just need to print the `scripted_searcher` graph
 
-.. GENERATED FROM PYTHON SOURCE LINES 830-834
+.. GENERATED FROM PYTHON SOURCE LINES 836-840
 
 .. code-block:: default
 
@@ -1036,7 +1055,7 @@ graph, we just need to print the `scripted_searcher` graph
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 835-846
+.. GENERATED FROM PYTHON SOURCE LINES 841-852
 
 Run Evaluation
 --------------
@@ -1050,7 +1069,7 @@ chat with the bot yourself, uncomment the ``evaluateInput`` line and
 give it a spin.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 846-862
+.. GENERATED FROM PYTHON SOURCE LINES 852-868
 
 .. code-block:: default
 
@@ -1058,7 +1077,7 @@ give it a spin.
 
     # Use appropriate device
     scripted_searcher.to(device)
-    # Set dropout layers to eval mode
+    # Set dropout layers to ``eval`` mode
     scripted_searcher.eval()
 
     # Evaluate examples
@@ -1066,8 +1085,8 @@ give it a spin.
     for s in sentences:
         evaluateExample(s, scripted_searcher, voc)
 
-    # Evaluate your input
-    #evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)
+    # Evaluate your input by running
+    # ``evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)``
 
 
 
@@ -1092,7 +1111,7 @@ give it a spin.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 863-873
+.. GENERATED FROM PYTHON SOURCE LINES 869-879
 
 Save Model
 ----------
@@ -1105,7 +1124,7 @@ model. When saving a Script module, use script_module.save(PATH) instead
 of torch.save(model, PATH).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 873-875
+.. GENERATED FROM PYTHON SOURCE LINES 879-881
 
 .. code-block:: default
 
@@ -1121,7 +1140,7 @@ of torch.save(model, PATH).
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.583 seconds)
+   **Total running time of the script:** ( 0 minutes  1.605 seconds)
 
 
 .. _sphx_glr_download_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:

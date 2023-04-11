@@ -18,8 +18,8 @@
 .. _sphx_glr_beginner_translation_transformer.py:
 
 
-Language Translation with nn.Transformer and torchtext
-======================================================
+Language Translation with ``nn.Transformer`` and torchtext
+==========================================================
 
 This tutorial shows:
     - How to train a translation model from scratch using Transformer.
@@ -40,7 +40,7 @@ that yields a pair of source-target raw sentences.
 To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 24-79
+.. GENERATED FROM PYTHON SOURCE LINES 24-43
 
 .. code-block:: default
 
@@ -64,11 +64,22 @@ To access torchtext datasets, please install torchdata following instructions at
     vocab_transform = {}
 
 
-    # Create source and target language tokenizer. Make sure to install the dependencies.
-    # pip install -U torchdata
-    # pip install -U spacy
-    # python -m spacy download en_core_web_sm
-    # python -m spacy download de_core_news_sm
+.. GENERATED FROM PYTHON SOURCE LINES 44-52
+
+Create source and target language tokenizer. Make sure to install the dependencies.
+
+.. code-block:: python
+
+   pip install -U torchdata
+   pip install -U spacy
+   python -m spacy download en_core_web_sm
+   python -m spacy download de_core_news_sm
+
+.. GENERATED FROM PYTHON SOURCE LINES 52-83
+
+.. code-block:: default
+
+
     token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
     token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
@@ -94,13 +105,13 @@ To access torchtext datasets, please install torchdata following instructions at
                                                         specials=special_symbols,
                                                         special_first=True)
 
-    # Set UNK_IDX as the default index. This index is returned when the token is not found.
-    # If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.
+    # Set ``UNK_IDX`` as the default index. This index is returned when the token is not found.
+    # If not set, it throws ``RuntimeError`` when the queried token is not found in the Vocabulary.
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
       vocab_transform[ln].set_default_index(UNK_IDX)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-94
+.. GENERATED FROM PYTHON SOURCE LINES 84-98
 
 Seq2Seq Network using Transformer
 ---------------------------------
@@ -114,10 +125,10 @@ into corresponding tensor of input embeddings. These embedding are further augme
 encodings to provide position information of input tokens to the model. The second part is the
 actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model.
 Finally, the output of the Transformer model is passed through linear layer
-that gives un-normalized probabilities for each token in the target language.
+that gives unnormalized probabilities for each token in the target language.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-181
+.. GENERATED FROM PYTHON SOURCE LINES 98-185
 
 .. code-block:: default
 
@@ -209,14 +220,14 @@ that gives un-normalized probabilities for each token in the target language.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-186
+.. GENERATED FROM PYTHON SOURCE LINES 186-190
 
 During training, we need a subsequent word mask that will prevent the model from looking into
 the future words when making predictions. We will also need masks to hide
 source and target padding tokens. Below, let's define a function that will take care of both.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-206
+.. GENERATED FROM PYTHON SOURCE LINES 190-210
 
 .. code-block:: default
 
@@ -241,13 +252,13 @@ source and target padding tokens. Below, let's define a function that will take 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-210
+.. GENERATED FROM PYTHON SOURCE LINES 211-214
 
 Let's now define the parameters of our model and instantiate the same. Below, we also
-define our loss function which is the cross-entropy loss and the optmizer used for training.
+define our loss function which is the cross-entropy loss and the optimizer used for training.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-234
+.. GENERATED FROM PYTHON SOURCE LINES 214-238
 
 .. code-block:: default
 
@@ -276,7 +287,7 @@ define our loss function which is the cross-entropy loss and the optmizer used f
     optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-243
+.. GENERATED FROM PYTHON SOURCE LINES 239-247
 
 Collation
 ---------
@@ -287,7 +298,7 @@ defined previously. Below we define our collate function that converts a batch o
 can be fed directly into our model.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-280
+.. GENERATED FROM PYTHON SOURCE LINES 247-284
 
 .. code-block:: default
 
@@ -309,7 +320,7 @@ can be fed directly into our model.
                           torch.tensor(token_ids),
                           torch.tensor([EOS_IDX])))
 
-    # src and tgt language text transforms to convert raw strings into tensors indices
+    # ``src`` and ``tgt`` language text transforms to convert raw strings into tensors indices
     text_transform = {}
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
         text_transform[ln] = sequential_transforms(token_transform[ln], #Tokenization
@@ -329,13 +340,13 @@ can be fed directly into our model.
         return src_batch, tgt_batch
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-284
+.. GENERATED FROM PYTHON SOURCE LINES 285-288
 
 Let's define training and evaluation loop that will be called for each
 epoch.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 284-338
+.. GENERATED FROM PYTHON SOURCE LINES 288-342
 
 .. code-block:: default
 
@@ -394,12 +405,12 @@ epoch.
         return losses / len(list(val_dataloader))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-341
+.. GENERATED FROM PYTHON SOURCE LINES 343-345
 
 Now we have all the ingredients to train our model. Let's do it!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 341-388
+.. GENERATED FROM PYTHON SOURCE LINES 345-392
 
 .. code-block:: default
 
@@ -451,7 +462,7 @@ Now we have all the ingredients to train our model. Let's do it!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 390-394
+.. GENERATED FROM PYTHON SOURCE LINES 394-398
 
 .. code-block:: default
 
@@ -460,7 +471,7 @@ Now we have all the ingredients to train our model. Let's do it!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 395-401
+.. GENERATED FROM PYTHON SOURCE LINES 399-405
 
 References
 ----------
