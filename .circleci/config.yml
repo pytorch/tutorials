@@ -220,10 +220,10 @@ pytorch_tutorial_manager_defaults: &pytorch_tutorial_manager_defaults
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
-
   - run:
       name: Copy generated docs with plot to the docs dir for artifacts
-      command:
+      no_output_timeout: "1h"
+      command: |
         mkdir /home/circleci/project/docs
         docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
   - store_artifacts:
