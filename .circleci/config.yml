@@ -141,7 +141,19 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
         # Copy docs with plot to a docs dir
         mkdir /home/circleci/project/docs
-        docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
+        source = "/var/lib/jenkins/workspace/docs_with_plot/docs/"
+        target = "/home/circleci/project/docs"
+        if docker ps -a | grep -q "$id"; then
+            if docker exec "$id" test -d "$source"; then
+                docker cp "$id":"$source"/. "$target"
+                echo "Directory copied successfully"
+            else
+                echo "No docs_with_plot directory"
+            fi
+        else
+          echo "Skip"
+        fi
+
   - store_artifacts:
       path: ./docs
       destination: tutorials
