@@ -139,16 +139,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
-
-pytorch_tutorial_manager_defaults: &pytorch_tutorial_manager_defaults
-  machine:
-    image: ubuntu-2004-cuda-11.4:202110-01
-  steps:
-  - run:
-      <<: *pytorch_tutorial_build_defaults
-  - run:
-      name: Copy docs with plot to a docs dir
-      command: |
+        # Copy docs with plot to a docs dir
         mkdir /home/circleci/project/docs
         docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
   - store_artifacts:
@@ -168,7 +159,7 @@ pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_default
   resource_class: medium
 
 
-  <<: *pytorch_tutorial_manager_defaults
+  <<: *pytorch_tutorial_build_defaults
 {% raw %}
 pytorch_windows_build_worker: &pytorch_windows_build_worker
   executor: windows-with-nvidia-gpu
