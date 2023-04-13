@@ -144,83 +144,11 @@ pytorch_tutorial_manager_defaults: &pytorch_tutorial_manager_defaults
   machine:
     image: ubuntu-2004-cuda-11.4:202110-01
   steps:
-  - checkout
   - run:
-      <<: *setup_linux_system_environment
+      <<: *pytorch_tutorial_build_defaults
   - run:
-      name: Set Up CI Environment
-      no_output_timeout: "1h"
+      name: Copy docs with plot to a docs dir
       command: |
-        set -e
-
-        sudo apt-get -y update
-        sudo apt-get -y install expect-dev moreutils
-
-        sudo pip3 -q install awscli==1.16.35
-
-         if [ -n "${CUDA_VERSION}" ]; then
-           nvidia-smi
-         fi
-
-        # This IAM user only allows read-write access to ECR
-        export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_ECR_READ_ONLY}
-        export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_ECR_READ_ONLY}
-        eval $(aws ecr get-login --region us-east-1 --no-include-email)
-  - run:
-      name: Build
-      no_output_timeout: "20h"
-      command: |
-        set -e
-
-        # for some reason, pip installs it in a different place than what is looked at in the py file
-        sudo pip3 install requests --target=/opt/circleci/.pyenv/versions/3.9.4/lib/python3.9/site-packages
-        export pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
-        echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
-
-        cat >/home/circleci/project/ci_build_script.sh \<<EOL
-        # =================== The following code will be executed inside Docker container ===================
-        set -ex
-
-        .jenkins/build.sh
-        # =================== The above code will be executed inside Docker container ===================
-        EOL
-        chmod +x /home/circleci/project/ci_build_script.sh
-
-        export DOCKER_IMAGE=${DOCKER_IMAGE}:${pyTorchDockerImageTag}
-        echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
-        docker pull ${DOCKER_IMAGE} >/dev/null
-        if [ -n "${CUDA_VERSION}" ]; then
-          export id=$(docker run --gpus all -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
-        else
-          export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
-        fi
-
-        echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
-        echo "declare -x COMMIT_ID=${CIRCLE_SHA1}" >> /home/circleci/project/env
-        echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
-        # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
-        set +x
-        if [[ "$CIRCLE_BRANCH" == master || "$CIRCLE_BRANCH" == main ]]; then
-          if [ -z "${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
-          if [ -z "${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
-          if [ -z "${GITHUB_PYTORCHBOT_USERNAME}" ]; then exit 1; fi
-          if [ -z "${GITHUB_PYTORCHBOT_TOKEN}" ]; then exit 1; fi
-
-          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
-          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
-          echo "declare -x GITHUB_PYTORCHBOT_USERNAME=${GITHUB_PYTORCHBOT_USERNAME}" >> /home/circleci/project/env
-          echo "declare -x GITHUB_PYTORCHBOT_TOKEN=${GITHUB_PYTORCHBOT_TOKEN}" >> /home/circleci/project/env
-        else
-          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
-          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
-        fi
-        set -x
-
-        echo 'rm /opt/cache/bin/*' | docker exec -u root -i "$id" bash
-        docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
-        export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
-        echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
-        # copy the build with the plot to the docs folder to add to artifacts.
         mkdir /home/circleci/project/docs
         docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
   - store_artifacts:
