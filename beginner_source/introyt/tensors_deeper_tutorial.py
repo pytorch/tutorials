@@ -544,11 +544,11 @@ d = torch.matmul(a, b, out=c)
 print(c)                # contents of c have changed
 
 assert c is d           # test c & d are same object, not just containing equal values
-assert id(c), old_id    # make sure that our new c is the same object as the old one
+assert id(c) == old_id  # make sure that our new c is the same object as the old one
 
 torch.rand(2, 2, out=c) # works for creation too!
 print(c)                # c has changed again
-assert id(c), old_id    # still the same object!
+assert id(c) == old_id  # still the same object!
 
 
 ##########################################################################
