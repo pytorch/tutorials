@@ -199,6 +199,68 @@ You can check how it looks in code in `pytorch android application example <http
 Member fields ``mModule``, ``mInputTensorBuffer`` and ``mInputTensor`` are initialized only once
 and buffer is refilled using ``org.pytorch.torchvision.TensorImageUtils.imageYUV420CenterCropToFloatBuffer``.
 
+6. Load time optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Available since Pytorch 1.13**
+
+Pytorch mobile also support a flatbuffer based file format that is faster
+to load. Both flatbuffer and pickle based model file can be load with the
+same `_load_for_lite_interpreter` (Python) or `_load_for_mobile`(C++) API.
+
+To use flatbuffer format, instead of create model file with
+
+::
+
+  model._save_for_lite_interpreter('path/to/file.ptl')
+
+
+One can save using
+
+::
+
+  model._save_for_lite_interpreter('path/to/file.ptl', _use_flatbuffer=True)
+
+
+The extra kwarg `_use_flatbuffer` makes a flatbuffer file instead of
+zip file. The created file will be faster to load.
+
+For example, using resnet-50, running the following script:
+
+::
+
+  import torch
+  from torch.jit import mobile
+  import time
+  model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_resnet50', pretrained=True)
+  model.eval()
+  jit_model = torch.jit.script(model)
+
+  jit_model._save_for_lite_interpreter('/tmp/jit_model.ptl')
+  jit_model._save_for_lite_interpreter('/tmp/jit_model.ff', _use_flatbuffer=True)
+
+  import timeit
+  print('Load ptl file:')
+  print(timeit.timeit('from torch.jit import mobile; mobile._load_for_lite_interpreter("/tmp/jit_model.ptl")',
+                         number=20))
+  print('Load flatbuffer file:')
+  print(timeit.timeit('from torch.jit import mobile; mobile._load_for_lite_interpreter("/tmp/jit_model.ff")',
+                         number=20))
+
+
+
+yields
+
+::
+
+  Load ptl file:
+  0.5387594579999999
+  Load flatbuffer file:
+  0.038842832999999466
+
+Speed ups on actual mobile devices will be smaller. One can still expect
+3x - 6x load time reductions.
+
+
 Benchmarking
 ------------
 
