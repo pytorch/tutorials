@@ -140,16 +140,13 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
         # Copy docs with plot to a docs dir
-        # docker_check=$(docker exec -it "$id" sh -c 'ls /var/lib/jenkins/workspace/docs_with_plot/docs/')
-        docker_check=$(docker exec -it "$id" sh -c "[ -d ./workspace/docs_with_plot/docs/] && echo 'exists' || echo 'not exists'")
-        if [[ "$docker_check" == "not exists" ]]; then
-            echo "No docs_with_plot directory. Skipping..."
-        else
+        if docker exec -it "$id" sh -c "test -d ./workspace/docs_with_plot/docs/"; then
             mkdir /home/circleci/project/docs
             docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
             echo "Directory copied successfully"
+        else
+            echo "No docs_with_plot directory. Skipping..."
         fi
-        exit 0
 
   - store_artifacts:
       path: ./docs
