@@ -139,6 +139,18 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
+        # Copy docs with plot to a docs dir
+        if docker exec -it "$id" sh -c "test -d ./workspace/docs_with_plot/docs/"; then
+            mkdir /home/circleci/project/docs
+            docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
+            echo "Directory copied successfully"
+        else
+            echo "No docs_with_plot directory. Skipping..."
+        fi
+
+  - store_artifacts:
+      path: ./docs
+      destination: tutorials
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
@@ -151,6 +163,8 @@ pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_default
   environment:
     DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.7-cudnn8-py3-gcc7"
   resource_class: medium
+
+
   <<: *pytorch_tutorial_build_defaults
 {% raw %}
 pytorch_windows_build_worker: &pytorch_windows_build_worker
@@ -181,9 +195,6 @@ pytorch_windows_build_worker: &pytorch_windows_build_worker
           - beginner_source/data
           - intermediate_source/data
           - prototype_source/data
-    - store_artifacts:
-        path: ./docs/build/html
-        destination: docs
 {% endraw %}
 jobs:
   {{ jobs("pr") }}
