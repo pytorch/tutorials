@@ -207,7 +207,8 @@ PyTorch Mobile also supports a FlatBuffer-based file format that is faster
 to load. Both flatbuffer and pickle-based model file can be load with the
 same ``_load_for_lite_interpreter`` (Python) or ``_load_for_mobile``(C++) API.
 
-To use the FlatBuffer format, instead of creating the model file with ``model._save_for_lite_interpreter('path/to/file.ptl')``, you can run the following command:
+To use the FlatBuffer format, instead of creating the model file with
+``model._save_for_lite_interpreter('path/to/file.ptl')``, you can run the following command:
 
 ::
 
@@ -221,7 +222,7 @@ One can save using
   model._save_for_lite_interpreter('path/to/file.ptl', _use_flatbuffer=True)
 
 
-The extra arguemnt ``_use_flatbuffer`` makes a FlatBuffer file instead of a
+The extra argument ``_use_flatbuffer`` makes a FlatBuffer file instead of a
 zip file. The created file will be faster to load.
 
 For example, using ResNet-50 and running the following script:
@@ -260,6 +261,15 @@ you would get the following result:
 While speed ups on actual mobile devices will be smaller, you can still expect
 3x - 6x load time reductions.
 
+### Reasons to not use flatbuffer based mobile model:
+
+However flatbuffer format also has some limitations that one should consider
+before using it. Namely:
+
+* It is only available since Pytorch 1.13. Therefore, client devices compiled
+  with earlier Pytorch versions might not be able to load it.
+* Flatbuffer library imposes a 4GB maximum for file sizes. So it is not suitable
+  for large models.
 
 Benchmarking
 ------------
