@@ -203,11 +203,11 @@ and buffer is refilled using ``org.pytorch.torchvision.TensorImageUtils.imageYUV
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 **Available since Pytorch 1.13**
 
-Pytorch mobile also support a flatbuffer based file format that is faster
-to load. Both flatbuffer and pickle based model file can be load with the
-same `_load_for_lite_interpreter` (Python) or `_load_for_mobile`(C++) API.
+PyTorch Mobile also supports a FlatBuffer-based file format that is faster
+to load. Both flatbuffer and pickle-based model file can be load with the
+same ``_load_for_lite_interpreter`` (Python) or ``_load_for_mobile``(C++) API.
 
-To use flatbuffer format, instead of create model file with
+To use the FlatBuffer format, instead of creating the model file with ``model._save_for_lite_interpreter('path/to/file.ptl')``, you can run the following command:
 
 ::
 
@@ -221,10 +221,10 @@ One can save using
   model._save_for_lite_interpreter('path/to/file.ptl', _use_flatbuffer=True)
 
 
-The extra kwarg `_use_flatbuffer` makes a flatbuffer file instead of
+The extra arguemnt ``_use_flatbuffer`` makes a FlatBuffer file instead of a
 zip file. The created file will be faster to load.
 
-For example, using resnet-50, running the following script:
+For example, using ResNet-50 and running the following script:
 
 ::
 
@@ -248,7 +248,7 @@ For example, using resnet-50, running the following script:
 
 
 
-yields
+you would get the following result: 
 
 ::
 
@@ -257,7 +257,7 @@ yields
   Load flatbuffer file:
   0.038842832999999466
 
-Speed ups on actual mobile devices will be smaller. One can still expect
+While speed ups on actual mobile devices will be smaller, you can still expect
 3x - 6x load time reductions.
 
 
