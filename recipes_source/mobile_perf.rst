@@ -210,10 +210,6 @@ same ``_load_for_lite_interpreter`` (Python) or ``_load_for_mobile``(C++) API.
 To use the FlatBuffer format, instead of creating the model file with
 ``model._save_for_lite_interpreter('path/to/file.ptl')``, you can run the following command:
 
-::
-
-  model._save_for_lite_interpreter('path/to/file.ptl')
-
 
 One can save using
 
@@ -261,14 +257,13 @@ you would get the following result:
 While speed ups on actual mobile devices will be smaller, you can still expect
 3x - 6x load time reductions.
 
-### Reasons to not use flatbuffer based mobile model:
+### Reasons to avoid using a FlatBuffer-based mobile model
 
-However flatbuffer format also has some limitations that one should consider
-before using it. Namely:
+However, FlatBuffer format also has some limitations that you might want to consider:
 
-* It is only available since Pytorch 1.13. Therefore, client devices compiled
-  with earlier Pytorch versions might not be able to load it.
-* Flatbuffer library imposes a 4GB maximum for file sizes. So it is not suitable
+* It is only available in PyTorch 1.13 or later. Therefore, client devices compiled
+  with earlier PyTorch versions might not be able to load it.
+* The Flatbuffer library imposes a 4GB limit for file sizes. So it is not suitable
   for large models.
 
 Benchmarking
