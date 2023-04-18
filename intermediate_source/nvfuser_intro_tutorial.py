@@ -71,7 +71,7 @@ if int(major) == 0 and int(minor) < 2:
 # networks, so improving the speed of these operations can improve
 # overall network training speed. Future releases of nvFuser will
 # improve the performance of Linear Layers, but for now we will
-# specifically look at the Bias-Dropout-Add-LayerNorm section of this
+# specifically look at the ``Bias-Dropout-Add-LayerNorm`` section of this
 # Transformer Block.
 #
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_transformer_block.png
@@ -154,7 +154,7 @@ def profile_workload(forward_func, grad_output, iteration_count=100, label=""):
         # Run model, forward and backward
         output = forward_func()
         output.backward(grad_output)
-        # delete gradiens to avoid profiling the gradient accumulation
+        # delete gradients to avoid profiling the gradient accumulation
         for p in parameters:
             p.grad = None
 
@@ -165,7 +165,7 @@ def profile_workload(forward_func, grad_output, iteration_count=100, label=""):
         # Run model, forward and backward
         output = forward_func()
         output.backward(grad_output)
-        # delete gradiens to avoid profiling the gradient accumulation
+        # delete gradients to avoid profiling the gradient accumulation
         for p in parameters:
             p.grad = None
 
@@ -265,7 +265,7 @@ profile_workload(
 # nvFuser took around 2.4s in total to compile these high speed
 # GPU functions.
 #
-# nvFuser’s capabilities extend well beyond this initial performance gain.
+# nvFuser's capabilities extend well beyond this initial performance gain.
 #
 
 ######################################################################
@@ -281,7 +281,7 @@ profile_workload(
 # To use nvFuser on inputs that change shape from iteration, we
 # generate new input and output gradient tensors and make a few
 # different sizes. Since the last dimension is shared with the
-# parameters and cannot be changed dynamically in LayerNorm, we
+# parameters and cannot be changed dynamically in ``LayerNorm``, we
 # perturb the first two dimensions of the input and gradient tensors.
 #
 
@@ -390,7 +390,7 @@ print("Average iterations per second: {:.2f}".format(iters_per_second))
 #
 
 ######################################################################
-# Defining novel operations with nvFuser and FuncTorch
+# Defining novel operations with nvFuser and functorch
 # ----------------------------------------------------
 #
 # One of the primary benefits of nvFuser is the ability to define
@@ -398,8 +398,8 @@ print("Average iterations per second: {:.2f}".format(iters_per_second))
 # just-in-time compiled into efficient kernels.
 #
 # PyTorch has strong performance for any individual operation,
-# especially composite operations like LayerNorm. However, if
-# LayerNorm wasn’t already implemented in PyTorch as a composite
+# especially composite operations like ``LayerNorm``. However, if
+# ``LayerNorm`` wasn’t already implemented in PyTorch as a composite
 # operation, then you’d have to define it as a series of simpler
 # (primitive) operations. Let’s make such a definition and run it
 # without nvFuser.
@@ -488,7 +488,7 @@ profile_workload(
 #
 # However, the performance is still slower than the original eager
 # mode performance of the composite definition. TorchScript works well
-# when predefined composite operations are used, however TorchScript’s
+# when predefined composite operations are used, however TorchScript
 # application of Autograd saves all of the activations for each
 # operator in the fusion for re-use in the backwards pass. However,
 # this is not typically the optimal choice. Especially when chaining
@@ -499,7 +499,7 @@ profile_workload(
 # It’s possible to optimize away many of these unnecessary memory
 # accesses, but it requires building a connected forward and backward
 # graph which isn’t possible with TorchScript. The
-# `memory_efficient_fusion` pass in FuncTorch, however, is such an
+# ``memory_efficient_fusion`` pass in functorch, however, is such an
 # optimization pass. To use this pass, we have to redefine our
 # function to pull the constants inside (for now it’s easiest to make
 # non-tensor constants literals in the function definition):
@@ -527,11 +527,11 @@ def primitive_definition_for_memory_efficient_fusion(
 
 ######################################################################
 # Now, instead of passing our function to TorchScript, we will pass it
-# to FuncTorch’s optimization pass.
+# to functorch optimization pass.
 #
 
 
-# Optimize the model with FuncTorch tracing and the memory efficiency
+# Optimize the model with functorch tracing and the memory efficiency
 # optimization pass
 memory_efficient_primitive_definition = memory_efficient_fusion(
     primitive_definition_for_memory_efficient_fusion
@@ -550,22 +550,22 @@ profile_workload(
 
 ######################################################################
 # This recovers even more speed, but it’s still not as fast as
-# TorchScripts original performance with the composite definition.
+# TorchScript original performance with the composite definition.
 # However, this is still faster than running this new definition
 # without nvFuser, and is still faster than the composite definition
 # without nvFuser.
 #
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_5.png
 #
-# .. note:: FuncTorch’s memory efficient pass is experimental and still
+# .. note:: The functorch memory efficient pass is experimental and still
 #           actively in development.
 #           Future versions of the API are expected to achieve performance
 #           closer to that of TorchScript with the composite definition.
 #
-# .. note:: FuncTorch’s memory efficient pass specializes on the shapes of
+# .. note:: The functorch memory efficient pass specializes on the shapes of
 #           the inputs to the function. If new inputs are provided with
 #           different shapes, then you need to construct a new function
-#           using `memory_efficient_fusion` and apply it to the new inputs.
+#           using ``memory_efficient_fusion`` and apply it to the new inputs.
 
 
 ######################################################################
@@ -577,10 +577,10 @@ profile_workload(
 # an entirely new operation in PyTorch – which takes a lot of time and
 # knowledge of the lower-level PyTorch code as well as parallel
 # programming – or writing the operation in simpler PyTorch ops and
-# settling for poor performance. For example, let's replace LayerNorm
-# in our example with RMSNorm. Even though RMSNorm is a bit simpler
-# than LayerNorm, it doesn’t have an existing compound operation in
-# PyTorch. See the `Root Mean Square Layer Normalization <https://doi.org/10.48550/arXiv.1910.07467>`__ paper for more information about RMSNorm.
+# settling for poor performance. For example, let's replace ``LayerNorm``
+# in our example with ``RMSNorm``. Even though ``RMSNorm`` is a bit simpler
+# than ``LayerNorm``, it doesn’t have an existing compound operation in
+# PyTorch. See the `Root Mean Square Layer Normalization <https://doi.org/10.48550/arXiv.1910.07467>`__ paper for more information about ``RMSNorm``.
 # As before, we’ll define our new transformer block with
 # primitive PyTorch operations.
 #
@@ -608,7 +608,7 @@ def with_rms_norm(
 # As before, we’ll get a baseline by running PyTorch without nvFuser.
 #
 
-# Profile rms_norm
+# Profile ``rms_norm``
 func = functools.partial(
     with_rms_norm,
     input1,
@@ -625,7 +625,7 @@ profile_workload(func, grad_output, iteration_count=100, label="Eager Mode - RMS
 # With nvFuser through TorchScript.
 #
 
-# Profile scripted rms_norm
+# Profile scripted ``rms_norm``
 scripted_with_rms_norm = torch.jit.script(with_rms_norm)
 func = functools.partial(
     scripted_with_rms_norm,
@@ -656,7 +656,7 @@ def with_rms_norm_for_memory_efficient_fusion(
     return norm_output
 
 
-# Profile memory efficient rms_norm
+# Profile memory efficient ``rms_norm``
 memory_efficient_rms_norm = memory_efficient_fusion(
     with_rms_norm_for_memory_efficient_fusion
 )
@@ -666,12 +666,12 @@ profile_workload(func, grad_output, iteration_count=100, label="FuncTorch - RMS 
 ######################################################################
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_6.png
 #
-# Since RMSNorm is simpler than LayerNorm the performance of our new
+# Since ``RMSNorm`` is simpler than ``LayerNorm`` the performance of our new
 # transformer block is a little higher than the primitive definition
 # without nvFuser (354 iterations per second compared with 260
 # iterations per second). With TorchScript, the iterations per second
 # increases by 2.68x and 3.36x to 952 iterations per second and 1,191
-# iterations per second with TorchScript and FuncTorch’s memory
+# iterations per second with TorchScript and functorch memory
 # efficient optimization pass, respectively. The performance of this
 # new operation nearly matches the performance of the composite Layer
 # Norm definition with TorchScript.
