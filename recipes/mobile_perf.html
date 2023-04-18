@@ -670,6 +670,58 @@ Instead of this, we can reuse the same memory that we allocated on the previous 
 <p>Member fields <code class="docutils literal notranslate"><span class="pre">mModule</span></code>, <code class="docutils literal notranslate"><span class="pre">mInputTensorBuffer</span></code> and <code class="docutils literal notranslate"><span class="pre">mInputTensor</span></code> are initialized only once
 and buffer is refilled using <code class="docutils literal notranslate"><span class="pre">org.pytorch.torchvision.TensorImageUtils.imageYUV420CenterCropToFloatBuffer</span></code>.</p>
 </div>
+<div class="section" id="load-time-optimization">
+<h3>6. Load time optimization<a class="headerlink" href="#load-time-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Available since Pytorch 1.13</strong></p>
+<p>PyTorch Mobile also supports a FlatBuffer-based file format that is faster
+to load. Both flatbuffer and pickle-based model file can be load with the
+same <code class="docutils literal notranslate"><span class="pre">_load_for_lite_interpreter</span></code> (Python) or <a href="#id1"><span class="problematic" id="id2">``</span></a>_load_for_mobile``(C++) API.</p>
+<p>To use the FlatBuffer format, instead of creating the model file with
+<code class="docutils literal notranslate"><span class="pre">model._save_for_lite_interpreter('path/to/file.ptl')</span></code>, you can run the following command:</p>
+<p>One can save using</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s1">&#39;path/to/file.ptl&#39;</span><span class="p">,</span> <span class="n">_use_flatbuffer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The extra argument <code class="docutils literal notranslate"><span class="pre">_use_flatbuffer</span></code> makes a FlatBuffer file instead of a
+zip file. The created file will be faster to load.</p>
+<p>For example, using ResNet-50 and running the following script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.jit</span> <span class="kn">import</span> <span class="n">mobile</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;pytorch/vision:v0.10.0&#39;</span><span class="p">,</span> <span class="s1">&#39;deeplabv3_resnet50&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">jit_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">jit_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s1">&#39;/tmp/jit_model.ptl&#39;</span><span class="p">)</span>
+<span class="n">jit_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s1">&#39;/tmp/jit_model.ff&#39;</span><span class="p">,</span> <span class="n">_use_flatbuffer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">timeit</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Load ptl file:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s1">&#39;from torch.jit import mobile; mobile._load_for_lite_interpreter(&quot;/tmp/jit_model.ptl&quot;)&#39;</span><span class="p">,</span>
+                       <span class="n">number</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Load flatbuffer file:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s1">&#39;from torch.jit import mobile; mobile._load_for_lite_interpreter(&quot;/tmp/jit_model.ff&quot;)&#39;</span><span class="p">,</span>
+                       <span class="n">number</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>you would get the following result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Load</span> <span class="n">ptl</span> <span class="n">file</span><span class="p">:</span>
+<span class="mf">0.5387594579999999</span>
+<span class="n">Load</span> <span class="n">flatbuffer</span> <span class="n">file</span><span class="p">:</span>
+<span class="mf">0.038842832999999466</span>
+</pre></div>
+</div>
+<p>While speed ups on actual mobile devices will be smaller, you can still expect
+3x - 6x load time reductions.</p>
+<p>### Reasons to avoid using a FlatBuffer-based mobile model</p>
+<p>However, FlatBuffer format also has some limitations that you might want to consider:</p>
+<ul class="simple">
+<li><p>It is only available in PyTorch 1.13 or later. Therefore, client devices compiled
+with earlier PyTorch versions might not be able to load it.</p></li>
+<li><p>The Flatbuffer library imposes a 4GB limit for file sizes. So it is not suitable
+for large models.</p></li>
+</ul>
+</div>
 </div>
 <div class="section" id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Permalink to this heading">¶</a></h2>
@@ -800,6 +852,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#use-torch-utils-mobile-optimizer">3. Use torch.utils.mobile_optimizer</a></li>
 <li><a class="reference internal" href="#prefer-using-channels-last-tensor-memory-format">4. Prefer Using Channels Last Tensor memory format</a></li>
 <li><a class="reference internal" href="#android-reusing-tensors-for-forward">5. Android - Reusing tensors for forward</a></li>
+<li><a class="reference internal" href="#load-time-optimization">6. Load time optimization</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#benchmarking">Benchmarking</a><ul>
