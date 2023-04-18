@@ -396,7 +396,7 @@ class Mario(Mario):  # subclassing for continuity
 # In our implementation, we share feature generator ``features`` across
 # :math:`Q_{online}` and :math:`Q_{target}`, but maintain separate FC
 # classifiers for each. :math:`\theta_{target}` (the parameters of
-# :math:`Q_{target}`) is frozen to prevent updation by backprop. Instead,
+# :math:`Q_{target}`) is frozen to prevent updating by backprop. Instead,
 # it is periodically synced with :math:`\theta_{online}` (more on this
 # later).
 #
