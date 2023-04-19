@@ -35,7 +35,7 @@ Prerequisites:
 # As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
 # such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
 # other half are on another. To do this, we pull out the ``Encoder`` and
-# ``Decoder`` sections into seperate modules and then build an ``nn.Sequential``
+# ``Decoder`` sections into separate modules and then build an ``nn.Sequential``
 # representing the original Transformer module.
 
 import sys
@@ -134,16 +134,17 @@ class PositionalEncoding(nn.Module):
 # length 6:
 #
 # .. math::
-#   \begin{bmatrix}
-#   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
-#   \end{bmatrix}
-#   \Rightarrow
-#   \begin{bmatrix}
-#   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
-#   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
-#   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
-#   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-#   \end{bmatrix}
+#
+#    \begin{bmatrix}
+#    \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+#    \end{bmatrix}
+#    \Rightarrow
+#    \begin{bmatrix}
+#    \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+#    \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+#    \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+#    \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+#    \end{bmatrix}
 #
 # These columns are treated as independent by the model, which means that
 # the dependence of ``G`` and ``F`` can not be learned, but allows more
