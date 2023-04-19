@@ -53,7 +53,7 @@ with high performance requirements. For that:
 # Simple Web Server
 # -----------------
 #
-# Following is a simple webserver, taken from Flask's documentation
+# Following is a simple web server, taken from Flask's documentation
 
 
 from flask import Flask
@@ -114,7 +114,7 @@ def predict():
 # ~~~~~~~~~~~~~~~~~~~
 #
 # DenseNet model requires the image to be of 3 channel RGB image of size
-# 224 x 224. We will also normalise the image tensor with the required mean
+# 224 x 224. We will also normalize the image tensor with the required mean
 # and standard deviation values. You can read more about it
 # `here <https://pytorch.org/vision/stable/models.html>`_.
 #

@@ -234,7 +234,7 @@ def inputTensor(line):
         tensor[li][0][all_letters.find(letter)] = 1
     return tensor
 
-# LongTensor of second letter to end (EOS) for target
+# ``LongTensor`` of second letter to end (EOS) for target
 def targetTensor(line):
     letter_indexes = [all_letters.find(line[li]) for li in range(1, len(line))]
     letter_indexes.append(n_letters - 1) # EOS
@@ -322,7 +322,7 @@ n_iters = 100000
 print_every = 5000
 plot_every = 500
 all_losses = []
-total_loss = 0 # Reset every plot_every iters
+total_loss = 0 # Reset every ``plot_every`` ``iters``
 
 start = time.time()
 
@@ -429,6 +429,6 @@ samples('Chinese', 'CHI')
 #    choosing a start letter
 # -  Get better results with a bigger and/or better shaped network
 #
-#    -  Try the nn.LSTM and nn.GRU layers
+#    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
 #    -  Combine multiple of these RNNs as a higher level network
 #

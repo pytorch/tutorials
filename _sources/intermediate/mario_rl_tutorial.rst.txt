@@ -21,10 +21,7 @@
 Train a Mario-playing RL Agent
 ================
 
-Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
-Subramanian <https://github.com/suraj813>`__, `Howard
-Wang <https://github.com/hw26>`__, `Steven
-Guo <https://github.com/GuoYuzhang>`__.
+**Authors:** `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj Subramanian <https://github.com/suraj813>`__, `Howard Wang <https://github.com/hw26>`__, `Steven Guo <https://github.com/GuoYuzhang>`__.
 
 
 This tutorial walks you through the fundamentals of Deep Reinforcement
@@ -43,14 +40,14 @@ as your companion. The full code is available
 .. figure:: /_static/img/mario.gif
    :alt: mario
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-36
+.. GENERATED FROM PYTHON SOURCE LINES 29-33
 
 .. code-block:: bash
 
     %%bash
     pip install gym-super-mario-bros==7.4.0
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-60
+.. GENERATED FROM PYTHON SOURCE LINES 35-57
 
 .. code-block:: default
 
@@ -83,7 +80,7 @@ as your companion. The full code is available
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-84
+.. GENERATED FROM PYTHON SOURCE LINES 58-81
 
 RL Definitions
 """"""""""""""""""
@@ -109,7 +106,7 @@ maximizes returns. :math:`Q` can be said to stand for the “quality” of
 the action in a state. We try to approximate this function.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-99
+.. GENERATED FROM PYTHON SOURCE LINES 84-96
 
 Environment
 """"""""""""""""
@@ -124,7 +121,7 @@ When Mario makes an action, the environment responds with the changed
 (next) state, reward and other info.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-116
+.. GENERATED FROM PYTHON SOURCE LINES 96-113
 
 .. code-block:: default
 
@@ -169,7 +166,7 @@ When Mario makes an action, the environment responds with the changed
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-148
+.. GENERATED FROM PYTHON SOURCE LINES 114-145
 
 Preprocess Environment
 ------------------------
@@ -203,7 +200,7 @@ jumping based on the direction of his movement in the previous several
 frames.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-216
+.. GENERATED FROM PYTHON SOURCE LINES 145-213
 
 .. code-block:: default
 
@@ -282,7 +279,7 @@ frames.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-227
+.. GENERATED FROM PYTHON SOURCE LINES 214-224
 
 After applying the above wrappers to the environment, the final wrapped
 state consists of 4 gray-scaled consecutive frames stacked together, as
@@ -295,7 +292,7 @@ is represented by a 3-D array of size ``[4, 84, 84]``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 230-245
+.. GENERATED FROM PYTHON SOURCE LINES 227-242
 
 Agent
 """""""""
@@ -313,7 +310,7 @@ should be able to:
 -  **Learn** a better action policy over time
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-268
+.. GENERATED FROM PYTHON SOURCE LINES 242-265
 
 .. code-block:: default
 
@@ -347,13 +344,13 @@ should be able to:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 269-272
+.. GENERATED FROM PYTHON SOURCE LINES 266-269
 
 In the following sections, we will populate Mario’s parameters and
 define his functions.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-285
+.. GENERATED FROM PYTHON SOURCE LINES 272-282
 
 Act
 --------------
@@ -366,7 +363,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 ``Learn`` section) to provide the most optimal action.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-335
+.. GENERATED FROM PYTHON SOURCE LINES 282-332
 
 .. code-block:: default
 
@@ -396,9 +393,9 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
         Given a state, choose an epsilon-greedy action and update value of step.
 
         Inputs:
-        state(LazyFrame): A single observation of the current state, dimension is (state_dim)
+        state(``LazyFrame``): A single observation of the current state, dimension is (state_dim)
         Outputs:
-        action_idx (int): An integer representing which action Mario will perform
+        ``action_idx`` (``int``): An integer representing which action Mario will perform
         """
             # EXPLORE
             if np.random.rand() < self.exploration_rate:
@@ -427,7 +424,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 336-349
+.. GENERATED FROM PYTHON SOURCE LINES 333-346
 
 Cache and Recall
 ----------------------
@@ -443,7 +440,7 @@ and whether the game is *done*.
 memory, and uses that to learn the game.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 349-390
+.. GENERATED FROM PYTHON SOURCE LINES 346-387
 
 .. code-block:: default
 
@@ -460,11 +457,11 @@ memory, and uses that to learn the game.
             Store the experience to self.memory (replay buffer)
 
             Inputs:
-            state (LazyFrame),
-            next_state (LazyFrame),
-            action (int),
-            reward (float),
-            done(bool))
+            state (``LazyFrame``),
+            next_state (``LazyFrame``),
+            action (``int``),
+            reward (``float``),
+            done(``bool``))
             """
             def first_if_tuple(x):
                 return x[0] if isinstance(x, tuple) else x
@@ -495,7 +492,7 @@ memory, and uses that to learn the game.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 391-408
+.. GENERATED FROM PYTHON SOURCE LINES 388-405
 
 Learn
 --------------
@@ -508,21 +505,21 @@ action-value function.
 In our implementation, we share feature generator ``features`` across
 :math:`Q_{online}` and :math:`Q_{target}`, but maintain separate FC
 classifiers for each. :math:`\theta_{target}` (the parameters of
-:math:`Q_{target}`) is frozen to prevent updation by backprop. Instead,
+:math:`Q_{target}`) is frozen to prevent updating by backprop. Instead,
 it is periodically synced with :math:`\theta_{online}` (more on this
 later).
 
 Neural Network
 ~~~~~~~~~~~~~~~~~~
 
-.. GENERATED FROM PYTHON SOURCE LINES 408-450
+.. GENERATED FROM PYTHON SOURCE LINES 405-447
 
 .. code-block:: default
 
 
 
     class MarioNet(nn.Module):
-        """mini cnn structure
+        """mini CNN structure
       input -> (conv2d + relu) x 3 -> flatten -> (dense + relu) x 2 -> output
       """
 
@@ -568,7 +565,7 @@ Neural Network
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-486
+.. GENERATED FROM PYTHON SOURCE LINES 448-483
 
 TD Estimate & TD Target
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -606,7 +603,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 (because we don’t need to backpropagate on :math:`\theta_{target}`).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 486-509
+.. GENERATED FROM PYTHON SOURCE LINES 483-506
 
 .. code-block:: default
 
@@ -640,7 +637,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 510-533
+.. GENERATED FROM PYTHON SOURCE LINES 507-530
 
 Updating the model
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -666,7 +663,7 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 533-552
+.. GENERATED FROM PYTHON SOURCE LINES 530-549
 
 .. code-block:: default
 
@@ -696,13 +693,13 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 553-556
+.. GENERATED FROM PYTHON SOURCE LINES 550-553
 
 Save checkpoint
 ~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 556-570
+.. GENERATED FROM PYTHON SOURCE LINES 553-567
 
 .. code-block:: default
 
@@ -727,13 +724,13 @@ Save checkpoint
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 571-574
+.. GENERATED FROM PYTHON SOURCE LINES 568-571
 
 Putting it all together
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 574-611
+.. GENERATED FROM PYTHON SOURCE LINES 571-608
 
 .. code-block:: default
 
@@ -781,13 +778,13 @@ Putting it all together
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 612-615
+.. GENERATED FROM PYTHON SOURCE LINES 609-612
 
 Logging
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 615-723
+.. GENERATED FROM PYTHON SOURCE LINES 612-720
 
 .. code-block:: default
 
@@ -906,7 +903,7 @@ Logging
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 724-730
+.. GENERATED FROM PYTHON SOURCE LINES 721-727
 
 Let’s play!
 """""""""""""""
@@ -915,7 +912,7 @@ In this example we run the training loop for 10 episodes, but for Mario to truly
 his world, we suggest running the loop for at least 40,000 episodes!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 730-777
+.. GENERATED FROM PYTHON SOURCE LINES 727-774
 
 .. code-block:: default
 
@@ -985,7 +982,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
 
-    Episode 0 - Step 463 - Epsilon 0.9998842566842889 - Mean Reward 1269.0 - Mean Length 463.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 4.844 - Time 2023-04-17T23:36:00
+    Episode 0 - Step 373 - Epsilon 0.9999067543359776 - Mean Reward 1008.0 - Mean Length 373.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 3.544 - Time 2023-04-19T00:59:08
     /opt/conda/lib/python3.10/site-packages/torchvision/transforms/functional.py:1603: UserWarning:
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
@@ -994,7 +991,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 778-784
+.. GENERATED FROM PYTHON SOURCE LINES 775-781
 
 Conclusion
 """""""""""""""
@@ -1006,7 +1003,7 @@ to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  29.447 seconds)
+   **Total running time of the script:** ( 0 minutes  31.038 seconds)
 
 
 .. _sphx_glr_download_intermediate_mario_rl_tutorial.py:

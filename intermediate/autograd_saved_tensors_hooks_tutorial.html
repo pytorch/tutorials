@@ -414,8 +414,7 @@ perform backpropagation. This tutorial walks through how these tensors
 are saved/retrieved and how you can define hooks to control the
 packing/unpacking process.</p>
 <p>This tutorial assumes you are familiar with how backpropagation works in
-theory. If not, read this first:
-<a class="reference external" href="https://colab.research.google.com/drive/1aWNdmYt7RcHMbUk-Xz2Cv5-cGFSWPXe0#scrollTo=AHcEJ6nXUb7W">https://colab.research.google.com/drive/1aWNdmYt7RcHMbUk-Xz2Cv5-cGFSWPXe0#scrollTo=AHcEJ6nXUb7W</a></p>
+theory. If not, read <a class="reference external" href="https://colab.research.google.com/drive/1aWNdmYt7RcHMbUk-Xz2Cv5-cGFSWPXe0#scrollTo=AHcEJ6nXUb7W">this</a> first.</p>
 <div class="section" id="saved-tensors">
 <h2>Saved tensors<a class="headerlink" href="#saved-tensors" title="Permalink to this heading">¶</a></h2>
 <p>Training a model usually consumes more memory than running it for
@@ -485,7 +484,7 @@ for the graph.</p>
 <a class="reference internal image-reference" href="https://user-images.githubusercontent.com/8019486/130124570-f1074098-1bb3-459e-bf5a-03bf6f65b403.png"><img alt="https://user-images.githubusercontent.com/8019486/130124570-f1074098-1bb3-459e-bf5a-03bf6f65b403.png" src="https://user-images.githubusercontent.com/8019486/130124570-f1074098-1bb3-459e-bf5a-03bf6f65b403.png" style="width: 500px;"/></a>
 </div>
 <p>In the example above, executing without grad would only have kept <code class="docutils literal notranslate"><span class="pre">x</span></code>
-and <code class="docutils literal notranslate"><span class="pre">y</span></code> in the scope, But the graph additionnally stores <code class="docutils literal notranslate"><span class="pre">f(x)</span></code> and
+and <code class="docutils literal notranslate"><span class="pre">y</span></code> in the scope, But the graph additionally stores <code class="docutils literal notranslate"><span class="pre">f(x)</span></code> and
 <code class="docutils literal notranslate"><span class="pre">f(f(x))</span></code>. Hence, running a forward pass during training will be more
 costly in memory usage than during evaluation (more precisely, when
 autograd is not required).</p>
@@ -551,7 +550,7 @@ Unpacking tensor([1., 1., 1., 1., 1.], requires_grad=True)
 Unpacking tensor([2., 2., 2., 2., 2.], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">pack_hook</span></code> function will be called everytime an operation saves
+<p>The <code class="docutils literal notranslate"><span class="pre">pack_hook</span></code> function will be called every time an operation saves
 a tensor for backward.
 The output of <code class="docutils literal notranslate"><span class="pre">pack_hook</span></code> is then stored in the computation graph
 instead of the original tensor.
@@ -573,11 +572,11 @@ value from it.</p>
 <h3>Some unconventional examples<a class="headerlink" href="#some-unconventional-examples" title="Permalink to this heading">¶</a></h3>
 <p>First, some silly examples to illustrate what is possible but you
 probably don’t ever want to do it.</p>
-<p><strong>Returning and int</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returning the index of a Python list</span>
-<span class="c1"># Relatively harmless but with debatable usefulness</span>
-
-<span class="n">storage</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="section" id="returning-an-int">
+<h4>Returning an <code class="docutils literal notranslate"><span class="pre">int</span></code><a class="headerlink" href="#returning-an-int" title="Permalink to this heading">¶</a></h4>
+<p>Returning the index of a Python list
+Relatively harmless but with debatable usefulness</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">storage</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
     <span class="n">storage</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
@@ -594,11 +593,12 @@ probably don’t ever want to do it.</p>
 <span class="k">assert</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<p><strong>Returning a tuple</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returning some tensor and a function how to unpack it</span>
-<span class="c1"># Quite unlikely to be useful in its current form</span>
-
-<span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+</div>
+<div class="section" id="returning-a-tuple">
+<h4>Returning a tuple<a class="headerlink" href="#returning-a-tuple" title="Permalink to this heading">¶</a></h4>
+<p>Returning some tensor and a function how to unpack it
+Quite unlikely to be useful in its current form</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
     <span class="n">delta</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="o">*</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">size</span><span class="p">())</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">-</span> <span class="n">delta</span><span class="p">,</span> <span class="k">lambda</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">+</span> <span class="n">delta</span>
 
@@ -615,11 +615,12 @@ probably don’t ever want to do it.</p>
 <span class="k">assert</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<p><strong>Returning a str</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returning the __repr__ of the tensor</span>
-<span class="c1"># Probably never do this</span>
-
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</div>
+<div class="section" id="returning-a-str">
+<h4>Returning a <code class="docutils literal notranslate"><span class="pre">str</span></code><a class="headerlink" href="#returning-a-str" title="Permalink to this heading">¶</a></h4>
+<p>Returning the <code class="docutils literal notranslate"><span class="pre">__repr__</span> <span class="pre">of</span></code> the tensor
+Probably never do this</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-graph sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.graph.saved_tensors_hooks" title="torch.autograd.graph.saved_tensors_hooks"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">saved_tensors_hooks</span></a><span class="p">(</span><span class="k">lambda</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">),</span> <span class="k">lambda</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">:</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">"torch."</span> <span class="o">+</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)):</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">*</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
@@ -631,6 +632,7 @@ illustrate that the output of <code class="docutils literal notranslate"><span c
 object as long as it contains enough information to retrieve the
 content of the original tensor.
 In the next sections, we focus on more useful applications.</p>
+</div>
 </div>
 <div class="section" id="saving-tensors-to-cpu">
 <h3>Saving tensors to CPU<a class="headerlink" href="#saving-tensors-to-cpu" title="Permalink to this heading">¶</a></h3>
@@ -677,7 +679,7 @@ well as the ability to use pinned memory).</p>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward" title="torch.Tensor.backward"><span class="n">loss</span><span class="o">.</span><span class="n">backward</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p>In practice, on a A100 GPU, for a resnet-152 with batch size 256, this
+<p>In practice, on a A100 GPU, for a ResNet-152 with batch size 256, this
 corresponds to a GPU memory usage reduction from 48GB to 5GB, at the
 cost of a 6x slowdown.</p>
 <p>Of course, you can modulate the tradeoff by only saving to CPU certain
@@ -821,7 +823,7 @@ should be saved (here, those whose number of elements is greater than
 <p>If you’ve made it this far, congratulations! You now know how to use
 saved tensor hooks and how they can be useful in a few scenarios to
 tradeoff memory for compute.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.068 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.062 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-autograd-saved-tensors-hooks-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/bc9c404ccbb9fd600e9d44a56fe16bee/autograd_saved_tensors_hooks_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_saved_tensors_hooks_tutorial.py</span></code></a></p>
@@ -879,7 +881,12 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </ul>
 </li>
 <li><a class="reference internal" href="#saved-tensors-hooks">Saved tensors hooks</a><ul>
-<li><a class="reference internal" href="#some-unconventional-examples">Some unconventional examples</a></li>
+<li><a class="reference internal" href="#some-unconventional-examples">Some unconventional examples</a><ul>
+<li><a class="reference internal" href="#returning-an-int">Returning an <code class="docutils literal notranslate"><span class="pre">int</span></code></a></li>
+<li><a class="reference internal" href="#returning-a-tuple">Returning a tuple</a></li>
+<li><a class="reference internal" href="#returning-a-str">Returning a <code class="docutils literal notranslate"><span class="pre">str</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#saving-tensors-to-cpu">Saving tensors to CPU</a></li>
 <li><a class="reference internal" href="#saving-tensors-to-disk">Saving tensors to disk</a></li>
 </ul>

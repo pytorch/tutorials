@@ -53,7 +53,7 @@ may not actually be reduced. See the final section for more details.
 For simplicity, in this tutorial we hardcode `bias=False`, `stride=1`, `padding=0`, `dilation=1`,
 and `groups=1` for Conv2D. For BatchNorm2D, we hardcode `eps=1e-3`, `momentum=0.1`,
 `affine=False`, and `track_running_statistics=False`. Another small difference
-is that we add epsilon in the denomator outside of the square root in the computation
+is that we add epsilon in the denominator outside of the square root in the computation
 of batch norm.
 
 [0] https://nenadmarkus.com/p/fusing-batchnorm-and-conv/
@@ -103,7 +103,7 @@ custom functions so we can validate their correctness individually
 
 .. GENERATED FROM PYTHON SOURCE LINES 75-76
 
-When testing with gradcheck, it is important to use double precision
+When testing with ``gradcheck``, it is important to use double precision
 
 .. GENERATED FROM PYTHON SOURCE LINES 76-80
 
@@ -130,8 +130,8 @@ When testing with gradcheck, it is important to use double precision
 
 Backward Formula Implementation for Batch Norm
 -------------------------------------------------------------------
-Batch Norm has two modes: training and eval mode. In training mode
-the sample statistics are a function of the inputs. In eval mode,
+Batch Norm has two modes: training and ``eval`` mode. In training mode
+the sample statistics are a function of the inputs. In ``eval`` mode,
 we use the saved running statistics, which are not a function of the inputs.
 This makes non-training mode's backward significantly simpler. Below
 we implement and test only the training mode case.
@@ -141,32 +141,32 @@ we implement and test only the training mode case.
 .. code-block:: default
 
     def unsqueeze_all(t):
-        # Helper function to unsqueeze all the dimensions that we reduce over
+        # Helper function to ``unsqueeze`` all the dimensions that we reduce over
         return t[None, :, None, None]
 
     def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps):
-        # We use the formula: out = (X - mean(X)) / (sqrt(var(X)) + eps)
-        # in batch norm 2d's forward. To simplify our derivation, we follow the
+        # We use the formula: ``out = (X - mean(X)) / (sqrt(var(X)) + eps)``
+        # in batch norm 2D forward. To simplify our derivation, we follow the
         # chain rule and compute the gradients as follows before accumulating
         # them all into a final grad_input.
-        #  1) 'grad of out wrt var(X)' * 'grad of var(X) wrt X'
-        #  2) 'grad of out wrt mean(X)' * 'grad of mean(X) wrt X'
-        #  3) 'grad of out wrt X in the numerator' * 'grad of X wrt X'
+        #  1) ``grad of out wrt var(X)`` * ``grad of var(X) wrt X``
+        #  2) ``grad of out wrt mean(X)`` * ``grad of mean(X) wrt X``
+        #  3) ``grad of out wrt X in the numerator`` * ``grad of X wrt X``
         # We then rewrite the formulas to use as few extra buffers as possible
         tmp = ((X - unsqueeze_all(sum) / N) * grad_out).sum(dim=(0, 2, 3))
         tmp *= -1
-        d_denom = tmp / (sqrt_var + eps)**2  # d_denom = -num / denom**2
-        # It is useful to delete tensors when you no longer need them with `del`
-        # For example, we could've done `del tmp` here because we won't use it later
-        # In this case, it's not a big difference because tmp only has size of (C,)
+        d_denom = tmp / (sqrt_var + eps)**2  # ``d_denom = -num / denom**2``
+        # It is useful to delete tensors when you no longer need them with ``del``
+        # For example, we could've done ``del tmp`` here because we won't use it later
+        # In this case, it's not a big difference because ``tmp`` only has size of (C,)
         # The important thing is avoid allocating NCHW-sized tensors unnecessarily
-        d_var = d_denom / (2 * sqrt_var)  # denom = torch.sqrt(var) + eps
-        # Compute d_mean_dx before allocating the final NCHW-sized grad_input buffer
+        d_var = d_denom / (2 * sqrt_var)  # ``denom = torch.sqrt(var) + eps``
+        # Compute ``d_mean_dx`` before allocating the final NCHW-sized grad_input buffer
         d_mean_dx = grad_out / unsqueeze_all(sqrt_var + eps)
         d_mean_dx = unsqueeze_all(-d_mean_dx.sum(dim=(0, 2, 3)) / N)
-        # d_mean_dx has already been reassigned to a C-sized buffer so no need to worry
+        # ``d_mean_dx`` has already been reassigned to a C-sized buffer so no need to worry
 
-        # (1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)
+        # ``(1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)``
         grad_input = X * unsqueeze_all(d_var * N)
         grad_input += unsqueeze_all(-d_var * sum)
         grad_input *= 2 / ((N - 1) * N)
@@ -175,13 +175,13 @@ we implement and test only the training mode case.
         # (3) Add 'grad_out / <factor>' without allocating an extra buffer
         grad_input *= unsqueeze_all(sqrt_var + eps)
         grad_input += grad_out
-        grad_input /= unsqueeze_all(sqrt_var + eps)  # sqrt_var + eps > 0!
+        grad_input /= unsqueeze_all(sqrt_var + eps)  # ``sqrt_var + eps > 0!``
         return grad_input
 
     class BatchNorm(torch.autograd.Function):
         @staticmethod
         def forward(ctx, X, eps=1e-3):
-            # Don't save keepdim'd values for backward
+            # Don't save ``keepdim`` values for backward
             sum = X.sum(dim=(0, 2, 3))
             var = X.var(unbiased=True, dim=(0, 2, 3))
             N = X.numel() / X.size(1)
@@ -212,7 +212,7 @@ we implement and test only the training mode case.
 
 .. GENERATED FROM PYTHON SOURCE LINES 152-153
 
-Testing with gradcheck
+Testing with ``gradcheck``
 
 .. GENERATED FROM PYTHON SOURCE LINES 153-156
 
@@ -336,7 +336,7 @@ The next step is to wrap our functional variant in a stateful
 
 .. GENERATED FROM PYTHON SOURCE LINES 231-232
 
-Use gradcheck to validate the correctness of our backward formula
+Use ``gradcheck`` to validate the correctness of our backward formula
 
 .. GENERATED FROM PYTHON SOURCE LINES 232-236
 
@@ -363,7 +363,7 @@ Use gradcheck to validate the correctness of our backward formula
 
 Testing out our new Layer
 -------------------------------------------------------------------
-Use FusedConvBN to train a basic network
+Use ``FusedConvBN`` to train a basic network
 The code below is after some light modifications to the example here:
 https://github.com/pytorch/examples/tree/master/mnist
 
@@ -491,29 +491,29 @@ https://github.com/pytorch/examples/tree/master/mnist
     Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
 
       0%|          | 0/9912422 [00:00<?, ?it/s]
-     95%|#########4| 9404416/9912422 [00:00<00:00, 93943235.46it/s]
-    100%|##########| 9912422/9912422 [00:00<00:00, 96694221.81it/s]
+     76%|#######5  | 7503872/9912422 [00:00<00:00, 74984979.30it/s]
+    100%|##########| 9912422/9912422 [00:00<00:00, 92807691.57it/s]
     Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
     Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
     Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
 
       0%|          | 0/28881 [00:00<?, ?it/s]
-    100%|##########| 28881/28881 [00:00<00:00, 147726455.88it/s]
+    100%|##########| 28881/28881 [00:00<00:00, 114820562.87it/s]
     Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
     Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
     Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
 
       0%|          | 0/1648877 [00:00<?, ?it/s]
-    100%|##########| 1648877/1648877 [00:00<00:00, 27088848.58it/s]
+    100%|##########| 1648877/1648877 [00:00<00:00, 25871692.19it/s]
     Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
     Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
     Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
 
       0%|          | 0/4542 [00:00<?, ?it/s]
-    100%|##########| 4542/4542 [00:00<00:00, 21648328.15it/s]
+    100%|##########| 4542/4542 [00:00<00:00, 28647411.68it/s]
     Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 
@@ -524,20 +524,20 @@ https://github.com/pytorch/examples/tree/master/mnist
 
 A Comparison of Memory Usage
 -------------------------------------------------------------------
-If cuda is enabled, print out memory usage for both `fused=True` and `fused=False`
-For an example run on RTX 3070, CuDNN 8.0.5: fused peak memory: 1.56GB,
+If CUDA is enabled, print out memory usage for both `fused=True` and `fused=False`
+For an example run on NVIDIA GeForce RTX 3070, NVIDIA CUDA® Deep Neural Network library (cuDNN) 8.0.5: fused peak memory: 1.56GB,
 unfused peak memory: 2.68GB
 
 It is important to note that the *peak* memory usage for this model may vary depending
-the specific CuDNN convolution algorithm used. For shallower models, it
+the specific cuDNN convolution algorithm used. For shallower models, it
 may be possible for the peak memory allocated of the fused model to exceed
 that of the unfused model! This is because the memory allocated to compute
-certain CuDNN convolution algorithms can be high enough to "hide" the typical peak
+certain cuDNN convolution algorithms can be high enough to "hide" the typical peak
 you would expect to be near the start of the backward pass.
 
 For this reason, we also record and display the memory allocated at the end
 of the forward pass as an approximation, and to demonstrate that we indeed
-allocate one fewer buffer per fused conv-bn pair.
+allocate one fewer buffer per fused ``conv-bn`` pair.
 
 .. GENERATED FROM PYTHON SOURCE LINES 367-395
 
@@ -563,7 +563,7 @@ allocate one fewer buffer per fused conv-bn pair.
                 scheduler.step()
             peak_memory_allocated.append(torch.cuda.max_memory_allocated())
             torch.cuda.reset_peak_memory_stats()
-        print("CuDNN version:", torch.backends.cudnn.version())
+        print("cuDNN version:", torch.backends.cudnn.version())
         print()
         print("Peak memory allocated:")
         print(f"fused: {peak_memory_allocated[0]/1024**3:.2f}GB, unfused: {peak_memory_allocated[1]/1024**3:.2f}GB")
@@ -599,23 +599,23 @@ allocate one fewer buffer per fused conv-bn pair.
 
     Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352356
     Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.323084
-    Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011064
-    Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.065911
-    Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.219979
-    Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890597
-    Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.612159
-    Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.693416
-    Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.631176
-    Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.219109
-    Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.161255
-    Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.999634
-    Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.863330
-    Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.877732
-    Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.711964
+    Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011065
+    Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.065912
+    Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.219972
+    Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890599
+    Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.612148
+    Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.692926
+    Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.629594
+    Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.216375
+    Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.155217
+    Train Epoch: 0 [45056/60000 (73%)]      Loss: 1.014030
+    Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.912730
+    Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.883736
+    Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.743730
 
-    Test set: Average loss: 0.4201, Accuracy: 8652/10000 (87%)
+    Test set: Average loss: 0.3952, Accuracy: 8792/10000 (88%)
 
-    CuDNN version: 8500
+    cuDNN version: 8500
 
     Peak memory allocated:
     fused: 2.30GB, unfused: 1.77GB
@@ -628,7 +628,7 @@ allocate one fewer buffer per fused conv-bn pair.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  36.028 seconds)
+   **Total running time of the script:** ( 0 minutes  30.655 seconds)
 
 
 .. _sphx_glr_download_intermediate_custom_function_conv_bn_tutorial.py:

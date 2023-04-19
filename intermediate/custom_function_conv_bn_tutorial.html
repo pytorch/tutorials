@@ -437,7 +437,7 @@ may not actually be reduced. See the final section for more details.</p>
 <p>For simplicity, in this tutorial we hardcode <cite>bias=False</cite>, <cite>stride=1</cite>, <cite>padding=0</cite>, <cite>dilation=1</cite>,
 and <cite>groups=1</cite> for Conv2D. For BatchNorm2D, we hardcode <cite>eps=1e-3</cite>, <cite>momentum=0.1</cite>,
 <cite>affine=False</cite>, and <cite>track_running_statistics=False</cite>. Another small difference
-is that we add epsilon in the denomator outside of the square root in the computation
+is that we add epsilon in the denominator outside of the square root in the computation
 of batch norm.</p>
 <p>[0] <a class="reference external" href="https://nenadmarkus.com/p/fusing-batchnorm-and-conv/">https://nenadmarkus.com/p/fusing-batchnorm-and-conv/</a></p>
 <div class="section" id="backward-formula-implementation-for-convolution">
@@ -470,7 +470,7 @@ custom functions so we can validate their correctness individually</p>
         <span class="k">return</span> <span class="n">convolution_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<p>When testing with gradcheck, it is important to use double precision</p>
+<p>When testing with <code class="docutils literal notranslate"><span class="pre">gradcheck</span></code>, it is important to use double precision</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-autograd sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.autograd.gradcheck.html#torch.autograd.gradcheck" title="torch.autograd.gradcheck"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span></a><span class="p">(</span><span class="n">Conv2D</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">))</span>
@@ -482,38 +482,38 @@ custom functions so we can validate their correctness individually</p>
 </div>
 <div class="section" id="backward-formula-implementation-for-batch-norm">
 <h2>Backward Formula Implementation for Batch Norm<a class="headerlink" href="#backward-formula-implementation-for-batch-norm" title="Permalink to this heading">¶</a></h2>
-<p>Batch Norm has two modes: training and eval mode. In training mode
-the sample statistics are a function of the inputs. In eval mode,
+<p>Batch Norm has two modes: training and <code class="docutils literal notranslate"><span class="pre">eval</span></code> mode. In training mode
+the sample statistics are a function of the inputs. In <code class="docutils literal notranslate"><span class="pre">eval</span></code> mode,
 we use the saved running statistics, which are not a function of the inputs.
 This makes non-training mode’s backward significantly simpler. Below
 we implement and test only the training mode case.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">unsqueeze_all</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-    <span class="c1"># Helper function to unsqueeze all the dimensions that we reduce over</span>
+    <span class="c1"># Helper function to ``unsqueeze`` all the dimensions that we reduce over</span>
     <span class="k">return</span> <span class="n">t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">batch_norm_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <span class="nb">sum</span><span class="p">,</span> <span class="n">sqrt_var</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
-    <span class="c1"># We use the formula: out = (X - mean(X)) / (sqrt(var(X)) + eps)</span>
-    <span class="c1"># in batch norm 2d's forward. To simplify our derivation, we follow the</span>
+    <span class="c1"># We use the formula: ``out = (X - mean(X)) / (sqrt(var(X)) + eps)``</span>
+    <span class="c1"># in batch norm 2D forward. To simplify our derivation, we follow the</span>
     <span class="c1"># chain rule and compute the gradients as follows before accumulating</span>
     <span class="c1"># them all into a final grad_input.</span>
-    <span class="c1">#  1) 'grad of out wrt var(X)' * 'grad of var(X) wrt X'</span>
-    <span class="c1">#  2) 'grad of out wrt mean(X)' * 'grad of mean(X) wrt X'</span>
-    <span class="c1">#  3) 'grad of out wrt X in the numerator' * 'grad of X wrt X'</span>
+    <span class="c1">#  1) ``grad of out wrt var(X)`` * ``grad of var(X) wrt X``</span>
+    <span class="c1">#  2) ``grad of out wrt mean(X)`` * ``grad of mean(X) wrt X``</span>
+    <span class="c1">#  3) ``grad of out wrt X in the numerator`` * ``grad of X wrt X``</span>
     <span class="c1"># We then rewrite the formulas to use as few extra buffers as possible</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="p">((</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a> <span class="o">-</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">grad_out</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">tmp</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="n">d_denom</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># d_denom = -num / denom**2</span>
-    <span class="c1"># It is useful to delete tensors when you no longer need them with `del`</span>
-    <span class="c1"># For example, we could've done `del tmp` here because we won't use it later</span>
-    <span class="c1"># In this case, it's not a big difference because tmp only has size of (C,)</span>
+    <span class="n">d_denom</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># ``d_denom = -num / denom**2``</span>
+    <span class="c1"># It is useful to delete tensors when you no longer need them with ``del``</span>
+    <span class="c1"># For example, we could've done ``del tmp`` here because we won't use it later</span>
+    <span class="c1"># In this case, it's not a big difference because ``tmp`` only has size of (C,)</span>
     <span class="c1"># The important thing is avoid allocating NCHW-sized tensors unnecessarily</span>
-    <span class="n">d_var</span> <span class="o">=</span> <span class="n">d_denom</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sqrt_var</span><span class="p">)</span>  <span class="c1"># denom = torch.sqrt(var) + eps</span>
-    <span class="c1"># Compute d_mean_dx before allocating the final NCHW-sized grad_input buffer</span>
+    <span class="n">d_var</span> <span class="o">=</span> <span class="n">d_denom</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sqrt_var</span><span class="p">)</span>  <span class="c1"># ``denom = torch.sqrt(var) + eps``</span>
+    <span class="c1"># Compute ``d_mean_dx`` before allocating the final NCHW-sized grad_input buffer</span>
     <span class="n">d_mean_dx</span> <span class="o">=</span> <span class="n">grad_out</span> <span class="o">/</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
     <span class="n">d_mean_dx</span> <span class="o">=</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="o">-</span><span class="n">d_mean_dx</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span>
-    <span class="c1"># d_mean_dx has already been reassigned to a C-sized buffer so no need to worry</span>
+    <span class="c1"># ``d_mean_dx`` has already been reassigned to a C-sized buffer so no need to worry</span>
 
-    <span class="c1"># (1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)</span>
+    <span class="c1"># ``(1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)``</span>
     <span class="n">grad_input</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a> <span class="o">*</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="n">d_var</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span>
     <span class="n">grad_input</span> <span class="o">+=</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="o">-</span><span class="n">d_var</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">)</span>
     <span class="n">grad_input</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">((</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span>
@@ -522,13 +522,13 @@ we implement and test only the training mode case.</p>
     <span class="c1"># (3) Add 'grad_out / &lt;factor&gt;' without allocating an extra buffer</span>
     <span class="n">grad_input</span> <span class="o">*=</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
     <span class="n">grad_input</span> <span class="o">+=</span> <span class="n">grad_out</span>
-    <span class="n">grad_input</span> <span class="o">/=</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>  <span class="c1"># sqrt_var + eps &gt; 0!</span>
+    <span class="n">grad_input</span> <span class="o">/=</span> <span class="n">unsqueeze_all</span><span class="p">(</span><span class="n">sqrt_var</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>  <span class="c1"># ``sqrt_var + eps &gt; 0!``</span>
     <span class="k">return</span> <span class="n">grad_input</span>
 
 <span class="k">class</span> <span class="nc">BatchNorm</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-autograd sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function" title="torch.autograd.Function"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span></a><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
-        <span class="c1"># Don't save keepdim'd values for backward</span>
+        <span class="c1"># Don't save ``keepdim`` values for backward</span>
         <span class="nb">sum</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="n">var</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">unbiased</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="n">N</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">/</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -551,7 +551,7 @@ we implement and test only the training mode case.</p>
         <span class="k">return</span> <span class="n">batch_norm_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sqrt_var</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Testing with gradcheck</p>
+<p>Testing with <code class="docutils literal notranslate"><span class="pre">gradcheck</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">a</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-autograd sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.autograd.gradcheck.html#torch.autograd.gradcheck" title="torch.autograd.gradcheck"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span></a><span class="p">(</span><span class="n">BatchNorm</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">a</span></a><span class="p">,),</span> <span class="n">fast_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
@@ -634,7 +634,7 @@ exact code as the examples above.</p>
         <a class="sphx-glr-backref-module-torch-nn-init sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_uniform_" title="torch.nn.init.kaiming_uniform_"><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_weight</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">a</span></a><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Use gradcheck to validate the correctness of our backward formula</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">gradcheck</span></code> to validate the correctness of our backward formula</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-autograd sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.autograd.gradcheck.html#torch.autograd.gradcheck" title="torch.autograd.gradcheck"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span></a><span class="p">(</span><span class="n">FusedConvBN2DFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">))</span>
@@ -646,7 +646,7 @@ exact code as the examples above.</p>
 </div>
 <div class="section" id="testing-out-our-new-layer">
 <h2>Testing out our new Layer<a class="headerlink" href="#testing-out-our-new-layer" title="Permalink to this heading">¶</a></h2>
-<p>Use FusedConvBN to train a basic network
+<p>Use <code class="docutils literal notranslate"><span class="pre">FusedConvBN</span></code> to train a basic network
 The code below is after some light modifications to the example here:
 <a class="reference external" href="https://github.com/pytorch/examples/tree/master/mnist">https://github.com/pytorch/examples/tree/master/mnist</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
@@ -762,47 +762,47 @@ The code below is after some light modifications to the example here:
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/9912422 [00:00&lt;?, ?it/s]
- 95%|#########4| 9404416/9912422 [00:00&lt;00:00, 93943235.46it/s]
-100%|##########| 9912422/9912422 [00:00&lt;00:00, 96694221.81it/s]
+ 76%|#######5  | 7503872/9912422 [00:00&lt;00:00, 74984979.30it/s]
+100%|##########| 9912422/9912422 [00:00&lt;00:00, 92807691.57it/s]
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/28881 [00:00&lt;?, ?it/s]
-100%|##########| 28881/28881 [00:00&lt;00:00, 147726455.88it/s]
+100%|##########| 28881/28881 [00:00&lt;00:00, 114820562.87it/s]
 Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/1648877 [00:00&lt;?, ?it/s]
-100%|##########| 1648877/1648877 [00:00&lt;00:00, 27088848.58it/s]
+100%|##########| 1648877/1648877 [00:00&lt;00:00, 25871692.19it/s]
 Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/4542 [00:00&lt;?, ?it/s]
-100%|##########| 4542/4542 [00:00&lt;00:00, 21648328.15it/s]
+100%|##########| 4542/4542 [00:00&lt;00:00, 28647411.68it/s]
 Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 </pre></div>
 </div>
 </div>
 <div class="section" id="a-comparison-of-memory-usage">
 <h2>A Comparison of Memory Usage<a class="headerlink" href="#a-comparison-of-memory-usage" title="Permalink to this heading">¶</a></h2>
-<p>If cuda is enabled, print out memory usage for both <cite>fused=True</cite> and <cite>fused=False</cite>
-For an example run on RTX 3070, CuDNN 8.0.5: fused peak memory: 1.56GB,
+<p>If CUDA is enabled, print out memory usage for both <cite>fused=True</cite> and <cite>fused=False</cite>
+For an example run on NVIDIA GeForce RTX 3070, NVIDIA CUDA® Deep Neural Network library (cuDNN) 8.0.5: fused peak memory: 1.56GB,
 unfused peak memory: 2.68GB</p>
 <p>It is important to note that the <em>peak</em> memory usage for this model may vary depending
-the specific CuDNN convolution algorithm used. For shallower models, it
+the specific cuDNN convolution algorithm used. For shallower models, it
 may be possible for the peak memory allocated of the fused model to exceed
 that of the unfused model! This is because the memory allocated to compute
-certain CuDNN convolution algorithms can be high enough to “hide” the typical peak
+certain cuDNN convolution algorithms can be high enough to “hide” the typical peak
 you would expect to be near the start of the backward pass.</p>
 <p>For this reason, we also record and display the memory allocated at the end
 of the forward pass as an approximation, and to demonstrate that we indeed
-allocate one fewer buffer per fused conv-bn pair.</p>
+allocate one fewer buffer per fused <code class="docutils literal notranslate"><span class="pre">conv-bn</span></code> pair.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">statistics</span> <span class="kn">import</span> <span class="n">mean</span>
 
 <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="kc">True</span>
@@ -823,7 +823,7 @@ allocate one fewer buffer per fused conv-bn pair.</p>
             <a class="sphx-glr-backref-module-torch-optim-lr_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html#torch.optim.lr_scheduler.StepLR" title="torch.optim.lr_scheduler.StepLR"><span class="n">scheduler</span></a><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="n">peak_memory_allocated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_allocated.html#torch.cuda.max_memory_allocated" title="torch.cuda.max_memory_allocated"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_allocated</span></a><span class="p">())</span>
         <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.reset_peak_memory_stats.html#torch.cuda.reset_peak_memory_stats" title="torch.cuda.reset_peak_memory_stats"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">reset_peak_memory_stats</span></a><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"CuDNN version:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-backends-cudnn sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/backends.html#torch.backends.cudnn.version" title="torch.backends.cudnn.version"><span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">version</span></a><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"cuDNN version:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-backends-cudnn sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/backends.html#torch.backends.cudnn.version" title="torch.backends.cudnn.version"><span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">version</span></a><span class="p">())</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Peak memory allocated:"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"fused: </span><span class="si">{</span><span class="n">peak_memory_allocated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">GB, unfused: </span><span class="si">{</span><span class="n">peak_memory_allocated</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">GB"</span><span class="p">)</span>
@@ -851,23 +851,23 @@ Test set: Average loss: 0.5091, Accuracy: 8503/10000 (85%)
 
 Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352356
 Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.323084
-Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011064
-Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.065911
-Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.219979
-Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890597
-Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.612159
-Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.693416
-Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.631176
-Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.219109
-Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.161255
-Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.999634
-Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.863330
-Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.877732
-Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.711964
+Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011065
+Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.065912
+Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.219972
+Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890599
+Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.612148
+Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.692926
+Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.629594
+Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.216375
+Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.155217
+Train Epoch: 0 [45056/60000 (73%)]      Loss: 1.014030
+Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.912730
+Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.883736
+Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.743730
 
-Test set: Average loss: 0.4201, Accuracy: 8652/10000 (87%)
+Test set: Average loss: 0.3952, Accuracy: 8792/10000 (88%)
 
-CuDNN version: 8500
+cuDNN version: 8500
 
 Peak memory allocated:
 fused: 2.30GB, unfused: 1.77GB
@@ -875,7 +875,7 @@ Memory allocated at end of forward pass:
 fused: 0.59GB, unfused: 0.96GB
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.028 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  30.655 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/187aea79daf1552dd05cdde1f4b4e34d/custom_function_conv_bn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">custom_function_conv_bn_tutorial.py</span></code></a></p>

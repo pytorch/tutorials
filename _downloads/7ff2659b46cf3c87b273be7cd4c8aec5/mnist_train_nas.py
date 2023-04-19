@@ -1,5 +1,5 @@
 """
-Example training code for ax_multiobjective_nas_tutorial.py
+Example training code for ``ax_multiobjective_nas_tutorial.py``
 """
 
 import argparse

@@ -477,12 +477,12 @@ if we were testing the effect of different model initializations).</p>
 </div>
 </div>
 <div class="section" id="using-vmap-to-vectorize-the-ensemble">
-<h2>Using vmap to vectorize the ensemble<a class="headerlink" href="#using-vmap-to-vectorize-the-ensemble" title="Permalink to this heading">¶</a></h2>
-<p>Let’s use vmap to speed up the for-loop. We must first prepare the models
-for use with vmap.</p>
+<h2>Using <code class="docutils literal notranslate"><span class="pre">vmap</span></code> to vectorize the ensemble<a class="headerlink" href="#using-vmap-to-vectorize-the-ensemble" title="Permalink to this heading">¶</a></h2>
+<p>Let’s use <code class="docutils literal notranslate"><span class="pre">vmap</span></code> to speed up the for-loop. We must first prepare the models
+for use with <code class="docutils literal notranslate"><span class="pre">vmap</span></code>.</p>
 <p>First, let’s combine the states of the model together by stacking each
 parameter. For example, <code class="docutils literal notranslate"><span class="pre">model[i].fc1.weight</span></code> has shape <code class="docutils literal notranslate"><span class="pre">[784,</span> <span class="pre">128]</span></code>; we are
-going to stack the .fc1.weight of each of the 10 models to produce a big
+going to stack the <code class="docutils literal notranslate"><span class="pre">.fc1.weight</span></code> of each of the 10 models to produce a big
 weight of shape <code class="docutils literal notranslate"><span class="pre">[10,</span> <span class="pre">784,</span> <span class="pre">128]</span></code>.</p>
 <p>PyTorch offers the <code class="docutils literal notranslate"><span class="pre">torch.func.stack_module_state</span></code> convenience function to do
 this.</p>
@@ -491,7 +491,7 @@ this.</p>
 <span class="n">params</span><span class="p">,</span> <span class="n">buffers</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.stack_module_state.html#torch.func.stack_module_state" title="torch.func.stack_module_state"><span class="n">stack_module_state</span></a><span class="p">(</span><span class="n">models</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Next, we need to define a function to vmap over. The function should,
+<p>Next, we need to define a function to <code class="docutils literal notranslate"><span class="pre">vmap</span></code> over. The function should,
 given parameters and buffers and inputs, run the model using those
 parameters, buffers, and inputs. We’ll use <code class="docutils literal notranslate"><span class="pre">torch.func.functional_call</span></code>
 to help out:</p>
@@ -508,9 +508,9 @@ to help out:</p>
 </pre></div>
 </div>
 <p>Option 1: get predictions using a different minibatch for each model.</p>
-<p>By default, vmap maps a function across the first dimension of all inputs to
+<p>By default, <code class="docutils literal notranslate"><span class="pre">vmap</span></code> maps a function across the first dimension of all inputs to
 the passed-in function. After using <code class="docutils literal notranslate"><span class="pre">stack_module_state</span></code>, each of
-the params and buffers have an additional dimension of size ‘num_models’ at
+the <code class="docutils literal notranslate"><span class="pre">params</span></code> and buffers have an additional dimension of size ‘num_models’ at
 the front, and minibatches has a dimension of size ‘num_models’.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span> <span class="c1"># show the leading 'num_models' dimension</span>
 
@@ -520,7 +520,7 @@ the front, and minibatches has a dimension of size ‘num_models’.</p>
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">predictions1_vmap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">(</span><span class="n">fmodel</span><span class="p">)(</span><span class="n">params</span><span class="p">,</span> <span class="n">buffers</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">minibatches</span></a><span class="p">)</span>
 
-<span class="c1"># verify the vmap predictions match the</span>
+<span class="c1"># verify the ``vmap`` predictions match the</span>
 <span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">predictions1_vmap</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.stack.html#torch.stack" title="torch.stack"><span class="n">torch</span><span class="o">.</span><span class="n">stack</span></a><span class="p">(</span><span class="n">predictions_diff_minibatch_loop</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -528,8 +528,8 @@ the front, and minibatches has a dimension of size ‘num_models’.</p>
 </pre></div>
 </div>
 <p>Option 2: get predictions using the same minibatch of data.</p>
-<p>vmap has an in_dims arg that specifies which dimensions to map over.
-By using <code class="docutils literal notranslate"><span class="pre">None</span></code>, we tell vmap we want the same minibatch to apply for all of
+<p><code class="docutils literal notranslate"><span class="pre">vmap</span></code> has an <code class="docutils literal notranslate"><span class="pre">in_dims</span></code> argument that specifies which dimensions to map over.
+By using <code class="docutils literal notranslate"><span class="pre">None</span></code>, we tell <code class="docutils literal notranslate"><span class="pre">vmap</span></code> we want the same minibatch to apply for all of
 the 10 models.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">predictions2_vmap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">(</span><span class="n">fmodel</span><span class="p">,</span> <span class="n">in_dims</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))(</span><span class="n">params</span><span class="p">,</span> <span class="n">buffers</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">minibatch</span></a><span class="p">)</span>
 
@@ -537,9 +537,9 @@ the 10 models.</p>
 </pre></div>
 </div>
 <p>A quick note: there are limitations around what types of functions can be
-transformed by vmap. The best functions to transform are ones that are pure
+transformed by <code class="docutils literal notranslate"><span class="pre">vmap</span></code>. The best functions to transform are ones that are pure
 functions: a function where the outputs are only determined by the inputs
-that have no side effects (e.g. mutation). vmap is unable to handle mutation
+that have no side effects (e.g. mutation). <code class="docutils literal notranslate"><span class="pre">vmap</span></code> is unable to handle mutation
 of arbitrary Python data structures, but it is able to handle many in-place
 PyTorch operations.</p>
 </div>
@@ -557,24 +557,24 @@ PyTorch operations.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Predictions with vmap </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer.timeit" title="torch.utils.benchmark.Timer.timeit"><span class="n">with_vmap</span><span class="o">.</span><span class="n">timeit</span></a><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f9d926e5900&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f0481b9be80&gt;
 [model(minibatch) for model, minibatch in zip(models, minibatches)]
-  1.52 ms
+  1.59 ms
   1 measurement, 100 runs , 1 thread
-Predictions with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f9d926e5ea0&gt;
+Predictions with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f0481b9ace0&gt;
 vmap(fmodel)(params, buffers, minibatches)
-  627.35 us
+  647.43 us
   1 measurement, 100 runs , 1 thread
 </pre></div>
 </div>
-<p>There’s a large speedup using vmap!</p>
-<p>In general, vectorization with vmap should be faster than running a function
+<p>There’s a large speedup using <code class="docutils literal notranslate"><span class="pre">vmap</span></code>!</p>
+<p>In general, vectorization with <code class="docutils literal notranslate"><span class="pre">vmap</span></code> should be faster than running a function
 in a for-loop and competitive with manual batching. There are some exceptions
-though, like if we haven’t implemented the vmap rule for a particular
+though, like if we haven’t implemented the <code class="docutils literal notranslate"><span class="pre">vmap</span></code> rule for a particular
 operation or if the underlying kernels weren’t optimized for older hardware
 (GPUs). If you see any of these cases, please let us know by opening an issue
 on GitHub.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.519 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.603 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-ensembling-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/626f23350a6d0b457ded1932a69ec7eb/ensembling.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">ensembling.py</span></code></a></p>
@@ -630,7 +630,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <ul>
 <li><a class="reference internal" href="#">Model ensembling</a><ul>
 <li><a class="reference internal" href="#what-is-model-ensembling">What is model ensembling?</a></li>
-<li><a class="reference internal" href="#using-vmap-to-vectorize-the-ensemble">Using vmap to vectorize the ensemble</a></li>
+<li><a class="reference internal" href="#using-vmap-to-vectorize-the-ensemble">Using <code class="docutils literal notranslate"><span class="pre">vmap</span></code> to vectorize the ensemble</a></li>
 <li><a class="reference internal" href="#performance">Performance</a></li>
 </ul>
 </li>

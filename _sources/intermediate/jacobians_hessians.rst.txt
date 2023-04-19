@@ -139,7 +139,7 @@ by using a different unit vector each time.
 
 Instead of computing the jacobian row-by-row, we can use PyTorch's
 ``torch.vmap`` function transform to get rid of the for-loop and vectorize the
-computation. We can’t directly apply vmap to ``torch.autograd.grad``;
+computation. We can’t directly apply ``vmap`` to ``torch.autograd.grad``;
 instead, PyTorch provides a ``torch.func.vjp`` transform that composes with
 ``torch.vmap``:
 
@@ -166,15 +166,15 @@ instead, PyTorch provides a ``torch.func.vjp`` transform that composes with
 
 .. GENERATED FROM PYTHON SOURCE LINES 79-90
 
-In a later tutorial a composition of reverse-mode AD and vmap will give us
+In a later tutorial a composition of reverse-mode AD and ``vmap`` will give us
 per-sample-gradients.
-In this tutorial, composing reverse-mode AD and vmap gives us Jacobian
+In this tutorial, composing reverse-mode AD and ``vmap`` gives us Jacobian
 computation!
-Various compositions of vmap and autodiff transforms can give us different
+Various compositions of ``vmap`` and autodiff transforms can give us different
 interesting quantities.
 
 PyTorch provides ``torch.func.jacrev`` as a convenience function that performs
-the vmap-vjp composition to compute jacobians. ``jacrev`` accepts an argnums
+the ``vmap-vjp`` composition to compute jacobians. ``jacrev`` accepts an ``argnums``
 argument that says which argument we would like to compute Jacobians with
 respect to.
 
@@ -187,7 +187,7 @@ respect to.
 
     ft_jacobian = jacrev(predict, argnums=2)(weight, bias, x)
 
-    # confirm
+    # Confirm by running the following:
     assert torch.allclose(ft_jacobian, jacobian)
 
 
@@ -203,10 +203,10 @@ Let's compare the performance of the two ways to compute the jacobian.
 The function transform version is much faster (and becomes even faster the
 more outputs there are).
 
-In general, we expect that vectorization via vmap can help eliminate overhead
+In general, we expect that vectorization via ``vmap`` can help eliminate overhead
 and give better utilization of your hardware.
 
-vmap does this magic by pushing the outer loop down into the function's
+``vmap`` does this magic by pushing the outer loop down into the function's
 primitive operations in order to obtain better performance.
 
 Let's make a quick function to evaluate performance and deal with
@@ -261,13 +261,13 @@ And then run the performance comparison:
 
  .. code-block:: none
 
-    <torch.utils.benchmark.utils.common.Measurement object at 0x7f98e6a29e40>
+    <torch.utils.benchmark.utils.common.Measurement object at 0x7f273481cd30>
     compute_jac(xp)
-      1.36 ms
+      1.49 ms
       1 measurement, 500 runs , 1 thread
-    <torch.utils.benchmark.utils.common.Measurement object at 0x7f98e6a640d0>
+    <torch.utils.benchmark.utils.common.Measurement object at 0x7f273489b4c0>
     jacrev(predict, argnums=2)(weight, bias, x)
-      586.09 us
+      669.03 us
       1 measurement, 500 runs , 1 thread
 
 
@@ -275,7 +275,7 @@ And then run the performance comparison:
 
 .. GENERATED FROM PYTHON SOURCE LINES 136-137
 
-Let's do a relative performance comparison of the above with our get_perf function:
+Let's do a relative performance comparison of the above with our ``get_perf`` function:
 
 .. GENERATED FROM PYTHON SOURCE LINES 137-140
 
@@ -292,14 +292,14 @@ Let's do a relative performance comparison of the above with our get_perf functi
 
  .. code-block:: none
 
-     Performance delta: 56.9279 percent improvement with vmap 
+     Performance delta: 54.9901 percent improvement with vmap 
 
 
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 141-143
 
-Furthemore, it’s pretty easy to flip the problem around and say we want to
+Furthermore, it’s pretty easy to flip the problem around and say we want to
 compute Jacobians of the parameters to our model (weight, bias) instead of the input
 
 .. GENERATED FROM PYTHON SOURCE LINES 143-147
@@ -307,7 +307,7 @@ compute Jacobians of the parameters to our model (weight, bias) instead of the i
 .. code-block:: default
 
 
-    # note the change in input via argnums params of 0,1 to map to weight and bias
+    # note the change in input via ``argnums`` parameters of 0,1 to map to weight and bias
     ft_jac_weight, ft_jac_bias = jacrev(predict, argnums=(0, 1))(weight, bias, x)
 
 
@@ -319,22 +319,22 @@ compute Jacobians of the parameters to our model (weight, bias) instead of the i
 
 .. GENERATED FROM PYTHON SOURCE LINES 148-171
 
-reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)
---------------------------------------------------------------------
+Reverse-mode Jacobian (``jacrev``) vs forward-mode Jacobian (``jacfwd``)
+------------------------------------------------------------------------
 
 We offer two APIs to compute jacobians: ``jacrev`` and ``jacfwd``:
 
-- jacrev uses reverse-mode AD. As you saw above it is a composition of our
-  vjp and vmap transforms.
-- jacfwd uses forward-mode AD. It is implemented as a composition of our
-  jvp and vmap transforms.
+- ``jacrev`` uses reverse-mode AD. As you saw above it is a composition of our
+  ``vjp`` and ``vmap`` transforms.
+- ``jacfwd`` uses forward-mode AD. It is implemented as a composition of our
+  ``jvp`` and ``vmap`` transforms.
 
-jacfwd and jacrev can be substituted for each other but they have different
+``jacfwd`` and ``jacrev`` can be substituted for each other but they have different
 performance characteristics.
 
 As a general rule of thumb, if you’re computing the jacobian of an :math:`R^N \to R^M`
-function, and there are many more outputs than inputs (i.e. :math:`M > N`) then
-jacfwd is preferred, otherwise use jacrev. There are exceptions to this rule,
+function, and there are many more outputs than inputs (for example, :math:`M > N`) then
+``jacfwd`` is preferred, otherwise use ``jacrev``. There are exceptions to this rule,
 but a non-rigorous argument for this follows:
 
 In reverse-mode AD, we are computing the jacobian row-by-row, while in
@@ -394,13 +394,13 @@ First, let's benchmark with more inputs than outputs:
  .. code-block:: none
 
     torch.Size([2048, 32])
-    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f99211192a0>
+    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f2734930af0>
     jacfwd(predict, argnums=2)(weight, bias, x)
-      1.07 ms
+      1.31 ms
       1 measurement, 500 runs , 1 thread
-    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f98e6a67640>
+    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f2734899ea0>
     jacrev(predict, argnums=2)(weight, bias, x)
-      9.39 ms
+      9.66 ms
       1 measurement, 500 runs , 1 thread
 
 
@@ -425,7 +425,7 @@ and then do a relative benchmark:
 
  .. code-block:: none
 
-     Performance delta: 775.1085 percent improvement with jacrev 
+     Performance delta: 636.8863 percent improvement with jacrev 
 
 
 
@@ -462,13 +462,13 @@ and now the reverse - more outputs (M) than inputs (N):
 
  .. code-block:: none
 
-    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f98e69c8910>
+    jacfwd time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f27348b10c0>
     jacfwd(predict, argnums=2)(weight, bias, x)
-      5.59 ms
+      6.26 ms
       1 measurement, 500 runs , 1 thread
-    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f98e693fd90>
+    jacrev time: <torch.utils.benchmark.utils.common.Measurement object at 0x7f273489a4d0>
     jacrev(predict, argnums=2)(weight, bias, x)
-      756.87 us
+      757.68 us
       1 measurement, 500 runs , 1 thread
 
 
@@ -476,7 +476,7 @@ and now the reverse - more outputs (M) than inputs (N):
 
 .. GENERATED FROM PYTHON SOURCE LINES 220-221
 
-and a relative perf comparison:
+and a relative performance comparison:
 
 .. GENERATED FROM PYTHON SOURCE LINES 221-224
 
@@ -493,7 +493,7 @@ and a relative perf comparison:
 
  .. code-block:: none
 
-     Performance delta: 637.9247 percent improvement with jacfwd 
+     Performance delta: 726.3446 percent improvement with jacfwd 
 
 
 
@@ -506,7 +506,7 @@ We offer a convenience API to compute hessians: ``torch.func.hessiani``.
 Hessians are the jacobian of the jacobian (or the partial derivative of
 the partial derivative, aka second order).
 
-This suggests that one can just compose functorch’s jacobian transforms to
+This suggests that one can just compose functorch jacobian transforms to
 compute the Hessian.
 Indeed, under the hood, ``hessian(f)`` is simply ``jacfwd(jacrev(f))``.
 
@@ -521,7 +521,7 @@ leveraging the rule of thumb above regarding wider vs taller matrices.
 
     from torch.func import hessian
 
-    # lets reduce the size in order not to blow out colab. Hessians require
+    # lets reduce the size in order not to overwhelm Colab. Hessians require
     # significant memory:
     Din = 512
     Dout = 32
@@ -542,8 +542,8 @@ leveraging the rule of thumb above regarding wider vs taller matrices.
 
 .. GENERATED FROM PYTHON SOURCE LINES 254-256
 
-Let's verify we have the same result regardless of using hessian api or
-using jacfwd(jacfwd())
+Let's verify we have the same result regardless of using hessian API or
+using ``jacfwd(jacfwd())``.
 
 .. GENERATED FROM PYTHON SOURCE LINES 256-259
 
@@ -575,7 +575,7 @@ with respect to a batch of inputs. That is, given a batch of inputs of
 shape ``(B, N)`` and a function that goes from :math:`R^N \to R^M`, we would like
 a Jacobian of shape ``(B, M, N)``.
 
-The easiest way to do this is to use vmap:
+The easiest way to do this is to use ``vmap``:
 
 .. GENERATED FROM PYTHON SOURCE LINES 269-284
 
@@ -613,7 +613,7 @@ The easiest way to do this is to use vmap:
 
 If you have a function that goes from (B, N) -> (B, M) instead and are
 certain that each input produces an independent output, then it's also
-sometimes possible to do this without using vmap by summing the outputs
+sometimes possible to do this without using ``vmap`` by summing the outputs
 and then computing the Jacobian of that function:
 
 .. GENERATED FROM PYTHON SOURCE LINES 289-296
@@ -637,10 +637,10 @@ and then computing the Jacobian of that function:
 .. GENERATED FROM PYTHON SOURCE LINES 297-303
 
 If you instead have a function that goes from :math:`R^N \to R^M` but inputs that
-are batched, you compose vmap with jacrev to compute batched jacobians:
+are batched, you compose ``vmap`` with ``jacrev`` to compute batched jacobians:
 
 Finally, batch hessians can be computed similarly. It's easiest to think
-about them by using vmap to batch over hessian computation, but in some
+about them by using ``vmap`` to batch over hessian computation, but in some
 cases the sum trick also works.
 
 .. GENERATED FROM PYTHON SOURCE LINES 303-309
@@ -749,7 +749,7 @@ instead compose reverse-mode AD with reverse-mode AD:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  13.569 seconds)
+   **Total running time of the script:** ( 0 minutes  14.379 seconds)
 
 
 .. _sphx_glr_download_intermediate_jacobians_hessians.py:
