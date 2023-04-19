@@ -62,7 +62,7 @@ print(jacobian[0])  # show first row
 ######################################################################
 # Instead of computing the jacobian row-by-row, we can use PyTorch's
 # ``torch.vmap`` function transform to get rid of the for-loop and vectorize the
-# computation. We can’t directly apply vmap to ``torch.autograd.grad``;
+# computation. We can’t directly apply ``vmap`` to ``torch.autograd.grad``;
 # instead, PyTorch provides a ``torch.func.vjp`` transform that composes with
 # ``torch.vmap``:
 
@@ -76,15 +76,15 @@ ft_jacobian, = vmap(vjp_fn)(unit_vectors)
 assert torch.allclose(ft_jacobian, jacobian)
 
 ######################################################################
-# In a later tutorial a composition of reverse-mode AD and vmap will give us
+# In a later tutorial a composition of reverse-mode AD and ``vmap`` will give us
 # per-sample-gradients.
-# In this tutorial, composing reverse-mode AD and vmap gives us Jacobian
+# In this tutorial, composing reverse-mode AD and ``vmap`` gives us Jacobian
 # computation!
-# Various compositions of vmap and autodiff transforms can give us different
+# Various compositions of ``vmap`` and autodiff transforms can give us different
 # interesting quantities.
 #
 # PyTorch provides ``torch.func.jacrev`` as a convenience function that performs
-# the vmap-vjp composition to compute jacobians. ``jacrev`` accepts an argnums
+# the ``vmap-vjp`` composition to compute jacobians. ``jacrev`` accepts an ``argnums``
 # argument that says which argument we would like to compute Jacobians with
 # respect to.
 
@@ -92,7 +92,7 @@ from torch.func import jacrev
 
 ft_jacobian = jacrev(predict, argnums=2)(weight, bias, x)
 
-# confirm
+# Confirm by running the following:
 assert torch.allclose(ft_jacobian, jacobian)
 
 ######################################################################
@@ -100,10 +100,10 @@ assert torch.allclose(ft_jacobian, jacobian)
 # The function transform version is much faster (and becomes even faster the
 # more outputs there are).
 #
-# In general, we expect that vectorization via vmap can help eliminate overhead
+# In general, we expect that vectorization via ``vmap`` can help eliminate overhead
 # and give better utilization of your hardware.
 #
-# vmap does this magic by pushing the outer loop down into the function's
+# ``vmap`` does this magic by pushing the outer loop down into the function's
 # primitive operations in order to obtain better performance.
 #
 # Let's make a quick function to evaluate performance and deal with
@@ -133,34 +133,34 @@ print(no_vmap_timer)
 print(with_vmap_timer)
 
 ######################################################################
-# Let's do a relative performance comparison of the above with our get_perf function:
+# Let's do a relative performance comparison of the above with our ``get_perf`` function:
 
 get_perf(no_vmap_timer, "without vmap",  with_vmap_timer, "vmap")
 
 ######################################################################
-# Furthemore, it’s pretty easy to flip the problem around and say we want to
+# Furthermore, it’s pretty easy to flip the problem around and say we want to
 # compute Jacobians of the parameters to our model (weight, bias) instead of the input
 
-# note the change in input via argnums params of 0,1 to map to weight and bias
+# note the change in input via ``argnums`` parameters of 0,1 to map to weight and bias
 ft_jac_weight, ft_jac_bias = jacrev(predict, argnums=(0, 1))(weight, bias, x)
 
 ######################################################################
-# reverse-mode Jacobian (jacrev) vs forward-mode Jacobian (jacfwd)
-# --------------------------------------------------------------------
+# Reverse-mode Jacobian (``jacrev``) vs forward-mode Jacobian (``jacfwd``)
+# ------------------------------------------------------------------------
 #
 # We offer two APIs to compute jacobians: ``jacrev`` and ``jacfwd``:
 #
-# - jacrev uses reverse-mode AD. As you saw above it is a composition of our
-#   vjp and vmap transforms.
-# - jacfwd uses forward-mode AD. It is implemented as a composition of our
-#   jvp and vmap transforms.
+# - ``jacrev`` uses reverse-mode AD. As you saw above it is a composition of our
+#   ``vjp`` and ``vmap`` transforms.
+# - ``jacfwd`` uses forward-mode AD. It is implemented as a composition of our
+#   ``jvp`` and ``vmap`` transforms.
 #
-# jacfwd and jacrev can be substituted for each other but they have different
+# ``jacfwd`` and ``jacrev`` can be substituted for each other but they have different
 # performance characteristics.
 #
 # As a general rule of thumb, if you’re computing the jacobian of an :math:`R^N \to R^M`
-# function, and there are many more outputs than inputs (i.e. :math:`M > N`) then
-# jacfwd is preferred, otherwise use jacrev. There are exceptions to this rule,
+# function, and there are many more outputs than inputs (for example, :math:`M > N`) then
+# ``jacfwd`` is preferred, otherwise use ``jacrev``. There are exceptions to this rule,
 # but a non-rigorous argument for this follows:
 #
 # In reverse-mode AD, we are computing the jacobian row-by-row, while in
@@ -217,7 +217,7 @@ print(f'jacfwd time: {jacfwd_timing}')
 print(f'jacrev time: {jacrev_timing}')
 
 #######################################################################
-# and a relative perf comparison:
+# and a relative performance comparison:
 
 get_perf(jacrev_timing, "jacrev", jacfwd_timing, "jacfwd")
 
@@ -228,7 +228,7 @@ get_perf(jacrev_timing, "jacrev", jacfwd_timing, "jacfwd")
 # Hessians are the jacobian of the jacobian (or the partial derivative of
 # the partial derivative, aka second order).
 #
-# This suggests that one can just compose functorch’s jacobian transforms to
+# This suggests that one can just compose functorch jacobian transforms to
 # compute the Hessian.
 # Indeed, under the hood, ``hessian(f)`` is simply ``jacfwd(jacrev(f))``.
 #
@@ -238,7 +238,7 @@ get_perf(jacrev_timing, "jacrev", jacfwd_timing, "jacfwd")
 
 from torch.func import hessian
 
-# lets reduce the size in order not to blow out colab. Hessians require
+# lets reduce the size in order not to overwhelm Colab. Hessians require
 # significant memory:
 Din = 512
 Dout = 32
@@ -251,8 +251,8 @@ hess_fwdfwd = jacfwd(jacfwd(predict, argnums=2), argnums=2)(weight, bias, x)
 hess_revrev = jacrev(jacrev(predict, argnums=2), argnums=2)(weight, bias, x)
 
 #######################################################################
-# Let's verify we have the same result regardless of using hessian api or
-# using jacfwd(jacfwd())
+# Let's verify we have the same result regardless of using hessian API or
+# using ``jacfwd(jacfwd())``.
 
 torch.allclose(hess_api, hess_fwdfwd)
 
@@ -265,7 +265,7 @@ torch.allclose(hess_api, hess_fwdfwd)
 # shape ``(B, N)`` and a function that goes from :math:`R^N \to R^M`, we would like
 # a Jacobian of shape ``(B, M, N)``.
 #
-# The easiest way to do this is to use vmap:
+# The easiest way to do this is to use ``vmap``:
 
 batch_size = 64
 Din = 31
@@ -284,7 +284,7 @@ batch_jacobian0 = compute_batch_jacobian(weight, bias, x)
 #######################################################################
 # If you have a function that goes from (B, N) -> (B, M) instead and are
 # certain that each input produces an independent output, then it's also
-# sometimes possible to do this without using vmap by summing the outputs
+# sometimes possible to do this without using ``vmap`` by summing the outputs
 # and then computing the Jacobian of that function:
 
 def predict_with_output_summed(weight, bias, x):
@@ -295,10 +295,10 @@ assert torch.allclose(batch_jacobian0, batch_jacobian1)
 
 #######################################################################
 # If you instead have a function that goes from :math:`R^N \to R^M` but inputs that
-# are batched, you compose vmap with jacrev to compute batched jacobians:
+# are batched, you compose ``vmap`` with ``jacrev`` to compute batched jacobians:
 #
 # Finally, batch hessians can be computed similarly. It's easiest to think
-# about them by using vmap to batch over hessian computation, but in some
+# about them by using ``vmap`` to batch over hessian computation, but in some
 # cases the sum trick also works.
 
 compute_batch_hessian = vmap(hessian(predict, argnums=2), in_dims=(None, None, 0))
