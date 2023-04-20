@@ -174,7 +174,7 @@ device = torch.device("cuda")
 
 def batchify(data, bsz):
     # Divide the dataset into ``bsz`` parts.
-    nbatch = data.size(0) // ``bsz``
+    nbatch = data.size(0) // bsz
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
     data = data.narrow(0, 0, nbatch * bsz)
     # Evenly divide the data across the ``bsz` batches.
