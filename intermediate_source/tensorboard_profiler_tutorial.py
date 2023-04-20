@@ -54,7 +54,7 @@ import torchvision.transforms as T
 
 ######################################################################
 # Then prepare the input data. For this tutorial, we use the CIFAR10 dataset.
-# Transform it to the desired format and use DataLoader to load each batch.
+# Transform it to the desired format and use ``DataLoader`` to load each batch.
 
 transform = T.Compose(
     [T.Resize(224),
@@ -116,7 +116,7 @@ def train(data):
 # - ``profile_memory`` - Track tensor memory allocation/deallocation. Note, for old version of pytorch with version
 #   before 1.10, if you suffer long profiling time, please disable it or upgrade to new version.
 # - ``with_stack`` - Record source information (file and line number) for the ops.
-#   If the TensorBoard is launched in VSCode (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
+#   If the TensorBoard is launched in VS Code (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
 #   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
@@ -217,13 +217,13 @@ prof.stop()
 # The "Total" duration includes its child operators’ time.
 #
 # - View call stack
-# Click the "View Callstack" of an operator, the operators with same name but different call stacks will be shown.
-# Then click a "View Callstack" in this sub-table, the call stack frames will be shown.
+# Click the ``View Callstack`` of an operator, the operators with same name but different call stacks will be shown.
+# Then click a ``View Callstack`` in this sub-table, the call stack frames will be shown.
 #
 # .. image:: ../../_static/img/profiler_callstack.png
 #    :scale: 25 %
 #
-# If the TensorBoard is launched inside VSCode
+# If the TensorBoard is launched inside VS Code
 # (`Launch Guide <https://devblogs.microsoft.com/python/python-in-visual-studio-code-february-2021-release/#tensorboard-integration>`_),
 # clicking a call stack frame will navigate to the specific code line.
 #
@@ -279,8 +279,8 @@ prof.stop()
 # 5. Improve performance with the help of profiler
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is DataLoader.
-# The PyTorch DataLoader uses single process by default.
+# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is ``DataLoader``.
+# The PyTorch ``DataLoader`` uses single process by default.
 # User could enable multi-process data loading by setting the parameter ``num_workers``.
 # `Here <https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading>`_ is more details.
 #
@@ -350,7 +350,7 @@ prof.stop()
 # In the memory events table, the allocation and release events are paired into one entry. The "operator" column shows
 # the immediate ATen operator that is causing the allocation. Notice that in PyTorch, ATen operators commonly use
 # ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
-# ``aten::fill_``. Solely display the opeartor name as ``aten::empty`` is of little help. It will be shown as
+# ``aten::fill_``. Solely display the operator name as ``aten::empty`` is of little help. It will be shown as
 # ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
 # columns' data might be missing if the event occurs outside of the time range. 
 #

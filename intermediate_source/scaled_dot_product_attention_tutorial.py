@@ -88,7 +88,7 @@ print(f"The default implementation runs in {benchmark_torch_function_in_microsec
 # Lets explore the speed of each of the 3 implementations
 from torch.backends.cuda import sdp_kernel, SDPBackend
 
-# Helpful arg mapper
+# Helpful arguments mapper
 backend_map = {
     SDPBackend.MATH: {"enable_math": True, "enable_flash": False, "enable_mem_efficient": False},
     SDPBackend.FLASH_ATTENTION: {"enable_math": False, "enable_flash": True, "enable_mem_efficient": False},
@@ -130,8 +130,8 @@ with sdp_kernel(**backend_map[SDPBackend.EFFICIENT_ATTENTION]):
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # Below is an example implementation of a multi-headed causal self
-# attention block inspired by Andrej Karpathy’s
-# `NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository.
+# attention block inspired by
+# `Andrej Karpathy NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository.
 #
 
 class CausalSelfAttention(nn.Module):
@@ -186,12 +186,12 @@ model = CausalSelfAttention(num_heads=num_heads, embed_dimension=embed_dimension
 print(model)
 
 
-######################################################################
-# NestedTensor and Dense tensor support
-# -------------------------------------
+#####################################################################
+# ``NestedTensor`` and Dense tensor support
+# -----------------------------------------
 #
-# SDPA supports both NestedTensor and Dense tensor inputs. NestedTensors handle the case where the input is a batch of variable length sequences
-# without needing to pad each sequence to the maximum length in the batch. For more information about NestedTensors see
+# SDPA supports both ``NestedTensor`` and Dense tensor inputs. ``NestedTensors`` handle the case where the input is a batch of variable length sequences
+# without needing to pad each sequence to the maximum length in the batch. For more information about ``NestedTensors`` see
 # `torch.nested <https://pytorch.org/docs/stable/nested.html>`__ and `NestedTensors Tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`__.
 #
 
@@ -236,7 +236,7 @@ def generate_rand_batch(
 random_nt, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=0.5, dtype=dtype, device=device)
 random_dense, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=None, dtype=dtype, device=device)
 
-# Currently the fused implementations don't support NestedTensor for training
+# Currently the fused implementations don't support ``NestedTensor`` for training
 model.eval()
 
 with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
@@ -248,14 +248,14 @@ with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
 
 
 ######################################################################
-# Using SDPA with torch.compile
-# ============================
+# Using SDPA with ``torch.compile``
+# =================================
 #
 # With the release of PyTorch 2.0, a new feature called
 # ``torch.compile()`` has been introduced, which can provide
 # significant performance improvements over eager mode.
 # Scaled dot product attention is fully composable with ``torch.compile()``.
-# To demonstrate this, let's compile the CausalSelfAttention module using
+# To demonstrate this, let's compile the ``CausalSelfAttention`` module using
 # ``torch.compile()`` and observe the resulting performance improvements.
 #
 
@@ -303,7 +303,9 @@ with profile(activities=activities, record_shapes=False) as prof:
 print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 # For even more insights, you can export the trace and use ``chrome://tracing`` to view the results
-# prof.export_chrome_trace("compiled_causal_attention_trace.json").
+# ::
+#
+#    prof.export_chrome_trace("compiled_causal_attention_trace.json").
 
 
 
@@ -315,15 +317,14 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # on the same set of functions for both modules.
 # The reason for this here is that ``torch.compile`` is very good at removing the
 # framework overhead associated with PyTorch. If your model is launching
-# large, efficient CUDA kernels, which in this case CausaulSelfAttention
+# large, efficient CUDA kernels, which in this case ``CausaulSelfAttention``
 # is, then the overhead of PyTorch can be hidden.
 #
 # In reality, your module does not normally consist of a singular
-# CausalSelfAttention block. When experimenting with Andrej Karpathy’s
-# `NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository, compiling
+# ``CausalSelfAttention`` block. When experimenting with `Andrej Karpathy NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository, compiling
 # the module took the time per train step from: ``6090.49ms`` to
-# ``3273.17ms``! This was done on commit: ae3a8d5 of NanoGPT training on
-# the shakespeare dataset.
+# ``3273.17ms``! This was done on commit: ``ae3a8d5`` of NanoGPT training on
+# the Shakespeare dataset.
 #
 
 
@@ -335,7 +336,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # ``torch.nn.functional.scaled_dot_product_attention``. We have shown how
 # the ``sdp_kernel`` context manager can be used to assert a certain
 # implementation is used on GPU. As well, we built a simple
-# CausalSelfAttention module that works with NestedTensor and is torch
+# ``CausalSelfAttention`` module that works with ``NestedTensor`` and is torch
 # compilable. In the process we have shown how to the profiling tools can
 # be used to explore the performance characteristics of a user defined
 # module.
