@@ -17,9 +17,9 @@ information about the environment and other more challenging environments at
 `Gymnasium's website <https://gymnasium.farama.org/environments/classic_control/cart_pole/>`__.
 
 .. figure:: /_static/img/cartpole.gif
-   :alt: cartpole
+   :alt: CartPole
 
-   cartpole
+   CartPole
 
 As the agent observes the current state of the environment and chooses
 an action, the environment *transitions* to a new state, and also
@@ -45,7 +45,7 @@ First, let's import needed packages. Firstly, we need
 `gymnasium <https://gymnasium.farama.org/>`__ for the environment,
 installed by using `pip`. This is a fork of the original OpenAI
 Gym project and maintained by the same team since Gym v0.19.
-If you are running this in Google colab, run:
+If you are running this in Google Colab, run:
 
 .. code-block:: bash
 
@@ -82,7 +82,7 @@ if is_ipython:
 
 plt.ion()
 
-# if gpu is to be used
+# if GPU is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -96,7 +96,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # batch are decorrelated. It has been shown that this greatly stabilizes
 # and improves the DQN training procedure.
 #
-# For this, we're going to need two classses:
+# For this, we're going to need two classes:
 #
 # -  ``Transition`` - a named tuple representing a single transition in
 #    our environment. It essentially maps (state, action) pairs
@@ -172,7 +172,7 @@ class ReplayMemory(object):
 #
 # .. math:: \delta = Q(s, a) - (r + \gamma \max_a' Q(s', a))
 #
-# To minimise this error, we will use the `Huber
+# To minimize this error, we will use the `Huber
 # loss <https://en.wikipedia.org/wiki/Huber_loss>`__. The Huber loss acts
 # like the mean squared error when the error is small, but like the mean
 # absolute error when the error is large - this makes it more robust to
@@ -233,7 +233,7 @@ class DQN(nn.Module):
 #    probability of choosing a random action will start at ``EPS_START``
 #    and will decay exponentially towards ``EPS_END``. ``EPS_DECAY``
 #    controls the rate of the decay.
-# -  ``plot_durations`` - a helper for plotting the durations of episodes,
+# -  ``plot_durations`` - a helper for plotting the duration of episodes,
 #    along with an average over the last 100 episodes (the measure used in
 #    the official evaluations). The plot will be underneath the cell
 #    containing the main training loop, and will update after every
@@ -246,7 +246,7 @@ class DQN(nn.Module):
 # EPS_END is the final value of epsilon
 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
 # TAU is the update rate of the target network
-# LR is the learning rate of the AdamW optimizer
+# LR is the learning rate of the ``AdamW`` optimizer
 BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
@@ -391,7 +391,7 @@ def optimize_model():
 #
 # Below, `num_episodes` is set to 600 if a GPU is available, otherwise 50 
 # episodes are scheduled so training does not take too long. However, 50 
-# episodes is insufficient for to observe good performance on cartpole.
+# episodes is insufficient for to observe good performance on CartPole.
 # You should see the model constantly achieve 500 steps within 600 training 
 # episodes. Training RL agents can be a noisy process, so restarting training
 # can produce better results if convergence is not observed.

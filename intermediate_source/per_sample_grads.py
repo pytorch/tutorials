@@ -70,7 +70,7 @@ model = SimpleCNN().to(device=device)
 predictions = model(data)  # move the entire mini-batch through the model
 
 loss = loss_fn(predictions, targets)
-loss.backward()  # back propogate the 'average' gradient of this mini-batch
+loss.backward()  # back propagate the 'average' gradient of this mini-batch
 
 ######################################################################
 # In contrast to the above approach, per-sample-gradient computation is
@@ -114,7 +114,7 @@ print(per_sample_grads[0].shape)
 # Our strategy is to define a function that computes the loss and then apply
 # transforms to construct a function that computes per-sample-gradients.
 #
-# We'll use the ``torch.func.functional_call`` function to treat an nn.Module
+# We'll use the ``torch.func.functional_call`` function to treat an ``nn.Module``
 # like a function.
 #
 # First, let’s extract the state from ``model`` into two dictionaries,
@@ -146,16 +146,16 @@ def compute_loss(params, buffers, sample, target):
 ######################################################################
 # Now, let’s use the ``grad`` transform to create a new function that computes
 # the gradient with respect to the first argument of ``compute_loss``
-# (i.e. the params).
+# (i.e. the ``params``).
 
 ft_compute_grad = grad(compute_loss)
 
 ######################################################################
 # The ``ft_compute_grad`` function computes the gradient for a single
-# (sample, target) pair. We can use vmap to get it to compute the gradient
+# (sample, target) pair. We can use ``vmap`` to get it to compute the gradient
 # over an entire batch of samples and targets. Note that
 # ``in_dims=(None, None, 0, 0)`` because we wish to map ``ft_compute_grad`` over
-# the 0th dimension of the data and targets, and use the same params and
+# the 0th dimension of the data and targets, and use the same ``params`` and
 # buffers for each.
 
 ft_compute_sample_grad = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
@@ -174,16 +174,16 @@ for per_sample_grad, ft_per_sample_grad in zip(per_sample_grads, ft_per_sample_g
 
 ######################################################################
 # A quick note: there are limitations around what types of functions can be
-# transformed by vmap. The best functions to transform are ones that are pure
+# transformed by ``vmap``. The best functions to transform are ones that are pure
 # functions: a function where the outputs are only determined by the inputs,
-# and that have no side effects (e.g. mutation). vmap is unable to handle
+# and that have no side effects (e.g. mutation). ``vmap`` is unable to handle
 # mutation of arbitrary Python data structures, but it is able to handle many
 # in-place PyTorch operations.
 #
 # Performance comparison
 # ----------------------
 #
-# Curious about how the performance of vmap compares?
+# Curious about how the performance of ``vmap`` compares?
 #
 # Currently the best results are obtained on newer GPU's such as the A100
 # (Ampere) where we've seen up to 25x speedups on this example, but here are
@@ -218,9 +218,9 @@ get_perf(with_vmap_timing, "vmap", no_vmap_timing, "no vmap")
 # the naive method. But it’s cool that composing ``vmap`` and ``grad`` give us a
 # nice speedup.
 #
-# In general, vectorization with vmap should be faster than running a function
+# In general, vectorization with ``vmap`` should be faster than running a function
 # in a for-loop and competitive with manual batching. There are some exceptions
-# though, like if we haven’t implemented the vmap rule for a particular
+# though, like if we haven’t implemented the ``vmap`` rule for a particular
 # operation or if the underlying kernels weren’t optimized for older hardware
 # (GPUs). If you see any of these cases, please let us know by opening an issue
 # at on GitHub.

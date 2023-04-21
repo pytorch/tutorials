@@ -318,10 +318,10 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # .. code-block:: python
 #
-#   import requests
+#    import requests
 #
-#   resp = requests.post("http://localhost:5000/predict",
-#                        files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+#    resp = requests.post("http://localhost:5000/predict",
+#                         files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
 
 #######################################################################
 # Printing `resp.json()` will now show the following:
