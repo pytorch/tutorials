@@ -27,24 +27,36 @@ In this tutorial, we will show how to use the torchtext library to build the dat
    - Build data processing pipeline to convert the raw text strings into ``torch.Tensor`` that can be used to train the model
    - Shuffle and iterate the data with `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-21
+
+Prerequisites
+~~~~~~~~~~~~~~~~
+
+A recent 2.x version of the ``portalocker`` package needs to be installed prior to running the tutorial.
+For example, in the Colab environment, this can be done by adding the following line at the top of the script:
+
+.. code-block:: bash 
+     
+    !pip install -U portalocker>=2.0.0`
+
+.. GENERATED FROM PYTHON SOURCE LINES 26-33
 
 Access to the raw dataset iterators
 -----------------------------------
 
 The torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the ``AG_NEWS`` dataset iterators yield the raw data as a tuple of label and text.
 
-To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-26
+.. GENERATED FROM PYTHON SOURCE LINES 33-39
 
 .. code-block:: default
 
 
     import torch
     from torchtext.datasets import AG_NEWS
-    train_iter = iter(AG_NEWS(split='train'))
+
+    train_iter = iter(AG_NEWS(split="train"))
 
 
 
@@ -53,7 +65,7 @@ To access torchtext datasets, please install torchdata following instructions at
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-47
+.. GENERATED FROM PYTHON SOURCE LINES 40-60
 
 ::
 
@@ -76,7 +88,7 @@ To access torchtext datasets, please install torchdata following instructions at
     building blocks of proteins.')
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-58
+.. GENERATED FROM PYTHON SOURCE LINES 63-71
 
 Prepare data processing pipelines
 ---------------------------------
@@ -87,7 +99,7 @@ Here is an example for typical NLP data processing with tokenizer and vocabulary
 factory function `build_vocab_from_iterator` which accepts iterator that yield list or iterator of tokens. Users can also pass any special symbols to be added to the
 vocabulary.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-73
+.. GENERATED FROM PYTHON SOURCE LINES 71-88
 
 .. code-block:: default
 
@@ -96,12 +108,14 @@ vocabulary.
     from torchtext.data.utils import get_tokenizer
     from torchtext.vocab import build_vocab_from_iterator
 
-    tokenizer = get_tokenizer('basic_english')
-    train_iter = AG_NEWS(split='train')
+    tokenizer = get_tokenizer("basic_english")
+    train_iter = AG_NEWS(split="train")
+
 
     def yield_tokens(data_iter):
         for _, text in data_iter:
             yield tokenizer(text)
+
 
     vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
     vocab.set_default_index(vocab["<unk>"])
@@ -113,7 +127,7 @@ vocabulary.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-82
+.. GENERATED FROM PYTHON SOURCE LINES 89-97
 
 The vocabulary block converts a list of tokens into integers.
 
@@ -124,7 +138,7 @@ The vocabulary block converts a list of tokens into integers.
 
 Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-87
+.. GENERATED FROM PYTHON SOURCE LINES 97-102
 
 .. code-block:: default
 
@@ -140,7 +154,7 @@ Prepare the text processing pipeline with the tokenizer and vocabulary. The text
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-97
+.. GENERATED FROM PYTHON SOURCE LINES 103-112
 
 The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,
 
@@ -152,7 +166,7 @@ The text pipeline converts a text string into a list of integers based on the lo
     >>> 9
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-111
+.. GENERATED FROM PYTHON SOURCE LINES 115-125
 
 Generate data batch and iterator
 --------------------------------
@@ -165,29 +179,34 @@ Before sending to the model, ``collate_fn`` function works on a batch of samples
 
 In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of ``nn.EmbeddingBag``. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of individual text entries.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-132
+.. GENERATED FROM PYTHON SOURCE LINES 125-151
 
 .. code-block:: default
 
 
 
     from torch.utils.data import DataLoader
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
     def collate_batch(batch):
         label_list, text_list, offsets = [], [], [0]
-        for (_label, _text) in batch:
-             label_list.append(label_pipeline(_label))
-             processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
-             text_list.append(processed_text)
-             offsets.append(processed_text.size(0))
+        for _label, _text in batch:
+            label_list.append(label_pipeline(_label))
+            processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+            text_list.append(processed_text)
+            offsets.append(processed_text.size(0))
         label_list = torch.tensor(label_list, dtype=torch.int64)
         offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
         text_list = torch.cat(text_list)
         return label_list.to(device), text_list.to(device), offsets.to(device)
 
-    train_iter = AG_NEWS(split='train')
-    dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch)
+
+    train_iter = AG_NEWS(split="train")
+    dataloader = DataLoader(
+        train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch
+    )
 
 
 
@@ -197,7 +216,7 @@ In this example, the text entries in the original data batch input are packed in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-144
+.. GENERATED FROM PYTHON SOURCE LINES 152-163
 
 Define the model
 ----------------
@@ -211,15 +230,15 @@ performance and memory efficiency to process a sequence of tensors.
 .. image:: ../_static/img/text_sentiment_ngrams_model.png
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-166
+.. GENERATED FROM PYTHON SOURCE LINES 163-185
 
 .. code-block:: default
 
 
     from torch import nn
 
-    class TextClassificationModel(nn.Module):
 
+    class TextClassificationModel(nn.Module):
         def __init__(self, vocab_size, embed_dim, num_class):
             super(TextClassificationModel, self).__init__()
             self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=False)
@@ -244,7 +263,7 @@ performance and memory efficiency to process a sequence of tensors.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-181
+.. GENERATED FROM PYTHON SOURCE LINES 186-200
 
 Initiate an instance
 --------------------
@@ -261,12 +280,12 @@ The ``AG_NEWS`` dataset has four labels and therefore the number of classes is f
 We build a model with the embedding dimension of 64. The vocab size is equal to the length of the vocabulary instance. The number of classes is equal to the number of labels,
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-189
+.. GENERATED FROM PYTHON SOURCE LINES 200-208
 
 .. code-block:: default
 
 
-    train_iter = AG_NEWS(split='train')
+    train_iter = AG_NEWS(split="train")
     num_class = len(set([label for (label, text) in train_iter]))
     vocab_size = len(vocab)
     emsize = 64
@@ -280,19 +299,20 @@ We build a model with the embedding dimension of 64. The vocab size is equal to 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-193
+.. GENERATED FROM PYTHON SOURCE LINES 209-212
 
 Define functions to train the model and evaluate results.
 ---------------------------------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-233
+.. GENERATED FROM PYTHON SOURCE LINES 212-257
 
 .. code-block:: default
 
 
 
     import time
+
 
     def train(dataloader):
         model.train()
@@ -311,11 +331,15 @@ Define functions to train the model and evaluate results.
             total_count += label.size(0)
             if idx % log_interval == 0 and idx > 0:
                 elapsed = time.time() - start_time
-                print('| epoch {:3d} | {:5d}/{:5d} batches '
-                      '| accuracy {:8.3f}'.format(epoch, idx, len(dataloader),
-                                                  total_acc/total_count))
+                print(
+                    "| epoch {:3d} | {:5d}/{:5d} batches "
+                    "| accuracy {:8.3f}".format(
+                        epoch, idx, len(dataloader), total_acc / total_count
+                    )
+                )
                 total_acc, total_count = 0, 0
                 start_time = time.time()
+
 
     def evaluate(dataloader):
         model.eval()
@@ -327,7 +351,7 @@ Define functions to train the model and evaluate results.
                 loss = criterion(predicted_label, label)
                 total_acc += (predicted_label.argmax(1) == label).sum().item()
                 total_count += label.size(0)
-        return total_acc/total_count
+        return total_acc / total_count
 
 
 
@@ -337,7 +361,7 @@ Define functions to train the model and evaluate results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-252
+.. GENERATED FROM PYTHON SOURCE LINES 258-276
 
 Split the dataset and run the model
 -----------------------------------
@@ -358,7 +382,7 @@ learning rate is set to 5.0.
 is used here to adjust the learning rate through epochs.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-296
+.. GENERATED FROM PYTHON SOURCE LINES 276-326
 
 .. code-block:: default
 
@@ -366,10 +390,11 @@ is used here to adjust the learning rate through epochs.
 
     from torch.utils.data.dataset import random_split
     from torchtext.data.functional import to_map_style_dataset
+
     # Hyperparameters
-    EPOCHS = 10 # epoch
+    EPOCHS = 10  # epoch
     LR = 5  # learning rate
-    BATCH_SIZE = 64 # batch size for training
+    BATCH_SIZE = 64  # batch size for training
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=LR)
@@ -379,31 +404,36 @@ is used here to adjust the learning rate through epochs.
     train_dataset = to_map_style_dataset(train_iter)
     test_dataset = to_map_style_dataset(test_iter)
     num_train = int(len(train_dataset) * 0.95)
-    split_train_, split_valid_ = \
-        random_split(train_dataset, [num_train, len(train_dataset) - num_train])
+    split_train_, split_valid_ = random_split(
+        train_dataset, [num_train, len(train_dataset) - num_train]
+    )
 
-    train_dataloader = DataLoader(split_train_, batch_size=BATCH_SIZE,
-                                  shuffle=True, collate_fn=collate_batch)
-    valid_dataloader = DataLoader(split_valid_, batch_size=BATCH_SIZE,
-                                  shuffle=True, collate_fn=collate_batch)
-    test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
-                                 shuffle=True, collate_fn=collate_batch)
+    train_dataloader = DataLoader(
+        split_train_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+    )
+    valid_dataloader = DataLoader(
+        split_valid_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+    )
+    test_dataloader = DataLoader(
+        test_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+    )
 
     for epoch in range(1, EPOCHS + 1):
         epoch_start_time = time.time()
         train(train_dataloader)
         accu_val = evaluate(valid_dataloader)
         if total_accu is not None and total_accu > accu_val:
-          scheduler.step()
+            scheduler.step()
         else:
-           total_accu = accu_val
-        print('-' * 59)
-        print('| end of epoch {:3d} | time: {:5.2f}s | '
-              'valid accuracy {:8.3f} '.format(epoch,
-                                               time.time() - epoch_start_time,
-                                               accu_val))
-        print('-' * 59)
-
+            total_accu = accu_val
+        print("-" * 59)
+        print(
+            "| end of epoch {:3d} | time: {:5.2f}s | "
+            "valid accuracy {:8.3f} ".format(
+                epoch, time.time() - epoch_start_time, accu_val
+            )
+        )
+        print("-" * 59)
 
 
 
@@ -414,90 +444,88 @@ is used here to adjust the learning rate through epochs.
 
  .. code-block:: none
 
-    | epoch   1 |   500/ 1782 batches | accuracy    0.683
-    | epoch   1 |  1000/ 1782 batches | accuracy    0.853
-    | epoch   1 |  1500/ 1782 batches | accuracy    0.876
+    | epoch   1 |   500/ 1782 batches | accuracy    0.694
+    | epoch   1 |  1000/ 1782 batches | accuracy    0.856
+    | epoch   1 |  1500/ 1782 batches | accuracy    0.877
     -----------------------------------------------------------
-    | end of epoch   1 | time: 13.21s | valid accuracy    0.882 
+    | end of epoch   1 | time: 11.58s | valid accuracy    0.886 
     -----------------------------------------------------------
-    | epoch   2 |   500/ 1782 batches | accuracy    0.896
-    | epoch   2 |  1000/ 1782 batches | accuracy    0.900
-    | epoch   2 |  1500/ 1782 batches | accuracy    0.901
+    | epoch   2 |   500/ 1782 batches | accuracy    0.898
+    | epoch   2 |  1000/ 1782 batches | accuracy    0.899
+    | epoch   2 |  1500/ 1782 batches | accuracy    0.906
     -----------------------------------------------------------
-    | end of epoch   2 | time: 11.10s | valid accuracy    0.895 
+    | end of epoch   2 | time: 11.12s | valid accuracy    0.895 
     -----------------------------------------------------------
-    | epoch   3 |   500/ 1782 batches | accuracy    0.914
-    | epoch   3 |  1000/ 1782 batches | accuracy    0.914
-    | epoch   3 |  1500/ 1782 batches | accuracy    0.914
+    | epoch   3 |   500/ 1782 batches | accuracy    0.916
+    | epoch   3 |  1000/ 1782 batches | accuracy    0.913
+    | epoch   3 |  1500/ 1782 batches | accuracy    0.915
     -----------------------------------------------------------
-    | end of epoch   3 | time: 11.09s | valid accuracy    0.899 
+    | end of epoch   3 | time: 11.13s | valid accuracy    0.894 
     -----------------------------------------------------------
-    | epoch   4 |   500/ 1782 batches | accuracy    0.924
-    | epoch   4 |  1000/ 1782 batches | accuracy    0.923
-    | epoch   4 |  1500/ 1782 batches | accuracy    0.921
+    | epoch   4 |   500/ 1782 batches | accuracy    0.930
+    | epoch   4 |  1000/ 1782 batches | accuracy    0.932
+    | epoch   4 |  1500/ 1782 batches | accuracy    0.929
     -----------------------------------------------------------
-    | end of epoch   4 | time: 11.06s | valid accuracy    0.901 
+    | end of epoch   4 | time: 11.12s | valid accuracy    0.902 
     -----------------------------------------------------------
-    | epoch   5 |   500/ 1782 batches | accuracy    0.933
-    | epoch   5 |  1000/ 1782 batches | accuracy    0.929
-    | epoch   5 |  1500/ 1782 batches | accuracy    0.928
+    | epoch   5 |   500/ 1782 batches | accuracy    0.932
+    | epoch   5 |  1000/ 1782 batches | accuracy    0.933
+    | epoch   5 |  1500/ 1782 batches | accuracy    0.931
     -----------------------------------------------------------
-    | end of epoch   5 | time: 10.97s | valid accuracy    0.905 
+    | end of epoch   5 | time: 11.14s | valid accuracy    0.902 
     -----------------------------------------------------------
-    | epoch   6 |   500/ 1782 batches | accuracy    0.935
-    | epoch   6 |  1000/ 1782 batches | accuracy    0.937
-    | epoch   6 |  1500/ 1782 batches | accuracy    0.933
+    | epoch   6 |   500/ 1782 batches | accuracy    0.933
+    | epoch   6 |  1000/ 1782 batches | accuracy    0.932
+    | epoch   6 |  1500/ 1782 batches | accuracy    0.935
     -----------------------------------------------------------
-    | end of epoch   6 | time: 11.05s | valid accuracy    0.899 
+    | end of epoch   6 | time: 11.11s | valid accuracy    0.903 
     -----------------------------------------------------------
-    | epoch   7 |   500/ 1782 batches | accuracy    0.947
-    | epoch   7 |  1000/ 1782 batches | accuracy    0.949
-    | epoch   7 |  1500/ 1782 batches | accuracy    0.947
+    | epoch   7 |   500/ 1782 batches | accuracy    0.934
+    | epoch   7 |  1000/ 1782 batches | accuracy    0.933
+    | epoch   7 |  1500/ 1782 batches | accuracy    0.935
     -----------------------------------------------------------
-    | end of epoch   7 | time: 11.18s | valid accuracy    0.908 
+    | end of epoch   7 | time: 11.09s | valid accuracy    0.903 
     -----------------------------------------------------------
-    | epoch   8 |   500/ 1782 batches | accuracy    0.952
-    | epoch   8 |  1000/ 1782 batches | accuracy    0.947
-    | epoch   8 |  1500/ 1782 batches | accuracy    0.947
+    | epoch   8 |   500/ 1782 batches | accuracy    0.935
+    | epoch   8 |  1000/ 1782 batches | accuracy    0.933
+    | epoch   8 |  1500/ 1782 batches | accuracy    0.935
     -----------------------------------------------------------
-    | end of epoch   8 | time: 11.05s | valid accuracy    0.908 
+    | end of epoch   8 | time: 11.10s | valid accuracy    0.904 
     -----------------------------------------------------------
-    | epoch   9 |   500/ 1782 batches | accuracy    0.951
-    | epoch   9 |  1000/ 1782 batches | accuracy    0.950
-    | epoch   9 |  1500/ 1782 batches | accuracy    0.949
+    | epoch   9 |   500/ 1782 batches | accuracy    0.934
+    | epoch   9 |  1000/ 1782 batches | accuracy    0.934
+    | epoch   9 |  1500/ 1782 batches | accuracy    0.934
     -----------------------------------------------------------
-    | end of epoch   9 | time: 10.97s | valid accuracy    0.908 
+    | end of epoch   9 | time: 11.13s | valid accuracy    0.904 
     -----------------------------------------------------------
-    | epoch  10 |   500/ 1782 batches | accuracy    0.949
-    | epoch  10 |  1000/ 1782 batches | accuracy    0.952
-    | epoch  10 |  1500/ 1782 batches | accuracy    0.951
+    | epoch  10 |   500/ 1782 batches | accuracy    0.934
+    | epoch  10 |  1000/ 1782 batches | accuracy    0.936
+    | epoch  10 |  1500/ 1782 batches | accuracy    0.933
     -----------------------------------------------------------
-    | end of epoch  10 | time: 11.00s | valid accuracy    0.908 
+    | end of epoch  10 | time: 11.10s | valid accuracy    0.905 
     -----------------------------------------------------------
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 297-300
+.. GENERATED FROM PYTHON SOURCE LINES 327-330
 
 Evaluate the model with test dataset
 ------------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 304-305
+.. GENERATED FROM PYTHON SOURCE LINES 333-334
 
 Checking the results of the test dataset…
 
-.. GENERATED FROM PYTHON SOURCE LINES 305-313
+.. GENERATED FROM PYTHON SOURCE LINES 334-340
 
 .. code-block:: default
 
 
-    print('Checking the results of test dataset.')
+    print("Checking the results of test dataset.")
     accu_test = evaluate(test_dataloader)
-    print('test accuracy {:8.3f}'.format(accu_test))
-
-
+    print("test accuracy {:8.3f}".format(accu_test))
 
 
 
@@ -509,12 +537,12 @@ Checking the results of the test dataset…
  .. code-block:: none
 
     Checking the results of test dataset.
-    test accuracy    0.906
+    test accuracy    0.907
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-319
+.. GENERATED FROM PYTHON SOURCE LINES 341-346
 
 Test on a random news
 ---------------------
@@ -522,22 +550,21 @@ Test on a random news
 Use the best model so far and test a golf news.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 319-347
+.. GENERATED FROM PYTHON SOURCE LINES 346-373
 
 .. code-block:: default
 
 
 
-    ag_news_label = {1: "World",
-                     2: "Sports",
-                     3: "Business",
-                     4: "Sci/Tec"}
+    ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
+
 
     def predict(text, text_pipeline):
         with torch.no_grad():
             text = torch.tensor(text_pipeline(text))
             output = model(text, torch.tensor([0]))
             return output.argmax(1).item() + 1
+
 
     ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
         enduring the season’s worst weather conditions on Sunday at The \
@@ -553,7 +580,7 @@ Use the best model so far and test a golf news.
 
     model = model.to("cpu")
 
-    print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
+    print("This is a %s news" % ag_news_label[predict(ex_text_str, text_pipeline)])
 
 
 
@@ -570,7 +597,7 @@ Use the best model so far and test a golf news.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  9.013 seconds)
+   **Total running time of the script:** ( 2 minutes  8.270 seconds)
 
 
 .. _sphx_glr_download_beginner_text_sentiment_ngrams_tutorial.py:

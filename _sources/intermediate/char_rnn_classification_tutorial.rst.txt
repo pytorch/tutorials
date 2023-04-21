@@ -20,13 +20,16 @@
 
 NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
-We will be building and training a basic character-level RNN to classify
-words. This tutorial, along with the following two, show how to do
-preprocess data for NLP modeling "from scratch", in particular not using
-many of the convenience functions of `torchtext`, so you can see how
-preprocessing for NLP modeling works at a low level.
+We will be building and training a basic character-level Recurrent Neural
+Network (RNN) to classify words. This tutorial, along with two other
+Natural Language Processing (NLP) "from scratch" tutorials
+:doc:`/intermediate/char_rnn_generation_tutorial` and
+:doc:`/intermediate/seq2seq_translation_tutorial`, show how to
+preprocess data to model NLP. In particular these tutorials do not
+use many of the convenience functions of `torchtext`, so you can see how
+preprocessing to model NLP works at a low level.
 
 A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
@@ -50,13 +53,15 @@ spelling:
     (-2.68) Dutch
 
 
-**Recommended Reading:**
+Recommended Preparation
+=======================
 
-I assume you have at least installed PyTorch, know Python, and
-understand Tensors:
+Before starting this tutorial it is recommended that you have installed PyTorch,
+and have a basic understanding of Python programming language and Tensors:
 
 -  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
+   and learn the basics of Tensors
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
 
@@ -87,11 +92,10 @@ We'll end up with a dictionary of lists of names per language,
 ``{language: [names ...]}``. The generic variables "category" and "line"
 (for language and name in our case) are used for later extensibility.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-115
+.. GENERATED FROM PYTHON SOURCE LINES 77-119
 
 .. code-block:: default
 
-    from __future__ import unicode_literals, print_function, division
     from io import open
     import glob
     import os
@@ -142,13 +146,13 @@ We'll end up with a dictionary of lists of names per language,
 
  .. code-block:: none
 
-    ['data/names/Czech.txt', 'data/names/German.txt', 'data/names/Portuguese.txt', 'data/names/Russian.txt', 'data/names/Irish.txt', 'data/names/French.txt', 'data/names/Korean.txt', 'data/names/Arabic.txt', 'data/names/Vietnamese.txt', 'data/names/Italian.txt', 'data/names/Japanese.txt', 'data/names/English.txt', 'data/names/Polish.txt', 'data/names/Scottish.txt', 'data/names/Chinese.txt', 'data/names/Dutch.txt', 'data/names/Greek.txt', 'data/names/Spanish.txt']
+    ['data/names/Arabic.txt', 'data/names/Chinese.txt', 'data/names/Czech.txt', 'data/names/Dutch.txt', 'data/names/English.txt', 'data/names/French.txt', 'data/names/German.txt', 'data/names/Greek.txt', 'data/names/Irish.txt', 'data/names/Italian.txt', 'data/names/Japanese.txt', 'data/names/Korean.txt', 'data/names/Polish.txt', 'data/names/Portuguese.txt', 'data/names/Russian.txt', 'data/names/Scottish.txt', 'data/names/Spanish.txt', 'data/names/Vietnamese.txt']
     Slusarski
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-121
+.. GENERATED FROM PYTHON SOURCE LINES 120-125
 
 Now we have ``category_lines``, a dictionary mapping each category
 (language) to a list of lines (names). We also kept track of
@@ -156,7 +160,7 @@ Now we have ``category_lines``, a dictionary mapping each category
 later reference.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-125
+.. GENERATED FROM PYTHON SOURCE LINES 125-129
 
 .. code-block:: default
 
@@ -177,7 +181,7 @@ later reference.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-142
+.. GENERATED FROM PYTHON SOURCE LINES 130-146
 
 Turning Names into Tensors
 --------------------------
@@ -196,7 +200,7 @@ That extra 1 dimension is because PyTorch assumes everything is in
 batches - we're just using a batch size of 1 here.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-168
+.. GENERATED FROM PYTHON SOURCE LINES 146-172
 
 .. code-block:: default
 
@@ -243,7 +247,7 @@ batches - we're just using a batch size of 1 here.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-188
+.. GENERATED FROM PYTHON SOURCE LINES 173-188
 
 Creating the Network
 ====================
@@ -260,10 +264,6 @@ nn_tutorial.html#example-2-recurrent-net>`__)
 is just 2 linear layers which operate on an input and hidden state, with
 a ``LogSoftmax`` layer after the output.
 
-.. figure:: https://i.imgur.com/Z2xbySO.png
-   :alt:
-
-
 
 .. GENERATED FROM PYTHON SOURCE LINES 188-215
 
@@ -279,13 +279,13 @@ a ``LogSoftmax`` layer after the output.
             self.hidden_size = hidden_size
 
             self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-            self.i2o = nn.Linear(input_size + hidden_size, output_size)
+            self.h2o = nn.Linear(hidden_size, output_size)
             self.softmax = nn.LogSoftmax(dim=1)
 
         def forward(self, input, hidden):
             combined = torch.cat((input, hidden), 1)
             hidden = self.i2h(combined)
-            output = self.i2o(combined)
+            output = self.h2o(hidden)
             output = self.softmax(output)
             return output, hidden
 
@@ -358,9 +358,9 @@ precomputing batches of Tensors.
 
  .. code-block:: none
 
-    tensor([[-2.9694, -2.9119, -2.9363, -2.7759, -2.8583, -2.8755, -2.9201, -2.9122,
-             -2.8318, -2.8369, -2.9570, -2.9842, -2.9026, -2.8321, -2.9084, -2.8505,
-             -2.8649, -2.9244]], grad_fn=<LogSoftmaxBackward0>)
+    tensor([[-2.9083, -2.9270, -2.9167, -2.9590, -2.9108, -2.8332, -2.8906, -2.8325,
+             -2.8521, -2.9279, -2.8452, -2.8754, -2.8565, -2.9733, -2.9201, -2.8233,
+             -2.9298, -2.8624]], grad_fn=<LogSoftmaxBackward0>)
 
 
 
@@ -405,7 +405,7 @@ of the greatest value:
 
  .. code-block:: none
 
-    ('Russian', 3)
+    ('Scottish', 15)
 
 
 
@@ -446,16 +446,16 @@ language):
 
  .. code-block:: none
 
-    category = Korean / line = Pak
-    category = English / line = Aikman
-    category = English / line = Paterson
-    category = Portuguese / line = Silveira
-    category = Korean / line = Sung
-    category = Spanish / line = Quinones
-    category = German / line = Porsche
-    category = Dutch / line = Ramaaker
-    category = Scottish / line = Jones
-    category = German / line = Heidrich
+    category = Chinese / line = Hou
+    category = Scottish / line = Mckay
+    category = Arabic / line = Cham
+    category = Russian / line = V'Yurkov
+    category = Irish / line = O'Keeffe
+    category = French / line = Belrose
+    category = Spanish / line = Silva
+    category = Japanese / line = Fuchida
+    category = Greek / line = Tsahalis
+    category = Korean / line = Chang
 
 
 
@@ -595,26 +595,26 @@ average of the loss.
 
  .. code-block:: none
 
-    5000 5% (0m 6s) 2.7129 Zogby / Scottish ✗ (Arabic)
-    10000 10% (0m 12s) 1.4012 Africani / Italian ✓
-    15000 15% (0m 19s) 2.5959 Riches / Dutch ✗ (English)
-    20000 20% (0m 25s) 2.0692 Zawisza / Japanese ✗ (Polish)
-    25000 25% (0m 32s) 2.6393 Ross / Greek ✗ (Scottish)
-    30000 30% (0m 38s) 1.6273 Gok / Korean ✗ (Chinese)
-    35000 35% (0m 45s) 0.3648 Mishima / Japanese ✓
-    40000 40% (0m 51s) 0.5275 Hadad / Arabic ✓
-    45000 45% (0m 57s) 0.8868 Pham / Vietnamese ✓
-    50000 50% (1m 4s) 0.2707 Son / Korean ✓
-    55000 55% (1m 10s) 2.1417 St pierre / Italian ✗ (French)
-    60000 60% (1m 16s) 0.9070 Fraser / Scottish ✓
-    65000 65% (1m 23s) 3.4446 Sandoval / Czech ✗ (Spanish)
-    70000 70% (1m 29s) 1.3613 Smith / Scottish ✓
-    75000 75% (1m 35s) 1.7481 Gaspar / Scottish ✗ (Portuguese)
-    80000 80% (1m 41s) 3.4829 Hana / Korean ✗ (Czech)
-    85000 85% (1m 48s) 0.3207 Attia / Arabic ✓
-    90000 90% (1m 54s) 0.8596 Haenraets / Dutch ✓
-    95000 95% (2m 0s) 1.7689 Johnston / English ✗ (Scottish)
-    100000 100% (2m 7s) 0.4589 Phi / Vietnamese ✓
+    5000 5% (0m 32s) 2.6379 Horigome / Japanese ✓
+    10000 10% (1m 6s) 2.0172 Miazga / Japanese ✗ (Polish)
+    15000 15% (1m 40s) 0.2680 Yukhvidov / Russian ✓
+    20000 20% (2m 16s) 1.8239 Mclaughlin / Irish ✗ (Scottish)
+    25000 25% (2m 50s) 0.6978 Banh / Vietnamese ✓
+    30000 30% (3m 24s) 1.7433 Machado / Japanese ✗ (Portuguese)
+    35000 35% (3m 57s) 0.0340 Fotopoulos / Greek ✓
+    40000 40% (4m 30s) 1.4637 Quirke / Irish ✓
+    45000 45% (5m 4s) 1.9018 Reier / French ✗ (German)
+    50000 50% (5m 37s) 0.9174 Hou / Chinese ✓
+    55000 55% (6m 10s) 1.0506 Duan / Vietnamese ✗ (Chinese)
+    60000 60% (6m 44s) 0.9617 Giang / Vietnamese ✓
+    65000 65% (7m 18s) 2.4557 Cober / German ✗ (Czech)
+    70000 70% (7m 51s) 0.8502 Mateus / Portuguese ✓
+    75000 75% (8m 24s) 0.2750 Hamilton / Scottish ✓
+    80000 80% (8m 58s) 0.7515 Maessen / Dutch ✓
+    85000 85% (9m 31s) 0.0912 Gan / Chinese ✓
+    90000 90% (10m 4s) 0.1190 Bellomi / Italian ✓
+    95000 95% (10m 37s) 0.0137 Vozgov / Russian ✓
+    100000 100% (11m 11s) 0.7808 Tong / Vietnamese ✓
 
 
 
@@ -654,7 +654,7 @@ learning:
  .. code-block:: none
 
 
-    [<matplotlib.lines.Line2D object at 0x7f0481a460e0>]
+    [<matplotlib.lines.Line2D object at 0x7fe28cbac5b0>]
 
 
 
@@ -792,19 +792,19 @@ Running on User Input
 
 
     > Dovesky
-    (-0.36) Russian
-    (-1.86) Czech
-    (-2.25) English
+    (-0.57) Czech
+    (-0.97) Russian
+    (-3.43) English
 
     > Jackson
-    (-0.33) Scottish
-    (-1.71) English
-    (-2.92) Russian
+    (-1.02) Scottish
+    (-1.49) Russian
+    (-1.96) English
 
     > Satoshi
-    (-0.86) Japanese
-    (-0.86) Arabic
-    (-3.03) Polish
+    (-0.42) Japanese
+    (-1.70) Polish
+    (-2.74) Italian
 
 
 
@@ -858,7 +858,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  14.414 seconds)
+   **Total running time of the script:** ( 11 minutes  20.310 seconds)
 
 
 .. _sphx_glr_download_intermediate_char_rnn_classification_tutorial.py:

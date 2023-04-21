@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Dynamic Quantization &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>Dynamic Quantization &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
@@ -43,18 +43,13 @@
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Automatic Mixed Precision" href="amp_recipe.html" />
     <link rel="prev" title="How to use TensorBoard with PyTorch" href="tensorboard_with_pytorch.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -232,7 +227,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -325,6 +320,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -384,7 +380,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -511,6 +507,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -531,7 +531,7 @@ execution.</p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>There are a number of trade-offs that can be made when designing neural
-networks. During model developmenet and training you can alter the
+networks. During model development and training you can alter the
 number of layers and number of parameters in a recurrent neural network
 and trade-off accuracy against model size and/or model latency or
 throughput. Such changes can take lot of time and compute resources
@@ -611,7 +611,7 @@ version of it.</p></li>
 </ol>
 <div class="section" id="set-up">
 <h3>1: Set Up<a class="headerlink" href="#set-up" title="Permalink to this heading">¶</a></h3>
-<p>This is a straightfoward bit of code to set up for the rest of the
+<p>This is a straightforward bit of code to set up for the rest of the
 recipe.</p>
 <p>The unique module we are importing here is torch.quantization which
 includes PyTorch’s quantized operators and conversion functions. We also
@@ -625,12 +625,12 @@ define a very simple LSTM model and set up some inputs.</p>
 <span class="kn">import</span> <span class="nn">time</span>
 
 <span class="c1"># define a very, very simple LSTM for demonstration purposes</span>
-<span class="c1"># in this case, we are wrapping nn.LSTM, one layer, no pre or post processing</span>
+<span class="c1"># in this case, we are wrapping ``nn.LSTM``, one layer, no preprocessing or postprocessing</span>
 <span class="c1"># inspired by</span>
-<span class="c1"># https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html, by Robert Guthrie</span>
-<span class="c1"># and https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html</span>
+<span class="c1"># `Sequence Models and Long Short-Term Memory Networks tutorial &lt;https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html`_, by Robert Guthrie</span>
+<span class="c1"># and `Dynamic Quanitzation tutorial &lt;https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html&gt;`__.</span>
 <span class="k">class</span> <span class="nc">lstm_for_demonstration</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-<span class="w">  </span><span class="sd">&quot;&quot;&quot;Elementary Long Short Term Memory style model which simply wraps nn.LSTM</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Elementary Long Short Term Memory style model which simply wraps ``nn.LSTM``</span>
 <span class="sd">     Not to be used for anything other than demonstration.</span>
 <span class="sd">  &quot;&quot;&quot;</span>
   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_dim</span><span class="p">,</span><span class="n">out_dim</span><span class="p">,</span><span class="n">depth</span><span class="p">):</span>
@@ -660,7 +660,7 @@ define a very simple LSTM model and set up some inputs.</p>
 <div class="section" id="do-the-quantization">
 <h3>2: Do the Quantization<a class="headerlink" href="#do-the-quantization" title="Permalink to this heading">¶</a></h3>
 <p>Now we get to the fun part. First we create an instance of the model
-called float_lstm then we are going to quantize it. We’re going to use
+called <code class="docutils literal notranslate"><span class="pre">float\_lstm</span></code> then we are going to quantize it. We’re going to use
 the</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">()</span>
 </pre></div>
@@ -691,7 +691,7 @@ module.</p>
 </div>
 <div class="section" id="look-at-model-size">
 <h3>3. Look at Model Size<a class="headerlink" href="#look-at-model-size" title="Permalink to this heading">¶</a></h3>
-<p>Ok, so we’ve quantized the model. What does that get us? Well the first
+<p>We’ve quantized the model. What does that get us? Well the first
 benefit is that we’ve replaced the FP32 model parameters with INT8
 values (and some recorded scale factors). This means about 75% less data
 to store and move around. With the default values the reduction shown
@@ -723,14 +723,19 @@ faster. This is due to a combinations of effects including at least:</p>
 </ol>
 <p>As you will see the quantized version of this super-simple network runs
 faster. This will generally be true of more complex networks but as they
-say “your milage may vary” depending on a number of factors including
+say “your mileage may vary” depending on a number of factors including
 the structure of the model and the hardware you are running on.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># compare the performance</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Floating point FP32&quot;</span><span class="p">)</span>
-<span class="c1"># %timeit float_lstm.forward(inputs, hidden)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Quantized INT8&quot;</span><span class="p">)</span>
-<span class="c1"># %timeit quantized_lstm.forward(inputs,hidden)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">float_lstm</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Quantized INT8&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">timeit</span> <span class="n">quantized_lstm</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="n">hidden</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

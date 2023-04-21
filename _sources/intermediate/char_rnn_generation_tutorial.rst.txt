@@ -20,7 +20,7 @@
 
 NLP From Scratch: Generating Names with a Character-Level RNN
 *************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is our second of three tutorials on "NLP From Scratch".
 In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
@@ -92,11 +92,10 @@ are a bunch of plain text files ``data/names/[Language].txt`` with a
 name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary ``{language: [names ...]}``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-123
+.. GENERATED FROM PYTHON SOURCE LINES 78-122
 
 .. code-block:: default
 
-    from __future__ import unicode_literals, print_function, division
     from io import open
     import glob
     import os
@@ -149,13 +148,13 @@ and end up with a dictionary ``{language: [names ...]}``.
 
  .. code-block:: none
 
-    # categories: 18 ['Czech', 'German', 'Portuguese', 'Russian', 'Irish', 'French', 'Korean', 'Arabic', 'Vietnamese', 'Italian', 'Japanese', 'English', 'Polish', 'Scottish', 'Chinese', 'Dutch', 'Greek', 'Spanish']
+    # categories: 18 ['Arabic', 'Chinese', 'Czech', 'Dutch', 'English', 'French', 'German', 'Greek', 'Irish', 'Italian', 'Japanese', 'Korean', 'Polish', 'Portuguese', 'Russian', 'Scottish', 'Spanish', 'Vietnamese']
     O'Neal
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-148
+.. GENERATED FROM PYTHON SOURCE LINES 123-147
 
 Creating the Network
 ====================
@@ -182,7 +181,7 @@ chaos and increase sampling variety.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-177
+.. GENERATED FROM PYTHON SOURCE LINES 147-176
 
 .. code-block:: default
 
@@ -222,7 +221,7 @@ chaos and increase sampling variety.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-185
+.. GENERATED FROM PYTHON SOURCE LINES 177-184
 
 Training
 =========
@@ -232,7 +231,7 @@ Preparing for Training
 First of all, helper functions to get random pairs of (category, line):
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-199
+.. GENERATED FROM PYTHON SOURCE LINES 184-198
 
 .. code-block:: default
 
@@ -257,7 +256,7 @@ First of all, helper functions to get random pairs of (category, line):
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-221
+.. GENERATED FROM PYTHON SOURCE LINES 199-220
 
 For each timestep (that is, for each letter in a training word) the
 inputs of the network will be
@@ -281,7 +280,7 @@ timestep - this is a design choice, it could have been included as part
 of initial hidden state or some other strategy.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-244
+.. GENERATED FROM PYTHON SOURCE LINES 220-243
 
 .. code-block:: default
 
@@ -315,14 +314,14 @@ of initial hidden state or some other strategy.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-249
+.. GENERATED FROM PYTHON SOURCE LINES 244-248
 
 For convenience during training we'll make a ``randomTrainingExample``
 function that fetches a random (category, line) pair and turns them into
 the required (category, input, target) tensors.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 249-259
+.. GENERATED FROM PYTHON SOURCE LINES 248-258
 
 .. code-block:: default
 
@@ -343,7 +342,7 @@ the required (category, input, target) tensors.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-270
+.. GENERATED FROM PYTHON SOURCE LINES 259-269
 
 Training the Network
 --------------------
@@ -356,7 +355,7 @@ The magic of autograd allows you to simply sum these losses at each step
 and call backward at the end.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-296
+.. GENERATED FROM PYTHON SOURCE LINES 269-295
 
 .. code-block:: default
 
@@ -371,7 +370,7 @@ and call backward at the end.
 
         rnn.zero_grad()
 
-        loss = 0
+        loss = torch.Tensor([0]) # you can also just simply use ``loss = 0``
 
         for i in range(input_line_tensor.size(0)):
             output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
@@ -393,13 +392,13 @@ and call backward at the end.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 297-300
+.. GENERATED FROM PYTHON SOURCE LINES 296-299
 
 To keep track of how long training takes I am adding a
 ``timeSince(timestamp)`` function which returns a human readable string:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-312
+.. GENERATED FROM PYTHON SOURCE LINES 299-311
 
 .. code-block:: default
 
@@ -422,7 +421,7 @@ To keep track of how long training takes I am adding a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 313-318
+.. GENERATED FROM PYTHON SOURCE LINES 312-317
 
 Training is business as usual - call train a bunch of times and wait a
 few minutes, printing the current time and loss every ``print_every``
@@ -430,7 +429,7 @@ examples, and keeping store of an average loss per ``plot_every`` examples
 in ``all_losses`` for plotting later.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 318-341
+.. GENERATED FROM PYTHON SOURCE LINES 317-340
 
 .. code-block:: default
 
@@ -465,31 +464,31 @@ in ``all_losses`` for plotting later.
 
  .. code-block:: none
 
-    0m 14s (5000 5%) 3.0408
-    0m 29s (10000 10%) 2.6972
-    0m 42s (15000 15%) 2.6942
-    0m 57s (20000 20%) 2.7794
-    1m 11s (25000 25%) 3.0897
-    1m 25s (30000 30%) 2.5541
-    1m 39s (35000 35%) 1.6657
-    1m 53s (40000 40%) 1.9472
-    2m 7s (45000 45%) 1.6466
-    2m 21s (50000 50%) 2.1719
-    2m 35s (55000 55%) 2.5572
-    2m 49s (60000 60%) 2.6945
-    3m 3s (65000 65%) 1.8066
-    3m 17s (70000 70%) 2.6341
-    3m 31s (75000 75%) 1.6179
-    3m 45s (80000 80%) 2.6818
-    3m 59s (85000 85%) 2.4563
-    4m 14s (90000 90%) 2.2300
-    4m 28s (95000 95%) 2.8112
-    4m 42s (100000 100%) 2.2006
+    0m 38s (5000 5%) 3.1506
+    1m 17s (10000 10%) 2.5070
+    1m 56s (15000 15%) 3.3047
+    2m 35s (20000 20%) 2.4247
+    3m 14s (25000 25%) 2.6406
+    3m 53s (30000 30%) 2.0266
+    4m 32s (35000 35%) 2.6520
+    5m 10s (40000 40%) 2.4261
+    5m 49s (45000 45%) 2.2302
+    6m 28s (50000 50%) 1.6496
+    7m 7s (55000 55%) 2.7101
+    7m 46s (60000 60%) 2.5396
+    8m 25s (65000 65%) 2.5978
+    9m 3s (70000 70%) 1.6029
+    9m 43s (75000 75%) 0.9634
+    10m 21s (80000 80%) 3.0950
+    11m 0s (85000 85%) 2.0512
+    11m 39s (90000 90%) 2.5302
+    12m 18s (95000 95%) 3.2365
+    12m 57s (100000 100%) 1.7113
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-348
+.. GENERATED FROM PYTHON SOURCE LINES 341-347
 
 Plotting the Losses
 -------------------
@@ -498,7 +497,7 @@ Plotting the historical loss from all\_losses shows the network
 learning:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 348-355
+.. GENERATED FROM PYTHON SOURCE LINES 347-354
 
 .. code-block:: default
 
@@ -523,11 +522,11 @@ learning:
  .. code-block:: none
 
 
-    [<matplotlib.lines.Line2D object at 0x7f312e1eeb00>]
+    [<matplotlib.lines.Line2D object at 0x7f6effb1aaa0>]
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 356-379
+.. GENERATED FROM PYTHON SOURCE LINES 355-378
 
 Sampling the Network
 ====================
@@ -553,7 +552,7 @@ feed that in as the next letter, and repeat until the EOS token.
    training and have the network choose its own starting letter.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 379-418
+.. GENERATED FROM PYTHON SOURCE LINES 378-417
 
 .. code-block:: default
 
@@ -604,23 +603,23 @@ feed that in as the next letter, and repeat until the EOS token.
 
  .. code-block:: none
 
-    Rovakinov
-    Uanikov
-    Shalloveki
-    Garter
-    Eerter
-    Rontan
-    Salla
-    Panela
-    Allana
-    Chang
-    Hang
-    Iung
+    Rovaki
+    Uarinovev
+    Shinan
+    Gerter
+    Eeren
+    Roune
+    Santera
+    Paneraz
+    Allan
+    Chin
+    Han
+    Ion
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 419-435
+.. GENERATED FROM PYTHON SOURCE LINES 418-434
 
 Exercises
 =========
@@ -642,7 +641,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  42.407 seconds)
+   **Total running time of the script:** ( 12 minutes  57.352 seconds)
 
 
 .. _sphx_glr_download_intermediate_char_rnn_generation_tutorial.py:

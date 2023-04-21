@@ -53,7 +53,7 @@ itself consists of ``nlayers`` of `nn.TransformerEncoderLayer <https://pytorch.o
 As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
 such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
 other half are on another. To do this, we pull out the ``Encoder`` and
-``Decoder`` sections into seperate modules and then build an nn.Sequential
+``Decoder`` sections into separate modules and then build an ``nn.Sequential``
 representing the original Transformer module.
 
 .. GENERATED FROM PYTHON SOURCE LINES 40-90
@@ -164,7 +164,7 @@ Load and batch data
 -------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-152
+.. GENERATED FROM PYTHON SOURCE LINES 125-153
 
 The training process uses Wikitext-2 dataset from ``torchtext``. 
 To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
@@ -178,23 +178,24 @@ and a batch size of 4, we would divide the alphabet into 4 sequences of
 length 6:
 
 .. math::
-  \begin{bmatrix}
-  \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
-  \end{bmatrix}
-  \Rightarrow
-  \begin{bmatrix}
-  \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
-  \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
-  \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
-  \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-  \end{bmatrix}
+
+   \begin{bmatrix}
+   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+   \end{bmatrix}
+   \Rightarrow
+   \begin{bmatrix}
+   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+   \end{bmatrix}
 
 These columns are treated as independent by the model, which means that
 the dependence of ``G`` and ``F`` can not be learned, but allows more
 efficient batch processing.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-190
+.. GENERATED FROM PYTHON SOURCE LINES 153-191
 
 .. code-block:: default
 
@@ -221,11 +222,11 @@ efficient batch processing.
     device = torch.device("cuda")
 
     def batchify(data, bsz):
-        # Divide the dataset into bsz parts.
+        # Divide the dataset into ``bsz`` parts.
         nbatch = data.size(0) // bsz
         # Trim off any extra elements that wouldn't cleanly fit (remainders).
         data = data.narrow(0, 0, nbatch * bsz)
-        # Evenly divide the data across the bsz batches.
+        # Evenly divide the data across the ``bsz` batches.
         data = data.view(bsz, -1).t().contiguous()
         return data.to(device)
 
@@ -243,13 +244,13 @@ efficient batch processing.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-194
+.. GENERATED FROM PYTHON SOURCE LINES 192-195
 
 Functions to generate input and target sequence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-209
+.. GENERATED FROM PYTHON SOURCE LINES 198-210
 
 ``get_batch()`` function generates the input and target sequence for
 the transformer model. It subdivides the source data into chunks of
@@ -264,7 +265,7 @@ with the ``S`` dimension in the Transformer model. The batch dimension
 ``N`` is along dimension 1.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-218
+.. GENERATED FROM PYTHON SOURCE LINES 210-219
 
 .. code-block:: default
 
@@ -284,13 +285,13 @@ with the ``S`` dimension in the Transformer model. The batch dimension
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-222
+.. GENERATED FROM PYTHON SOURCE LINES 220-223
 
 Model scale and Pipe initialization
 -----------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-245
+.. GENERATED FROM PYTHON SOURCE LINES 226-246
 
 To demonstrate training large Transformer models using pipeline parallelism,
 we scale up the Transformer layers appropriately. We use an embedding
@@ -313,16 +314,16 @@ transformer layers on the other GPU.
    allows the Pipe to work with only two partitions and avoid any
    cross-partition overheads.
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-304
+.. GENERATED FROM PYTHON SOURCE LINES 246-305
 
 .. code-block:: default
 
 
     ntokens = len(vocab) # the size of vocabulary
     emsize = 4096 # embedding dimension
-    nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
-    nlayers = 12 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-    nhead = 16 # the number of heads in the multiheadattention models
+    nhid = 4096 # the dimension of the feedforward network model in ``nn.TransformerEncoder``
+    nlayers = 12 # the number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``
+    nhead = 16 # the number of heads in the Multihead Attention models
     dropout = 0.2 # the dropout value
 
     from torch.distributed import rpc
@@ -389,13 +390,13 @@ transformer layers on the other GPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 305-308
+.. GENERATED FROM PYTHON SOURCE LINES 306-309
 
 Run the model
 -------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 311-321
+.. GENERATED FROM PYTHON SOURCE LINES 312-322
 
 `CrossEntropyLoss <https://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
 is applied to track the loss and
@@ -408,7 +409,7 @@ training, we use
 function to scale all the gradient together to prevent exploding.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-381
+.. GENERATED FROM PYTHON SOURCE LINES 322-382
 
 .. code-block:: default
 
@@ -479,12 +480,12 @@ function to scale all the gradient together to prevent exploding.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 382-384
+.. GENERATED FROM PYTHON SOURCE LINES 383-385
 
 Loop over epochs. Save the model if the validation loss is the best
 we've seen so far. Adjust the learning rate after each epoch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 384-406
+.. GENERATED FROM PYTHON SOURCE LINES 385-407
 
 .. code-block:: default
 
@@ -522,42 +523,42 @@ we've seen so far. Adjust the learning rate after each epoch.
 
     To get the last learning rate computed by the scheduler, please use `get_last_lr()`.
 
-    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 1798.01 | loss 41.59 | ppl 1160018970593073152.00
-    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 1675.30 | loss 42.57 | ppl 3063852650308443648.00
-    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 1617.61 | loss 44.36 | ppl 18351649666037594112.00
-    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 1597.50 | loss 41.87 | ppl 1526955311399730432.00
+    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2966.96 | loss 51.60 | ppl 25691483545748465778688.00
+    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2668.38 | loss 44.21 | ppl 15838827084261371904.00
+    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2670.50 | loss 43.87 | ppl 11235333300557459456.00
+    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2679.45 | loss 34.66 | ppl 1126582476438232.25
     -----------------------------------------------------------------------------------------
-    | end of epoch   1 | time: 90.95s | valid loss  0.73 | valid ppl     2.08
+    | end of epoch   1 | time: 152.27s | valid loss  1.02 | valid ppl     2.78
     -----------------------------------------------------------------------------------------
-    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 1783.42 | loss 36.30 | ppl 5806791883305976.00
-    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 1621.16 | loss 29.18 | ppl 4727380487443.61
-    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 1616.44 | loss 30.54 | ppl 18408161303782.02
-    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 1610.89 | loss 23.88 | ppl 23386861238.05
+    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2943.46 | loss 37.13 | ppl 13322318746481938.00
+    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2679.54 | loss 27.15 | ppl 619717356867.28
+    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2674.52 | loss 25.96 | ppl 187377465814.04
+    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2673.67 | loss 25.50 | ppl 118619452180.45
     -----------------------------------------------------------------------------------------
-    | end of epoch   2 | time: 90.68s | valid loss  0.33 | valid ppl     1.39
+    | end of epoch   2 | time: 152.11s | valid loss  0.29 | valid ppl     1.33
     -----------------------------------------------------------------------------------------
-    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 1780.87 | loss 13.31 | ppl 601384.49
-    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 1622.00 | loss 12.37 | ppl 236298.13
-    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 1622.81 | loss  9.96 | ppl 21246.47
-    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 1621.25 | loss 10.50 | ppl 36256.99
+    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2941.69 | loss 12.95 | ppl 420558.36
+    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2672.08 | loss 11.72 | ppl 123500.08
+    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2678.78 | loss 10.52 | ppl 37106.62
+    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2672.90 | loss 10.86 | ppl 51860.06
     -----------------------------------------------------------------------------------------
-    | end of epoch   3 | time: 90.84s | valid loss  0.22 | valid ppl     1.25
+    | end of epoch   3 | time: 152.04s | valid loss  0.21 | valid ppl     1.23
     -----------------------------------------------------------------------------------------
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 407-410
+.. GENERATED FROM PYTHON SOURCE LINES 408-411
 
 Evaluate the model with the test dataset
 -------------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 413-414
+.. GENERATED FROM PYTHON SOURCE LINES 414-415
 
 Apply the best model to check the result with the test dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 414-420
+.. GENERATED FROM PYTHON SOURCE LINES 415-421
 
 .. code-block:: default
 
@@ -576,7 +577,7 @@ Apply the best model to check the result with the test dataset.
  .. code-block:: none
 
     =========================================================================================
-    | End of training | test loss  0.20 | test ppl     1.22
+    | End of training | test loss  0.19 | test ppl     1.20
     =========================================================================================
 
 
@@ -585,7 +586,7 @@ Apply the best model to check the result with the test dataset.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 5 minutes  7.785 seconds)
+   **Total running time of the script:** ( 8 minutes  17.034 seconds)
 
 
 .. _sphx_glr_download_intermediate_pipeline_tutorial.py:

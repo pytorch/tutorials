@@ -290,15 +290,19 @@ for epoch in range(EPOCHS):
     model.train(True)
     avg_loss = train_one_epoch(epoch_number, writer)
     
-    # We don't need gradients on to do reporting
-    model.train(False)
-    
+
     running_vloss = 0.0
-    for i, vdata in enumerate(validation_loader):
-        vinputs, vlabels = vdata
-        voutputs = model(vinputs)
-        vloss = loss_fn(voutputs, vlabels)
-        running_vloss += vloss
+    # Set the model to evaluation mode, disabling dropout and using population 
+    # statistics for batch normalization.
+    model.eval()
+
+    # Disable gradient computation and reduce memory consumption.
+    with torch.no_grad():
+        for i, vdata in enumerate(validation_loader):
+            vinputs, vlabels = vdata
+            voutputs = model(vinputs)
+            vloss = loss_fn(voutputs, vlabels)
+            running_vloss += vloss
     
     avg_vloss = running_vloss / (i + 1)
     print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))

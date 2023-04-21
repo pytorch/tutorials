@@ -117,21 +117,24 @@ Installation
 Before you get started, you need to have a Python environment with:
 
 -  Python version 3.6 or higher
--  For the Captum Insights example, Flask 1.1 or higher
+-  For the Captum Insights example, Flask 1.1 or higher and Flask-Compress
+   (the latest version is recommended)
 -  PyTorch version 1.2 or higher (the latest version is recommended)
 -  TorchVision version 0.6 or higher (the latest version is recommended)
 -  Captum (the latest version is recommended)
+-  Matplotlib version 3.3.4, since Captum currently uses a Matplotlib
+   function whose arguments have been renamed in later versions
 
 To install Captum in an Anaconda or pip virtual environment, use the
 appropriate command for your environment below:
 
 With ``conda``::
 
-    conda install pytorch torchvision captum -c pytorch
+    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c pytorch
 
 With ``pip``::
 
-    pip install torch torchvision captum
+    pip install torch torchvision captum matplotlib==3.3.4 Flask-Compress
 
 Restart this notebook in the environment you set up, and you’re ready to
 go!
@@ -148,7 +151,7 @@ input attribution map for some test images.
  
 First, some imports: 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-152
+.. GENERATED FROM PYTHON SOURCE LINES 136-155
 
 .. code-block:: default
 
@@ -172,30 +175,30 @@ First, some imports:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-157
+.. GENERATED FROM PYTHON SOURCE LINES 156-160
 
 Now we’ll use the TorchVision model library to download a pretrained
 ResNet. Since we’re not training, we’ll place it in evaluation mode for
 now.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-162
+.. GENERATED FROM PYTHON SOURCE LINES 160-165
 
 .. code-block:: default
 
 
-    model = models.resnet101(weights='IMAGENET1K_V1')
+    model = models.resnet18(weights='IMAGENET1K_V1')
     model = model.eval()
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-166
+.. GENERATED FROM PYTHON SOURCE LINES 166-169
 
 The place where you got this interactive notebook should also have an
 ``img`` folder with a file ``cat.jpg`` in it.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-173
+.. GENERATED FROM PYTHON SOURCE LINES 169-176
 
 .. code-block:: default
 
@@ -207,7 +210,7 @@ The place where you got this interactive notebook should also have an
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-180
+.. GENERATED FROM PYTHON SOURCE LINES 177-183
 
 Our ResNet model was trained on the ImageNet dataset, and expects images
 to be of a certain size, with the channel data normalized to a specific
@@ -216,7 +219,7 @@ for the categories our model recognizes - that should be in the ``img``
 folder as well.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-203
+.. GENERATED FROM PYTHON SOURCE LINES 183-206
 
 .. code-block:: default
 
@@ -244,13 +247,13 @@ folder as well.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-207
+.. GENERATED FROM PYTHON SOURCE LINES 207-210
 
 Now, we can ask the question: What does our model think this image
 represents?
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-216
+.. GENERATED FROM PYTHON SOURCE LINES 210-219
 
 .. code-block:: default
 
@@ -264,7 +267,7 @@ represents?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-222
+.. GENERATED FROM PYTHON SOURCE LINES 220-225
 
 We’ve confirmed that ResNet thinks our image of a cat is, in fact, a
 cat. But *why* does the model think this is an image of a cat?
@@ -272,7 +275,7 @@ cat. But *why* does the model think this is an image of a cat?
 For the answer to that, we turn to Captum.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-254
+.. GENERATED FROM PYTHON SOURCE LINES 228-257
 
 Feature Attribution with Integrated Gradients
 ---------------------------------------------
@@ -304,7 +307,7 @@ Running the cell with the ``integrated_gradients.attribute()`` call will
 usually take a minute or two.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-279
+.. GENERATED FROM PYTHON SOURCE LINES 257-282
 
 .. code-block:: default
 
@@ -334,13 +337,13 @@ usually take a minute or two.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-283
+.. GENERATED FROM PYTHON SOURCE LINES 283-286
 
 In the image above, you should see that Integrated Gradients gives us
 the strongest signal around the cat’s location in the image.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 286-307
+.. GENERATED FROM PYTHON SOURCE LINES 289-310
 
 Feature Attribution with Occlusion
 ----------------------------------
@@ -364,7 +367,7 @@ instructive view of what regions of our cat photo the model found to be
 most “cat-like”.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-327
+.. GENERATED FROM PYTHON SOURCE LINES 310-330
 
 .. code-block:: default
 
@@ -389,13 +392,13 @@ most “cat-like”.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 328-331
+.. GENERATED FROM PYTHON SOURCE LINES 331-334
 
 Again, we see greater significance placed on the region of the image
 that contains the cat.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 334-355
+.. GENERATED FROM PYTHON SOURCE LINES 337-358
 
 Layer Attribution with Layer GradCAM
 ------------------------------------
@@ -419,7 +422,7 @@ model that you wish to examine. As above, when we call ``attribute()``,
 we specify the target class of interest.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-364
+.. GENERATED FROM PYTHON SOURCE LINES 358-367
 
 .. code-block:: default
 
@@ -433,7 +436,7 @@ we specify the target class of interest.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 365-370
+.. GENERATED FROM PYTHON SOURCE LINES 368-373
 
 We’ll use the convenience method ``interpolate()`` in the
 `LayerAttribution <https://captum.ai/api/base_classes.html?highlight=layerattribution#captum.attr.LayerAttribution>`__
@@ -441,7 +444,7 @@ base class to upsample this attribution data for comparison to the input
 image.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 370-386
+.. GENERATED FROM PYTHON SOURCE LINES 373-389
 
 .. code-block:: default
 
@@ -462,13 +465,13 @@ image.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 387-390
+.. GENERATED FROM PYTHON SOURCE LINES 390-393
 
 Visualizations such as this can give you novel insights into how your
 hidden layers respond to your input.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 393-409
+.. GENERATED FROM PYTHON SOURCE LINES 396-412
 
 Visualization with Captum Insights
 ----------------------------------
@@ -487,7 +490,7 @@ First, let’s gather some image and see what the model thinks of them.
 For variety, we’ll take our cat, a teapot, and a trilobite fossil:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 409-426
+.. GENERATED FROM PYTHON SOURCE LINES 412-429
 
 .. code-block:: default
 
@@ -509,7 +512,7 @@ For variety, we’ll take our cat, a teapot, and a trilobite fossil:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 427-444
+.. GENERATED FROM PYTHON SOURCE LINES 430-447
 
 …and it looks like our model is identifying them all correctly - but of
 course, we want to dig deeper. For that we’ll use the Captum Insights
@@ -529,7 +532,7 @@ We configure the ``AttributionVisualizer`` with the following arguments:
    and labels - just like you’d use for training
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 444-478
+.. GENERATED FROM PYTHON SOURCE LINES 447-481
 
 .. code-block:: default
 
@@ -568,7 +571,7 @@ We configure the ``AttributionVisualizer`` with the following arguments:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 479-491
+.. GENERATED FROM PYTHON SOURCE LINES 482-494
 
 Note that running the cell above didn’t take much time at all, unlike
 our attributions above. That’s because Captum Insights lets you
@@ -583,7 +586,7 @@ model’s predictions with associated probabilities, and view heatmaps of
 the attribution compared with the original image.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 491-493
+.. GENERATED FROM PYTHON SOURCE LINES 494-496
 
 .. code-block:: default
 

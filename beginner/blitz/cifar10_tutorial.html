@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Training a Classifier — PyTorch Tutorials 2.0.0+cu117 documentation</title>
+<title>Training a Classifier — PyTorch Tutorials 2.0.1+cu117 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -25,16 +25,13 @@
 <link href="../../search.html" rel="search" title="Search"/>
 <link href="../pytorch_with_examples.html" rel="next" title="Learning PyTorch with Examples"/>
 <link href="neural_networks_tutorial.html" rel="prev" title="Neural Networks"/>
-<!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-<!-- End Google Analytics -->
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
 <script src="../../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -183,7 +180,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
 <div role="search">
 <form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -258,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -317,7 +315,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -401,6 +399,9 @@
 <div class="call-to-action-mobile-view">GitHub</div>
 </div>
 </div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
@@ -488,24 +489,33 @@ the num_worker of torch.utils.data.DataLoader() to 0.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 458752/170498071 [00:00&lt;00:41, 4054041.41it/s]
-  4%|4         | 7012352/170498071 [00:00&lt;00:04, 38350543.85it/s]
- 10%|#         | 17694720/170498071 [00:00&lt;00:02, 68593762.12it/s]
- 17%|#6        | 28344320/170498071 [00:00&lt;00:01, 83204169.88it/s]
- 23%|##2       | 38961152/170498071 [00:00&lt;00:01, 91344696.75it/s]
- 29%|##8       | 49381376/170498071 [00:00&lt;00:01, 95658310.26it/s]
- 35%|###5      | 59768832/170498071 [00:00&lt;00:01, 98317319.17it/s]
- 41%|####1     | 70254592/170498071 [00:00&lt;00:00, 100297365.71it/s]
- 47%|####7     | 80904192/170498071 [00:00&lt;00:00, 102154141.93it/s]
- 53%|#####3    | 91193344/170498071 [00:01&lt;00:00, 102299017.31it/s]
- 60%|#####9    | 101810176/170498071 [00:01&lt;00:00, 103465512.95it/s]
- 66%|######5   | 112197632/170498071 [00:01&lt;00:00, 103230513.43it/s]
- 72%|#######1  | 122552320/170498071 [00:01&lt;00:00, 103014257.06it/s]
- 78%|#######7  | 132874240/170498071 [00:01&lt;00:00, 102853412.09it/s]
- 85%|########4 | 144211968/170498071 [00:01&lt;00:00, 105881451.94it/s]
- 91%|#########1| 155648000/170498071 [00:01&lt;00:00, 108346684.37it/s]
- 98%|#########8| 167215104/170498071 [00:01&lt;00:00, 110452869.43it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 97484751.15it/s]
+  0%|          | 458752/170498071 [00:00&lt;00:39, 4298363.77it/s]
+  2%|1         | 2588672/170498071 [00:00&lt;00:11, 14007029.00it/s]
+  3%|3         | 5144576/170498071 [00:00&lt;00:08, 19193099.18it/s]
+  5%|4         | 8355840/170498071 [00:00&lt;00:06, 24144624.93it/s]
+  7%|6         | 11370496/170498071 [00:00&lt;00:06, 26269524.70it/s]
+  8%|8         | 14221312/170498071 [00:00&lt;00:05, 26901098.20it/s]
+ 10%|#         | 17137664/170498071 [00:00&lt;00:05, 27458328.94it/s]
+ 12%|#1        | 19922944/170498071 [00:00&lt;00:05, 27459747.27it/s]
+ 13%|#3        | 22708224/170498071 [00:00&lt;00:05, 27553305.01it/s]
+ 16%|#6        | 27361280/170498071 [00:01&lt;00:04, 33345161.56it/s]
+ 19%|#9        | 33095680/170498071 [00:01&lt;00:03, 40639438.18it/s]
+ 24%|##3       | 40304640/170498071 [00:01&lt;00:02, 50127205.49it/s]
+ 28%|##8       | 48398336/170498071 [00:01&lt;00:02, 59351004.32it/s]
+ 33%|###3      | 56328192/170498071 [00:01&lt;00:01, 65302434.81it/s]
+ 38%|###7      | 64323584/170498071 [00:01&lt;00:01, 69688191.98it/s]
+ 42%|####2     | 72351744/170498071 [00:01&lt;00:01, 72848092.20it/s]
+ 47%|####7     | 80642048/170498071 [00:01&lt;00:01, 75719238.71it/s]
+ 52%|#####2    | 89128960/170498071 [00:01&lt;00:01, 78447720.16it/s]
+ 58%|#####7    | 98074624/170498071 [00:01&lt;00:00, 81702913.72it/s]
+ 63%|######3   | 107544576/170498071 [00:02&lt;00:00, 85586222.88it/s]
+ 69%|######8   | 117211136/170498071 [00:02&lt;00:00, 88786607.06it/s]
+ 75%|#######4  | 127139840/170498071 [00:02&lt;00:00, 91868261.06it/s]
+ 80%|########  | 137134080/170498071 [00:02&lt;00:00, 94269473.29it/s]
+ 86%|########6 | 147095552/170498071 [00:02&lt;00:00, 95852190.96it/s]
+ 92%|#########2| 157319168/170498071 [00:02&lt;00:00, 97660587.30it/s]
+ 98%|#########8| 167706624/170498071 [00:02&lt;00:00, 99465017.82it/s]
+100%|##########| 170498071/170498071 [00:02&lt;00:00, 64457480.09it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -534,7 +544,7 @@ Files already downloaded and verified
 <span class="nb">print</span><span class="p">(</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">classes</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">labels</span></a><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="si">:</span><span class="s1">5s</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)))</span>
 </pre></div>
 </div>
-<img alt="cifar10 tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_cifar10_tutorial_001.png" srcset="../../_images/sphx_glr_cifar10_tutorial_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>horse cat   dog   horse
+<img alt="cifar10 tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_cifar10_tutorial_001.png" srcset="../../_images/sphx_glr_cifar10_tutorial_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>frog  plane deer  car
 </pre></div>
 </div>
 </div>
@@ -610,18 +620,18 @@ network and optimize.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Finished Training'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[1,  2000] loss: 2.200
-[1,  4000] loss: 1.884
-[1,  6000] loss: 1.673
-[1,  8000] loss: 1.564
-[1, 10000] loss: 1.497
-[1, 12000] loss: 1.471
-[2,  2000] loss: 1.390
-[2,  4000] loss: 1.343
-[2,  6000] loss: 1.346
-[2,  8000] loss: 1.311
-[2, 10000] loss: 1.298
-[2, 12000] loss: 1.263
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[1,  2000] loss: 2.144
+[1,  4000] loss: 1.835
+[1,  6000] loss: 1.677
+[1,  8000] loss: 1.573
+[1, 10000] loss: 1.526
+[1, 12000] loss: 1.447
+[2,  2000] loss: 1.405
+[2,  4000] loss: 1.363
+[2,  6000] loss: 1.341
+[2,  8000] loss: 1.340
+[2, 10000] loss: 1.315
+[2, 12000] loss: 1.281
 Finished Training
 </pre></div>
 </div>
@@ -675,7 +685,7 @@ So, let’s get the index of the highest energy:</p>
                               <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted:  cat   ship  ship  ship
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted:  cat   ship  truck ship
 </pre></div>
 </div>
 <p>The results seem pretty good.</p>
@@ -696,7 +706,7 @@ So, let’s get the index of the highest energy:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Accuracy of the network on the 10000 test images: </span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">correct</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">total</span><span class="si">}</span><span class="s1"> %'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy of the network on the 10000 test images: 55 %
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy of the network on the 10000 test images: 54 %
 </pre></div>
 </div>
 <p>That looks way better than chance, which is 10% accuracy (randomly picking
@@ -727,16 +737,16 @@ not perform well:</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Accuracy for class: </span><span class="si">{</span><span class="n">classname</span><span class="si">:</span><span class="s1">5s</span><span class="si">}</span><span class="s1"> is </span><span class="si">{</span><span class="n">accuracy</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> %'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy for class: plane is 44.7 %
-Accuracy for class: car   is 72.6 %
-Accuracy for class: bird  is 51.3 %
-Accuracy for class: cat   is 39.9 %
-Accuracy for class: deer  is 43.2 %
-Accuracy for class: dog   is 49.3 %
-Accuracy for class: frog  is 64.9 %
-Accuracy for class: horse is 55.5 %
-Accuracy for class: ship  is 81.8 %
-Accuracy for class: truck is 51.5 %
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy for class: plane is 37.9 %
+Accuracy for class: car   is 62.2 %
+Accuracy for class: bird  is 45.6 %
+Accuracy for class: cat   is 29.2 %
+Accuracy for class: deer  is 50.3 %
+Accuracy for class: dog   is 45.9 %
+Accuracy for class: frog  is 60.1 %
+Accuracy for class: horse is 70.3 %
+Accuracy for class: ship  is 82.9 %
+Accuracy for class: truck is 63.1 %
 </pre></div>
 </div>
 <p>Okay, so what next?</p>
@@ -801,7 +811,7 @@ please check out <a class="reference internal" href="data_parallel_tutorial.html
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">dataiter</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  54.009 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  51.710 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-cifar10-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c51fcdf96d93a8e4b3f2943cb36bab19/cifar10_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></p>

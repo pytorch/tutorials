@@ -83,6 +83,8 @@ Constructing the process group
    initializes the distributed process group.
 -  Read more about `choosing a DDP
    backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
+-  `set_device <https://pytorch.org/docs/stable/generated/torch.cuda.set_device.html?highlight=set_device#torch.cuda.set_device>`__
+   sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on `GPU:0`
 
 .. code:: diff
 
@@ -95,6 +97,7 @@ Constructing the process group
    +   os.environ["MASTER_ADDR"] = "localhost"
    +   os.environ["MASTER_PORT"] = "12355"
    +   init_process_group(backend="nccl", rank=rank, world_size=world_size)
+   +   torch.cuda.set_device(rank)
 
 
 Constructing the DDP model

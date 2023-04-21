@@ -100,7 +100,7 @@ to permit Tensor Core usage on Tensor Core-capable GPUs (see :ref:`Troubleshooti
 
 Exercise: Vary participating sizes and see how the mixed precision speedup changes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-87
+.. GENERATED FROM PYTHON SOURCE LINES 71-90
 
 .. code-block:: default
 
@@ -112,22 +112,25 @@ Exercise: Vary participating sizes and see how the mixed precision speedup chang
     num_batches = 50
     epochs = 3
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    torch.set_default_device(device)
+
     # Creates data in default precision.
     # The same data is used for both default and mixed precision trials below.
-    # You don't need to manually change inputs' dtype when enabling mixed precision.
-    data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batches)]
-    targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
+    # You don't need to manually change inputs' ``dtype`` when enabling mixed precision.
+    data = [torch.randn(batch_size, in_size) for _ in range(num_batches)]
+    targets = [torch.randn(batch_size, out_size) for _ in range(num_batches)]
 
     loss_fn = torch.nn.MSELoss().cuda()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-91
+.. GENERATED FROM PYTHON SOURCE LINES 91-94
 
 Default Precision
 -----------------
 Without ``torch.cuda.amp``, the following simple network executes all ops in default precision (``torch.float32``):
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-105
+.. GENERATED FROM PYTHON SOURCE LINES 94-108
 
 .. code-block:: default
 
@@ -146,47 +149,47 @@ Without ``torch.cuda.amp``, the following simple network executes all ops in def
     end_timer_and_print("Default precision:")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-115
+.. GENERATED FROM PYTHON SOURCE LINES 109-118
 
-Adding autocast
----------------
+Adding ``torch.autocast``
+-------------------------
 Instances of `torch.autocast <https://pytorch.org/docs/stable/amp.html#autocasting>`_
 serve as context managers that allow regions of your script to run in mixed precision.
 
-In these regions, CUDA ops run in a dtype chosen by autocast
+In these regions, CUDA ops run in a ``dtype`` chosen by ``autocast``
 to improve performance while maintaining accuracy.
 See the `Autocast Op Reference <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
-for details on what precision autocast chooses for each op, and under what circumstances.
+for details on what precision ``autocast`` chooses for each op, and under what circumstances.
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-135
+.. GENERATED FROM PYTHON SOURCE LINES 118-138
 
 .. code-block:: default
 
 
     for epoch in range(0): # 0 epochs, this section is for illustration only
         for input, target in zip(data, targets):
-            # Runs the forward pass under autocast.
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
+            # Runs the forward pass under ``autocast``.
+            with torch.autocast(device_type=device, dtype=torch.float16):
                 output = net(input)
-                # output is float16 because linear layers autocast to float16.
+                # output is float16 because linear layers ``autocast`` to float16.
                 assert output.dtype is torch.float16
 
                 loss = loss_fn(output, target)
-                # loss is float32 because mse_loss layers autocast to float32.
+                # loss is float32 because ``mse_loss`` layers ``autocast`` to float32.
                 assert loss.dtype is torch.float32
 
-            # Exits autocast before backward().
-            # Backward passes under autocast are not recommended.
-            # Backward ops run in the same dtype autocast chose for corresponding forward ops.
+            # Exits ``autocast`` before backward().
+            # Backward passes under ``autocast`` are not recommended.
+            # Backward ops run in the same ``dtype`` ``autocast`` chose for corresponding forward ops.
             loss.backward()
             opt.step()
             opt.zero_grad() # set_to_none=True here can modestly improve performance
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-144
+.. GENERATED FROM PYTHON SOURCE LINES 139-147
 
-Adding GradScaler
------------------
+Adding ``GradScaler``
+---------------------
 `Gradient scaling <https://pytorch.org/docs/stable/amp.html#gradient-scaling>`_
 helps prevent gradients with small magnitudes from flushing to zero
 ("underflowing") when training with mixed precision.
@@ -194,29 +197,29 @@ helps prevent gradients with small magnitudes from flushing to zero
 `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_
 performs the steps of gradient scaling conveniently.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-171
+.. GENERATED FROM PYTHON SOURCE LINES 147-174
 
 .. code-block:: default
 
 
-    # Constructs scaler once, at the beginning of the convergence run, using default args.
-    # If your network fails to converge with default GradScaler args, please file an issue.
-    # The same GradScaler instance should be used for the entire convergence run.
+    # Constructs a ``scaler`` once, at the beginning of the convergence run, using default arguments.
+    # If your network fails to converge with default ``GradScaler`` arguments, please file an issue.
+    # The same ``GradScaler`` instance should be used for the entire convergence run.
     # If you perform multiple convergence runs in the same script, each run should use
-    # a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
+    # a dedicated fresh ``GradScaler`` instance. ``GradScaler`` instances are lightweight.
     scaler = torch.cuda.amp.GradScaler()
 
     for epoch in range(0): # 0 epochs, this section is for illustration only
         for input, target in zip(data, targets):
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
+            with torch.autocast(device_type=device, dtype=torch.float16):
                 output = net(input)
                 loss = loss_fn(output, target)
 
-            # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
+            # Scales loss. Calls ``backward()`` on scaled loss to create scaled gradients.
             scaler.scale(loss).backward()
 
-            # scaler.step() first unscales the gradients of the optimizer's assigned params.
-            # If these gradients do not contain infs or NaNs, optimizer.step() is then called,
+            # ``scaler.step()`` first unscales the gradients of the optimizer's assigned parameters.
+            # If these gradients do not contain ``inf``s or ``NaN``s, optimizer.step() is then called,
             # otherwise, optimizer.step() is skipped.
             scaler.step(opt)
 
@@ -226,7 +229,7 @@ performs the steps of gradient scaling conveniently.
             opt.zero_grad() # set_to_none=True here can modestly improve performance
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-177
+.. GENERATED FROM PYTHON SOURCE LINES 175-180
 
 All together: "Automatic Mixed Precision"
 ------------------------------------------
@@ -234,7 +237,7 @@ All together: "Automatic Mixed Precision"
 If False, ``autocast`` and ``GradScaler``\ 's calls become no-ops.
 This allows switching between default precision and mixed precision without if/else statements.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-196
+.. GENERATED FROM PYTHON SOURCE LINES 180-199
 
 .. code-block:: default
 
@@ -248,7 +251,7 @@ This allows switching between default precision and mixed precision without if/e
     start_timer()
     for epoch in range(epochs):
         for input, target in zip(data, targets):
-            with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=use_amp):
+            with torch.autocast(device_type=device, dtype=torch.float16, enabled=use_amp):
                 output = net(input)
                 loss = loss_fn(output, target)
             scaler.scale(loss).backward()
@@ -258,7 +261,7 @@ This allows switching between default precision and mixed precision without if/e
     end_timer_and_print("Mixed precision:")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-202
+.. GENERATED FROM PYTHON SOURCE LINES 200-205
 
 Inspecting/modifying gradients (e.g., clipping)
 --------------------------------------------------------
@@ -266,22 +269,22 @@ All gradients produced by ``scaler.scale(loss).backward()`` are scaled.  If you 
 the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``, you should
 unscale them first using `scaler.unscale_(optimizer) <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.unscale_>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-221
+.. GENERATED FROM PYTHON SOURCE LINES 205-224
 
 .. code-block:: default
 
 
     for epoch in range(0): # 0 epochs, this section is for illustration only
         for input, target in zip(data, targets):
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
+            with torch.autocast(device_type=device, dtype=torch.float16):
                 output = net(input)
                 loss = loss_fn(output, target)
             scaler.scale(loss).backward()
 
-            # Unscales the gradients of optimizer's assigned params in-place
+            # Unscales the gradients of optimizer's assigned parameters in-place
             scaler.unscale_(opt)
 
-            # Since the gradients of optimizer's assigned params are now unscaled, clips as usual.
+            # Since the gradients of optimizer's assigned parameters are now unscaled, clips as usual.
             # You may use the same value for max_norm here as you would without gradient scaling.
             torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=0.1)
 
@@ -290,7 +293,7 @@ unscale them first using `scaler.unscale_(optimizer) <https://pytorch.org/docs/s
             opt.zero_grad() # set_to_none=True here can modestly improve performance
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-231
+.. GENERATED FROM PYTHON SOURCE LINES 225-234
 
 Saving/Resuming
 ----------------
@@ -298,11 +301,11 @@ To save/resume Amp-enabled runs with bitwise accuracy, use
 `scaler.state_dict <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.state_dict>`_ and
 `scaler.load_state_dict <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.load_state_dict>`_.
 
-When saving, save the scaler state dict alongside the usual model and optimizer state dicts.
+When saving, save the ``scaler`` state dict alongside the usual model and optimizer state ``dicts``.
 Do this either at the beginning of an iteration before any forward passes, or at the end of
 an iteration after ``scaler.update()``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-238
+.. GENERATED FROM PYTHON SOURCE LINES 234-241
 
 .. code-block:: default
 
@@ -314,40 +317,43 @@ an iteration after ``scaler.update()``.
     # torch.save(checkpoint, "filename")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-240
+.. GENERATED FROM PYTHON SOURCE LINES 242-251
 
-When resuming, load the scaler state dict alongside the model and optimizer state dicts.
+When resuming, load the ``scaler`` state dict alongside the model and optimizer state ``dicts``.
+Read checkpoint as desired, for example:
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-249
+.. code-block::
+
+   dev = torch.cuda.current_device()
+   checkpoint = torch.load("filename",
+                           map_location = lambda storage, loc: storage.cuda(dev))
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 251-255
 
 .. code-block:: default
 
-
-    # Read checkpoint as desired, e.g.,
-    # dev = torch.cuda.current_device()
-    # checkpoint = torch.load("filename",
-    #                         map_location = lambda storage, loc: storage.cuda(dev))
     net.load_state_dict(checkpoint["model"])
     opt.load_state_dict(checkpoint["optimizer"])
     scaler.load_state_dict(checkpoint["scaler"])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-256
+.. GENERATED FROM PYTHON SOURCE LINES 256-262
 
 If a checkpoint was created from a run *without* Amp, and you want to resume training *with* Amp,
-load model and optimizer states from the checkpoint as usual.  The checkpoint won't contain a saved scaler state, so
+load model and optimizer states from the checkpoint as usual.  The checkpoint won't contain a saved ``scaler`` state, so
 use a fresh instance of ``GradScaler``.
 
-If a checkpoint was created from a run *with* Amp and you want to resume training *without* Amp,
-load model and optimizer states from the checkpoint as usual, and ignore the saved scaler state.
+If a checkpoint was created from a run *with* Amp and you want to resume training *without* ``Amp``,
+load model and optimizer states from the checkpoint as usual, and ignore the saved ``scaler`` state.
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-261
+.. GENERATED FROM PYTHON SOURCE LINES 264-267
 
 Inference/Evaluation
 --------------------
 ``autocast`` may be used by itself to wrap inference or evaluation forward passes. ``GradScaler`` is not necessary.
 
-.. GENERATED FROM PYTHON SOURCE LINES 263-281
+.. GENERATED FROM PYTHON SOURCE LINES 269-287
 
 .. _advanced-topics:
 
@@ -362,13 +368,13 @@ See the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/not
 * Custom autograd functions (subclasses of ``torch.autograd.Function``)
 
 If you perform multiple convergence runs in the same script, each run should use
-a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
+a dedicated fresh ``GradScaler`` instance. ``GradScaler`` instances are lightweight.
 
 If you're registering a custom C++ op with the dispatcher, see the
 `autocast section <https://pytorch.org/tutorials/advanced/dispatcher.html#autocast>`_
 of the dispatcher tutorial.
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-326
+.. GENERATED FROM PYTHON SOURCE LINES 289-332
 
 .. _troubleshooting:
 
@@ -383,9 +389,9 @@ Speedup with Amp is minor
      as much as you can without running OOM.
    * Try to avoid excessive CPU-GPU synchronization (``.item()`` calls, or printing values from CUDA tensors).
    * Try to avoid sequences of many small CUDA ops (coalesce these into a few large CUDA ops if you can).
-2. Your network may be GPU compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
+2. Your network may be GPU compute bound (lots of ``matmuls``/convolutions) but your GPU does not have Tensor Cores.
    In this case a reduced speedup is expected.
-3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
+3. The ``matmul`` dimensions are not Tensor Core-friendly.  Make sure ``matmuls`` participating sizes are multiples of 8.
    (For NLP models with encoders/decoders, this can be subtle.  Also, convolutions used to have similar size constraints
    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See
    `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>`_ for guidance.)
@@ -397,19 +403,19 @@ See also `Prefer binary_cross_entropy_with_logits over binary_cross_entropy <htt
 
 If you're confident your Amp usage is correct, you may need to file an issue, but before doing so, it's helpful to gather the following information:
 
-1. Disable ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if infs/NaNs persist.
+1. Disable ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if ``infs``/``NaNs`` persist.
 2. If you suspect part of your network (e.g., a complicated loss function) overflows , run that forward region in ``float32``
-   and see if infs/NaNs persist.
+   and see if ``infs``/``NaN``s persist.
    `The autocast docstring <https://pytorch.org/docs/stable/amp.html#torch.autocast>`_'s last code snippet
-   shows forcing a subregion to run in ``float32`` (by locally disabling autocast and casting the subregion's inputs).
+   shows forcing a subregion to run in ``float32`` (by locally disabling ``autocast`` and casting the subregion's inputs).
 
-Type mismatch error (may manifest as CUDNN_STATUS_BAD_PARAM)
+Type mismatch error (may manifest as ``CUDNN_STATUS_BAD_PARAM``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Autocast tries to cover all ops that benefit from or require casting.
+``Autocast`` tries to cover all ops that benefit from or require casting.
 `Ops that receive explicit coverage <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
 are chosen based on numerical properties, but also on experience.
-If you see a type mismatch error in an autocast-enabled forward region or a backward pass following that region,
-it's possible autocast missed an op.
+If you see a type mismatch error in an ``autocast`` enabled forward region or a backward pass following that region,
+it's possible ``autocast`` missed an op.
 
 Please file an issue with the error backtrace.  ``export TORCH_SHOW_CPP_STACKTRACES=1`` before running your script to provide
 fine-grained information on which backend op is failing.

@@ -81,14 +81,17 @@ defines a few new members, and allowing other attributes might lead to
 clashes in their names. For those who still want to access the attributes, 
 a workaround is to use a subclass of ``DataParallel`` as below.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-58
+.. GENERATED FROM PYTHON SOURCE LINES 53-61
 
 .. code-block:: default
 
 
     class MyDataParallel(nn.DataParallel):
         def __getattr__(self, name):
-            return getattr(self.module, name)
+            try:
+                return super().__getattr__(name)
+            except AttributeError:
+                return getattr(self.module, name)
     
 
 
@@ -97,7 +100,7 @@ a workaround is to use a subclass of ``DataParallel`` as below.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-73
+.. GENERATED FROM PYTHON SOURCE LINES 62-76
 
 **Primitives on which DataParallel is implemented upon:**
 
@@ -114,7 +117,7 @@ We have implemented simple MPI-like primitives:
 To give a better clarity, here function ``data_parallel`` composed using
 these collectives
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-88
+.. GENERATED FROM PYTHON SOURCE LINES 76-91
 
 .. code-block:: default
 
@@ -140,7 +143,7 @@ these collectives
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-94
+.. GENERATED FROM PYTHON SOURCE LINES 92-97
 
 Part of the model on CPU and part on the GPU
 --------------------------------------------
@@ -148,7 +151,7 @@ Part of the model on CPU and part on the GPU
 Let’s look at a small example of implementing a network where part of it
 is on the CPU and part on the GPU
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-116
+.. GENERATED FROM PYTHON SOURCE LINES 97-119
 
 .. code-block:: default
 
@@ -181,7 +184,7 @@ is on the CPU and part on the GPU
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-142
+.. GENERATED FROM PYTHON SOURCE LINES 120-145
 
 This was a small introduction to PyTorch for former Torch users.
 There’s a lot more to learn.
@@ -212,7 +215,7 @@ Also look at
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.003 seconds)
+   **Total running time of the script:** ( 0 minutes  0.002 seconds)
 
 
 .. _sphx_glr_download_beginner_former_torchies_parallelism_tutorial.py:

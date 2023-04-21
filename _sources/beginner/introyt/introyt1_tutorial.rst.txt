@@ -529,7 +529,7 @@ PyTorch tensor.
 
     transform = transforms.Compose(
         [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))])
 
 
 
@@ -539,16 +539,35 @@ PyTorch tensor.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 295-312
+.. GENERATED FROM PYTHON SOURCE LINES 295-331
 
 Here, we specify two transformations for our input:
 
 -  ``transforms.ToTensor()`` converts images loaded by Pillow into 
    PyTorch tensors.
 -  ``transforms.Normalize()`` adjusts the values of the tensor so
-   that their average is zero and their standard deviation is 0.5. Most
+   that their average is zero and their standard deviation is 1.0. Most
    activation functions have their strongest gradients around x = 0, so
    centering our data there can speed learning.
+   The values passed to the transform are the means (first tuple) and the
+   standard deviations (second tuple) of the rgb values of the images in
+   the dataset. You can calculate these values yourself by running these
+   few lines of code:
+         ```
+          from torch.utils.data import ConcatDataset
+          transform = transforms.Compose([transforms.ToTensor()])
+          trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                       download=True, transform=transform)
+
+          #stack all train images together into a tensor of shape 
+          #(50000, 3, 32, 32)
+          x = torch.stack([sample[0] for sample in ConcatDataset([trainset])])
+
+          #get the mean of each channel            
+          mean = torch.mean(x, dim=(0,2,3)) #tensor([0.4914, 0.4822, 0.4465])
+          std = torch.std(x, dim=(0,2,3)) #tensor([0.2470, 0.2435, 0.2616])  
+
+         ```   
 
 There are many more transforms available, including cropping, centering,
 rotation, and reflection.
@@ -559,7 +578,7 @@ Next, we’ll create an instance of the CIFAR10 dataset. This is a set of
 automobile, ship, truck):
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 312-317
+.. GENERATED FROM PYTHON SOURCE LINES 331-336
 
 .. code-block:: default
 
@@ -579,40 +598,38 @@ automobile, ship, truck):
     Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
       0%|          | 0/170498071 [00:00<?, ?it/s]
-      0%|          | 458752/170498071 [00:00<00:41, 4049834.77it/s]
-      4%|3         | 6684672/170498071 [00:00<00:04, 36466805.15it/s]
-      8%|7         | 13565952/170498071 [00:00<00:03, 50769042.47it/s]
-     12%|#1        | 20086784/170498071 [00:00<00:02, 56228630.27it/s]
-     15%|#5        | 25821184/170498071 [00:00<00:02, 53834264.07it/s]
-     19%|#9        | 32768000/170498071 [00:00<00:02, 58789710.11it/s]
-     23%|##2       | 38731776/170498071 [00:00<00:02, 57902487.08it/s]
-     27%|##6       | 45449216/170498071 [00:00<00:02, 60672808.49it/s]
-     30%|###       | 51576832/170498071 [00:00<00:01, 60137697.95it/s]
-     34%|###3      | 57638912/170498071 [00:01<00:01, 58422076.45it/s]
-     38%|###8      | 65110016/170498071 [00:01<00:01, 63203559.57it/s]
-     42%|####1     | 71499776/170498071 [00:01<00:01, 57740510.48it/s]
-     46%|####6     | 78479360/170498071 [00:01<00:01, 61035368.19it/s]
-     50%|####9     | 84705280/170498071 [00:01<00:01, 60414988.85it/s]
-     53%|#####3    | 90832896/170498071 [00:01<00:01, 59784950.00it/s]
-     57%|#####7    | 97681408/170498071 [00:01<00:01, 62254137.06it/s]
-     61%|######    | 103972864/170498071 [00:01<00:01, 60751922.91it/s]
-     65%|######4   | 110297088/170498071 [00:01<00:00, 61428516.65it/s]
-     68%|######8   | 116490240/170498071 [00:02<00:00, 60934545.47it/s]
-     72%|#######1  | 122617856/170498071 [00:02<00:00, 60425563.20it/s]
-     76%|#######6  | 129826816/170498071 [00:02<00:00, 63785520.64it/s]
-     80%|#######9  | 136249344/170498071 [00:02<00:00, 61165469.28it/s]
-     84%|########3 | 142409728/170498071 [00:02<00:00, 59502942.99it/s]
-     87%|########7 | 149028864/170498071 [00:02<00:00, 61353009.90it/s]
-     91%|#########1| 155222016/170498071 [00:02<00:00, 58895959.71it/s]
-     95%|#########5| 162660352/170498071 [00:02<00:00, 63178647.68it/s]
-     99%|#########9| 169050112/170498071 [00:02<00:00, 57648672.12it/s]
-    100%|##########| 170498071/170498071 [00:02<00:00, 58419694.75it/s]
+      0%|          | 425984/170498071 [00:00<00:40, 4208034.96it/s]
+      4%|3         | 6094848/170498071 [00:00<00:04, 34792698.25it/s]
+      7%|7         | 12779520/170498071 [00:00<00:03, 49205579.05it/s]
+     11%|#1        | 19595264/170498071 [00:00<00:02, 56548918.34it/s]
+     16%|#5        | 26476544/170498071 [00:00<00:02, 60787471.46it/s]
+     20%|#9        | 33423360/170498071 [00:00<00:02, 63500525.43it/s]
+     24%|##3       | 40304640/170498071 [00:00<00:01, 65214422.46it/s]
+     28%|##7       | 47415296/170498071 [00:00<00:01, 67013447.46it/s]
+     32%|###1      | 54558720/170498071 [00:00<00:01, 68350753.10it/s]
+     36%|###6      | 61571072/170498071 [00:01<00:01, 68881749.64it/s]
+     40%|####      | 68485120/170498071 [00:01<00:01, 66650099.01it/s]
+     44%|####4     | 75169792/170498071 [00:01<00:01, 61252315.31it/s]
+     48%|####7     | 81395712/170498071 [00:01<00:01, 55240998.08it/s]
+     51%|#####1    | 87097344/170498071 [00:01<00:01, 50822026.65it/s]
+     54%|#####4    | 92340224/170498071 [00:01<00:01, 47732843.05it/s]
+     57%|#####7    | 97222656/170498071 [00:01<00:01, 46750157.98it/s]
+     60%|#####9    | 101974016/170498071 [00:01<00:01, 45629373.96it/s]
+     64%|######3   | 108724224/170498071 [00:01<00:01, 51408434.53it/s]
+     69%|######8   | 117276672/170498071 [00:02<00:00, 60792491.49it/s]
+     74%|#######3  | 125960192/170498071 [00:02<00:00, 67986782.69it/s]
+     79%|#######9  | 134742016/170498071 [00:02<00:00, 73669459.81it/s]
+     84%|########4 | 143556608/170498071 [00:02<00:00, 77808183.58it/s]
+     89%|########9 | 152371200/170498071 [00:02<00:00, 80791177.16it/s]
+     95%|#########4| 161185792/170498071 [00:02<00:00, 82872658.47it/s]
+    100%|#########9| 169967616/170498071 [00:02<00:00, 84335785.03it/s]
+    100%|##########| 170498071/170498071 [00:02<00:00, 63533877.36it/s]
     Extracting ./data/cifar-10-python.tar.gz to ./data
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 318-340
+.. GENERATED FROM PYTHON SOURCE LINES 337-359
 
 .. note::
      When you run the cell above, it may take a little time for the 
@@ -637,7 +654,7 @@ When we instantiate our dataset, we need to tell it a few things:
 Once your dataset is ready, you can give it to the ``DataLoader``:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 340-345
+.. GENERATED FROM PYTHON SOURCE LINES 359-364
 
 .. code-block:: default
 
@@ -653,7 +670,7 @@ Once your dataset is ready, you can give it to the ``DataLoader``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-357
+.. GENERATED FROM PYTHON SOURCE LINES 365-376
 
 A ``Dataset`` subclass wraps access to the data, and is specialized to
 the type of data it’s serving. The ``DataLoader`` knows *nothing* about
@@ -667,7 +684,7 @@ and we told it to spin up two workers to load data from disk.
 It’s good practice to visualize the batches your ``DataLoader`` serves:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 357-380
+.. GENERATED FROM PYTHON SOURCE LINES 376-399
 
 .. code-block:: default
 
@@ -707,12 +724,13 @@ It’s good practice to visualize the batches your ``DataLoader`` serves:
 
  .. code-block:: none
 
+    Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
      ship   car horse  ship
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 381-391
+.. GENERATED FROM PYTHON SOURCE LINES 400-410
 
 Running the above cell should show you a strip of four images, and the
 correct label for each.
@@ -725,7 +743,7 @@ Follow along with the video beginning at `17:10 <https://www.youtube.com/watch?v
 Let’s put all the pieces together, and train a model:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 391-407
+.. GENERATED FROM PYTHON SOURCE LINES 410-426
 
 .. code-block:: default
 
@@ -752,14 +770,14 @@ Let’s put all the pieces together, and train a model:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 408-412
+.. GENERATED FROM PYTHON SOURCE LINES 427-431
 
 First, we’ll need training and test datasets. If you haven’t already,
 run the cell below to make sure the dataset is downloaded. (It may take
 a minute.)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 412-431
+.. GENERATED FROM PYTHON SOURCE LINES 431-450
 
 .. code-block:: default
 
@@ -796,12 +814,12 @@ a minute.)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 432-434
+.. GENERATED FROM PYTHON SOURCE LINES 451-453
 
 We’ll run our check on the output from ``DataLoader``:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 434-457
+.. GENERATED FROM PYTHON SOURCE LINES 453-476
 
 .. code-block:: default
 
@@ -846,14 +864,14 @@ We’ll run our check on the output from ``DataLoader``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 458-462
+.. GENERATED FROM PYTHON SOURCE LINES 477-481
 
 This is the model we’ll train. If it looks familiar, that’s because it’s
 a variant of LeNet - discussed earlier in this video - adapted for
 3-color images.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 462-486
+.. GENERATED FROM PYTHON SOURCE LINES 481-505
 
 .. code-block:: default
 
@@ -888,12 +906,12 @@ a variant of LeNet - discussed earlier in this video - adapted for
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 487-489
+.. GENERATED FROM PYTHON SOURCE LINES 506-508
 
 The last ingredients we need are a loss function and an optimizer:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 489-494
+.. GENERATED FROM PYTHON SOURCE LINES 508-513
 
 .. code-block:: default
 
@@ -909,7 +927,7 @@ The last ingredients we need are a loss function and an optimizer:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 495-509
+.. GENERATED FROM PYTHON SOURCE LINES 514-528
 
 The loss function, as discussed earlier in this video, is a measure of
 how far from our ideal output the model’s prediction was. Cross-entropy
@@ -926,7 +944,7 @@ Finally, all of this is assembled into the training loop. Go ahead and
 run this cell, as it will likely take a few minutes to execute:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 509-536
+.. GENERATED FROM PYTHON SOURCE LINES 528-555
 
 .. code-block:: default
 
@@ -967,22 +985,22 @@ run this cell, as it will likely take a few minutes to execute:
 
     [1,  2000] loss: 2.195
     [1,  4000] loss: 1.876
-    [1,  6000] loss: 1.654
-    [1,  8000] loss: 1.577
-    [1, 10000] loss: 1.515
-    [1, 12000] loss: 1.464
-    [2,  2000] loss: 1.422
-    [2,  4000] loss: 1.370
+    [1,  6000] loss: 1.655
+    [1,  8000] loss: 1.576
+    [1, 10000] loss: 1.519
+    [1, 12000] loss: 1.466
+    [2,  2000] loss: 1.421
+    [2,  4000] loss: 1.376
     [2,  6000] loss: 1.336
-    [2,  8000] loss: 1.330
-    [2, 10000] loss: 1.317
-    [2, 12000] loss: 1.263
+    [2,  8000] loss: 1.335
+    [2, 10000] loss: 1.326
+    [2, 12000] loss: 1.270
     Finished Training
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 537-593
+.. GENERATED FROM PYTHON SOURCE LINES 556-612
 
 Here, we are doing only **2 training epochs** (line 1) - that is, two
 passes over the training dataset. Each pass has an inner loop that
@@ -1041,7 +1059,7 @@ to test the generality of the model, we ask it to make predictions on
 data it hasn’t trained on:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 593-608
+.. GENERATED FROM PYTHON SOURCE LINES 612-627
 
 .. code-block:: default
 
@@ -1073,7 +1091,7 @@ data it hasn’t trained on:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 609-614
+.. GENERATED FROM PYTHON SOURCE LINES 628-633
 
 If you followed along, you should see that the model is roughly 50%
 accurate at this point. That’s not exactly state-of-the-art, but it’s
@@ -1084,7 +1102,7 @@ demonstrates that some general learning did happen in the model.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  41.371 seconds)
+   **Total running time of the script:** ( 1 minutes  48.188 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_introyt1_tutorial.py:

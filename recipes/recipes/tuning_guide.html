@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Performance Tuning Guide &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>Performance Tuning Guide &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
@@ -43,18 +43,13 @@
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="TorchScript for Deployment" href="../torchscript_inference.html" />
     <link rel="prev" title="Automatic Mixed Precision" href="amp_recipe.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -232,7 +227,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -325,6 +320,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -384,7 +380,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -511,6 +507,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -531,8 +531,8 @@ techniques often can be implemented by changing only a few lines of code and can
 be applied to a wide range of deep learning models across all domains.</p>
 <div class="section" id="general-optimizations">
 <h2>General optimizations<a class="headerlink" href="#general-optimizations" title="Permalink to this heading">¶</a></h2>
-<div class="section" id="enable-async-data-loading-and-augmentation">
-<h3>Enable async data loading and augmentation<a class="headerlink" href="#enable-async-data-loading-and-augmentation" title="Permalink to this heading">¶</a></h3>
+<div class="section" id="enable-asynchronous-data-loading-and-augmentation">
+<h3>Enable asynchronous data loading and augmentation<a class="headerlink" href="#enable-asynchronous-data-loading-and-augmentation" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a>
 supports asynchronous data loading and data augmentation in separate worker
 subprocesses. The default setting for <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> is <code class="docutils literal notranslate"><span class="pre">num_workers=0</span></code>,
@@ -667,7 +667,7 @@ or
 <li><p>profiler related:
 <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.emit_nvtx">torch.autograd.profiler.emit_nvtx</a>,
 <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile">torch.autograd.profiler.profile</a></p></li>
-<li><p>autograd gradcheck:
+<li><p>autograd <code class="docutils literal notranslate"><span class="pre">gradcheck</span></code>:
 <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.gradcheck">torch.autograd.gradcheck</a>
 or
 <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.gradgradcheck">torch.autograd.gradgradcheck</a></p></li>
@@ -680,7 +680,7 @@ or
 <h3>Utilize Non-Uniform Memory Access (NUMA) Controls<a class="headerlink" href="#utilize-non-uniform-memory-access-numa-controls" title="Permalink to this heading">¶</a></h3>
 <p>NUMA or non-uniform memory access is a memory layout design used in data center machines meant to take advantage of locality of memory in multi-socket machines with multiple memory controllers and blocks. Generally speaking, all deep learning workloads, training or inference, get better performance without accessing hardware resources across NUMA nodes. Thus, inference can be run with multiple instances, each instance runs on one socket, to raise throughput. For training tasks on single node, distributed training is recommended to make each training process run on one socket.</p>
 <p>In general cases the following command executes a PyTorch script on cores on the Nth node only, and avoids cross-socket memory access to reduce memory access overhead.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># numactl --cpunodebind=N --membind=N python &lt;pytorch_script&gt;</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>numactl<span class="w"> </span>--cpunodebind<span class="o">=</span>N<span class="w"> </span>--membind<span class="o">=</span>N<span class="w"> </span>python<span class="w"> </span>&lt;pytorch_script&gt;
 </pre></div>
 </div>
 <p>More detailed descriptions can be found <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html">here</a>.</p>
@@ -688,45 +688,45 @@ or
 <div class="section" id="utilize-openmp">
 <h3>Utilize OpenMP<a class="headerlink" href="#utilize-openmp" title="Permalink to this heading">¶</a></h3>
 <p>OpenMP is utilized to bring better performance for parallel computation tasks.
-OMP_NUM_THREADS is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
-CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. GOMP_CPU_AFFINITY or KMP_AFFINITY determines how to bind OpenMP* threads to physical processing units. Detailed information can be found <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html">here</a>.</p>
+<code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
+CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. <code class="docutils literal notranslate"><span class="pre">GOMP_CPU_AFFINITY</span></code> or <code class="docutils literal notranslate"><span class="pre">KMP_AFFINITY</span></code> determines how to bind OpenMP* threads to physical processing units. Detailed information can be found <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html">here</a>.</p>
 <p>With the following command, PyTorch run the task on N OpenMP threads.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export OMP_NUM_THREADS=N</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span>N
 </pre></div>
 </div>
-<p>Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. OMP_PROC_BIND specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. OMP_SCHEDULE determines how OpenMP threads are scheduled. GOMP_CPU_AFFINITY binds threads to specific CPUs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export OMP_SCHEDULE=STATIC</span>
-<span class="c1"># export OMP_PROC_BIND=CLOSE</span>
-<span class="c1"># export GOMP_CPU_AFFINITY=&quot;N-M&quot;</span>
+<p>Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. <code class="docutils literal notranslate"><span class="pre">OMP_PROC_BIND</span></code> specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. <code class="docutils literal notranslate"><span class="pre">OMP_SCHEDULE</span></code> determines how OpenMP threads are scheduled. <code class="docutils literal notranslate"><span class="pre">GOMP_CPU_AFFINITY</span></code> binds threads to specific CPUs.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OMP_SCHEDULE</span><span class="o">=</span>STATIC
+<span class="nb">export</span><span class="w"> </span><span class="nv">OMP_PROC_BIND</span><span class="o">=</span>CLOSE
+<span class="nb">export</span><span class="w"> </span><span class="nv">GOMP_CPU_AFFINITY</span><span class="o">=</span><span class="s2">&quot;N-M&quot;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="intel-openmp-runtime-library-libiomp">
-<h3>Intel OpenMP Runtime Library (libiomp)<a class="headerlink" href="#intel-openmp-runtime-library-libiomp" title="Permalink to this heading">¶</a></h3>
-<p>By default, PyTorch uses GNU OpenMP (GNU libgomp) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It sometimes brings more performance benefits compared to libgomp. Utilizing environment variable LD_PRELOAD can switch OpenMP library to libiomp:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export LD_PRELOAD=&lt;path&gt;/libiomp5.so:$LD_PRELOAD</span>
+<h3>Intel OpenMP Runtime Library (<code class="docutils literal notranslate"><span class="pre">libiomp</span></code>)<a class="headerlink" href="#intel-openmp-runtime-library-libiomp" title="Permalink to this heading">¶</a></h3>
+<p>By default, PyTorch uses GNU OpenMP (GNU <code class="docutils literal notranslate"><span class="pre">libgomp</span></code>) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (<code class="docutils literal notranslate"><span class="pre">libiomp</span></code>) provides OpenMP API specification support. It sometimes brings more performance benefits compared to <code class="docutils literal notranslate"><span class="pre">libgomp</span></code>. Utilizing environment variable <code class="docutils literal notranslate"><span class="pre">LD_PRELOAD</span></code> can switch OpenMP library to <code class="docutils literal notranslate"><span class="pre">libiomp</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LD_PRELOAD</span><span class="o">=</span>&lt;path&gt;/libiomp5.so:<span class="nv">$LD_PRELOAD</span>
 </pre></div>
 </div>
-<p>Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in libiomp to control CPU affinity settings.
-KMP_AFFINITY binds OpenMP threads to physical processing units. KMP_BLOCKTIME sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting KMP_BLOCKTIME to 1 or 0 yields good performances.
+<p>Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in <code class="docutils literal notranslate"><span class="pre">libiomp</span></code> to control CPU affinity settings.
+<code class="docutils literal notranslate"><span class="pre">KMP_AFFINITY</span></code> binds OpenMP threads to physical processing units. <code class="docutils literal notranslate"><span class="pre">KMP_BLOCKTIME</span></code> sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting <code class="docutils literal notranslate"><span class="pre">KMP_BLOCKTIME</span></code> to 1 or 0 yields good performances.
 The following commands show a common settings with Intel OpenMP Runtime Library.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export KMP_AFFINITY=granularity=fine,compact,1,0</span>
-<span class="c1"># export KMP_BLOCKTIME=1</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">KMP_AFFINITY</span><span class="o">=</span><span class="nv">granularity</span><span class="o">=</span>fine,compact,1,0
+<span class="nb">export</span><span class="w"> </span><span class="nv">KMP_BLOCKTIME</span><span class="o">=</span><span class="m">1</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="switch-memory-allocator">
 <h3>Switch Memory allocator<a class="headerlink" href="#switch-memory-allocator" title="Permalink to this heading">¶</a></h3>
-<p>For deep learning workloads, Jemalloc or TCMalloc can get better performance by reusing memory as much as possible than default malloc funtion. <a class="reference external" href="https://github.com/jemalloc/jemalloc">Jemalloc</a> is a general purpose malloc implementation that emphasizes fragmentation avoidance and scalable concurrency support. <a class="reference external" href="https://google.github.io/tcmalloc/overview.html">TCMalloc</a> also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
-Use environment variable LD_PRELOAD to take advantage of one of them.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export LD_PRELOAD=&lt;jemalloc.so/tcmalloc.so&gt;:$LD_PRELOAD</span>
+<p>For deep learning workloads, <code class="docutils literal notranslate"><span class="pre">Jemalloc</span></code> or <code class="docutils literal notranslate"><span class="pre">TCMalloc</span></code> can get better performance by reusing memory as much as possible than default <code class="docutils literal notranslate"><span class="pre">malloc</span></code> function. <a class="reference external" href="https://github.com/jemalloc/jemalloc">Jemalloc</a> is a general purpose <code class="docutils literal notranslate"><span class="pre">malloc</span></code> implementation that emphasizes fragmentation avoidance and scalable concurrency support. <a class="reference external" href="https://google.github.io/tcmalloc/overview.html">TCMalloc</a> also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
+Use environment variable <code class="docutils literal notranslate"><span class="pre">LD_PRELOAD</span></code> to take advantage of one of them.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LD_PRELOAD</span><span class="o">=</span>&lt;jemalloc.so/tcmalloc.so&gt;:<span class="nv">$LD_PRELOAD</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="use-onednn-graph-with-torchscript-for-inference">
 <h3>Use oneDNN Graph with TorchScript for inference<a class="headerlink" href="#use-onednn-graph-with-torchscript-for-inference" title="Permalink to this heading">¶</a></h3>
 <p>oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
-In PyTorch 2.0, it is supported as a beta feature for Float32 &amp; BFloat16 data-types.
+In PyTorch 2.0, it is supported as a beta feature for <code class="docutils literal notranslate"><span class="pre">Float32</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">BFloat16</span></code> data-types.
 oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
 A model should be JIT-traced using an example input.
 Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
@@ -739,7 +739,7 @@ The example code-snippets below are for resnet50, but they can very well be exte
 If you are using oneDNN Graph, please avoid calling <code class="docutils literal notranslate"><span class="pre">torch.jit.optimize_for_inference</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># sample input should be of the same shape as expected inputs</span>
 <span class="n">sample_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)]</span>
-<span class="c1"># Using resnet50 from TorchVision in this example for illustrative purposes,</span>
+<span class="c1"># Using resnet50 from torchvision in this example for illustrative purposes,</span>
 <span class="c1"># but the line below can indeed be modified to use custom models as well.</span>
 <span class="n">model</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="p">,</span> <span class="s2">&quot;resnet50&quot;</span><span class="p">)()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="c1"># Tracing the model with example input</span>
@@ -750,23 +750,24 @@ If you are using oneDNN Graph, please avoid calling <code class="docutils litera
 </div>
 <p>Once a model is JIT-traced with a sample input, it can then be used for inference after a couple of warm-up runs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-    <span class="c1"># a couple of warmup runs</span>
+    <span class="c1"># a couple of warm-up runs</span>
     <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
     <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
-    <span class="c1"># speedup would be observed after warmup runs</span>
+    <span class="c1"># speedup would be observed after warm-up runs</span>
     <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>While the JIT fuser for oneDNN Graph also supports inference with BFloat16 datatype,
-performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16 ISA.
-The following code snippets serves as an example of using BFloat16 datatype for inference with oneDNN Graph:</p>
+<p>While the JIT fuser for oneDNN Graph also supports inference with <code class="docutils literal notranslate"><span class="pre">BFloat16</span></code> datatype,
+performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16
+instruction set architecture (ISA).
+The following code snippets serves as an example of using <code class="docutils literal notranslate"><span class="pre">BFloat16</span></code> datatype for inference with oneDNN Graph:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># AMP for JIT mode is enabled by default, and is divergent with its eager mode counterpart</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_jit_set_autocast_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">example_input</span><span class="p">))</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="c1"># a couple of warmup runs</span>
+    <span class="c1"># a couple of warm-up runs</span>
     <span class="n">model</span><span class="p">(</span><span class="n">example_input</span><span class="p">)</span>
     <span class="n">model</span><span class="p">(</span><span class="n">example_input</span><span class="p">)</span>
     <span class="c1"># speedup would be observed in subsequent runs.</span>
@@ -775,8 +776,8 @@ The following code snippets serves as an example of using BFloat16 datatype for 
 </div>
 </div>
 <div class="section" id="train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">
-<h3>Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality<a class="headerlink" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality" title="Permalink to this heading">¶</a></h3>
-<p>For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. <a class="reference external" href="https://github.com/intel/torch-ccl">Torch-ccl</a>, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.</p>
+<h3>Train a model on CPU with PyTorch <a href="#id3"><span class="problematic" id="id4">``</span></a>DistributedDataParallel``(DDP) functionality<a class="headerlink" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality" title="Permalink to this heading">¶</a></h3>
+<p>For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. <a class="reference external" href="https://github.com/intel/torch-ccl">Torch-ccl</a>, optimized with Intel(R) <code class="docutils literal notranslate"><span class="pre">oneCCL</span></code> (collective communications library) for efficient distributed deep learning training implementing such collectives like <code class="docutils literal notranslate"><span class="pre">allreduce</span></code>, <code class="docutils literal notranslate"><span class="pre">allgather</span></code>, <code class="docutils literal notranslate"><span class="pre">alltoall</span></code>, implements PyTorch C10D <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> API and can be dynamically loaded as external <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code>. Upon optimizations implemented in PyTorch DDP module, <code class="docutils literal notranslate"><span class="pre">torch-ccl</span></code> accelerates communication operations. Beside the optimizations made to communication kernels, <code class="docutils literal notranslate"><span class="pre">torch-ccl</span></code> also features simultaneous computation-communication functionality.</p>
 </div>
 </div>
 <div class="section" id="gpu-specific-optimizations">
@@ -812,7 +813,7 @@ contains many operations.</p>
 <li><p>memory copies: <code class="docutils literal notranslate"><span class="pre">tensor.cuda()</span></code>,  <code class="docutils literal notranslate"><span class="pre">cuda_tensor.cpu()</span></code> and equivalent
 <code class="docutils literal notranslate"><span class="pre">tensor.to(device)</span></code> calls</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cuda_tensor.nonzero()</span></code></p></li>
-<li><p>python control flow which depends on results of operations performed on cuda
+<li><p>python control flow which depends on results of operations performed on CUDA
 tensors e.g. <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(cuda_tensor</span> <span class="pre">!=</span> <span class="pre">0).all()</span></code></p></li>
 </ul>
 </div>
@@ -820,7 +821,7 @@ tensors e.g. <code class="docutils literal notranslate"><span class="pre">if</sp
 <h3>Create tensors directly on the target device<a class="headerlink" href="#create-tensors-directly-on-the-target-device" title="Permalink to this heading">¶</a></h3>
 <p>Instead of calling <code class="docutils literal notranslate"><span class="pre">torch.rand(size).cuda()</span></code> to generate a random tensor,
 produce the output directly on the target device:
-<code class="docutils literal notranslate"><span class="pre">torch.rand(size,</span> <span class="pre">device=torch.device('cuda'))</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">torch.rand(size,</span> <span class="pre">device='cuda')</span></code>.</p>
 <p>This is applicable to all functions which create new tensors and accept
 <code class="docutils literal notranslate"><span class="pre">device</span></code> argument:
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand">torch.rand()</a>,
@@ -859,8 +860,8 @@ still be explicitly padded e.g. vocabulary size in NLP models</p></li>
 </li>
 </ul>
 </div>
-<div class="section" id="pre-allocate-memory-in-case-of-variable-input-length">
-<h3>Pre-allocate memory in case of variable input length<a class="headerlink" href="#pre-allocate-memory-in-case-of-variable-input-length" title="Permalink to this heading">¶</a></h3>
+<div class="section" id="preallocate-memory-in-case-of-variable-input-length">
+<h3>Preallocate memory in case of variable input length<a class="headerlink" href="#preallocate-memory-in-case-of-variable-input-length" title="Permalink to this heading">¶</a></h3>
 <p>Models for speech recognition or for NLP are often trained on input tensors
 with variable sequence length. Variable length can be problematic for PyTorch
 caching allocator and can lead to reduced performance or to unexpected
@@ -869,14 +870,14 @@ an another batch with longer sequence length, then PyTorch is forced to
 release intermediate buffers from previous iteration and to re-allocate new
 buffers. This process is time consuming and causes fragmentation in the
 caching allocator which may result in out-of-memory errors.</p>
-<p>A typical solution is to implement pre-allocation. It consists of the
+<p>A typical solution is to implement preallocation. It consists of the
 following steps:</p>
 <ol class="arabic simple">
 <li><p>generate a (usually random) batch of inputs with maximum sequence length
 (either corresponding to max length in the training dataset or to some
 predefined threshold)</p></li>
 <li><p>execute a forward and a backward pass with the generated batch, do not
-execute an optimizer or a learning rate scheduler, this step pre-allocates
+execute an optimizer or a learning rate scheduler, this step preallocates
 buffers of maximum size, which can be reused in subsequent
 training iterations</p></li>
 <li><p>zero out gradients</p></li>
@@ -899,7 +900,7 @@ multiple-GPUs. For more information refer to the
 from PyTorch documentation.</p>
 </div>
 <div class="section" id="skip-unnecessary-all-reduce-if-training-with-distributeddataparallel-and-gradient-accumulation">
-<h3>Skip unnecessary all-reduce if training with DistributedDataParallel and gradient accumulation<a class="headerlink" href="#skip-unnecessary-all-reduce-if-training-with-distributeddataparallel-and-gradient-accumulation" title="Permalink to this heading">¶</a></h3>
+<h3>Skip unnecessary all-reduce if training with <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> and gradient accumulation<a class="headerlink" href="#skip-unnecessary-all-reduce-if-training-with-distributeddataparallel-and-gradient-accumulation" title="Permalink to this heading">¶</a></h3>
 <p>By default
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel">torch.nn.parallel.DistributedDataParallel</a>
 executes gradient all-reduce after every backward pass to compute the average
@@ -915,7 +916,7 @@ accumulation, the last iteration should follow the default execution and
 perform the required gradient all-reduce.</p>
 </div>
 <div class="section" id="match-the-order-of-layers-in-constructors-and-during-the-execution-if-using-distributeddataparallel-find-unused-parameters-true">
-<h3>Match the order of layers in constructors and during the execution if using DistributedDataParallel(find_unused_parameters=True)<a class="headerlink" href="#match-the-order-of-layers-in-constructors-and-during-the-execution-if-using-distributeddataparallel-find-unused-parameters-true" title="Permalink to this heading">¶</a></h3>
+<h3>Match the order of layers in constructors and during the execution if using <a href="#id8"><span class="problematic" id="id9">``</span></a>DistributedDataParallel``(find_unused_parameters=True)<a class="headerlink" href="#match-the-order-of-layers-in-constructors-and-during-the-execution-if-using-distributeddataparallel-find-unused-parameters-true" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel">torch.nn.parallel.DistributedDataParallel</a>
 with <code class="docutils literal notranslate"><span class="pre">find_unused_parameters=True</span></code> uses the order of layers and parameters
 from model constructors to build buckets for <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>
@@ -1026,7 +1027,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
               <ul>
 <li><a class="reference internal" href="#">Performance Tuning Guide</a><ul>
 <li><a class="reference internal" href="#general-optimizations">General optimizations</a><ul>
-<li><a class="reference internal" href="#enable-async-data-loading-and-augmentation">Enable async data loading and augmentation</a></li>
+<li><a class="reference internal" href="#enable-asynchronous-data-loading-and-augmentation">Enable asynchronous data loading and augmentation</a></li>
 <li><a class="reference internal" href="#disable-gradient-calculation-for-validation-or-inference">Disable gradient calculation for validation or inference</a></li>
 <li><a class="reference internal" href="#disable-bias-for-convolutions-directly-followed-by-a-batch-norm">Disable bias for convolutions directly followed by a batch norm</a></li>
 <li><a class="reference internal" href="#use-parameter-grad-none-instead-of-model-zero-grad-or-optimizer-zero-grad">Use parameter.grad = None instead of model.zero_grad() or optimizer.zero_grad()</a></li>
@@ -1039,10 +1040,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#cpu-specific-optimizations">CPU specific optimizations</a><ul>
 <li><a class="reference internal" href="#utilize-non-uniform-memory-access-numa-controls">Utilize Non-Uniform Memory Access (NUMA) Controls</a></li>
 <li><a class="reference internal" href="#utilize-openmp">Utilize OpenMP</a></li>
-<li><a class="reference internal" href="#intel-openmp-runtime-library-libiomp">Intel OpenMP Runtime Library (libiomp)</a></li>
+<li><a class="reference internal" href="#intel-openmp-runtime-library-libiomp">Intel OpenMP Runtime Library (<code class="docutils literal notranslate"><span class="pre">libiomp</span></code>)</a></li>
 <li><a class="reference internal" href="#switch-memory-allocator">Switch Memory allocator</a></li>
 <li><a class="reference internal" href="#use-onednn-graph-with-torchscript-for-inference">Use oneDNN Graph with TorchScript for inference</a></li>
-<li><a class="reference internal" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality</a></li>
+<li><a class="reference internal" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">Train a model on CPU with PyTorch ``DistributedDataParallel``(DDP) functionality</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#gpu-specific-optimizations">GPU specific optimizations</a><ul>
@@ -1050,13 +1051,13 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#avoid-unnecessary-cpu-gpu-synchronization">Avoid unnecessary CPU-GPU synchronization</a></li>
 <li><a class="reference internal" href="#create-tensors-directly-on-the-target-device">Create tensors directly on the target device</a></li>
 <li><a class="reference internal" href="#use-mixed-precision-and-amp">Use mixed precision and AMP</a></li>
-<li><a class="reference internal" href="#pre-allocate-memory-in-case-of-variable-input-length">Pre-allocate memory in case of variable input length</a></li>
+<li><a class="reference internal" href="#preallocate-memory-in-case-of-variable-input-length">Preallocate memory in case of variable input length</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#distributed-optimizations">Distributed optimizations</a><ul>
 <li><a class="reference internal" href="#use-efficient-data-parallel-backend">Use efficient data-parallel backend</a></li>
-<li><a class="reference internal" href="#skip-unnecessary-all-reduce-if-training-with-distributeddataparallel-and-gradient-accumulation">Skip unnecessary all-reduce if training with DistributedDataParallel and gradient accumulation</a></li>
-<li><a class="reference internal" href="#match-the-order-of-layers-in-constructors-and-during-the-execution-if-using-distributeddataparallel-find-unused-parameters-true">Match the order of layers in constructors and during the execution if using DistributedDataParallel(find_unused_parameters=True)</a></li>
+<li><a class="reference internal" href="#skip-unnecessary-all-reduce-if-training-with-distributeddataparallel-and-gradient-accumulation">Skip unnecessary all-reduce if training with <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> and gradient accumulation</a></li>
+<li><a class="reference internal" href="#match-the-order-of-layers-in-constructors-and-during-the-execution-if-using-distributeddataparallel-find-unused-parameters-true">Match the order of layers in constructors and during the execution if using ``DistributedDataParallel``(find_unused_parameters=True)</a></li>
 <li><a class="reference internal" href="#load-balance-workload-in-a-distributed-setting">Load-balance workload in a distributed setting</a></li>
 </ul>
 </li>

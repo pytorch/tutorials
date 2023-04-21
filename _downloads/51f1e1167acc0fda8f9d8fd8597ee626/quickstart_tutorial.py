@@ -152,9 +152,9 @@ def train(dataloader, model, loss_fn, optimizer):
         loss = loss_fn(pred, y)
 
         # Backpropagation
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        optimizer.zero_grad()
 
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
@@ -215,7 +215,7 @@ print("Saved PyTorch Model State to model.pth")
 # The process for loading a model includes re-creating the model structure and loading
 # the state dictionary into it.
 
-model = NeuralNetwork()
+model = NeuralNetwork().to(device)
 model.load_state_dict(torch.load("model.pth"))
 
 #############################################################
@@ -237,6 +237,7 @@ classes = [
 model.eval()
 x, y = test_data[0][0], test_data[0][1]
 with torch.no_grad():
+    x = x.to(device)
     pred = model(x)
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')

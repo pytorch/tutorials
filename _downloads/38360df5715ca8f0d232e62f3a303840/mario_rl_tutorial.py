@@ -53,6 +53,8 @@ from nes_py.wrappers import JoypadSpace
 # Super Mario environment for OpenAI Gym
 import gym_super_mario_bros
 
+from tensordict import TensorDict
+from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 
 ######################################################################
 # RL Definitions
@@ -348,7 +350,7 @@ class Mario:
 class Mario(Mario):  # subclassing for continuity
     def __init__(self, state_dim, action_dim, save_dir):
         super().__init__(state_dim, action_dim, save_dir)
-        self.memory = deque(maxlen=100000)
+        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = 32
 
     def cache(self, state, next_state, action, reward, done):
@@ -367,20 +369,21 @@ class Mario(Mario):  # subclassing for continuity
         state = first_if_tuple(state).__array__()
         next_state = first_if_tuple(next_state).__array__()
 
-        state = torch.tensor(state, device=self.device)
-        next_state = torch.tensor(next_state, device=self.device)
-        action = torch.tensor([action], device=self.device)
-        reward = torch.tensor([reward], device=self.device)
-        done = torch.tensor([done], device=self.device)
+        state = torch.tensor(state)
+        next_state = torch.tensor(next_state)
+        action = torch.tensor([action])
+        reward = torch.tensor([reward])
+        done = torch.tensor([done])
 
-        self.memory.append((state, next_state, action, reward, done,))
+        # self.memory.append((state, next_state, action, reward, done,))
+        self.memory.add(TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}, batch_size=[]))
 
     def recall(self):
         """
         Retrieve a batch of experiences from memory
         """
-        batch = random.sample(self.memory, self.batch_size)
-        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+        batch = self.memory.sample(self.batch_size).to(self.device)
+        state, next_state, action, reward, done = (batch.get(key) for key in ("state", "next_state", "action", "reward", "done"))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
 
@@ -711,17 +714,18 @@ class MetricLogger:
                 f"{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):>20}\n"
             )
 
-        for metric in ["ep_rewards", "ep_lengths", "ep_avg_losses", "ep_avg_qs"]:
-            plt.plot(getattr(self, f"moving_avg_{metric}"))
-            plt.savefig(getattr(self, f"{metric}_plot"))
+        for metric in ["ep_lengths", "ep_avg_losses", "ep_avg_qs", "ep_rewards"]:
             plt.clf()
+            plt.plot(getattr(self, f"moving_avg_{metric}"), label=f"moving_avg_{metric}")
+            plt.legend()
+            plt.savefig(getattr(self, f"{metric}_plot"))
 
 
 ######################################################################
 # Let’s play!
 # """""""""""""""
 #
-# In this example we run the training loop for 10 episodes, but for Mario to truly learn the ways of
+# In this example we run the training loop for 40 episodes, but for Mario to truly learn the ways of
 # his world, we suggest running the loop for at least 40,000 episodes!
 #
 use_cuda = torch.cuda.is_available()
@@ -735,7 +739,7 @@ mario = Mario(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=sav
 
 logger = MetricLogger(save_dir)
 
-episodes = 10
+episodes = 40
 for e in range(episodes):
 
     state = env.reset()

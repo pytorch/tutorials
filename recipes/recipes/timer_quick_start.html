@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Timer quick start &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>Timer quick start &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
@@ -41,18 +41,13 @@
   <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -230,7 +225,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -323,6 +318,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -382,7 +378,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -507,6 +503,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -526,16 +526,14 @@ to download the full example code</p>
 API, with several PyTorch specific modifications. Familiarity with the
 builtin <cite>Timer</cite> class is not required for this tutorial, however we assume
 that the reader is familiar with the fundamentals of performance work.</p>
-<p>A more comprehensive performace tuning tutorial is available at:</p>
-<blockquote>
-<div><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/benchmark.html">https://pytorch.org/tutorials/recipes/recipes/benchmark.html</a></p>
-</div></blockquote>
+<p>For a more comprehensive performance tuning tutorial, see
+<a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/benchmark.html">PyTorch Benchmark</a>.</p>
 <dl class="simple">
 <dt><strong>Contents:</strong></dt><dd><ol class="arabic simple">
 <li><p><a class="reference external" href="#defining-a-timer">Defining a Timer</a></p></li>
-<li><p><a class="reference external" href="#wall-time-timer-blocked-autorange">Wall time: `Timer.blocked_autorange(…)`</a></p></li>
+<li><p><a class="reference external" href="#wall-time-timer-blocked-autorange">Wall time: Timer.blocked_autorange(…)</a></p></li>
 <li><p><a class="reference external" href="#c-snippets">C++ snippets</a></p></li>
-<li><p><a class="reference external" href="#instruction-counts-timer-collect-callgrind">Instruction counts: `Timer.collect_callgrind(…)`</a></p></li>
+<li><p><a class="reference external" href="#instruction-counts-timer-collect-callgrind">Instruction counts: Timer.collect_callgrind(…)</a></p></li>
 <li><p><a class="reference external" href="#instruction-counts-delving-deeper">Instruction counts: Delving deeper</a></p></li>
 <li><p><a class="reference external" href="#a-b-testing-with-callgrind">A/B testing with Callgrind</a></p></li>
 <li><p><a class="reference external" href="#wrapping-up">Wrapping up</a></p></li>
@@ -559,12 +557,14 @@ that the reader is familiar with the fundamentals of performance work.</p>
 <span class="s2">        y = torch.ones((128,))</span>
 <span class="s2">    &quot;&quot;&quot;</span><span class="p">,</span>
 
-    <span class="c1"># Alternately, `globals` can be used to pass variables from the outer scope.</span>
+    <span class="c1"># Alternatively, ``globals`` can be used to pass variables from the outer scope.</span>
     <span class="c1"># -------------------------------------------------------------------------</span>
-    <span class="c1"># globals={</span>
-    <span class="c1">#     &quot;x&quot;: torch.ones((128,)),</span>
-    <span class="c1">#     &quot;y&quot;: torch.ones((128,)),</span>
-    <span class="c1"># },</span>
+    <span class="c1"># ::</span>
+    <span class="c1">#</span>
+    <span class="c1">#    globals={</span>
+    <span class="c1">#        &quot;x&quot;: torch.ones((128,)),</span>
+    <span class="c1">#        &quot;y&quot;: torch.ones((128,)),</span>
+    <span class="c1">#    },</span>
 
     <span class="c1"># Control the number of threads that PyTorch uses. (Default: 1)</span>
     <span class="n">num_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -573,7 +573,7 @@ that the reader is familiar with the fundamentals of performance work.</p>
 </div>
 </div>
 <div class="section" id="wall-time-timer-blocked-autorange">
-<h2>2. Wall time: <cite>Timer.blocked_autorange(…)</cite><a class="headerlink" href="#wall-time-timer-blocked-autorange" title="Permalink to this heading">¶</a></h2>
+<h2>2. Wall time: <code class="docutils literal notranslate"><span class="pre">Timer.blocked_autorange(...)</span></code><a class="headerlink" href="#wall-time-timer-blocked-autorange" title="Permalink to this heading">¶</a></h2>
 <p>This method will handle details such as picking a suitable number if repeats,
 fixing the number of threads, and providing a convenient representation of
 the results.</p>
@@ -633,9 +633,9 @@ the results.</p>
 <p>Unsurprisingly, the C++ snippet is both faster and has lower variation.</p>
 </div>
 <div class="section" id="instruction-counts-timer-collect-callgrind">
-<h2>4. Instruction counts: <cite>Timer.collect_callgrind(…)</cite><a class="headerlink" href="#instruction-counts-timer-collect-callgrind" title="Permalink to this heading">¶</a></h2>
-<p>For deep dive investigations, <cite>Timer.collect_callgrind</cite> wraps
-<cite>Callgrind &lt;https://valgrind.org/docs/manual/cl-manual.html&gt;</cite> in order to
+<h2>4. Instruction counts: <code class="docutils literal notranslate"><span class="pre">Timer.collect_callgrind(...)</span></code><a class="headerlink" href="#instruction-counts-timer-collect-callgrind" title="Permalink to this heading">¶</a></h2>
+<p>For deep dive investigations, <code class="docutils literal notranslate"><span class="pre">Timer.collect_callgrind</span></code> wraps
+<a class="reference external" href="https://valgrind.org/docs/manual/cl-manual.html">Callgrind</a> in order to
 collect instruction counts. These are useful as they offer fine grained and
 deterministic (or very low noise in the case of Python) insights into how a
 snippet is run.</p>
@@ -663,30 +663,32 @@ snippet is run.</p>
 </div>
 <div class="section" id="instruction-counts-delving-deeper">
 <h2>5. Instruction counts: Delving deeper<a class="headerlink" href="#instruction-counts-delving-deeper" title="Permalink to this heading">¶</a></h2>
-<p>The string representation of CallgrindStats is similar to that of
+<p>The string representation of <code class="docutils literal notranslate"><span class="pre">CallgrindStats</span></code> is similar to that of
 Measurement. <cite>Noisy symbols</cite> are a Python concept (removing calls in the
 CPython interpreter which are known to be noisy).</p>
 <p>For more detailed analysis, however, we will want to look at specific calls.
-<cite>CallgrindStats.stats()</cite> returns a FunctionCounts object to make this easier.
-Conceptually, FunctionCounts can be thought of as a tuple of pairs with some
+<code class="docutils literal notranslate"><span class="pre">CallgrindStats.stats()</span></code> returns a <code class="docutils literal notranslate"><span class="pre">FunctionCounts</span></code> object to make this easier.
+Conceptually, <code class="docutils literal notranslate"><span class="pre">FunctionCounts</span></code> can be thought of as a tuple of pairs with some
 utility methods, where each pair is <cite>(number of instructions, file path and
 function name)</cite>.</p>
-<dl>
+<dl class="simple">
 <dt>A note on paths:</dt><dd><p>One generally doesn’t care about absolute path. For instance, the full path
 and function name for a multiply call is something like:</p>
-<blockquote>
-<div><p>/the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&amp;) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]</p>
-</div></blockquote>
-<p>when in reality, all of the information that we’re interested in can be
-represented in:</p>
-<blockquote>
-<div><p>build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&amp;) const</p>
-</div></blockquote>
-<p>CallgrindStats.as_standardized() makes a best effort to strip low signal
-portions of the file path, as well as the shared object and is generally
-recommended.</p>
 </dd>
 </dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="o">/</span><span class="n">the</span><span class="o">/</span><span class="n">prefix</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">pytorch</span><span class="o">/</span><span class="n">install</span><span class="o">/</span><span class="nb">dir</span><span class="o">/</span><span class="n">pytorch</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">aten</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">ATen</span><span class="o">/</span><span class="n">core</span><span class="o">/</span><span class="n">TensorMethods</span><span class="o">.</span><span class="n">cpp</span><span class="p">:</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">::</span><span class="n">mul</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">const</span><span class="o">&amp;</span><span class="p">)</span> <span class="n">const</span> <span class="p">[</span><span class="o">/</span><span class="n">the</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">install</span><span class="o">/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">ab_ref</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">torch</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">libtorch_cpu</span><span class="o">.</span><span class="n">so</span><span class="p">]</span>
+
+<span class="n">when</span> <span class="ow">in</span> <span class="n">reality</span><span class="p">,</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">information</span> <span class="n">that</span> <span class="n">we</span><span class="s1">&#39;re interested in can be</span>
+<span class="n">represented</span> <span class="ow">in</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&amp;) const
+
+``CallgrindStats.as_standardized()`` makes a best effort to strip low signal
+portions of the file path, as well as the shared object and is generally
+recommended.
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inclusive_stats</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">as_standardized</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="n">inclusive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">inclusive_stats</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
 </pre></div>
@@ -749,7 +751,7 @@ will both map to <cite>foo.h</cite>) will be added together.</p>
 </div>
 </div>
 <div class="section" id="a-b-testing-with-callgrind">
-<h2>6. A/B testing with Callgrind<a class="headerlink" href="#a-b-testing-with-callgrind" title="Permalink to this heading">¶</a></h2>
+<h2>6. A/B testing with <code class="docutils literal notranslate"><span class="pre">Callgrind</span></code><a class="headerlink" href="#a-b-testing-with-callgrind" title="Permalink to this heading">¶</a></h2>
 <p>One of the most useful features of instruction counts is they allow fine
 grained comparison of computation, which is critical when analyzing
 performance.</p>
@@ -770,8 +772,8 @@ Tensor:</p>
 </pre></div>
 </div>
 <p>Often we want to A/B test two different environments. (e.g. testing a PR, or
-experimenting with compile flags.) This is quite simple, as CallgrindStats,
-FunctionCounts, and Measurement are all pickleable. Simply save measurements
+experimenting with compile flags.) This is quite simple, as <code class="docutils literal notranslate"><span class="pre">CallgrindStats</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FunctionCounts</span></code>, and Measurement are all pickleable. Simply save measurements
 from each environment, and load them in a single process for analysis.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
 
@@ -820,7 +822,7 @@ from each environment, and load them in a single process for analysis.</p>
 </div>
 <p>So the broadcasting version takes an extra 580 instructions per call (recall
 that we’re collecting 100 runs per sample), or about 10%. There are quite a
-few TensorIterator calls, so lets drill down to those. FunctionCounts.filter
+few <code class="docutils literal notranslate"><span class="pre">TensorIterator</span></code> calls, so lets drill down to those. <code class="docutils literal notranslate"><span class="pre">FunctionCounts.filter</span></code>
 makes this easy.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">extract_fn_name</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">fn</span><span class="p">:</span> <span class="s2">&quot;TensorIterator&quot;</span> <span class="ow">in</span> <span class="n">fn</span><span class="p">))</span>
 </pre></div>
@@ -844,7 +846,7 @@ makes this easy.</p>
 </pre></div>
 </div>
 </div>
-<p>This makes plain what is going on: there is a fast path in TensorIterator
+<p>This makes plain what is going on: there is a fast path in <code class="docutils literal notranslate"><span class="pre">TensorIterator</span></code>
 setup, but in the {128} x {1} case we miss it and have to do a more general
 analysis which is more expensive. The most prominent call omitted by the
 filter is <cite>c10::SmallVectorImpl&lt;long&gt;::operator=(…)</cite>, which is also part
@@ -864,18 +866,18 @@ to slice-and-dice them.</p>
 <blockquote>
 <div><ul class="simple">
 <li><dl class="simple">
-<dt>Implied <cite>import torch</cite></dt><dd><p>If <cite>globals</cite> does not contain “torch”, Timer will automatically
-populate it. This means that <cite>Timer(“torch.empty(())”)</cite> will work.
+<dt>Implied <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">torch</span></code></dt><dd><p>If <cite>globals</cite> does not contain “torch”, Timer will automatically
+populate it. This means that <code class="docutils literal notranslate"><span class="pre">Timer(&quot;torch.empty(())&quot;)</span></code> will work.
 (Though other imports should be placed in <cite>setup</cite>,
-e.g. <cite>Timer(“np.zeros(())”, “import numpy as np”)</cite>)</p>
+e.g. <code class="docutils literal notranslate"><span class="pre">Timer(&quot;np.zeros(())&quot;,</span> <span class="pre">&quot;import</span> <span class="pre">numpy</span> <span class="pre">as</span> <span class="pre">np&quot;)</span></code>)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>REL_WITH_DEB_INFO</dt><dd><p>In order to provide full information about the PyTorch internals which
-are executed, Callgrind needs access to C++ debug symbols. This is
-accomplished by setting REL_WITH_DEB_INFO=1 when building PyTorch.
-Otherwise function calls will be opaque. (The resultant CallgrindStats
+<dt><code class="docutils literal notranslate"><span class="pre">REL_WITH_DEB_INFO</span></code></dt><dd><p>In order to provide full information about the PyTorch internals which
+are executed, <code class="docutils literal notranslate"><span class="pre">Callgrind</span></code> needs access to C++ debug symbols. This is
+accomplished by setting <code class="docutils literal notranslate"><span class="pre">REL_WITH_DEB_INFO=1</span></code> when building PyTorch.
+Otherwise function calls will be opaque. (The resultant <code class="docutils literal notranslate"><span class="pre">CallgrindStats</span></code>
 will warn if debug symbols are missing.)</p>
 </dd>
 </dl>
@@ -949,11 +951,11 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
               <ul>
 <li><a class="reference internal" href="#">Timer quick start</a><ul>
 <li><a class="reference internal" href="#defining-a-timer">1. Defining a Timer</a></li>
-<li><a class="reference internal" href="#wall-time-timer-blocked-autorange">2. Wall time: <cite>Timer.blocked_autorange(…)</cite></a></li>
+<li><a class="reference internal" href="#wall-time-timer-blocked-autorange">2. Wall time: <code class="docutils literal notranslate"><span class="pre">Timer.blocked_autorange(...)</span></code></a></li>
 <li><a class="reference internal" href="#c-snippets">3. C++ snippets</a></li>
-<li><a class="reference internal" href="#instruction-counts-timer-collect-callgrind">4. Instruction counts: <cite>Timer.collect_callgrind(…)</cite></a></li>
+<li><a class="reference internal" href="#instruction-counts-timer-collect-callgrind">4. Instruction counts: <code class="docutils literal notranslate"><span class="pre">Timer.collect_callgrind(...)</span></code></a></li>
 <li><a class="reference internal" href="#instruction-counts-delving-deeper">5. Instruction counts: Delving deeper</a></li>
-<li><a class="reference internal" href="#a-b-testing-with-callgrind">6. A/B testing with Callgrind</a></li>
+<li><a class="reference internal" href="#a-b-testing-with-callgrind">6. A/B testing with <code class="docutils literal notranslate"><span class="pre">Callgrind</span></code></a></li>
 <li><a class="reference internal" href="#wrapping-up">7. Wrapping up</a></li>
 <li><a class="reference internal" href="#footnotes">8. Footnotes</a></li>
 </ul>

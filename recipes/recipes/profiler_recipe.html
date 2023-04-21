@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PyTorch Profiler &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>PyTorch Profiler &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
@@ -43,18 +43,13 @@
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Model Interpretability using Captum" href="Captum_Recipe.html" />
     <link rel="prev" title="Zeroing out gradients in PyTorch" href="zeroing_out_gradients.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -232,7 +227,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -325,6 +320,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -384,7 +380,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -511,6 +507,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -549,7 +549,7 @@ use profiler to analyze model performance.</p>
 <li><p>Using profiler to analyze memory consumption</p></li>
 <li><p>Using tracing functionality</p></li>
 <li><p>Examining stack traces</p></li>
-<li><p>Visualizing data as a flamegraph</p></li>
+<li><p>Visualizing data as a flame graph</p></li>
 <li><p>Using profiler to analyze long-running jobs</p></li>
 </ol>
 <div class="section" id="import-all-necessary-libraries">
@@ -591,7 +591,7 @@ model’s Tensors;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">use_cuda</span></code> - whether to measure execution time of CUDA kernels.</p></li>
 </ul>
 <p>Note: when using CUDA, profiler also shows the runtime CUDA events
-occuring on the host.</p>
+occurring on the host.</p>
 <p>Let’s see how we can use profiler to analyze the execution time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile" class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">profile</span></a><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">],</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
@@ -606,7 +606,7 @@ execution of a code range wrapped with a profiler context manager.
 If multiple profiler ranges are active at the same time (e.g. in
 parallel PyTorch threads), each profiling context manager tracks only
 the operators of its corresponding range.
-Profiler also automatically profiles the async tasks launched
+Profiler also automatically profiles the asynchronous tasks launched
 with <code class="docutils literal notranslate"><span class="pre">torch.jit._fork</span></code> and (in case of a backward pass)
 the backward pass operators launched with <code class="docutils literal notranslate"><span class="pre">backward()</span></code> call.</p>
 <p>Let’s print out the stats for the execution above:</p>
@@ -632,33 +632,34 @@ the backward pass operators launched with <code class="docutils literal notransl
 </pre></div>
 </div>
 <p>Here we see that, as expected, most of the time is spent in convolution (and specifically in <code class="docutils literal notranslate"><span class="pre">mkldnn_convolution</span></code>
-for PyTorch compiled with MKL-DNN support).
+for PyTorch compiled with <code class="docutils literal notranslate"><span class="pre">MKL-DNN</span></code> support).
 Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time
 spent in children operator calls, while total cpu time includes it. You can choose to sort by the self cpu time by passing
 <code class="docutils literal notranslate"><span class="pre">sort_by=&quot;self_cpu_time_total&quot;</span></code> into the <code class="docutils literal notranslate"><span class="pre">table</span></code> call.</p>
 <p>To get a finer granularity of results and include operator input shapes, pass <code class="docutils literal notranslate"><span class="pre">group_by_input_shape=True</span></code>
 (note: this requires running the profiler with <code class="docutils literal notranslate"><span class="pre">record_shapes=True</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-
-<span class="c1"># (omitting some columns)</span>
-<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
-<span class="c1">#                              Name     CPU total                                 Input Shapes</span>
-<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
-<span class="c1">#                   model_inference      57.503ms                                           []</span>
-<span class="c1">#                      aten::conv2d       8.008ms      [5,64,56,56], [64,64,3,3], [], ..., []]</span>
-<span class="c1">#                 aten::convolution       7.956ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
-<span class="c1">#                aten::_convolution       7.909ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
-<span class="c1">#          aten::mkldnn_convolution       7.834ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
-<span class="c1">#                      aten::conv2d       6.332ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
-<span class="c1">#                 aten::convolution       6.303ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
-<span class="c1">#                aten::_convolution       6.273ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
-<span class="c1">#          aten::mkldnn_convolution       6.233ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
-<span class="c1">#                      aten::conv2d       4.751ms  [[5,256,14,14], [256,256,3,3], [], ..., []]</span>
-<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
-<span class="c1"># Self CPU time total: 57.549ms</span>
 </pre></div>
 </div>
-<p>Note the occurence of <code class="docutils literal notranslate"><span class="pre">aten::convolution</span></code> twice with different input shapes.</p>
+<p>The output might look like this (omitting some columns):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">-------------------------------------------</span>
+                             <span class="n">Name</span>     <span class="n">CPU</span> <span class="n">total</span>                                 <span class="n">Input</span> <span class="n">Shapes</span>
+<span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">-------------------------------------------</span>
+                  <span class="n">model_inference</span>      <span class="mf">57.503</span><span class="n">ms</span>                                           <span class="p">[]</span>
+                     <span class="n">aten</span><span class="p">::</span><span class="n">conv2d</span>       <span class="mf">8.008</span><span class="n">ms</span>      <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+                <span class="n">aten</span><span class="p">::</span><span class="n">convolution</span>       <span class="mf">7.956</span><span class="n">ms</span>     <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+               <span class="n">aten</span><span class="p">::</span><span class="n">_convolution</span>       <span class="mf">7.909</span><span class="n">ms</span>     <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+         <span class="n">aten</span><span class="p">::</span><span class="n">mkldnn_convolution</span>       <span class="mf">7.834</span><span class="n">ms</span>     <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+                     <span class="n">aten</span><span class="p">::</span><span class="n">conv2d</span>       <span class="mf">6.332</span><span class="n">ms</span>    <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+                <span class="n">aten</span><span class="p">::</span><span class="n">convolution</span>       <span class="mf">6.303</span><span class="n">ms</span>    <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+               <span class="n">aten</span><span class="p">::</span><span class="n">_convolution</span>       <span class="mf">6.273</span><span class="n">ms</span>    <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+         <span class="n">aten</span><span class="p">::</span><span class="n">mkldnn_convolution</span>       <span class="mf">6.233</span><span class="n">ms</span>    <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+                     <span class="n">aten</span><span class="p">::</span><span class="n">conv2d</span>       <span class="mf">4.751</span><span class="n">ms</span>  <span class="p">[[</span><span class="mi">5</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">14</span><span class="p">],</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[]]</span>
+<span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">-------------------------------------------</span>
+<span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">57.549</span><span class="n">ms</span>
+</pre></div>
+</div>
+<p>Note the occurrence of <code class="docutils literal notranslate"><span class="pre">aten::convolution</span></code> twice with different input shapes.</p>
 <p>Profiler can also be used to analyze performance of models executed on GPUs:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18" class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 <span class="n">inputs</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
@@ -672,27 +673,26 @@ spent in children operator calls, while total cpu time includes it. You can choo
 </pre></div>
 </div>
 <p>(Note: the first use of CUDA profiling may bring an extra overhead.)</p>
-<p>The resulting table output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># (omitting some columns)</span>
-<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
-<span class="c1">#                                                    Name     Self CUDA    CUDA total</span>
-<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
-<span class="c1">#                                         model_inference       0.000us      11.666ms</span>
-<span class="c1">#                                            aten::conv2d       0.000us      10.484ms</span>
-<span class="c1">#                                       aten::convolution       0.000us      10.484ms</span>
-<span class="c1">#                                      aten::_convolution       0.000us      10.484ms</span>
-<span class="c1">#                              aten::_convolution_nogroup       0.000us      10.484ms</span>
-<span class="c1">#                                       aten::thnn_conv2d       0.000us      10.484ms</span>
-<span class="c1">#                               aten::thnn_conv2d_forward      10.484ms      10.484ms</span>
-<span class="c1"># void at::native::im2col_kernel&lt;float&gt;(long, float co...       3.844ms       3.844ms</span>
-<span class="c1">#                                       sgemm_32x32x32_NN       3.206ms       3.206ms</span>
-<span class="c1">#                                   sgemm_32x32x32_NN_vec       3.093ms       3.093ms</span>
-<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
-<span class="c1"># Self CPU time total: 23.015ms</span>
-<span class="c1"># Self CUDA time total: 11.666ms</span>
+<p>The resulting table output (omitting some columns):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-------------------------------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+                                                   <span class="n">Name</span>     <span class="n">Self</span> <span class="n">CUDA</span>    <span class="n">CUDA</span> <span class="n">total</span>
+<span class="o">-------------------------------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+                                        <span class="n">model_inference</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">11.666</span><span class="n">ms</span>
+                                           <span class="n">aten</span><span class="p">::</span><span class="n">conv2d</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">10.484</span><span class="n">ms</span>
+                                      <span class="n">aten</span><span class="p">::</span><span class="n">convolution</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">10.484</span><span class="n">ms</span>
+                                     <span class="n">aten</span><span class="p">::</span><span class="n">_convolution</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">10.484</span><span class="n">ms</span>
+                             <span class="n">aten</span><span class="p">::</span><span class="n">_convolution_nogroup</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">10.484</span><span class="n">ms</span>
+                                      <span class="n">aten</span><span class="p">::</span><span class="n">thnn_conv2d</span>       <span class="mf">0.000</span><span class="n">us</span>      <span class="mf">10.484</span><span class="n">ms</span>
+                              <span class="n">aten</span><span class="p">::</span><span class="n">thnn_conv2d_forward</span>      <span class="mf">10.484</span><span class="n">ms</span>      <span class="mf">10.484</span><span class="n">ms</span>
+<span class="n">void</span> <span class="n">at</span><span class="p">::</span><span class="n">native</span><span class="p">::</span><span class="n">im2col_kernel</span><span class="o">&lt;</span><span class="nb">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">long</span><span class="p">,</span> <span class="nb">float</span> <span class="n">co</span><span class="o">...</span>       <span class="mf">3.844</span><span class="n">ms</span>       <span class="mf">3.844</span><span class="n">ms</span>
+                                      <span class="n">sgemm_32x32x32_NN</span>       <span class="mf">3.206</span><span class="n">ms</span>       <span class="mf">3.206</span><span class="n">ms</span>
+                                  <span class="n">sgemm_32x32x32_NN_vec</span>       <span class="mf">3.093</span><span class="n">ms</span>       <span class="mf">3.093</span><span class="n">ms</span>
+<span class="o">-------------------------------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+<span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">23.015</span><span class="n">ms</span>
+<span class="n">Self</span> <span class="n">CUDA</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">11.666</span><span class="n">ms</span>
 </pre></div>
 </div>
-<p>Note the occurence of on-device kernels in the output (e.g. <code class="docutils literal notranslate"><span class="pre">sgemm_32x32x32_NN</span></code>).</p>
+<p>Note the occurrence of on-device kernels in the output (e.g. <code class="docutils literal notranslate"><span class="pre">sgemm_32x32x32_NN</span></code>).</p>
 </div>
 <div class="section" id="using-profiler-to-analyze-memory-consumption">
 <h3>4. Using profiler to analyze memory consumption<a class="headerlink" href="#using-profiler-to-analyze-memory-consumption" title="Permalink to this heading">¶</a></h3>
@@ -728,29 +728,30 @@ To enable memory profiling functionality pass <code class="docutils literal notr
 <span class="c1"># Self CPU time total: 53.064ms</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_memory_usage&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-
-<span class="c1"># (omitting some columns)</span>
-<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
-<span class="c1">#                              Name       CPU Mem  Self CPU Mem    # of Calls</span>
-<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
-<span class="c1">#                       aten::empty      94.79 Mb      94.79 Mb           121</span>
-<span class="c1">#                  aten::batch_norm      47.41 Mb           0 b            20</span>
-<span class="c1">#      aten::_batch_norm_impl_index      47.41 Mb           0 b            20</span>
-<span class="c1">#           aten::native_batch_norm      47.41 Mb           0 b            20</span>
-<span class="c1">#                      aten::conv2d      47.37 Mb           0 b            20</span>
-<span class="c1">#                 aten::convolution      47.37 Mb           0 b            20</span>
-<span class="c1">#                aten::_convolution      47.37 Mb           0 b            20</span>
-<span class="c1">#          aten::mkldnn_convolution      47.37 Mb           0 b            20</span>
-<span class="c1">#                  aten::max_pool2d      11.48 Mb           0 b             1</span>
-<span class="c1">#     aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1</span>
-<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
-<span class="c1"># Self CPU time total: 53.064ms</span>
+</pre></div>
+</div>
+<p>The output might look like this (omitting some columns):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+                             <span class="n">Name</span>       <span class="n">CPU</span> <span class="n">Mem</span>  <span class="n">Self</span> <span class="n">CPU</span> <span class="n">Mem</span>    <span class="c1"># of Calls</span>
+<span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+                      <span class="n">aten</span><span class="p">::</span><span class="n">empty</span>      <span class="mf">94.79</span> <span class="n">Mb</span>      <span class="mf">94.79</span> <span class="n">Mb</span>           <span class="mi">121</span>
+                 <span class="n">aten</span><span class="p">::</span><span class="n">batch_norm</span>      <span class="mf">47.41</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+     <span class="n">aten</span><span class="p">::</span><span class="n">_batch_norm_impl_index</span>      <span class="mf">47.41</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+          <span class="n">aten</span><span class="p">::</span><span class="n">native_batch_norm</span>      <span class="mf">47.41</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+                     <span class="n">aten</span><span class="p">::</span><span class="n">conv2d</span>      <span class="mf">47.37</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+                <span class="n">aten</span><span class="p">::</span><span class="n">convolution</span>      <span class="mf">47.37</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+               <span class="n">aten</span><span class="p">::</span><span class="n">_convolution</span>      <span class="mf">47.37</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+         <span class="n">aten</span><span class="p">::</span><span class="n">mkldnn_convolution</span>      <span class="mf">47.37</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>            <span class="mi">20</span>
+                 <span class="n">aten</span><span class="p">::</span><span class="n">max_pool2d</span>      <span class="mf">11.48</span> <span class="n">Mb</span>           <span class="mi">0</span> <span class="n">b</span>             <span class="mi">1</span>
+    <span class="n">aten</span><span class="p">::</span><span class="n">max_pool2d_with_indices</span>      <span class="mf">11.48</span> <span class="n">Mb</span>      <span class="mf">11.48</span> <span class="n">Mb</span>             <span class="mi">1</span>
+<span class="o">---------------------------------</span>  <span class="o">------------</span>  <span class="o">------------</span>  <span class="o">------------</span>
+<span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">53.064</span><span class="n">ms</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="using-tracing-functionality">
 <h3>5. Using tracing functionality<a class="headerlink" href="#using-tracing-functionality" title="Permalink to this heading">¶</a></h3>
-<p>Profiling results can be outputted as a .json trace file:</p>
+<p>Profiling results can be outputted as a <code class="docutils literal notranslate"><span class="pre">.json</span></code> trace file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18" class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 <span class="n">inputs</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 
@@ -775,43 +776,42 @@ in Chrome trace viewer (<code class="docutils literal notranslate"><span class="
 
 <span class="c1"># Print aggregated stats</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_stack_n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;self_cuda_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-
-<span class="c1"># (omitting some columns)</span>
-<span class="c1"># -------------------------  -----------------------------------------------------------</span>
-<span class="c1">#                      Name  Source Location</span>
-<span class="c1"># -------------------------  -----------------------------------------------------------</span>
-<span class="c1"># aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward</span>
-<span class="c1">#                            .../torch/nn/modules/conv.py(443): forward</span>
-<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
-<span class="c1">#                            .../site-packages/torchvision/models/resnet.py(63): forward</span>
-<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
-<span class="c1">#</span>
-<span class="c1"># aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward</span>
-<span class="c1">#                            .../torch/nn/modules/conv.py(443): forward</span>
-<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
-<span class="c1">#                            .../site-packages/torchvision/models/resnet.py(59): forward</span>
-<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
-<span class="c1">#</span>
-<span class="c1"># -------------------------  -----------------------------------------------------------</span>
-<span class="c1"># Self CPU time total: 34.016ms</span>
-<span class="c1"># Self CUDA time total: 11.659ms</span>
 </pre></div>
 </div>
-<p>Note the two convolutions and the two callsites in <code class="docutils literal notranslate"><span class="pre">torchvision/models/resnet.py</span></code> script.</p>
+<p>The output might look like this (omitting some columns):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-------------------------</span>  <span class="o">-----------------------------------------------------------</span>
+                     <span class="n">Name</span>  <span class="n">Source</span> <span class="n">Location</span>
+<span class="o">-------------------------</span>  <span class="o">-----------------------------------------------------------</span>
+<span class="n">aten</span><span class="p">::</span><span class="n">thnn_conv2d_forward</span>  <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">conv</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">439</span><span class="p">):</span> <span class="n">_conv_forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">conv</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">443</span><span class="p">):</span> <span class="n">forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">module</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">1051</span><span class="p">):</span> <span class="n">_call_impl</span>
+                           <span class="o">.../</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">torchvision</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">resnet</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">63</span><span class="p">):</span> <span class="n">forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">module</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">1051</span><span class="p">):</span> <span class="n">_call_impl</span>
+<span class="n">aten</span><span class="p">::</span><span class="n">thnn_conv2d_forward</span>  <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">conv</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">439</span><span class="p">):</span> <span class="n">_conv_forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">conv</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">443</span><span class="p">):</span> <span class="n">forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">module</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">1051</span><span class="p">):</span> <span class="n">_call_impl</span>
+                           <span class="o">.../</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">torchvision</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">resnet</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">59</span><span class="p">):</span> <span class="n">forward</span>
+                           <span class="o">.../</span><span class="n">torch</span><span class="o">/</span><span class="n">nn</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">module</span><span class="o">.</span><span class="n">py</span><span class="p">(</span><span class="mi">1051</span><span class="p">):</span> <span class="n">_call_impl</span>
+<span class="o">-------------------------</span>  <span class="o">-----------------------------------------------------------</span>
+<span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">34.016</span><span class="n">ms</span>
+<span class="n">Self</span> <span class="n">CUDA</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">11.659</span><span class="n">ms</span>
+</pre></div>
+</div>
+<p>Note the two convolutions and the two call sites in <code class="docutils literal notranslate"><span class="pre">torchvision/models/resnet.py</span></code> script.</p>
 <p>(Warning: stack tracing adds an extra profiling overhead.)</p>
 </div>
-<div class="section" id="visualizing-data-as-a-flamegraph">
-<h3>7. Visualizing data as a flamegraph<a class="headerlink" href="#visualizing-data-as-a-flamegraph" title="Permalink to this heading">¶</a></h3>
+<div class="section" id="visualizing-data-as-a-flame-graph">
+<h3>7. Visualizing data as a flame graph<a class="headerlink" href="#visualizing-data-as-a-flame-graph" title="Permalink to this heading">¶</a></h3>
 <p>Execution time (<code class="docutils literal notranslate"><span class="pre">self_cpu_time_total</span></code> and <code class="docutils literal notranslate"><span class="pre">self_cuda_time_total</span></code> metrics) and stack traces
 can also be visualized as a flame graph. To do this, first export the raw data using <code class="docutils literal notranslate"><span class="pre">export_stacks</span></code> (requires <code class="docutils literal notranslate"><span class="pre">with_stack=True</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">export_stacks</span><span class="p">(</span><span class="s2">&quot;/tmp/profiler_stacks.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;self_cuda_time_total&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We recommend using e.g. <a class="reference external" href="https://github.com/brendangregg/FlameGraph">Flamegraph tool</a> to generate an
-interactive SVG:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># git clone https://github.com/brendangregg/FlameGraph</span>
-<span class="c1"># cd FlameGraph</span>
-<span class="c1"># ./flamegraph.pl --title &quot;CUDA time&quot; --countname &quot;us.&quot; /tmp/profiler_stacks.txt &gt; perf_viz.svg</span>
+<p>We recommend using <a class="reference external" href="https://github.com/brendangregg/FlameGraph">Flamegraph tool</a> to generate an
+interactive <code class="docutils literal notranslate"><span class="pre">.svg</span></code> file:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/brendangregg/FlameGraph
+<span class="nb">cd</span><span class="w"> </span>FlameGraph
+./flamegraph.pl<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;CUDA time&quot;</span><span class="w"> </span>--countname<span class="w"> </span><span class="s2">&quot;us.&quot;</span><span class="w"> </span>/tmp/profiler_stacks.txt<span class="w"> </span>&gt;<span class="w"> </span>perf_viz.svg
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/perf_viz.png"><img alt="../../_images/perf_viz.png" src="../../_images/perf_viz.png" style="width: 592.5px; height: 139.5px;" /></a>
@@ -983,7 +983,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#using-profiler-to-analyze-memory-consumption">4. Using profiler to analyze memory consumption</a></li>
 <li><a class="reference internal" href="#using-tracing-functionality">5. Using tracing functionality</a></li>
 <li><a class="reference internal" href="#examining-stack-traces">6. Examining stack traces</a></li>
-<li><a class="reference internal" href="#visualizing-data-as-a-flamegraph">7. Visualizing data as a flamegraph</a></li>
+<li><a class="reference internal" href="#visualizing-data-as-a-flame-graph">7. Visualizing data as a flame graph</a></li>
 <li><a class="reference internal" href="#using-profiler-to-analyze-long-running-jobs">8. Using profiler to analyze long-running jobs</a></li>
 </ul>
 </li>

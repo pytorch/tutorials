@@ -33,7 +33,7 @@ This tutorial explains how to implement the `Neural-Style algorithm <https://arx
 developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 Neural-Style, or Neural-Transfer, allows you to take an image and
 reproduce it with a new artistic style. The algorithm takes three images,
-an input image, a content-image, and a style-image, and changes the input 
+an input image, a content-image, and a style-image, and changes the input
 to resemble the content of the content-image and the artistic style of the style-image.
 
  
@@ -63,15 +63,13 @@ Below is a  list of the packages needed to implement the neural transfer.
 -  ``PIL``, ``PIL.Image``, ``matplotlib.pyplot`` (load and display
    images)
 -  ``torchvision.transforms`` (transform PIL images into tensors)
--  ``torchvision.models`` (train or load pre-trained models)
+-  ``torchvision.models`` (train or load pretrained models)
 -  ``copy`` (to deep copy the models; system package)
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-66
+.. GENERATED FROM PYTHON SOURCE LINES 49-64
 
 .. code-block:: default
 
-
-    from __future__ import print_function
 
     import torch
     import torch.nn as nn
@@ -94,7 +92,7 @@ Below is a  list of the packages needed to implement the neural transfer.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-73
+.. GENERATED FROM PYTHON SOURCE LINES 65-71
 
 Next, we need to choose which device to run the network on and import the
 content and style images. Running the neural transfer algorithm on large
@@ -103,12 +101,13 @@ use ``torch.cuda.is_available()`` to detect if there is a GPU available.
 Next, we set the ``torch.device`` for use throughout the tutorial. Also the ``.to(device)``
 method is used to move tensors or modules to a desired device. 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-76
+.. GENERATED FROM PYTHON SOURCE LINES 71-75
 
 .. code-block:: default
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch.set_default_device(device)
 
 
 
@@ -117,7 +116,7 @@ method is used to move tensors or modules to a desired device.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-97
+.. GENERATED FROM PYTHON SOURCE LINES 76-96
 
 Loading the Images
 ------------------
@@ -129,7 +128,7 @@ An important detail to note is that neural networks from the
 torch library are trained with tensor values ranging from 0 to 1. If you
 try to feed the networks with 0 to 255 tensor images, then the activated
 feature maps will be unable to sense the intended content and style.
-However, pre-trained networks from the Caffe library are trained with 0
+However, pretrained networks from the Caffe library are trained with 0
 to 255 tensor images. 
 
 
@@ -140,13 +139,13 @@ to 255 tensor images.
     Download these two images and add them to a directory
     with name ``images`` in your current working directory.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-120
+.. GENERATED FROM PYTHON SOURCE LINES 96-119
 
 .. code-block:: default
 
 
     # desired size of the output image
-    imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
+    imsize = 512 if torch.cuda.is_available() else 128  # use small size if no GPU
 
     loader = transforms.Compose([
         transforms.Resize(imsize),  # scale imported image
@@ -174,14 +173,14 @@ to 255 tensor images.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-125
+.. GENERATED FROM PYTHON SOURCE LINES 120-124
 
 Now, let's create a function that displays an image by reconverting a 
 copy of it to PIL format and displaying the copy using 
 ``plt.imshow``. We will try displaying the content and style images 
 to ensure they were imported correctly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-146
+.. GENERATED FROM PYTHON SOURCE LINES 124-145
 
 .. code-block:: default
 
@@ -230,7 +229,7 @@ to ensure they were imported correctly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-171
+.. GENERATED FROM PYTHON SOURCE LINES 146-170
 
 Loss Functions
 --------------
@@ -257,7 +256,7 @@ loss and then returns the layer’s input. The computed loss is saved as a
 parameter of the module.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-186
+.. GENERATED FROM PYTHON SOURCE LINES 170-185
 
 .. code-block:: default
 
@@ -283,7 +282,7 @@ parameter of the module.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-193
+.. GENERATED FROM PYTHON SOURCE LINES 186-192
 
 .. Note::
    **Important detail**: although this module is named ``ContentLoss``, it
@@ -292,7 +291,7 @@ parameter of the module.
    to recompute/implement the gradient manually in the ``backward``
    method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-217
+.. GENERATED FROM PYTHON SOURCE LINES 194-216
 
 Style Loss
 ~~~~~~~~~~
@@ -317,7 +316,7 @@ gradient descent. Style features tend to be in the deeper layers of the
 network so this normalization step is crucial.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-232
+.. GENERATED FROM PYTHON SOURCE LINES 216-231
 
 .. code-block:: default
 
@@ -327,7 +326,7 @@ network so this normalization step is crucial.
         # b=number of feature maps
         # (c,d)=dimensions of a f. map (N=c*d)
 
-        features = input.view(a * b, c * d)  # resise F_XL into \hat F_XL
+        features = input.view(a * b, c * d)  # resize F_XL into \hat F_XL
 
         G = torch.mm(features, features.t())  # compute the gram product
 
@@ -343,14 +342,14 @@ network so this normalization step is crucial.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-237
+.. GENERATED FROM PYTHON SOURCE LINES 232-236
 
 Now the style loss module looks almost exactly like the content loss
 module. The style distance is also computed using the mean square
 error between :math:`G_{XL}` and :math:`G_{SL}`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 237-250
+.. GENERATED FROM PYTHON SOURCE LINES 236-249
 
 .. code-block:: default
 
@@ -374,12 +373,12 @@ error between :math:`G_{XL}` and :math:`G_{SL}`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-265
+.. GENERATED FROM PYTHON SOURCE LINES 250-264
 
 Importing the Model
 -------------------
 
-Now we need to import a pre-trained neural network. We will use a 19
+Now we need to import a pretrained neural network. We will use a 19
 layer VGG network like the one used in the paper.
 
 PyTorch’s implementation of VGG is a module divided into two child
@@ -391,12 +390,12 @@ different behavior during training than evaluation, so we must set the
 network to evaluation mode using ``.eval()``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-270
+.. GENERATED FROM PYTHON SOURCE LINES 264-269
 
 .. code-block:: default
 
 
-    cnn = models.vgg19(pretrained=True).features.to(device).eval()
+    cnn = models.vgg19(pretrained=True).features.eval()
 
 
 
@@ -408,132 +407,78 @@ network to evaluation mode using ``.eval()``.
 
  .. code-block:: none
 
-    /opt/conda/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning:
-
-    The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
-
-    /opt/conda/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning:
-
-    Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG19_Weights.IMAGENET1K_V1`. You can also use `weights=VGG19_Weights.DEFAULT` to get the most up-to-date weights.
-
     Downloading: "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/vgg19-dcbb9e9d.pth
 
+
       0%|          | 0.00/548M [00:00<?, ?B/s]
-      1%|          | 3.86M/548M [00:00<00:14, 40.4MB/s]
-      1%|1         | 7.77M/548M [00:00<00:13, 40.6MB/s]
-      3%|2         | 14.9M/548M [00:00<00:09, 56.0MB/s]
-      4%|3         | 20.2M/548M [00:00<00:10, 54.7MB/s]
-      5%|4         | 25.5M/548M [00:00<00:11, 47.4MB/s]
-      6%|5         | 30.3M/548M [00:00<00:11, 48.2MB/s]
-      6%|6         | 35.0M/548M [00:00<00:11, 47.4MB/s]
-      7%|7         | 39.6M/548M [00:00<00:12, 44.4MB/s]
-      8%|8         | 44.4M/548M [00:00<00:11, 45.5MB/s]
-      9%|9         | 50.0M/548M [00:01<00:10, 49.0MB/s]
-     10%|#         | 54.8M/548M [00:01<00:10, 49.1MB/s]
-     11%|#1        | 61.1M/548M [00:01<00:09, 53.4MB/s]
-     12%|#2        | 67.0M/548M [00:01<00:09, 56.0MB/s]
-     14%|#3        | 74.0M/548M [00:01<00:08, 61.0MB/s]
-     15%|#4        | 79.9M/548M [00:01<00:08, 61.2MB/s]
-     16%|#5        | 86.4M/548M [00:01<00:07, 63.2MB/s]
-     17%|#6        | 92.4M/548M [00:01<00:07, 62.7MB/s]
-     18%|#7        | 98.4M/548M [00:01<00:07, 60.6MB/s]
-     19%|#9        | 105M/548M [00:02<00:07, 62.8MB/s] 
-     20%|##        | 111M/548M [00:02<00:08, 52.6MB/s]
-     21%|##1       | 117M/548M [00:02<00:08, 51.2MB/s]
-     22%|##2       | 122M/548M [00:02<00:08, 52.2MB/s]
-     23%|##3       | 128M/548M [00:02<00:08, 54.1MB/s]
-     25%|##4       | 135M/548M [00:02<00:07, 58.2MB/s]
-     26%|##5       | 141M/548M [00:02<00:06, 61.3MB/s]
-     27%|##6       | 147M/548M [00:02<00:07, 58.2MB/s]
-     28%|##7       | 153M/548M [00:02<00:07, 56.3MB/s]
-     29%|##8       | 158M/548M [00:03<00:08, 46.7MB/s]
-     30%|###       | 165M/548M [00:03<00:07, 50.7MB/s]
-     31%|###       | 170M/548M [00:03<00:08, 46.5MB/s]
-     32%|###2      | 176M/548M [00:03<00:07, 52.7MB/s]
-     33%|###3      | 183M/548M [00:03<00:06, 57.2MB/s]
-     34%|###4      | 189M/548M [00:03<00:06, 57.4MB/s]
-     36%|###5      | 196M/548M [00:03<00:05, 62.6MB/s]
-     37%|###6      | 202M/548M [00:03<00:05, 60.5MB/s]
-     38%|###8      | 209M/548M [00:03<00:05, 61.5MB/s]
-     39%|###9      | 215M/548M [00:04<00:05, 63.1MB/s]
-     40%|####      | 221M/548M [00:04<00:05, 59.4MB/s]
-     42%|####1     | 228M/548M [00:04<00:05, 63.1MB/s]
-     43%|####2     | 234M/548M [00:04<00:06, 54.8MB/s]
-     44%|####3     | 240M/548M [00:04<00:06, 52.0MB/s]
-     45%|####4     | 246M/548M [00:04<00:05, 55.5MB/s]
-     46%|####5     | 252M/548M [00:04<00:05, 58.2MB/s]
-     47%|####7     | 258M/548M [00:04<00:05, 58.8MB/s]
-     48%|####8     | 265M/548M [00:04<00:04, 62.3MB/s]
-     49%|####9     | 271M/548M [00:05<00:04, 62.5MB/s]
-     50%|#####     | 277M/548M [00:05<00:04, 60.1MB/s]
-     52%|#####1    | 283M/548M [00:05<00:04, 61.9MB/s]
-     53%|#####2    | 289M/548M [00:05<00:04, 59.3MB/s]
-     54%|#####3    | 295M/548M [00:05<00:04, 57.1MB/s]
-     55%|#####4    | 301M/548M [00:05<00:04, 57.5MB/s]
-     56%|#####5    | 306M/548M [00:05<00:04, 56.7MB/s]
-     57%|#####6    | 312M/548M [00:05<00:04, 56.9MB/s]
-     58%|#####7    | 317M/548M [00:05<00:04, 57.4MB/s]
-     59%|#####9    | 323M/548M [00:06<00:03, 59.2MB/s]
-     60%|######    | 329M/548M [00:06<00:03, 60.3MB/s]
-     61%|######1   | 335M/548M [00:06<00:03, 58.9MB/s]
-     62%|######2   | 341M/548M [00:06<00:03, 54.5MB/s]
-     63%|######3   | 347M/548M [00:06<00:03, 54.7MB/s]
-     64%|######4   | 353M/548M [00:06<00:03, 57.8MB/s]
-     65%|######5   | 359M/548M [00:06<00:03, 55.9MB/s]
-     67%|######6   | 366M/548M [00:06<00:03, 59.7MB/s]
-     68%|######7   | 372M/548M [00:06<00:03, 60.5MB/s]
-     69%|######8   | 377M/548M [00:07<00:03, 59.5MB/s]
-     70%|######9   | 383M/548M [00:07<00:02, 58.4MB/s]
-     71%|#######   | 389M/548M [00:07<00:03, 54.4MB/s]
-     72%|#######1  | 394M/548M [00:07<00:02, 54.3MB/s]
-     73%|#######2  | 400M/548M [00:07<00:02, 55.9MB/s]
-     74%|#######4  | 406M/548M [00:07<00:02, 59.3MB/s]
-     75%|#######5  | 412M/548M [00:07<00:02, 59.7MB/s]
-     76%|#######6  | 418M/548M [00:07<00:02, 58.9MB/s]
-     77%|#######7  | 424M/548M [00:07<00:02, 53.4MB/s]
-     78%|#######8  | 430M/548M [00:08<00:02, 56.3MB/s]
-     79%|#######9  | 435M/548M [00:08<00:02, 52.8MB/s]
-     80%|########  | 440M/548M [00:08<00:02, 46.0MB/s]
-     81%|########1 | 446M/548M [00:08<00:02, 48.5MB/s]
-     82%|########2 | 451M/548M [00:08<00:02, 50.0MB/s]
-     83%|########3 | 456M/548M [00:08<00:02, 45.6MB/s]
-     84%|########4 | 462M/548M [00:08<00:01, 49.0MB/s]
-     85%|########5 | 467M/548M [00:08<00:01, 45.5MB/s]
-     86%|########6 | 473M/548M [00:08<00:01, 50.1MB/s]
-     87%|########7 | 479M/548M [00:09<00:01, 54.1MB/s]
-     88%|########8 | 484M/548M [00:09<00:01, 53.9MB/s]
-     89%|########9 | 490M/548M [00:09<00:01, 57.7MB/s]
-     91%|######### | 497M/548M [00:09<00:00, 59.6MB/s]
-     92%|#########1| 503M/548M [00:09<00:00, 62.7MB/s]
-     93%|#########2| 510M/548M [00:09<00:00, 63.5MB/s]
-     94%|#########4| 516M/548M [00:09<00:00, 58.1MB/s]
-     95%|#########5| 521M/548M [00:09<00:00, 55.3MB/s]
-     96%|#########6| 527M/548M [00:09<00:00, 56.5MB/s]
-     97%|#########7| 533M/548M [00:10<00:00, 56.4MB/s]
-     98%|#########8| 540M/548M [00:10<00:00, 61.3MB/s]
-    100%|#########9| 546M/548M [00:10<00:00, 61.3MB/s]
-    100%|##########| 548M/548M [00:10<00:00, 55.9MB/s]
+
+      4%|4         | 22.2M/548M [00:00<00:02, 232MB/s]
+
+      8%|8         | 45.5M/548M [00:00<00:02, 240MB/s]
+
+     13%|#2        | 69.2M/548M [00:00<00:02, 244MB/s]
+
+     17%|#6        | 92.4M/548M [00:00<00:01, 243MB/s]
+
+     21%|##1       | 116M/548M [00:00<00:01, 243MB/s] 
+
+     25%|##5       | 139M/548M [00:00<00:01, 244MB/s]
+
+     30%|##9       | 162M/548M [00:00<00:01, 244MB/s]
+
+     34%|###3      | 186M/548M [00:00<00:01, 245MB/s]
+
+     38%|###8      | 209M/548M [00:00<00:01, 245MB/s]
+
+     43%|####2     | 233M/548M [00:01<00:01, 246MB/s]
+
+     47%|####6     | 257M/548M [00:01<00:01, 247MB/s]
+
+     51%|#####1    | 280M/548M [00:01<00:01, 247MB/s]
+
+     55%|#####5    | 304M/548M [00:01<00:01, 247MB/s]
+
+     60%|#####9    | 327M/548M [00:01<00:00, 247MB/s]
+
+     64%|######4   | 351M/548M [00:01<00:00, 247MB/s]
+
+     68%|######8   | 375M/548M [00:01<00:00, 246MB/s]
+
+     73%|#######2  | 398M/548M [00:01<00:00, 247MB/s]
+
+     77%|#######6  | 422M/548M [00:01<00:00, 247MB/s]
+
+     81%|########1 | 445M/548M [00:01<00:00, 247MB/s]
+
+     86%|########5 | 469M/548M [00:02<00:00, 241MB/s]
+
+     90%|########9 | 492M/548M [00:02<00:00, 243MB/s]
+
+     94%|#########4| 516M/548M [00:02<00:00, 245MB/s]
+
+     98%|#########8| 540M/548M [00:02<00:00, 245MB/s]
+    100%|##########| 548M/548M [00:02<00:00, 245MB/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-275
+.. GENERATED FROM PYTHON SOURCE LINES 270-274
 
 Additionally, VGG networks are trained on images with each channel
 normalized by mean=[0.485, 0.456, 0.406] and std=[0.229, 0.224, 0.225].
 We will use them to normalize the image before sending it into the network.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-295
+.. GENERATED FROM PYTHON SOURCE LINES 274-294
 
 .. code-block:: default
 
 
-    cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-    cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+    cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406])
+    cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225])
 
     # create a module to normalize input image so we can easily put it in a
-    # nn.Sequential
+    # ``nn.Sequential``
     class Normalization(nn.Module):
         def __init__(self, mean, std):
             super(Normalization, self).__init__()
@@ -544,7 +489,7 @@ We will use them to normalize the image before sending it into the network.
             self.std = torch.tensor(std).view(-1, 1, 1)
 
         def forward(self, img):
-            # normalize img
+            # normalize ``img``
             return (img - self.mean) / self.std
 
 
@@ -555,17 +500,17 @@ We will use them to normalize the image before sending it into the network.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 296-303
+.. GENERATED FROM PYTHON SOURCE LINES 295-302
 
 A ``Sequential`` module contains an ordered list of child modules. For
-instance, ``vgg19.features`` contains a sequence (Conv2d, ReLU, MaxPool2d,
-Conv2d, ReLU…) aligned in the right order of depth. We need to add our
+instance, ``vgg19.features`` contains a sequence (``Conv2d``, ``ReLU``, ``MaxPool2d``,
+``Conv2d``, ``ReLU``…) aligned in the right order of depth. We need to add our
 content loss and style loss layers immediately after the convolution
 layer they are detecting. To do this we must create a new ``Sequential``
 module that has content loss and style loss modules correctly inserted.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 303-368
+.. GENERATED FROM PYTHON SOURCE LINES 302-367
 
 .. code-block:: default
 
@@ -579,14 +524,14 @@ module that has content loss and style loss modules correctly inserted.
                                    content_layers=content_layers_default,
                                    style_layers=style_layers_default):
         # normalization module
-        normalization = Normalization(normalization_mean, normalization_std).to(device)
+        normalization = Normalization(normalization_mean, normalization_std)
 
-        # just in order to have an iterable access to or list of content/syle
+        # just in order to have an iterable access to or list of content/style
         # losses
         content_losses = []
         style_losses = []
 
-        # assuming that cnn is a nn.Sequential, so we make a new nn.Sequential
+        # assuming that ``cnn`` is a ``nn.Sequential``, so we make a new ``nn.Sequential``
         # to put in modules that are supposed to be activated sequentially
         model = nn.Sequential(normalization)
 
@@ -597,8 +542,8 @@ module that has content loss and style loss modules correctly inserted.
                 name = 'conv_{}'.format(i)
             elif isinstance(layer, nn.ReLU):
                 name = 'relu_{}'.format(i)
-                # The in-place version doesn't play very nicely with the ContentLoss
-                # and StyleLoss we insert below. So we replace with out-of-place
+                # The in-place version doesn't play very nicely with the ``ContentLoss``
+                # and ``StyleLoss`` we insert below. So we replace with out-of-place
                 # ones here.
                 layer = nn.ReLU(inplace=False)
             elif isinstance(layer, nn.MaxPool2d):
@@ -641,20 +586,23 @@ module that has content loss and style loss modules correctly inserted.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 369-372
+.. GENERATED FROM PYTHON SOURCE LINES 368-371
 
 Next, we select the input image. You can use a copy of the content image
 or white noise.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-382
+.. GENERATED FROM PYTHON SOURCE LINES 371-384
 
 .. code-block:: default
 
 
     input_img = content_img.clone()
-    # if you want to use white noise instead uncomment the below line:
-    # input_img = torch.randn(content_img.data.size(), device=device)
+    # if you want to use white noise by using the following code:
+    #
+    # ::
+    #
+    #    input_img = torch.randn(content_img.data.size())
 
     # add the original input image to the figure:
     plt.figure()
@@ -673,19 +621,19 @@ or white noise.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 383-392
+.. GENERATED FROM PYTHON SOURCE LINES 385-394
 
 Gradient Descent
 ----------------
 
 As Leon Gatys, the author of the algorithm, suggested `here <https://discuss.pytorch.org/t/pytorch-tutorial-for-neural-transfert-of-artistic-style/336/20?u=alexis-jacq>`__, we will use
 L-BFGS algorithm to run our gradient descent. Unlike training a network,
-we want to train the input image in order to minimise the content/style
+we want to train the input image in order to minimize the content/style
 losses. We will create a PyTorch L-BFGS optimizer ``optim.LBFGS`` and pass
 our image to it as the tensor to optimize.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 392-399
+.. GENERATED FROM PYTHON SOURCE LINES 394-401
 
 .. code-block:: default
 
@@ -703,12 +651,12 @@ our image to it as the tensor to optimize.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 400-411
+.. GENERATED FROM PYTHON SOURCE LINES 402-413
 
 Finally, we must define a function that performs the neural transfer. For
 each iteration of the networks, it is fed an updated input and computes
 new losses. We will run the ``backward`` methods of each loss module to
-dynamicaly compute their gradients. The optimizer requires a “closure”
+dynamically compute their gradients. The optimizer requires a “closure”
 function, which reevaluates the module and returns the loss.
 
 We still have one final constraint to address. The network may try to
@@ -717,7 +665,7 @@ the image. We can address this by correcting the input values to be
 between 0 to 1 each time the network is run.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 411-470
+.. GENERATED FROM PYTHON SOURCE LINES 413-475
 
 .. code-block:: default
 
@@ -733,6 +681,9 @@ between 0 to 1 each time the network is run.
         # We want to optimize the input and not the model parameters so we
         # update all the requires_grad fields accordingly
         input_img.requires_grad_(True)
+        # We also put the model in evaluation mode, so that specific layers 
+        # such as dropout or batch normalization layers behave correctly. 
+        model.eval()
         model.requires_grad_(False)
 
         optimizer = get_input_optimizer(input_img)
@@ -787,12 +738,12 @@ between 0 to 1 each time the network is run.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 471-473
+.. GENERATED FROM PYTHON SOURCE LINES 476-478
 
 Finally, we can run the algorithm.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 473-484
+.. GENERATED FROM PYTHON SOURCE LINES 478-489
 
 .. code-block:: default
 
@@ -821,32 +772,24 @@ Finally, we can run the algorithm.
  .. code-block:: none
 
     Building the style transfer model..
-    /var/lib/jenkins/workspace/advanced_source/neural_style_tutorial.py:287: UserWarning:
-
-    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
-
-    /var/lib/jenkins/workspace/advanced_source/neural_style_tutorial.py:288: UserWarning:
-
-    To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
-
     Optimizing..
     run [50]:
-    Style Loss : 3.925124 Content Loss: 4.099094
+    Style Loss : 4.171039 Content Loss: 4.173039
 
     run [100]:
-    Style Loss : 1.114960 Content Loss: 2.996370
+    Style Loss : 1.143260 Content Loss: 3.032521
 
     run [150]:
-    Style Loss : 0.696528 Content Loss: 2.638656
+    Style Loss : 0.712268 Content Loss: 2.646801
 
     run [200]:
-    Style Loss : 0.472688 Content Loss: 2.487325
+    Style Loss : 0.476083 Content Loss: 2.489204
 
     run [250]:
-    Style Loss : 0.343590 Content Loss: 2.400472
+    Style Loss : 0.346815 Content Loss: 2.401730
 
     run [300]:
-    Style Loss : 0.261742 Content Loss: 2.348437
+    Style Loss : 0.261949 Content Loss: 2.348955
 
 
 
@@ -855,7 +798,7 @@ Finally, we can run the algorithm.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  45.028 seconds)
+   **Total running time of the script:** ( 0 minutes  36.431 seconds)
 
 
 .. _sphx_glr_download_advanced_neural_style_tutorial.py:

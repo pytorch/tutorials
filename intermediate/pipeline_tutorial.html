@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Training Transformer models using Pipeline Parallelism — PyTorch Tutorials 2.0.0+cu117 documentation</title>
+<title>Training Transformer models using Pipeline Parallelism — PyTorch Tutorials 2.0.1+cu117 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -25,16 +25,13 @@
 <link href="../search.html" rel="search" title="Search"/>
 <link href="../advanced/ddp_pipeline.html" rel="next" title="Training Transformer models using Distributed Data Parallel and Pipeline Parallelism"/>
 <link href="../advanced/rpc_ddp_tutorial.html" rel="prev" title="Combining Distributed DataParallel with Distributed RPC Framework"/>
-<!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-<!-- End Google Analytics -->
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -183,7 +180,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -258,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -317,7 +315,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -400,6 +398,9 @@
 <div class="call-to-action-mobile-view">GitHub</div>
 </div>
 </div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
@@ -435,7 +436,7 @@ itself consists of <code class="docutils literal notranslate"><span class="pre">
 As a result, our focus is on <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> and we split the model
 such that half of the <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoderLayer</span></code> are on one GPU and the
 other half are on another. To do this, we pull out the <code class="docutils literal notranslate"><span class="pre">Encoder</span></code> and
-<code class="docutils literal notranslate"><span class="pre">Decoder</span></code> sections into seperate modules and then build an nn.Sequential
+<code class="docutils literal notranslate"><span class="pre">Decoder</span></code> sections into separate modules and then build an <code class="docutils literal notranslate"><span class="pre">nn.Sequential</span></code>
 representing the original Transformer module.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">math</span>
@@ -532,9 +533,7 @@ length 6:</p>
 \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &amp;
 \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &amp;
 \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-\end{bmatrix}
-
-\]</div>
+\end{bmatrix}\]</div>
 <p>These columns are treated as independent by the model, which means that
 the dependence of <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> can not be learned, but allows more
 efficient batch processing.</p>
@@ -560,11 +559,11 @@ efficient batch processing.</p>
 <span class="n">device</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">batchify</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bsz</span><span class="p">):</span>
-    <span class="c1"># Divide the dataset into bsz parts.</span>
+    <span class="c1"># Divide the dataset into ``bsz`` parts.</span>
     <span class="n">nbatch</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">bsz</span>
     <span class="c1"># Trim off any extra elements that wouldn't cleanly fit (remainders).</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbatch</span> <span class="o">*</span> <span class="n">bsz</span><span class="p">)</span>
-    <span class="c1"># Evenly divide the data across the bsz batches.</span>
+    <span class="c1"># Evenly divide the data across the ``bsz` batches.</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
@@ -620,9 +619,9 @@ cross-partition overheads.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torchtext-vocab sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/text/stable/vocab.html#torchtext.vocab.Vocab" title="torchtext.vocab.Vocab"><span class="n">vocab</span></a><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
 <span class="n">emsize</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># embedding dimension</span>
-<span class="n">nhid</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># the dimension of the feedforward network model in nn.TransformerEncoder</span>
-<span class="n">nlayers</span> <span class="o">=</span> <span class="mi">12</span> <span class="c1"># the number of nn.TransformerEncoderLayer in nn.TransformerEncoder</span>
-<span class="n">nhead</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># the number of heads in the multiheadattention models</span>
+<span class="n">nhid</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># the dimension of the feedforward network model in ``nn.TransformerEncoder``</span>
+<span class="n">nlayers</span> <span class="o">=</span> <span class="mi">12</span> <span class="c1"># the number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``</span>
+<span class="n">nhead</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># the number of heads in the Multihead Attention models</span>
 <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="c1"># the dropout value</span>
 
 <span class="kn">from</span> <span class="nn">torch.distributed</span> <span class="kn">import</span> <span class="n">rpc</span>
@@ -779,26 +778,26 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 
 To get the last learning rate computed by the scheduler, please use `get_last_lr()`.
 
-| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 1798.01 | loss 41.59 | ppl 1160018970593073152.00
-| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 1675.30 | loss 42.57 | ppl 3063852650308443648.00
-| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 1617.61 | loss 44.36 | ppl 18351649666037594112.00
-| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 1597.50 | loss 41.87 | ppl 1526955311399730432.00
+| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2966.96 | loss 51.60 | ppl 25691483545748465778688.00
+| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2668.38 | loss 44.21 | ppl 15838827084261371904.00
+| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2670.50 | loss 43.87 | ppl 11235333300557459456.00
+| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2679.45 | loss 34.66 | ppl 1126582476438232.25
 -----------------------------------------------------------------------------------------
-| end of epoch   1 | time: 90.95s | valid loss  0.73 | valid ppl     2.08
+| end of epoch   1 | time: 152.27s | valid loss  1.02 | valid ppl     2.78
 -----------------------------------------------------------------------------------------
-| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 1783.42 | loss 36.30 | ppl 5806791883305976.00
-| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 1621.16 | loss 29.18 | ppl 4727380487443.61
-| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 1616.44 | loss 30.54 | ppl 18408161303782.02
-| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 1610.89 | loss 23.88 | ppl 23386861238.05
+| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2943.46 | loss 37.13 | ppl 13322318746481938.00
+| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2679.54 | loss 27.15 | ppl 619717356867.28
+| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2674.52 | loss 25.96 | ppl 187377465814.04
+| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2673.67 | loss 25.50 | ppl 118619452180.45
 -----------------------------------------------------------------------------------------
-| end of epoch   2 | time: 90.68s | valid loss  0.33 | valid ppl     1.39
+| end of epoch   2 | time: 152.11s | valid loss  0.29 | valid ppl     1.33
 -----------------------------------------------------------------------------------------
-| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 1780.87 | loss 13.31 | ppl 601384.49
-| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 1622.00 | loss 12.37 | ppl 236298.13
-| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 1622.81 | loss  9.96 | ppl 21246.47
-| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 1621.25 | loss 10.50 | ppl 36256.99
+| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2941.69 | loss 12.95 | ppl 420558.36
+| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2672.08 | loss 11.72 | ppl 123500.08
+| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2678.78 | loss 10.52 | ppl 37106.62
+| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2672.90 | loss 10.86 | ppl 51860.06
 -----------------------------------------------------------------------------------------
-| end of epoch   3 | time: 90.84s | valid loss  0.22 | valid ppl     1.25
+| end of epoch   3 | time: 152.04s | valid loss  0.21 | valid ppl     1.23
 -----------------------------------------------------------------------------------------
 </pre></div>
 </div>
@@ -814,11 +813,11 @@ To get the last learning rate computed by the scheduler, please use `get_last_lr
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
-| End of training | test loss  0.20 | test ppl     1.22
+| End of training | test loss  0.19 | test ppl     1.20
 =========================================================================================
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  7.785 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 8 minutes  17.034 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pipeline-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b4afbcfb1c1ac5f5cd7da108c2236f09/pipeline_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pipeline_tutorial.py</span></code></a></p>

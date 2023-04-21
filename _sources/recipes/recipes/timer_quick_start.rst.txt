@@ -28,22 +28,21 @@ API, with several PyTorch specific modifications. Familiarity with the
 builtin `Timer` class is not required for this tutorial, however we assume
 that the reader is familiar with the fundamentals of performance work.
 
-A more comprehensive performace tuning tutorial is available at:
-
-    https://pytorch.org/tutorials/recipes/recipes/benchmark.html
+For a more comprehensive performance tuning tutorial, see
+`PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`__.
 
 
 **Contents:**
     1. `Defining a Timer <#defining-a-timer>`__
-    2. `Wall time: \`Timer.blocked_autorange(...)\` <#wall-time-timer-blocked-autorange>`__
+    2. `Wall time: Timer.blocked_autorange(...) <#wall-time-timer-blocked-autorange>`__
     3. `C++ snippets <#c-snippets>`__
-    4. `Instruction counts: \`Timer.collect_callgrind(...)\` <#instruction-counts-timer-collect-callgrind>`__
+    4. `Instruction counts: Timer.collect_callgrind(...) <#instruction-counts-timer-collect-callgrind>`__
     5. `Instruction counts: Delving deeper <#instruction-counts-delving-deeper>`__
     6. `A/B testing with Callgrind <#a-b-testing-with-callgrind>`__
     7. `Wrapping up <#wrapping-up>`__
     8. `Footnotes <#footnotes>`__
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-35
+.. GENERATED FROM PYTHON SOURCE LINES 29-34
 
 1. Defining a Timer
 ~~~~~~~~~~~~~~~~~~~
@@ -51,7 +50,7 @@ A more comprehensive performace tuning tutorial is available at:
 A `Timer` serves as a task definition.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-60
+.. GENERATED FROM PYTHON SOURCE LINES 34-61
 
 .. code-block:: default
 
@@ -69,29 +68,31 @@ A `Timer` serves as a task definition.
             y = torch.ones((128,))
         """,
 
-        # Alternately, `globals` can be used to pass variables from the outer scope.
+        # Alternatively, ``globals`` can be used to pass variables from the outer scope.
         # -------------------------------------------------------------------------
-        # globals={
-        #     "x": torch.ones((128,)),
-        #     "y": torch.ones((128,)),
-        # },
+        # ::
+        #
+        #    globals={
+        #        "x": torch.ones((128,)),
+        #        "y": torch.ones((128,)),
+        #    },
 
         # Control the number of threads that PyTorch uses. (Default: 1)
         num_threads=1,
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-68
+.. GENERATED FROM PYTHON SOURCE LINES 62-69
 
-2. Wall time: `Timer.blocked_autorange(...)`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Wall time: ``Timer.blocked_autorange(...)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This method will handle details such as picking a suitable number if repeats,
 fixing the number of threads, and providing a convenient representation of
 the results.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-76
+.. GENERATED FROM PYTHON SOURCE LINES 69-77
 
 .. code-block:: default
 
@@ -104,7 +105,7 @@ the results.
     print(m)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-90
+.. GENERATED FROM PYTHON SOURCE LINES 78-91
 
 .. code-block:: none
    :caption: **Snippet wall time.**
@@ -120,13 +121,13 @@ the results.
           424 measurements, 1000 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-95
+.. GENERATED FROM PYTHON SOURCE LINES 93-96
 
 3. C++ snippets
 ~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-109
+.. GENERATED FROM PYTHON SOURCE LINES 96-110
 
 .. code-block:: default
 
@@ -145,7 +146,7 @@ the results.
     print(cpp_timer.blocked_autorange(min_run_time=1))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-123
+.. GENERATED FROM PYTHON SOURCE LINES 111-124
 
 .. code-block:: none
    :caption: **C++ snippet wall time.**
@@ -161,24 +162,24 @@ the results.
           83 measurements, 10000 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-127
+.. GENERATED FROM PYTHON SOURCE LINES 126-128
 
 Unsurprisingly, the C++ snippet is both faster and has lower variation.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-138
+.. GENERATED FROM PYTHON SOURCE LINES 130-139
 
-4. Instruction counts: `Timer.collect_callgrind(...)`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Instruction counts: ``Timer.collect_callgrind(...)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For deep dive investigations, `Timer.collect_callgrind` wraps
-`Callgrind <https://valgrind.org/docs/manual/cl-manual.html>` in order to
+For deep dive investigations, ``Timer.collect_callgrind`` wraps
+`Callgrind <https://valgrind.org/docs/manual/cl-manual.html>`__ in order to
 collect instruction counts. These are useful as they offer fine grained and
 deterministic (or very low noise in the case of Python) insights into how a
 snippet is run.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-144
+.. GENERATED FROM PYTHON SOURCE LINES 139-145
 
 .. code-block:: default
 
@@ -189,7 +190,7 @@ snippet is run.
     print(stats)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-159
+.. GENERATED FROM PYTHON SOURCE LINES 146-160
 
 .. code-block:: none
    :caption: **C++ Callgrind stats (summary)**
@@ -206,18 +207,18 @@ snippet is run.
         100 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-189
+.. GENERATED FROM PYTHON SOURCE LINES 162-194
 
 5. Instruction counts: Delving deeper
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The string representation of CallgrindStats is similar to that of
+The string representation of ``CallgrindStats`` is similar to that of
 Measurement. `Noisy symbols` are a Python concept (removing calls in the
 CPython interpreter which are known to be noisy).
 
 For more detailed analysis, however, we will want to look at specific calls.
-`CallgrindStats.stats()` returns a FunctionCounts object to make this easier.
-Conceptually, FunctionCounts can be thought of as a tuple of pairs with some
+``CallgrindStats.stats()`` returns a ``FunctionCounts`` object to make this easier.
+Conceptually, ``FunctionCounts`` can be thought of as a tuple of pairs with some
 utility methods, where each pair is `(number of instructions, file path and
 function name)`.
 
@@ -225,19 +226,23 @@ A note on paths:
   One generally doesn't care about absolute path. For instance, the full path
   and function name for a multiply call is something like:
 
-      /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
+::
+
+   /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
 
   when in reality, all of the information that we're interested in can be
   represented in:
 
-      build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
+::
 
-  CallgrindStats.as_standardized() makes a best effort to strip low signal
+   build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
+
+  ``CallgrindStats.as_standardized()`` makes a best effort to strip low signal
   portions of the file path, as well as the shared object and is generally
   recommended.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 189-193
+.. GENERATED FROM PYTHON SOURCE LINES 194-198
 
 .. code-block:: default
 
@@ -246,7 +251,7 @@ A note on paths:
     print(inclusive_stats[:10])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-211
+.. GENERATED FROM PYTHON SOURCE LINES 199-216
 
 .. code-block:: none
    :caption: **C++ Callgrind stats (detailed)**
@@ -266,7 +271,7 @@ A note on paths:
         Total: 173472
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-218
+.. GENERATED FROM PYTHON SOURCE LINES 218-223
 
 That's still quite a lot to digest. Let's use the `FunctionCounts.transform`
 method to trim some of the function path, and discard the function called.
@@ -274,7 +279,7 @@ When we do, the counts of any collisions (e.g. `foo.h:a()` and `foo.h:b()`
 will both map to `foo.h`) will be added together.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-234
+.. GENERATED FROM PYTHON SOURCE LINES 223-239
 
 .. code-block:: default
 
@@ -295,7 +300,7 @@ will both map to `foo.h`) will be added together.
     print(inclusive_stats.transform(group_by_file)[:10])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-252
+.. GENERATED FROM PYTHON SOURCE LINES 240-257
 
 .. code-block:: none
    :caption: **Callgrind stats (condensed)**
@@ -315,10 +320,10 @@ will both map to `foo.h`) will be added together.
         Total: 352327
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-266
+.. GENERATED FROM PYTHON SOURCE LINES 259-271
 
-6. A/B testing with Callgrind
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+6. A/B testing with ``Callgrind``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One of the most useful features of instruction counts is they allow fine
 grained comparison of computation, which is critical when analyzing
@@ -330,7 +335,7 @@ Tensor:
   result = {a0 * b0, a1 * b0, ..., a127 * b0}
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-276
+.. GENERATED FROM PYTHON SOURCE LINES 271-281
 
 .. code-block:: default
 
@@ -345,15 +350,15 @@ Tensor:
     ).collect_callgrind().as_standardized().stats(inclusive=False)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 277-282
+.. GENERATED FROM PYTHON SOURCE LINES 282-287
 
 Often we want to A/B test two different environments. (e.g. testing a PR, or
-experimenting with compile flags.) This is quite simple, as CallgrindStats,
-FunctionCounts, and Measurement are all pickleable. Simply save measurements
+experimenting with compile flags.) This is quite simple, as ``CallgrindStats``,
+``FunctionCounts``, and Measurement are all pickleable. Simply save measurements
 from each environment, and load them in a single process for analysis.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-301
+.. GENERATED FROM PYTHON SOURCE LINES 287-306
 
 .. code-block:: default
 
@@ -377,7 +382,7 @@ from each environment, and load them in a single process for analysis.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 302-328
+.. GENERATED FROM PYTHON SOURCE LINES 307-333
 
 .. code-block:: none
    :caption: **Instruction count delta**
@@ -406,15 +411,15 @@ from each environment, and load them in a single process for analysis.
         Total: 58091
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 330-335
+.. GENERATED FROM PYTHON SOURCE LINES 335-340
 
 So the broadcasting version takes an extra 580 instructions per call (recall
 that we're collecting 100 runs per sample), or about 10%. There are quite a
-few TensorIterator calls, so lets drill down to those. FunctionCounts.filter
+few ``TensorIterator`` calls, so lets drill down to those. ``FunctionCounts.filter``
 makes this easy.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-338
+.. GENERATED FROM PYTHON SOURCE LINES 340-343
 
 .. code-block:: default
 
@@ -422,7 +427,7 @@ makes this easy.
     print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-357
+.. GENERATED FROM PYTHON SOURCE LINES 344-362
 
 .. code-block:: none
    :caption: **Instruction count delta (filter)**
@@ -443,16 +448,16 @@ makes this easy.
         Total: 24000
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 359-365
+.. GENERATED FROM PYTHON SOURCE LINES 364-370
 
-This makes plain what is going on: there is a fast path in TensorIterator
+This makes plain what is going on: there is a fast path in ``TensorIterator``
 setup, but in the {128} x {1} case we miss it and have to do a more general
 analysis which is more expensive. The most prominent call omitted by the
 filter is `c10::SmallVectorImpl<long>::operator=(...)`, which is also part
 of the more general setup.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 367-378
+.. GENERATED FROM PYTHON SOURCE LINES 372-383
 
 7. Wrapping up
 ~~~~~~~~~~~~~~
@@ -466,22 +471,22 @@ instruction counts and `FunctionCounts.(__add__ / __sub__ / transform / filter)`
 to slice-and-dice them.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-395
+.. GENERATED FROM PYTHON SOURCE LINES 385-400
 
 8. Footnotes
 ~~~~~~~~~~~~
 
-  - Implied `import torch`
+  - Implied ``import torch``
       If `globals` does not contain "torch", Timer will automatically
-      populate it. This means that `Timer("torch.empty(())")` will work.
+      populate it. This means that ``Timer("torch.empty(())")`` will work.
       (Though other imports should be placed in `setup`,
-      e.g. `Timer("np.zeros(())", "import numpy as np")`)
+      e.g. ``Timer("np.zeros(())", "import numpy as np")``)
 
-  - REL_WITH_DEB_INFO
+  - ``REL_WITH_DEB_INFO``
       In order to provide full information about the PyTorch internals which
-      are executed, Callgrind needs access to C++ debug symbols. This is
-      accomplished by setting REL_WITH_DEB_INFO=1 when building PyTorch.
-      Otherwise function calls will be opaque. (The resultant CallgrindStats
+      are executed, ``Callgrind`` needs access to C++ debug symbols. This is
+      accomplished by setting ``REL_WITH_DEB_INFO=1`` when building PyTorch.
+      Otherwise function calls will be opaque. (The resultant ``CallgrindStats``
       will warn if debug symbols are missing.)
 
 

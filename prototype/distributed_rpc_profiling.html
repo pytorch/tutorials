@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Profiling PyTorch RPC-Based Workloads &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>Profiling PyTorch RPC-Based Workloads &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -41,18 +41,13 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -230,7 +225,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -323,6 +318,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -382,7 +378,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -507,6 +503,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -515,286 +515,9 @@
               
   <div class="section" id="profiling-pytorch-rpc-based-workloads">
 <h1>Profiling PyTorch RPC-Based Workloads<a class="headerlink" href="#profiling-pytorch-rpc-based-workloads" title="Permalink to this heading">¶</a></h1>
-<p>In this recipe, you will learn:</p>
-<ul class="simple">
-<li><p>An overview of the <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">Distributed RPC Framework</a></p></li>
-<li><p>An overview of the <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#profiler">PyTorch Profiler</a></p></li>
-<li><p>How to use the profiler to profile RPC-based workloads</p></li>
-</ul>
-<div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>PyTorch 1.6</p></li>
-</ul>
-<p>The instructions for installing PyTorch are
-available at <a class="reference external" href="https://pytorch.org/">pytorch.org</a>.</p>
-</div>
-<div class="section" id="what-is-the-distributed-rpc-framework">
-<h2>What is the Distributed RPC Framework?<a class="headerlink" href="#what-is-the-distributed-rpc-framework" title="Permalink to this heading">¶</a></h2>
-<p>The <strong>Distributed RPC Framework</strong> provides mechanisms for multi-machine model
-training through a set of primitives to allow for remote communication, and a
-higher-level API to automatically differentiate models split across several machines.
-For this recipe, it would be helpful to be familiar with the <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">Distributed RPC Framework</a>
-as well as the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/rpc_tutorial.html">RPC Tutorials</a>.</p>
-</div>
-<div class="section" id="what-is-the-pytorch-profiler">
-<h2>What is the PyTorch Profiler?<a class="headerlink" href="#what-is-the-pytorch-profiler" title="Permalink to this heading">¶</a></h2>
-<p>The profiler is a context manager based API that allows for on-demand profiling of
-operators in a model’s workload. The profiler can be used to analyze various aspects
-of a model including execution time, operators invoked, and memory consumption. For a
-detailed tutorial on using the profiler to profile a single-node model, please see the
-<a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/profiler.html">Profiler Recipe</a>.</p>
-</div>
-<div class="section" id="how-to-use-the-profiler-for-rpc-based-workloads">
-<h2>How to use the Profiler for RPC-based workloads<a class="headerlink" href="#how-to-use-the-profiler-for-rpc-based-workloads" title="Permalink to this heading">¶</a></h2>
-<p>The profiler supports profiling of calls made of RPC and allows the user to have a
-detailed view into the operations that take place on different nodes. To demonstrate an
-example of this, let’s first set up the RPC framework. The below code snippet will initialize
-two RPC workers on the same host, named <code class="docutils literal notranslate"><span class="pre">worker0</span></code> and <code class="docutils literal notranslate"><span class="pre">worker1</span></code> respectively. The workers will
-be spawned as subprocesses, and we set some environment variables required for proper
-initialization.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.distributed.rpc</span> <span class="k">as</span> <span class="nn">rpc</span>
-<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
-<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">random_tensor</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_ADDR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_PORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;29500&quot;</span>
-    <span class="n">worker_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">&quot;</span>
-
-    <span class="c1"># Initialize RPC framework.</span>
-    <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">worker_name</span><span class="p">,</span>
-        <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-        <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span>
-    <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">worker_name</span><span class="si">}</span><span class="s2"> successfully initialized RPC.&quot;</span><span class="p">)</span>
-
-    <span class="k">pass</span> <span class="c1"># to be continued below</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2"> waiting for workers and shutting down RPC&quot;</span><span class="p">)</span>
-    <span class="n">rpc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2"> shutdown RPC&quot;</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1"># Run 2 RPC workers.</span>
-    <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,),</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Running the above program should present you with the following output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">worker1</span> <span class="n">successfully</span> <span class="n">initialized</span> <span class="n">RPC</span><span class="o">.</span>
-<span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">worker0</span> <span class="n">successfully</span> <span class="n">initialized</span> <span class="n">RPC</span><span class="o">.</span>
-<span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">Rank</span> <span class="mi">0</span> <span class="n">waiting</span> <span class="k">for</span> <span class="n">workers</span> <span class="ow">and</span> <span class="n">shutting</span> <span class="n">down</span> <span class="n">RPC</span>
-<span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">Rank</span> <span class="mi">1</span> <span class="n">waiting</span> <span class="k">for</span> <span class="n">workers</span> <span class="ow">and</span> <span class="n">shutting</span> <span class="n">down</span> <span class="n">RPC</span>
-<span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">Rank</span> <span class="mi">1</span> <span class="n">shutdown</span> <span class="n">RPC</span>
-<span class="n">DEBUG</span><span class="p">:</span><span class="n">root</span><span class="p">:</span><span class="n">Rank</span> <span class="mi">0</span> <span class="n">shutdown</span> <span class="n">RPC</span>
-</pre></div>
-</div>
-<p>Now that we have a skeleton setup of our RPC framework, we can move on to
-sending RPCs back and forth and using the profiler to obtain a view of what’s
-happening under the hood. Let’s add to the above <code class="docutils literal notranslate"><span class="pre">worker</span></code> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="c1"># Above code omitted...</span>
-    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">dst_worker_rank</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">world_size</span>
-        <span class="n">dst_worker_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">dst_worker_rank</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">random_tensor</span><span class="p">(),</span> <span class="n">random_tensor</span><span class="p">()</span>
-        <span class="c1"># Send and wait RPC completion under profiling scope.</span>
-        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-            <span class="n">fut1</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">))</span>
-            <span class="n">fut2</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">))</span>
-            <span class="c1"># RPCs must be awaited within profiling scope.</span>
-            <span class="n">fut1</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-            <span class="n">fut2</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>The aformented code creates 2 RPCs, specifying <code class="docutils literal notranslate"><span class="pre">torch.add</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.mul</span></code>, respectively,
-to be run with two random input tensors on worker 1. Since we use the <code class="docutils literal notranslate"><span class="pre">rpc_async</span></code> API,
-we are returned a <code class="docutils literal notranslate"><span class="pre">torch.futures.Future</span></code> object, which must be awaited for the result
-of the computation. Note that this wait must take place within the scope created by
-the profiling context manager in order for the RPC to be accurately profiled. Running
-the code with this new worker function should result in the following output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some columns are omitted for brevity, exact output subject to randomness</span>
-<span class="o">----------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-<span class="n">Name</span>                                                              <span class="n">Self</span> <span class="n">CPU</span> <span class="n">total</span> <span class="o">%</span>  <span class="n">Self</span> <span class="n">CPU</span> <span class="n">total</span>   <span class="n">CPU</span> <span class="n">total</span> <span class="o">%</span>      <span class="n">CPU</span> <span class="n">total</span>        <span class="n">CPU</span> <span class="n">time</span> <span class="n">avg</span>     <span class="n">Number</span> <span class="n">of</span> <span class="n">Calls</span>  <span class="n">Node</span> <span class="n">ID</span>
-<span class="o">----------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-<span class="n">rpc_async</span><span class="c1">#aten::add(worker0 -&gt; worker1)                           0.00%            0.000us          0                20.462ms         20.462ms         1                0</span>
-<span class="n">rpc_async</span><span class="c1">#aten::mul(worker0 -&gt; worker1)                           0.00%            0.000us          0                5.712ms          5.712ms          1                0</span>
-<span class="n">rpc_async</span><span class="c1">#aten::mul(worker0 -&gt; worker1)#remote_op: mul            1.84%            206.864us        2.69%            302.162us        151.081us        2                1</span>
-<span class="n">rpc_async</span><span class="c1">#aten::add(worker0 -&gt; worker1)#remote_op: add            1.41%            158.501us        1.57%            176.924us        176.924us        1                1</span>
-<span class="n">rpc_async</span><span class="c1">#aten::mul(worker0 -&gt; worker1)#remote_op: output_nr      0.04%            4.980us          0.04%            4.980us          2.490us          2                1</span>
-<span class="n">rpc_async</span><span class="c1">#aten::mul(worker0 -&gt; worker1)#remote_op: is_leaf        0.07%            7.806us          0.07%            7.806us          1.952us          4                1</span>
-<span class="n">rpc_async</span><span class="c1">#aten::add(worker0 -&gt; worker1)#remote_op: empty          0.16%            18.423us         0.16%            18.423us         18.423us         1                1</span>
-<span class="n">rpc_async</span><span class="c1">#aten::mul(worker0 -&gt; worker1)#remote_op: empty          0.14%            15.712us         0.14%            15.712us         15.712us         1                1</span>
-<span class="o">----------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-<span class="n">Self</span> <span class="n">CPU</span> <span class="n">time</span> <span class="n">total</span><span class="p">:</span> <span class="mf">11.237</span><span class="n">ms</span>
-</pre></div>
-</div>
-<p>Here we can see that the profiler has profiled our <code class="docutils literal notranslate"><span class="pre">rpc_async</span></code> calls made to <code class="docutils literal notranslate"><span class="pre">worker1</span></code>
-from <code class="docutils literal notranslate"><span class="pre">worker0</span></code>. In particular, the first 2 entries in the table show details (such as
-the operator name, originating worker, and destination worker) about each RPC call made
-and the <code class="docutils literal notranslate"><span class="pre">CPU</span> <span class="pre">total</span></code> column indicates the end-to-end latency of the RPC call.</p>
-<p>We also have visibility into the actual operators invoked remotely on worker 1 due RPC.
-We can see operations that took place on <code class="docutils literal notranslate"><span class="pre">worker1</span></code> by checking the <code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">ID</span></code> column. For
-example, we can interpret the row with name <code class="docutils literal notranslate"><span class="pre">rpc_async#aten::mul(worker0</span> <span class="pre">-&gt;</span> <span class="pre">worker1)#remote_op:</span> <span class="pre">mul</span></code>
-as a <code class="docutils literal notranslate"><span class="pre">mul</span></code> operation taking place on the remote node, as a result of the RPC sent to <code class="docutils literal notranslate"><span class="pre">worker1</span></code>
-from <code class="docutils literal notranslate"><span class="pre">worker0</span></code>, specifying <code class="docutils literal notranslate"><span class="pre">worker1</span></code> to run the builtin <code class="docutils literal notranslate"><span class="pre">mul</span></code> operator on the input tensors.
-Note that names of remote operations are prefixed with the name of the RPC event that resulted
-in them. For example, remote operations corresponding to the <code class="docutils literal notranslate"><span class="pre">rpc.rpc_async(dst_worker_name,</span> <span class="pre">torch.add,</span> <span class="pre">args=(t1,</span> <span class="pre">t2))</span></code>
-call are prefixed with <code class="docutils literal notranslate"><span class="pre">rpc_async#aten::mul(worker0</span> <span class="pre">-&gt;</span> <span class="pre">worker1)</span></code>.</p>
-<p>We can also use the profiler gain insight into user-defined functions that are executed over RPC.
-For example, let’s add the following to the above <code class="docutils literal notranslate"><span class="pre">worker</span></code> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define somewhere outside of worker() func.</span>
-<span class="k">def</span> <span class="nf">udf_with_ops</span><span class="p">():</span>
-    <span class="kn">import</span> <span class="nn">time</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">random_tensor</span><span class="p">(),</span> <span class="n">random_tensor</span><span class="p">()</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="c1"># Above code omitted</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
-        <span class="n">fut</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">udf_with_ops</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">())</span>
-        <span class="n">fut</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>The above code creates a user-defined function that sleeps for 1 second, and then executes various
-operators. Similar to what we’ve done above, we send an RPC to the remote worker, specifying it to
-run our user-defined function. Running this code should result in the following output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Exact output subject to randomness</span>
-<span class="o">--------------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-<span class="n">Name</span>                                                                  <span class="n">Self</span> <span class="n">CPU</span> <span class="n">total</span> <span class="o">%</span>  <span class="n">Self</span> <span class="n">CPU</span> <span class="n">total</span>   <span class="n">CPU</span> <span class="n">total</span> <span class="o">%</span>      <span class="n">CPU</span> <span class="n">total</span>        <span class="n">CPU</span> <span class="n">time</span> <span class="n">avg</span>     <span class="n">Number</span> <span class="n">of</span> <span class="n">Calls</span>  <span class="n">Node</span> <span class="n">ID</span>
-<span class="o">--------------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)                            0.00%            0.000us          0                1.008s           1.008s           1                0</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: rand            12.58%           80.037us         47.09%           299.589us        149.795us        2                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: empty           15.40%           98.013us         15.40%           98.013us         24.503us         4                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: uniform_        22.85%           145.358us        23.87%           151.870us        75.935us         2                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: is_complex      1.02%            6.512us          1.02%            6.512us          3.256us          2                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: add             25.80%           164.179us        28.43%           180.867us        180.867us        1                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: mul             20.48%           130.293us        31.43%           199.949us        99.975us         2                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: output_nr       0.71%            4.506us          0.71%            4.506us          2.253us          2                1</span>
-<span class="n">rpc_async</span><span class="c1">#udf_with_ops(worker0 -&gt; worker1)#remote_op: is_leaf         1.16%            7.367us          1.16%            7.367us          1.842us          4                1</span>
-<span class="o">--------------------------------------------------------------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>  <span class="o">---------------</span>
-</pre></div>
-</div>
-<p>Here we can see that the user-defined function has successfully been profiled with its name
-<code class="docutils literal notranslate"><span class="pre">(rpc_async#udf_with_ops(worker0</span> <span class="pre">-&gt;</span> <span class="pre">worker1))</span></code>, and has the CPU total time we would roughly expect
-(slightly greater than 1s given the <code class="docutils literal notranslate"><span class="pre">sleep</span></code>). Similar to the above profiling output, we can see the
-remote operators that have been executed on worker 1 as part of executing this RPC request.</p>
-<p>Lastly, we can visualize remote execution using the tracing functionality provided by the profiler.
-Let’s add the following code to the above <code class="docutils literal notranslate"><span class="pre">worker</span></code> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="c1"># Above code omitted</span>
-    <span class="c1"># Will generated trace for above profiling output</span>
-    <span class="n">trace_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/trace.json&quot;</span>
-    <span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="n">trace_file</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote trace to </span><span class="si">{</span><span class="n">trace_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Now, we can load the trace file in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code>). We should see output similar to
-the following:</p>
-<a class="reference internal image-reference" href="../_images/rpc_trace_img.png"><img alt="../_images/rpc_trace_img.png" src="../_images/rpc_trace_img.png" style="width: 840.0px; height: 253.5px;" /></a>
-<p>As we can see, we have traced our RPC requests and can also visualize traces of the remote operations,
-in this case, given in the trace column for <code class="docutils literal notranslate"><span class="pre">node_id:</span> <span class="pre">1</span></code>.</p>
-<p>Putting it all together, we have the following code for this recipe:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.distributed.rpc</span> <span class="k">as</span> <span class="nn">rpc</span>
-<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
-<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">random_tensor</span><span class="p">():</span>
-  <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">udf_with_ops</span><span class="p">():</span>
-  <span class="kn">import</span> <span class="nn">time</span>
-  <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-  <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">random_tensor</span><span class="p">(),</span> <span class="n">random_tensor</span><span class="p">()</span>
-  <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
-  <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-  <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_ADDR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
-  <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_PORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;29500&quot;</span>
-  <span class="n">worker_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">&quot;</span>
-
-  <span class="c1"># Initialize RPC framework.</span>
-  <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
-      <span class="n">name</span><span class="o">=</span><span class="n">worker_name</span><span class="p">,</span>
-      <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-      <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span>
-  <span class="p">)</span>
-  <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">worker_name</span><span class="si">}</span><span class="s2"> successfully initialized RPC.&quot;</span><span class="p">)</span>
-
-  <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="n">dst_worker_rank</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">world_size</span>
-    <span class="n">dst_worker_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">dst_worker_rank</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">random_tensor</span><span class="p">(),</span> <span class="n">random_tensor</span><span class="p">()</span>
-    <span class="c1"># Send and wait RPC completion under profiling scope.</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-        <span class="n">fut1</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">))</span>
-        <span class="n">fut2</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">))</span>
-        <span class="c1"># RPCs must be awaited within profiling scope.</span>
-        <span class="n">fut1</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="n">fut2</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">())</span>
-
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
-        <span class="n">fut</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span><span class="n">dst_worker_name</span><span class="p">,</span> <span class="n">udf_with_ops</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">())</span>
-        <span class="n">fut</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">())</span>
-
-    <span class="n">trace_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/trace.json&quot;</span>
-    <span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="n">trace_file</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote trace to </span><span class="si">{</span><span class="n">trace_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-  <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2"> waiting for workers and shutting down RPC&quot;</span><span class="p">)</span>
-  <span class="n">rpc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-  <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2"> shutdown RPC&quot;</span><span class="p">)</span>
-
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-  <span class="c1"># Run 2 RPC workers.</span>
-  <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
-  <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,),</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="learn-more">
-<h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/">pytorch.org</a> for installation instructions, and more documentation
-and tutorials.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">Distributed RPC Framework</a> for RPC framework and API reference.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#profiler">Full profiler documentation</a> for profiler documentation.</p></li>
-</ul>
-</div>
-</div>
+<p>This tutorial has been deprecated.</p>
+<p>Redirecting to homepage…</p>
+<meta http-equiv="Refresh" content="2; url='https://pytorch.org/tutorials'" /></div>
 
 
              </article>
@@ -848,14 +571,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Profiling PyTorch RPC-Based Workloads</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#what-is-the-distributed-rpc-framework">What is the Distributed RPC Framework?</a></li>
-<li><a class="reference internal" href="#what-is-the-pytorch-profiler">What is the PyTorch Profiler?</a></li>
-<li><a class="reference internal" href="#how-to-use-the-profiler-for-rpc-based-workloads">How to use the Profiler for RPC-based workloads</a></li>
-<li><a class="reference internal" href="#learn-more">Learn More</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Profiling PyTorch RPC-Based Workloads</a></li>
 </ul>
 
             </div>

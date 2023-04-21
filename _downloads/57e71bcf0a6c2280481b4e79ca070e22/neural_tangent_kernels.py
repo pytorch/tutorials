@@ -24,7 +24,7 @@ First, some setup. Let's define a simple CNN that we wish to compute the NTK of.
 import torch
 import torch.nn as nn
 from torch.func import functional_call, vmap, vjp, jvp, jacrev
-device = 'cuda'
+device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
 
 class CNN(nn.Module):
     def __init__(self):
@@ -58,7 +58,7 @@ x_test = torch.randn(5, 3, 32, 32, device=device)
 # we will need a function that accepts the parameters of the model and a single
 # input (as opposed to a batch of inputs!) and returns a single output.
 #
-# We'll use ``torch.func.functional_call``, which allows us to call an nn.Module
+# We'll use ``torch.func.functional_call``, which allows us to call an ``nn.Module``
 # using different parameters/buffers, to help accomplish the first step.
 #
 # Keep in mind that the model was originally written to accept a batch of input
@@ -200,10 +200,10 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
         output, vjp_fn = vjp(func_x1, params)
 
         def get_ntk_slice(vec):
-            # This computes vec @ J(x2).T
+            # This computes ``vec @ J(x2).T``
             # `vec` is some unit vector (a single slice of the Identity matrix)
             vjps = vjp_fn(vec)
-            # This computes J(X1) @ vjps
+            # This computes ``J(X1) @ vjps``
             _, jvps = jvp(func_x2, (params,), vjps)
             return jvps
 
@@ -211,10 +211,10 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
         basis = torch.eye(output.numel(), dtype=output.dtype, device=output.device).view(output.numel(), -1)
         return vmap(get_ntk_slice)(basis)
 
-    # get_ntk(x1, x2) computes the NTK for a single data point x1, x2
-    # Since the x1, x2 inputs to empirical_ntk_ntk_vps are batched,
+    # ``get_ntk(x1, x2)`` computes the NTK for a single data point x1, x2
+    # Since the x1, x2 inputs to ``empirical_ntk_ntk_vps`` are batched,
     # we actually wish to compute the NTK between every pair of data points
-    # between {x1} and {x2}. That's what the vmaps here do.
+    # between {x1} and {x2}. That's what the ``vmaps`` here do.
     result = vmap(vmap(get_ntk, (None, 0)), (0, None))(x1, x2)
 
     if compute == 'full':
@@ -224,8 +224,11 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
     if compute == 'diagonal':
         return torch.einsum('NMKK->NMK', result)
 
-result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
-result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
+# Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
+with torch.backends.cudnn.flags(allow_tf32=False):
+    result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
+    result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
+
 assert torch.allclose(result_from_jacobian_contraction, result_from_ntk_vps, atol=1e-5)
 
 ######################################################################

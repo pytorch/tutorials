@@ -33,6 +33,7 @@ model from C++.
 
 import torch  # This is all you need to use both PyTorch and TorchScript!
 print(torch.__version__)
+torch.manual_seed(191009)  # set the seed for reproducibility
 
 
 ######################################################################
@@ -158,7 +159,7 @@ print(my_cell(x, h))
 # have to explicitly define derivatives for all constructs in the
 # language.
 #
-# .. figure:: https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/dynamic_graph.gif
+# .. figure:: https://github.com/pytorch/pytorch/raw/main/docs/source/_static/img/dynamic_graph.gif
 #    :alt: How autograd works
 #
 #    How autograd works
@@ -308,7 +309,7 @@ print(scripted_cell.code)
 
 # New inputs
 x, h = torch.rand(3, 4), torch.rand(3, 4)
-traced_cell(x, h)
+print(scripted_cell(x, h))
 
 
 ######################################################################

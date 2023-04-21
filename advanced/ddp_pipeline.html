@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Training Transformer models using Distributed Data Parallel and Pipeline Parallelism — PyTorch Tutorials 2.0.0+cu117 documentation</title>
+<title>Training Transformer models using Distributed Data Parallel and Pipeline Parallelism — PyTorch Tutorials 2.0.1+cu117 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -25,16 +25,13 @@
 <link href="../search.html" rel="search" title="Search"/>
 <link href="generic_join.html" rel="next" title="Distributed Training with Uneven Inputs Using the Join Context Manager"/>
 <link href="../intermediate/pipeline_tutorial.html" rel="prev" title="Training Transformer models using Pipeline Parallelism"/>
-<!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-<!-- End Google Analytics -->
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -183,7 +180,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -258,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -317,7 +315,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -400,6 +398,9 @@
 <div class="call-to-action-mobile-view">GitHub</div>
 </div>
 </div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
@@ -474,7 +475,7 @@ itself consists of <code class="docutils literal notranslate"><span class="pre">
 As a result, our focus is on <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> and we split the model
 such that half of the <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoderLayer</span></code> are on one GPU and the
 other half are on another. To do this, we pull out the <code class="docutils literal notranslate"><span class="pre">Encoder</span></code> and
-<code class="docutils literal notranslate"><span class="pre">Decoder</span></code> sections into seperate modules and then build an nn.Sequential
+<code class="docutils literal notranslate"><span class="pre">Decoder</span></code> sections into separate modules and then build an <code class="docutils literal notranslate"><span class="pre">nn.Sequential</span></code>
 representing the original Transformer module.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">'win32'</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Windows platform is not supported for pipeline parallelism'</span><span class="p">)</span>
@@ -538,7 +539,7 @@ For instance, with the alphabet as the sequence (total length of 26)
 and a batch size of 4, we would divide the alphabet into 4 sequences of
 length 6:</p>
 <div class="math">
-\[\begin{bmatrix}
+\[ \begin{bmatrix}
 \text{A} &amp; \text{B} &amp; \text{C} &amp; \ldots &amp; \text{X} &amp; \text{Y} &amp; \text{Z}
 \end{bmatrix}
 \Rightarrow
@@ -547,9 +548,7 @@ length 6:</p>
 \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &amp;
 \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &amp;
 \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-\end{bmatrix}
-
-\]</div>
+\end{bmatrix}\]</div>
 <p>These columns are treated as independent by the model, which means that
 the dependence of <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> can not be learned, but allows more
 efficient batch processing.</p>
@@ -578,11 +577,11 @@ efficient batch processing.</p>
     <span class="n">device</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">rank</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">batchify</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bsz</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="c1"># Divide the dataset into bsz parts.</span>
+        <span class="c1"># Divide the dataset into ``bsz`` parts.</span>
         <span class="n">nbatch</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">bsz</span>
         <span class="c1"># Trim off any extra elements that wouldn't cleanly fit (remainders).</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbatch</span> <span class="o">*</span> <span class="n">bsz</span><span class="p">)</span>
-        <span class="c1"># Evenly divide the data across the bsz batches.</span>
+        <span class="c1"># Evenly divide the data across the ``bsz`` batches.</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
         <span class="c1"># Divide the data across the ranks only for training data.</span>
         <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
@@ -634,13 +633,13 @@ initialize the RPC framework with only a single worker since we’re using a
 single process to drive multiple GPUs.</p>
 <p>The pipeline is then initialized with 8 transformer layers on one GPU and 8
 transformer layers on the other GPU. One pipe is setup across GPUs 0 and 1 and
-another across GPUs 2 and 3. Both pipes are then replicated using DistributedDataParallel.</p>
+another across GPUs 2 and 3. Both pipes are then replicated using <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># In 'run_worker'</span>
     <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
     <span class="n">emsize</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># embedding dimension</span>
-    <span class="n">nhid</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># the dimension of the feedforward network model in nn.TransformerEncoder</span>
-    <span class="n">nlayers</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># the number of nn.TransformerEncoderLayer in nn.TransformerEncoder</span>
-    <span class="n">nhead</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># the number of heads in the multiheadattention models</span>
+    <span class="n">nhid</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># the dimension of the feedforward network model in ``nn.TransformerEncoder``</span>
+    <span class="n">nlayers</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># the number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``</span>
+    <span class="n">nhead</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># the number of heads in the Multihead Attention models</span>
     <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="c1"># the dropout value</span>
 
     <span class="kn">from</span> <span class="nn">torch.distributed</span> <span class="kn">import</span> <span class="n">rpc</span>
@@ -659,7 +658,7 @@ another across GPUs 2 and 3. Both pipes are then replicated using DistributedDat
         <span class="p">)</span>
     <span class="p">)</span>
 
-    <span class="c1"># Num gpus for model parallelism.</span>
+    <span class="c1"># Number of GPUs for model parallelism.</span>
     <span class="n">num_gpus</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">partition_len</span> <span class="o">=</span> <span class="p">((</span><span class="n">nlayers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">num_gpus</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 

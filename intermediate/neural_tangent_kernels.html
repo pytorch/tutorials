@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Neural Tangent Kernels — PyTorch Tutorials 2.0.0+cu117 documentation</title>
+<title>Neural Tangent Kernels — PyTorch Tutorials 2.0.1+cu117 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -23,16 +23,13 @@
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-<!-- End Google Analytics -->
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -181,7 +178,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -256,6 +253,7 @@
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -315,7 +313,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -398,6 +396,9 @@
 <div class="call-to-action-mobile-view">GitHub</div>
 </div>
 </div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
@@ -425,7 +426,7 @@ composable function transforms for PyTorch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.functional_call.html#torch.func.functional_call" title="torch.func.functional_call"><span class="n">functional_call</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jvp.html#torch.func.jvp" title="torch.func.jvp"><span class="n">jvp</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a>
-<span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.device_count.html#torch.cuda.device_count" title="torch.cuda.device_count"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span></a><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">'cpu'</span>
 
 <span class="k">class</span> <span class="nc">CNN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -457,7 +458,7 @@ composable function transforms for PyTorch.</p>
 <p><code class="docutils literal notranslate"><span class="pre">torch.func</span></code> transforms operate on functions. In particular, to compute the NTK,
 we will need a function that accepts the parameters of the model and a single
 input (as opposed to a batch of inputs!) and returns a single output.</p>
-<p>We’ll use <code class="docutils literal notranslate"><span class="pre">torch.func.functional_call</span></code>, which allows us to call an nn.Module
+<p>We’ll use <code class="docutils literal notranslate"><span class="pre">torch.func.functional_call</span></code>, which allows us to call an <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>
 using different parameters/buffers, to help accomplish the first step.</p>
 <p>Keep in mind that the model was originally written to accept a batch of input
 data points. In our CNN example, there are no inter-batch operations. That
@@ -590,10 +591,10 @@ Jacobian-vector product) to compute the NTK.</p>
         <span class="n">output</span><span class="p">,</span> <span class="n">vjp_fn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a><span class="p">(</span><span class="n">func_x1</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">get_ntk_slice</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
-            <span class="c1"># This computes vec @ J(x2).T</span>
+            <span class="c1"># This computes ``vec @ J(x2).T``</span>
             <span class="c1"># `vec` is some unit vector (a single slice of the Identity matrix)</span>
             <span class="n">vjps</span> <span class="o">=</span> <span class="n">vjp_fn</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-            <span class="c1"># This computes J(X1) @ vjps</span>
+            <span class="c1"># This computes ``J(X1) @ vjps``</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">jvps</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jvp.html#torch.func.jvp" title="torch.func.jvp"><span class="n">jvp</span></a><span class="p">(</span><span class="n">func_x2</span><span class="p">,</span> <span class="p">(</span><span class="n">params</span><span class="p">,),</span> <span class="n">vjps</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">jvps</span>
 
@@ -601,10 +602,10 @@ Jacobian-vector product) to compute the NTK.</p>
         <span class="n">basis</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.eye.html#torch.eye" title="torch.eye"><span class="n">torch</span><span class="o">.</span><span class="n">eye</span></a><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">numel</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">numel</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">(</span><span class="n">get_ntk_slice</span><span class="p">)(</span><span class="n">basis</span><span class="p">)</span>
 
-    <span class="c1"># get_ntk(x1, x2) computes the NTK for a single data point x1, x2</span>
-    <span class="c1"># Since the x1, x2 inputs to empirical_ntk_ntk_vps are batched,</span>
+    <span class="c1"># ``get_ntk(x1, x2)`` computes the NTK for a single data point x1, x2</span>
+    <span class="c1"># Since the x1, x2 inputs to ``empirical_ntk_ntk_vps`` are batched,</span>
     <span class="c1"># we actually wish to compute the NTK between every pair of data points</span>
-    <span class="c1"># between {x1} and {x2}. That's what the vmaps here do.</span>
+    <span class="c1"># between {x1} and {x2}. That's what the ``vmaps`` here do.</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">(</span><span class="n">get_ntk</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">compute</span> <span class="o">==</span> <span class="s1">'full'</span><span class="p">:</span>
@@ -614,8 +615,11 @@ Jacobian-vector product) to compute the NTK.</p>
     <span class="k">if</span> <span class="n">compute</span> <span class="o">==</span> <span class="s1">'diagonal'</span><span class="p">:</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.einsum.html#torch.einsum" title="torch.einsum"><span class="n">torch</span><span class="o">.</span><span class="n">einsum</span></a><span class="p">(</span><span class="s1">'NMKK-&gt;NMK'</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">)</span>
 
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_jacobian_contraction</span></a> <span class="o">=</span> <span class="n">empirical_ntk_jacobian_contraction</span><span class="p">(</span><span class="n">fnet_single</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_test</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_train</span></a><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_ntk_vps</span></a> <span class="o">=</span> <span class="n">empirical_ntk_ntk_vps</span><span class="p">(</span><span class="n">fnet_single</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_test</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_train</span></a><span class="p">)</span>
+<span class="c1"># Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">flags</span><span class="p">(</span><span class="n">allow_tf32</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_jacobian_contraction</span></a> <span class="o">=</span> <span class="n">empirical_ntk_jacobian_contraction</span><span class="p">(</span><span class="n">fnet_single</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_test</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_train</span></a><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_ntk_vps</span></a> <span class="o">=</span> <span class="n">empirical_ntk_ntk_vps</span><span class="p">(</span><span class="n">fnet_single</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_test</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x_train</span></a><span class="p">)</span>
+
 <span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_jacobian_contraction</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result_from_ntk_vps</span></a><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -635,7 +639,7 @@ such as fully-connected (not convolutional) models with many outputs <span class
 Memory-wise, both methods should be comparable. See section 3.3 in
 <a class="reference external" href="https://arxiv.org/abs/2206.08720">Fast Finite Width Neural Tangent Kernel</a>
 for details.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.272 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.170 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-neural-tangent-kernels-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/57e71bcf0a6c2280481b4e79ca070e22/neural_tangent_kernels.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_tangent_kernels.py</span></code></a></p>

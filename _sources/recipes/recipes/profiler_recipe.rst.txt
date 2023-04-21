@@ -50,7 +50,7 @@ Steps
 4. Using profiler to analyze memory consumption
 5. Using tracing functionality
 6. Examining stack traces
-7. Visualizing data as a flamegraph
+7. Visualizing data as a flame graph
 8. Using profiler to analyze long-running jobs
 
 1. Import all necessary libraries
@@ -107,7 +107,7 @@ a number of parameters, some of the most useful are:
 - ``use_cuda`` - whether to measure execution time of CUDA kernels.
 
 Note: when using CUDA, profiler also shows the runtime CUDA events
-occuring on the host.
+occurring on the host.
 
 .. GENERATED FROM PYTHON SOURCE LINES 83-84
 
@@ -134,7 +134,7 @@ execution of a code range wrapped with a profiler context manager.
 If multiple profiler ranges are active at the same time (e.g. in
 parallel PyTorch threads), each profiling context manager tracks only
 the operators of its corresponding range.
-Profiler also automatically profiles the async tasks launched
+Profiler also automatically profiles the asynchronous tasks launched
 with ``torch.jit._fork`` and (in case of a backward pass)
 the backward pass operators launched with ``backward()`` call.
 
@@ -177,7 +177,7 @@ The output will look like (omitting some columns):
 .. GENERATED FROM PYTHON SOURCE LINES 127-135
 
 Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
-for PyTorch compiled with MKL-DNN support).
+for PyTorch compiled with ``MKL-DNN`` support).
 Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time excludes time
 spent in children operator calls, while total cpu time includes it. You can choose to sort by the self cpu time by passing
 ``sort_by="self_cpu_time_total"`` into the ``table`` call.
@@ -185,40 +185,45 @@ spent in children operator calls, while total cpu time includes it. You can choo
 To get a finer granularity of results and include operator input shapes, pass ``group_by_input_shape=True``
 (note: this requires running the profiler with ``record_shapes=True``):
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-155
+.. GENERATED FROM PYTHON SOURCE LINES 135-138
 
 .. code-block:: default
 
 
     print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10))
 
-    # (omitting some columns)
-    # ---------------------------------  ------------  -------------------------------------------
-    #                              Name     CPU total                                 Input Shapes
-    # ---------------------------------  ------------  -------------------------------------------
-    #                   model_inference      57.503ms                                           []
-    #                      aten::conv2d       8.008ms      [5,64,56,56], [64,64,3,3], [], ..., []]
-    #                 aten::convolution       7.956ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
-    #                aten::_convolution       7.909ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
-    #          aten::mkldnn_convolution       7.834ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
-    #                      aten::conv2d       6.332ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
-    #                 aten::convolution       6.303ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
-    #                aten::_convolution       6.273ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
-    #          aten::mkldnn_convolution       6.233ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
-    #                      aten::conv2d       4.751ms  [[5,256,14,14], [256,256,3,3], [], ..., []]
-    # ---------------------------------  ------------  -------------------------------------------
-    # Self CPU time total: 57.549ms
 
+.. GENERATED FROM PYTHON SOURCE LINES 139-158
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-157
+The output might look like this (omitting some columns):
 
-Note the occurence of ``aten::convolution`` twice with different input shapes.
+::
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-160
+   ---------------------------------  ------------  -------------------------------------------
+                                Name     CPU total                                 Input Shapes
+   ---------------------------------  ------------  -------------------------------------------
+                     model_inference      57.503ms                                           []
+                        aten::conv2d       8.008ms      [5,64,56,56], [64,64,3,3], [], ..., []]
+                   aten::convolution       7.956ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
+                  aten::_convolution       7.909ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
+            aten::mkldnn_convolution       7.834ms     [[5,64,56,56], [64,64,3,3], [], ..., []]
+                        aten::conv2d       6.332ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
+                   aten::convolution       6.303ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
+                  aten::_convolution       6.273ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
+            aten::mkldnn_convolution       6.233ms    [[5,512,7,7], [512,512,3,3], [], ..., []]
+                        aten::conv2d       4.751ms  [[5,256,14,14], [256,256,3,3], [], ..., []]
+   ---------------------------------  ------------  -------------------------------------------
+   Self CPU time total: 57.549ms
+
+.. GENERATED FROM PYTHON SOURCE LINES 160-161
+
+Note the occurrence of ``aten::convolution`` twice with different input shapes.
+
+.. GENERATED FROM PYTHON SOURCE LINES 163-164
 
 Profiler can also be used to analyze performance of models executed on GPUs:
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-171
+.. GENERATED FROM PYTHON SOURCE LINES 164-175
 
 .. code-block:: default
 
@@ -234,43 +239,38 @@ Profiler can also be used to analyze performance of models executed on GPUs:
     print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-173
+.. GENERATED FROM PYTHON SOURCE LINES 176-177
 
 (Note: the first use of CUDA profiling may bring an extra overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-176
+.. GENERATED FROM PYTHON SOURCE LINES 179-199
 
-The resulting table output:
+The resulting table output (omitting some columns):
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-195
+::
 
-.. code-block:: default
+   -------------------------------------------------------  ------------  ------------
+                                                      Name     Self CUDA    CUDA total
+   -------------------------------------------------------  ------------  ------------
+                                           model_inference       0.000us      11.666ms
+                                              aten::conv2d       0.000us      10.484ms
+                                         aten::convolution       0.000us      10.484ms
+                                        aten::_convolution       0.000us      10.484ms
+                                aten::_convolution_nogroup       0.000us      10.484ms
+                                         aten::thnn_conv2d       0.000us      10.484ms
+                                 aten::thnn_conv2d_forward      10.484ms      10.484ms
+   void at::native::im2col_kernel<float>(long, float co...       3.844ms       3.844ms
+                                         sgemm_32x32x32_NN       3.206ms       3.206ms
+                                     sgemm_32x32x32_NN_vec       3.093ms       3.093ms
+   -------------------------------------------------------  ------------  ------------
+   Self CPU time total: 23.015ms
+   Self CUDA time total: 11.666ms
 
+.. GENERATED FROM PYTHON SOURCE LINES 201-202
 
-    # (omitting some columns)
-    # -------------------------------------------------------  ------------  ------------
-    #                                                    Name     Self CUDA    CUDA total
-    # -------------------------------------------------------  ------------  ------------
-    #                                         model_inference       0.000us      11.666ms
-    #                                            aten::conv2d       0.000us      10.484ms
-    #                                       aten::convolution       0.000us      10.484ms
-    #                                      aten::_convolution       0.000us      10.484ms
-    #                              aten::_convolution_nogroup       0.000us      10.484ms
-    #                                       aten::thnn_conv2d       0.000us      10.484ms
-    #                               aten::thnn_conv2d_forward      10.484ms      10.484ms
-    # void at::native::im2col_kernel<float>(long, float co...       3.844ms       3.844ms
-    #                                       sgemm_32x32x32_NN       3.206ms       3.206ms
-    #                                   sgemm_32x32x32_NN_vec       3.093ms       3.093ms
-    # -------------------------------------------------------  ------------  ------------
-    # Self CPU time total: 23.015ms
-    # Self CUDA time total: 11.666ms
+Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 196-197
-
-Note the occurence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
-
-.. GENERATED FROM PYTHON SOURCE LINES 199-207
+.. GENERATED FROM PYTHON SOURCE LINES 204-212
 
 4. Using profiler to analyze memory consumption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -281,7 +281,7 @@ In the output below, 'self' memory corresponds to the memory allocated (released
 by the operator, excluding the children calls to the other operators.
 To enable memory profiling functionality pass ``profile_memory=True``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-253
+.. GENERATED FROM PYTHON SOURCE LINES 212-241
 
 .. code-block:: default
 
@@ -314,32 +314,37 @@ To enable memory profiling functionality pass ``profile_memory=True``.
 
     print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 
-    # (omitting some columns)
-    # ---------------------------------  ------------  ------------  ------------
-    #                              Name       CPU Mem  Self CPU Mem    # of Calls
-    # ---------------------------------  ------------  ------------  ------------
-    #                       aten::empty      94.79 Mb      94.79 Mb           121
-    #                  aten::batch_norm      47.41 Mb           0 b            20
-    #      aten::_batch_norm_impl_index      47.41 Mb           0 b            20
-    #           aten::native_batch_norm      47.41 Mb           0 b            20
-    #                      aten::conv2d      47.37 Mb           0 b            20
-    #                 aten::convolution      47.37 Mb           0 b            20
-    #                aten::_convolution      47.37 Mb           0 b            20
-    #          aten::mkldnn_convolution      47.37 Mb           0 b            20
-    #                  aten::max_pool2d      11.48 Mb           0 b             1
-    #     aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1
-    # ---------------------------------  ------------  ------------  ------------
-    # Self CPU time total: 53.064ms
 
+.. GENERATED FROM PYTHON SOURCE LINES 242-261
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-258
+The output might look like this (omitting some columns):
+
+::
+
+   ---------------------------------  ------------  ------------  ------------
+                                Name       CPU Mem  Self CPU Mem    # of Calls
+   ---------------------------------  ------------  ------------  ------------
+                         aten::empty      94.79 Mb      94.79 Mb           121
+                    aten::batch_norm      47.41 Mb           0 b            20
+        aten::_batch_norm_impl_index      47.41 Mb           0 b            20
+             aten::native_batch_norm      47.41 Mb           0 b            20
+                        aten::conv2d      47.37 Mb           0 b            20
+                   aten::convolution      47.37 Mb           0 b            20
+                  aten::_convolution      47.37 Mb           0 b            20
+            aten::mkldnn_convolution      47.37 Mb           0 b            20
+                    aten::max_pool2d      11.48 Mb           0 b             1
+       aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1
+   ---------------------------------  ------------  ------------  ------------
+   Self CPU time total: 53.064ms
+
+.. GENERATED FROM PYTHON SOURCE LINES 263-267
 
 5. Using tracing functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Profiling results can be outputted as a .json trace file:
+Profiling results can be outputted as a ``.json`` trace file:
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-267
+.. GENERATED FROM PYTHON SOURCE LINES 267-276
 
 .. code-block:: default
 
@@ -353,7 +358,7 @@ Profiling results can be outputted as a .json trace file:
     prof.export_chrome_trace("trace.json")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-273
+.. GENERATED FROM PYTHON SOURCE LINES 277-282
 
 You can examine the sequence of profiled operators and CUDA kernels
 in Chrome trace viewer (``chrome://tracing``):
@@ -361,14 +366,14 @@ in Chrome trace viewer (``chrome://tracing``):
 .. image:: ../../_static/img/trace_img.png
    :scale: 25 %
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-279
+.. GENERATED FROM PYTHON SOURCE LINES 284-288
 
 6. Examining stack traces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Profiler can be used to analyze Python and TorchScript stack traces:
 
-.. GENERATED FROM PYTHON SOURCE LINES 279-309
+.. GENERATED FROM PYTHON SOURCE LINES 288-298
 
 .. code-block:: default
 
@@ -382,42 +387,45 @@ Profiler can be used to analyze Python and TorchScript stack traces:
     # Print aggregated stats
     print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total", row_limit=2))
 
-    # (omitting some columns)
-    # -------------------------  -----------------------------------------------------------
-    #                      Name  Source Location
-    # -------------------------  -----------------------------------------------------------
-    # aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward
-    #                            .../torch/nn/modules/conv.py(443): forward
-    #                            .../torch/nn/modules/module.py(1051): _call_impl
-    #                            .../site-packages/torchvision/models/resnet.py(63): forward
-    #                            .../torch/nn/modules/module.py(1051): _call_impl
-    #
-    # aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward
-    #                            .../torch/nn/modules/conv.py(443): forward
-    #                            .../torch/nn/modules/module.py(1051): _call_impl
-    #                            .../site-packages/torchvision/models/resnet.py(59): forward
-    #                            .../torch/nn/modules/module.py(1051): _call_impl
-    #
-    # -------------------------  -----------------------------------------------------------
-    # Self CPU time total: 34.016ms
-    # Self CUDA time total: 11.659ms
 
+.. GENERATED FROM PYTHON SOURCE LINES 299-319
 
-.. GENERATED FROM PYTHON SOURCE LINES 310-313
+The output might look like this (omitting some columns):
 
-Note the two convolutions and the two callsites in ``torchvision/models/resnet.py`` script.
+::
+
+   -------------------------  -----------------------------------------------------------
+                        Name  Source Location
+   -------------------------  -----------------------------------------------------------
+   aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward
+                              .../torch/nn/modules/conv.py(443): forward
+                              .../torch/nn/modules/module.py(1051): _call_impl
+                              .../site-packages/torchvision/models/resnet.py(63): forward
+                              .../torch/nn/modules/module.py(1051): _call_impl
+   aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward
+                              .../torch/nn/modules/conv.py(443): forward
+                              .../torch/nn/modules/module.py(1051): _call_impl
+                              .../site-packages/torchvision/models/resnet.py(59): forward
+                              .../torch/nn/modules/module.py(1051): _call_impl
+   -------------------------  -----------------------------------------------------------
+   Self CPU time total: 34.016ms
+   Self CUDA time total: 11.659ms
+
+.. GENERATED FROM PYTHON SOURCE LINES 321-324
+
+Note the two convolutions and the two call sites in ``torchvision/models/resnet.py`` script.
 
 (Warning: stack tracing adds an extra profiling overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-321
+.. GENERATED FROM PYTHON SOURCE LINES 327-332
 
-7. Visualizing data as a flamegraph
+7. Visualizing data as a flame graph
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Execution time (``self_cpu_time_total`` and ``self_cuda_time_total`` metrics) and stack traces
 can also be visualized as a flame graph. To do this, first export the raw data using ``export_stacks`` (requires ``with_stack=True``):
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-324
+.. GENERATED FROM PYTHON SOURCE LINES 332-335
 
 .. code-block:: default
 
@@ -425,27 +433,23 @@ can also be visualized as a flame graph. To do this, first export the raw data u
     prof.export_stacks("/tmp/profiler_stacks.txt", "self_cuda_time_total")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 325-327
+.. GENERATED FROM PYTHON SOURCE LINES 336-344
 
-We recommend using e.g. `Flamegraph tool <https://github.com/brendangregg/FlameGraph>`_ to generate an
-interactive SVG:
+We recommend using `Flamegraph tool <https://github.com/brendangregg/FlameGraph>`_ to generate an
+interactive ``.svg`` file:
 
-.. GENERATED FROM PYTHON SOURCE LINES 327-332
+.. code-block:: sh
 
-.. code-block:: default
+   git clone https://github.com/brendangregg/FlameGraph
+   cd FlameGraph
+   ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
 
-
-    # git clone https://github.com/brendangregg/FlameGraph
-    # cd FlameGraph
-    # ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 333-335
+.. GENERATED FROM PYTHON SOURCE LINES 346-348
 
 .. image:: ../../_static/img/perf_viz.png
    :scale: 25 %
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-355
+.. GENERATED FROM PYTHON SOURCE LINES 352-368
 
 8. Using profiler to analyze long-running jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -464,7 +468,7 @@ arguments:
 To illustrate how the API works, let's first consider the following example with
 ``torch.profiler.schedule`` helper function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-365
+.. GENERATED FROM PYTHON SOURCE LINES 368-378
 
 .. code-block:: default
 
@@ -479,7 +483,7 @@ To illustrate how the API works, let's first consider the following example with
         repeat=2)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 366-383
+.. GENERATED FROM PYTHON SOURCE LINES 379-396
 
 Profiler assumes that the long-running job is composed of steps, numbered
 starting from zero. The example above defines the following sequence of actions
@@ -499,7 +503,7 @@ for the profiler:
 4. An optional ``repeat`` parameter specifies an upper bound on the number of cycles.
    By default (zero value), profiler will execute cycles as long as the job runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 385-398
+.. GENERATED FROM PYTHON SOURCE LINES 398-411
 
 Thus, in the example above, profiler will skip the first 15 steps, spend the next step on the warm up,
 actively record the next 3 steps, skip another 5 steps, spend the next step on the warm up, actively
@@ -515,7 +519,7 @@ The current profiler step is stored in ``prof.step_num``.
 
 The following example shows how to use all of the concepts above:
 
-.. GENERATED FROM PYTHON SOURCE LINES 398-417
+.. GENERATED FROM PYTHON SOURCE LINES 411-430
 
 .. code-block:: default
 
@@ -539,7 +543,7 @@ The following example shows how to use all of the concepts above:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 418-427
+.. GENERATED FROM PYTHON SOURCE LINES 431-440
 
 Learn More
 ----------

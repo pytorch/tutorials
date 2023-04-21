@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Reinforcement Learning (DQN) Tutorial — PyTorch Tutorials 2.0.0+cu117 documentation</title>
+<title>Reinforcement Learning (DQN) Tutorial — PyTorch Tutorials 2.0.1+cu117 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
@@ -24,17 +24,14 @@
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="reinforcement_ppo.html" rel="next" title="Reinforcement Learning (PPO) with TorchRL Tutorial"/>
-<link href="../beginner/translation_transformer.html" rel="prev" title="Language Translation with nn.Transformer and torchtext"/>
-<!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-<!-- End Google Analytics -->
+<link href="../beginner/torchtext_custom_dataset_tutorial.html" rel="prev" title="Preprocess custom text dataset using Torchtext"/>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -183,7 +180,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -258,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul class="current">
@@ -317,7 +315,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -400,6 +398,9 @@
 <div class="call-to-action-mobile-view">GitHub</div>
 </div>
 </div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
@@ -422,8 +423,8 @@ right - so that the pole attached to it stays upright. You can find more
 information about the environment and other more challenging environments at
 <a class="reference external" href="https://gymnasium.farama.org/environments/classic_control/cart_pole/">Gymnasium’s website</a>.</p>
 <div class="figure align-default" id="id1">
-<img alt="cartpole" src="../_images/cartpole.gif"/>
-<p class="caption"><span class="caption-text">cartpole</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<img alt="CartPole" src="../_images/cartpole.gif"/>
+<p class="caption"><span class="caption-text">CartPole</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>As the agent observes the current state of the environment and chooses
 an action, the environment <em>transitions</em> to a new state, and also
@@ -444,7 +445,7 @@ then chosen.</p>
 <a class="reference external" href="https://gymnasium.farama.org/">gymnasium</a> for the environment,
 installed by using <cite>pip</cite>. This is a fork of the original OpenAI
 Gym project and maintained by the same team since Gym v0.19.
-If you are running this in Google colab, run:</p>
+If you are running this in Google Colab, run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
 pip3<span class="w"> </span>install<span class="w"> </span>gymnasium<span class="o">[</span>classic_control<span class="o">]</span>
 </pre></div>
@@ -477,7 +478,7 @@ pip3<span class="w"> </span>install<span class="w"> </span>gymnasium<span class=
 
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
 
-<span class="c1"># if gpu is to be used</span>
+<span class="c1"># if GPU is to be used</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -488,7 +489,7 @@ the transitions that the agent observes, allowing us to reuse this data
 later. By sampling from it randomly, the transitions that build up a
 batch are decorrelated. It has been shown that this greatly stabilizes
 and improves the DQN training procedure.</p>
-<p>For this, we’re going to need two classses:</p>
+<p>For this, we’re going to need two classes:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Transition</span></code> - a named tuple representing a single transition in
 our environment. It essentially maps (state, action) pairs
@@ -561,7 +562,7 @@ temporal difference error, <span class="math">\(\delta\)</span>:</p>
 \[\delta = Q(s, a) - (r + \gamma \max_a' Q(s', a))
 
 \]</div>
-<p>To minimise this error, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Huber_loss">Huber
+<p>To minimize this error, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Huber_loss">Huber
 loss</a>. The Huber loss acts
 like the mean squared error when the error is small, but like the mean
 absolute error when the error is large - this makes it more robust to
@@ -614,7 +615,7 @@ the action, and sometimes we’ll just sample one uniformly. The
 probability of choosing a random action will start at <code class="docutils literal notranslate"><span class="pre">EPS_START</span></code>
 and will decay exponentially towards <code class="docutils literal notranslate"><span class="pre">EPS_END</span></code>. <code class="docutils literal notranslate"><span class="pre">EPS_DECAY</span></code>
 controls the rate of the decay.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">plot_durations</span></code> - a helper for plotting the durations of episodes,
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_durations</span></code> - a helper for plotting the duration of episodes,
 along with an average over the last 100 episodes (the measure used in
 the official evaluations). The plot will be underneath the cell
 containing the main training loop, and will update after every
@@ -626,7 +627,7 @@ episode.</p></li>
 <span class="c1"># EPS_END is the final value of epsilon</span>
 <span class="c1"># EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay</span>
 <span class="c1"># TAU is the update rate of the target network</span>
-<span class="c1"># LR is the learning rate of the AdamW optimizer</span>
+<span class="c1"># LR is the learning rate of the ``AdamW`` optimizer</span>
 <span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">GAMMA</span> <span class="o">=</span> <span class="mf">0.99</span>
 <span class="n">EPS_START</span> <span class="o">=</span> <span class="mf">0.9</span>
@@ -764,7 +765,7 @@ an action, execute it, observe the next state and the reward (always
 fails), we restart the loop.</p>
 <p>Below, <cite>num_episodes</cite> is set to 600 if a GPU is available, otherwise 50
 episodes are scheduled so training does not take too long. However, 50
-episodes is insufficient for to observe good performance on cartpole.
+episodes is insufficient for to observe good performance on CartPole.
 You should see the model constantly achieve 500 steps within 600 training
 episodes. Training RL agents can be a noisy process, so restarting training
 can produce better results if convergence is not observed.</p>
@@ -829,7 +830,7 @@ replay memory and also run optimization step on every iteration.
 Optimization picks a random batch from the replay memory to do training of the
 new policy. The “older” target_net is also used in optimization to compute the
 expected Q values. A soft update of its weights are performed at every step.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 7 minutes  14.787 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 10 minutes  30.264 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-reinforcement-q-learning-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/6ea0e49c7d0da2713588ef1a3b64eb35/reinforcement_q_learning.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">reinforcement_q_learning.py</span></code></a></p>
@@ -847,7 +848,7 @@ expected Q values. A soft update of its weights are performed at every step.</p>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
 <a accesskey="n" class="btn btn-neutral float-right" href="reinforcement_ppo.html" rel="next" title="Reinforcement Learning (PPO) with TorchRL Tutorial">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../beginner/translation_transformer.html" rel="prev" title="Language Translation with nn.Transformer and torchtext"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="p" class="btn btn-neutral" href="../beginner/torchtext_custom_dataset_tutorial.html" rel="prev" title="Preprocess custom text dataset using Torchtext"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">

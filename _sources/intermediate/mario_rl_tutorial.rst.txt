@@ -47,7 +47,7 @@ as your companion. The full code is available
     %%bash
     pip install gym-super-mario-bros==7.4.0
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-57
+.. GENERATED FROM PYTHON SOURCE LINES 35-59
 
 .. code-block:: default
 
@@ -72,6 +72,8 @@ as your companion. The full code is available
     # Super Mario environment for OpenAI Gym
     import gym_super_mario_bros
 
+    from tensordict import TensorDict
+    from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 
 
 
@@ -80,7 +82,7 @@ as your companion. The full code is available
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-81
+.. GENERATED FROM PYTHON SOURCE LINES 60-83
 
 RL Definitions
 """"""""""""""""""
@@ -106,7 +108,7 @@ maximizes returns. :math:`Q` can be said to stand for the “quality” of
 the action in a state. We try to approximate this function.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-96
+.. GENERATED FROM PYTHON SOURCE LINES 86-98
 
 Environment
 """"""""""""""""
@@ -121,7 +123,7 @@ When Mario makes an action, the environment responds with the changed
 (next) state, reward and other info.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-113
+.. GENERATED FROM PYTHON SOURCE LINES 98-115
 
 .. code-block:: default
 
@@ -166,7 +168,7 @@ When Mario makes an action, the environment responds with the changed
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-145
+.. GENERATED FROM PYTHON SOURCE LINES 116-147
 
 Preprocess Environment
 ------------------------
@@ -200,7 +202,7 @@ jumping based on the direction of his movement in the previous several
 frames.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-213
+.. GENERATED FROM PYTHON SOURCE LINES 147-215
 
 .. code-block:: default
 
@@ -279,7 +281,7 @@ frames.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-224
+.. GENERATED FROM PYTHON SOURCE LINES 216-226
 
 After applying the above wrappers to the environment, the final wrapped
 state consists of 4 gray-scaled consecutive frames stacked together, as
@@ -292,7 +294,7 @@ is represented by a 3-D array of size ``[4, 84, 84]``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-242
+.. GENERATED FROM PYTHON SOURCE LINES 229-244
 
 Agent
 """""""""
@@ -310,7 +312,7 @@ should be able to:
 -  **Learn** a better action policy over time
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-265
+.. GENERATED FROM PYTHON SOURCE LINES 244-267
 
 .. code-block:: default
 
@@ -344,13 +346,13 @@ should be able to:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-269
+.. GENERATED FROM PYTHON SOURCE LINES 268-271
 
 In the following sections, we will populate Mario’s parameters and
 define his functions.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 272-282
+.. GENERATED FROM PYTHON SOURCE LINES 274-284
 
 Act
 --------------
@@ -363,7 +365,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 ``Learn`` section) to provide the most optimal action.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-332
+.. GENERATED FROM PYTHON SOURCE LINES 284-334
 
 .. code-block:: default
 
@@ -424,7 +426,7 @@ he chooses to exploit, he relies on ``MarioNet`` (implemented in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 333-346
+.. GENERATED FROM PYTHON SOURCE LINES 335-348
 
 Cache and Recall
 ----------------------
@@ -440,7 +442,7 @@ and whether the game is *done*.
 memory, and uses that to learn the game.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-387
+.. GENERATED FROM PYTHON SOURCE LINES 348-390
 
 .. code-block:: default
 
@@ -449,7 +451,7 @@ memory, and uses that to learn the game.
     class Mario(Mario):  # subclassing for continuity
         def __init__(self, state_dim, action_dim, save_dir):
             super().__init__(state_dim, action_dim, save_dir)
-            self.memory = deque(maxlen=100000)
+            self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
             self.batch_size = 32
 
         def cache(self, state, next_state, action, reward, done):
@@ -468,20 +470,21 @@ memory, and uses that to learn the game.
             state = first_if_tuple(state).__array__()
             next_state = first_if_tuple(next_state).__array__()
 
-            state = torch.tensor(state, device=self.device)
-            next_state = torch.tensor(next_state, device=self.device)
-            action = torch.tensor([action], device=self.device)
-            reward = torch.tensor([reward], device=self.device)
-            done = torch.tensor([done], device=self.device)
+            state = torch.tensor(state)
+            next_state = torch.tensor(next_state)
+            action = torch.tensor([action])
+            reward = torch.tensor([reward])
+            done = torch.tensor([done])
 
-            self.memory.append((state, next_state, action, reward, done,))
+            # self.memory.append((state, next_state, action, reward, done,))
+            self.memory.add(TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}, batch_size=[]))
 
         def recall(self):
             """
             Retrieve a batch of experiences from memory
             """
-            batch = random.sample(self.memory, self.batch_size)
-            state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+            batch = self.memory.sample(self.batch_size).to(self.device)
+            state, next_state, action, reward, done = (batch.get(key) for key in ("state", "next_state", "action", "reward", "done"))
             return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
 
@@ -492,7 +495,7 @@ memory, and uses that to learn the game.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 388-405
+.. GENERATED FROM PYTHON SOURCE LINES 391-408
 
 Learn
 --------------
@@ -512,7 +515,7 @@ later).
 Neural Network
 ~~~~~~~~~~~~~~~~~~
 
-.. GENERATED FROM PYTHON SOURCE LINES 405-447
+.. GENERATED FROM PYTHON SOURCE LINES 408-450
 
 .. code-block:: default
 
@@ -565,7 +568,7 @@ Neural Network
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 448-483
+.. GENERATED FROM PYTHON SOURCE LINES 451-486
 
 TD Estimate & TD Target
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -603,7 +606,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 (because we don’t need to backpropagate on :math:`\theta_{target}`).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 483-506
+.. GENERATED FROM PYTHON SOURCE LINES 486-509
 
 .. code-block:: default
 
@@ -637,7 +640,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 507-530
+.. GENERATED FROM PYTHON SOURCE LINES 510-533
 
 Updating the model
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -663,7 +666,7 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 530-549
+.. GENERATED FROM PYTHON SOURCE LINES 533-552
 
 .. code-block:: default
 
@@ -693,13 +696,13 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 550-553
+.. GENERATED FROM PYTHON SOURCE LINES 553-556
 
 Save checkpoint
 ~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 553-567
+.. GENERATED FROM PYTHON SOURCE LINES 556-570
 
 .. code-block:: default
 
@@ -724,13 +727,13 @@ Save checkpoint
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 568-571
+.. GENERATED FROM PYTHON SOURCE LINES 571-574
 
 Putting it all together
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 571-608
+.. GENERATED FROM PYTHON SOURCE LINES 574-611
 
 .. code-block:: default
 
@@ -778,13 +781,13 @@ Putting it all together
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 609-612
+.. GENERATED FROM PYTHON SOURCE LINES 612-615
 
 Logging
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 612-720
+.. GENERATED FROM PYTHON SOURCE LINES 615-724
 
 .. code-block:: default
 
@@ -890,10 +893,11 @@ Logging
                     f"{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):>20}\n"
                 )
 
-            for metric in ["ep_rewards", "ep_lengths", "ep_avg_losses", "ep_avg_qs"]:
-                plt.plot(getattr(self, f"moving_avg_{metric}"))
-                plt.savefig(getattr(self, f"{metric}_plot"))
+            for metric in ["ep_lengths", "ep_avg_losses", "ep_avg_qs", "ep_rewards"]:
                 plt.clf()
+                plt.plot(getattr(self, f"moving_avg_{metric}"), label=f"moving_avg_{metric}")
+                plt.legend()
+                plt.savefig(getattr(self, f"{metric}_plot"))
 
 
 
@@ -903,16 +907,16 @@ Logging
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 721-727
+.. GENERATED FROM PYTHON SOURCE LINES 725-731
 
 Let’s play!
 """""""""""""""
 
-In this example we run the training loop for 10 episodes, but for Mario to truly learn the ways of
+In this example we run the training loop for 40 episodes, but for Mario to truly learn the ways of
 his world, we suggest running the loop for at least 40,000 episodes!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 727-774
+.. GENERATED FROM PYTHON SOURCE LINES 731-778
 
 .. code-block:: default
 
@@ -927,7 +931,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
     logger = MetricLogger(save_dir)
 
-    episodes = 10
+    episodes = 40
     for e in range(episodes):
 
         state = env.reset()
@@ -982,7 +986,12 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
 
-    Episode 0 - Step 373 - Epsilon 0.9999067543359776 - Mean Reward 1008.0 - Mean Length 373.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 3.544 - Time 2023-04-19T00:59:08
+    Episode 0 - Step 46 - Epsilon 0.9999885000646858 - Mean Reward 217.0 - Mean Length 46.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 0.557 - Time 2023-06-27T18:17:45
+    /opt/conda/lib/python3.10/site-packages/torchvision/transforms/functional.py:1603: UserWarning:
+
+    The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
+
+    Episode 20 - Step 5037 - Epsilon 0.9987415423652014 - Mean Reward 684.952 - Mean Length 239.857 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 62.075 - Time 2023-06-27T18:18:47
     /opt/conda/lib/python3.10/site-packages/torchvision/transforms/functional.py:1603: UserWarning:
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
@@ -991,7 +1000,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 775-781
+.. GENERATED FROM PYTHON SOURCE LINES 779-785
 
 Conclusion
 """""""""""""""
@@ -1003,7 +1012,7 @@ to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  31.038 seconds)
+   **Total running time of the script:** ( 2 minutes  1.766 seconds)
 
 
 .. _sphx_glr_download_intermediate_mario_rl_tutorial.py:

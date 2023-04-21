@@ -2,7 +2,7 @@
 """
 NLP From Scratch: Generating Names with a Character-Level RNN
 *************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is our second of three tutorials on "NLP From Scratch".
 In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
@@ -75,7 +75,6 @@ name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary ``{language: [names ...]}``.
 
 """
-from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
 import os
@@ -278,7 +277,7 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
 
     rnn.zero_grad()
 
-    loss = 0
+    loss = torch.Tensor([0]) # you can also just simply use ``loss = 0``
 
     for i in range(input_line_tensor.size(0)):
         output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)

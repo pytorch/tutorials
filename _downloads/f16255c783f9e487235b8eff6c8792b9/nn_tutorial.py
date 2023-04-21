@@ -75,6 +75,11 @@ from matplotlib import pyplot
 import numpy as np
 
 pyplot.imshow(x_train[0].reshape((28, 28)), cmap="gray")
+# ``pyplot.show()`` only if not on Colab
+try:
+    import google.colab
+except ImportError:
+    pyplot.show()
 print(x_train.shape)
 
 ###############################################################################
@@ -790,8 +795,7 @@ class WrappedDataLoader:
         return len(self.dl)
 
     def __iter__(self):
-        batches = iter(self.dl)
-        for b in batches:
+        for b in self.dl:
             yield (self.func(*b))
 
 train_dl, valid_dl = get_data(train_ds, valid_ds, bs)

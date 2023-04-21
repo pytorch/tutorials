@@ -339,8 +339,8 @@ print(
 # pruning this technique implements (supported options are ``global``,
 # ``structured``, and ``unstructured``). This is needed to determine
 # how to combine masks in the case in which pruning is applied
-# iteratively. In other words, when pruning a pre-pruned parameter,
-# the current prunining techique is expected to act on the unpruned
+# iteratively. In other words, when pruning a prepruned parameter,
+# the current pruning technique is expected to act on the unpruned
 # portion of the parameter. Specifying the ``PRUNING_TYPE`` will
 # enable the ``PruningContainer`` (which handles the iterative
 # application of pruning masks) to correctly identify the slice of the

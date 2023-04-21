@@ -35,12 +35,9 @@ For this tutorial, you will need to install `ONNX <https://github.com/onnx/onnx>
 and `ONNX Runtime <https://github.com/microsoft/onnxruntime>`__.
 You can get binary builds of ONNX and ONNX Runtime with
 ``pip install onnx onnxruntime``.
-Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.
+ONNX Runtime recommends using the latest stable runtime for PyTorch.
 
-``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
-the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
-
-.. GENERATED FROM PYTHON SOURCE LINES 25-35
+.. GENERATED FROM PYTHON SOURCE LINES 22-32
 
 .. code-block:: default
 
@@ -55,18 +52,18 @@ the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-52
+.. GENERATED FROM PYTHON SOURCE LINES 33-49
 
 Super-resolution is a way of increasing the resolution of images, videos
 and is widely used in image processing or video editing. For this
 tutorial, we will use a small super-resolution model.
 
-First, let's create a SuperResolution model in PyTorch.
+First, let's create a ``SuperResolution`` model in PyTorch.
 This model uses the efficient sub-pixel convolution layer described in
 `"Real-Time Single Image and Video Super-Resolution Using an Efficient
 Sub-Pixel Convolutional Neural Network" - Shi et al <https://arxiv.org/abs/1609.05158>`__
 for increasing the resolution of an image by an upscale factor.
-The model expects the Y component of the YCbCr of an image as an input, and
+The model expects the Y component of the ``YCbCr`` of an image as an input, and
 outputs the upscaled Y component in super resolution.
 
 `The
@@ -74,7 +71,7 @@ model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py
 comes directly from PyTorch's examples without modification:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-88
+.. GENERATED FROM PYTHON SOURCE LINES 49-85
 
 .. code-block:: default
 
@@ -115,10 +112,10 @@ comes directly from PyTorch's examples without modification:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-99
+.. GENERATED FROM PYTHON SOURCE LINES 86-96
 
 Ordinarily, you would now train this model; however, for this tutorial,
-we will instead download some pre-trained weights. Note that this model
+we will instead download some pretrained weights. Note that this model
 was not trained fully for good accuracy and is used here for
 demonstration purposes only.
 
@@ -128,7 +125,7 @@ This is required since operators like dropout or batchnorm behave
 differently in inference and training mode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-114
+.. GENERATED FROM PYTHON SOURCE LINES 96-111
 
 .. code-block:: default
 
@@ -148,7 +145,7 @@ differently in inference and training mode.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-134
+.. GENERATED FROM PYTHON SOURCE LINES 112-131
 
 Exporting a model in PyTorch works via tracing or scripting. This
 tutorial will use as an example a model exported by tracing.
@@ -170,7 +167,7 @@ To learn more details about PyTorch's export interface, check out the
 `torch.onnx documentation <https://pytorch.org/docs/master/onnx.html>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-151
+.. GENERATED FROM PYTHON SOURCE LINES 131-148
 
 .. code-block:: default
 
@@ -192,16 +189,16 @@ To learn more details about PyTorch's export interface, check out the
                                     'output' : {0 : 'batch_size'}})
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-167
+.. GENERATED FROM PYTHON SOURCE LINES 149-164
 
 We also computed ``torch_out``, the output after of the model,
 which we will use to verify that the model we exported computes
 the same values when run in ONNX Runtime.
 
 But before verifying the model's output with ONNX Runtime, we will check
-the ONNX model with ONNX's API.
+the ONNX model with ONNX API.
 First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
-will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
+will output a ``onnx.ModelProto`` structure (a top-level file/container format for bundling a ML model.
 For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
 Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 and confirm that the model has a valid schema.
@@ -210,7 +207,7 @@ version, the graph's structure, as well as the nodes and their inputs
 and outputs.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-174
+.. GENERATED FROM PYTHON SOURCE LINES 164-171
 
 .. code-block:: default
 
@@ -222,7 +219,7 @@ and outputs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-188
+.. GENERATED FROM PYTHON SOURCE LINES 172-185
 
 Now let's compute the output using ONNX Runtime's Python APIs.
 This part can normally be done in a separate process or on another
@@ -233,12 +230,12 @@ for the network.
 In order to run the model with ONNX Runtime, we need to create an
 inference session for the model with the chosen configuration
 parameters (here we use the default config).
-Once the session is created, we evaluate the model using the run() api.
+Once the session is created, we evaluate the model using the run() API.
 The output of this call is a list containing the outputs of the model
 computed by ONNX Runtime.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-206
+.. GENERATED FROM PYTHON SOURCE LINES 185-203
 
 .. code-block:: default
 
@@ -261,26 +258,26 @@ computed by ONNX Runtime.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-212
+.. GENERATED FROM PYTHON SOURCE LINES 204-209
 
 We should see that the output of PyTorch and ONNX Runtime runs match
-numerically with the given precision (rtol=1e-03 and atol=1e-05).
+numerically with the given precision (``rtol=1e-03`` and ``atol=1e-05``).
 As a side-note, if they do not match then there is an issue in the
 ONNX exporter, so please contact us in that case.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-218
+.. GENERATED FROM PYTHON SOURCE LINES 212-215
 
 Running the model on an image using ONNX Runtime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-223
+.. GENERATED FROM PYTHON SOURCE LINES 218-220
 
 So far we have exported a model from PyTorch and shown how to load it
 and run it in ONNX Runtime with a dummy tensor as an input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-231
+.. GENERATED FROM PYTHON SOURCE LINES 222-228
 
 For this tutorial, we will use a famous cat image used widely which
 looks like below
@@ -289,15 +286,15 @@ looks like below
    :alt: cat
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-246
+.. GENERATED FROM PYTHON SOURCE LINES 230-243
 
-First, let's load the image, pre-process it using standard PIL
+First, let's load the image, preprocess it using standard PIL
 python library. Note that this preprocessing is the standard practice of
 processing data for training/testing neural networks.
 
 We first resize the image to fit the size of the model's input (224x224).
 Then we split the image into its Y, Cb, and Cr components.
-These components represent a greyscale image (Y), and
+These components represent a grayscale image (Y), and
 the blue-difference (Cb) and red-difference (Cr) chroma components.
 The Y component being more sensitive to the human eye, we are
 interested in this component which we will be transforming.
@@ -305,7 +302,7 @@ After extracting the Y component, we convert it to a tensor which
 will be the input of our model.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-263
+.. GENERATED FROM PYTHON SOURCE LINES 243-260
 
 .. code-block:: default
 
@@ -327,14 +324,14 @@ will be the input of our model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 264-268
+.. GENERATED FROM PYTHON SOURCE LINES 261-265
 
 Now, as a next step, let's take the tensor representing the
-greyscale resized cat image and run the super-resolution model in
+grayscale resized cat image and run the super-resolution model in
 ONNX Runtime as explained previously.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-274
+.. GENERATED FROM PYTHON SOURCE LINES 265-271
 
 .. code-block:: default
 
@@ -345,7 +342,7 @@ ONNX Runtime as explained previously.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-282
+.. GENERATED FROM PYTHON SOURCE LINES 272-279
 
 At this point, the output of the model is a tensor.
 Now, we'll process the output of the model to construct back the
@@ -355,7 +352,7 @@ implementation of super-resolution model
 `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-297
+.. GENERATED FROM PYTHON SOURCE LINES 279-294
 
 .. code-block:: default
 
@@ -375,7 +372,7 @@ implementation of super-resolution model
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 298-313
+.. GENERATED FROM PYTHON SOURCE LINES 295-310
 
 .. figure:: /_static/img/cat_superres_with_ort.jpg
    :alt: output\_cat

@@ -101,7 +101,7 @@ itself consists of ``nlayers`` of `nn.TransformerEncoderLayer <https://pytorch.o
 As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
 such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
 other half are on another. To do this, we pull out the ``Encoder`` and
-``Decoder`` sections into seperate modules and then build an nn.Sequential
+``Decoder`` sections into separate modules and then build an ``nn.Sequential``
 representing the original Transformer module.
 
 .. GENERATED FROM PYTHON SOURCE LINES 80-122
@@ -177,7 +177,7 @@ Load and batch data
 -------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-169
+.. GENERATED FROM PYTHON SOURCE LINES 142-170
 
 The training process uses Wikitext-2 dataset from ``torchtext``. 
 To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
@@ -191,23 +191,24 @@ and a batch size of 4, we would divide the alphabet into 4 sequences of
 length 6:
 
 .. math::
-  \begin{bmatrix}
-  \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
-  \end{bmatrix}
-  \Rightarrow
-  \begin{bmatrix}
-  \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
-  \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
-  \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
-  \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-  \end{bmatrix}
+
+    \begin{bmatrix}
+   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+   \end{bmatrix}
+   \Rightarrow
+   \begin{bmatrix}
+   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+   \end{bmatrix}
 
 These columns are treated as independent by the model, which means that
 the dependence of ``G`` and ``F`` can not be learned, but allows more
 efficient batch processing.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-214
+.. GENERATED FROM PYTHON SOURCE LINES 170-215
 
 .. code-block:: default
 
@@ -237,11 +238,11 @@ efficient batch processing.
         device = torch.device(2 * rank)
 
         def batchify(data, bsz, rank, world_size, is_train=False):
-            # Divide the dataset into bsz parts.
+            # Divide the dataset into ``bsz`` parts.
             nbatch = data.size(0) // bsz
             # Trim off any extra elements that wouldn't cleanly fit (remainders).
             data = data.narrow(0, 0, nbatch * bsz)
-            # Evenly divide the data across the bsz batches.
+            # Evenly divide the data across the ``bsz`` batches.
             data = data.view(bsz, -1).t().contiguous()
             # Divide the data across the ranks only for training data.
             if is_train:
@@ -257,13 +258,13 @@ efficient batch processing.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-218
+.. GENERATED FROM PYTHON SOURCE LINES 216-219
 
 Functions to generate input and target sequence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-233
+.. GENERATED FROM PYTHON SOURCE LINES 222-234
 
 ``get_batch()`` function generates the input and target sequence for
 the transformer model. It subdivides the source data into chunks of
@@ -278,7 +279,7 @@ with the ``S`` dimension in the Transformer model. The batch dimension
 ``N`` is along dimension 1.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-243
+.. GENERATED FROM PYTHON SOURCE LINES 234-244
 
 .. code-block:: default
 
@@ -293,13 +294,13 @@ with the ``S`` dimension in the Transformer model. The batch dimension
             return data.t(), target
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 244-247
+.. GENERATED FROM PYTHON SOURCE LINES 245-248
 
 Model scale and Pipe initialization
 -----------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-265
+.. GENERATED FROM PYTHON SOURCE LINES 251-266
 
 To demonstrate training large Transformer models using pipeline parallelism,
 we scale up the Transformer layers appropriately. We use an embedding
@@ -315,9 +316,9 @@ single process to drive multiple GPUs.
 
 The pipeline is then initialized with 8 transformer layers on one GPU and 8
 transformer layers on the other GPU. One pipe is setup across GPUs 0 and 1 and
-another across GPUs 2 and 3. Both pipes are then replicated using DistributedDataParallel.
+another across GPUs 2 and 3. Both pipes are then replicated using ``DistributedDataParallel``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-335
+.. GENERATED FROM PYTHON SOURCE LINES 266-336
 
 .. code-block:: default
 
@@ -325,9 +326,9 @@ another across GPUs 2 and 3. Both pipes are then replicated using DistributedDat
     # In 'run_worker'
         ntokens = len(vocab) # the size of vocabulary
         emsize = 4096 # embedding dimension
-        nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
-        nlayers = 8 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-        nhead = 16 # the number of heads in the multiheadattention models
+        nhid = 4096 # the dimension of the feedforward network model in ``nn.TransformerEncoder``
+        nlayers = 8 # the number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``
+        nhead = 16 # the number of heads in the Multihead Attention models
         dropout = 0.2 # the dropout value
 
         from torch.distributed import rpc
@@ -346,7 +347,7 @@ another across GPUs 2 and 3. Both pipes are then replicated using DistributedDat
             )
         )
 
-        # Num gpus for model parallelism.
+        # Number of GPUs for model parallelism.
         num_gpus = 2
         partition_len = ((nlayers - 1) // num_gpus) + 1
 
@@ -392,13 +393,13 @@ another across GPUs 2 and 3. Both pipes are then replicated using DistributedDat
         print_with_rank('Total parameters in model: {:,}'.format(get_total_params(model)))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 336-339
+.. GENERATED FROM PYTHON SOURCE LINES 337-340
 
 Run the model
 -------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-352
+.. GENERATED FROM PYTHON SOURCE LINES 343-353
 
 `CrossEntropyLoss <https://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
 is applied to track the loss and
@@ -411,7 +412,7 @@ training, we use
 function to scale all the gradient together to prevent exploding.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 352-413
+.. GENERATED FROM PYTHON SOURCE LINES 353-414
 
 .. code-block:: default
 
@@ -477,12 +478,12 @@ function to scale all the gradient together to prevent exploding.
             return total_loss / (len(data_source) - 1)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 414-416
+.. GENERATED FROM PYTHON SOURCE LINES 415-417
 
 Loop over epochs. Save the model if the validation loss is the best
 we've seen so far. Adjust the learning rate after each epoch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 416-439
+.. GENERATED FROM PYTHON SOURCE LINES 417-440
 
 .. code-block:: default
 
@@ -510,14 +511,14 @@ we've seen so far. Adjust the learning rate after each epoch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 440-444
+.. GENERATED FROM PYTHON SOURCE LINES 441-445
 
 Evaluate the model with the test dataset
 -------------------------------------
 
 Apply the best model to check the result with the test dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 444-458
+.. GENERATED FROM PYTHON SOURCE LINES 445-459
 
 .. code-block:: default
 
@@ -536,13 +537,13 @@ Apply the best model to check the result with the test dataset.
         world_size = 2
         mp.spawn(run_worker, args=(world_size, ), nprocs=world_size, join=True)
 
-.. GENERATED FROM PYTHON SOURCE LINES 459-462
+.. GENERATED FROM PYTHON SOURCE LINES 460-463
 
 Output
 ------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 465-516
+.. GENERATED FROM PYTHON SOURCE LINES 466-517
 
 .. code-block:: py
 

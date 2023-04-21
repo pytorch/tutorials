@@ -90,7 +90,6 @@ first and most popular attack methods, the Fast Gradient Sign Attack
 # into the implementation.
 # 
 
-from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -98,13 +97,6 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
-
-# NOTE: This is a hack to get around "User-agent" limitations when downloading MNIST datasets
-#       see, https://github.com/pytorch/vision/issues/3497 for more information
-from six.moves import urllib
-opener = urllib.request.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-urllib.request.install_opener(opener)
 
 
 ######################################################################
@@ -131,7 +123,7 @@ urllib.request.install_opener(opener)
 # -  ``pretrained_model`` - path to the pretrained MNIST model which was
 #    trained with
 #    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
-#    For simplicity, download the pretrained model `here <https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing>`__.
+#    For simplicity, download the pretrained model `here <https://drive.google.com/file/d/1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl/view?usp=drive_link>`__.
 # 
 # -  ``use_cuda`` - boolean flag to use CUDA if desired and available.
 #    Note, a GPU with CUDA is not critical for this tutorial as a CPU will
@@ -141,6 +133,8 @@ urllib.request.install_opener(opener)
 epsilons = [0, .05, .1, .15, .2, .25, .3]
 pretrained_model = "data/lenet_mnist_model.pth"
 use_cuda=True
+# Set random seed for reproducibility
+torch.manual_seed(42)
 
 
 ######################################################################
@@ -160,37 +154,45 @@ use_cuda=True
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.conv2_drop = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, 10)
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
         x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+        output = F.log_softmax(x, dim=1)
+        return output
 
 # MNIST Test dataset and dataloader declaration
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data', train=False, download=True, transform=transforms.Compose([
             transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
             ])), 
         batch_size=1, shuffle=True)
 
 # Define what device we are using
 print("CUDA Available: ",torch.cuda.is_available())
-device = torch.device("cuda" if (use_cuda and torch.cuda.is_available()) else "cpu")
+device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu")
 
 # Initialize the network
 model = Net().to(device)
 
 # Load the pretrained model
-model.load_state_dict(torch.load(pretrained_model, map_location='cpu'))
+model.load_state_dict(torch.load(pretrained_model, map_location=device))
 
 # Set the model in evaluation mode. In this case this is for the Dropout layers
 model.eval()
@@ -224,6 +226,26 @@ def fgsm_attack(image, epsilon, data_grad):
     perturbed_image = torch.clamp(perturbed_image, 0, 1)
     # Return the perturbed image
     return perturbed_image
+
+# restores the tensors to their original scale
+def denorm(batch, mean=[0.1307], std=[0.3081]):
+    """
+    Convert a batch of tensors to their original scale.
+
+    Args:
+        batch (torch.Tensor): Batch of normalized tensors.
+        mean (torch.Tensor or list): Mean used for normalization.
+        std (torch.Tensor or list): Standard deviation used for normalization.
+
+    Returns:
+        torch.Tensor: batch of tensors without normalization applied to them.
+    """
+    if isinstance(mean, list):
+        mean = torch.tensor(mean).to(device)
+    if isinstance(std, list):
+        std = torch.tensor(std).to(device)
+    
+    return batch * std.view(1, -1, 1, 1) + mean.view(1, -1, 1, 1)
 
 
 ######################################################################
@@ -279,18 +301,24 @@ def test( model, device, test_loader, epsilon ):
         # Collect ``datagrad``
         data_grad = data.grad.data
 
+        # Restore the data to its original scale
+        data_denorm = denorm(data)
+
         # Call FGSM Attack
-        perturbed_data = fgsm_attack(data, epsilon, data_grad)
+        perturbed_data = fgsm_attack(data_denorm, epsilon, data_grad)
+
+        # Reapply normalization
+        perturbed_data_normalized = transforms.Normalize((0.1307,), (0.3081,))(perturbed_data)
 
         # Re-classify the perturbed image
-        output = model(perturbed_data)
+        output = model(perturbed_data_normalized)
 
         # Check for success
         final_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
         if final_pred.item() == target.item():
             correct += 1
             # Special case for saving 0 epsilon examples
-            if (epsilon == 0) and (len(adv_examples) < 5):
+            if epsilon == 0 and len(adv_examples) < 5:
                 adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
                 adv_examples.append( (init_pred.item(), final_pred.item(), adv_ex) )
         else:
@@ -301,7 +329,7 @@ def test( model, device, test_loader, epsilon ):
 
     # Calculate final accuracy for this epsilon
     final_acc = correct/float(len(test_loader))
-    print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader), final_acc))
+    print(f"Epsilon: {epsilon}\tTest Accuracy = {correct} / {len(test_loader)} = {final_acc}")
 
     # Return the accuracy and an adversarial example
     return final_acc, adv_examples
@@ -387,9 +415,9 @@ for i in range(len(epsilons)):
         plt.xticks([], [])
         plt.yticks([], [])
         if j == 0:
-            plt.ylabel("Eps: {}".format(epsilons[i]), fontsize=14)
+            plt.ylabel(f"Eps: {epsilons[i]}", fontsize=14)
         orig,adv,ex = examples[i][j]
-        plt.title("{} -> {}".format(orig, adv))
+        plt.title(f"{orig} -> {adv}")
         plt.imshow(ex, cmap="gray")
 plt.tight_layout()
 plt.show()

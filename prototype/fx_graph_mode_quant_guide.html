@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>(prototype) FX Graph Mode Quantization User Guide &mdash; PyTorch Tutorials 2.0.0+cu117 documentation</title>
+  <title>(prototype) FX Graph Mode Quantization User Guide &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
   <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
@@ -41,18 +41,13 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-  <!-- Google Analytics -->
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-117752657-2');
-    </script>
-  
-  <!-- End Google Analytics -->
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+    <!-- End Google Tag Manager -->
   
 
   
@@ -230,7 +225,7 @@
               
               
                 <div class="version">
-                  2.0.0+cu117
+                  2.0.1+cu117
                 </div>
               
             
@@ -323,6 +318,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -382,7 +378,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -507,6 +503,10 @@
 
         
 
+          <!-- Google Tag Manager (noscript) -->
+          <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <!-- End Google Tag Manager (noscript) -->
           
           <div class="rst-content">
           
@@ -517,7 +517,7 @@
 <h1>(prototype) FX Graph Mode Quantization User Guide<a class="headerlink" href="#prototype-fx-graph-mode-quantization-user-guide" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/jerryzh168">Jerry Zhang</a></p>
 <p>FX Graph Mode Quantization requires a symbolically traceable model.
-We use the FX framework (TODO: link) to convert a symbolically traceable nn.Module instance to IR,
+We use the FX framework to convert a symbolically traceable nn.Module instance to IR,
 and we operate on the IR to execute the quantization passes.
 Please post your question about symbolically tracing your model in <a class="reference external" href="https://discuss.pytorch.org/c/quantization/17">PyTorch Discussion Forum</a></p>
 <p>Quantization will only work on the symbolically traceable parts of your model.
@@ -542,12 +542,38 @@ You can use any combination of these options:</p>
 </dl>
 </li>
 </ol>
-<div class="section" id="a-symbolically-trace-only-the-code-that-needs-to-be-quantized">
-<h2>1.a. Symbolically trace only the code that needs to be quantized<a class="headerlink" href="#a-symbolically-trace-only-the-code-that-needs-to-be-quantized" title="Permalink to this heading">¶</a></h2>
+<p>If the code that is not symbolically traceable does not need to be quantized, we have the following two options
+to run FX Graph Mode Quantization:</p>
+<div class="section" id="symbolically-trace-only-the-code-that-needs-to-be-quantized">
+<h2>Symbolically trace only the code that needs to be quantized<a class="headerlink" href="#symbolically-trace-only-the-code-that-needs-to-be-quantized" title="Permalink to this heading">¶</a></h2>
 <p>When the whole model is not symbolically traceable but the submodule we want to quantize is
-symbolically traceable, we can run quantization only on that submodule.
-before:</p>
+symbolically traceable, we can run quantization only on that submodule.</p>
+<p>before:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">M</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">non_traceable_code_1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">traceable_code</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">non_traceable_code_2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+</div>
 <p>after:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FP32Traceable</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">traceable_code</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span> <span class="nc">M</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traceable_submodule</span> <span class="o">=</span> <span class="n">FP32Traceable</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traceable_code_1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># We&#39;ll only symbolic trace/quantize this submodule</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traceable_submodule</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traceable_code_2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+</div>
 <p>quantization code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">qconfig_mapping</span> <span class="o">=</span> <span class="n">QConfigMapping</span><span class="p">()</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig</span><span class="p">)</span>
 <span class="n">model_fp32</span><span class="o">.</span><span class="n">traceable_submodule</span> <span class="o">=</span> \
@@ -556,6 +582,9 @@ before:</p>
 </div>
 <p>Note if original model needs to be preserved, you will have to
 copy it yourself before calling the quantization APIs.</p>
+</div>
+<div class="section" id="skip-symbolically-trace-the-non-traceable-code">
+<h2>Skip symbolically trace the non-traceable code<a class="headerlink" href="#skip-symbolically-trace-the-non-traceable-code" title="Permalink to this heading">¶</a></h2>
 <p>When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized,
 we can factor out this part of the code into a submodule and skip symbolically trace that submodule.</p>
 <p>before</p>
@@ -608,6 +637,9 @@ we can factor out this part of the code into a submodule and skip symbolically t
 </pre></div>
 </div>
 <p>If the code that is not symbolically traceable needs to be quantized, we have the following two options:</p>
+</div>
+<div class="section" id="refactor-your-code-to-make-it-symbolically-traceable">
+<h2>Refactor your code to make it symbolically traceable<a class="headerlink" href="#refactor-your-code-to-make-it-symbolically-traceable" title="Permalink to this heading">¶</a></h2>
 <p>If it is easy to refactor the code and make the code symbolically traceable,
 we can refactor the code and remove the use of non-traceable constructs in python.</p>
 <p>More information about symbolic tracing support can be found in: (TODO: link)</p>
@@ -628,9 +660,11 @@ since x.view also supports list input.</p>
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>quantization code:</p>
 <p>This can be combined with other approaches and the quantization code
 depends on the model.</p>
+</div>
+<div class="section" id="write-your-own-observed-and-quantized-submodule">
+<h2>Write your own observed and quantized submodule<a class="headerlink" href="#write-your-own-observed-and-quantized-submodule" title="Permalink to this heading">¶</a></h2>
 <p>If the non-traceable code can’t be refactored to be symbolically traceable,
 for example it has some loops that can’t be eliminated, like nn.LSTM,
 we’ll need to factor out the non-traceable code to a submodule (we call it CustomModule in fx graph mode quantization) and
@@ -653,9 +687,8 @@ non-traceable logic, wrapped in a module</p>
     <span class="o">...</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>Define observed version of FP32NonTraceable</p></li>
-</ol>
+<p>2. Define observed version of
+FP32NonTraceable</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ObservedNonTraceable</span><span class="p">:</span>
 
     <span class="nd">@classmethod</span>
@@ -812,7 +845,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">(prototype) FX Graph Mode Quantization User Guide</a><ul>
-<li><a class="reference internal" href="#a-symbolically-trace-only-the-code-that-needs-to-be-quantized">1.a. Symbolically trace only the code that needs to be quantized</a></li>
+<li><a class="reference internal" href="#symbolically-trace-only-the-code-that-needs-to-be-quantized">Symbolically trace only the code that needs to be quantized</a></li>
+<li><a class="reference internal" href="#skip-symbolically-trace-the-non-traceable-code">Skip symbolically trace the non-traceable code</a></li>
+<li><a class="reference internal" href="#refactor-your-code-to-make-it-symbolically-traceable">Refactor your code to make it symbolically traceable</a></li>
+<li><a class="reference internal" href="#write-your-own-observed-and-quantized-submodule">Write your own observed and quantized submodule</a></li>
 </ul>
 </li>
 </ul>
