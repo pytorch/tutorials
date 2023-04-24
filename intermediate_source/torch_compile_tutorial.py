@@ -41,7 +41,7 @@ torch.compile Tutorial
 # Basic Usage
 # ------------
 #
-# ``torch.compile`` is included in the latest PyTorch nightlies.
+# ``torch.compile`` is included in the latest PyTorch..
 # Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
 # binary. If Triton is still missing, try installing ``torchtriton`` via pip 
 # (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
@@ -125,7 +125,7 @@ def init_model():
 # First, let's compare inference.
 #
 # Note that in the call to ``torch.compile``, we have have the additional
-# ``mode`` kwarg, which we will discuss below.
+# ``mode`` argument, which we will discuss below.
 
 def evaluate(mod, inp):
     return mod(inp)
@@ -184,7 +184,7 @@ print("~" * 10)
 # GPU compute and the observed speedup may be less significant.
 #
 # You may also see different speedup results depending on the chosen ``mode``
-# kwarg. Since our model and data are small, we want to reduce overhead as
+# argument. Since our model and data are small, we want to reduce overhead as
 # much as possible, and so we chose ``"reduce-overhead"``. For your own models,
 # you may need to experiment with different modes to maximize speedup. You can
 # read more about modes `here <https://pytorch.org/get-started/pytorch-2.0/#user-experience>`__.

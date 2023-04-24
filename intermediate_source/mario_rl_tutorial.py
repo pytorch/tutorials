@@ -3,10 +3,7 @@
 Train a Mario-playing RL Agent
 ================
 
-Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
-Subramanian <https://github.com/suraj813>`__, `Howard
-Wang <https://github.com/hw26>`__, `Steven
-Guo <https://github.com/GuoYuzhang>`__.
+**Authors:** `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj Subramanian <https://github.com/suraj813>`__, `Howard Wang <https://github.com/hw26>`__, `Steven Guo <https://github.com/GuoYuzhang>`__.
 
 
 This tutorial walks you through the fundamentals of Deep Reinforcement
@@ -308,9 +305,9 @@ class Mario:
     Given a state, choose an epsilon-greedy action and update value of step.
 
     Inputs:
-    state(LazyFrame): A single observation of the current state, dimension is (state_dim)
+    state(``LazyFrame``): A single observation of the current state, dimension is (state_dim)
     Outputs:
-    action_idx (int): An integer representing which action Mario will perform
+    ``action_idx`` (``int``): An integer representing which action Mario will perform
     """
         # EXPLORE
         if np.random.rand() < self.exploration_rate:
@@ -359,11 +356,11 @@ class Mario(Mario):  # subclassing for continuity
         Store the experience to self.memory (replay buffer)
 
         Inputs:
-        state (LazyFrame),
-        next_state (LazyFrame),
-        action (int),
-        reward (float),
-        done(bool))
+        state (``LazyFrame``),
+        next_state (``LazyFrame``),
+        action (``int``),
+        reward (``float``),
+        done(``bool``))
         """
         def first_if_tuple(x):
             return x[0] if isinstance(x, tuple) else x
@@ -399,7 +396,7 @@ class Mario(Mario):  # subclassing for continuity
 # In our implementation, we share feature generator ``features`` across
 # :math:`Q_{online}` and :math:`Q_{target}`, but maintain separate FC
 # classifiers for each. :math:`\theta_{target}` (the parameters of
-# :math:`Q_{target}`) is frozen to prevent updation by backprop. Instead,
+# :math:`Q_{target}`) is frozen to prevent updating by backprop. Instead,
 # it is periodically synced with :math:`\theta_{online}` (more on this
 # later).
 #
@@ -408,7 +405,7 @@ class Mario(Mario):  # subclassing for continuity
 
 
 class MarioNet(nn.Module):
-    """mini cnn structure
+    """mini CNN structure
   input -> (conv2d + relu) x 3 -> flatten -> (dense + relu) x 2 -> output
   """
 

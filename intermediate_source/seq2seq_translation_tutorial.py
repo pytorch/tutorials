@@ -106,7 +106,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # yet, someone did the extra work of splitting language pairs into
 # individual text files here: https://www.manythings.org/anki/
 #
-# The English to French pairs are too big to include in the repo, so
+# The English to French pairs are too big to include in the repository, so
 # download to ``data/eng-fra.txt`` before continuing. The file is a tab
 # separated list of translation pairs:
 #
@@ -301,10 +301,10 @@ print(random.choice(pairs))
 # length and order, which makes it ideal for translation between two
 # languages.
 #
-# Consider the sentence "Je ne suis pas le chat noir" → "I am not the
-# black cat". Most of the words in the input sentence have a direct
+# Consider the sentence ``Je ne suis pas le chat noir`` → ``I am not the
+# black cat``. Most of the words in the input sentence have a direct
 # translation in the output sentence, but are in slightly different
-# orders, e.g. "chat noir" and "black cat". Because of the "ne/pas"
+# orders, e.g. ``chat noir`` and ``black cat``. Because of the ``ne/pas``
 # construction there is also one more word in the input sentence. It would
 # be difficult to produce a correct translation directly from the sequence
 # of input words.
@@ -844,8 +844,8 @@ evaluateAndShowAttention("c est un jeune directeur plein de talent .")
 #    -  Chat → Response
 #    -  Question → Answer
 #
-# -  Replace the embeddings with pre-trained word embeddings such as word2vec or
-#    GloVe
+# -  Replace the embeddings with pretrained word embeddings such as ``word2vec`` or
+#    ``GloVe``
 # -  Try with more layers, more hidden units, and more sentences. Compare
 #    the training time and results.
 # -  If you use a translation file where pairs have two of the same phrase

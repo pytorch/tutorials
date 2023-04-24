@@ -40,7 +40,7 @@ and its corresponding ``label`` initialized to some random values. Label in pret
 shape (1,1000).
 
 .. note::
-    This tutorial work only on CPU and will not work on GPU (even if tensors are moved to CUDA).
+    This tutorial works only on the CPU and will not work on GPU devices (even if tensors are moved to CUDA).
 
 """
 import torch

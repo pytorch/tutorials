@@ -3,6 +3,7 @@ matrix:
 - name: python
   sources:
     - beginner_source/*.py
+    - intermediate_source/*.py
   dictionary:
     wordlists:
       - en-wordlist.txt
@@ -15,9 +16,14 @@ matrix:
         # Exclude figure rST tags
         - open: '\.\.\s+(figure|literalinclude|math|image|grid)::'
           close: '\n'
+        # Exclude roles:
+        - open: ':(?:(class|py:mod|mod|func)):`'
+          content: '[^`]*'
+          close: '`'
         # Exclude raw directive
         - open: '\.\. (raw)::.*$\n*'
           close: '\n'
+        # Exclude
         # Exclude Python coding directives
         - open: '-\*- coding:'
           close: '\n'
@@ -31,7 +37,7 @@ matrix:
         - open: '(?s)^::\n\n  '
           close: '^\n'
         # Ignore reStructuredText block directives
-        - open: '\.\. (code-block)::.*$\n*'
+        - open: '\.\. (code-block|math)::.*$\n*'
           content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
           close: '(^(?![ \t]+.*$))'
   - pyspelling.filters.markdown:

@@ -15,7 +15,7 @@ control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
 Key learnings:
 
-- How to create an environment in TorchRL, transform its outputs, and collect data from this env;
+- How to create an environment in TorchRL, transform its outputs, and collect data from this environment;
 - How to make your classes talk to each other using :class:`tensordict.TensorDict`;
 - The basics of building your training loop with TorchRL:
 
@@ -166,7 +166,7 @@ max_grad_norm = 1.0
 # When using ``frame_skip`` it is good practice to
 # correct the other frame counts by the number of frames we are grouping
 # together. If we configure a total count of X frames for training but
-# use a ``frame_skip`` of Y, we will be actually collecting XY frames in total
+# use a ``frame_skip`` of Y, we will be actually collecting ``XY`` frames in total
 # which exceeds our predefined budget.
 #
 frame_skip = 1
@@ -187,7 +187,7 @@ total_frames = 50_000 // frame_skip
 # The size of these sub-batches is controlled by ``sub_batch_size``.
 #
 sub_batch_size = 64  # cardinality of the sub-samples gathered from the current data in the inner loop
-num_epochs = 10  # optimisation steps per batch of data collected
+num_epochs = 10  # optimization steps per batch of data collected
 clip_epsilon = (
     0.2  # clip value for PPO loss: see the equation in the intro for more context.
 )
@@ -201,9 +201,9 @@ entropy_eps = 1e-4
 #
 # In RL, an *environment* is usually the way we refer to a simulator or a
 # control system. Various libraries provide simulation environments for reinforcement
-# learning, including Gymnasium (previously OpenAI Gym), DeepMind control suite, and
+# learning, including Gymnasium (previously OpenAI Gym), DeepMind Control Suite, and
 # many others.
-# As a generalistic library, TorchRL's goal is to provide an interchangeable interface
+# As a general library, TorchRL's goal is to provide an interchangeable interface
 # to a large panel of RL simulators, allowing you to easily swap one environment
 # with another. For example, creating a wrapped gym environment can be achieved with few characters:
 #
@@ -214,12 +214,12 @@ base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_s
 # There are a few things to notice in this code: first, we created
 # the environment by calling the ``GymEnv`` wrapper. If extra keyword arguments
 # are passed, they will be transmitted to the ``gym.make`` method, hence covering
-# the most common env construction commands.
+# the most common environment construction commands.
 # Alternatively, one could also directly create a gym environment using ``gym.make(env_name, **kwargs)``
 # and wrap it in a `GymWrapper` class.
 #
 # Also the ``device`` argument: for gym, this only controls the device where
-# input action and observered states will be stored, but the execution will always
+# input action and observed states will be stored, but the execution will always
 # be done on CPU. The reason for this is simply that gym does not support on-device
 # execution, unless specified otherwise. For other libraries, we have control over
 # the execution device and, as much as we can, we try to stay consistent in terms of
@@ -232,8 +232,8 @@ base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_s
 # the policy. In Gym, this is usually achieved via wrappers. TorchRL takes a different
 # approach, more similar to other pytorch domain libraries, through the use of transforms.
 # To add transforms to an environment, one should simply wrap it in a :class:`TransformedEnv`
-# instance, and append the sequence of transforms to it. The transformed env will inherit
-# the device and meta-data of the wrapped env, and transform these depending on the sequence
+# instance, and append the sequence of transforms to it. The transformed environment will inherit
+# the device and meta-data of the wrapped environment, and transform these depending on the sequence
 # of transforms it contains.
 #
 # Normalization
@@ -255,7 +255,7 @@ base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_s
 # to communicate. You could think of it as a python dictionary with some extra
 # tensor features. In practice, this means that many modules we will be working
 # with need to be told what key to read (``in_keys``) and what key to write
-# (``out_keys``) in the tensordict they will receive. Usually, if ``out_keys``
+# (``out_keys``) in the ``tensordict`` they will receive. Usually, if ``out_keys``
 # is omitted, it is assumed that the ``in_keys`` entries will be updated
 # in-place. For our transforms, the only entry we are interested in is referred
 # to as ``"observation"`` and our transform layers will be told to modify this
@@ -295,7 +295,7 @@ print("normalization constant shape:", env.transform[0].loc.shape)
 # environment specs, but you can easily check that your environment specs are
 # adequate.
 # In our example, the :class:`GymWrapper` and :class:`GymEnv` that inherits
-# from it already take care of setting the proper specs for your env so
+# from it already take care of setting the proper specs for your environment so
 # you should not have to care about this.
 #
 # Nevertheless, let's see a concrete example using our transformed
@@ -312,7 +312,7 @@ print("input_spec:", env.input_spec)
 print("action_spec (as defined by input_spec):", env.action_spec)
 
 ######################################################################
-# the :func:`check_env_specs` function runs a small rollout and compares its output against the environemnt
+# the :func:`check_env_specs` function runs a small rollout and compares its output against the environment
 # specs. If no error is raised, we can be confident that the specs are properly defined:
 #
 check_env_specs(env)
@@ -328,7 +328,7 @@ check_env_specs(env)
 # observation may be composite, meaning that it could be composed of more than one
 # tensor. This is not a problem for TorchRL, since the whole set of observations
 # is automatically packed in the output :class:`tensordict.TensorDict`. After executing a rollout
-# (ie a sequence of environment steps and random action generations) over a given
+# (for example, a sequence of environment steps and random action generations) over a given
 # number of steps, we will retrieve a :class:`tensordict.TensorDict` instance with a shape
 # that matches this trajectory length:
 #
@@ -340,7 +340,7 @@ print("Shape of the rollout TensorDict:", rollout.batch_size)
 # Our rollout data has a shape of ``torch.Size([3])`, which matches the number of steps
 # we ran it for. The ``"next"`` entry points to the data coming after the current step.
 # In most cases, the ``"next""`` data at time `t` matches the data at ``t+1``, but this
-# may not be the case if we are using some specific transformations (e.g. mutli-step).
+# may not be the case if we are using some specific transformations (for example, multi-step).
 #
 # Policy
 # ------
@@ -360,13 +360,13 @@ print("Shape of the rollout TensorDict:", rollout.batch_size)
 #     f_{\theta}(\text{observation}) = \mu_{\theta}(\text{observation}), \sigma^{+}_{\theta}(\text{observation})
 #
 # The only extra-difficulty that is brought up here is to split our output in two
-# equal parts and map the second to a scrictly positive space.
+# equal parts and map the second to a strictly positive space.
 #
 # We design the policy in three steps:
 #
 # 1. Define a neural network ``D_obs`` -> ``2 * D_action``. Indeed, our ``loc`` (mu) and ``scale`` (sigma) both have dimension ``D_action``;
 #
-# 2. Append a :class:`NormalParamExtractor` to extract a location and a scale (ie splits the input in two equal parts
+# 2. Append a :class:`NormalParamExtractor` to extract a location and a scale (for example, splits the input in two equal parts
 #   and applies a positive transformation to the scale parameter);
 #
 # 3. Create a probabilistic :class:`TensorDictModule` that can create this distribution and sample from it.
@@ -384,7 +384,7 @@ actor_net = nn.Sequential(
 )
 
 ######################################################################
-# To enable the policy to "talk" with the environment through the tensordict
+# To enable the policy to "talk" with the environment through the ``tensordict``
 # data carrier, we wrap the ``nn.Module`` in a :class:`TensorDictModule`. This
 # class will simply ready the ``in_keys`` it is provided with and write the
 # outputs in-place at the registered ``out_keys``.
@@ -429,7 +429,7 @@ policy_module = ProbabilisticActor(
 # won't be used at inference time. This module will read the observations and
 # return an estimation of the discounted return for the following trajectory.
 # This allows us to amortize learning by relying on the some utility estimation
-# that is learnt on-the-fly during training. Our value network share the same
+# that is learned on-the-fly during training. Our value network share the same
 # structure as the policy, but for simplicity we assign it its own set of
 # parameters.
 #
@@ -484,7 +484,7 @@ print("Running value:", value_module(env.reset()))
 # As for the policy and environment before, the data collector will return
 # :class:`tensordict.TensorDict` instances with a total number of elements that will
 # match ``frames_per_batch``. Using :class:`tensordict.TensorDict` to pass data to the
-# training loop allows you to write dataloading pipelines
+# training loop allows you to write data loading pipelines
 # that are 100% oblivious to the actual specificities of the rollout content.
 #
 collector = SyncDataCollector(
@@ -525,7 +525,7 @@ replay_buffer = ReplayBuffer(
 # Loss function
 # -------------
 #
-# The PPO loss can be directly imported from torchrl for convenience using the
+# The PPO loss can be directly imported from TorchRL for convenience using the
 # :class:`ClipPPOLoss` class. This is the easiest way of utilizing PPO:
 # it hides away the mathematical operations of PPO and the control flow that
 # goes with it.
@@ -536,7 +536,7 @@ replay_buffer = ReplayBuffer(
 # To compute the advantage, one just needs to (1) build the advantage module, which
 # utilizes our value operator, and (2) pass each batch of data through it before each
 # epoch.
-# The GAE module will update the input tensordict with new ``"advantage"`` and
+# The GAE module will update the input ``tensordict`` with new ``"advantage"`` and
 # ``"value_target"`` entries.
 # The ``"value_target"`` is a gradient-free tensor that represents the empirical
 # value that the value network should represent with the input observation.
@@ -612,7 +612,7 @@ for i, tensordict_data in enumerate(collector):
                 + loss_vals["loss_entropy"]
             )
 
-            # Optimization: backward, grad clipping and optim step
+            # Optimization: backward, grad clipping and optimization step
             loss_value.backward()
             # this is not strictly mandatory but it's good practice to keep
             # your gradient norm bounded
@@ -633,8 +633,8 @@ for i, tensordict_data in enumerate(collector):
         # We evaluate the policy once every 10 batches of data.
         # Evaluation is rather simple: execute the policy without exploration
         # (take the expected value of the action distribution) for a given
-        # number of steps (1000, which is our env horizon).
-        # The ``rollout`` method of the env can take a policy as argument:
+        # number of steps (1000, which is our ``env`` horizon).
+        # The ``rollout`` method of the ``env`` can take a policy as argument:
         # it will then execute this policy at each step.
         with set_exploration_mode("mean"), torch.no_grad():
             # execute a rollout with the trained policy
