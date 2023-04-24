@@ -75,7 +75,7 @@ class PositionalEncoding(nn.Module):
 # As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
 # such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
 # other half are on another. To do this, we pull out the ``Encoder`` and
-# ``Decoder`` sections into seperate modules and then build an nn.Sequential
+# ``Decoder`` sections into separate modules and then build an ``nn.Sequential``
 # representing the original Transformer module.
 
 
@@ -151,16 +151,17 @@ def run_worker(rank, world_size):
 # length 6:
 #
 # .. math::
-#   \begin{bmatrix}
-#   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
-#   \end{bmatrix}
-#   \Rightarrow
-#   \begin{bmatrix}
-#   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
-#   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
-#   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
-#   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-#   \end{bmatrix}
+#
+#     \begin{bmatrix}
+#    \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+#    \end{bmatrix}
+#    \Rightarrow
+#    \begin{bmatrix}
+#    \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+#    \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+#    \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+#    \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+#    \end{bmatrix}
 #
 # These columns are treated as independent by the model, which means that
 # the dependence of ``G`` and ``F`` can not be learned, but allows more
@@ -192,11 +193,11 @@ def run_worker(rank, world_size):
     device = torch.device(2 * rank)
 
     def batchify(data, bsz, rank, world_size, is_train=False):
-        # Divide the dataset into bsz parts.
+        # Divide the dataset into ``bsz`` parts.
         nbatch = data.size(0) // bsz
         # Trim off any extra elements that wouldn't cleanly fit (remainders).
         data = data.narrow(0, 0, nbatch * bsz)
-        # Evenly divide the data across the bsz batches.
+        # Evenly divide the data across the ``bsz`` batches.
         data = data.view(bsz, -1).t().contiguous()
         # Divide the data across the ranks only for training data.
         if is_train:
@@ -261,14 +262,14 @@ def run_worker(rank, world_size):
 #
 # The pipeline is then initialized with 8 transformer layers on one GPU and 8
 # transformer layers on the other GPU. One pipe is setup across GPUs 0 and 1 and
-# another across GPUs 2 and 3. Both pipes are then replicated using DistributedDataParallel.
+# another across GPUs 2 and 3. Both pipes are then replicated using ``DistributedDataParallel``.
 
 # In 'run_worker'
     ntokens = len(vocab) # the size of vocabulary
     emsize = 4096 # embedding dimension
-    nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
-    nlayers = 8 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-    nhead = 16 # the number of heads in the multiheadattention models
+    nhid = 4096 # the dimension of the feedforward network model in ``nn.TransformerEncoder``
+    nlayers = 8 # the number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``
+    nhead = 16 # the number of heads in the Multihead Attention models
     dropout = 0.2 # the dropout value
 
     from torch.distributed import rpc
@@ -287,7 +288,7 @@ def run_worker(rank, world_size):
         )
     )
 
-    # Num gpus for model parallelism.
+    # Number of GPUs for model parallelism.
     num_gpus = 2
     partition_len = ((nlayers - 1) // num_gpus) + 1
 
