@@ -544,13 +544,6 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization,Production
 
 .. customcarditem::
-   :header: Introduction to nvFuser
-   :card_description: An introduction to nvFuser
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/nvfuser_intro_tutorial.html
-   :tags: Model-Optimization
-
-.. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ax_logo.png
