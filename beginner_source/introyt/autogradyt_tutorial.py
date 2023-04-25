@@ -153,7 +153,7 @@ print(b)
 #######################################################################
 # This ``grad_fn`` gives us a hint that when we execute the
 # backpropagation step and compute gradients, we’ll need to compute the
-# derivative of :math:`sin(x)` for all this tensor’s inputs.
+# derivative of :math:`\sin(x)` for all this tensor’s inputs.
 # 
 # Let’s perform some more computations:
 # 
@@ -222,8 +222,8 @@ plt.plot(a.detach(), a.grad.detach())
 #    out = d.sum()
 # 
 # Adding a constant, as we did to compute ``d``, does not change the
-# derivative. That leaves :math:`c = 2 * b = 2 * sin(a)`, the derivative
-# of which should be :math:`2 * cos(a)`. Looking at the graph above,
+# derivative. That leaves :math:`c = 2 * b = 2 * \sin(a)`, the derivative
+# of which should be :math:`2 * \cos(a)`. Looking at the graph above,
 # that’s just what we see.
 # 
 # Be aware that only *leaf nodes* of the computation have their gradients
