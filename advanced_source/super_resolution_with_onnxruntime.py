@@ -37,12 +37,12 @@ import torch.onnx
 # and is widely used in image processing or video editing. For this
 # tutorial, we will use a small super-resolution model.
 #
-# First, let's create a SuperResolution model in PyTorch.
+# First, let's create a ``SuperResolution`` model in PyTorch.
 # This model uses the efficient sub-pixel convolution layer described in
 # `"Real-Time Single Image and Video Super-Resolution Using an Efficient
 # Sub-Pixel Convolutional Neural Network" - Shi et al <https://arxiv.org/abs/1609.05158>`__
 # for increasing the resolution of an image by an upscale factor.
-# The model expects the Y component of the YCbCr of an image as an input, and
+# The model expects the Y component of the ``YCbCr`` of an image as an input, and
 # outputs the upscaled Y component in super resolution.
 #
 # `The
@@ -87,7 +87,7 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 
 ######################################################################
 # Ordinarily, you would now train this model; however, for this tutorial,
-# we will instead download some pre-trained weights. Note that this model
+# we will instead download some pretrained weights. Note that this model
 # was not trained fully for good accuracy and is used here for
 # demonstration purposes only.
 #
@@ -154,9 +154,9 @@ torch.onnx.export(torch_model,               # model being run
 # the same values when run in ONNX Runtime.
 #
 # But before verifying the model's output with ONNX Runtime, we will check
-# the ONNX model with ONNX's API.
+# the ONNX model with ONNX API.
 # First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
-# will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
+# will output a ``onnx.ModelProto`` structure (a top-level file/container format for bundling a ML model.
 # For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
 # Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 # and confirm that the model has a valid schema.
@@ -181,7 +181,7 @@ onnx.checker.check_model(onnx_model)
 # In order to run the model with ONNX Runtime, we need to create an
 # inference session for the model with the chosen configuration
 # parameters (here we use the default config).
-# Once the session is created, we evaluate the model using the run() api.
+# Once the session is created, we evaluate the model using the run() API.
 # The output of this call is a list containing the outputs of the model
 # computed by ONNX Runtime.
 #
@@ -205,7 +205,7 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 
 ######################################################################
 # We should see that the output of PyTorch and ONNX Runtime runs match
-# numerically with the given precision (rtol=1e-03 and atol=1e-05).
+# numerically with the given precision (``rtol=1e-03`` and ``atol=1e-05``).
 # As a side-note, if they do not match then there is an issue in the
 # ONNX exporter, so please contact us in that case.
 #
@@ -230,13 +230,13 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 #
 
 ######################################################################
-# First, let's load the image, pre-process it using standard PIL
+# First, let's load the image, preprocess it using standard PIL
 # python library. Note that this preprocessing is the standard practice of
 # processing data for training/testing neural networks.
 #
 # We first resize the image to fit the size of the model's input (224x224).
 # Then we split the image into its Y, Cb, and Cr components.
-# These components represent a greyscale image (Y), and
+# These components represent a grayscale image (Y), and
 # the blue-difference (Cb) and red-difference (Cr) chroma components.
 # The Y component being more sensitive to the human eye, we are
 # interested in this component which we will be transforming.
@@ -262,7 +262,7 @@ img_y.unsqueeze_(0)
 
 ######################################################################
 # Now, as a next step, let's take the tensor representing the
-# greyscale resized cat image and run the super-resolution model in
+# grayscale resized cat image and run the super-resolution model in
 # ONNX Runtime as explained previously.
 #
 
