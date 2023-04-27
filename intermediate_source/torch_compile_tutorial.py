@@ -117,9 +117,9 @@ def generate_data(b):
 
 N_ITERS = 10
 
-from torchvision.models import resnet18
+from torchvision.models import densenet121
 def init_model():
-    return resnet18().to(torch.float32).cuda()
+    return densenet121().to(torch.float32).cuda()
 
 ######################################################################
 # First, let's compare inference.
