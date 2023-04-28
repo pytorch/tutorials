@@ -402,8 +402,8 @@ print(dropout(my_tensor))
 # really a program - with many parameters - that *simulates a mathematical
 # function*. If all we did was multiple tensors by layer weights
 # repeatedly, we could only simulate *linear functions;* further, there
-# would be no point to having many layers, as the whole network would
-# reduce could be reduced to a single matrix multiplication. Inserting
+# would be no point to having many layers, as the whole network
+# could be reduced to a single matrix multiplication. Inserting
 # *non-linear* activation functions between layers is what allows a deep
 # learning model to simulate any function, rather than just linear ones.
 # 
