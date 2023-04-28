@@ -19,7 +19,7 @@ These datasets are currently available in:
 * `torchtext <https://pytorch.org/text/stable/datasets.html>`__
 
 with more to come.
-Using the Yesno dataset from ``torchaudio.datasets.YESNO``, we will
+Using the ``yesno`` dataset from ``torchaudio.datasets.YESNO``, we will
 demonstrate how to effectively and efficiently load data from a PyTorch
 ``Dataset`` into a PyTorch ``DataLoader``.
 """
@@ -66,11 +66,11 @@ import torchaudio
 # 2. Access the data in the dataset
 # ---------------------------------------------------------------
 #
-# The Yesno dataset in ``torchaudio`` features sixty recordings of one
+# The ``yesno`` dataset in ``torchaudio`` features sixty recordings of one
 # individual saying yes or no in Hebrew; with each recording being eight
 # words long (`read more here <https://www.openslr.org/1/>`__).
 #
-# ``torchaudio.datasets.YESNO`` creates a dataset for YesNo.
+# ``torchaudio.datasets.YESNO`` creates a dataset for ``yesno``.
 torchaudio.datasets.YESNO(
      root='./',
      url='http://www.openslr.org/resources/1/waves_yesno.tar.gz',
@@ -81,21 +81,21 @@ torchaudio.datasets.YESNO(
 # Each item in the dataset is a tuple of the form: (waveform, sample_rate,
 # labels).
 #
-# You must set a ``root`` for the Yesno dataset, which is where the
+# You must set a ``root`` for the ``yesno`` dataset, which is where the
 # training and testing dataset will exist. The other parameters are
 # optional, with their default values shown. Here is some additional
 # useful info on the other parameters:
 
 # * ``download``: If true, downloads the dataset from the internet and puts it in root directory. If dataset is already downloaded, it is not downloaded again.
 #
-# Let’s access our Yesno data:
+# Let’s access our ``yesno`` data:
 #
 
-# A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels
+# A data point in ``yesno`` is a tuple (waveform, sample_rate, labels) where labels
 # is a list of integers with 1 for yes and 0 for no.
 yesno_data = torchaudio.datasets.YESNO('./', download=True)
 
-# Pick data point number 3 to see an example of the the yesno_data:
+# Pick data point number 3 to see an example of the the ``yesno_data``:
 n = 3
 waveform, sample_rate, labels = yesno_data[n]
 print("Waveform: {}\nSample rate: {}\nLabels: {}".format(waveform, sample_rate, labels))
