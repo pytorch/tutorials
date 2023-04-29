@@ -43,8 +43,8 @@ import warnings
 
 gpu_ok = False
 if torch.cuda.is_available():
-    device = torch.cuda.get_device_name()
-    if "V100" in device or "A100" in device:
+    device_cap = torch.cuda.get_device_capability()
+    if device_cap in [(7, 0), (8,0)]:
         gpu_ok = True
 
 if not gpu_ok:
