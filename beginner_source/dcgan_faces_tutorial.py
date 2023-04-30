@@ -514,7 +514,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # practices shown in `ganhacks <https://github.com/soumith/ganhacks>`__.
 # Namely, we will “construct different mini-batches for real and fake”
 # images, and also adjust G’s objective function to maximize
-# :math:`logD(G(z))`. Training is split up into two main parts. Part 1
+# :math:`log(D(G(z)))`. Training is split up into two main parts. Part 1
 # updates the Discriminator and Part 2 updates the Generator.
 # 
 # **Part 1 - Train the Discriminator**
