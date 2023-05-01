@@ -117,7 +117,7 @@ Process group initialization
    -     os.environ["MASTER_PORT"] = "12355"
    -     init_process_group(backend="nccl", rank=rank, world_size=world_size)
    +     init_process_group(backend="nccl")
-
+         torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
 
 Use Torchrun-provided env variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

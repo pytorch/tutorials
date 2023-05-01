@@ -27,10 +27,10 @@ def jobs(pr_or_trunk, num_workers=20, indentation=2):
     jobs = {}
 
     # all tutorials that need gpu.nvidia.small.multi machines will be routed by
-    # get_files_to_run.py to 0th worker, similarly for gpu.nvidia.medium and the
+    # get_files_to_run.py to 0th worker, similarly for gpu.nvidia.large and the
     # 1st worker
     needs_gpu_nvidia_small_multi = [0]
-    needs_gpu_nvidia_medium = [1]
+    needs_gpu_nvidia_large = [1]
     jobs[f"pytorch_tutorial_{pr_or_trunk}_build_manager"] = {
         "<<": "*pytorch_tutorial_build_manager_defaults"
     }
@@ -38,8 +38,8 @@ def jobs(pr_or_trunk, num_workers=20, indentation=2):
         job_info = {"<<": "*pytorch_tutorial_build_worker_defaults"}
         if i in needs_gpu_nvidia_small_multi:
             job_info["resource_class"] = "gpu.nvidia.small.multi"
-        if i in needs_gpu_nvidia_medium:
-            job_info["resource_class"] = "gpu.nvidia.medium"
+        if i in needs_gpu_nvidia_large:
+            job_info["resource_class"] = "gpu.nvidia.large"
         jobs[f"pytorch_tutorial_{pr_or_trunk}_build_worker_{i}"] = job_info
 
     return indent(indentation, jobs).replace("'", "")
