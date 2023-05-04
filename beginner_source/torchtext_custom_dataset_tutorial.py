@@ -111,3 +111,25 @@ for sample in dataPipe:
     print(sample)
     break
 
+# %%
+# Now, let us define few functions to perform tokenization:
+
+def eng_tokenize(text):
+    """
+    Tokenize an English text and returns list of tokens
+    """
+    return [token.text for token in eng.tokenizer(text)]
+
+def fin_tokenize(text):
+    """
+    Tokenize a Finnish text and returns list of tokens
+    """
+    return [token.text for token in fin.tokenizer(text)]
+
+# %%
+# Above function accepts a text and returns a list of words
+# as shown below:
+
+print(eng_tokenize("Have a good day!!!"))
+print(fin_tokenize("Hyvää päivänjatkoa!!!"))
+
