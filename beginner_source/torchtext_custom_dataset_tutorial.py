@@ -378,6 +378,6 @@ show_some_transformed_sentences(dataPipe)
 # In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we
 # can use this dataPipe while writing our training function.
 #
-# Some parts of this tutorial was inspired from this article: Torchtext DataLoaders in version 0.14.0
-# `Link: https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 \
-# <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 >`__.
+# Some parts of this tutorial was inspired from this article:
+# Link: `https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71\
+# <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71>`__.
