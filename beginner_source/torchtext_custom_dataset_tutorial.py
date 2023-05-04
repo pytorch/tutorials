@@ -49,3 +49,43 @@ Here <https://www.manythings.org/anki/fin-eng.zip>`__
 #
 #   python -m spacy download en_core_web_sm
 #   python -m spacy download fi_core_news_sm
+
+
+# %%
+# Let us start by importing required modules:
+
+import torchdata.datapipes as dp
+import torchtext.transforms as T
+import spacy
+from torchtext.vocab import build_vocab_from_iterator
+eng = spacy.load("en_core_web_sm") # Load the English model to be used for tokenizing
+fin = spacy.load("fi_core_news_sm") # Load the Finnish model to be used for tokenizing
+
+# %%
+# Now we will load the dataset
+
+FILE_PATH = 'fin.txt'
+dataPipe = dp.iter.IterableWrapper([FILE_PATH])
+dataPipe = dp.iter.FileOpener(dataPipe, mode='rb')
+dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
+
+# %%
+# In the above code block, we are doing following things:
+#
+# 1. At line 2, we are creating an iterable of filenames
+# 2. At line 3, we pass the iterable to `FileOpener` which then
+#    opens the file in read mode
+# 3. At line 4, we call a function to parse the file, which
+#    again returns an iterable of tuples representing each rows
+#    of the tab-delimited file
+#
+# Data pipes can be thought of something like a dataset object, on which
+# we can perform various operations. Check `this tutorial <https://pytorch.org\
+# /data/beta/dp_tutorial.html>`_ for more details on data pipes.
+#
+# We can verify if the iterable has the pair of sentences as shown
+# below:
+
+for sample in dataPipe:
+    print(sample)
+    break
