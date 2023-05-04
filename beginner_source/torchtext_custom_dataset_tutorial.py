@@ -89,3 +89,25 @@ dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
 for sample in dataPipe:
     print(sample)
     break
+
+# %%
+# Note that we also have attribution details along with pair of sentences. We will
+# write a small function to remove the attribution details:
+
+def remove_attribution(row):
+    """
+    Function to keep the first two elements in a tuple
+    """
+    return row[:2]
+dataPipe = dataPipe.map(remove_attribution)
+
+# %%
+# The `map` function at line 2 in above code block can be used to apply some function
+# on each elements of data pipe. Now, we can verify that the data pipe only contains
+# pair of sentences.
+
+
+for sample in dataPipe:
+    print(sample)
+    break
+
