@@ -209,3 +209,67 @@ targetVocab.set_default_index(targetVocab['<unk>'])
 
 print(sourceVocab.get_itos()[:9])
 
+# %%
+# Numericalize sentences using vocabulary
+# ---------------------------------------
+# After building the vocabulary, we need to convert our sentences to corresponding indices.
+# Let us define some functions for this:
+
+def get_transform(vocab):
+    """
+    Create transforms based on given vocabulary. The returned transform is applied to sequence
+    of tokens.
+    """
+    text_tranform = T.Sequential(
+        ## converts the sentences to indices based on given vocabulary
+        T.VocabTransform(vocab=vocab),
+        ## Add <sos> at beginning of each sentence. 1 because the index for <sos> in vocabulary is
+        # 1 as seen in previous section
+        T.AddToken(1, begin=True),
+        ## Add <eos> at beginning of each sentence. 2 because the index for <eos> in vocabulary is
+        # 2 as seen in previous section
+        T.AddToken(2, begin=False)
+    )
+    return text_tranform
+
+# %%
+# Now, let us see how to use the above function. The function returns an object of `Transforms`
+# which we will use on our sentence. Let us take a random sentence and check the working of
+# the transform:
+
+tempList = list(dataPipe)
+someSetence = tempList[798][0]
+print("Some sentence=", end="")
+print(someSetence)
+transformedSentence = get_transform(sourceVocab)(eng_tokenize(someSetence))
+print("Transformed sentence=", end="")
+print(transformedSentence)
+indexToString = sourceVocab.get_itos()
+for index in transformedSentence:
+    print(indexToString[index], end=" ")
+
+# %%
+# In the above code,:
+#
+#   * At line 2, we take a source setence from list that we created from dataPipe at line 1
+#   * At line 5, we get a transform based on a source vocabulary and apply it to a tokenized
+#     sentence. Note that transforms take list of words and not a sentence.
+#   * At line 8, we get the mapping of index to string and then use it get the transformed
+#     sentence
+#
+# Now we will use functions of `dataPipe` to apply transform to all our sentences.
+# Let us define some more functions for this.
+
+def apply_transform(sequence_pair):
+    """
+    Apply transforms to sequence of tokens in a sequence pair
+    """
+
+    return (
+        get_transform(sourceVocab)(eng_tokenize(sequence_pair[0])),
+        get_transform(targetVocab)(fin_tokenize(sequence_pair[1]))
+    )
+dataPipe = dataPipe.map(apply_transform) ## Apply the function to each element in the iterator
+tempList = list(dataPipe)
+print(tempList[0])
+
