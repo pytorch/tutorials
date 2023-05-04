@@ -64,7 +64,7 @@ fin = spacy.load("fi_core_news_sm") # Load the Finnish model to be used for toke
 # %%
 # Now we will load the dataset
 
-FILE_PATH = 'fin.txt'
+FILE_PATH = 'data/fin.txt'
 dataPipe = dp.iter.IterableWrapper([FILE_PATH])
 dataPipe = dp.iter.FileOpener(dataPipe, mode='rb')
 dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
