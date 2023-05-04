@@ -25,3 +25,27 @@ the `Tatoeba Project <https://tatoeba.org/en>`_ which can be downloaded from thi
 Here <https://www.manythings.org/anki/fin-eng.zip>`__
 """
 
+# %%
+# Setup
+# -----
+#
+# First, download the dataset, extract the zip, and note the path to the file `fin.txt`.
+# The dataset can be downloaded from this link: `Click Here <https://www.manythings.org/anki/fin\
+# -eng.zip>`__ .
+#
+# Ensure that following packages are installed:
+#
+# * `Torchdata 0.6.0 <https://pytorch.org/data/beta/index.html>`_ (Installation instructions: `C\
+#   lick here <https://github.com/pytorch/data>`__)
+# * `Torchtext 0.15.0 <https://pytorch.org/text/stable/index.html>`_ (Installation instructions:\
+#   `Click here <https://github.com/pytorch/text>`__)
+# * Spacy (Docs: `Click here <https://spacy.io/usage>`__)
+#
+# Here, we are using `Spacy` to tokenize text. In simple words tokenization means to
+# convert a sentence to list of words. Spacy is a python package used for various Natural
+# Language Processing (NLP) tasks.
+#
+# Download the English and Finnish models from spacy as shown below: ::
+#
+#   python -m spacy download en_core_web_sm
+#   python -m spacy download fi_core_news_sm
