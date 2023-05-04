@@ -877,6 +877,7 @@ Additional Resources
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
+   beginner/torchtext_custom_dataset_tutorial
 
 
 .. toctree::
