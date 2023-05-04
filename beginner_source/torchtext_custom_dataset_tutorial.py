@@ -344,3 +344,31 @@ def apply_padding(pair_of_sequences):
 # vocabulary.
 dataPipe = dataPipe.map(apply_padding)
 
+# %%
+# Now, we can use the index to string mapping to see how the sequence would look with tokens
+# instead of indices:
+
+sourceItoS = sourceVocab.get_itos()
+targetItoS = targetVocab.get_itos()
+
+def show_some_transformed_senetnces(data_pipe):
+    """
+    Function to show how the senetnces look like after applying all transforms.
+    Here we try to print actual words instead of corresponding index
+    """
+    for sources,targets in data_pipe:
+        if sources[0][-1] != 0:
+            continue # Just to visualize padding of shorter sentences
+        for i in range(4):
+            source = ""
+            for token in sources[i]:
+                source += " " + sourceItoS[token]
+            target = ""
+            for token in targets[i]:
+                target += " " + targetItoS[token]
+            print(f"Source: {source}")
+            print(f"Traget: {target}")
+        break
+# %%
+# In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we can
+# use this dataPipe while writing our training function.
