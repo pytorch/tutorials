@@ -107,8 +107,8 @@ download:
 	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
 
 	# Download dataset for beginner_source/torchtext_custom_dataset_tutorial.py
-	wget -nv -N https://www.manythings.org/anki/fin-eng.zip -P $(DATADIR)
-	unzip -o $(DATADIR)/fin-eng.zip -d beginner_source/data/
+	wget -nv -N https://www.manythings.org/anki/deu-eng.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/deu-eng.zip -d beginner_source/data/
 
 
 docs:
