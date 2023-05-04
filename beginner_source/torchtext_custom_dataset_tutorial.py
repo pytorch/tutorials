@@ -273,3 +273,56 @@ dataPipe = dataPipe.map(apply_transform) ## Apply the function to each element i
 tempList = list(dataPipe)
 print(tempList[0])
 
+# %%
+# Make batches (with bucket batch)
+# --------------------------------
+# Generally, we train models in batches. While working for sequence to sequence models, it is
+# recommended to keep the length of sequences in a batch similar. For that we will use
+# `bucketbatch` function of `dataPipe`.
+#
+# Let us define some functions that will be used by the `bucketbatch` function.
+
+def sort_bucket(bucket):
+    """
+    Function to sort a given bucket. Here, we want to sort based on the length of
+    source and target sequence.
+    """
+    return sorted(bucket, key=lambda x: (len(x[0]), len(x[1])))
+
+# %%
+# Now, we will apply the `bucketbatch` function:
+
+dataPipe = dataPipe.bucketbatch(
+    batch_size = 4, batch_num=5,  bucket_num=1,
+    use_in_batch_shuffle=False, sort_key=sort_bucket
+)
+
+# %%
+# In the above code block:
+#
+#   * We keep batch size = 4.
+#   * `batch_num` is the number of batches to keep in a bucket
+#   * `bucket_num` is the number of buckets to keep in a pool for shuffling
+#   * `sort_key` specifies the function that takes a bucket and sorts it
+#
+# Now, let us consider a batch of source sentences as `X` and a batch of target sentences as `y`.
+# Generally, while training a model, we predict on a batch of `X` and compare the result with `y`.
+# But, a batch in our `dataPipe` is of the form `[(X_1,y_1), (X_2,y_2), (X_3,y_3), (X_4,y_4)]`:
+
+print(list(dataPipe)[0])
+# %%
+# So, we will now convert them into the form: `((X_1,X_2,X_3,X_4), (y_1,y_2,y_3,y_4))`.
+# For this we will write a small function:
+
+def separate_source_target(sequence_pairs):
+    """
+    input of form: `[(X_1,y_1), (X_2,y_2), (X_3,y_3), (X_4,y_4)]`
+    output of form: `((X_1,X_2,X_3,X_4), (y_1,y_2,y_3,y_4))`
+    """
+    sources,targets = zip(*sequence_pairs)
+    return sources,targets
+
+## Apply the function to each element in the iterator
+dataPipe = dataPipe.map(separate_source_target)
+print(list(dataPipe)[0])
+
