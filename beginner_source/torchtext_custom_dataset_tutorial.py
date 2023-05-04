@@ -9,7 +9,8 @@ This tutorial is regarding the preparation of a text dataset using Torchtext. In
 will be preparing a  custom dataset that can be further utilized to train a sequence-to-sequence
 model for machine translation (something like, in this tutorial: `Sequence to Sequence Learning
 with Neural Networks <https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%\
-20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb>`_) but without using legacy version.
+20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb>`_) but without using legacy version
+of torchtext.
 
 In this tutorial, we will learn how to:
 
@@ -21,16 +22,18 @@ In this tutorial, we will learn how to:
 Let us assume that we need to prepare a dataset to train a model that can perform English to
 Finnish translation. We will use a tab-delimited Finnish - English sentence pairs provided by
 the `Tatoeba Project <https://tatoeba.org/en>`_ which can be downloaded from this link: `Click
-Here <https://www.manythings.org/anki/fin-eng.zip>`__
+Here <https://www.manythings.org/anki/fin-eng.zip>`__.
+
+Sentence pairs for other languages can be found in this link:
+
+Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
 """
 
 # %%
-# Setup
-# -----
+#Setup
+#-----
 #
 # First, download the dataset, extract the zip, and note the path to the file `fin.txt`.
-# The dataset can be downloaded from this link: `Click Here <https://www.manythings.org/anki/fin\
-# -eng.zip>`__ .
 #
 # Ensure that following packages are installed:
 #
@@ -79,8 +82,9 @@ dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
 #    of the tab-delimited file
 #
 # Data pipes can be thought of something like a dataset object, on which
-# we can perform various operations. Check `this tutorial <https://pytorch.org\
-# /data/beta/dp_tutorial.html>`_ for more details on data pipes.
+# we can perform various operations.
+# Check `this tutorial <https://pytorch.org/data/beta/dp_tutorial.html>`_ for more details on
+# data pipes.
 #
 # We can verify if the iterable has the pair of sentences as shown
 # below:
@@ -371,8 +375,9 @@ def show_some_transformed_sentences(data_pipe):
 
 show_some_transformed_sentences(dataPipe)
 # %%
-# In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we\
+# In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we
 # can use this dataPipe while writing our training function.
 #
-# Some parts of this tutorial was inspired from this article: `Click here <https://medium.com/@b\
-# itdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71>`__.
+# Some parts of this tutorial was inspired from this article:
+# `Link https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 \
+#  <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 >`__.
