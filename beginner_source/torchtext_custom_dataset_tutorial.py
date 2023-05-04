@@ -30,8 +30,8 @@ Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
 """
 
 # %%
-#Setup
-#-----
+# Setup
+# -----
 #
 # First, download the dataset, extract the zip, and note the path to the file `fin.txt`.
 #
