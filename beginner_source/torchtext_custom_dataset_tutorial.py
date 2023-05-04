@@ -374,5 +374,5 @@ show_some_transformed_sentences(dataPipe)
 # In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we\
 # can use this dataPipe while writing our training function.
 #
-# Some parts of this tutorial was inspired from this article: `Click here: <https://medium.com/@b\
+# Some parts of this tutorial was inspired from this article: `Click here <https://medium.com/@b\
 # itdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71>`__.
