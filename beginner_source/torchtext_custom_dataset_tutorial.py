@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Preaparing custom text dataset using Torchtext
+Pre-process custom text dataset using Torchtext
 ==============================================
 
 **Author**: `Anupam Sharma <https://anp-scp.github.io/>`_
 
-This tutorial is regarding the preparation of a text dataset using Torchtext. In the tutorial, we
-will be preparing a  custom dataset that can be further utilized to train a sequence-to-sequence
+This tutorial illustrates the usage of torchtext on a dataset that is not built-in. In the tutorial,
+we will pre-process a dataset that can be further utilized to train a sequence-to-sequence
 model for machine translation (something like, in this tutorial: `Sequence to Sequence Learning
 with Neural Networks <https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%\
 20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb>`_) but without using legacy version
