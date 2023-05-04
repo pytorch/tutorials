@@ -20,9 +20,9 @@ In this tutorial, we will learn how to:
 * Perform bucket batching
 
 Let us assume that we need to prepare a dataset to train a model that can perform English to
-Finnish translation. We will use a tab-delimited Finnish - English sentence pairs provided by
+German translation. We will use a tab-delimited German - English sentence pairs provided by
 the `Tatoeba Project <https://tatoeba.org/en>`_ which can be downloaded from this link: `Click
-Here <https://www.manythings.org/anki/fin-eng.zip>`__.
+Here <https://www.manythings.org/anki/deu-eng.zip>`__.
 
 Sentence pairs for other languages can be found in this link:
 
@@ -33,7 +33,7 @@ Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
 # Setup
 # -----
 #
-# First, download the dataset, extract the zip, and note the path to the file `fin.txt`.
+# First, download the dataset, extract the zip, and note the path to the file `deu.txt`.
 #
 # Ensure that following packages are installed:
 #
@@ -47,10 +47,10 @@ Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
 # convert a sentence to list of words. Spacy is a python package used for various Natural
 # Language Processing (NLP) tasks.
 #
-# Download the English and Finnish models from spacy as shown below: ::
+# Download the English and German models from spacy as shown below: ::
 #
 #   python -m spacy download en_core_web_sm
-#   python -m spacy download fi_core_news_sm
+#   python -m spacy download de_core_news_sm
 
 
 # %%
@@ -61,12 +61,12 @@ import torchtext.transforms as T
 import spacy
 from torchtext.vocab import build_vocab_from_iterator
 eng = spacy.load("en_core_web_sm") # Load the English model to be used for tokenizing
-fin = spacy.load("fi_core_news_sm") # Load the Finnish model to be used for tokenizing
+de = spacy.load("de_core_news_sm") # Load the German model to be used for tokenizing
 
 # %%
 # Now we will load the dataset
 
-FILE_PATH = 'data/fin.txt'
+FILE_PATH = 'data/deu.txt'
 dataPipe = dp.iter.IterableWrapper([FILE_PATH])
 dataPipe = dp.iter.FileOpener(dataPipe, mode='rb')
 dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
@@ -123,23 +123,23 @@ def eng_tokenize(text):
     """
     return [token.text for token in eng.tokenizer(text)]
 
-def fin_tokenize(text):
+def de_tokenize(text):
     """
-    Tokenize a Finnish text and returns list of tokens
+    Tokenize a German text and returns list of tokens
     """
-    return [token.text for token in fin.tokenizer(text)]
+    return [token.text for token in de.tokenizer(text)]
 
 # %%
 # Above function accepts a text and returns a list of words
 # as shown below:
 
 print(eng_tokenize("Have a good day!!!"))
-print(fin_tokenize("Hyvää päivänjatkoa!!!"))
+print(de_tokenize("Haben Sie einen guten Tag!!!"))
 
 # %%
 # Building the vocabulary
 # -----------------------
-# Let us consider an English sentence as the source and a Finnish sentence as the target.
+# Let us consider an English sentence as the source and a German sentence as the target.
 #
 # Vocabulary can be considered as the set of unique words we have in the dataset.
 # We will build vocabulary for both our source and target now.
@@ -153,11 +153,11 @@ def get_tokens(data_iter, place):
     tuple of sentences (source and target), `place` parameters defines for which
     index to return the tokens for. `place=0` for source and `place=1` for target
     """
-    for english, finnish in data_iter:
+    for english, german in data_iter:
         if place == 0:
             yield eng_tokenize(english)
         else:
-            yield fin_tokenize(finnish)
+            yield de_tokenize(german)
 
 # %%
 # Now, we will build vocabulary for source:
@@ -270,7 +270,7 @@ def apply_transform(sequence_pair):
 
     return (
         get_transform(sourceVocab)(eng_tokenize(sequence_pair[0])),
-        get_transform(targetVocab)(fin_tokenize(sequence_pair[1]))
+        get_transform(targetVocab)(de_tokenize(sequence_pair[1]))
     )
 dataPipe = dataPipe.map(apply_transform) ## Apply the function to each element in the iterator
 tempList = list(dataPipe)
