@@ -133,3 +133,69 @@ def fin_tokenize(text):
 print(eng_tokenize("Have a good day!!!"))
 print(fin_tokenize("Hyvää päivänjatkoa!!!"))
 
+# %%
+# Building the vocabulary
+# -----------------------
+# Let us consider an English sentence as the source and a Finnish sentence as the target.
+#
+# Vocabulary can be considered as the set of unique words we have in the dataset.
+# We will build vocabulary for both our source and target now.
+#
+# Let us define a function to get tokens from elements of tuples in the iterator.
+# The comments within the function specifies the need and working of it:
+
+def get_tokens(data_iter, place):
+    """
+    Function to yield tokens from an iterator. Since, our iterator contains
+    tuple of sentences (source and target), `place` parameters defines for which
+    index to return the tokens for. `place=0` for source and `place=1` for target
+    """
+    for english, finnish in data_iter:
+        if place == 0:
+            yield eng_tokenize(english)
+        else:
+            yield fin_tokenize(finnish)
+
+# %%
+# Now, we will build vocabulary for source:
+
+sourceVocab = build_vocab_from_iterator(
+    get_tokens(dataPipe,0),
+    min_freq=2,
+    specials= ['<pad>', '<sos>', '<eos>', '<unk>'],
+    special_first=True
+)
+sourceVocab.set_default_index(sourceVocab['<unk>'])
+
+# %%
+# The code above, builds the vocabulary from the iterator. In the above code block:
+#
+# * At line 2, we call the `get_tokens()` function with `place=0` as we need vocabulary for
+#   source sentences.
+# * At line 3, we set `min_freq=2`. This means, the function will skip those words that occurs
+#   less than 2 times.
+# * At line 4, we specify some special tokens:
+#
+#   * `<sos>` for start of sentence
+#   * `<eos>` for end of senetence
+#   * `<unk>` for unknown words. An example of unknown word is the one skipped because of
+#     `min_freq=2`.
+#   * `<pad>` is the padding token. While training, a model we mostly train in batches. In a
+#     batch, there can be sentences of different length. So, we pad the shorter sentences with
+#     `<pad>` token to make length of all sequences in the batch equal.
+#
+# * At line 5, we set `special_first=True`. Which means `<pad>` will get index 0, `<sos>` index 1,
+#   `<eos>` index 2, and <unk> will get index 3 in the vocabulary.
+# * At line 7, we set default index as index of `<unk>`. That means if some word is not in
+#   vocbulary, we will use `<unk>` instead of that unknown word.
+#
+# Similarly, we will build vocabulary for target sentences:
+
+targetVocab = build_vocab_from_iterator(
+    get_tokens(dataPipe,1),
+    min_freq=2,
+    specials= ['<pad>', '<sos>', '<eos>', '<unk>'],
+    special_first=True
+)
+targetVocab.set_default_index(targetVocab['<unk>'])
+
