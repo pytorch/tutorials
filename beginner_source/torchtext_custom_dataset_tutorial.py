@@ -241,10 +241,10 @@ def get_transform(vocab):
 # the transform:
 
 tempList = list(dataPipe)
-someSetence = tempList[798][0]
+someSentence = tempList[798][0]
 print("Some sentence=", end="")
-print(someSetence)
-transformedSentence = get_transform(sourceVocab)(eng_tokenize(someSetence))
+print(someSentence)
+transformedSentence = get_transform(sourceVocab)(eng_tokenize(someSentence))
 print("Transformed sentence=", end="")
 print(transformedSentence)
 indexToString = sourceVocab.get_itos()
@@ -254,7 +254,7 @@ for index in transformedSentence:
 # %%
 # In the above code,:
 #
-#   * At line 2, we take a source setence from list that we created from dataPipe at line 1
+#   * At line 2, we take a source sentence from list that we created from dataPipe at line 1
 #   * At line 5, we get a transform based on a source vocabulary and apply it to a tokenized
 #     sentence. Note that transforms take list of words and not a sentence.
 #   * At line 8, we get the mapping of index to string and then use it get the transformed
@@ -378,6 +378,6 @@ show_some_transformed_sentences(dataPipe)
 # In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we
 # can use this dataPipe while writing our training function.
 #
-# Some parts of this tutorial was inspired from this article:
-# `Link https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 \
-#  <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 >`__.
+# Some parts of this tutorial was inspired from this article: Torchtext DataLoaders in version 0.14.0
+# `Link: https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 \
+# <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71 >`__.
