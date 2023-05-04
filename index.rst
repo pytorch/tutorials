@@ -265,7 +265,7 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 .. customcarditem::
-   :header: Preaparing custom text dataset using Torchtext
+   :header: Pre-process custom text dataset using Torchtext 
    :card_description: Learn how to use torchtext to prepare a custom dataset
    :image: _static/img/thumbnails/cropped/torch_text_logo.png
    :link: beginner/torchtext_custom_dataset_tutorial.html
