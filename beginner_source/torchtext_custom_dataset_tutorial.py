@@ -326,3 +326,21 @@ def separate_source_target(sequence_pairs):
 dataPipe = dataPipe.map(separate_source_target)
 print(list(dataPipe)[0])
 
+# %%
+# Now, we have the data as desired.
+#
+# Padding
+# -------
+# As discussed earlier while building vocabulary, we need to pad shorter sentences in a batch to
+# make all the sequences in a batch of equal length. We can perform padding as follows:
+
+def apply_padding(pair_of_sequences):
+    """
+    Convert sequnces to tensors and apply padding
+    """
+    return (T.ToTensor(0)(list(pair_of_sequences[0])), T.ToTensor(0)(list(pair_of_sequences[1])))
+## `T.ToTensor(0)` returns a transform that converts the sequence to `torch.tensor` and also applies
+# padding. Here, `0` is passed to the constructor to specify the index of the `<pad>` token in the
+# vocabulary.
+dataPipe = dataPipe.map(apply_padding)
+
