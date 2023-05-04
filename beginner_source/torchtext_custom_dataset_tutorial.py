@@ -350,7 +350,7 @@ dataPipe = dataPipe.map(apply_padding)
 sourceItoS = sourceVocab.get_itos()
 targetItoS = targetVocab.get_itos()
 
-def show_some_transformed_senetnces(data_pipe):
+def show_some_transformed_sentences(data_pipe):
     """
     Function to show how the senetnces look like after applying all transforms.
     Here we try to print actual words instead of corresponding index
@@ -368,6 +368,11 @@ def show_some_transformed_senetnces(data_pipe):
             print(f"Source: {source}")
             print(f"Traget: {target}")
         break
+
+show_some_transformed_sentences(dataPipe)
 # %%
-# In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we can
-# use this dataPipe while writing our training function.
+# In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we\
+# can use this dataPipe while writing our training function.
+#
+# Some parts of this tutorial was inspired from this article: `Click here: <https://medium.com/@b\
+# itdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71>`__.
