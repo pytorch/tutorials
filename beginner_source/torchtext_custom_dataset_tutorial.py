@@ -199,3 +199,13 @@ targetVocab = build_vocab_from_iterator(
 )
 targetVocab.set_default_index(targetVocab['<unk>'])
 
+# %%
+# Note that the example above shows how can we add special tokens to our vocabulary. The
+# special tokens may change based on the requirements.
+#
+# Now, we can verify that special tokens are placed at the beginning and then other words.
+# In the below code, `sourceVocab.get_itos()` returns a list with tokens at index based on
+# vocabulary.
+
+print(sourceVocab.get_itos()[:9])
+
