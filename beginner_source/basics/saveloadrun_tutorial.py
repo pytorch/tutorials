@@ -33,7 +33,7 @@ torch.save(model.state_dict(), 'model_weights.pth')
 # To load model weights, you need to create an instance of the same model first, and then load the parameters
 # using ``load_state_dict()`` method.
 
-model = models.vgg16() # we do not specify weights, i.e. create untrained model
+model = models.vgg16() # we do not specify ``weights``, i.e. create untrained model
 model.load_state_dict(torch.load('model_weights.pth'))
 model.eval()
 
