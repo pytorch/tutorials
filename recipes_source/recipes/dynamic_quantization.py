@@ -11,7 +11,7 @@ Introduction
 -------------
 
 There are a number of trade-offs that can be made when designing neural
-networks. During model developmenet and training you can alter the
+networks. During model development and training you can alter the
 number of layers and number of parameters in a recurrent neural network
 and trade-off accuracy against model size and/or model latency or
 throughput. Such changes can take lot of time and compute resources
@@ -108,7 +108,7 @@ This recipe has 5 steps.
 
 1: Set Up
 ~~~~~~~~~~~~~~~
-This is a straightfoward bit of code to set up for the rest of the
+This is a straightforward bit of code to set up for the rest of the
 recipe.
 
 The unique module we are importing here is torch.quantization which
@@ -126,12 +126,12 @@ import os
 import time
 
 # define a very, very simple LSTM for demonstration purposes
-# in this case, we are wrapping nn.LSTM, one layer, no pre or post processing
+# in this case, we are wrapping ``nn.LSTM``, one layer, no preprocessing or postprocessing
 # inspired by
-# https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html, by Robert Guthrie
-# and https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html
+# `Sequence Models and Long Short-Term Memory Networks tutorial <https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html`_, by Robert Guthrie
+# and `Dynamic Quanitzation tutorial <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`__.
 class lstm_for_demonstration(nn.Module):
-  """Elementary Long Short Term Memory style model which simply wraps nn.LSTM
+  """Elementary Long Short Term Memory style model which simply wraps ``nn.LSTM``
      Not to be used for anything other than demonstration.
   """
   def __init__(self,in_dim,out_dim,depth):
@@ -162,7 +162,7 @@ hidden = (torch.randn(lstm_depth,batch_size,model_dimension), torch.randn(lstm_d
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Now we get to the fun part. First we create an instance of the model
-# called float\_lstm then we are going to quantize it. We're going to use
+# called ``float\_lstm`` then we are going to quantize it. We're going to use
 # the
 #
 # ::
@@ -198,7 +198,7 @@ print(quantized_lstm)
 ######################################################################
 # 3. Look at Model Size
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Ok, so we've quantized the model. What does that get us? Well the first
+# We've quantized the model. What does that get us? Well the first
 # benefit is that we've replaced the FP32 model parameters with INT8
 # values (and some recorded scale factors). This means about 75% less data
 # to store and move around. With the default values the reduction shown
@@ -232,16 +232,24 @@ print("{0:.2f} times smaller".format(f/q))
 #
 # As you will see the quantized version of this super-simple network runs
 # faster. This will generally be true of more complex networks but as they
-# say "your milage may vary" depending on a number of factors including
+# say "your mileage may vary" depending on a number of factors including
 # the structure of the model and the hardware you are running on.
 #
 
 # compare the performance
 print("Floating point FP32")
-# %timeit float_lstm.forward(inputs, hidden)
+
+#####################################################################
+# .. code-block:: python
+#
+#    %timeit float_lstm.forward(inputs, hidden)
 
 print("Quantized INT8")
-# %timeit quantized_lstm.forward(inputs,hidden)
+
+######################################################################
+# .. code-block:: python
+#
+#    %timeit quantized_lstm.forward(inputs,hidden)
 
 
 ######################################################################
