@@ -133,7 +133,7 @@ print(tensor)
 ######################################################################
 # **Joining tensors** You can use ``torch.cat`` to concatenate a sequence of tensors along a given dimension.
 # See also `torch.stack <https://pytorch.org/docs/stable/generated/torch.stack.html>`__,
-# another tensor joining option that is subtly different from ``torch.cat``.
+# another tensor joining operator that is subtly different from ``torch.cat``.
 t1 = torch.cat([tensor, tensor, tensor], dim=1)
 print(t1)
 
