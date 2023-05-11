@@ -40,7 +40,6 @@ Setup / Imports
 Let's start with the imports:
 """
 from functools import partial
-import numpy as np
 import os
 import torch
 import torch.nn as nn
@@ -114,19 +113,26 @@ class Net(nn.Module):
 # documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_.
 #
 # We wrap the training script in a function ``train_cifar(config, data_dir=None)``.
-# As you can guess, the ``config`` parameter will receive the hyperparameters we would like to
-# train with. The ``data_dir`` specifies
-# the directory where we load and store the data, so multiple runs can share the same data source.
+# The ``config`` parameter will receive the hyperparameters we would like to
+# train with. The ``data_dir`` specifies the directory where we load and store the data,
+# so that multiple runs can share the same data source.
+# We also load the model and optimizer state at the start of the run, if a checkpoint
+# is provided. Further down in this tutorial you will find information on how
+# to save the checkpoint and what it is used for.
 #
 # .. code-block:: python
 #
 #     net = Net(config["l1"], config["l2"])
 #
-#     if checkpoint_dir:
-#         model_state, optimizer_state = torch.load(
-#             os.path.join(checkpoint_dir, "checkpoint"))
-#         net.load_state_dict(model_state)
-#         optimizer.load_state_dict(optimizer_state)
+#     checkpoint = session.get_checkpoint()
+#
+#     if checkpoint:
+#         checkpoint_state = checkpoint.to_dict()
+#         start_epoch = checkpoint_state["epoch"]
+#         net.load_state_dict(checkpoint_state["net_state_dict"])
+#         optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#     else:
+#         start_epoch = 0
 #
 # The learning rate of the optimizer is made configurable, too:
 #
@@ -175,11 +181,17 @@ class Net(nn.Module):
 #
 # .. code-block:: python
 #
-#     with tune.checkpoint_dir(epoch) as checkpoint_dir:
-#         path = os.path.join(checkpoint_dir, "checkpoint")
-#         torch.save((net.state_dict(), optimizer.state_dict()), path)
+#     checkpoint_data = {
+#         "epoch": epoch,
+#         "net_state_dict": net.state_dict(),
+#         "optimizer_state_dict": optimizer.state_dict(),
+#     }
+#     checkpoint = Checkpoint.from_dict(checkpoint_data)
 #
-#     tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+#     session.report(
+#         {"loss": val_loss / val_steps, "accuracy": correct / total},
+#         checkpoint=checkpoint,
+#     )
 #
 # Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
 # we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
@@ -191,7 +203,8 @@ class Net(nn.Module):
 # schedulers like
 # `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
 # Also, by saving the checkpoint we can later load the trained models and validate them
-# on a test set.
+# on a test set. Lastly, saving checkpoints is useful for fault tolerance, and it allows
+# us to interrupt training and continue training later.
 #
 # Full training function
 # ~~~~~~~~~~~~~~~~~~~~~~
@@ -215,9 +228,12 @@ def train_cifar(config, data_dir=None):
     checkpoint = session.get_checkpoint()
 
     if checkpoint:
-        checkpoint_state = checkpoint.as_dict()
+        checkpoint_state = checkpoint.to_dict()
+        start_epoch = checkpoint_state["epoch"]
         net.load_state_dict(checkpoint_state["net_state_dict"])
         optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+    else:
+        start_epoch = 0
 
     trainset, testset = load_data(data_dir)
 
@@ -233,7 +249,7 @@ def train_cifar(config, data_dir=None):
         val_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
     )
 
-    for epoch in range(10):  # loop over the dataset multiple times
+    for epoch in range(start_epoch, 10):  # loop over the dataset multiple times
         running_loss = 0.0
         epoch_steps = 0
         for i, data in enumerate(trainloader, 0):
@@ -280,6 +296,7 @@ def train_cifar(config, data_dir=None):
                 val_steps += 1
 
         checkpoint_data = {
+            "epoch": epoch,
             "net_state_dict": net.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
         }
@@ -365,7 +382,6 @@ def test_accuracy(net, device="cpu"):
 #         config=config,
 #         num_samples=num_samples,
 #         scheduler=scheduler,
-#         progress_reporter=reporter,
 #         checkpoint_at_end=True)
 #
 # You can specify the number of CPUs, which are then available e.g.
@@ -410,13 +426,9 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     )
 
     best_trial = result.get_best_trial("loss", "min", "last")
-    print("Best trial config: {}".format(best_trial.config))
-    print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
-    print(
-        "Best trial final validation accuracy: {}".format(
-            best_trial.last_result["accuracy"]
-        )
-    )
+    print(f"Best trial config: {best_trial.config}")
+    print(f"Best trial final validation loss: {best_trial.last_result['loss']}")
+    print(f"Best trial final validation accuracy: {best_trial.last_result['accuracy']}")
 
     best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
     device = "cpu"
@@ -426,11 +438,10 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
             best_trained_model = nn.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint_dir = best_trial.checkpoint.value
-    model_state, optimizer_state = torch.load(
-        os.path.join(best_checkpoint_dir, "checkpoint")
-    )
-    best_trained_model.load_state_dict(model_state)
+    best_checkpoint = best_trial.checkpoint.to_air_checkpoint()
+    best_checkpoint_data = best_checkpoint.to_dict()
+
+    best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
 
     test_acc = test_accuracy(best_trained_model, device)
     print("Best trial test set accuracy: {}".format(test_acc))
