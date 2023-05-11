@@ -64,18 +64,20 @@ from ray.tune.schedulers import ASHAScheduler
 
 
 def load_data(data_dir="./data"):
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+    transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    )
 
     trainset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=True, download=True, transform=transform)
+        root=data_dir, train=True, download=True, transform=transform
+    )
 
     testset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=False, download=True, transform=transform)
+        root=data_dir, train=False, download=True, transform=transform
+    )
 
     return trainset, testset
+
 
 ######################################################################
 # Configurable neural network
@@ -98,11 +100,12 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
+        x = torch.flatten(x, 1)  # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 ######################################################################
 # The train function
@@ -220,18 +223,15 @@ def train_cifar(config, data_dir=None):
 
     test_abs = int(len(trainset) * 0.8)
     train_subset, val_subset = random_split(
-        trainset, [test_abs, len(trainset) - test_abs])
+        trainset, [test_abs, len(trainset) - test_abs]
+    )
 
     trainloader = torch.utils.data.DataLoader(
-        train_subset,
-        batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        train_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
+    )
     valloader = torch.utils.data.DataLoader(
-        val_subset,
-        batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        val_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
+    )
 
     for epoch in range(10):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -254,8 +254,10 @@ def train_cifar(config, data_dir=None):
             running_loss += loss.item()
             epoch_steps += 1
             if i % 2000 == 1999:  # print every 2000 mini-batches
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                running_loss / epoch_steps))
+                print(
+                    "[%d, %5d] loss: %.3f"
+                    % (epoch + 1, i + 1, running_loss / epoch_steps)
+                )
                 running_loss = 0.0
 
         # Validation loss
@@ -279,12 +281,16 @@ def train_cifar(config, data_dir=None):
 
         checkpoint_data = {
             "net_state_dict": net.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict()
+            "optimizer_state_dict": optimizer.state_dict(),
         }
         checkpoint = Checkpoint.from_dict(checkpoint_data)
 
-        session.report({"loss": val_loss / val_steps, "accuracy": correct / total}, checkpoint=checkpoint)
+        session.report(
+            {"loss": val_loss / val_steps, "accuracy": correct / total},
+            checkpoint=checkpoint,
+        )
     print("Finished Training")
+
 
 ######################################################################
 # As you can see, most of the code is adapted directly from the original example.
@@ -300,7 +306,8 @@ def test_accuracy(net, device="cpu"):
     trainset, testset = load_data()
 
     testloader = torch.utils.data.DataLoader(
-        testset, batch_size=4, shuffle=False, num_workers=2)
+        testset, batch_size=4, shuffle=False, num_workers=2
+    )
 
     correct = 0
     total = 0
@@ -314,6 +321,7 @@ def test_accuracy(net, device="cpu"):
             correct += (predicted == labels).sum().item()
 
     return correct / total
+
 
 ######################################################################
 # The function also expects a ``device`` parameter, so we can do the
@@ -381,30 +389,34 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
     config = {
-        "l1": tune.choice([2 ** i for i in range(9)]),
-        "l2": tune.choice([2 ** i for i in range(9)]),
+        "l1": tune.choice([2**i for i in range(9)]),
+        "l2": tune.choice([2**i for i in range(9)]),
         "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8, 16])
+        "batch_size": tune.choice([2, 4, 8, 16]),
     }
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
         max_t=max_num_epochs,
         grace_period=1,
-        reduction_factor=2)
+        reduction_factor=2,
+    )
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
-        scheduler=scheduler)
+        scheduler=scheduler,
+    )
 
     best_trial = result.get_best_trial("loss", "min", "last")
     print("Best trial config: {}".format(best_trial.config))
-    print("Best trial final validation loss: {}".format(
-        best_trial.last_result["loss"]))
-    print("Best trial final validation accuracy: {}".format(
-        best_trial.last_result["accuracy"]))
+    print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+    print(
+        "Best trial final validation accuracy: {}".format(
+            best_trial.last_result["accuracy"]
+        )
+    )
 
     best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
     device = "cpu"
@@ -415,8 +427,9 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     best_trained_model.to(device)
 
     best_checkpoint_dir = best_trial.checkpoint.value
-    model_state, optimizer_state = torch.load(os.path.join(
-        best_checkpoint_dir, "checkpoint"))
+    model_state, optimizer_state = torch.load(
+        os.path.join(best_checkpoint_dir, "checkpoint")
+    )
     best_trained_model.load_state_dict(model_state)
 
     test_acc = test_accuracy(best_trained_model, device)
@@ -428,6 +441,7 @@ if __name__ == "__main__":
     # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
     # This is only needed to run with sphinx-build.
     import sys
+
     sys.stdout.fileno = lambda: False
     # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
