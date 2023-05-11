@@ -152,11 +152,4 @@ model.train()
 # 
 # Congratulations! You have successfully saved and loaded a general
 # checkpoint for inference and/or resuming training in PyTorch.
-# 
-# Learn More
-# ----------
-# 
-# Take a look at these other recipes to continue your learning:
-# 
-# -  TBD
-# -  TBD
+#

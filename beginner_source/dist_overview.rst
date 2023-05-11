@@ -131,7 +131,7 @@ DDP materials are listed below:
 4. The `Shard Optimizer States With ZeroRedundancyOptimizer <../recipes/zero_redundancy_optimizer.html>`__
    recipe demonstrates how `ZeroRedundancyOptimizer <https://pytorch.org/docs/stable/distributed.optim.html>`__
    helps to reduce optimizer memory footprint.
-5. The `Distributed Training with Uneven Inputs Using the Join Context Manager <../advanced/generic_oin.html>`__
+5. The `Distributed Training with Uneven Inputs Using the Join Context Manager <../advanced/generic_join.html>`__
    tutorial walks through using the generic join context for distributed training with uneven inputs.
 
 torch.distributed.elastic
