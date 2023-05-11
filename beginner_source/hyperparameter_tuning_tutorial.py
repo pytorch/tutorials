@@ -50,7 +50,7 @@ from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
 from ray import tune
-from ray.tune import CLIReporter
+from ray.air import Checkpoint, session
 from ray.tune.schedulers import ASHAScheduler
 
 ######################################################################
@@ -80,7 +80,8 @@ def load_data(data_dir="./data"):
 ######################################################################
 # Configurable neural network
 # ---------------------------
-# We can only tune those parameters that are configurable. In this example, we can specify
+# We can only tune those parameters that are configurable.
+# In this example, we can specify
 # the layer sizes of the fully connected layers:
 
 
@@ -97,7 +98,7 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -109,9 +110,9 @@ class Net(nn.Module):
 # Now it gets interesting, because we introduce some changes to the example `from the PyTorch
 # documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_.
 #
-# We wrap the training script in a function ``train_cifar(config, checkpoint_dir=None, data_dir=None)``.
+# We wrap the training script in a function ``train_cifar(config, data_dir=None)``.
 # As you can guess, the ``config`` parameter will receive the hyperparameters we would like to
-# train with. The ``checkpoint_dir`` parameter is used to restore checkpoints. The ``data_dir`` specifies
+# train with. The ``data_dir`` specifies
 # the directory where we load and store the data, so multiple runs can share the same data source.
 #
 # .. code-block:: python
@@ -195,7 +196,7 @@ class Net(nn.Module):
 # The full code example looks like this:
 
 
-def train_cifar(config, checkpoint_dir=None, data_dir=None):
+def train_cifar(config, data_dir=None):
     net = Net(config["l1"], config["l2"])
 
     device = "cpu"
@@ -208,11 +209,12 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 
-    if checkpoint_dir:
-        model_state, optimizer_state = torch.load(
-            os.path.join(checkpoint_dir, "checkpoint"))
-        net.load_state_dict(model_state)
-        optimizer.load_state_dict(optimizer_state)
+    checkpoint = session.get_checkpoint()
+
+    if checkpoint:
+        checkpoint_state = checkpoint.as_dict()
+        net.load_state_dict(checkpoint_state["net_state_dict"])
+        optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
 
     trainset, testset = load_data(data_dir)
 
@@ -275,11 +277,13 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
                 val_loss += loss.cpu().numpy()
                 val_steps += 1
 
-        with tune.checkpoint_dir(epoch) as checkpoint_dir:
-            path = os.path.join(checkpoint_dir, "checkpoint")
-            torch.save((net.state_dict(), optimizer.state_dict()), path)
+        checkpoint_data = {
+            "net_state_dict": net.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict()
+        }
+        checkpoint = Checkpoint.from_dict(checkpoint_data)
 
-        tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+        session.report({"loss": val_loss / val_steps, "accuracy": correct / total}, checkpoint=checkpoint)
     print("Finished Training")
 
 ######################################################################
@@ -322,14 +326,14 @@ def test_accuracy(net, device="cpu"):
 # .. code-block:: python
 #
 #     config = {
-#         "l1": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
-#         "l2": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
+#         "l1": tune.choice([2 ** i for i in range(9)]),
+#         "l2": tune.choice([2 ** i for i in range(9)]),
 #         "lr": tune.loguniform(1e-4, 1e-1),
 #         "batch_size": tune.choice([2, 4, 8, 16])
 #     }
 #
-# The ``tune.sample_from()`` function makes it possible to define your own sample
-# methods to obtain hyperparameters. In this example, the ``l1`` and ``l2`` parameters
+# The ``tune.choice()`` accepts a list of values that are uniformly sampled from.
+# In this example, the ``l1`` and ``l2`` parameters
 # should be powers of 2 between 4 and 256, so either 4, 8, 16, 32, 64, 128, or 256.
 # The ``lr`` (learning rate) should be uniformly sampled between 0.0001 and 0.1. Lastly,
 # the batch size is a choice between 2, 4, 8, and 16.
@@ -377,8 +381,8 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
     config = {
-        "l1": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
-        "l2": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+        "l1": tune.choice([2 ** i for i in range(9)]),
+        "l2": tune.choice([2 ** i for i in range(9)]),
         "lr": tune.loguniform(1e-4, 1e-1),
         "batch_size": tune.choice([2, 4, 8, 16])
     }
@@ -388,16 +392,12 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         max_t=max_num_epochs,
         grace_period=1,
         reduction_factor=2)
-    reporter = CLIReporter(
-        # ``parameter_columns=["l1", "l2", "lr", "batch_size"]``,
-        metric_columns=["loss", "accuracy", "training_iteration"])
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
-        scheduler=scheduler,
-        progress_reporter=reporter)
+        scheduler=scheduler)
 
     best_trial = result.get_best_trial("loss", "min", "last")
     print("Best trial config: {}".format(best_trial.config))
