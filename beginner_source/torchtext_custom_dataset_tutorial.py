@@ -21,12 +21,11 @@ In this tutorial, we will learn how to:
 
 Let us assume that we need to prepare a dataset to train a model that can perform English to
 German translation. We will use a tab-delimited German - English sentence pairs provided by
-the `Tatoeba Project <https://tatoeba.org/en>`_ which can be downloaded from this link: `Click
-Here <https://www.manythings.org/anki/deu-eng.zip>`__.
+the `Tatoeba Project <https://tatoeba.org/en>`_ which can be downloaded from
+`this link <https://www.manythings.org/anki/deu-eng.zip>`__.
 
-Sentence pairs for other languages can be found in this link:
-
-Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
+Sentence pairs for other languages can be found in `this link <https://www.manythings.org/anki/>`\
+__.
 """
 
 # %%
@@ -37,11 +36,11 @@ Link: `https://www.manythings.org/anki/ <https://www.manythings.org/anki/>`__
 #
 # Ensure that following packages are installed:
 #
-# * `Torchdata 0.6.0 <https://pytorch.org/data/beta/index.html>`_ (Installation instructions: `C\
-#   lick here <https://github.com/pytorch/data>`__)
-# * `Torchtext 0.15.0 <https://pytorch.org/text/stable/index.html>`_ (Installation instructions:\
-#   `Click here <https://github.com/pytorch/text>`__)
-# * Spacy (Docs: `Click here <https://spacy.io/usage>`__)
+# * `Torchdata 0.6.0 <https://pytorch.org/data/beta/index.html>`_ (`Installation instructions \
+#   <https://github.com/pytorch/data>`__)
+# * `Torchtext 0.15.0 <https://pytorch.org/text/stable/index.html>`_ (`Installation instructions \
+#   <https://github.com/pytorch/text>`__)
+# * `Spacy <https://spacy.io/usage>`__
 #
 # Here, we are using `Spacy` to tokenize text. In simple words tokenization means to
 # convert a sentence to list of words. Spacy is a python package used for various Natural
@@ -67,9 +66,9 @@ de = spacy.load("de_core_news_sm") # Load the German model to be used for tokeni
 # Now we will load the dataset
 
 FILE_PATH = 'data/deu.txt'
-dataPipe = dp.iter.IterableWrapper([FILE_PATH])
-dataPipe = dp.iter.FileOpener(dataPipe, mode='rb')
-dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
+data_pipe = dp.iter.IterableWrapper([FILE_PATH])
+data_pipe = dp.iter.FileOpener(data_pipe, mode='rb')
+data_pipe = data_pipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
 
 # %%
 # In the above code block, we are doing following things:
@@ -81,15 +80,15 @@ dataPipe = dataPipe.parse_csv(skip_lines=0, delimiter='\t', as_tuple=True)
 #    again returns an iterable of tuples representing each rows
 #    of the tab-delimited file
 #
-# Data pipes can be thought of something like a dataset object, on which
+# DataPipes can be thought of something like a dataset object, on which
 # we can perform various operations.
 # Check `this tutorial <https://pytorch.org/data/beta/dp_tutorial.html>`_ for more details on
-# data pipes.
+# DataPipes.
 #
 # We can verify if the iterable has the pair of sentences as shown
 # below:
 
-for sample in dataPipe:
+for sample in data_pipe:
     print(sample)
     break
 
@@ -97,35 +96,35 @@ for sample in dataPipe:
 # Note that we also have attribution details along with pair of sentences. We will
 # write a small function to remove the attribution details:
 
-def remove_attribution(row):
+def removeAttribution(row):
     """
     Function to keep the first two elements in a tuple
     """
     return row[:2]
-dataPipe = dataPipe.map(remove_attribution)
+data_pipe = data_pipe.map(removeAttribution)
 
 # %%
-# The `map` function at line 2 in above code block can be used to apply some function
-# on each elements of data pipe. Now, we can verify that the data pipe only contains
+# The `map` function at line 6 in above code block can be used to apply some function
+# on each elements of `data_pipe`. Now, we can verify that the `data_pipe` only contains
 # pair of sentences.
 
 
-for sample in dataPipe:
+for sample in data_pipe:
     print(sample)
     break
 
 # %%
 # Now, let us define few functions to perform tokenization:
 
-def eng_tokenize(text):
+def engTokenize(text):
     """
-    Tokenize an English text and returns list of tokens
+    Tokenize an English text and return a list of tokens
     """
     return [token.text for token in eng.tokenizer(text)]
 
-def de_tokenize(text):
+def deTokenize(text):
     """
-    Tokenize a German text and returns list of tokens
+    Tokenize a German text and return a list of tokens
     """
     return [token.text for token in de.tokenizer(text)]
 
@@ -133,8 +132,8 @@ def de_tokenize(text):
 # Above function accepts a text and returns a list of words
 # as shown below:
 
-print(eng_tokenize("Have a good day!!!"))
-print(de_tokenize("Haben Sie einen guten Tag!!!"))
+print(engTokenize("Have a good day!!!"))
+print(deTokenize("Haben Sie einen guten Tag!!!"))
 
 # %%
 # Building the vocabulary
@@ -145,9 +144,9 @@ print(de_tokenize("Haben Sie einen guten Tag!!!"))
 # We will build vocabulary for both our source and target now.
 #
 # Let us define a function to get tokens from elements of tuples in the iterator.
-# The comments within the function specifies the need and working of it:
 
-def get_tokens(data_iter, place):
+
+def getTokens(data_iter, place):
     """
     Function to yield tokens from an iterator. Since, our iterator contains
     tuple of sentences (source and target), `place` parameters defines for which
@@ -155,25 +154,25 @@ def get_tokens(data_iter, place):
     """
     for english, german in data_iter:
         if place == 0:
-            yield eng_tokenize(english)
+            yield engTokenize(english)
         else:
-            yield de_tokenize(german)
+            yield deTokenize(german)
 
 # %%
 # Now, we will build vocabulary for source:
 
-sourceVocab = build_vocab_from_iterator(
-    get_tokens(dataPipe,0),
+source_vocab = build_vocab_from_iterator(
+    getTokens(data_pipe,0),
     min_freq=2,
     specials= ['<pad>', '<sos>', '<eos>', '<unk>'],
     special_first=True
 )
-sourceVocab.set_default_index(sourceVocab['<unk>'])
+source_vocab.set_default_index(source_vocab['<unk>'])
 
 # %%
 # The code above, builds the vocabulary from the iterator. In the above code block:
 #
-# * At line 2, we call the `get_tokens()` function with `place=0` as we need vocabulary for
+# * At line 2, we call the `getTokens()` function with `place=0` as we need vocabulary for
 #   source sentences.
 # * At line 3, we set `min_freq=2`. This means, the function will skip those words that occurs
 #   less than 2 times.
@@ -194,23 +193,23 @@ sourceVocab.set_default_index(sourceVocab['<unk>'])
 #
 # Similarly, we will build vocabulary for target sentences:
 
-targetVocab = build_vocab_from_iterator(
-    get_tokens(dataPipe,1),
+target_vocab = build_vocab_from_iterator(
+    getTokens(data_pipe,1),
     min_freq=2,
     specials= ['<pad>', '<sos>', '<eos>', '<unk>'],
     special_first=True
 )
-targetVocab.set_default_index(targetVocab['<unk>'])
+target_vocab.set_default_index(target_vocab['<unk>'])
 
 # %%
 # Note that the example above shows how can we add special tokens to our vocabulary. The
 # special tokens may change based on the requirements.
 #
 # Now, we can verify that special tokens are placed at the beginning and then other words.
-# In the below code, `sourceVocab.get_itos()` returns a list with tokens at index based on
+# In the below code, `source_vocab.get_itos()` returns a list with tokens at index based on
 # vocabulary.
 
-print(sourceVocab.get_itos()[:9])
+print(source_vocab.get_itos()[:9])
 
 # %%
 # Numericalize sentences using vocabulary
@@ -218,7 +217,7 @@ print(sourceVocab.get_itos()[:9])
 # After building the vocabulary, we need to convert our sentences to corresponding indices.
 # Let us define some functions for this:
 
-def get_transform(vocab):
+def getTransform(vocab):
     """
     Create transforms based on given vocabulary. The returned transform is applied to sequence
     of tokens.
@@ -237,55 +236,55 @@ def get_transform(vocab):
 
 # %%
 # Now, let us see how to use the above function. The function returns an object of `Transforms`
-# which we will use on our sentence. Let us take a random sentence and check the working of
-# the transform:
+# which we will use on our sentence. Let us take a random sentence and check how the transform
+# works.
 
-tempList = list(dataPipe)
-someSentence = tempList[798][0]
+temp_list = list(data_pipe)
+some_sentence = temp_list[798][0]
 print("Some sentence=", end="")
-print(someSentence)
-transformedSentence = get_transform(sourceVocab)(eng_tokenize(someSentence))
+print(some_sentence)
+transformed_sentence = getTransform(source_vocab)(engTokenize(some_sentence))
 print("Transformed sentence=", end="")
-print(transformedSentence)
-indexToString = sourceVocab.get_itos()
-for index in transformedSentence:
-    print(indexToString[index], end=" ")
+print(transformed_sentence)
+index_to_string = source_vocab.get_itos()
+for index in transformed_sentence:
+    print(index_to_string[index], end=" ")
 
 # %%
 # In the above code,:
 #
-#   * At line 2, we take a source sentence from list that we created from dataPipe at line 1
-#   * At line 5, we get a transform based on a source vocabulary and apply it to a tokenized
-#     sentence. Note that transforms take list of words and not a sentence.
-#   * At line 8, we get the mapping of index to string and then use it get the transformed
-#     sentence
+# * At line 2, we take a source sentence from list that we created from `data_pipe` at line 1
+# * At line 5, we get a transform based on a source vocabulary and apply it to a tokenized
+#   sentence. Note that transforms take list of words and not a sentence.
+# * At line 8, we get the mapping of index to string and then use it get the transformed
+#   sentence
 #
-# Now we will use functions of `dataPipe` to apply transform to all our sentences.
+# Now we will use DataPipe functions to apply transform to all our sentences.
 # Let us define some more functions for this.
 
-def apply_transform(sequence_pair):
+def applyTransform(sequence_pair):
     """
     Apply transforms to sequence of tokens in a sequence pair
     """
 
     return (
-        get_transform(sourceVocab)(eng_tokenize(sequence_pair[0])),
-        get_transform(targetVocab)(de_tokenize(sequence_pair[1]))
+        getTransform(source_vocab)(engTokenize(sequence_pair[0])),
+        getTransform(target_vocab)(deTokenize(sequence_pair[1]))
     )
-dataPipe = dataPipe.map(apply_transform) ## Apply the function to each element in the iterator
-tempList = list(dataPipe)
-print(tempList[0])
+data_pipe = data_pipe.map(applyTransform) ## Apply the function to each element in the iterator
+temp_list = list(data_pipe)
+print(temp_list[0])
 
 # %%
 # Make batches (with bucket batch)
 # --------------------------------
 # Generally, we train models in batches. While working for sequence to sequence models, it is
 # recommended to keep the length of sequences in a batch similar. For that we will use
-# `bucketbatch` function of `dataPipe`.
+# `bucketbatch` function of `data_pipe`.
 #
 # Let us define some functions that will be used by the `bucketbatch` function.
 
-def sort_bucket(bucket):
+def sortBucket(bucket):
     """
     Function to sort a given bucket. Here, we want to sort based on the length of
     source and target sequence.
@@ -295,9 +294,9 @@ def sort_bucket(bucket):
 # %%
 # Now, we will apply the `bucketbatch` function:
 
-dataPipe = dataPipe.bucketbatch(
+data_pipe = data_pipe.bucketbatch(
     batch_size = 4, batch_num=5,  bucket_num=1,
-    use_in_batch_shuffle=False, sort_key=sort_bucket
+    use_in_batch_shuffle=False, sort_key=sortBucket
 )
 
 # %%
@@ -310,14 +309,14 @@ dataPipe = dataPipe.bucketbatch(
 #
 # Now, let us consider a batch of source sentences as `X` and a batch of target sentences as `y`.
 # Generally, while training a model, we predict on a batch of `X` and compare the result with `y`.
-# But, a batch in our `dataPipe` is of the form `[(X_1,y_1), (X_2,y_2), (X_3,y_3), (X_4,y_4)]`:
+# But, a batch in our `data_pipe` is of the form `[(X_1,y_1), (X_2,y_2), (X_3,y_3), (X_4,y_4)]`:
 
-print(list(dataPipe)[0])
+print(list(data_pipe)[0])
 # %%
 # So, we will now convert them into the form: `((X_1,X_2,X_3,X_4), (y_1,y_2,y_3,y_4))`.
 # For this we will write a small function:
 
-def separate_source_target(sequence_pairs):
+def separateSourceTarget(sequence_pairs):
     """
     input of form: `[(X_1,y_1), (X_2,y_2), (X_3,y_3), (X_4,y_4)]`
     output of form: `((X_1,X_2,X_3,X_4), (y_1,y_2,y_3,y_4))`
@@ -326,8 +325,8 @@ def separate_source_target(sequence_pairs):
     return sources,targets
 
 ## Apply the function to each element in the iterator
-dataPipe = dataPipe.map(separate_source_target)
-print(list(dataPipe)[0])
+data_pipe = data_pipe.map(separateSourceTarget)
+print(list(data_pipe)[0])
 
 # %%
 # Now, we have the data as desired.
@@ -337,7 +336,7 @@ print(list(dataPipe)[0])
 # As discussed earlier while building vocabulary, we need to pad shorter sentences in a batch to
 # make all the sequences in a batch of equal length. We can perform padding as follows:
 
-def apply_padding(pair_of_sequences):
+def applyPadding(pair_of_sequences):
     """
     Convert sequnces to tensors and apply padding
     """
@@ -345,16 +344,16 @@ def apply_padding(pair_of_sequences):
 ## `T.ToTensor(0)` returns a transform that converts the sequence to `torch.tensor` and also applies
 # padding. Here, `0` is passed to the constructor to specify the index of the `<pad>` token in the
 # vocabulary.
-dataPipe = dataPipe.map(apply_padding)
+data_pipe = data_pipe.map(applyPadding)
 
 # %%
 # Now, we can use the index to string mapping to see how the sequence would look with tokens
 # instead of indices:
 
-sourceItoS = sourceVocab.get_itos()
-targetItoS = targetVocab.get_itos()
+source_index_to_string = source_vocab.get_itos()
+target_index_to_string = target_vocab.get_itos()
 
-def show_some_transformed_sentences(data_pipe):
+def showSomeTransformedSentences(data_pipe):
     """
     Function to show how the senetnces look like after applying all transforms.
     Here we try to print actual words instead of corresponding index
@@ -365,19 +364,18 @@ def show_some_transformed_sentences(data_pipe):
         for i in range(4):
             source = ""
             for token in sources[i]:
-                source += " " + sourceItoS[token]
+                source += " " + source_index_to_string[token]
             target = ""
             for token in targets[i]:
-                target += " " + targetItoS[token]
+                target += " " + target_index_to_string[token]
             print(f"Source: {source}")
             print(f"Traget: {target}")
         break
 
-show_some_transformed_sentences(dataPipe)
+showSomeTransformedSentences(data_pipe)
 # %%
 # In the above output we can observe that the shorter sentences are padded with `<pad>`. Now, we
-# can use this dataPipe while writing our training function.
+# can use `data_pipe` while writing our training function.
 #
-# Some parts of this tutorial was inspired from this article:
-# Link: `https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71\
+# Some parts of this tutorial was inspired from `this article
 # <https://medium.com/@bitdribble/migrate-torchtext-to-the-new-0-9-0-api-1ff1472b5d71>`__.
