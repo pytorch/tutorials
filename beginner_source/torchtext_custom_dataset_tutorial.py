@@ -46,10 +46,13 @@ __.
 # convert a sentence to list of words. Spacy is a python package used for various Natural
 # Language Processing (NLP) tasks.
 #
-# Download the English and German models from Spacy as shown below: ::
+# Download the English and German models from Spacy as shown below:
 #
-#   python -m spacy download en_core_web_sm
-#   python -m spacy download de_core_news_sm
+# .. code-block:: shell
+#
+#    python -m spacy download en_core_web_sm
+#    python -m spacy download de_core_news_sm
+#
 
 
 # %%
@@ -59,8 +62,8 @@ import torchdata.datapipes as dp
 import torchtext.transforms as T
 import spacy
 from torchtext.vocab import build_vocab_from_iterator
-eng = spacy.load("en_core_web_sm") # Load the English model to be used for tokenizing
-de = spacy.load("de_core_news_sm") # Load the German model to be used for tokenizing
+eng = spacy.load("en_core_web_sm") # Load the English model to tokenize English text
+de = spacy.load("de_core_news_sm") # Load the German model to tokenize German text
 
 # %%
 # Now we will load the dataset
