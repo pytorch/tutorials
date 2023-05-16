@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Pre-process custom text dataset using Torchtext
+Preprocess custom text dataset using Torchtext
 ===============================================
 
 **Author**: `Anupam Sharma <https://anp-scp.github.io/>`_
 
 This tutorial illustrates the usage of torchtext on a dataset that is not built-in. In the tutorial,
-we will pre-process a dataset that can be further utilized to train a sequence-to-sequence
+we will preprocess a dataset that can be further utilized to train a sequence-to-sequence
 model for machine translation (something like, in this tutorial: `Sequence to Sequence Learning
 with Neural Networks <https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%\
 20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb>`_) but without using legacy version
@@ -46,7 +46,7 @@ __.
 # convert a sentence to list of words. Spacy is a python package used for various Natural
 # Language Processing (NLP) tasks.
 #
-# Download the English and German models from spacy as shown below: ::
+# Download the English and German models from Spacy as shown below: ::
 #
 #   python -m spacy download en_core_web_sm
 #   python -m spacy download de_core_news_sm
@@ -179,7 +179,7 @@ source_vocab.set_default_index(source_vocab['<unk>'])
 # * At line 4, we specify some special tokens:
 #
 #   * `<sos>` for start of sentence
-#   * `<eos>` for end of senetence
+#   * `<eos>` for end of sentence
 #   * `<unk>` for unknown words. An example of unknown word is the one skipped because of
 #     `min_freq=2`.
 #   * `<pad>` is the padding token. While training, a model we mostly train in batches. In a
@@ -189,7 +189,7 @@ source_vocab.set_default_index(source_vocab['<unk>'])
 # * At line 5, we set `special_first=True`. Which means `<pad>` will get index 0, `<sos>` index 1,
 #   `<eos>` index 2, and <unk> will get index 3 in the vocabulary.
 # * At line 7, we set default index as index of `<unk>`. That means if some word is not in
-#   vocbulary, we will use `<unk>` instead of that unknown word.
+#   vocabulary, we will use `<unk>` instead of that unknown word.
 #
 # Similarly, we will build vocabulary for target sentences:
 
@@ -338,7 +338,7 @@ print(list(data_pipe)[0])
 
 def applyPadding(pair_of_sequences):
     """
-    Convert sequnces to tensors and apply padding
+    Convert sequences to tensors and apply padding
     """
     return (T.ToTensor(0)(list(pair_of_sequences[0])), T.ToTensor(0)(list(pair_of_sequences[1])))
 ## `T.ToTensor(0)` returns a transform that converts the sequence to `torch.tensor` and also applies
@@ -355,7 +355,7 @@ target_index_to_string = target_vocab.get_itos()
 
 def showSomeTransformedSentences(data_pipe):
     """
-    Function to show how the senetnces look like after applying all transforms.
+    Function to show how the sentences look like after applying all transforms.
     Here we try to print actual words instead of corresponding index
     """
     for sources,targets in data_pipe:
