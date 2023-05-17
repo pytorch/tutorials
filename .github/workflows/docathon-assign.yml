@@ -31,10 +31,35 @@ jobs:
               const octokit = new Octokit({
                 auth: process.env.GITHUB_TOKEN,
               });
-              octokit.issues.addAssignees({
+              const { data: issue } = await octokit.issues.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issueNumber,
-                assignees: [assignee]
+                issue_number: issueNumber
               });
+              const hasLabel = issue.labels.some(label => label.name === 'docathon-h1-2023');
+              if (hasLabel) {
+                if (issue.assignee !== null) {
+                  await octokit.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: "The issue is already assigned. Please pick an open and unnasigned issue with the [docathon-h1-2023 label](https://github.com/pytorch/tutorials/issues?q=is%3Aopen+is%3Aissue+label%3Adocathon-h1-2023)."
+                  });
+                } else {
+                  octokit.issues.addAssignees({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    assignees: [assignee]
+                  });
+                }
+              } else {
+                const commmentMessage = "This issue does not have the correct label. Please pick an open and unnasigned issue with the [docathon-h1-2023 label](https://github.com/pytorch/tutorials/issues?q=is%3Aopen+is%3Aissue+label%3Adocathon-h1-2023)."
+                await octokit.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: commmentMessage
+                });
+              }
             }
