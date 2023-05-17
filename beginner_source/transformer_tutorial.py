@@ -135,7 +135,7 @@ class PositionalEncoding(nn.Module):
 
 ######################################################################
 # This tutorial uses ``torchtext`` to generate Wikitext-2 dataset.
-# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 # %%
 #  .. code-block:: bash
 #
@@ -175,7 +175,7 @@ from torchtext.vocab import build_vocab_from_iterator
 train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
 vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=['<unk>'])
-vocab.set_default_index(vocab['<unk>']) 
+vocab.set_default_index(vocab['<unk>'])
 
 def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
     """Converts raw text into a flat Tensor."""
@@ -196,7 +196,7 @@ def batchify(data: Tensor, bsz: int) -> Tensor:
     that wouldn't cleanly fit.
 
     Arguments:
-        data: Tensor, shape [N]
+        data: Tensor, shape ``[N]``
         bsz: int, batch size
 
     Returns:

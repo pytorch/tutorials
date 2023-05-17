@@ -95,25 +95,25 @@ writer.close()
 # 
 # Install TensorBoard through the command line to visualize data you logged
 #
-# ::
-# 
-#    $ pip install tensorboard
-# 
+# .. code-block:: sh
+#
+#    pip install tensorboard
+#
 #
 # Now, start TensorBoard, specifying the root log directory you used above. 
 # Argument ``logdir`` points to directory where TensorBoard will look to find 
 # event files that it can display. TensorBoard will recursively walk 
-# the directory structure rooted at logdir, looking for .*tfevents.* files.
+# the directory structure rooted at ``logdir``, looking for ``.*tfevents.*`` files.
 #
-# ::
-# 
-#    $ tensorboard --logdir=runs
-# 
+# .. code-block:: sh
+#
+#    tensorboard --logdir=runs
+#
 # Go to the URL it provides OR to `http://localhost:6006/ <http://localhost:6006/>`_
-# 
+#
 # .. image:: ../../_static/img/thumbnails/tensorboard_scalars.png
 #    :scale: 40 %
-# 
+#
 # This dashboard shows how the loss and accuracy change with every epoch. 
 # You can use it to also track training speed, learning rate, and other 
 # scalar values. It’s helpful to compare these metrics across different 
@@ -123,33 +123,33 @@ writer.close()
 
 ######################################################################
 # Share TensorBoard dashboards
-# -----
-# 
-# `TensorBoard.dev <https://tensorboard.dev/>`_ lets you upload and share 
-# your ML experiment results with anyone. Use TensorBoard.dev to host, 
-# track, and share your TensorBoard dashboards.
-# 
-# Install the latest version of TensorBoard to use the uploader.
+# ----------------------------
 #
-# :: 
-# 
-#    $ pip install tensorboard --upgrade
+# `TensorBoard.dev <https://tensorboard.dev/>`_ lets you upload and share 
+# your ML experiment results with anyone. Use ``TensorBoard.dev`` to host,
+# track, and share your TensorBoard dashboards.
+#
+# Install the latest version of TensorBoard to use the ``uploader``.
+#
+# .. code-block:: sh
+#
+#    pip install tensorboard --upgrade
 #
 # Use a simple command to upload and share your TensorBoard.
 #
-# :: 
-# 
-#   $ tensorboard dev upload --logdir runs \
-#   --name "My latest experiment" \ # optional
-#   --description "Simple comparison of several hyperparameters" # optional
-# 
+# .. code-block:: sh
+#
+#    tensorboard dev upload --logdir runs \
+#    --name "My latest experiment" \ # optional
+#    --description "Simple comparison of several hyperparameters" # optional
+#
 # For help, run ``$ tensorboard dev --help``.
 #
-# **Note:** Uploaded TensorBoards are public and visible to everyone. 
+# **Note:** Uploaded TensorBoards are public and visible to everyone.
 # Do not upload sensitive data.
 #
-# View your TensorBoard live at URL provided in your terminal. 
-# E.g. `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
+# View your TensorBoard live at URL provided in your terminal.
+# For example: `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
 #
 #
 # .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
@@ -157,7 +157,7 @@ writer.close()
 # 
 # 
 # .. note::
-#   TensorBoard.dev currently supports scalars, graphs, histograms, distributions, hparams, and text dashboards.
+#    ``TensorBoard.dev`` currently supports scalars, graphs, histograms, distributions, ``hparams``, and text dashboards.
 
 ########################################################################
 # Learn More
