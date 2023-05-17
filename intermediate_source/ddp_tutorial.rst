@@ -343,7 +343,7 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
     if __name__ == "__main__":
         demo_basic()
 
-One can then run a `torch elastic/torchrun<https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
+One can then run a `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
 on all nodes to initialize the DDP job created above:
 
 .. code:: bash
