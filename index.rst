@@ -264,6 +264,13 @@ What's new in PyTorch tutorials?
    :link: beginner/translation_transformer.html
    :tags: Text
 
+.. customcarditem::
+   :header: Pre-process custom text dataset using Torchtext 
+   :card_description: Learn how to use torchtext to prepare a custom dataset
+   :image: _static/img/thumbnails/cropped/torch_text_logo.png
+   :link: beginner/torchtext_custom_dataset_tutorial.html
+   :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -870,6 +877,7 @@ Additional Resources
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
+   beginner/torchtext_custom_dataset_tutorial
 
 
 .. toctree::
