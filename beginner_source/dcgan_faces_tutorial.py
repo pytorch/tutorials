@@ -305,7 +305,7 @@ def weights_init(m):
 # 
 # The generator, :math:`G`, is designed to map the latent space vector
 # (:math:`z`) to data-space. Since our data are images, converting
-# :math:`z` to data-space means ultimately creating a RGB image with the
+# :math:`z` to data-space means ultimately creating an RGB image with the
 # same size as the training images (i.e. 3x64x64). In practice, this is
 # accomplished through a series of strided two dimensional convolutional
 # transpose layers, each paired with a 2d batch norm layer and a relu
