@@ -556,13 +556,13 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # reported are:
 # 
 # -  **Loss_D** - discriminator loss calculated as the sum of losses for
-#    the all real and all fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
+#    the all-real and all-fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
 # -  **Loss_G** - generator loss calculated as :math:`log(D(G(z)))`
 # -  **D(x)** - the average output (across the batch) of the discriminator
-#    for the all real batch. This should start close to 1 then
+#    for the all-real batch. This should start close to 1 then
 #    theoretically converge to 0.5 when G gets better. Think about why
 #    this is.
-# -  **D(G(z))** - average discriminator outputs for the all fake batch.
+# -  **D(G(z))** - average discriminator outputs for the all-fake batch.
 #    The first number is before D is updated and the second number is
 #    after D is updated. These numbers should start near 0 and converge to
 #    0.5 as G gets better. Think about why this is.
