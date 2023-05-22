@@ -395,7 +395,7 @@ print(netG)
 # to the use of the strided convolution, BatchNorm, and LeakyReLUs. The
 # DCGAN paper mentions it is a good practice to use strided convolution
 # rather than pooling to downsample because it lets the network learn its
-# own pooling function. Also batch norm and leaky relu functions promote
+# own pooling function. Also batch norm and leaky ReLU functions promote
 # healthy gradient flow which is critical for the learning process of both
 # :math:`G` and :math:`D`.
 # 
