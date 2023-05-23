@@ -24,7 +24,7 @@ If you are starting off with a Jupyter notebook, you can use [this script](https
 
 The tutorial build is very large and requires a GPU. If your machine does not have a GPU device, you can preview your HTML build without actually downloading the data and running the tutorial code: 
 
-1. Install required dependencies by running: `pip install -r requirements.txt`.
+1. Install required dependencies by running the following command: `pip install -r requirements.txt`.
 
 > If you want to use `virtualenv`, in the root of the repo, run: `virtualenv venv`, then `source venv/bin/activate`.
 
