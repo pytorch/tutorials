@@ -298,7 +298,7 @@ for epoch in range(EPOCHS):
         vinputs, vlabels = vdata
         voutputs = model(vinputs)
         vloss = loss_fn(voutputs, vlabels)
-        running_vloss += vloss
+        running_vloss += vloss.item()
     
     avg_vloss = running_vloss / (i + 1)
     print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))
