@@ -85,15 +85,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
     from torch.nn.parallel import DistributedDataParallel as DDP
     from torch.utils.data.distributed import DistributedSampler
     from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-    from torch.distributed.fsdp.fully_sharded_data_parallel import (
-        CPUOffload,
-        BackwardPrefetch,
-    )
-    from torch.distributed.fsdp.wrap import (
-        size_based_auto_wrap_policy,
-        enable_wrap,
-        wrap,
-    )
+    from torch.distributed.fsdp.fully_sharded_data_parallel import CPUOffload
+    from torch.distributed.fsdp.wrap import size_based_auto_wrap_policy
 
 1.3 Distributed training setup. As we mentioned FSDP is a type of data parallelism which requires a distributed training environment, so here we use two helper functions to initialize the processes for distributed training and clean up.
 
@@ -219,9 +212,6 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
         train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
         test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
-        my_auto_wrap_policy = functools.partial(
-            size_based_auto_wrap_policy, min_num_params=100
-        )
         torch.cuda.set_device(rank)
         
         
