@@ -246,8 +246,46 @@ Will add example of `FixedQParamsQuantizationSpec` with `sigmoid` after implemen
 --------------------------------------------------------
 
 `DerivedQuantizationSpec` is the quantization spec for the Tensors whose quantization parameters are derived from other Tensors.
-**TODO(leslie)**  `DerivedQuantizationSpec` has not been implemented yet.
-Will add example of `DerivedQuantizationSpec` with `linear`.
+For example, we want to define the scale, zp for bias derived from activation and weight of convolution node.
+
+::
+
+    def _annotate_conv2d_derived_bias(
+        self, node: Node, quantization_config: QuantizationConfig
+    ) -> None:
+        if (
+            node.op == "call_function"
+            and node.target == torch.ops.aten.convolution.default
+        ):
+            input_act = node.args[0]
+            weight = node.args[1]
+            bias = node.args[2]
+            act_qspec = get_act_qspec(quantization_config)
+            weight_qspec = get_weight_qspec(quantization_config)
+
+            def derive_qparams_fn(obs_or_fqs: List[ObserverOrFakeQuantize]) -> Tuple[Tensor, Tensor]:
+                assert len(obs_or_fqs) == 2, \
+                    "Expecting two obs/fqs, one for activation and one for weight, got: {}".format(len(obs_or_fq))
+                act_obs_or_fq = obs_or_fqs[0]
+                weight_obs_or_fq = obs_or_fqs[1]
+                act_scale, act_zp = act_obs_or_fq.calculate_qparams()
+                weight_scale, weight_zp = weight_obs_or_fq.calculate_qparams()
+                return torch.tensor([act_scale * weight_scale]).to(torch.float32), torch.tensor([0]).to(torch.int32)
+
+            bias_qspec = DerivedQuantizationSpec(
+                derived_from=[(input_act, node), (weight, node)],
+                derive_qparams_fn=derive_qparams_fn,
+                dtype=torch.int32,
+                quant_min=-2**31,
+                quant_max=2**31 - 1,
+                qscheme=torch.per_tensor_symmetric,
+            )
+            input_qspec_map = {input_act: act_qspec, weight: weight_qspec, bias: bias_qspec}
+            node.meta["quantization_annotation"] = QuantizationAnnotation(
+                input_qspec_map=input_qspec_map,
+                output_qspec=act_qspec,
+                _annotated=True,
+            )
 
 7. A Toy Example with Resnet18 
 --------------------------------------------------------
