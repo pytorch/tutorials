@@ -221,28 +221,36 @@ sharing the same quantization parameters.
 5. Annotate fixed qparams operators
 --------------------------------------------------------
 
-For operator such as `sigmoid`, whose quantization parameters are known before,
-we want to use fixed parameters for it.
-
-**TODO(leslie)** `FixedQParamsQuantizationSpec` has not been implemented yet.
-Will add example of `FixedQParamsQuantizationSpec` with `sigmoid` after implementation.
+For operator such as `sigmoid`, which has predefined and fixed scale/zero_point,
+we can use fixed parameters for it with `FixedQParamsQuantizationSpec`.
 
 ::
 
     def _annotate_sigmoid(
         self, node: Node, quantization_config: QuantizationConfig
     ) -> None:
-        if sigmoid_node.op == "call_function" and sigmoid_node.target in [
+        if node.op == "call_function" and node.target in [
             torch.ops.aten.sigmoid.default,
         ]:
-            act_qspec = get_act_qspec(quantization_config)
+            input_act = node.args[0]
+            assert isinstance(input_act, Node)
+            act_qspec = FixedQParamsQuantizationSpec(
+                dtype=torch.uint8,
+                quant_min=0,
+                quant_max=255,
+                qscheme=torch.per_tensor_affine,
+                scale=2.0 / 256.0,
+                zero_point=128,
+            )
+            node.meta["quantization_annotation"] = QuantizationAnnotation(
+                input_qspec_map={
+                    input_act: act_qspec,
+                },
+                output_qspec=act_qspec,
+                _annotated=True,
+            )
 
-            input_qspec_map = {}
-            input_act0 = sigmoid_node.args[0]
-
-            fixed_params_qspec = FixedQParamsQuantizationSpec...
-
-6. Annotate bias for linear 
+6. Annotate tensor with derived quantization parameters
 --------------------------------------------------------
 
 `DerivedQuantizationSpec` is the quantization spec for the Tensors whose quantization parameters are derived from other Tensors.
@@ -463,8 +471,6 @@ to run a example with Torchvision Resnet18.
                         nodes_to_mark_annotated = list(p.nodes)
                         _mark_nodes_as_annotated(nodes_to_mark_annotated)
 
-        # TODO: move to `_pt2e/_propagate_annotation.py` after we have
-        # decided on the how we want to use pattern matching for annotation
         def _annotate_maxpool2d(
             self, node: Node, quantization_config: QuantizationConfig
         ) -> None:
