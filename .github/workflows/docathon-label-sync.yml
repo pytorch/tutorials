@@ -1,0 +1,33 @@
+name: Docathon Labels Sync
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  check-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if PR mentions an issue and get labels
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install requests
+          pip install PyGithub
+      - name: Run Python script
+        run: |
+          pip install requests
+          pip install PyGithub
+      - name: Set up env var
+        run: echo "PR_NUMBER=$((${{ github.event.pull_request.number }}))" >> $GITHUB_ENV
+      - name: Run Python script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python ./.github/scripts/label-sync-test.py $PR_NUMBER
