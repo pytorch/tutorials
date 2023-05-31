@@ -145,7 +145,7 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
            num_objs = len(obj_ids)
            boxes = []
            for i in range(num_objs):
-               pos = np.where(masks[i])
+               pos = np.nonzero(masks[i])
                xmin = np.min(pos[1])
                xmax = np.max(pos[1])
                ymin = np.min(pos[0])
