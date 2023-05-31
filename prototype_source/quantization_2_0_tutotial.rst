@@ -66,8 +66,15 @@ tutorial for how to use the `QuantizationAnnotation API` to create a quantizer.
 1. Define QuantizationConfig
 --------------------------------------------------------
 
-QuantizationConfig defines the data type and qscheme for activation, weight and bias. Suppose
-we want to define:
+QuantizationConfig defines the data type and qscheme for activation, weight and bias.
+`QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__ is defined here.
+It consists of `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__ defined for activation, weight and bias.
+When annotating the model, methods of `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
+`get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__,
+`get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
+are used to get the `QuantizationSpec` from `QuantizationConfig`. Then corresponding observer will been created
+based on the `QuantizationSpec`.
+Suppose we want to define:
 
 -  Activation: `int8` data type, `per_tensor_affine` quantization, `HistogramObserver`
 -  Weight    : `int8` data type, `per_channel_symmetric` quantization, `PerChannelMinMaxObserver`
@@ -105,7 +112,7 @@ we want to define:
             observer_or_fake_quant_ctr=bias_observer_or_fake_quant_ctr
         )
         quantization_config = QuantizationConfig(
-            act_quantization_spec, weight_quantization_spec, bias_quantization_spec, is_qat
+            act_quantization_spec, weight_quantization_spec, bias_quantization_spec
         )
         return quantization_config
 
@@ -125,17 +132,16 @@ defined later.
             self.operator_type_config: Dict[str, Optional[QuantizationConfig]] = {}
 
         def set_global(self, quantization_config: QuantizationConfig):
+            """set global QuantizationConfig used for the backend.
+            QuantizationConfig is defined in torch/ao/quantization/_pt2e/quantizer/quantizer.py.
+            """
             self.global_config = quantization_config
             return self
 
-        def set_config_for_operator_type(
-            self, operator_type: str, quantization_config: QuantizationConfig
-        ):
-            self.operator_type_config[operator_type] = quantization_config
-            return self
-
         def annotate(self, model: torch.fx.GraphModule) -> torch.fx.GraphModule:
-            """just handling global spec for now"""
+            """annotate nodes in the graph with observer or fake quant constructors
+            to convey the desired way of quantization.
+            """
             global_config = self.global_config
             self.annotate_symmetric_config(model, global_config)
 
@@ -150,10 +156,12 @@ defined later.
             return model
 
         def validate(self, model: torch.fx.GraphModule) -> None:
+            """validate the annotated graph is supported by the backend"""
             pass
 
         @classmethod
         def get_supported_operators(cls) -> List[OperatorConfig]:
+            """return the operator list which is supported by the backend"""
             return []
 
 3. Annotate common operator patterns
@@ -370,12 +378,6 @@ to run a example with Torchvision Resnet18.
 
         def set_global(self, quantization_config: QuantizationConfig):
             self.global_config = quantization_config
-            return self
-
-        def set_config_for_operator_type(
-            self, operator_type: str, quantization_config: QuantizationConfig
-        ):
-            self.operator_type_config[operator_type] = quantization_config
             return self
 
         def annotate(self, model: torch.fx.GraphModule) -> torch.fx.GraphModule:
