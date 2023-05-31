@@ -30,6 +30,7 @@ Symbolically trace only the code that needs to be quantized
 -----------------------------------------------------------------
 When the whole model is not symbolically traceable but the submodule we want to quantize is
 symbolically traceable, we can run quantization only on that submodule.
+
 before:
 
 .. code:: python
@@ -44,6 +45,7 @@ before:
 after:
 
 .. code:: python
+    
   class FP32Traceable(nn.Module):
       def forward(self, x):
           x = traceable_code(x)
