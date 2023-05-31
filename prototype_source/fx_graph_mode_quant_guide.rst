@@ -33,6 +33,7 @@ symbolically traceable, we can run quantization only on that submodule.
 before:
 
 .. code:: python
+
   class M(nn.Module):
       def forward(self, x):
           x = non_traceable_code_1(x)
