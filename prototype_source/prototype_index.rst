@@ -68,6 +68,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/numeric_suite_tutorial.html
    :tags: Debugging,Quantization
 
+.. customcarditem::
+   :header: PyTorch Quantization 2.0 Tutorial
+   :card_description: Learn how to use the PyTorch Quantization 2.0 stack.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/quantization_2_0_tutotial.html
+   :tags: Quantization
+
 .. Mobile
 
 .. customcarditem::
