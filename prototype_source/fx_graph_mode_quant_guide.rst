@@ -205,8 +205,8 @@ non-traceable logic, wrapped in a module
   class FP32NonTraceable:
       ...
 
-
-2. Define observed version of FP32NonTraceable
+2. Define observed version of
+FP32NonTraceable
 
 .. code:: python
 
