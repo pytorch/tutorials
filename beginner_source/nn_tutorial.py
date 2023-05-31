@@ -80,7 +80,6 @@ try:
     import google.colab
 except ImportError:
     pyplot.show()
-    pass
 print(x_train.shape)
 
 ###############################################################################
