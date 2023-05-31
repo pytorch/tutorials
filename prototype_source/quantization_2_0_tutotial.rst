@@ -72,8 +72,8 @@ It consists of `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd72
 When annotating the model, methods of `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
 `get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__,
 `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
-are used to get the `QuantizationSpec` from `QuantizationConfig`. Then corresponding observer will been created
-based on the `QuantizationSpec`.
+are used to get the `QuantizationSpec` from `QuantizationConfig` for the specific node. Then corresponding observer will been created
+based on the node's `QuantizationSpec`.
 Suppose we want to define:
 
 -  Activation: `int8` data type, `per_tensor_affine` quantization, `HistogramObserver`
