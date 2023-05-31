@@ -16,10 +16,7 @@ For this tutorial, you will need to install `ONNX <https://github.com/onnx/onnx>
 and `ONNX Runtime <https://github.com/microsoft/onnxruntime>`__.
 You can get binary builds of ONNX and ONNX Runtime with
 ``pip install onnx onnxruntime``.
-Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.
-
-``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
-the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
+ONNX Runtime recommends using the latest stable runtime for PyTorch.
 
 """
 
