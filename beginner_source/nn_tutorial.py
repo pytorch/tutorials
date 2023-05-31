@@ -75,7 +75,7 @@ from matplotlib import pyplot
 import numpy as np
 
 pyplot.imshow(x_train[0].reshape((28, 28)), cmap="gray")
-# pyplot.show() only if not on colab
+# ``pyplot.show()`` only if not on Colab
 try:
     import google.colab
 except ImportError:
