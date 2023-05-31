@@ -13,8 +13,12 @@ a simplified UX.
 
 Suppose we are a backend developer and we wish to integrate our backend
 with PyTorch's quantization 2.0 flow. We only need to define the backend
-specific quantizer. An existing quantizer object defined for
-QNNPack/XNNPack is here
+specific quantizer. The high level arch of quantization 2.0 with quantizer could be: 
+
+.. image:: /_static/img/quantization/pytorch_quantization_2_0_diagram.png
+   :width: 300 px
+
+An existing quantizer object defined for QNNPack/XNNPack is here 
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
 Taking QNNPackQuantizer as example, the overall Quantization 2.0 flow could be:
 
@@ -47,7 +51,7 @@ Taking QNNPackQuantizer as example, the overall Quantization 2.0 flow could be:
     quantizer = qq.QNNPackQuantizer()
     operator_config = qq.get_symmetric_quantization_config(is_per_channel=True)
     quantizer.set_global(operator_config)
-    prepared_graph_module = prepare_pt2e(exported_graph_module, quantizer)
+    prepared_graph_module = prepare_pt2e_quantizer(exported_graph_module, quantizer)
 
     # Step 3: Quantize the model
     convered_graph_module = convert_pt2e(prepared_graph_module)
