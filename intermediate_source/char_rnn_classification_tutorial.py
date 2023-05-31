@@ -2,7 +2,7 @@
 """
 NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 We will be building and training a basic character-level RNN to classify
 words. This tutorial, along with the following two, show how to do
