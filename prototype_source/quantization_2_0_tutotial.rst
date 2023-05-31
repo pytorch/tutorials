@@ -65,19 +65,21 @@ tutorial for how to use the `QuantizationAnnotation API` to create a quantizer.
 1. Define QuantizationConfig
 --------------------------------------------------------
 
-QuantizationConfig defines the data type and qscheme for activation, weight and bias.
-`QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__ is defined here.
-It consists of `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__ defined for activation, weight and bias.
-When annotating the model, methods of `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
-`get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__,
+`QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
+consists of `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__
+for activation, weight and bias seperately. Each `QuantizationSpec` defines the data type, qscheme and other quantization parameters used to create the observer.
+When annotating the model, methods of
+`get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
+`get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__ and
 `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
-are used to get the `QuantizationSpec` from `QuantizationConfig` for the specific node. Then corresponding observer will been created
-based on the node's `QuantizationSpec`.
-Suppose we want to define:
+are used to get the `QuantizationSpec` from `QuantizationConfig` for a specific node. Then corresponding observer will be created
+based on this node's `QuantizationSpec`. Suppose we want use these quantization parameters for activation, weight and bias:
 
 -  Activation: `int8` data type, `per_tensor_affine` quantization, `HistogramObserver`
 -  Weight    : `int8` data type, `per_channel_symmetric` quantization, `PerChannelMinMaxObserver`
 -  Bias      : `float` data type, `PlaceholderObserver`
+
+We can define the `QuantizationConfig` as below:
 
 ::
 
