@@ -238,9 +238,9 @@ qconfig_mapping = (QConfigMapping()
     .set_object_type(nn.LSTM, default_dynamic_qconfig)
     .set_object_type(nn.Linear, default_dynamic_qconfig)
 )
-# Deepcopying the original model because quantization api changes the model inplace and we want
+# Saving the original model because quantization api changes the model inplace and we want
 # to keep the original model for future comparison
-model_to_quantize = copy.deepcopy(model)
+model_to_quantize = torch.save(model)
 prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
 print("prepared model:", prepared_model)
 quantized_model = convert_fx(prepared_model)
