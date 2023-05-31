@@ -37,7 +37,7 @@ can be easily adapted/composed.
 # ``nn.TransformerEncoder`` consists of multiple layers of
 # `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
 # Along with the input sequence, a square attention mask is required because the
-# self-attention layers in ``nn.TransformerEncoder`` are only allowed to attend
+# self-attention layers in ``nn.TransformerDecoder`` are only allowed to attend
 # the earlier positions in the sequence. For the language modeling task, any
 # tokens on the future positions should be masked. To produce a probability
 # distribution over output words, the output of the ``nn.TransformerEncoder``
