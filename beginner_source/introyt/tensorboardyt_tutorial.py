@@ -207,14 +207,14 @@ for epoch in range(1):  # loop over the dataset multiple times
             # Check against the validation set
             running_vloss = 0.0
             
-            net.train(False) # Don't need to track gradents for validation
-            for j, vdata in enumerate(validation_loader, 0):
-                vinputs, vlabels = vdata
-                voutputs = net(vinputs)
-                vloss = criterion(voutputs, vlabels)
-                running_vloss += vloss.item()
-            net.train(True) # Turn gradients back on for training
-            
+            net.eval() # Don't need to track gradents for validation
+            with torch.inference_mode():
+               for j, vdata in enumerate(validation_loader, 0):
+                   vinputs, vlabels = vdata
+                   voutputs = net(vinputs)
+                   vloss = criterion(voutputs, vlabels)
+                   running_vloss += vloss.item()
+                
             avg_loss = running_loss / 1000
             avg_vloss = running_vloss / len(validation_loader)
             
