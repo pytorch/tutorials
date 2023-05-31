@@ -22,10 +22,11 @@ You can use any combination of these options:
     b. Write your own observed and quantized submodule
 
 
-####################################################################
 If the code that is not symbolically traceable does not need to be quantized, we have the following two options
 to run FX Graph Mode Quantization:
-1.a. Symbolically trace only the code that needs to be quantized
+
+
+a. Symbolically trace only the code that needs to be quantized
 -----------------------------------------------------------------
 When the whole model is not symbolically traceable but the submodule we want to quantize is
 symbolically traceable, we can run quantization only on that submodule.
@@ -69,8 +70,7 @@ Note if original model needs to be preserved, you will have to
 copy it yourself before calling the quantization APIs.
 
 
-#####################################################
-1.b. Skip symbolically trace the non-traceable code
+b. Skip symbolically trace the non-traceable code
 ---------------------------------------------------
 When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized,
 we can factor out this part of the code into a submodule and skip symbolically trace that submodule.
@@ -134,8 +134,7 @@ quantization code:
 
 If the code that is not symbolically traceable needs to be quantized, we have the following two options:
 
-##########################################################
-2.a Refactor your code to make it symbolically traceable
+a. Refactor your code to make it symbolically traceable
 --------------------------------------------------------
 If it is easy to refactor the code and make the code symbolically traceable,
 we can refactor the code and remove the use of non-traceable constructs in python.
@@ -174,8 +173,7 @@ depends on the model.
 
 
 
-#######################################################
-2.b. Write your own observed and quantized submodule
+b. Write your own observed and quantized submodule
 -----------------------------------------------------
 
 If the non-traceable code can’t be refactored to be symbolically traceable,
