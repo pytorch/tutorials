@@ -6,7 +6,7 @@ NLP From Scratch: Classifying Names with a Character-Level RNN
 
 We will be building and training a basic character-level Recurrent Neural
 Network (RNN) to classify words. This tutorial, along with two other
-Natural Language Procesing (NLP) "from scratch" tutorials
+Natural Language Processing (NLP) "from scratch" tutorials
 :doc:`/intermediate/char_rnn_generation_tutorial` and
 :doc:`/intermediate/seq2seq_translation_tutorial`, show how to
 preprocess data to model NLP. In particular these tutorials do not
