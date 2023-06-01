@@ -66,7 +66,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 # In case you are using an environment that has TensorFlow installed,
 # such as Google Colab, uncomment the following code to avoid
-# a bug with saving embeddings to your tensorboard directory
+# a bug with saving embeddings to your TensorBoard directory
 
 # import tensorflow as tf
 # import tensorboard as tb
