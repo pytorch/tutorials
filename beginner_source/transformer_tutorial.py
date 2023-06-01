@@ -148,7 +148,7 @@ class PositionalEncoding(nn.Module):
 # Given a 1-D vector of sequential data, ``batchify()`` arranges the data
 # into ``batch_size`` columns. If the data does not divide evenly into
 # ``batch_size`` columns, then the data is trimmed to fit. For instance, with
-# the alphabet as the data (total length of 26) and `batch_size=4`, we would
+# the alphabet as the data (total length of 26) and ``batch_size=4``, we would
 # divide the alphabet into sequences of length 6, resulting in 4 such sequences:
 #
 # .. math::
