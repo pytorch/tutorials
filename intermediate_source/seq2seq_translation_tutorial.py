@@ -2,7 +2,7 @@
 """
 NLP From Scratch: Translation with a Sequence to Sequence Network and Attention
 *******************************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is the third and final tutorial on doing "NLP From Scratch", where we
 write our own classes and functions to preprocess the data to do our NLP

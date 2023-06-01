@@ -2,7 +2,7 @@
 """
 NLP From Scratch: Generating Names with a Character-Level RNN
 *************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is our second of three tutorials on "NLP From Scratch".
 In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
