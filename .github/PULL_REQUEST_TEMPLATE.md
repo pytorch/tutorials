@@ -8,4 +8,4 @@ Fixes #ISSUE_NUMBER
 - [ ] The issue that is being fixed is referred in the description (see above "Fixes #ISSUE_NUMBER")
 - [ ] Only one issue is addressed in this pull request
 - [ ] Labels from the issue that this PR is fixing are added to this pull request
-- [ ] No unnessessary issues are included into this pull request.
+- [ ] No unnecessary issues are included into this pull request.
