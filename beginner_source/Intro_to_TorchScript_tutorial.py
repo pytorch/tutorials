@@ -2,7 +2,7 @@
 Introduction to TorchScript
 ===========================
 
-*James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
+**Authors:** James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com), rev2
 
 This tutorial is an introduction to TorchScript, an intermediate
 representation of a PyTorch model (subclass of ``nn.Module``) that
@@ -147,7 +147,7 @@ print(my_cell(x, h))
 
 
 ######################################################################
-# We’ve once again redefined our MyCell class, but here we’ve defined
+# We’ve once again redefined our ``MyCell`` class, but here we’ve defined
 # ``MyDecisionGate``. This module utilizes **control flow**. Control flow
 # consists of things like loops and ``if``-statements.
 #
@@ -158,7 +158,7 @@ print(my_cell(x, h))
 # have to explicitly define derivatives for all constructs in the
 # language.
 #
-# .. figure:: https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/dynamic_graph.gif
+# .. figure:: https://github.com/pytorch/pytorch/raw/main/docs/source/_static/img/dynamic_graph.gif
 #    :alt: How autograd works
 #
 #    How autograd works
@@ -202,7 +202,7 @@ traced_cell(x, h)
 # inputs* the network might see.
 #
 # What exactly has this done? It has invoked the ``Module``, recorded the
-# operations that occured when the ``Module`` was run, and created an
+# operations that occurred when the ``Module`` was run, and created an
 # instance of ``torch.jit.ScriptModule`` (of which ``TracedModule`` is an
 # instance)
 #
@@ -283,7 +283,7 @@ print(traced_cell.code)
 # Looking at the ``.code`` output, we can see that the ``if-else`` branch
 # is nowhere to be found! Why? Tracing does exactly what we said it would:
 # run the code, record the operations *that happen* and construct a
-# ScriptModule that does exactly that. Unfortunately, things like control
+# ``ScriptModule`` that does exactly that. Unfortunately, things like control
 # flow are erased.
 #
 # How can we faithfully represent this module in TorchScript? We provide a

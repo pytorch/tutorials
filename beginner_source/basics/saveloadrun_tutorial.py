@@ -26,14 +26,14 @@ import torchvision.models as models
 # state dictionary, called ``state_dict``. These can be persisted via the ``torch.save``
 # method:
 
-model = models.vgg16(pretrained=True)
+model = models.vgg16(weights='IMAGENET1K_V1')
 torch.save(model.state_dict(), 'model_weights.pth')
 
 ##########################
 # To load model weights, you need to create an instance of the same model first, and then load the parameters
 # using ``load_state_dict()`` method.
 
-model = models.vgg16() # we do not specify pretrained=True, i.e. do not load default weights
+model = models.vgg16() # we do not specify ``weights``, i.e. create untrained model
 model.load_state_dict(torch.load('model_weights.pth'))
 model.eval()
 

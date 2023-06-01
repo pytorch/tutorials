@@ -18,7 +18,8 @@ tldr; The FX Graph Mode API for dynamic quantization looks like the following:
     from torch.quantization.quantize_fx import prepare_fx, convert_fx
 
     float_model.eval()
-    qconfig = get_default_qconfig("fbgemm")
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    qconfig = get_default_qconfig("x86")
     qconfig_mapping = QConfigMapping().set_global(qconfig)
     prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
     # no calibration is required for dynamic quantization

@@ -1,0 +1,53 @@
+spellchecker: aspell
+matrix:
+- name: python
+  sources:
+    - beginner_source/*.py
+    - intermediate_source/*.py
+    - advanced_source/*.py
+    - recipes_source/*/*.py
+  dictionary:
+    wordlists:
+      - en-wordlist.txt
+  pipeline:
+  - pyspelling.filters.python:
+      group_comments: true
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+        # Exclude figure rST tags
+        - open: '\.\.\s+(figure|literalinclude|math|image|grid)::'
+          close: '\n'
+        # Exclude roles:
+        - open: ':(?:(class|py:mod|mod|func)):`'
+          content: '[^`]*'
+          close: '`'
+        # Exclude reStructuredText hyperlinks
+        - open: '\s'
+          content: '\w*'
+          close: '_'
+        # Exclude raw directive
+        - open: '\.\. (raw)::.*$\n*'
+          close: '\n'
+        # Exclude Python coding directives
+        - open: '-\*- coding:'
+          close: '\n'
+        # Exclude Authors:
+        - open: 'Author(|s):'
+          close: '\n'
+        # Exclude .rst directives:
+        - open: ':math:`.*`'
+          close: ' '
+        # Ignore multiline content in codeblock
+        - open: '(?s)^::\n\n  '
+          close: '^\n'
+        # Ignore reStructuredText block directives
+        - open: '\.\. (code-block|math)::.*$\n*'
+          content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
+          close: '(^(?![ \t]+.*$))'
+  - pyspelling.filters.markdown:
+  - pyspelling.filters.html:
+      ignores:
+        - code
+        - pre
+  - pyspelling.filters.url:
