@@ -11,6 +11,12 @@ transformations on top of the ATen dialect graph. This approach is expected to
 have significantly higher model coverage, better programmability, and
 a simplified UX.
 
+Prerequisites:
+
+-  `Understanding of the quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
+-  `Understanding of FX graph mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
+-  `Understanding of torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
+
 Imagine a backend developer who wishes to integrate a third-party backend
 with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
 to define the backend specific quantizer. The high level architecture of
