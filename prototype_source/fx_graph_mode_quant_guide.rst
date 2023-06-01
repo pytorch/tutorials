@@ -4,7 +4,7 @@
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
 FX Graph Mode Quantization requires a symbolically traceable model.
-We use the FX framework (TODO: link) to convert a symbolically traceable nn.Module instance to IR,
+We use the FX framework to convert a symbolically traceable nn.Module instance to IR,
 and we operate on the IR to execute the quantization passes.
 Please post your question about symbolically tracing your model in `PyTorch Discussion Forum <https://discuss.pytorch.org/c/quantization/17>`_
 
