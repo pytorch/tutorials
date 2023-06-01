@@ -72,7 +72,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    :header: PyTorch Quantization 2.0 Tutorial
    :card_description: Learn how to use the PyTorch Quantization 2.0 stack.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/quantization_2_0_tutotial.html
+   :link: ../prototype/quantization_in_pytorch_2_0_tutorial.html
    :tags: Quantization
 
 .. Mobile
@@ -200,7 +200,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
-   prototype/quantization_2_0_tutotial.html
+   prototype/quantization_in_pytorch_2_0_tutorial.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html

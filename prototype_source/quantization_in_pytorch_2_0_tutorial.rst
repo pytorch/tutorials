@@ -1,4 +1,4 @@
-(prototype) PyTorch Quantization 2.0 Tutorial
+(prototype) Quantization in PyTorch 2.0 Export Tutorial
 =====================================================
 
 Today we have `FX Graph Mode
