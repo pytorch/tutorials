@@ -12,6 +12,7 @@ have significantly higher model coverage, better programmability, and
 a simplified UX.
 
 Prerequisites:
+-----------------------
 
 -  `Understanding of the quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
 -  `Understanding of FX graph mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
@@ -600,3 +601,17 @@ to run a example with Torchvision Resnet18.
         after_prepare_result = m(*example_inputs)
         m = convert_pt2e(m)
         print("converted module is: {}".format(m), flush=True)
+
+8. Conclusion
+------------
+
+With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
+how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
+Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
+are given for specific annotation use cases. Quantization 2.0 flow is still under active development. If user wants
+to learn more about the design, here are some further reading materials. Please contact to @jerryzh168 if you want access to
+below materials.
+
+-  `Quantization in PyTorch 2.0 Export Detailed Design <https://docs.google.com/document/d/1_jjXrdaPbkmy7Fzmo35-r1GnNKL7anYoAnqozjyY-XI/edit#heading=h.8raqyft9y50>`__
+-  `Quantization Annotation API Design <https://docs.google.com/document/d/1tjIsL7-uVgm_1bv_kUK7iovP6G1D5zcbzwEcmYEG2Js/edit#heading=h.fng0wlvs8ou6>`__
+-  `Quantized Model Representation in PyTorch 2.0 Export <https://docs.google.com/document/d/1M-C2ACNhERhXqi52bWRq7y8ajamwMnrY6updHPQ8rRE/edit#heading=h.ov8z39149wy8>`__
