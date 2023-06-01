@@ -169,12 +169,8 @@ after:
       return x.permute(0, 2, 1, 3)
 
 
-quantization code:
-
 This can be combined with other approaches and the quantization code
 depends on the model.
-
-
 
 Write your own observed and quantized submodule
 -----------------------------------------------------
