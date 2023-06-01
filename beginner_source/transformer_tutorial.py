@@ -149,7 +149,7 @@ class PositionalEncoding(nn.Module):
 # into ``batch_size`` columns. If the data does not divide evenly into
 # ``batch_size`` columns, then the data is trimmed to fit. For instance, with
 # the alphabet as the sequence (total length of 26) and a batch size of 4, 
-# we would divide the letters into sequences of length 6, resulting in 4 such sequences:
+# we would divide the alphabet into sequences of length 6, resulting in 4 such sequences:
 #
 # .. math::
 #   \begin{bmatrix}
