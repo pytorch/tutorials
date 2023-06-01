@@ -511,6 +511,7 @@ print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_s
 per_channel_quantized_model = load_model(saved_model_dir + float_model_file)
 per_channel_quantized_model.eval()
 per_channel_quantized_model.fuse_model()
+torch.backends.quantized.engine = "fbgemm"
 per_channel_quantized_model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
 print(per_channel_quantized_model.qconfig)
 
