@@ -348,7 +348,7 @@ class Mario:
 class Mario(Mario):  # subclassing for continuity
     def __init__(self, state_dim, action_dim, save_dir):
         super().__init__(state_dim, action_dim, save_dir)
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=60000) # Please change this value according to your GPU memory (current value is suitable for a GPU with 16GB RAM)
         self.batch_size = 32
 
     def cache(self, state, next_state, action, reward, done):
