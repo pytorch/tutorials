@@ -1,25 +1,26 @@
 (prototype) PyTorch Quantization 2.0 Tutorial
-==========================================
+=====================================================
 
 Today we have `FX Graph Mode
 Quantization <https://pytorch.org/docs/stable/quantization.html#prototype-fx-graph-mode-quantization>`__
-which uses symbolic_trace to capture the model into a graph, and then
+which uses ``symbolic_trace`` to capture the model into a graph, and then
 perform quantization transformations on top of the captured model. In a
 similar way, for Quantization 2.0 flow, we will now use the PT2 Export
-workflow to capture the model into a graph, and perform quantizations
-transformations on top of the ATen dialect graph. This is expected to
+workflow to capture the model into a graph, and perform quantization
+transformations on top of the ATen dialect graph. This approach is expected to
 have significantly higher model coverage, better programmability, and
 a simplified UX.
 
-Suppose we are a backend developer and we wish to integrate our backend
-with PyTorch's quantization 2.0 flow. We only need to define the backend
-specific quantizer. The high level arch of quantization 2.0 with quantizer could be: 
+Imagine a backend developer who wishes to integrate a third-party backend
+with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
+to define the backend specific quantizer. The high level architecture of
+quantization 2.0 with quantizer could look like this:
 
 .. image:: /_static/img/quantization/pytorch_quantization_2_0_diagram.png
 
-An existing quantizer object defined for QNNPack/XNNPack is here 
+An existing quantizer object defined for QNNPack/XNNPack is located in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
-Taking QNNPackQuantizer as example, the overall Quantization 2.0 flow could be:
+Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could be:
 
 ::
 
@@ -59,27 +60,27 @@ Taking QNNPackQuantizer as example, the overall Quantization 2.0 flow could be:
 
 Inside the Quantizer, we will use the `QuantizationAnnotation API <https://docs.google.com/document/d/1tjIsL7-uVgm_1bv_kUK7iovP6G1D5zcbzwEcmYEG2Js/edit#>`__
 to convey user's intent for what quantization spec to use and how to
-observe certain tensor values in the prepare step. Now, we will have a step by step
-tutorial for how to use the `QuantizationAnnotation API` to create a quantizer.
+observe certain tensor values in the prepare step. Now, we will have a step-by-step
+tutorial for how to use the ``QuantizationAnnotation API`` to create a quantizer.
 
-1. Define QuantizationConfig
+1. Define ``QuantizationConfig``
 --------------------------------------------------------
 
 `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
 consists of `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__
-for activation, weight and bias seperately. Each `QuantizationSpec` defines the data type, qscheme and other quantization parameters used to create the observer.
+for activation, weight, and bias separately. Each ``QuantizationSpec`` defines the data type, ``qscheme``, and other quantization parameters used to create the observer.
 When annotating the model, methods of
 `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
 `get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__ and
 `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
-are used to get the `QuantizationSpec` from `QuantizationConfig` for a specific node. Then corresponding observer will be created
-based on this node's `QuantizationSpec`. Suppose we want use these quantization parameters for activation, weight and bias:
+are used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node. Then corresponding observer will be created
+based on this node's ``QuantizationSpec``. For example, we want to use these quantization parameters for activation, weight, and bias:
 
--  Activation: `int8` data type, `per_tensor_affine` quantization, `HistogramObserver`
--  Weight    : `int8` data type, `per_channel_symmetric` quantization, `PerChannelMinMaxObserver`
--  Bias      : `float` data type, `PlaceholderObserver`
+-  Activation: ``int8`` data type, ``per_tensor_affine`` quantization, ``HistogramObserver``
+-  Weight    : ``int8`` data type, ``per_channel_symmetric`` quantization, ``PerChannelMinMaxObserver``
+-  Bias      : ``float`` data type, ``PlaceholderObserver``
 
-We can define the `QuantizationConfig` as below:
+We can define the ``QuantizationConfig`` as below:
 
 ::
 
@@ -117,10 +118,10 @@ We can define the `QuantizationConfig` as below:
         )
         return quantization_config
 
-2. Define the BackendQuantizer
+2. Define the ``BackendQuantizer``
 --------------------------------------------------------
 
-Then we will define the skeleton of a BackendQuantizer. The annotatation methods for each operation will be
+Then we will define the skeleton of a ``BackendQuantizer``. The annotatation methods for each operation will be
 defined later.
 
 ::
@@ -168,8 +169,8 @@ defined later.
 3. Annotate common operator patterns
 --------------------------------------------------------
 
-Now we will start to define the annotatation methods inside quantizer. For common operators like `conv2d`, we can use `QuantizationSpec` to
-annotate the input, weight, bias and output.
+Now we will start to define the annotatation methods inside quantizer. For common operators like ``conv2d``, we can use ``QuantizationSpec`` to
+annotate the input, weight, bias, and output.
 
 ::
 
@@ -215,8 +216,8 @@ annotate the input, weight, bias and output.
 4. Annotate sharing qparams operators
 --------------------------------------------------------
 
-For operator such as `add` and `cat`, which we want the two inputs sharing
-quantization parameters, we can use the `SharedQuantizationSpec` to make the two inputs
+For operator such as ``add`` and ``cat``, which we want the two inputs sharing
+quantization parameters, we can use the ``SharedQuantizationSpec`` to make the two inputs
 sharing the same quantization parameters.
 
 ::
@@ -249,8 +250,8 @@ sharing the same quantization parameters.
 5. Annotate fixed qparams operators
 --------------------------------------------------------
 
-For operator such as `sigmoid`, which has predefined and fixed scale/zero_point,
-we can use fixed parameters for it with `FixedQParamsQuantizationSpec`.
+For operator such as ``sigmoid``, which has predefined and fixed scale/zero_point,
+we can use fixed parameters for it with ``FixedQParamsQuantizationSpec``.
 
 ::
 
@@ -283,8 +284,8 @@ we can use fixed parameters for it with `FixedQParamsQuantizationSpec`.
 6. Annotate tensor with derived quantization parameters
 --------------------------------------------------------
 
-`DerivedQuantizationSpec` is the quantization spec for the Tensors whose quantization parameters are derived from other Tensors.
-For example, we want to define the scale, zp for bias derived from activation and weight of convolution node.
+``DerivedQuantizationSpec`` is the quantization spec for the Tensors whose quantization parameters are derived from other Tensors.
+For example, we want to define the ``scale``, ``zp`` for bias derived from activation and weight of convolution node.
 
 ::
 
@@ -330,7 +331,7 @@ For example, we want to define the scale, zp for bias derived from activation an
 7. A Toy Example with Resnet18 
 --------------------------------------------------------
 
-After above annotation methods defined with `QuantizationAnnotation API`, we can now put them together for the BackendQuantizer
+After above annotation methods defined with ``QuantizationAnnotation API``, we can now put them together for the ``BackendQuantizer``
 to run a example with Torchvision Resnet18.
 
 .. code:: ipython3
