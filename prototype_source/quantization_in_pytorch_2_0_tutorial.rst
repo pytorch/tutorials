@@ -25,34 +25,34 @@ quantization 2.0 with quantizer could look like this:
 
 ::
 
-float_model(Python)                               Input
-     \                                              /
-      \                                            /
-—-------------------------------------------------------
-|                    Dynamo Export                     |
-—-------------------------------------------------------
-                             |
-                       FX Graph in CATen    QNNPackQuantizer,
-                             |              or X86InductorQuantizer,
-                             |              or <Other Backend Quantizer>
-                             |                /
-—--------------------------------------------------------
-|                 prepare_pt2e_quantizer                |
-—--------------------------------------------------------
-                              |
-                       Calibrate/Train
-                              |
-—--------------------------------------------------------
-|                         convert_pt2e                  |
-—--------------------------------------------------------
-                              |
-                   Reference Quantized Model
-                              |
-—--------------------------------------------------------
-|                        Lowering                       |
-—--------------------------------------------------------
-                              |
-          Executorch, Inductor, <Other Backends>
+    float_model(Python)                               Input
+        \                                              /
+        \                                            /
+    —-------------------------------------------------------
+    |                    Dynamo Export                     |
+    —-------------------------------------------------------
+                                |
+                        FX Graph in CATen    QNNPackQuantizer,
+                                |            or X86InductorQuantizer,
+                                |            or <Other Backend Quantizer>
+                                |                /
+    —--------------------------------------------------------
+    |                 prepare_pt2e_quantizer                |
+    —--------------------------------------------------------
+                                |
+                        Calibrate/Train
+                                |
+    —--------------------------------------------------------
+    |                         convert_pt2e                  |
+    —--------------------------------------------------------
+                                |
+                    Reference Quantized Model
+                                |
+    —--------------------------------------------------------
+    |                        Lowering                       |
+    —--------------------------------------------------------
+                                |
+            Executorch, Inductor, <Other Backends>
 
 An existing quantizer object defined for QNNPack/XNNPack is located in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
