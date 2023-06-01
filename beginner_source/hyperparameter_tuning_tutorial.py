@@ -201,7 +201,7 @@ class Net(nn.Module):
 #
 # The checkpoint saving is optional, however, it is necessary if we wanted to use advanced
 # schedulers like
-# `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
+# `Population Based Training <https://docs.ray.io/en/latest/tune/examples/pbt_guide.html>`_.
 # Also, by saving the checkpoint we can later load the trained models and validate them
 # on a test set. Lastly, saving checkpoints is useful for fault tolerance, and it allows
 # us to interrupt training and continue training later.

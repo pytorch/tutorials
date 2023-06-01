@@ -423,6 +423,9 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     # We want to optimize the input and not the model parameters so we
     # update all the requires_grad fields accordingly
     input_img.requires_grad_(True)
+    # We also put the model in evaluation mode, so that specific layers 
+    # such as dropout or batch normalization layers behave correctly. 
+    model.eval()
     model.requires_grad_(False)
 
     optimizer = get_input_optimizer(input_img)
