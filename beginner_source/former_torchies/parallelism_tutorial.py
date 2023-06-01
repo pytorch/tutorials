@@ -51,7 +51,7 @@ class DataParallelModel(nn.Module):
 # clashes in their names. For those who still want to access the attributes, 
 # a workaround is to use a subclass of ``DataParallel`` as below.
 
-class MyDataParallel(DataParallel):
+class MyDataParallel(nn.DataParallel):
     def __getattr__(self, name):
         try:
             return super().__getattr__(name)
