@@ -23,7 +23,36 @@ with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
 to define the backend specific quantizer. The high level architecture of
 quantization 2.0 with quantizer could look like this:
 
-.. image:: /_static/img/quantization/pytorch_quantization_2_0_diagram.png
+```
+float_model(Python)                               Input
+     \                                              /
+      \                                            /
+—-------------------------------------------------------
+|                    Dynamo Export                     |
+—-------------------------------------------------------
+                             |
+                       FX Graph in CATen    QNNPackQuantizer,
+                             |              or X86InductorQuantizer,
+                             |              or <Other Backend Quantizer>
+(prepare_pt2e_quantizer)     |                /
+—--------------------------------------------------------
+|                 prepare_pt2e_quantizer                |
+—--------------------------------------------------------
+                              |
+                       Calibrate/Train
+(convert_pt2e)                |
+—--------------------------------------------------------
+|                         convert_pt2e                  |
+—--------------------------------------------------------
+                              |
+                   Reference Quantized Model
+                              |
+—--------------------------------------------------------
+|                        Lowering                       |
+—--------------------------------------------------------
+                              |
+          Executorch, Inductor, <Other Backends>
+```
 
 An existing quantizer object defined for QNNPack/XNNPack is located in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
