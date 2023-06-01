@@ -27,7 +27,7 @@ quantization 2.0 with quantizer could look like this:
 
     float_model(Python)                               Input
         \                                              /
-        \                                            /
+         \                                            /
     —-------------------------------------------------------
     |                    Dynamo Export                     |
     —-------------------------------------------------------
@@ -40,10 +40,10 @@ quantization 2.0 with quantizer could look like this:
     |                 prepare_pt2e_quantizer                |
     —--------------------------------------------------------
                                 |
-                        Calibrate/Train
+                         Calibrate/Train
                                 |
     —--------------------------------------------------------
-    |                         convert_pt2e                  |
+    |                      convert_pt2e                     |
     —--------------------------------------------------------
                                 |
                     Reference Quantized Model
@@ -52,7 +52,7 @@ quantization 2.0 with quantizer could look like this:
     |                        Lowering                       |
     —--------------------------------------------------------
                                 |
-            Executorch, Inductor, <Other Backends>
+            Executorch, or Inductor, or <Other Backends>
 
 An existing quantizer object defined for QNNPack/XNNPack is located in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
@@ -637,9 +637,9 @@ to run a example with Torchvision Resnet18.
 With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
 how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
 Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
-are given for specific annotation use cases. Quantization 2.0 flow is still under active development. If user wants
-to learn more about the design, here are some further reading materials. Please contact to @jerryzh168 if you want access to
-below materials.
+are given for specific annotation use case. Quantization 2.0 flow is still under active development. If the user wants
+to learn more about the design, here are some further reading links. Please contact to `Jerry <https://github.com/jerryzh168>`__ if you want access to
+below links.
 
 -  `Quantization in PyTorch 2.0 Export Detailed Design <https://docs.google.com/document/d/1_jjXrdaPbkmy7Fzmo35-r1GnNKL7anYoAnqozjyY-XI/edit#heading=h.8raqyft9y50>`__
 -  `Quantization Annotation API Design <https://docs.google.com/document/d/1tjIsL7-uVgm_1bv_kUK7iovP6G1D5zcbzwEcmYEG2Js/edit#heading=h.fng0wlvs8ou6>`__
