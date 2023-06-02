@@ -35,7 +35,7 @@ with torch.device('cuda'):
     print(mod(torch.randn(128, 20)).device)
 
 #########################################
-# You can also set it globally like this:
+# You can also set it globally like this: 
 
 torch.set_default_device('cuda')
 
