@@ -267,7 +267,7 @@ class RandomCrop(object):
         new_h, new_w = self.output_size
 
         top = np.random.randint(0, h - new_h + 1)
-        left = np.random.randint(0, w - new_w)
+        left = np.random.randint(0, w - new_w + 1)
 
         image = image[top: top + new_h,
                       left: left + new_w]
