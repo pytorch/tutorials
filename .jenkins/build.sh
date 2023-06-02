@@ -112,7 +112,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 
   # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
-  awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
+  awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
@@ -138,7 +138,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
-  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
+  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z
 
   # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
