@@ -165,9 +165,7 @@ face_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.csv',
 
 fig = plt.figure()
 
-for i in range(len(face_dataset)):
-    sample = face_dataset[i]
-
+for i, sample in enumerate(face_dataset):
     print(i, sample['image'].shape, sample['landmarks'].shape)
 
     ax = plt.subplot(1, 4, i + 1)
@@ -356,9 +354,7 @@ transformed_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.c
                                                ToTensor()
                                            ]))
 
-for i in range(len(transformed_dataset)):
-    sample = transformed_dataset[i]
-
+for i, sample in enumerate(transformed_dataset):
     print(i, sample['image'].size(), sample['landmarks'].size())
 
     if i == 3:
