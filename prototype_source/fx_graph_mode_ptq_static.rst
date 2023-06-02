@@ -214,9 +214,9 @@ Download the `torchvision resnet18 model <https://download.pytorch.org/models/re
     float_model = load_model(saved_model_dir + float_model_file).to("cpu")
     float_model.eval()
 
-    # deepcopy the model since we need to keep the original model around
-    import copy
-    model_to_quantize = copy.deepcopy(float_model)
+    # create another instance of the model since
+    # we need to keep the original model around
+    model_to_quantize = load_model(saved_model_dir + float_model_file).to("cpu")
 
 3. Set model to eval mode
 -------------------------

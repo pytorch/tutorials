@@ -18,7 +18,7 @@ Setup
 -----
 To install ``torch`` and ``torchvision`` use the following command:
 
-::
+.. code-block::
 
    pip install torch torchvision
 
@@ -160,7 +160,7 @@ prof.stop()
 #
 # Install PyTorch Profiler TensorBoard Plugin.
 #
-# ::
+# .. code-block::
 #
 #     pip install torch_tb_profiler
 #
@@ -168,7 +168,7 @@ prof.stop()
 ######################################################################
 # Launch the TensorBoard.
 #
-# ::
+# .. code-block::
 #
 #     tensorboard --logdir=./log
 #
@@ -176,7 +176,7 @@ prof.stop()
 ######################################################################
 # Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser.
 #
-# ::
+# .. code-block::
 #
 #     http://localhost:6006/#pytorch_profiler
 #
@@ -287,7 +287,7 @@ prof.stop()
 # In this example, we follow the "Performance Recommendation" and set ``num_workers`` as below,
 # pass a different name such as ``./log/resnet18_4workers`` to ``tensorboard_trace_handler``, and run it again.
 #
-# ::
+# .. code-block::
 #
 #     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 #
@@ -316,7 +316,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/memory_demo_1_10
@@ -366,7 +366,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure:
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/distributed_bert
