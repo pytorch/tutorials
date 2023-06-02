@@ -32,7 +32,7 @@ quantization 2.0 with quantizer could look like this:
     |                    Dynamo Export                     |
     —-------------------------------------------------------
                                 |
-                        FX Graph in CATen    QNNPackQuantizer,
+                        FX Graph in ATen     QNNPackQuantizer,
                                 |            or X86InductorQuantizer,
                                 |            or <Other Backend Quantizer>
                                 |                /
@@ -194,12 +194,17 @@ defined later.
             return model
 
         def validate(self, model: torch.fx.GraphModule) -> None:
-            """validate the annotated graph is supported by the backend"""
+            """validate if the annotated graph is supported by the backend"""
             pass
 
         @classmethod
         def get_supported_operators(cls) -> List[OperatorConfig]:
-            """return the operator list which is supported by the backend"""
+            """return the OperatorConfig list supported by the backend.
+            An OperatorConfig is a mapping from QuantizationConfig to a list of operators patterns.
+            The return value can be used to check:
+                1. If a QuantizationConfig is supported by the BackendQuantizer.
+                2. For a specific QuantizationConfig, if an operators' pattern is supported by the BackendQuantizer.
+            """
             return []
 
 3. Annotate common operator patterns
@@ -318,7 +323,7 @@ we can use fixed parameters for it with ``FixedQParamsQuantizationSpec``.
             )
 
 6. Annotate tensor with derived quantization parameters
---------------------------------------------------------
+---------------------------------------------------------------
 
 ``DerivedQuantizationSpec`` is the quantization spec for the Tensors whose quantization parameters are derived from other Tensors.
 For example, we want to define the ``scale``, ``zp`` for bias derived from activation and weight of convolution node.
@@ -632,15 +637,9 @@ to run a example with Torchvision Resnet18.
         print("converted module is: {}".format(m), flush=True)
 
 8. Conclusion
-------------
+---------------------
 
 With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
 how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
 Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
-are given for specific annotation use case. Quantization 2.0 flow is still under active development. If the user wants
-to learn more about the design, here are some further reading links. Please contact to `Jerry <https://github.com/jerryzh168>`__ if you want access to
-below links.
-
--  `Quantization in PyTorch 2.0 Export Detailed Design <https://docs.google.com/document/d/1_jjXrdaPbkmy7Fzmo35-r1GnNKL7anYoAnqozjyY-XI/edit#heading=h.8raqyft9y50>`__
--  `Quantization Annotation API Design <https://docs.google.com/document/d/1tjIsL7-uVgm_1bv_kUK7iovP6G1D5zcbzwEcmYEG2Js/edit#heading=h.fng0wlvs8ou6>`__
--  `Quantized Model Representation in PyTorch 2.0 Export <https://docs.google.com/document/d/1M-C2ACNhERhXqi52bWRq7y8ajamwMnrY6updHPQ8rRE/edit#heading=h.ov8z39149wy8>`__
+are given for specific annotation use case.
