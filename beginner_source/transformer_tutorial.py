@@ -112,14 +112,7 @@ def generate_square_subsequent_mask(sz: int) -> Tensor:
 # The ``math.log(10000.0)`` term in the exponent represents the maximum effective 
 # input length (in this case, ``10000``). Dividing this term by ``d_model`` scales 
 # the values to be within a reasonable range for the exponential function. 
-# The negative sign in front of the logarithm ensures that the values decrease exponentially.
-# The reason for writing ``math.log(10000.0)`` instead of ``4`` in the code is to make it clear
-# that this value represents the logarithm of the maximum effective input length 
-# (in this case, ``10000``). This makes the code more readable and easier to understand.
-# Using ``math.log(10000.0)`` instead of ``4`` also makes it easier to change the maximum effective 
-# input length if needed. If you want to use a different value for the maximum effective 
-# input length, you can simply change the argument of the ``math.log`` 
-# function instead of recalculating the logarithm manually.
+#
 
 class PositionalEncoding(nn.Module):
 
