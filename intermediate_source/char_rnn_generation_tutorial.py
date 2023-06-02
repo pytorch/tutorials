@@ -278,7 +278,7 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
 
     rnn.zero_grad()
 
-    loss = 0
+    loss = torch.Tensor([0]) # you can also just simply use ``loss = 0``
 
     for i in range(input_line_tensor.size(0)):
         output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
