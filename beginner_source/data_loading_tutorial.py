@@ -292,7 +292,7 @@ class ToTensor(object):
 
 ######################################################################
 # .. note::
-#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     In the example above, `RandomCrop` uses an external library's random number generator
 #     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader`
 #     (see `here <https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers>`_).
 #     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
