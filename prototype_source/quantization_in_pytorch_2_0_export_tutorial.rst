@@ -341,15 +341,15 @@ this bias tensor.
 After above annotation methods defined with ``QuantizationAnnotation API``, we can now put them together to construct a ``BackendQuantizer``
 to run a example with Torchvision Resnet18. Here are some basic concepts before we move on to this example:
 
--  `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__
-defines the ``data type``, ``qscheme``, and other quantization parameters used to quantize a tensor.
--  `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
-consists of ``QuantizationSpec`` for activation, weight, and bias separately. 
--  When annotating the model, methods of
-`get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
-`get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__ and
-`get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
-can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
+- `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__
+  defines the ``data type``, ``qscheme``, and other quantization parameters used to quantize a tensor.
+- `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
+  consists of ``QuantizationSpec`` for activation, weight, and bias separately.
+- When annotating the model, methods of
+  `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
+  `get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__ and
+  `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
+  can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
 
 .. code:: ipython3
 
