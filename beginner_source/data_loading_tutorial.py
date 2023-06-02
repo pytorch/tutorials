@@ -268,8 +268,8 @@ class RandomCrop(object):
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
 
-        top = np.random.randint(0, h - new_h)
-        left = np.random.randint(0, w - new_w)
+        top = np.random.randint(0, h - new_h + 1)
+        left = np.random.randint(0, w - new_w + 1)
 
         image = image[top: top + new_h,
                       left: left + new_w]
@@ -294,7 +294,7 @@ class ToTensor(object):
 
 ######################################################################
 # .. note::
-#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     In the example above, `RandomCrop` uses an external library's random number generator
 #     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader`
 #     (see `here <https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers>`_).
 #     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.

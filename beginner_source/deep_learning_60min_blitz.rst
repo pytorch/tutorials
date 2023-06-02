@@ -20,11 +20,12 @@ Goal of this tutorial:
 - Understand PyTorch’s Tensor library and neural networks at a high level.
 - Train a small neural network to classify images
 
-To run the tutorials below, make sure you have the `torch`_ and `torchvision`_
-packages installed.
+To run the tutorials below, make sure you have the `torch`_, `torchvision`_,
+and `matplotlib`_ packages installed.
 
 .. _torch: https://github.com/pytorch/pytorch
 .. _torchvision: https://github.com/pytorch/vision
+.. _matplotlib: https://github.com/matplotlib/matplotlib
 
 .. toctree::
    :hidden:

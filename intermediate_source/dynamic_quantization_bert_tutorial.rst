@@ -68,7 +68,7 @@ built-in F1 score calculation helper function.
 .. code:: shell
 
    pip install sklearn
-   pip install transformers
+   pip install transformers==4.29.2
 
 
 Because we will be using the beta parts of the PyTorch, it is
