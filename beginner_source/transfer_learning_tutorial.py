@@ -46,7 +46,6 @@ from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
 import os
-import copy
 from PIL import Image
 from tempfile import TemporaryDirectory
 
