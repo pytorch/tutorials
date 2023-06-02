@@ -341,8 +341,8 @@ plt.show()
 # ----------------------
 #
 # Here we have saved the trained model and loaded it for inference. We can 
-# now use our trained model to make predictions on our own images and analyze the
-# results.
+# now use our trained model to make predictions on our own images and analyze 
+# the results.
 #
 
 def save_and_load_model(model, model_name):
@@ -367,7 +367,7 @@ def visualize_model_upload_image(model,model_name,img_path):
         imshow(img.cpu().data[0])
         model.train(mode=was_training)
 
-visualize_model_upload_image(model_conv,img_path='image_path',model_name='model_name')
+visualize_model_upload_image(model_conv,img_path='data/hymenoptera_data/val/ants/1337725712_2eb53cd742.jpg',model_name='resentconv.pth')
 
 ######################################################################
 # Further Learning
