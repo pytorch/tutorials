@@ -43,7 +43,7 @@ mod = torch.nn.Linear(20, 30)
 print(mod.weight.device)
 print(mod(torch.randn(128, 20)).device)
 
-# And then gloablly return it back to CPU
+# And then globally return it back to CPU
 torch.set_default_device('cpu')
 
 ################################################################
