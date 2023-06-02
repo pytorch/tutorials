@@ -14,6 +14,9 @@ def main():
     repo = g.get_repo(f'{repo_owner}/{repo_name}')
     pull_request = repo.get_pull(pull_request_number)
     pull_request_body = pull_request.body
+    # PR without description
+    if pull_request_body is None:
+        return
 
     # get issue number from the PR body
     if not re.search(r'#\d{1,5}', pull_request_body):
