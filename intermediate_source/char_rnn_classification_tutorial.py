@@ -4,11 +4,14 @@ NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
-We will be building and training a basic character-level RNN to classify
-words. This tutorial, along with the following two, show how to do
-preprocess data for NLP modeling "from scratch", in particular not using
-many of the convenience functions of `torchtext`, so you can see how
-preprocessing for NLP modeling works at a low level.
+We will be building and training a basic character-level Recurrent Neural
+Network (RNN) to classify words. This tutorial, along with two other
+Natural Language Processing (NLP) "from scratch" tutorials
+:doc:`/intermediate/char_rnn_generation_tutorial` and
+:doc:`/intermediate/seq2seq_translation_tutorial`, show how to
+preprocess data to model NLP. In particular these tutorials do not
+use many of the convenience functions of `torchtext`, so you can see how
+preprocessing to model NLP works at a low level.
 
 A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
@@ -32,13 +35,15 @@ spelling:
     (-2.68) Dutch
 
 
-**Recommended Reading:**
+Recommended Preparation
+=======================
 
-I assume you have at least installed PyTorch, know Python, and
-understand Tensors:
+Before starting this tutorial it is recommended that you have installed PyTorch,
+and have a basic understanding of Python programming language and Tensors:
 
 -  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
+   and learn the basics of Tensors
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
 
@@ -181,10 +186,6 @@ print(lineToTensor('Jones').size())
 # is just 2 linear layers which operate on an input and hidden state, with
 # a ``LogSoftmax`` layer after the output.
 #
-# .. figure:: https://i.imgur.com/Z2xbySO.png
-#    :alt:
-#
-#
 
 import torch.nn as nn
 
@@ -195,13 +196,13 @@ class RNN(nn.Module):
         self.hidden_size = hidden_size
 
         self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.i2o = nn.Linear(input_size + hidden_size, output_size)
+        self.h2o = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
         combined = torch.cat((input, hidden), 1)
         hidden = self.i2h(combined)
-        output = self.i2o(combined)
+        output = self.h2o(hidden)
         output = self.softmax(output)
         return output, hidden
 
