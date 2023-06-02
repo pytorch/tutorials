@@ -42,8 +42,8 @@ Follow along with the video below or on `youtube <https://www.youtube.com/watch/
 
 In distributed training, a single process failure can
 disrupt the entire training job. Since the susceptibility for failure can be higher here, making your training
-script robust is particularly important here. You might also prefer your training job to be *elastic* i.e. 
-
+script robust is particularly important here. You might also prefer your training job to be *elastic*, for example,
+compute resources can join and leave dynamically over the course of the job.
 
 PyTorch offers a utility called ``torchrun`` that provides fault-tolerance and 
 elastic training. When a failure occurs, ``torchrun`` logs the errors and
@@ -60,7 +60,7 @@ Why use ``torchrun``
 ``torchrun`` handles the minutiae of distributed training so that you
 don't need to. For instance,
 
--  You don't need to set environment variables or explicitly pass the ``rank`` and ``world_size``; torchrun assigns this along with several other `environment variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__.
+-  You don't need to set environment variables or explicitly pass the ``rank`` and ``world_size``; ``torchrun`` assigns this along with several other `environment variables <https://pytorch.org/docs/stable/elastic/run.html#environment-variables>`__.
 -  No need to call ``mp.spawn`` in your script; you only need a generic ``main()`` entrypoint, and launch the script with ``torchrun``. This way the same script can be run in non-distributed as well as single-node and multinode setups. 
 -  Gracefully restarting training from the last saved training snapshot
 
@@ -117,7 +117,7 @@ Process group initialization
    -     os.environ["MASTER_PORT"] = "12355"
    -     init_process_group(backend="nccl", rank=rank, world_size=world_size)
    +     init_process_group(backend="nccl")
-
+         torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
 
 Use Torchrun-provided env variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

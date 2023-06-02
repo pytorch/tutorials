@@ -249,7 +249,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
         if args.save_model:
             # use a barrier to make sure training is done on all ranks
-            dist_barrier()
+            dist.barrier()
             # state_dict for FSDP model is only available on Nightlies for now
             states = model.state_dict()
             if rank == 0:

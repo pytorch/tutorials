@@ -24,14 +24,14 @@ Before You Start
 To run this tutorial, you’ll need to install PyTorch, TorchVision,
 Matplotlib, and TensorBoard.
 
-With ``conda``:
+With ``conda``::
 
-``conda install pytorch torchvision -c pytorch``
-``conda install matplotlib tensorboard``
+    conda install pytorch torchvision -c pytorch
+    conda install matplotlib tensorboard
 
-With ``pip``:
+With ``pip``::
 
-``pip install torch torchvision matplotlib tensorboard``
+    pip install torch torchvision matplotlib tensorboard
 
 Once the dependencies are installed, restart this notebook in the Python
 environment where you installed them.
@@ -64,6 +64,13 @@ import numpy as np
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
 
+# In case you are using an environment that has TensorFlow installed,
+# such as Google Colab, uncomment the following code to avoid
+# a bug with saving embeddings to your TensorBoard directory
+
+# import tensorflow as tf
+# import tensorboard as tb
+# tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
 
 ######################################################################
 # Showing Images in TensorBoard

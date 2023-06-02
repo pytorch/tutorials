@@ -17,8 +17,9 @@ tldr; The FX Graph Mode API looks like the following:
   from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
   from torch.ao.quantization import QConfigMapping
   float_model.eval()
-  qconfig = get_default_qconfig("fbgemm")
-  qconfig_mapping = QConfigMapping.set_global(qconfig)
+  # The old 'fbgemm' is still available but 'x86' is the recommended default.
+  qconfig = get_default_qconfig("x86") 
+  qconfig_mapping = QConfigMapping().set_global(qconfig)
   def calibrate(model, data_loader):
       model.eval()
       with torch.no_grad():
@@ -213,9 +214,9 @@ Download the `torchvision resnet18 model <https://download.pytorch.org/models/re
     float_model = load_model(saved_model_dir + float_model_file).to("cpu")
     float_model.eval()
 
-    # deepcopy the model since we need to keep the original model around
-    import copy
-    model_to_quantize = copy.deepcopy(float_model)
+    # create another instance of the model since
+    # we need to keep the original model around
+    model_to_quantize = load_model(saved_model_dir + float_model_file).to("cpu")
 
 3. Set model to eval mode
 -------------------------
@@ -256,7 +257,8 @@ while those for ``QConfigMapping`` can be found in the `qconfig_mapping <https:/
 
 .. code:: python
 
-    qconfig = get_default_qconfig("fbgemm")
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    qconfig = get_default_qconfig("x86") 
     qconfig_mapping = QConfigMapping().set_global(qconfig)
 
 5. Prepare the Model for Post Training Static Quantization

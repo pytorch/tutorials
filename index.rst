@@ -3,11 +3,15 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Survey: Let us know how the PyTorch Tutorials are working for you! <https://docs.google.com/forms/d/e/1FAIpQLSfM-n7fF-K8AqkOcdSlzS_0g-xd6ith7U_W36xG-C_6Q2B6Mg/viewform>`__
-* `PyTorch Distributed Series <https://pytorch.org/tutorials/beginner/ddp_series_intro.html?utm_source=whats_new_tutorials&utm_medium=ddp_series_intro>`__
-* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
-* `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
-* `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
+* `Implementing High Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html?utm_source=whats_new_tutorials&utm_medium=scaled_dot_product_attention_tutorial>`__
+* `torch.compile Tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torch_compile>`__
+* `Per Sample Gradients <https://pytorch.org/tutorials/intermediate/per_sample_grads.html?utm_source=whats_new_tutorials&utm_medium=per_sample_grads>`__
+* `Jacobians, Hessians, hvp, vhp, and more: composing function transforms <https://pytorch.org/tutorials/intermediate/jacobians_hessians.html?utm_source=whats_new_tutorials&utm_medium=jacobians_hessians>`__
+* `Model Ensembling <https://pytorch.org/tutorials/intermediate/ensembling.html?utm_source=whats_new_tutorials&utm_medium=ensembling>`__
+* `Neural Tangent Kernels <https://pytorch.org/tutorials/intermediate/neural_tangent_kernels.html?utm_source=whats_new_tutorials&utm_medium=neural_tangent_kernels>`__
+* `Reinforcement Learning (PPO) with TorchRL Tutorial <https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html?utm_source=whats_new_tutorials&utm_medium=reinforcement_ppo>`__
+* `Changing Default Device <https://pytorch.org/tutorials/recipes/recipes/changing_default_device.html?utm_source=whats_new_tutorials&utm_medium=changing_default_device>`__
+
 
 .. raw:: html
 
@@ -260,6 +264,13 @@ What's new in PyTorch tutorials?
    :link: beginner/translation_transformer.html
    :tags: Text
 
+.. customcarditem::
+   :header: Pre-process custom text dataset using Torchtext 
+   :card_description: Learn how to use torchtext to prepare a custom dataset
+   :image: _static/img/thumbnails/cropped/torch_text_logo.png
+   :link: beginner/torchtext_custom_dataset_tutorial.html
+   :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -268,6 +279,13 @@ What's new in PyTorch tutorials?
    :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
    :image: _static/img/cartpole.gif
    :link: intermediate/reinforcement_q_learning.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Reinforcement Learning (PPO) with TorchRL
+   :card_description: Learn how to use PyTorch and TorchRL to train a Proximal Policy Optimization agent on the Inverted Pendulum task from Gym.
+   :image: _static/img/invpendulum.gif
+   :link: intermediate/reinforcement_ppo.html
    :tags: Reinforcement-Learning
 
 .. customcarditem::
@@ -418,6 +436,34 @@ What's new in PyTorch tutorials?
    :link: intermediate/forward_ad_usage.html
    :tags: Frontend-APIs
 
+.. customcarditem::
+   :header: Jacobians, Hessians, hvp, vhp, and more
+   :card_description: Learn how to compute advanced autodiff quantities using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/jacobians_hessians.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Model Ensembling
+   :card_description: Learn how to ensemble models using torch.vmap
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/ensembling.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Per-Sample-Gradients
+   :card_description: Learn how to compute per-sample-gradients using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/per_sample_grads.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Neural Tangent Kernels
+   :card_description: Learn how to compute neural tangent kernels using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/neural_tangent_kernels.html
+   :tags: Frontend-APIs
+
 .. Model Optimization
 
 .. customcarditem::
@@ -503,13 +549,6 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torchserve_with_ipex_2
    :tags: Model-Optimization,Production
-   
-.. customcarditem::
-   :header: Introduction to nvFuser
-   :card_description: An introduction to nvFuser
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/nvfuser_intro_tutorial.html
-   :tags: Model-Optimization
 
 .. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
@@ -524,6 +563,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
    :tags: Model-Optimization
+
+.. customcarditem::
+   :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
+   :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/scaled_dot_product_attention_tutorial.html
+   :tags: Model-Optimization,Attention,Transformer
 
 .. Parallel-and-Distributed-Training
 
@@ -831,6 +877,7 @@ Additional Resources
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
+   beginner/torchtext_custom_dataset_tutorial
 
 
 .. toctree::
@@ -840,6 +887,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
 
 .. toctree::
@@ -871,6 +919,10 @@ Additional Resources
 
    intermediate/memory_format_tutorial
    intermediate/forward_ad_usage
+   intermediate/jacobians_hessians
+   intermediate/ensembling
+   intermediate/per_sample_grads
+   intermediate/neural_tangent_kernels.py
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
@@ -910,6 +962,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/scaled_dot_product_attention_tutorial
 
 .. toctree::
    :maxdepth: 2

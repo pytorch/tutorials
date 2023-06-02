@@ -37,6 +37,8 @@ ensures each device gets a non-overlapping input batch. The model is replicated 
 each replica calculates gradients and simultaneously synchronizes with the others using the `ring all-reduce
 algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-deep-learning-allreduce/>`__.
 
+This `illustrative tutorial <https://pytorch.org/tutorials/intermediate/dist_tuto.html#>`__ provides a more in-depth python view of the mechanics of DDP.
+
 Why you should prefer DDP over DataParallel (DP)
 -------------------------------------------------
 
@@ -54,8 +56,8 @@ DDP improves upon the architecture in a few ways:
 |                                       | machines                     |
 +---------------------------------------+------------------------------+
 | Slower; uses multithreading on a      | Faster (no GIL contention)   |
-| single process and runs into GIL      | because it uses              |
-| contention                            | multiprocessing              |
+| single process and runs into Global   | because it uses              |
+| Interpreter Lock (GIL) contention     | multiprocessing              |
 +---------------------------------------+------------------------------+
 
 Further Reading
@@ -66,3 +68,4 @@ Further Reading
    API <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
 -  `DDP Internal
    Design <https://pytorch.org/docs/master/notes/ddp.html#internal-design>`__
+-  `DDP Mechanics Tutorial <https://pytorch.org/tutorials/intermediate/dist_tuto.html#>`__

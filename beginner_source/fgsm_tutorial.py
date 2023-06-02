@@ -120,7 +120,7 @@ urllib.request.install_opener(opener)
 # There are only three inputs for this tutorial, and are defined as
 # follows:
 # 
-# -  **epsilons** - List of epsilon values to use for the run. It is
+# -  ``epsilons`` - List of epsilon values to use for the run. It is
 #    important to keep 0 in the list because it represents the model
 #    performance on the original test set. Also, intuitively we would
 #    expect the larger the epsilon, the more noticeable the perturbations
@@ -128,12 +128,12 @@ urllib.request.install_opener(opener)
 #    accuracy. Since the data range here is :math:`[0,1]`, no epsilon
 #    value should exceed 1.
 # 
-# -  **pretrained_model** - path to the pretrained MNIST model which was
+# -  ``pretrained_model`` - path to the pretrained MNIST model which was
 #    trained with
 #    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
 #    For simplicity, download the pretrained model `here <https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing>`__.
 # 
-# -  **use_cuda** - boolean flag to use CUDA if desired and available.
+# -  ``use_cuda`` - boolean flag to use CUDA if desired and available.
 #    Note, a GPU with CUDA is not critical for this tutorial as a CPU will
 #    not take much time.
 # 
@@ -263,7 +263,7 @@ def test( model, device, test_loader, epsilon ):
         output = model(data)
         init_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
 
-        # If the initial prediction is wrong, dont bother attacking, just move on
+        # If the initial prediction is wrong, don't bother attacking, just move on
         if init_pred.item() != target.item():
             continue
 
@@ -276,7 +276,7 @@ def test( model, device, test_loader, epsilon ):
         # Calculate gradients of model in backward pass
         loss.backward()
 
-        # Collect datagrad
+        # Collect ``datagrad``
         data_grad = data.grad.data
 
         # Call FGSM Attack
@@ -366,7 +366,7 @@ plt.show()
 # Remember the idea of no free lunch? In this case, as epsilon increases
 # the test accuracy decreases **BUT** the perturbations become more easily
 # perceptible. In reality, there is a tradeoff between accuracy
-# degredation and perceptibility that an attacker must consider. Here, we
+# degradation and perceptibility that an attacker must consider. Here, we
 # show some examples of successful adversarial examples at each epsilon
 # value. Each row of the plot shows a different epsilon value. The first
 # row is the :math:`\epsilon=0` examples which represent the original

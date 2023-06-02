@@ -41,7 +41,7 @@ In this tutorial, we start with a single-GPU training script and migrate that to
 Along the way, we will talk through important concepts in distributed training while implementing them in our code.
 
 .. note:: 
-   If your model contains any ``BatchNorm`` layer, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm`` 
+   If your model contains any ``BatchNorm`` layers, it needs to be converted to ``SyncBatchNorm`` to sync the running stats of ``BatchNorm``
    layers across replicas.
 
    Use the helper function 
@@ -57,7 +57,7 @@ Imports
 ~~~~~~~
 -  ``torch.multiprocessing`` is a PyTorch wrapper around Python's native
    multiprocessing
--  The dsitributed process group contains all the processes that can
+-  The distributed process group contains all the processes that can
    communicate and synchronize with each other.
 
 .. code:: diff
@@ -83,6 +83,8 @@ Constructing the process group
    initializes the distributed process group.
 -  Read more about `choosing a DDP
    backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
+-  `set_device <https://pytorch.org/docs/stable/generated/torch.cuda.set_device.html?highlight=set_device#torch.cuda.set_device>`__
+   sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on `GPU:0`
 
 .. code:: diff
 
@@ -95,6 +97,7 @@ Constructing the process group
    +   os.environ["MASTER_ADDR"] = "localhost"
    +   os.environ["MASTER_PORT"] = "12355"
    +   init_process_group(backend="nccl", rank=rank, world_size=world_size)
+   +   torch.cuda.set_device(rank)
 
 
 Constructing the DDP model
@@ -177,8 +180,8 @@ Running the distributed training job
    +  ddp_setup(rank, world_size)
       dataset, model, optimizer = load_train_objs()
       train_data = prepare_dataloader(dataset, batch_size=32)
-   -  trainer = Trainer(model, dataset, optimizer, device, save_every)
-   +  trainer = Trainer(model, dataset, optimizer, rank, save_every)
+   -  trainer = Trainer(model, train_data, optimizer, device, save_every)
+   +  trainer = Trainer(model, train_data, optimizer, rank, save_every)
       trainer.train(total_epochs)
    +  destroy_process_group()
     

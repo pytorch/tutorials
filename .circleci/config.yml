@@ -139,18 +139,32 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
+        # Copy docs with plot to a docs dir
+        if docker exec -it "$id" sh -c "test -d ./workspace/docs_with_plot/docs/"; then
+            mkdir /home/circleci/project/docs
+            docker cp "$id:/var/lib/jenkins/workspace/docs_with_plot/docs/." /home/circleci/project/docs
+            echo "Directory copied successfully"
+        else
+            echo "No docs_with_plot directory. Skipping..."
+        fi
+
+  - store_artifacts:
+      path: ./docs
+      destination: tutorials
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.6-cudnn8-py3-gcc7"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda12.1-cudnn8-py3-gcc9"
     CUDA_VERSION: "9"
   resource_class: gpu.nvidia.small
   <<: *pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda11.6-cudnn8-py3-gcc7"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-bionic-cuda12.1-cudnn8-py3-gcc9"
   resource_class: medium
+
+
   <<: *pytorch_tutorial_build_defaults
 
 pytorch_windows_build_worker: &pytorch_windows_build_worker
@@ -190,6 +204,7 @@ jobs:
     resource_class: gpu.nvidia.small.multi
   pytorch_tutorial_pr_build_worker_1:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.large
   pytorch_tutorial_pr_build_worker_10:
     <<: *pytorch_tutorial_build_worker_defaults
   pytorch_tutorial_pr_build_worker_11:
@@ -234,6 +249,7 @@ jobs:
     resource_class: gpu.nvidia.small.multi
   pytorch_tutorial_trunk_build_worker_1:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.large
   pytorch_tutorial_trunk_build_worker_10:
     <<: *pytorch_tutorial_build_worker_defaults
   pytorch_tutorial_trunk_build_worker_11:

@@ -31,7 +31,7 @@ install ``torch`` if it isn’t already available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Save on a GPU, load on a CPU
 # 4. Save on a GPU, load on a GPU
 # 5. Save on a CPU, load on a GPU
@@ -50,7 +50,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -179,12 +179,4 @@ torch.save(net.module.state_dict(), PATH)
 ######################################################################
 # Congratulations! You have successfully saved and loaded models across
 # devices in PyTorch.
-# 
-# Learn More
-# ----------
-# 
-# Take a look at these other recipes to continue your learning:
-# 
-# -  TBD
-# -  TBD
 # 

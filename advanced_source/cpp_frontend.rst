@@ -946,9 +946,9 @@ we use implement the `Adam <https://arxiv.org/pdf/1412.6980.pdf>`_ algorithm:
 .. code-block:: cpp
 
   torch::optim::Adam generator_optimizer(
-      generator->parameters(), torch::optim::AdamOptions(2e-4).beta1(0.5));
+      generator->parameters(), torch::optim::AdamOptions(2e-4).betas(std::make_tuple(0.5, 0.5)));
   torch::optim::Adam discriminator_optimizer(
-      discriminator->parameters(), torch::optim::AdamOptions(5e-4).beta1(0.5));
+      discriminator->parameters(), torch::optim::AdamOptions(5e-4).betas(std::make_tuple(0.5, 0.5)));
 
 .. note::
 

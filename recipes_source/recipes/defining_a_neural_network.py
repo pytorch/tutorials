@@ -54,7 +54,7 @@ import torch.nn.functional as F
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Our network will recognize images. We will use a process built into
@@ -64,7 +64,7 @@ import torch.nn.functional as F
 # blurriness, etc.) from the input image.
 # 
 # There are two requirements for defining the ``Net`` class of your model.
-# The first is writing an ``__init__`` function that references
+# The first is writing an __init__ function that references
 # ``nn.Module``. This function is where you define the fully connected
 # layers in your neural network.
 # 
@@ -140,7 +140,7 @@ class Net(nn.Module):
       x = self.dropout1(x)
       # Flatten x with start_dim=1
       x = torch.flatten(x, 1)
-      # Pass data through fc1
+      # Pass data through ``fc1``
       x = self.fc1(x)
       x = F.relu(x)
       x = self.dropout2(x)

@@ -53,7 +53,7 @@ with high performance requirements. For that:
 # Simple Web Server
 # -----------------
 #
-# Following is a simple webserver, taken from Flask's documentation
+# Following is a simple web server, taken from Flask's documentation
 
 
 from flask import Flask
@@ -114,7 +114,7 @@ def predict():
 # ~~~~~~~~~~~~~~~~~~~
 #
 # DenseNet model requires the image to be of 3 channel RGB image of size
-# 224 x 224. We will also normalise the image tensor with the required mean
+# 224 x 224. We will also normalize the image tensor with the required mean
 # and standard deviation values. You can read more about it
 # `here <https://pytorch.org/vision/stable/models.html>`_.
 #
@@ -161,8 +161,8 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 
 from torchvision import models
 
-# Make sure to pass `pretrained` as `True` to use the pretrained weights:
-model = models.densenet121(pretrained=True)
+# Make sure to set `weights` as `'IMAGENET1K_V1'` to use the pretrained weights:
+model = models.densenet121(weights='IMAGENET1K_V1')
 # Since we are using our model only for inference, switch to `eval` mode:
 model.eval()
 
@@ -269,7 +269,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 #   app = Flask(__name__)
 #   imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
-#   model = models.densenet121(pretrained=True)
+#   model = models.densenet121(weights='IMAGENET1K_V1')
 #   model.eval()
 #
 #
@@ -318,10 +318,10 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # .. code-block:: python
 #
-#   import requests
+#    import requests
 #
-#   resp = requests.post("http://localhost:5000/predict",
-#                        files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+#    resp = requests.post("http://localhost:5000/predict",
+#                         files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
 
 #######################################################################
 # Printing `resp.json()` will now show the following:

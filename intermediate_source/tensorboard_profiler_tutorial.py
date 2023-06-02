@@ -18,7 +18,7 @@ Setup
 -----
 To install ``torch`` and ``torchvision`` use the following command:
 
-::
+.. code-block::
 
    pip install torch torchvision
 
@@ -54,7 +54,7 @@ import torchvision.transforms as T
 
 ######################################################################
 # Then prepare the input data. For this tutorial, we use the CIFAR10 dataset.
-# Transform it to the desired format and use DataLoader to load each batch.
+# Transform it to the desired format and use ``DataLoader`` to load each batch.
 
 transform = T.Compose(
     [T.Resize(224),
@@ -68,7 +68,7 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=Tru
 # To run on GPU, move model and loss to GPU device.
 
 device = torch.device("cuda:0")
-model = torchvision.models.resnet18(pretrained=True).cuda(device)
+model = torchvision.models.resnet18(weights='IMAGENET1K_V1').cuda(device)
 criterion = torch.nn.CrossEntropyLoss().cuda(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 model.train()
@@ -116,7 +116,7 @@ def train(data):
 # - ``profile_memory`` - Track tensor memory allocation/deallocation. Note, for old version of pytorch with version
 #   before 1.10, if you suffer long profiling time, please disable it or upgrade to new version.
 # - ``with_stack`` - Record source information (file and line number) for the ops.
-#   If the TensorBoard is launched in VSCode (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
+#   If the TensorBoard is launched in VS Code (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
 #   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
@@ -160,7 +160,7 @@ prof.stop()
 #
 # Install PyTorch Profiler TensorBoard Plugin.
 #
-# ::
+# .. code-block::
 #
 #     pip install torch_tb_profiler
 #
@@ -168,7 +168,7 @@ prof.stop()
 ######################################################################
 # Launch the TensorBoard.
 #
-# ::
+# .. code-block::
 #
 #     tensorboard --logdir=./log
 #
@@ -176,7 +176,7 @@ prof.stop()
 ######################################################################
 # Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser.
 #
-# ::
+# .. code-block::
 #
 #     http://localhost:6006/#pytorch_profiler
 #
@@ -217,13 +217,13 @@ prof.stop()
 # The "Total" duration includes its child operators’ time.
 #
 # - View call stack
-# Click the "View Callstack" of an operator, the operators with same name but different call stacks will be shown.
-# Then click a "View Callstack" in this sub-table, the call stack frames will be shown.
+# Click the ``View Callstack`` of an operator, the operators with same name but different call stacks will be shown.
+# Then click a ``View Callstack`` in this sub-table, the call stack frames will be shown.
 #
 # .. image:: ../../_static/img/profiler_callstack.png
 #    :scale: 25 %
 #
-# If the TensorBoard is launched inside VSCode
+# If the TensorBoard is launched inside VS Code
 # (`Launch Guide <https://devblogs.microsoft.com/python/python-in-visual-studio-code-february-2021-release/#tensorboard-integration>`_),
 # clicking a call stack frame will navigate to the specific code line.
 #
@@ -279,15 +279,15 @@ prof.stop()
 # 5. Improve performance with the help of profiler
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is DataLoader.
-# The PyTorch DataLoader uses single process by default.
+# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is ``DataLoader``.
+# The PyTorch ``DataLoader`` uses single process by default.
 # User could enable multi-process data loading by setting the parameter ``num_workers``.
 # `Here <https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading>`_ is more details.
 #
 # In this example, we follow the "Performance Recommendation" and set ``num_workers`` as below,
 # pass a different name such as ``./log/resnet18_4workers`` to ``tensorboard_trace_handler``, and run it again.
 #
-# ::
+# .. code-block::
 #
 #     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 #
@@ -316,7 +316,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/memory_demo_1_10
@@ -350,7 +350,7 @@ prof.stop()
 # In the memory events table, the allocation and release events are paired into one entry. The "operator" column shows
 # the immediate ATen operator that is causing the allocation. Notice that in PyTorch, ATen operators commonly use
 # ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
-# ``aten::fill_``. Solely display the opeartor name as ``aten::empty`` is of little help. It will be shown as
+# ``aten::fill_``. Solely display the operator name as ``aten::empty`` is of little help. It will be shown as
 # ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
 # columns' data might be missing if the event occurs outside of the time range. 
 #
@@ -366,7 +366,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure:
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/distributed_bert
