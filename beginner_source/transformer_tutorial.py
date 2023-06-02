@@ -103,6 +103,15 @@ def generate_square_subsequent_mask(sz: int) -> Tensor:
 # positional encodings have the same dimension as the embeddings so that
 # the two can be summed. Here, we use ``sine`` and ``cosine`` functions of
 # different frequencies.
+# The ``div_term`` in the code is calculated as 
+# ``torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))``. 
+# This calculation is based on the original Transformer paper’s formulation 
+# for positional encoding. The purpose of this calculation is to create 
+# a range of values that decrease exponentially. 
+# This allows the model to learn to attend to positions based on their relative distances.
+# The ``math.log(10000.0)`` term in the exponent represents the maximum effective 
+# input length (in this case, ``10000``). Dividing this term by ``d_model`` scales 
+# the values to be within a reasonable range for the exponential function. 
 #
 
 class PositionalEncoding(nn.Module):
