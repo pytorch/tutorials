@@ -269,8 +269,8 @@ either the application or the model ``forward()`` method.
         setup(rank, world_size)
 
         # setup mp_model and devices for this process
-        dev0 = (rank * 2) % (world_size * 2)
-        dev1 = (rank * 2 + 1) % (world_size * 2)
+        dev0 = rank * 2
+        dev1 = rank * 2 + 1
         mp_model = ToyMpModel(dev0, dev1)
         ddp_mp_model = DDP(mp_model)
 
