@@ -41,7 +41,10 @@ can be easily adapted/composed.
 # the earlier positions in the sequence. For the language modeling task, any
 # tokens on the future positions should be masked. To produce a probability
 # distribution over output words, the output of the ``nn.TransformerEncoder``
-# model is passed through a linear layer followed by a log-softmax function.
+# model is passed through a linear layer to output unnormalized logits.
+# The log-softmax function isn't applied here due to the later use of
+# `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html>`__,
+# which requires the inputs to be unnormalized logits.
 #
 
 import math
