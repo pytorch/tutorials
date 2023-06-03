@@ -308,7 +308,7 @@ def test( model, device, test_loader, epsilon ):
         # Collect ``datagrad``
         data_grad = data.grad.data
 
-       # Denormalize the data
+        # Denormalize the data
         data_denorm = denorm(data)
 
         # Call FGSM Attack
