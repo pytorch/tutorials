@@ -233,6 +233,27 @@ def fgsm_attack(image, epsilon, data_grad):
     # Return the perturbed image
     return perturbed_image
 
+# denormalize the tensors before performing an FGSM attack
+# because FGSM only works with the original unnormalized image
+def denorm(batch, mean=[0.1307], std=[0.3081]):
+    """
+    Denormalizes a batch of tensors.
+
+    Args:
+        batch (torch.Tensor): Batch of normalized tensors.
+        mean (torch.Tensor or list): Mean used for normalization.
+        std (torch.Tensor or list): Standard deviation used for normalization.
+
+    Returns:
+        torch.Tensor: Denormalized batch of tensors.
+    """
+    if isinstance(mean, list):
+        mean = torch.tensor(mean).to(device)
+    if isinstance(std, list):
+        std = torch.tensor(std).to(device)
+    
+    return batch * std.view(1, -1, 1, 1) + mean.view(1, -1, 1, 1)
+
 
 ######################################################################
 # Testing Function
@@ -287,11 +308,17 @@ def test( model, device, test_loader, epsilon ):
         # Collect ``datagrad``
         data_grad = data.grad.data
 
+       # Denormalize the data
+        data_denorm = denorm(data)
+
         # Call FGSM Attack
-        perturbed_data = fgsm_attack(data, epsilon, data_grad)
+        perturbed_data = fgsm_attack(data_denorm, epsilon, data_grad)
+
+        # Reapply normalization
+        perturbed_data_normalized = transforms.Normalize((0.1307,), (0.3081,))(perturbed_data)
 
         # Re-classify the perturbed image
-        output = model(perturbed_data)
+        output = model(perturbed_data_normalized)
 
         # Check for success
         final_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
