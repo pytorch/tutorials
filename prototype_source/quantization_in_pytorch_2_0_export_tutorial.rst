@@ -103,31 +103,33 @@ tutorial for how to use the ``QuantizationAnnotation API`` with different types 
 1. Annotate common operator patterns
 --------------------------------------------------------
 
+In order to use the quantized operators, e.g. ``quantized add``,
+backend developers will have intent to quantize (as expressed by
 `QuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L38>`__
-is used to annotate common operators like ``conv2d``. It allows user to specify how to quantize
-input tensors and output tensor of this operator which includes parameters of ``observer type``, ``dtype``,
-``quant_min``, and ``quant_max`` etc.
+) input, output of the operator. Following is an example flow (with ``add``)
+of how this intent is conveyed in the quantization workflow with node annotation API.
+
+-  Step1: Identify the original floating point ``add`` node in the FX graph. There are
+   several ways to identify this node: 1. User may use a pattern matcher (e.g. SubgraphMatcher)
+   to match the operator pattern. 2. User may go through the nodes from start to the end and compare
+   the node's target type.
+-  Step2: Define the ``QuantizationSpec`` for two inputs and one output of the ``add`` node to specify
+   how to quantize input tensors and output tensor which includes parameters of ``observer type``,
+   ``dtype``, ``quant_min``, and ``quant_max`` etc.
+-  Step3: Annotate the inputs and output of the ``add`` node. User will create the ``QuantizationAnnotation``
+   object and add it into ``add`` node's ``meta`` property.
 
 ::
 
-    def _annotate_conv2d(
+    def _annotate_add(
         self, gm: torch.fx.GraphModule, quantization_config: QuantizationConfig
     ) -> None:
-        conv_partitions = get_source_partitions(
-            gm.graph, [torch.nn.Conv2d, torch.nn.functional.conv2d]
-        )
-        conv_partitions = list(itertools.chain(*conv_partitions.values()))
-        for conv_partition in conv_partitions:
-            if len(conv_partition.output_nodes) > 1:
-                raise ValueError("conv partition has more than one output node")
-            conv_node = conv_partition.output_nodes[0]
-            if (
-                conv_node.op != "call_function"
-                or conv_node.target != torch.ops.aten.convolution.default
-            ):
-                raise ValueError(f"{conv_node} is not an aten conv2d operator")
-            # skip annotation if it is already annotated
-            if _is_annotated([conv_node]):
+        # Step1: Identify the ``add`` node in the original floating point FX graph.
+        add_partitions = get_source_partitions(gm.graph, [operator.add, torch.add])
+        add_partitions = list(itertools.chain(*add_partitions.values()))
+        for add_partition in add_partitions:
+            add_node = add_partition.output_nodes[0]
+            if _is_annotated([add_node]):
                 continue
 
             act_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = \
@@ -141,53 +143,47 @@ input tensors and output tensor of this operator which includes parameters of ``
                 observer_or_fake_quant_ctr=act_observer_or_fake_quant_ctr.with_args(eps=2**-12),
             )
 
-            weight_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = PerChannelMinMaxObserver
-            extra_args: Dict[str, Any] = {"eps": 2**-12}
-            weight_quantization_spec = QuantizationSpec(
-                dtype=torch.int8,
-                quant_min=-127,
-                quant_max=127,
-                qscheme=torch.per_channel_symmetric,
-                ch_axis=0,
-                is_dynamic=False,
-                observer_or_fake_quant_ctr=weight_observer_or_fake_quant_ctr.with_args(**extra_args),
-            )
-
-            bias_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = PlaceholderObserver
-            bias_quantization_spec = QuantizationSpec(
-                dtype=torch.float,
-                observer_or_fake_quant_ctr=bias_observer_or_fake_quant_ctr
-            )
+            # Step2: The ``add`` node has two inputs and one output. We define the ``QuantizationSpec``
+            # for each input and output.
+            input_act_qspec = act_quantization_spec
+            output_act_qspec = act_quantization_spec
 
             input_qspec_map = {}
-            input_act = conv_node.args[0]
-            assert isinstance(input_act, Node)
-            input_qspec_map[input_act] = act_quantization_spec
+            input_act0 = add_node.args[0]
+            if isinstance(input_act0, Node):
+                input_qspec_map[input_act0] = input_act_qspec
 
-            weight = conv_node.args[1]
-            assert isinstance(weight, Node)
-            input_qspec_map[weight] = weight_quantization_spec
+            input_act1 = add_node.args[1]
+            if isinstance(input_act1, Node):
+                input_qspec_map[input_act1] = input_act_qspec
 
-            bias = conv_node.args[2]
-            if isinstance(bias, Node):
-                input_qspec_map[bias] = bias_quantization_spec
-
-            conv_node.meta["quantization_annotation"] = QuantizationAnnotation(
+            # Step3: Annotate the inputs and outputs of the ``add`` node.
+            add_node.meta["quantization_annotation"] = QuantizationAnnotation(
                 input_qspec_map=input_qspec_map,
-                output_qspec=get_act_qspec(quantization_config),
+                output_qspec=output_act_qspec,
                 _annotated=True,
             )
 
 2. Annotate sharing qparams operators
 --------------------------------------------------------
 
-`SharedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L90>`__
-is used to annotate tensors whose quantization parameters are shared with other tensors.
-As example, for operators like ``add`` and ``cat``, which user may want two input tensors
-sharing quantization parameters. Then user can use the ``SharedQuantizationSpec`` to annotate
-this operator. Input of ``SharedQuantizationSpec`` can be an input edge or an output value.
-Input edge is the connection between input node and the node consuming the input, so it's a
-Tuple[Node, Node]. Output value is an fx Node.
+It is natural that users want to annotate a quantized model where quantization
+parameters can be shared among some tensors explicitly. Two typical use cases are:
+
+-  Example 1: One example is for ``add`` where having both inputs sharing quantization
+   parameters makes operator implementation much easier. Without using of
+   `SharedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L90>`__,
+   we have to annotate ``add`` as example in above section 1, in which two inputs of ``add``
+   has different quantization parameters.
+-  Example 2: Another example is that of sharing quantization parameters between inputs and output.
+   This typically results from operators such as ``maxpool``, ``average_pool``, ``concat`` etc.
+
+``SharedQuantizationSpec`` is designed for this use case to annotate tensors whose quantization
+parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` can be an input edge
+or an output value. Input edge is the connection between input node and the node consuming the input,
+so it's a Tuple[Node, Node]. Output value is an fx Node.
+
+Now, we have a example to rewrite ``add`` annotation example with ``SharedQuantizationSpec``.
 
 ::
 
@@ -230,10 +226,12 @@ Tuple[Node, Node]. Output value is an fx Node.
 3. Annotate fixed qparams operators
 --------------------------------------------------------
 
+Another typical use case to annotate a quantized model is for tensors whose
+quantization parmaters are known beforehand. For example, operator like ``sigmoid``, which has
+predefined and fixed scale/zero_point at input and output tensors.
 `FixedQParamsQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L90>`__
-is a quantization spec for tensors whose quantization parmaters are known beforehand.
-For example, operator like ``sigmoid``, which has predefined and fixed scale/zero_point
-at input and output tensors. We can annotate it with ``FixedQParamsQuantizationSpec``.
+is designed for this use case. To use ``FixedQParamsQuantizationSpec``, users need to pass in parameters
+of ``scale`` and ``zero_point`` explicitly.
 
 ::
 
@@ -266,8 +264,9 @@ at input and output tensors. We can annotate it with ``FixedQParamsQuantizationS
 4. Annotate tensor with derived quantization parameters
 ---------------------------------------------------------------
 
+We also need to define the constraint that the scale of bias is a product of input scale and weight scale in the annotation API.
 `DerivedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L102>`__
-is for the tensors whose quantization parameters are derived from other tensors. For example,
+is designed for this use case where a tensor's quantization parameters is derived from other tensors. For example,
 if we want to annotate a convolution node, and define the ``scale``, ``zp`` of its bias input tensor
 as derived from the activation and weight tensors. We can use ``DerivedQuantizationSpec`` to annotate
 this bias tensor.
@@ -363,7 +362,8 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
     from torch.ao.quantization._pt2e.quantizer.utils import (
         _annotate_input_qspec_map,
         _annotate_output_qspec,
-        get_act_qspec,
+        get_input_act_qspec,
+        get_output_act_qspec,
         get_bias_qspec,
         get_weight_qspec,
     )
@@ -461,7 +461,7 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
                 input_qspec_map = {}
                 input_act = conv_node.args[0]
                 assert isinstance(input_act, Node)
-                input_qspec_map[input_act] = get_act_qspec(quantization_config)
+                input_qspec_map[input_act] = get_input_act_qspec(quantization_config)
 
                 weight = conv_node.args[1]
                 assert isinstance(weight, Node)
@@ -473,7 +473,7 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
 
                 conv_node.meta["quantization_annotation"] = QuantizationAnnotation(
                     input_qspec_map=input_qspec_map,
-                    output_qspec=get_act_qspec(quantization_config),
+                    output_qspec=get_output_act_qspec(quantization_config),
                     _annotated=True,
                 )
 
@@ -483,7 +483,7 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
             module_partitions = get_source_partitions(
                 gm.graph, [torch.nn.Linear, torch.nn.functional.linear]
             )
-            act_qspec = get_act_qspec(quantization_config)
+            act_qspec = get_input_act_qspec(quantization_config)
             weight_qspec = get_weight_qspec(quantization_config)
             bias_qspec = get_bias_qspec(quantization_config)
             for module_or_fn_type, partitions in module_partitions.items():
@@ -545,7 +545,7 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
                 input_act = maxpool_node.args[0]  # type: ignore[union-attr]
                 assert isinstance(input_act, Node)
 
-                act_qspec = get_act_qspec(quantization_config)
+                act_qspec = get_input_act_qspec(quantization_config)
                 maxpool_node.meta["quantization_annotation"] = QuantizationAnnotation(  # type: ignore[union-attr]
                     input_qspec_map={
                         input_act: act_qspec,
@@ -596,7 +596,10 @@ to run a example with Torchvision Resnet18. Here are some basic concepts before 
             observer_or_fake_quant_ctr=bias_observer_or_fake_quant_ctr
         )
         quantization_config = QuantizationConfig(
-            act_quantization_spec, weight_quantization_spec, bias_quantization_spec
+            act_quantization_spec,
+            act_quantization_spec,
+            weight_quantization_spec,
+            bias_quantization_spec,
         )
         return quantization_config
 
