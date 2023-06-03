@@ -190,7 +190,7 @@ This function also
       """
       since = time.time()
 
-      best_model_wts = copy.deepcopy(model.state_dict())
+      best_model_wts = model.load_state_dict(model.state_dict())
       best_acc = 0.0
 
       for epoch in range(num_epochs):
@@ -242,7 +242,7 @@ This function also
           # deep copy the model
           if phase == 'val' and epoch_acc > best_acc:
             best_acc = epoch_acc
-            best_model_wts = copy.deepcopy(model.state_dict())
+            best_model_wts = model.load_state_dict(model.state_dict())
 
         print()
 
