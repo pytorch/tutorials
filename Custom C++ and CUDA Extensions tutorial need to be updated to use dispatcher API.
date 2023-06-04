@@ -1,0 +1,82 @@
+Include necessary headers: Begin by including the required headers for the dispatcher API and the necessary CUDA headers if you're working with CUDA extensions.
+Define the C++ and CUDA functions: Define your custom C++ and CUDA functions that you want to expose as extensions. Make sure to annotate them with the appropriate attributes, such as __host__ __device__ for CUDA functions.
+Create dispatcher functions: Create dispatcher functions that will be used to register and dispatch your custom functions. These dispatcher functions will serve as an intermediate layer between Python and your C++/CUDA functions.
+Register the dispatcher functions: Use the dispatcher API to register your dispatcher functions. This will allow Python to call the dispatcher functions and, in turn, invoke your custom C++/CUDA functions.
+Build and install the extension: Modify your build system to compile and link the extension using the dispatcher API. This may involve changes to your setup.py or CMakeLists.txt file, depending on your build setup.
+Update the Python binding: Remove the existing PYBIND11_MODULE code that creates Python bindings for your functions. Since you're now using the dispatcher API, the bindings will be automatically handled by the dispatcher.
+Test the updated extension: Compile and install the updated extension, and test it to ensure that the custom C++ and CUDA functions are callable from Python.
+
+Keep in mind that the exact implementation details may vary depending on your specific project setup and requirements. You may need to refer to the documentation and examples provided by the library or framework you're using for custom extensions.
+
+Here's an example code snippet that demonstrates how to update the tutorial to use the dispatcher API for registering custom C++ and CUDA extensions:
+
+#include <torch/extension.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+// Define your custom C++ function
+torch::Tensor my_custom_cpp_function(torch::Tensor input) {
+    // ... your implementation ...
+    return output;
+}
+
+// Define your custom CUDA function
+torch::Tensor my_custom_cuda_function(torch::Tensor input) {
+    // ... your implementation ...
+    return output;
+}
+
+// Define the dispatcher functions
+torch::Tensor my_custom_cpp_dispatcher(torch::Tensor input) {
+    return my_custom_cpp_function(input);
+}
+
+torch::Tensor my_custom_cuda_dispatcher(torch::Tensor input) {
+    return my_custom_cuda_function(input);
+}
+
+// Register the dispatcher functions
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def("my_custom_cpp", &my_custom_cpp_dispatcher, "My custom C++ function");
+    m.def("my_custom_cuda", &my_custom_cuda_dispatcher, "My custom CUDA function");
+}
+
+Certainly! Here's an example code snippet that demonstrates how to update the tutorial to use the dispatcher API for registering custom C++ and CUDA extensions:
+
+'
+#include <torch/extension.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+// Define your custom C++ function
+torch::Tensor my_custom_cpp_function(torch::Tensor input) {
+    // ... your implementation ...
+    return output;
+}
+
+// Define your custom CUDA function
+torch::Tensor my_custom_cuda_function(torch::Tensor input) {
+    // ... your implementation ...
+    return output;
+}
+
+// Define the dispatcher functions
+torch::Tensor my_custom_cpp_dispatcher(torch::Tensor input) {
+    return my_custom_cpp_function(input);
+}
+
+torch::Tensor my_custom_cuda_dispatcher(torch::Tensor input) {
+    return my_custom_cuda_function(input);
+}
+
+// Register the dispatcher functions
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def("my_custom_cpp", &my_custom_cpp_dispatcher, "My custom C++ function");
+    m.def("my_custom_cuda", &my_custom_cuda_dispatcher, "My custom CUDA function");
+}
+'
+
+In this example, we define two custom functions: my_custom_cpp_function for C++ and my_custom_cuda_function for CUDA. These functions perform some computation on the input tensor and return the result.
+Next, we define the corresponding dispatcher functions: my_custom_cpp_dispatcher and my_custom_cuda_dispatcher. These dispatcher functions serve as an intermediate layer between Python and the actual custom functions. They simply call the respective custom functions.
+Finally, we use the dispatcher API to register the dispatcher functions using the PYBIND11_MODULE macro. This will automatically create the Python bindings for the dispatcher functions and allow Python to call them, which will, in turn, invoke the custom C++/CUDA functions.
+Make sure to update your build system (e.g., setup.py or CMakeLists.txt) to include the necessary configuration for compiling and linking the extension with the dispatcher API.
