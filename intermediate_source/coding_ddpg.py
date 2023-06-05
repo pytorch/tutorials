@@ -17,29 +17,33 @@ TorchRL objectives: Coding a DDPG loss
 # TorchRL losses (or "objectives") are stateful objects that contain the
 # trainable parameters (policy and value models).
 # This tutorial will guide you through the steps to code a loss from the ground up
-# using torchrl.
+# using TorchRL.
 #
 # To this aim, we will be focusing on DDPG, which is a relatively straightforward
 # algorithm to code.
 # DDPG (`Deep Deterministic Policy Gradient <https://arxiv.org/abs/1509.02971>`_)
 # is a simple continuous control algorithm. It consists in learning a
 # parametric value function for an action-observation pair, and
-# then learning a policy that outputs actions that maximise this value
+# then learning a policy that outputs actions that maximize this value
 # function given a certain observation.
 #
-# Key learnings:
+# What you will learn:
 #
 # - how to write a loss module and customize its value estimator;
-# - how to build an environment in torchrl, including transforms
-#   (e.g. data normalization) and parallel execution;
+# - how to build an environment in TorchRL, including transforms
+#   (for example, data normalization) and parallel execution;
 # - how to design a policy and value network;
 # - how to collect data from your environment efficiently and store them
 #   in a replay buffer;
 # - how to store trajectories (and not transitions) in your replay buffer);
-# - and finally how to evaluate your model.
+# - how to evaluate your model.
 #
-# This tutorial assumes that you have completed the PPO tutorial which gives
-# an overview of the torchrl components and dependencies, such as
+# Prerequisites
+# ~~~~~~~~~~
+#
+# This tutorial assumes that you have completed the
+# `PPO tutorial <reinforcement_ppo.html>`_ which gives
+# an overview of the TorchRL components and dependencies, such as
 # :class:`tensordict.TensorDict` and :class:`tensordict.nn.TensorDictModules`,
 # although it should be
 # sufficiently transparent to be understood without a deep understanding of
@@ -47,7 +51,7 @@ TorchRL objectives: Coding a DDPG loss
 #
 # .. note::
 #   We do not aim at giving a SOTA implementation of the algorithm, but rather
-#   to provide a high-level illustration of torchrl's loss implementations
+#   to provide a high-level illustration of TorchRL's loss implementations
 #   and the library features that are to be used in the context of
 #   this algorithm.
 #
@@ -73,7 +77,7 @@ device = (
 )
 
 ###############################################################################
-# torchrl :class:`~torchrl.objectives.LossModule`
+# TorchRL :class:`~torchrl.objectives.LossModule`
 # -----------------------------------------------
 #
 # TorchRL provides a series of losses to use in your training scripts.
@@ -122,14 +126,14 @@ device = (
 #
 # Let us start with the :meth:`~torchrl.objectives.LossModule.__init__`
 # method. DDPG aims at solving a control task with a simple strategy:
-# training a policy to output actions that maximise the value predicted by
+# training a policy to output actions that maximize the value predicted by
 # a value network. Hence, our loss module needs to receive two networks in its
 # constructor: an actor and a value networks. We expect both of these to be
 # tensordict-compatible objects, such as
 # :class:`tensordict.nn.TensorDictModule`.
 # Our loss function will need to compute a target value and fit the value
 # network to this, and generate an action and fit the policy such that its
-# value estimate is maximised.
+# value estimate is maximized.
 #
 # The crucial step of the :meth:`LossModule.__init__` method is the call to
 # :meth:`~torchrl.LossModule.convert_to_functional`. This method will extract
@@ -156,7 +160,7 @@ device = (
 # accessible but this will just return a **detached** version of the
 # actor parameters.
 #
-# Later, we will see how the target parameters should be updated in torchrl.
+# Later, we will see how the target parameters should be updated in TorchRL.
 #
 
 from tensordict.nn import TensorDictModule
@@ -258,7 +262,7 @@ def make_value_estimator(self, value_type: ValueEstimators, **hyperparams):
 # The central piece of an RL algorithm is the training loss for the actor.
 # In the case of DDPG, this function is quite simple: we just need to compute
 # the value associated with an action computed using the policy and optimize
-# the actor weights to maximise this value.
+# the actor weights to maximize this value.
 #
 # When computing this value, we must make sure to take the value parameters out
 # of the graph, otherwise the actor and value loss will be mixed up.
@@ -404,7 +408,7 @@ class DDPGLoss(LossModule):
 #
 # By default, these environment disable rendering. Training from states is
 # usually easier than training from images. To keep things simple, we focus
-# on learning from states only. To pass the pixels to the tensordicts that
+# on learning from states only. To pass the pixels to the ``tensordicts`` that
 # are collected by :func:`env.step()`, simply pass the ``from_pixels=True``
 # argument to the constructor:
 #
@@ -413,7 +417,7 @@ class DDPGLoss(LossModule):
 #    env = GymEnv("HalfCheetah-v4", from_pixels=True, pixels_only=True)
 #
 # We write a :func:`make_env` helper function that will create an environment
-# with either one of the two backends considered above (dm-control or gym).
+# with either one of the two backends considered above (``dm-control`` or ``gym``).
 #
 
 from torchrl.envs.libs.dm_control import DMControlEnv
@@ -601,15 +605,15 @@ def parallel_env_constructor(
     return env
 
 
-# The backend can be gym or dm_control
+# The backend can be ``gym`` or ``dm_control``
 backend = "gym"
 
 ###############################################################################
 # .. note::
 #   ``frame_skip`` batches multiple step together with a single action
-#   If > 1, the other frame counts (e.g. frames_per_batch, total_frames) need to
-#   be adjusted to have a consistent total number of frames collected across
-#   experiments. This is important as raising the frame-skip but keeping the
+#   If > 1, the other frame counts (for example, frames_per_batch, total_frames)
+#   need to be adjusted to have a consistent total number of frames collected
+#   across experiments. This is important as raising the frame-skip but keeping the
 #   total number of frames unchanged may seem like cheating: all things compared,
 #   a dataset of 10M elements collected with a frame-skip of 2 and another with
 #   a frame-skip of 1 actually have a ratio of interactions with the environment
@@ -623,7 +627,7 @@ reward_scaling = 5.0
 
 ###############################################################################
 # We also define when a trajectory will be truncated. A thousand steps (500 if
-# frame-skip = 2) is a good number to use for cheetah:
+# frame-skip = 2) is a good number to use for the cheetah task:
 
 max_frames_per_traj = 500
 
@@ -653,7 +657,7 @@ def get_env_stats():
 ###############################################################################
 # Normalization stats
 # ~~~~~~~~~~~~~~~~~~~
-# Number of random steps used as for stats computation using ObservationNorm
+# Number of random steps used as for stats computation using ``ObservationNorm``
 
 init_env_steps = 5000
 
@@ -794,8 +798,8 @@ if device == torch.device("cpu"):
 # environment and reset it when required.
 # Data collectors are designed to help developers have a tight control
 # on the number of frames per batch of data, on the (a)sync nature of this
-# collection and on the resources allocated to the data collection (e.g. GPU,
-# number of workers etc).
+# collection and on the resources allocated to the data collection (for example
+# GPU, number of workers, and so on).
 #
 # Here we will use
 # :class:`~torchrl.collectors.MultiaSyncDataCollector`, a data collector that
@@ -810,7 +814,7 @@ if device == torch.device("cpu"):
 # - the policy,
 # - the total number of frames before the collector is considered empty,
 # - the maximum number of frames per trajectory (useful for non-terminating
-#   environments, like dm_control ones).
+#   environments, like ``dm_control`` ones).
 #   .. note::
 #     The ``max_frames_per_traj`` passed to the collector will have the effect
 #     of registering a new :class:`~torchrl.envs.StepCounter` transform
@@ -1182,7 +1186,7 @@ del collector
 #
 # .. note::
 #   As already mentioned above, to get a more reasonable performance,
-#   use a greater value for ``total_frames`` e.g. 1M.
+#   use a greater value for ``total_frames`` for example, 1M.
 
 from matplotlib import pyplot as plt
 
@@ -1198,7 +1202,7 @@ plt.tight_layout()
 # Conclusion
 # ----------
 #
-# In this tutorial, we have learnt how to code a loss module in TorchRL given
+# In this tutorial, we have learned how to code a loss module in TorchRL given
 # the concrete example of DDPG.
 #
 # The key takeaways are:
