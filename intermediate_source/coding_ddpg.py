@@ -98,7 +98,7 @@ device = (
 #
 # - They output a :class:`tensordict.TensorDict` instance with the loss values
 #   written under a ``"loss_<smth>"`` where ``smth`` is a string describing the
-#   loss. Additional keys in the tensordict may be useful metrics to log during
+#   loss. Additional keys in the ``tensordict`` may be useful metrics to log during
 #   training time.
 #   .. note::
 #     The reason we return independent losses is to let the user use a different
@@ -334,7 +334,7 @@ def _loss_value(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # The only missing piece is the forward method, which will glue together the
-# value and actor loss, collect the cost values and write them in a tensordict
+# value and actor loss, collect the cost values and write them in a ``tensordict``
 # delivered to the user.
 
 from tensordict.tensordict import TensorDict, TensorDictBase
@@ -394,7 +394,7 @@ class DDPGLoss(LossModule):
 # For this example, we will be using the ``"cheetah"`` task. The goal is to make
 # a half-cheetah run as fast as possible.
 #
-# In TorchRL, one can create such a task by relying on dm_control or gym:
+# In TorchRL, one can create such a task by relying on ``dm_control`` or ``gym``:
 #
 # .. code-block:: python
 #
@@ -610,6 +610,7 @@ backend = "gym"
 
 ###############################################################################
 # .. note::
+#
 #   ``frame_skip`` batches multiple step together with a single action
 #   If > 1, the other frame counts (for example, frames_per_batch, total_frames)
 #   need to be adjusted to have a consistent total number of frames collected
