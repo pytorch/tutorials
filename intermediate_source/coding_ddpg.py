@@ -21,7 +21,7 @@ TorchRL objectives: Coding a DDPG loss
 #
 # To this aim, we will be focusing on DDPG, which is a relatively straightforward
 # algorithm to code.
-# DDPG (`Deep Deterministic Policy Gradient <https://arxiv.org/abs/1509.02971>`_)
+# `Deep Deterministic Policy Gradient <https://arxiv.org/abs/1509.02971>`_ (DDPG)
 # is a simple continuous control algorithm. It consists in learning a
 # parametric value function for an action-observation pair, and
 # then learning a policy that outputs actions that maximize this value
