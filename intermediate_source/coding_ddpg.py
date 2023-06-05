@@ -71,7 +71,7 @@ import tqdm
 
 
 ###############################################################################
-# We will execute the policy on cuda if available
+# We will execute the policy on CUDA if available
 device = (
     torch.device("cpu") if torch.cuda.device_count() == 0 else torch.device("cuda:0")
 )
