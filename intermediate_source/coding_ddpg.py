@@ -86,7 +86,7 @@ device = (
 #
 # The main characteristics of TorchRL losses are:
 #
-# - they are stateful objects: they contain a copy of the trainable parameters
+# - They are stateful objects: they contain a copy of the trainable parameters
 #   such that ``loss_module.parameters()`` gives whatever is needed to train the
 #   algorithm.
 # - They follow the ``tensordict`` convention: the :meth:`torch.nn.Module.forward`
