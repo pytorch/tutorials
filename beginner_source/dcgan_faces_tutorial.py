@@ -112,7 +112,6 @@ DCGAN Tutorial
 # will be explained in the coming sections.
 # 
 
-from __future__ import print_function
 #%matplotlib inline
 import argparse
 import os
@@ -120,7 +119,6 @@ import random
 import torch
 import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
 import torchvision.datasets as dset
@@ -137,6 +135,7 @@ manualSeed = 999
 print("Random Seed: ", manualSeed)
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
+torch.use_deterministic_algorithms(True) # Needed for reproducible results
 
 
 ######################################################################

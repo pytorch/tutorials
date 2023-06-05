@@ -165,9 +165,7 @@ face_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.csv',
 
 fig = plt.figure()
 
-for i in range(len(face_dataset)):
-    sample = face_dataset[i]
-
+for i, sample in enumerate(face_dataset):
     print(i, sample['image'].shape, sample['landmarks'].shape)
 
     ax = plt.subplot(1, 4, i + 1)
@@ -268,8 +266,8 @@ class RandomCrop(object):
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
 
-        top = np.random.randint(0, h - new_h)
-        left = np.random.randint(0, w - new_w)
+        top = np.random.randint(0, h - new_h + 1)
+        left = np.random.randint(0, w - new_w + 1)
 
         image = image[top: top + new_h,
                       left: left + new_w]
@@ -294,7 +292,7 @@ class ToTensor(object):
 
 ######################################################################
 # .. note::
-#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     In the example above, `RandomCrop` uses an external library's random number generator
 #     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader`
 #     (see `here <https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers>`_).
 #     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
@@ -356,9 +354,7 @@ transformed_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.c
                                                ToTensor()
                                            ]))
 
-for i in range(len(transformed_dataset)):
-    sample = transformed_dataset[i]
-
+for i, sample in enumerate(transformed_dataset):
     print(i, sample['image'].size(), sample['landmarks'].size())
 
     if i == 3:
