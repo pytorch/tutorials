@@ -75,7 +75,6 @@ name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary ``{language: [names ...]}``.
 
 """
-from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
 import os
