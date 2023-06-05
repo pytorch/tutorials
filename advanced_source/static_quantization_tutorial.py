@@ -519,7 +519,13 @@ evaluate(per_channel_quantized_model,criterion, data_loader, num_calibration_bat
 torch.quantization.convert(per_channel_quantized_model, inplace=True)
 top1, top5 = evaluate(per_channel_quantized_model, criterion, data_loader_test, neval_batches=num_eval_batches)
 print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg))
-torch.jit.save(torch.jit.script(per_channel_quantized_model), saved_model_dir + scripted_quantized_model_file)
+# Saving quantized model, catching Exceptions when they occur
+try:
+    scripted_model = torch.jit.script(per_channel_quantized_model)
+    torch.jit.save(scripted_model, saved_model_dir + scripted_quantized_model_file)
+    print("Quantized model saved successfully.")
+except Exception as e:
+    print("Error occurred while saving the model:", str(e))
 
 ######################################################################
 # Changing just this quantization configuration method resulted in an increase
