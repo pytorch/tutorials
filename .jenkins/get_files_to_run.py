@@ -11,7 +11,7 @@ REPO_BASE_DIR = Path(__file__).absolute().parent.parent
 
 def get_all_files() -> List[str]:
     sources = [x.relative_to(REPO_BASE_DIR) for x in REPO_BASE_DIR.glob("*_source/**/*.py") if 'data' not in x.parts]
-    return [str(x) for x in sources]
+    return sorted([str(x) for x in sources])
 
 
 def read_metadata() -> Dict[str, Any]:
@@ -87,8 +87,8 @@ def parse_args() -> Any:
     from argparse import ArgumentParser
     parser = ArgumentParser("Select files to run")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--num-shards", type=int, default=int(os.environ.get("NUM_WORKERS", 20)))
-    parser.add_argument("--shard-num", type=int, default=int(os.environ.get("WORKER_ID", 0)))
+    parser.add_argument("--num-shards", type=int, default=int(os.environ.get("NUM_WORKERS", "20")))
+    parser.add_argument("--shard-num", type=int, default=int(os.environ.get("WORKER_ID", "1")))
     return parser.parse_args()
 
 
@@ -96,7 +96,7 @@ def main() -> None:
     args = parse_args()
 
     all_files = get_all_files()
-    files_to_run = calculate_shards(all_files, num_shards=args.num_shards)[args.shard_num]
+    files_to_run = calculate_shards(all_files, num_shards=args.num_shards)[args.shard_num - 1]
     if not args.dry_run:
         remove_other_files(all_files, compute_files_to_keep(files_to_run))
     stripped_file_names = [Path(x).stem for x in files_to_run]
