@@ -253,8 +253,6 @@ model before and after the dynamic quantization.
         torch.manual_seed(seed)
     set_seed(42)
 
-    # Initialize a global random number generator
-    global_rng = random.Random()
 
 
 2.2 Load the fine-tuned BERT model
@@ -526,20 +524,9 @@ We can serialize and save the quantized model for the future use using
 
 .. code:: python
 
-    def ids_tensor(shape, vocab_size, rng=None, name=None):
+    def ids_tensor(shape, vocab_size):
         #  Creates a random int32 tensor of the shape within the vocab size
-        if rng is None:
-            rng = global_rng
-
-        total_dims = 1
-        for dim in shape:
-            total_dims *= dim
-
-        values = []
-        for _ in range(total_dims):
-            values.append(rng.randint(0, vocab_size - 1))
-
-        return torch.tensor(data=values, dtype=torch.long, device='cpu').view(shape).contiguous()
+        return torch.randint(0, vocab_size, shape=shape, dtype=torch.int, device='cpu')
 
     input_ids = ids_tensor([8, 128], 2)
     token_type_ids = ids_tensor([8, 128], 2)

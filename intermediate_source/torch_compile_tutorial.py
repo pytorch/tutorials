@@ -69,7 +69,7 @@ if not gpu_ok:
 
 def foo(x, y):
     a = torch.sin(x)
-    b = torch.cos(x)
+    b = torch.cos(y)
     return a + b
 opt_foo1 = torch.compile(foo)
 print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
@@ -80,7 +80,7 @@ print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 @torch.compile
 def opt_foo2(x, y):
     a = torch.sin(x)
-    b = torch.cos(x)
+    b = torch.cos(y)
     return a + b
 print(opt_foo2(torch.randn(10, 10), torch.randn(10, 10)))
 
