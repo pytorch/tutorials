@@ -66,9 +66,9 @@ Here is another way to print logging for Inductor.
 +--------------+-------------------------------------------------------------+
 | +inductor    | Set the logging level of Inductor to DEBUG, default is INFO |
 +--------------+-------------------------------------------------------------+
-| +output_code | Print output code with cpp/triton kernels                   |
+| output_code  | Print output code with cpp/triton kernels                   |
 +--------------+-------------------------------------------------------------+
-| +schedule    | Print reasons for not doing vectorization in cpp kernels    |
+| schedule     | Print reasons for not doing vectorization in cpp kernels    |
 +--------------+-------------------------------------------------------------+
 
 Configs to do deeper analysis
@@ -138,7 +138,7 @@ The implementation of ``neg`` in cpp codegen is as follows.
 .. code-block:: python
 
 	def neg(x):
-	        return f"decltype({x})(-{x})"
+	    return f"decltype({x})(-{x})"
 
 
 In order to demonstrate the debugging, we will modify the function to a wrong one later.
@@ -153,7 +153,7 @@ For example, the ``neg`` function is modified like this.
 .. code-block:: python
 
 	def neg(x):
-	        return f"-{x}"
+	    return f"-{x}"
 
 
 The logging gives the following compile error with a rather clear reason. In this case, the root cause is that data types of maximum's inputs are inconsistent.
@@ -195,7 +195,7 @@ For example, we modify the ``neg`` function like this.
 .. code-block:: python
 
 	def neg(x):
-	        return f"decltype({x})(2 * {x})"
+	    return f"decltype({x})(2 * {x})"
 
 
 An accuracy problem would be raised as follows.
@@ -610,7 +610,7 @@ Future work
 --------------
 
 Implement and up-stream the debug tools
-	1. **Cosim**: Merge graphs of a model into a single large graph. Thus, graphs can be compared quickly between different versions of PyTorch. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
+	1. **Graph merger**: Merge graphs of a model into a single large graph. Thus, graphs can be compared quickly between different versions of PyTorch. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
 	2. **Graph matching**: In order to know what each kernel does, this tool matches cpp kernel with FX graph operators and adds corresponding operators before each kernel in cpp output code. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
 	3. **Save inputs and outputs**: For the purpose of reproducing rapidly the failure of a large model, it is necessary to add serializations for the inputs and outputs among graphs and intermediate outputs in graphs.
 	4. **Test case generation**: When a user has found the operators which are inefficient with cpp kernels, a tool is needed to automatically write a test case. Specifically, one test case can be generated for each kernel, with the corresponding small FX graph and input.

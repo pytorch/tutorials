@@ -3,7 +3,6 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Inductor CPU Backend Debugging and Profiling <https://pytorch.org/tutorials/intermediate/inductor_debug_cpu.html?utm_source=whats_new_tutorials&utm_medium=inductor_debug_cpu>`__
 * `Implementing High Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html?utm_source=whats_new_tutorials&utm_medium=scaled_dot_product_attention_tutorial>`__
 * `torch.compile Tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torch_compile>`__
 * `Per Sample Gradients <https://pytorch.org/tutorials/intermediate/per_sample_grads.html?utm_source=whats_new_tutorials&utm_medium=per_sample_grads>`__
