@@ -92,8 +92,6 @@ In this step we import the necessary Python modules for the tutorial.
 
 .. code:: python
 
-    from __future__ import absolute_import, division, print_function
-
     import logging
     import numpy as np
     import os

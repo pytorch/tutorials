@@ -40,8 +40,6 @@ Once all the necesessary packages are downloaded and installed we setup the code
 
 .. code:: python
 
-    from __future__ import absolute_import, division, print_function
-
     import logging
     import numpy as np
     import os
