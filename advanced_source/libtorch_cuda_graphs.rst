@@ -90,8 +90,8 @@ the training:
     training_step(model, optimizer, data, targets, output, loss);
   }
 
-After successful graph capturing we can replace `training_step(model, optimizer, data, targets, output, loss);`
-call via `graph.replay();`.
+After successful graph capturing we can replace ``training_step(model, optimizer, data, targets, output, loss);``
+call via ``graph.replay();``.
 
 The full source code is available in GitHub.
 
