@@ -253,6 +253,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Leverage Advanced Matrix Extensions
+
+.. customcarditem::
+   :header: Leverage Advanced Matrix Extensions
+   :card_description: Learn to leverage Advanced Matrix Extensions.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/amx.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
