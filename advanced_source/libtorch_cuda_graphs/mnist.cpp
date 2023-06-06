@@ -56,6 +56,14 @@ struct Net : torch::nn::Module {
   torch::nn::Linear fc2;
 };
 
+void stream_sync(
+    at::cuda::CUDAStream& dependency,
+    at::cuda::CUDAStream& dependent) {
+  at::cuda::CUDAEvent cuda_ev;
+  cuda_ev.record(dependency);
+  cuda_ev.block(dependent);
+}
+
 void training_step(
     Net& model,
     torch::optim::Optimizer& optimizer,
@@ -87,24 +95,20 @@ void capture_train_graph(
 
   at::cuda::setCurrentCUDAStream(warmupStream);
 
-  at::cuda::CUDAEvent cuda_ev;
-  cuda_ev.record(legacyStream);
-  cuda_ev.block(warmupStream);
+  stream_sync(legacyStream, warmupStream);
 
   for (int iter = 0; iter < num_warmup_iters; iter++) {
     training_step(model, optimizer, data, targets, output, loss);
   }
 
-  cuda_ev.record(warmupStream);
-  cuda_ev.block(captureStream);
+  stream_sync(warmupStream, captureStream);
   at::cuda::setCurrentCUDAStream(captureStream);
 
   graph.capture_begin();
   training_step(model, optimizer, data, targets, output, loss);
   graph.capture_end();
 
-  cuda_ev.record(captureStream);
-  cuda_ev.block(legacyStream);
+  stream_sync(captureStream, legacyStream);
   at::cuda::setCurrentCUDAStream(legacyStream);
 }
 
@@ -182,10 +186,7 @@ void capture_test_graph(
   at::cuda::CUDAStream legacyStream = at::cuda::getCurrentCUDAStream();
 
   at::cuda::setCurrentCUDAStream(warmupStream);
-
-  at::cuda::CUDAEvent cuda_ev;
-  cuda_ev.record(legacyStream);
-  cuda_ev.block(warmupStream);
+  stream_sync(captureStream, legacyStream);
 
   for (int iter = 0; iter < num_warmup_iters; iter++) {
     test_step(model, data, targets, output, loss);
@@ -193,16 +194,14 @@ void capture_test_graph(
     total_correct = total_correct + output.argmax(1).eq(targets).sum();
   }
 
-  cuda_ev.record(warmupStream);
-  cuda_ev.block(captureStream);
+  stream_sync(warmupStream, captureStream);
   at::cuda::setCurrentCUDAStream(captureStream);
 
   graph.capture_begin();
   test_step(model, data, targets, output, loss);
   graph.capture_end();
 
-  cuda_ev.record(captureStream);
-  cuda_ev.block(legacyStream);
+  stream_sync(captureStream, legacyStream);
   at::cuda::setCurrentCUDAStream(legacyStream);
 }
 
