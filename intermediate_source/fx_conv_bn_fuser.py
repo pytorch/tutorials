@@ -23,7 +23,6 @@ https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/f
 # of these later in the code).
 
 from typing import Type, Dict, Any, Tuple, Iterable
-import copy
 import torch.fx as fx
 import torch
 import torch.nn as nn
@@ -104,8 +103,8 @@ def fuse_conv_bn_eval(conv, bn):
     module `C` such that C(x) == B(A(x)) in inference mode.
     """
     assert(not (conv.training or bn.training)), "Fusion only for eval!"
-    fused_conv = copy.deepcopy(conv)
-
+    
+    fused_conv = conv.detach().clone()
     fused_conv.weight, fused_conv.bias = \
         fuse_conv_bn_weights(fused_conv.weight, fused_conv.bias,
                              bn.running_mean, bn.running_var, bn.eps, bn.weight, bn.bias)
@@ -150,7 +149,7 @@ def replace_node_module(node: fx.Node, modules: Dict[str, Any], new_module: torc
 
 
 def fuse(model: torch.nn.Module) -> torch.nn.Module:
-    model = copy.deepcopy(model)
+    model = torch.load(model.state_dict())
     # The first step of most FX passes is to symbolically trace our model to
     # obtain a `GraphModule`. This is a representation of our original model
     # that is functionally identical to our original model, except that we now
