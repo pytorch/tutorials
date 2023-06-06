@@ -130,8 +130,6 @@ While the CUDA Graph output is the following:
 .. code-block:: shell
 
   $ time ./mnist --use-train-graph
-  CUDA is available! Training on GPU.
-  Using CUDA Graph for training.
   Train Epoch: 1 [59584/60000] Loss: 0.4092
   Test set: Average loss: 0.2037 | Accuracy: 0.938
   Train Epoch: 2 [59584/60000] Loss: 0.2039
