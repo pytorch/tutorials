@@ -242,9 +242,24 @@ qconfig_mapping = (QConfigMapping()
 # Load model to create the original model because quantization api changes the model inplace and we want
 # to keep the original model for future comparison
 
-# Load the model
-model_to_quantize = torch.load(model_data_filepath + 'word_language_model_quantize.pth', map_location=torch.device('cpu'))
+
+# Load Pretrained Model
+model_to_quantize = LSTMModel(
+    ntoken = ntokens,
+    ninp = 512,
+    nhid = 256,
+    nlayers = 5,
+)
+
+model_to_quantize.load_state_dict(
+    torch.load(
+        model_data_filepath + 'word_language_model_quantize.pth',
+        map_location=torch.device('cpu')
+        )
+    )
+
 model_to_quantize.eval()
+
 
 prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
 print("prepared model:", prepared_model)
