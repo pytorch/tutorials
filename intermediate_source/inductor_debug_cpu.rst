@@ -302,11 +302,13 @@ Note that there exists a debugging tool provided by PyTorch, called `Minifier <h
 
 Performance profiling
 --------------
+
 For this part, we are going to describe how to analyze torchinductor model performance.
 Firsly, we choose an eager model as a baseline. We set up a benchmark to compare
 the end to end performance between eager model and inductor model.
 
 .. code-block:: python
+
     from transformers import T5ForConditionalGeneration
     # init an eager model
     eager_model = T5ForConditionalGeneration.from_pretrained("t5-small")
@@ -343,21 +345,28 @@ the end to end performance between eager model and inductor model.
     print("ratio:", eager_t / inductor_t)
         
 Output:
+
 .. code-block:: shell
+
     eager use: 410.12550354003906
     inductor use: 478.59081745147705
     ratio: 0.8569439458198976
 
 We see inductor model spent more time than eager model, which does not meet our expectation.
-To deep dive op-level performance, we can use `Pytorch Profiler<https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`
-We can enable kernel profile in inductor by:
+To deep dive op-level performance, we can use `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
+
+To enable kernel profile in inductor, we need set ``enable_kernel_profile`` by:
+
 .. code-block:: python
+
     from torch._inductor import config
     config.cpp.enable_kernel_profile = True
 
-Following the steps in `Pytorch Profiler<https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`
-we can get the profiling table and trace files.
+Following the steps in `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
+we are able to get the profiling table and trace files.
+
 .. code-block:: python
+
     from torch.profiler import profile, schedule, ProfilerActivity
     my_schedule = schedule(
         skip_first=10,
@@ -388,8 +397,10 @@ we can get the profiling table and trace files.
             p.step()
     print("latency: {} ms".format(1000*(total)/100))
 
-We can get following profile tables for eager model
+We will get following profile tables for eager model
+
 .. code-block:: shell
+
     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                     Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
@@ -415,8 +426,11 @@ We can get following profile tables for eager model
                 aten::fill_         0.15%     613.000us         0.15%     613.000us      15.718us            39  
     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
     Self CPU time total: 415.949ms
-And for inductor model
+
+And get above table for inductor model
+
 .. code-block:: shell
+
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                     Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
@@ -443,8 +457,10 @@ And for inductor model
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
     Self CPU time total: 474.360ms
 
-We can search the most time consuming `graph_0_cpp_fused__softmax_7` in `output_code.py` to see the generated code:
+We can search the most time consuming ``graph_0_cpp_fused__softmax_7`` in ``output_code.py`` to see the generated code:
+
 .. code-block:: python
+
     cpp_fused__softmax_7 = async_compile.cpp('''
     #include <ATen/record_function.h>
     #include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
@@ -584,8 +600,9 @@ We can search the most time consuming `graph_0_cpp_fused__softmax_7` in `output_
         }
     }
     ''')
-With the kernel name `cpp_fused__softmax_*` and considering the profile 
-results together, we may suspect the generated code for 'softmax' is
+
+With the kernel name ``cpp_fused__softmax_*`` and considering the profile 
+results together, we may suspect the generated code for ``softmax`` is
 inefficient. We encourage you to report an issue with all you findings above.
 
 
