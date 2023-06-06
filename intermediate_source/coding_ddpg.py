@@ -499,7 +499,7 @@ from torchrl.envs import (
 def make_transformed_env(
     env,
 ):
-    """Apply transforms to the env (such as reward scaling and state normalization)."""
+    """Apply transforms to the ``env`` (such as reward scaling and state normalization)."""
 
     env = TransformedEnv(env)
 
@@ -857,7 +857,6 @@ collector = MultiaSyncDataCollector(
     * num_collectors,
     policy=actor_model_explore,
     total_frames=total_frames,
-    # max_frames_per_traj=max_frames_per_traj,  # this is achieved by the env constructor
     frames_per_batch=frames_per_batch,
     init_random_frames=init_random_frames,
     reset_at_each_iter=False,
