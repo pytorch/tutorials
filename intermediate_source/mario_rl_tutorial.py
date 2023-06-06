@@ -1,4 +1,3 @@
-, storage
 # -*- coding: utf-8 -*-
 """
 Train a Mario-playing RL Agent
