@@ -8,7 +8,7 @@ In this example we would like to demonstrate CUDA Graphs usage on PyTorch’s `M
 example <https://github.com/pytorch/examples/tree/main/cpp/mnist>`_.
 The usage of CUDA Graphs in LibTorch is very similar to its `Python counterpart
 <https://pytorch.org/docs/main/notes/cuda.html#cuda-graphs>`_ with only major
-difference in launguage syntax.
+difference in language syntax.
 
 
 The main training training loop consists of the several steps and depicted in the
@@ -95,6 +95,8 @@ call via `graph.replay();`.
 
 The full source code is available in GitHub.
 
+The ordinary eager-mode produces the following output:
+
 .. code-block:: shell
 
 $ time ./mnist
@@ -122,6 +124,8 @@ Test set: Average loss: 0.0517 | Accuracy: 0.983
 real    0m44.287s
 user    0m44.018s
 sys    0m1.116s
+
+While the CUDA Graph output is the following:
 
 .. code-block:: shell
 
