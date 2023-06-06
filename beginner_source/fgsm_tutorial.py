@@ -98,13 +98,6 @@ from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
 
-# NOTE: This is a hack to get around "User-agent" limitations when downloading MNIST datasets
-#       see, https://github.com/pytorch/vision/issues/3497 for more information
-from six.moves import urllib
-opener = urllib.request.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-urllib.request.install_opener(opener)
-
 
 ######################################################################
 # Implementation
@@ -140,6 +133,8 @@ urllib.request.install_opener(opener)
 epsilons = [0, .05, .1, .15, .2, .25, .3]
 pretrained_model = "data/lenet_mnist_model.pth"
 use_cuda=True
+# Set random seed for reproducibility
+torch.manual_seed(42)
 
 
 ######################################################################
@@ -178,18 +173,18 @@ class Net(nn.Module):
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data', train=False, download=True, transform=transforms.Compose([
             transforms.ToTensor(),
-            ])), 
+            ])),
         batch_size=1, shuffle=True)
 
 # Define what device we are using
 print("CUDA Available: ",torch.cuda.is_available())
-device = torch.device("cuda" if (use_cuda and torch.cuda.is_available()) else "cpu")
+device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu")
 
 # Initialize the network
 model = Net().to(device)
 
 # Load the pretrained model
-model.load_state_dict(torch.load(pretrained_model, map_location='cpu'))
+model.load_state_dict(torch.load(pretrained_model, weights_only=True, map_location='cpu'))
 
 # Set the model in evaluation mode. In this case this is for the Dropout layers
 model.eval()
@@ -289,7 +284,7 @@ def test( model, device, test_loader, epsilon ):
         if final_pred.item() == target.item():
             correct += 1
             # Special case for saving 0 epsilon examples
-            if (epsilon == 0) and (len(adv_examples) < 5):
+            if epsilon == 0 and len(adv_examples) < 5:
                 adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
                 adv_examples.append( (init_pred.item(), final_pred.item(), adv_ex) )
         else:
@@ -300,7 +295,7 @@ def test( model, device, test_loader, epsilon ):
 
     # Calculate final accuracy for this epsilon
     final_acc = correct/float(len(test_loader))
-    print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader), final_acc))
+    print(f"Epsilon: {epsilon}\tTest Accuracy = {correct} / {len(test_loader)} = {final_acc}")
 
     # Return the accuracy and an adversarial example
     return final_acc, adv_examples
@@ -386,9 +381,9 @@ for i in range(len(epsilons)):
         plt.xticks([], [])
         plt.yticks([], [])
         if j == 0:
-            plt.ylabel("Eps: {}".format(epsilons[i]), fontsize=14)
+            plt.ylabel(f"Eps: {epsilons[i]}", fontsize=14)
         orig,adv,ex = examples[i][j]
-        plt.title("{} -> {}".format(orig, adv))
+        plt.title(f"{orig} -> {adv}")
         plt.imshow(ex, cmap="gray")
 plt.tight_layout()
 plt.show()
