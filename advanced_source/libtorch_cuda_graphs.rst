@@ -99,62 +99,62 @@ The ordinary eager-mode produces the following output:
 
 .. code-block:: shell
 
-$ time ./mnist
-Train Epoch: 1 [59584/60000] Loss: 0.3921
-Test set: Average loss: 0.2051 | Accuracy: 0.938
-Train Epoch: 2 [59584/60000] Loss: 0.1826
-Test set: Average loss: 0.1273 | Accuracy: 0.960
-Train Epoch: 3 [59584/60000] Loss: 0.1796
-Test set: Average loss: 0.1012 | Accuracy: 0.968
-Train Epoch: 4 [59584/60000] Loss: 0.1603
-Test set: Average loss: 0.0869 | Accuracy: 0.973
-Train Epoch: 5 [59584/60000] Loss: 0.2315
-Test set: Average loss: 0.0736 | Accuracy: 0.978
-Train Epoch: 6 [59584/60000] Loss: 0.0511
-Test set: Average loss: 0.0704 | Accuracy: 0.977
-Train Epoch: 7 [59584/60000] Loss: 0.0802
-Test set: Average loss: 0.0654 | Accuracy: 0.979
-Train Epoch: 8 [59584/60000] Loss: 0.0774
-Test set: Average loss: 0.0604 | Accuracy: 0.980
-Train Epoch: 9 [59584/60000] Loss: 0.0669
-Test set: Average loss: 0.0544 | Accuracy: 0.984
-Train Epoch: 10 [59584/60000] Loss: 0.0219
-Test set: Average loss: 0.0517 | Accuracy: 0.983
+  $ time ./mnist
+  Train Epoch: 1 [59584/60000] Loss: 0.3921
+  Test set: Average loss: 0.2051 | Accuracy: 0.938
+  Train Epoch: 2 [59584/60000] Loss: 0.1826
+  Test set: Average loss: 0.1273 | Accuracy: 0.960
+  Train Epoch: 3 [59584/60000] Loss: 0.1796
+  Test set: Average loss: 0.1012 | Accuracy: 0.968
+  Train Epoch: 4 [59584/60000] Loss: 0.1603
+  Test set: Average loss: 0.0869 | Accuracy: 0.973
+  Train Epoch: 5 [59584/60000] Loss: 0.2315
+  Test set: Average loss: 0.0736 | Accuracy: 0.978
+  Train Epoch: 6 [59584/60000] Loss: 0.0511
+  Test set: Average loss: 0.0704 | Accuracy: 0.977
+  Train Epoch: 7 [59584/60000] Loss: 0.0802
+  Test set: Average loss: 0.0654 | Accuracy: 0.979
+  Train Epoch: 8 [59584/60000] Loss: 0.0774
+  Test set: Average loss: 0.0604 | Accuracy: 0.980
+  Train Epoch: 9 [59584/60000] Loss: 0.0669
+  Test set: Average loss: 0.0544 | Accuracy: 0.984
+  Train Epoch: 10 [59584/60000] Loss: 0.0219
+  Test set: Average loss: 0.0517 | Accuracy: 0.983
 
-real    0m44.287s
-user    0m44.018s
-sys    0m1.116s
+  real    0m44.287s
+  user    0m44.018s
+  sys    0m1.116s
 
 While the CUDA Graph output is the following:
 
 .. code-block:: shell
 
-$ time ./mnist --use-train-graph
-CUDA is available! Training on GPU.
-Using CUDA Graph for training.
-Train Epoch: 1 [59584/60000] Loss: 0.4092
-Test set: Average loss: 0.2037 | Accuracy: 0.938
-Train Epoch: 2 [59584/60000] Loss: 0.2039
-Test set: Average loss: 0.1274 | Accuracy: 0.961
-Train Epoch: 3 [59584/60000] Loss: 0.1779
-Test set: Average loss: 0.1017 | Accuracy: 0.968
-Train Epoch: 4 [59584/60000] Loss: 0.1559
-Test set: Average loss: 0.0871 | Accuracy: 0.972
-Train Epoch: 5 [59584/60000] Loss: 0.2240
-Test set: Average loss: 0.0735 | Accuracy: 0.977
-Train Epoch: 6 [59584/60000] Loss: 0.0520
-Test set: Average loss: 0.0710 | Accuracy: 0.978
-Train Epoch: 7 [59584/60000] Loss: 0.0935
-Test set: Average loss: 0.0666 | Accuracy: 0.979
-Train Epoch: 8 [59584/60000] Loss: 0.0744
-Test set: Average loss: 0.0603 | Accuracy: 0.981
-Train Epoch: 9 [59584/60000] Loss: 0.0762
-Test set: Average loss: 0.0547 | Accuracy: 0.983
-Train Epoch: 10 [59584/60000] Loss: 0.0207
-Test set: Average loss: 0.0525 | Accuracy: 0.983
+  $ time ./mnist --use-train-graph
+  CUDA is available! Training on GPU.
+  Using CUDA Graph for training.
+  Train Epoch: 1 [59584/60000] Loss: 0.4092
+  Test set: Average loss: 0.2037 | Accuracy: 0.938
+  Train Epoch: 2 [59584/60000] Loss: 0.2039
+  Test set: Average loss: 0.1274 | Accuracy: 0.961
+  Train Epoch: 3 [59584/60000] Loss: 0.1779
+  Test set: Average loss: 0.1017 | Accuracy: 0.968
+  Train Epoch: 4 [59584/60000] Loss: 0.1559
+  Test set: Average loss: 0.0871 | Accuracy: 0.972
+  Train Epoch: 5 [59584/60000] Loss: 0.2240
+  Test set: Average loss: 0.0735 | Accuracy: 0.977
+  Train Epoch: 6 [59584/60000] Loss: 0.0520
+  Test set: Average loss: 0.0710 | Accuracy: 0.978
+  Train Epoch: 7 [59584/60000] Loss: 0.0935
+  Test set: Average loss: 0.0666 | Accuracy: 0.979
+  Train Epoch: 8 [59584/60000] Loss: 0.0744
+  Test set: Average loss: 0.0603 | Accuracy: 0.981
+  Train Epoch: 9 [59584/60000] Loss: 0.0762
+  Test set: Average loss: 0.0547 | Accuracy: 0.983
+  Train Epoch: 10 [59584/60000] Loss: 0.0207
+  Test set: Average loss: 0.0525 | Accuracy: 0.983
 
-real    0m6.952s
-user    0m7.048s
-sys    0m0.619s
+  real    0m6.952s
+  user    0m7.048s
+  sys    0m0.619s
 
 As we can see, just applying a CUDA Graph for the training step we were able to gain the performance by more than 6 times.
