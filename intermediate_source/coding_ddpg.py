@@ -69,6 +69,8 @@ warnings.filterwarnings("ignore")
 import torch.cuda
 import tqdm
 
+import torch.multiprocessing
+torch.multiprocessing.set_start_method('spawn')
 
 ###############################################################################
 # We will execute the policy on CUDA if available
