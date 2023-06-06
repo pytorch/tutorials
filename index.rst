@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Inductor CPU Backend Debugging and Profiling <https://pytorch.org/tutorials/intermediate/inductor_debug_cpu.html?utm_source=whats_new_tutorials&utm_medium=inductor_debug_cpu>`__
 * `Implementing High Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html?utm_source=whats_new_tutorials&utm_medium=scaled_dot_product_attention_tutorial>`__
 * `torch.compile Tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torch_compile>`__
 * `Per Sample Gradients <https://pytorch.org/tutorials/intermediate/per_sample_grads.html?utm_source=whats_new_tutorials&utm_medium=per_sample_grads>`__
@@ -565,6 +566,13 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: Inductor CPU Backend Debugging and Profiling
+   :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/inductor_debug_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
    :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
@@ -962,6 +970,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
 
 .. toctree::
