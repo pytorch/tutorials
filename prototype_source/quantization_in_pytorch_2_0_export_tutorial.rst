@@ -27,8 +27,9 @@ with two main limitations:
    `discussion <https://github.com/pytorch/pytorch/issues/96288>`__ to support `conv add` fusion with oneDNN library.
    It also requires some changes to current already complicated pattern matching code such as in the
    `PR <https://github.com/pytorch/pytorch/pull/97122>`__ to support `conv add` fusion.
--  Limitation around supporting user's advanced intention to quantize their model. For example, ``FX Graph Mode Quantization``
-   doesn't support this quantization intention: only quantize inputs and outputs when the ``linear`` has a third input.
+-  Limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
+   developer only want to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
+   team and backend developer.
 
 To address these scalability issues, 
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
@@ -36,15 +37,13 @@ is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class t
 programmably set the observer or fake quant objects for each node in the model graph. It adds flexibility
 to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
 This will allow users to express how they want an operator pattern to be observed in a more explicit
-way by annotating the appropriate nodes. To define a backend specific quantizer, user mainly need to override
-several APIs:
+way by annotating the appropriate nodes. A backend specific quantizer inherited from base quantizer,
+some APIs need to be overrided:
 
 -  `annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
    is used to annotate nodes in the graph with observer or fake quant constructors to convey the desired way of quantization.
-- `validate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L721>`__
+-  `validate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L721>`__
    is used to validate if the annotated graph is supported by the backend.
-- `set_global method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#LL259C9-L259C19>`__
-   is used to set the global ``QuantizationConfig`` object for this quantizer to specify how the model will be quantized.
 
 Imagine a backend developer who wishes to integrate a third-party backend
 with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
@@ -140,9 +139,9 @@ backend developers will have intent to quantize (as expressed by
 of how this intent is conveyed in the quantization workflow with annotation API.
 
 -  Step 1: Identify the original floating point pattern in the FX graph. There are
-   several ways to identify this pattern: 1. User may use a pattern matcher (e.g. SubgraphMatcher)
-   to match the operator pattern. 2. User may go through the nodes from start to the end and compare
-   the node's target type to match the operator pattern. In this example, we use the
+   several ways to identify this pattern: User may use a pattern matcher (e.g. SubgraphMatcher)
+   to match the operator pattern; User may go through the nodes from start to the end and compare
+   the node's target type to match the operator pattern. In this example, we can use the
    `get_source_partitions <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/fx/passes/utils/source_matcher_utils.py#L51>`__
    to match this pattern. The original floating point ``add`` pattern only contain a single ``add`` node. 
 
@@ -154,9 +153,8 @@ of how this intent is conveyed in the quantization workflow with annotation API.
         add_node = add_partition.output_nodes[0]
 
 -  Step 2: Define the ``QuantizationSpec`` for inputs and output of the pattern. ``QuantizationSpec``
-   defines the ``data type``, ``qscheme``, and other quantization parameters used to quantize a tensor.
-   In this example, the ``add`` pattern has two input tensors and one output tensor. We will define the ``QuantizationSpec``
-   for each of the input or output tensor to specify how to quantize it.
+   defines the ``data type``, ``qscheme``, and other quantization parameters about users' intent of
+   how to observer/quantize a tensor.
 
 ::
 
@@ -174,11 +172,11 @@ of how this intent is conveyed in the quantization workflow with annotation API.
 
 -  Step 3: Annotate the inputs and output of the pattern with
    `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
-   . ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: 1. ``input_qspec_map`` field is ``Dict``
-   to map each input ``Node`` to a ``QuantizationSpec``. 2. ``output_qspec`` field expresses the ``QuantizationSpec`` used for
-   output node. 3. ``_annotated`` field indicates if this node has already been annotated by quantizer.
-   In this example, we will create the ``QuantizationAnnotation``object with the ``QuantizationSpec`` objects
-   created in above step 2.
+   . ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is ``Dict``
+   to map each input ``Node`` to a ``QuantizationSpec``; ``output_qspec`` field expresses the ``QuantizationSpec`` used for
+   output node; ``_annotated`` field indicates if this node has already been annotated by quantizer.
+   In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec`` objects
+   created in above step 2 for two inputs and one output of ``add`` node.
 
 ::
 
@@ -221,9 +219,14 @@ or an output value.
    so it's a Tuple[Node, Node].
 -  Output value is an fx Node.
 
-Now, If we want to rewrite ``add`` annotation example with ``SharedQuantizationSpec`` to indicate
+Now, if we want to rewrite ``add`` annotation example with ``SharedQuantizationSpec`` to indicate
 two input tensors as sharing quantization parameters. We can define its ``QuantizationAnnotation``
 as this:
+
+-  Step 1: Annotate input_act0 of ``add`` with ``QuantizationSpec``.
+-  Step 2: Create a ``SharedQuantizationSpec`` object with input edge defined as ``(input_act0, add_node)`` which means to
+   share the observer used for this edge. Then, user can annotate input_act1 with this ``SharedQuantizationSpec``
+   object.
 
 ::
 
@@ -247,6 +250,10 @@ predefined and fixed scale/zero_point at input and output tensors.
 is designed for this use case. To use ``FixedQParamsQuantizationSpec``, users need to pass in parameters
 of ``scale`` and ``zero_point`` explicitly.
 
+-  Step 1: Create ``FixedQParamsQuantizationSpec`` object with inputs of fixed ``scale``, ``zero_point`` value.
+   These values will be used to create the ``quantize`` node and ``dequantize`` node in the convert phase.
+-  Step 2: Annotate inputs and output to use this ``FixedQParamsQuantizationSpec`` object.
+
 ::
 
     act_qspec = FixedQParamsQuantizationSpec(
@@ -266,11 +273,22 @@ of ``scale`` and ``zero_point`` explicitly.
 4. Annotate tensor with derived quantization parameters
 ---------------------------------------------------------------
 
-We also may need to define the constraint for tensors whose quantization parameters are derived from other tensors.
+Another use case is to define the constraint for tensors whose quantization parameters are derived from other tensors.
 For example, if we want to annotate a convolution node, and define the ``scale`` of its bias input tensor
 as product of the activation tensor's ``scale`` and weight tensor's ``scale``. We can use
 `DerivedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L102>`__
-to annotate this bias tensor.
+to annotate this conv node.
+
+-  Step 1: Define ``derive_qparams_fn`` function, it accepts list of ``ObserverOrFakeQuantize`` (
+   `ObserverBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/observer.py#L124>`__
+   or `FakeQuantizeBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/fake_quantize.py#L60>`__)
+   as input. From each ``ObserverOrFakeQuantize`` object, user can get the ``scale``, ``zero point`` value. Combine these values together,
+   user can define its heuristic about how to derive new ``scale``, ``zero point`` value.
+-  Step 2: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` (Edge is for the connection
+   between input node and the node consuming the input as Tuple[Node, Node]; Node is for the output node.). The observer at the input edge or output node
+   will be passed in to the ``derive_qparams_fn`` function; ``derive_qparams_fn`` function;
+   several other quantization parameters such as ``dtype``, ``qscheme``.
+-  Step 3: Annotate the inputs and output of this conv node with ``QuantizationAnnotation``.
 
 ::
 
