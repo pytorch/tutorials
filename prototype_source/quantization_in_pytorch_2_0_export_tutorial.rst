@@ -18,6 +18,34 @@ Prerequisites:
 -  `Understanding of FX graph mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
 -  `Understanding of torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
 
+Previously in ``FX Graph Mode Quantization`` we were using ``QConfigMapping`` for users to specify how the model to be quantized
+and ``BackendConfig`` to specify the supported ways of quantization in their backend.
+This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
+with two main limitations:
+
+-  Limitation around expressing quantization intentions for complicated operator patterns such as in the
+   `discussion <https://github.com/pytorch/pytorch/issues/96288>`__ to support `conv add` fusion with oneDNN library.
+   It also requires some changes to current already complicated pattern matching code such as in the
+   `PR <https://github.com/pytorch/pytorch/pull/97122>`__ to support `conv add` fusion.
+-  Limitation around supporting user's advanced intention to quantize their model. For example, ``FX Graph Mode Quantization``
+   doesn't support this quantization intention: only quantize inputs and outputs when the ``linear`` has a third input.
+
+To address these scalability issues, 
+`Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
+is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class that users can use to
+programmably set the observer or fake quant objects for each node in the model graph. It adds flexibility
+to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
+This will allow users to express how they want an operator pattern to be observed in a more explicit
+way by annotating the appropriate nodes. To define a backend specific quantizer, user mainly need to override
+several APIs:
+
+-  `annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
+   is used to annotate nodes in the graph with observer or fake quant constructors to convey the desired way of quantization.
+- `validate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L721>`__
+   is used to validate if the annotated graph is supported by the backend.
+- `set_global method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#LL259C9-L259C19>`__
+   is used to set the global ``QuantizationConfig`` object for this quantizer to specify how the model will be quantized.
+
 Imagine a backend developer who wishes to integrate a third-party backend
 with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
 to define the backend specific quantizer. The high level architecture of
@@ -264,12 +292,11 @@ of ``scale`` and ``zero_point`` explicitly.
 4. Annotate tensor with derived quantization parameters
 ---------------------------------------------------------------
 
-We also need to define the constraint that the scale of bias is a product of input scale and weight scale in the annotation API.
+We also may need to define the constraint for tensors whose quantization parameters are derived from other tensors.
+For example, if we want to annotate a convolution node, and define the ``scale`` of its bias input tensor
+as product of the activation tensor's ``scale`` and weight tensor's ``scale``. We can use
 `DerivedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L102>`__
-is designed for this use case where a tensor's quantization parameters is derived from other tensors. For example,
-if we want to annotate a convolution node, and define the ``scale``, ``zp`` of its bias input tensor
-as derived from the activation and weight tensors. We can use ``DerivedQuantizationSpec`` to annotate
-this bias tensor.
+to annotate this bias tensor.
 
 ::
 
