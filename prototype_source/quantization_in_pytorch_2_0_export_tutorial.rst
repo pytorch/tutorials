@@ -82,6 +82,8 @@ quantization 2.0 with quantizer could look like this:
                                 |
             Executorch, or Inductor, or <Other Backends>
 
+Note: ``prepare_pt2e_quantizer`` will be updated to ``prepare_pt2e`` soon.
+
 An existing quantizer object defined for QNNPack/XNNPack is located in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
 Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could be:
@@ -131,66 +133,71 @@ tutorial for how to use the ``QuantizationAnnotation API`` with different types 
 1. Annotate common operator patterns
 --------------------------------------------------------
 
-In order to use the quantized operators, e.g. ``quantized add``,
+In order to use the quantized pattern/operators, e.g. ``quantized add``,
 backend developers will have intent to quantize (as expressed by
 `QuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L38>`__
-) input, output of the operator. Following is an example flow (with ``add``)
-of how this intent is conveyed in the quantization workflow with node annotation API.
+) inputs, output of the pattern. Following is an example flow (take ``add`` operator as example)
+of how this intent is conveyed in the quantization workflow with annotation API.
 
--  Step 1: Identify the original floating point ``add`` node in the FX graph. There are
-   several ways to identify this node: 1. User may use a pattern matcher (e.g. SubgraphMatcher)
+-  Step 1: Identify the original floating point pattern in the FX graph. There are
+   several ways to identify this pattern: 1. User may use a pattern matcher (e.g. SubgraphMatcher)
    to match the operator pattern. 2. User may go through the nodes from start to the end and compare
-   the node's target type.
--  Step 2: Define the ``QuantizationSpec`` for two inputs and one output of the ``add`` node to specify
-   how to quantize input tensors and output tensor which includes parameters of ``observer type``,
-   ``dtype``, ``quant_min``, and ``quant_max`` etc.
--  Step 3: Annotate the inputs and output of the ``add`` node. User will create the ``QuantizationAnnotation``
-   object and add it into ``add`` node's ``meta`` property.
+   the node's target type to match the operator pattern. In this example, we use the
+   `get_source_partitions <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/fx/passes/utils/source_matcher_utils.py#L51>`__
+   to match this pattern. The original floating point ``add`` pattern only contain a single ``add`` node. 
 
 ::
 
-    def _annotate_add(
-        self, gm: torch.fx.GraphModule, quantization_config: QuantizationConfig
-    ) -> None:
-        # Step1: Identify the ``add`` node in the original floating point FX graph.
-        add_partitions = get_source_partitions(gm.graph, [operator.add, torch.add])
-        add_partitions = list(itertools.chain(*add_partitions.values()))
-        for add_partition in add_partitions:
-            add_node = add_partition.output_nodes[0]
-            if _is_annotated([add_node]):
-                continue
+    add_partitions = get_source_partitions(gm.graph, [operator.add, torch.add])
+    add_partitions = list(itertools.chain(*add_partitions.values()))
+    for add_partition in add_partitions:
+        add_node = add_partition.output_nodes[0]
 
-            act_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = \
-                HistogramObserver
-            act_quantization_spec = QuantizationSpec(
-                dtype=torch.int8,
-                quant_min=-128,
-                quant_max=127,
-                qscheme=torch.per_tensor_affine,
-                is_dynamic=False,
-                observer_or_fake_quant_ctr=act_observer_or_fake_quant_ctr.with_args(eps=2**-12),
-            )
+-  Step 2: Define the ``QuantizationSpec`` for inputs and output of the pattern. ``QuantizationSpec``
+   defines the ``data type``, ``qscheme``, and other quantization parameters used to quantize a tensor.
+   In this example, the ``add`` pattern has two input tensors and one output tensor. We will define the ``QuantizationSpec``
+   for each of the input or output tensor to specify how to quantize it.
 
-            # Step2: The ``add`` node has two inputs and one output. We define the ``QuantizationSpec``
-            # for each input and output.
-            input_act_qspec = act_quantization_spec
-            output_act_qspec = act_quantization_spec
+::
 
-            input_qspec_map = {}
-            input_act0 = add_node.args[0]
-            if isinstance(input_act0, Node):
-                input_qspec_map[input_act0] = input_act_qspec
+    act_quantization_spec = QuantizationSpec(
+        dtype=torch.int8,
+        quant_min=-128,
+        quant_max=127,
+        qscheme=torch.per_tensor_affine,
+        is_dynamic=False,
+        observer_or_fake_quant_ctr=HistogramObserver.with_args(eps=2**-12),
+    )
 
-            input_act1 = add_node.args[1]
-            if isinstance(input_act1, Node):
-                input_qspec_map[input_act1] = input_act_qspec
+    input_act_qspec = act_quantization_spec
+    output_act_qspec = act_quantization_spec
 
-            # Step3: Annotate the inputs and outputs of the ``add`` node.
-            add_node.meta["quantization_annotation"] = QuantizationAnnotation(
-                input_qspec_map=input_qspec_map,
-                output_qspec=output_act_qspec,
-                _annotated=True,
-            )
+-  Step 3: Annotate the inputs and output of the pattern with
+   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
+   . ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: 1. ``input_qspec_map`` field is ``Dict``
+   to map each input ``Node`` to a ``QuantizationSpec``. 2. ``output_qspec`` field expresses the ``QuantizationSpec`` used for
+   output node. 3. ``_annotated`` field indicates if this node has already been annotated by quantizer.
+   In this example, we will create the ``QuantizationAnnotation``object with the ``QuantizationSpec`` objects
+   created in above step 2.
+
+::
+
+    input_qspec_map = {}
+    input_act0 = add_node.args[0]
+    input_qspec_map[input_act0] = input_act_qspec
+
+    input_act1 = add_node.args[1]
+    input_qspec_map[input_act1] = input_act_qspec
+         
+    add_node.meta["quantization_annotation"] = QuantizationAnnotation(
+        input_qspec_map=input_qspec_map,
+        output_qspec=output_act_qspec,
+        _annotated=True,
+    )
+
+After we annotate the ``add`` node like this, in the following up quantization flow, ``HistogramObserver`` will
+be inserted at its two input nodes and one output node in prepare phase. And ``HistogramObserver`` will be substituted with
+``quantize`` node and ``dequantize`` node in the convert phase.
 
 2. Annotate sharing qparams operators
 --------------------------------------------------------
@@ -208,48 +215,27 @@ parameters can be shared among some tensors explicitly. Two typical use cases ar
 
 ``SharedQuantizationSpec`` is designed for this use case to annotate tensors whose quantization
 parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` can be an input edge
-or an output value. Input edge is the connection between input node and the node consuming the input,
-so it's a Tuple[Node, Node]. Output value is an fx Node.
+or an output value. 
 
-Now, we have a example to rewrite ``add`` annotation example with ``SharedQuantizationSpec``.
+-  Input edge is the connection between input node and the node consuming the input,
+   so it's a Tuple[Node, Node].
+-  Output value is an fx Node.
+
+Now, If we want to rewrite ``add`` annotation example with ``SharedQuantizationSpec`` to indicate
+two input tensors as sharing quantization parameters. We can define its ``QuantizationAnnotation``
+as this:
 
 ::
 
-    def _annotate_add(
-        self, gm: torch.fx.GraphModule, quantization_config: QuantizationConfig
-    ) -> None:
-        add_partitions = get_source_partitions(gm.graph, [operator.add, torch.add])
-        add_partitions = list(itertools.chain(*add_partitions.values()))
-        for add_partition in add_partitions:
-            add_node = add_partition.output_nodes[0]
-            if _is_annotated([add_node]):
-                continue
+    input_qspec_map = {}
+    share_qparams_with_input_act0_qspec = SharedQuantizationSpec((input_act0, add_node))
+    input_qspec_map = {input_act0: act_quantization_spec, input_act1: share_qparams_with_input_act0_qspec}
 
-            act_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = \
-                HistogramObserver
-            act_quantization_spec = QuantizationSpec(
-                dtype=torch.int8,
-                quant_min=-128,
-                quant_max=127,
-                qscheme=torch.per_tensor_affine,
-                is_dynamic=False,
-                observer_or_fake_quant_ctr=act_observer_or_fake_quant_ctr.with_args(eps=2**-12),
-            )
-            act_qspec = act_quantization_spec
-
-            input_qspec_map = {}
-            input_act0 = add_node.args[0]
-            input_act1 = add_node.args[1]
-
-            share_qparams_with_input_act0_qspec = SharedQuantizationSpec((input_act0, add_node))
-
-            input_qspec_map = {input_act0: act_qspec, input_act1: share_qparams_with_input_act0_qspec}
-
-            add_node.meta["quantization_annotation"] = QuantizationAnnotation(
-                input_qspec_map=input_qspec_map,
-                output_qspec=act_qspec,
-                _annotated=True,
-            )
+    add_node.meta["quantization_annotation"] = QuantizationAnnotation(
+        input_qspec_map=input_qspec_map,
+        output_qspec=act_quantization_spec,
+        _annotated=True,
+    )
 
 3. Annotate fixed qparams operators
 --------------------------------------------------------
@@ -263,31 +249,19 @@ of ``scale`` and ``zero_point`` explicitly.
 
 ::
 
-    def _annotate_sigmoid(
-        self, gm: torch.fx.GraphModule, quantization_config: QuantizationConfig
-    ) -> None:
-        sigmoid_partitions = get_source_partitions(gm.graph, [torch.nn.Sigmoid])
-        sigmoid_partitions = list(itertools.chain(*sigmoid_partitions.values()))
-        for sigmoid_partition in sigmoid_partitions:
-            sigmoid_node = sigmoid_partition.output_nodes[0]
-
-            input_act = sigmoid_node.args[0]
-            assert isinstance(input_act, Node)
-            act_qspec = FixedQParamsQuantizationSpec(
-                dtype=torch.uint8,
-                quant_min=0,
-                quant_max=255,
-                qscheme=torch.per_tensor_affine,
-                scale=2.0 / 256.0,
-                zero_point=128,
-            )
-            sigmoid_node.meta["quantization_annotation"] = QuantizationAnnotation(
-                input_qspec_map={
-                    input_act: act_qspec,
-                },
-                output_qspec=act_qspec,
-                _annotated=True,
-            )
+    act_qspec = FixedQParamsQuantizationSpec(
+        dtype=torch.uint8,
+        quant_min=0,
+        quant_max=255,
+        qscheme=torch.per_tensor_affine,
+        scale=2.0 / 256.0,
+        zero_point=128,
+    )
+    sigmoid_node.meta["quantization_annotation"] = QuantizationAnnotation(
+        input_qspec_map={input_act: act_qspec},
+        output_qspec=act_qspec,
+        _annotated=True,
+    )
 
 4. Annotate tensor with derived quantization parameters
 ---------------------------------------------------------------
@@ -300,74 +274,35 @@ to annotate this bias tensor.
 
 ::
 
-    def _annotate_conv2d_derived_bias(
-        self, gm: torch.fx.GraphModule, quantization_config: QuantizationConfig
-    ) -> None:
-        conv_partitions = get_source_partitions(
-            gm.graph, [torch.nn.Conv2d, torch.nn.functional.conv2d]
-        )
-        conv_partitions = list(itertools.chain(*conv_partitions.values()))
-        for conv_partition in conv_partitions:
-            node = conv_partition.output_nodes[0]
-            input_act = node.args[0]
-            weight = node.args[1]
-            bias = node.args[2]
+    def derive_qparams_fn(obs_or_fqs: List[ObserverOrFakeQuantize]) -> Tuple[Tensor, Tensor]:
+        assert len(obs_or_fqs) == 2, \
+            "Expecting two obs/fqs, one for activation and one for weight, got: {}".format(len(obs_or_fq))
+        act_obs_or_fq = obs_or_fqs[0]
+        weight_obs_or_fq = obs_or_fqs[1]
+        act_scale, act_zp = act_obs_or_fq.calculate_qparams()
+        weight_scale, weight_zp = weight_obs_or_fq.calculate_qparams()
+        return torch.tensor([act_scale * weight_scale]).to(torch.float32), torch.tensor([0]).to(torch.int32)
 
-            act_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = \
-                HistogramObserver
-            act_quantization_spec = QuantizationSpec(
-                dtype=torch.int8,
-                quant_min=-128,
-                quant_max=127,
-                qscheme=torch.per_tensor_affine,
-                is_dynamic=False,
-                observer_or_fake_quant_ctr=act_observer_or_fake_quant_ctr.with_args(eps=2**-12),
-            )
-            weight_observer_or_fake_quant_ctr: _ObserverOrFakeQuantizeConstructor = PerChannelMinMaxObserver
-            extra_args: Dict[str, Any] = {"eps": 2**-12}
-            weight_quantization_spec = QuantizationSpec(
-                dtype=torch.int8,
-                quant_min=-127,
-                quant_max=127,
-                qscheme=torch.per_channel_symmetric,
-                ch_axis=0,
-                is_dynamic=False,
-                observer_or_fake_quant_ctr=weight_observer_or_fake_quant_ctr.with_args(**extra_args),
-            )
-            act_qspec = act_quantization_spec
-            weight_qspec = weight_quantization_spec
-
-            def derive_qparams_fn(obs_or_fqs: List[ObserverOrFakeQuantize]) -> Tuple[Tensor, Tensor]:
-                assert len(obs_or_fqs) == 2, \
-                    "Expecting two obs/fqs, one for activation and one for weight, got: {}".format(len(obs_or_fq))
-                act_obs_or_fq = obs_or_fqs[0]
-                weight_obs_or_fq = obs_or_fqs[1]
-                act_scale, act_zp = act_obs_or_fq.calculate_qparams()
-                weight_scale, weight_zp = weight_obs_or_fq.calculate_qparams()
-                return torch.tensor([act_scale * weight_scale]).to(torch.float32), torch.tensor([0]).to(torch.int32)
-
-            bias_qspec = DerivedQuantizationSpec(
-                derived_from=[(input_act, node), (weight, node)],
-                derive_qparams_fn=derive_qparams_fn,
-                dtype=torch.int32,
-                quant_min=-2**31,
-                quant_max=2**31 - 1,
-                qscheme=torch.per_tensor_symmetric,
-            )
-            input_qspec_map = {input_act: act_qspec, weight: weight_qspec, bias: bias_qspec}
-            node.meta["quantization_annotation"] = QuantizationAnnotation(
-                input_qspec_map=input_qspec_map,
-                output_qspec=act_qspec,
-                _annotated=True,
-            )
+    bias_qspec = DerivedQuantizationSpec(
+        derived_from=[(input_act, node), (weight, node)],
+        derive_qparams_fn=derive_qparams_fn,
+        dtype=torch.int32,
+        quant_min=-2**31,
+        quant_max=2**31 - 1,
+        qscheme=torch.per_tensor_symmetric,
+    )
+    input_qspec_map = {input_act: act_quantization_spec, weight: weight_quantization_spec, bias: bias_qspec}
+    node.meta["quantization_annotation"] = QuantizationAnnotation(
+        input_qspec_map=input_qspec_map,
+        output_qspec=act_quantization_spec,
+        _annotated=True,
+    )
 
 5. A Toy Example with Resnet18 
 --------------------------------------------------------
 
 To better understand the final example, here are some basic concepts before we move on to this part:
 
-- `QuantizationSpec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L28-L66>`__
-  defines the ``data type``, ``qscheme``, and other quantization parameters used to quantize a tensor.
 - `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
   consists of ``QuantizationSpec`` for activation, weight, and bias separately.
 - When annotating the model, methods of
