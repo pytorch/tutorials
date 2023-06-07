@@ -9,11 +9,11 @@ performance of applications.
 In this tutorial we will be focusing on using CUDA Graphs for `C++
 frontend of PyTorch <https://pytorch.org/tutorials/advanced/cpp_frontend.html>`_.
 The C++ frontend is mostly utilized in production and deployment applications which
-are important parts of PyTorch use cases. Since first `the appearance
+are important parts of PyTorch use cases. Since `the first appearance
 <https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/>`_
 the CUDA Graphs won users’ and developer’s hearts for being a very performant
 and at the same time simple-to-use tool. In fact, CUDA Graphs are used by default
-in torch.compile of PyTorch 2.0 to boost the productivity of training and inference.
+in ``torch.compile`` of PyTorch 2.0 to boost the productivity of training and inference.
 
 We would like to demonstrate CUDA Graphs usage on PyTorch’s `MNIST
 example <https://github.com/pytorch/examples/tree/main/cpp/mnist>`_.
@@ -80,7 +80,7 @@ Where ``training_step`` simply consists of forward and backward passes with corr
     optimizer.step();
   }
 
-PyTorch’s CUDA Graphs API is relying on Stream Capture which in general looks like the following:
+PyTorch’s CUDA Graphs API is relying on Stream Capture which in our case would used as following:
 
 .. code-block:: cpp
 
