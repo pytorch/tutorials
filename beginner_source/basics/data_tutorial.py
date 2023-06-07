@@ -44,6 +44,14 @@ Datasets & DataLoaders
 #  - ``download=True`` downloads the data from the internet if it's not available at ``root``.
 #  - ``transform`` and ``target_transform`` specify the feature and label transformations
 
+############################################################
+# Loading a Dataset
+# -------------------
+# Add these 2 lines of code to control the environment, in case Conda is used.
+#
+
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 import torch
 from torch.utils.data import Dataset
