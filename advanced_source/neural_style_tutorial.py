@@ -70,6 +70,7 @@ import copy
 # method is used to move tensors or modules to a desired device. 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_default_device(device)
 
 ######################################################################
 # Loading the Images
