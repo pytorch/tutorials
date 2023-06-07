@@ -1216,9 +1216,6 @@ tensors and display them with matplotlib:
 
 .. code-block:: python
 
-  from __future__ import print_function
-  from __future__ import unicode_literals
-
   import argparse
 
   import matplotlib.pyplot as plt
