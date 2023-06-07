@@ -51,6 +51,9 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
 
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 
 training_data = datasets.FashionMNIST(
     root="data",
