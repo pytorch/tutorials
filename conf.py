@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
 import glob
+import random
 import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
@@ -85,6 +86,11 @@ intersphinx_mapping = {
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
+def reset_seeds(gallery_conf, fname):
+    torch.manual_seed(42)
+    torch.set_default_device(None)
+    random.seed(10)
+
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
@@ -94,7 +100,8 @@ sphinx_gallery_conf = {
     'backreferences_dir': None,
     'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
                             "# https://pytorch.org/tutorials/beginner/colab\n"
-                            "%matplotlib inline")
+                            "%matplotlib inline"),
+    'reset_modules': (reset_seeds)
 }
 
 if os.getenv('GALLERY_PATTERN'):
