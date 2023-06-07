@@ -10,7 +10,7 @@ Inductor CPU backend debugging and profiling
 #########################################################################
 # Overview
 # --------
-
+#
 # This document is intended to introduce the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
 #     1. For the usage, we will show how to print debugging loggings and how to inductor an in-depth analysis with config parameters.
 #     2. For debugging, we will demonstrate the process to debug a functional failure. There are usually two types of functional failure.
@@ -21,7 +21,7 @@ Inductor CPU backend debugging and profiling
 #        This tutorial will walk you through the process of profiling, including how to find the time-consuming hotpot and determine the root cause. There are two typical scenarios for performance profiling.
 #        One is the case where the execution time with inductor is longer than that of eager. The other is the model regression between two PyTorch versions where both FX graph and output code could change.
 #     4. In the final part, we will propose several debugging tools to be implemented and upstreamt in the future.
-
+#
 # Here is a simple example to run the ``torch.compile`` with Inductor.
 
 import torch
@@ -35,21 +35,21 @@ result = compiled_fn(x)
 
 # Get more loggings
 # ^^^^^^^^^^^^^^^^^
-
+#
 # The simple example above would not give any debugging info. If you'd want to get more useful logging, you can add a ``TORCH_COMPILE_DEBUG`` environment variable:
-
+#
 # .. code:: shell
-
+#
 # 	TORCH_COMPILE_DEBUG=1 python xx.py
-
+#
 # The time taken in each step is shown. This also does the graph visualization and prints the output code. In logging, a temporary debug tracing directory like this can be found.
-
+#
 # .. code:: shell
-
+#
 # 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
-
+#
 # In this directory, the following files are saved for debugging purposes.
-
+#
 # +-------------------------+----------------------------------------------------------+
 # | File                    | Description                                              |
 # +-------------------------+----------------------------------------------------------+
@@ -63,17 +63,15 @@ result = compiled_fn(x)
 # +-------------------------+----------------------------------------------------------+
 # | output_code.py          | Generated Python code for graph, with cpp/triton kernels |
 # +-------------------------+----------------------------------------------------------+
-
-
+#
 # ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier.
-
-
+#
 # Here is another way to print logging for Inductor:
-
+#
 # .. code:: shell
-
+#
 # 	TORCH_LOGS="+inductor,output_code,schedule" python xx.py
-
+#
 # +--------------+-------------------------------------------------------------+
 # | Parameter    | Description                                                 |
 # +--------------+-------------------------------------------------------------+
@@ -83,12 +81,12 @@ result = compiled_fn(x)
 # +--------------+-------------------------------------------------------------+
 # | schedule     | Print reasons for not doing vectorization in cpp kernels    |
 # +--------------+-------------------------------------------------------------+
-
+#
 # Conducting an in-depth analysis
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+#
 # Moreover, there are several config parameters helping the analysis.
-
+#
 # +--------------------------------------------------+---------------------------------------------------------------------+
 # | Parameter                                        | Description                                                         |
 # +--------------------------------------------------+---------------------------------------------------------------------+
@@ -105,12 +103,12 @@ result = compiled_fn(x)
 ######################################################################
 # Debugging
 # ---------
-
+#
 # Determine component of error
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+#
 # When encountering errors or an accuracy problem, a straightforward solution to find the bug is to narrow down the problem. The first thing to do is to determine the component where the error occurs. Luckily, it can be simply achieved by changing the backend of ``torch.compile``.
-
+#
 # +----------------------------------------+-----------------------------------------+
 # | Code                                   | Description                             |
 # +----------------------------------------+-----------------------------------------+
@@ -120,13 +118,13 @@ result = compiled_fn(x)
 # +----------------------------------------+-----------------------------------------+
 # | torch.compile(fn, backend="inductor")  | Enable Dynamo + AOT autograd + Inductor |
 # +----------------------------------------+-----------------------------------------+
-
+#
 # If the model can successfully run when the backend is set to ``eager`` or ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
-
-
+#
+#
 # Example
 # ^^^^^^^
-
+#
 # Here is an example for the subsequent debugging:
 
 import torch
@@ -148,29 +146,32 @@ actual_result = compiled_fn(x1, x2)
 
 assert same(expected_result, actual_result) == True
 
+######################################################################
 # The implementation of ``neg`` in the ``cpp`` codegen is as follows:
 
 def neg(x):
     return f"decltype({x})(-{x})"
 
+######################################################################
 # In order to demonstrate the debugging, we will modify the function to a wrong one later.
-
-
+#
+#
 # Errors debugging
 # ^^^^^^^^^^^^^^^^
-
+#
 # If a compile error occurs, the root cause is usually shown in the traceback log.
-
+#
 # For example, the ``neg`` function is modified like this:
 
 def neg(x):
     return f"-{x}"
 
 
+######################################################################
 # The logging gives the following compile error with a rather clear reason. In this case, the root cause is that data types of maximum's inputs are inconsistent.
-
+#
 # .. code:: shell
-
+#
 # 	…
 # 	torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
 # 	CppCompileError: C++ compile error
@@ -187,41 +188,42 @@ def neg(x):
 # 	/tmp/torchinductor_root/2x/c2xgxsooklulr4u54etfnnha7dsu6xzbwdscttvs7dkpba3uwkem.cpp:14:53: note:   deduced conflicting types for parameter ‘scalar_t’ (‘unsigned char’ and ‘int’)
 # 	   14 |             auto tmp3 = max_propagate_nan(tmp0, tmp2);
 # 	      |                                                     ^
-
-
+#
+#
 # Otherwise, if the model runs with other errors, we can do the model code reduction until finding the minimum code snippet with failure. Thus, the target operators and kernels are located.
-
-
+#
+#
 # Accuracy debugging
 # ^^^^^^^^^^^^^^^^^^^
-
+#
 # The accuracy problem refers the case where outputs of backends eager and inductor are different. As FX graph is generated before Inductor and output code is generated after Inductor, we can narrow down the problem by comparing their outputs.
-
+#
 # If a model has several graphs, the first step is to compare the final outputs of FX graph and output code for each graph, given the same input. The target is to find the first graph occurring error or with different outputs. Binary search is suggested to use for efficiency.
-
+#
 # When a model has only one graph or the problematic graph has been found with the above step, compare the intermediate outputs of FX graph and output code in each graph, given the same input. The idea is to continuously narrow down the problem.
-
+#
 # For example, we modify the ``neg`` function like this:
 
 def neg(x):
     return f"decltype({x})(2 * {x})"
 
 
+######################################################################
 # An accuracy problem would be raised as follows.
-
+#
 # .. code:: shell
-
+#
 # 	torch._dynamo.utils: [ERROR] Accuracy failed: allclose not within tol=0.0001
 # 	Traceback (most recent call last):
 # 	  File "test_script.py", line 18, in <module>
 # 	    assert same(expected_result, actual_result) == True
 # 	AssertionError
-
-
+#
+#
 # By comparing the intermediate outputs of FX graph and output code, it would be found that outputs are already different after doing ``torch.neg``.
-
+#
 # Here are the modifications of FX graph and output code:
-
+#
 # **Changes of teh FX graph:**
 
 # Before
@@ -244,7 +246,7 @@ class Repro(torch.nn.Module):
         neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
         return (neg,)
 
-
+######################################################################
 # **Changes of the output code:**
 
 # Before
@@ -301,14 +303,14 @@ def call(args):
     del arg1_1
     return (buf0, )
 
-
+######################################################################
 # You can use the PyTorch debugging tool called `Minifier <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_. It helps to automatically generate a minified problematic graph.
 
 
 ######################################################################
 # Performance profiling
 # ---------------------
-
+#
 # For this part, we will describe how to analyze the inductor model performance.
 # Firsly, we choose an eager model as a baseline. We set up a benchmark to compare the end to end performance between eager model and inductor model.
 
@@ -346,23 +348,25 @@ print(model.__class__)
 print("eager use:", eager_t)
 print("inductor use:", inductor_t)
 print("ratio:", eager_t / inductor_t)
-        
+
+######################################################################
 # Output:
-
+#
 # .. code-block:: shell
-
+#
 #     eager use: 410.12550354003906
 #     inductor use: 478.59081745147705
 #     ratio: 0.8569439458198976
-
+#
 # We see that the inductor model execution time is longer than the eager model, which does not meet our expectation.
 # To deep dive op-level performance, we can use `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
-
+#
 # To enable kernel profile in inductor, we need set ``enable_kernel_profile`` by:
 
 from torch._inductor import config
 config.cpp.enable_kernel_profile = True
 
+######################################################################
 # Following the steps in `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 # we are able to get the profiling table and trace files.
 
@@ -396,10 +400,11 @@ with profile(
         p.step()
 print("latency: {} ms".format(1000*(total)/100))
 
+######################################################################
 # We will get the following profile tables for eager model:
-
+#
 # .. code-block:: shell
-
+#
 #     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
 #                     Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
 #     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
@@ -425,11 +430,11 @@ print("latency: {} ms".format(1000*(total)/100))
 #                 aten::fill_         0.15%     613.000us         0.15%     613.000us      15.718us            39  
 #     -----------------------  ------------  ------------  ------------  ------------  ------------  ------------  
 #     Self CPU time total: 415.949ms
-
+#
 # Similarly, get the table for the inductor model:
-
+#
 # .. code-block:: shell
-
+#
 #     --------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
 #                                                Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
 #     --------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
@@ -455,7 +460,7 @@ print("latency: {} ms".format(1000*(total)/100))
 #                        graph_0_cpp_fused__softmax_49         0.48%       2.255ms         0.48%       2.255ms       2.255ms             1  
 #     --------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
 #     Self CPU time total: 474.360ms
-
+#
 # We can search the most time consuming ``graph_0_cpp_fused__softmax_7`` in ``output_code.py`` to see the generated code:
 
 
@@ -599,6 +604,7 @@ extern "C" void kernel(float* in_out_ptr0,
 }
 ''')
 
+######################################################################
 # With the kernel name ``cpp_fused__softmax_*`` and considering the profile 
 # results together, we may suspect the generated code for ``softmax`` is
 # inefficient. We encourage you to report an issue with all you findings above.
@@ -607,7 +613,7 @@ extern "C" void kernel(float* in_out_ptr0,
 ######################################################################
 # Future work
 # -----------
-
+#
 # Implement and upstream the debug tools
 # 	1. **Graph merger**: Merge graphs of a model into a single large graph. Thus, graphs can be compared quickly between different versions of PyTorch. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
 # 	2. **Graph matching**: In order to know what each kernel does, this tool matches C++ kernel with FX graph operators and adds corresponding operators before each kernel in the ``.cpp`` output code. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
