@@ -60,22 +60,9 @@ Once all the necesessary packages are downloaded and installed we setup the code
     from torch.quantization import per_channel_dynamic_qconfig
     from torch.quantization import quantize_dynamic_jit
 
-    global_rng = random.Random()
-
-    def ids_tensor(shape, vocab_size, rng=None, name=None):
+    def ids_tensor(shape, vocab_size):
         #  Creates a random int32 tensor of the shape within the vocab size
-        if rng is None:
-            rng = global_rng
-
-        total_dims = 1
-        for dim in shape:
-            total_dims *= dim
-
-        values = []
-        for _ in range(total_dims):
-            values.append(rng.randint(0, vocab_size - 1))
-
-        return torch.tensor(data=values, dtype=torch.long, device='cpu').view(shape).contiguous()
+        return torch.randint(0, vocab_size, shape=shape, dtype=torch.int, device='cpu')
 
     # Setup logging
     logger = logging.getLogger(__name__)
