@@ -1216,3 +1216,11 @@ plt.tight_layout()
 # - How to use (or not) a target network, and how to update its parameters;
 # - How to create an optimizer associated with a loss module.
 #
+# Next Steps
+# ----------
+# 
+# To iterate further on this loss module we might consider:
+# 
+# - Using `@dispatch` (see `[Feature] Distpatch IQL loss module <https://github.com/pytorch/rl/pull/1230>`_.
+# - Allowing flexible TensorDict keys.
+# 
