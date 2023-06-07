@@ -79,11 +79,9 @@ When the generated graph model runs into oneDNN implementations with the support
 Confirm AMX is being utilized
 ------------------------------
 
-Set environment variable `export ONEDNN_VERBOSE=1` to get oneDNN verbose at runtime.
+Set environment variable ``export ONEDNN_VERBOSE=1`` to get oneDNN verbose at runtime.
 
-For example:
-
-Get oneDNN verbose:
+For example, get oneDNN verbose:
 
 ::
 
