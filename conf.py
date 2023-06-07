@@ -88,7 +88,7 @@ intersphinx_mapping = {
 
 def reset_seeds(gallery_conf, fname):
     torch.manual_seed(42)
-    torch.set_default_device('cpu')
+    torch.set_default_device(None)
     random.seed(10)
 
 sphinx_gallery_conf = {
