@@ -23,10 +23,10 @@ and ``BackendConfig`` to specify the supported ways of quantization in their bac
 This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
 with two main limitations:
 
--  Limitation around expressing quantization intentions for complicated operator patterns such as in the
-   `discussion <https://github.com/pytorch/pytorch/issues/96288>`__ to support `conv add` fusion with oneDNN library.
+-  Limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
+   `issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion with oneDNN library.
    It also requires some changes to current already complicated pattern matching code such as in the
-   `PR <https://github.com/pytorch/pytorch/pull/97122>`__ to support `conv add` fusion.
+   `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__ to support ``conv add`` fusion.
 -  Limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
    developer only want to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
    team and backend developer.
@@ -212,8 +212,8 @@ parameters can be shared among some tensors explicitly. Two typical use cases ar
    This typically results from operators such as ``maxpool``, ``average_pool``, ``concat`` etc.
 
 ``SharedQuantizationSpec`` is designed for this use case to annotate tensors whose quantization
-parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` can be an input edge
-or an output value. 
+parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` is an ``EdgeOrNode`` object which 
+can be an input edge or an output value. 
 
 -  Input edge is the connection between input node and the node consuming the input,
    so it's a Tuple[Node, Node].
@@ -284,10 +284,9 @@ to annotate this conv node.
    or `FakeQuantizeBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/fake_quantize.py#L60>`__)
    as input. From each ``ObserverOrFakeQuantize`` object, user can get the ``scale``, ``zero point`` value. Combine these values together,
    user can define its heuristic about how to derive new ``scale``, ``zero point`` value.
--  Step 2: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` (Edge is for the connection
-   between input node and the node consuming the input as Tuple[Node, Node]; Node is for the output node.). The observer at the input edge or output node
-   will be passed in to the ``derive_qparams_fn`` function; ``derive_qparams_fn`` function;
-   several other quantization parameters such as ``dtype``, ``qscheme``.
+-  Step 2: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` objects.
+   The observer corresponding to each ``EdgeOrNode`` object will be passed into the ``derive_qparams_fn`` function;
+   ``derive_qparams_fn`` function; several other quantization parameters such as ``dtype``, ``qscheme``.
 -  Step 3: Annotate the inputs and output of this conv node with ``QuantizationAnnotation``.
 
 ::
@@ -319,7 +318,9 @@ to annotate this conv node.
 5. A Toy Example with Resnet18 
 --------------------------------------------------------
 
-To better understand the final example, here are some basic concepts before we move on to this part:
+After above annotation methods defined with ``QuantizationAnnotation API``, we can now put them together to construct a ``BackendQuantizer``
+and run a `toy example <https://gist.github.com/leslie-fang-intel/b78ed682aa9b54d2608285c5a4897cfc>`__
+with ``Torchvision Resnet18``. To better understand the final example, here are some basic concepts which are used:
 
 - `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
   consists of ``QuantizationSpec`` for activation, weight, and bias separately.
@@ -328,10 +329,6 @@ To better understand the final example, here are some basic concepts before we m
   `get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__, and
   `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
   can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
-
-After above annotation methods defined with ``QuantizationAnnotation API``, we can now put them together to construct a ``BackendQuantizer``
-to run a `toy example <https://gist.github.com/leslie-fang-intel/b78ed682aa9b54d2608285c5a4897cfc>`__
-with Torchvision Resnet18.
 
 6. Conclusion
 ---------------------
