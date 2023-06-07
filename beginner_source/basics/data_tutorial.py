@@ -44,16 +44,20 @@ Datasets & DataLoaders
 #  - ``download=True`` downloads the data from the internet if it's not available at ``root``.
 #  - ``transform`` and ``target_transform`` specify the feature and label transformations
 
+############################################################
+# Environment control
+# -------------------
+#
+# The following two lines of code are only necessary when Conda is used.
+
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import torch
 from torch.utils.data import Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
-
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 
 training_data = datasets.FashionMNIST(
     root="data",
@@ -68,7 +72,6 @@ test_data = datasets.FashionMNIST(
     download=True,
     transform=ToTensor()
 )
-
 
 #################################################################
 # Iterating and Visualizing the Dataset
@@ -124,6 +127,7 @@ plt.show()
 import os
 import pandas as pd
 from torchvision.io import read_image
+
 
 class CustomImageDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
