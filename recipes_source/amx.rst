@@ -19,7 +19,7 @@ to get higher performance out-of-box on x86 CPUs with AMX support.
 For more detailed information of oneDNN, see `oneDNN`_.
 
 The operation is fully handled by oneDNN according to the execution code path generated. I.e. when a supported operation gets executed into oneDNN implementation on a hardware platform with AMX support, AMX instructions will be invoked automatically inside oneDNN.
-No manual operations are required to enable this feature. 
+Since oneDNN is the default acceleration library for CPU, no manual operations are required to enable the AMX support.
 
 - BF16 CPU ops that can leverage AMX:
 
@@ -51,6 +51,8 @@ No manual operations are required to enable this feature.
 ``conv_transpose3d``,
 ``linear``
 
+Note: For quantized linear, whether to leverage AMX depends on which quantization backend to choose.
+At present, x86 quantization backend is used by default for quantized linear, using fbgemm, while users can specify onednn backend to turn on AMX for quantized linear.
 
 Guidelines of leveraging AMX with workloads
 --------------------------------------------------
