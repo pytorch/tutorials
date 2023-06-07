@@ -243,7 +243,6 @@ qconfig_mapping = (QConfigMapping()
 # to keep the original model for future comparison
 
 
-# Load Pretrained Model
 model_to_quantize = LSTMModel(
     ntoken = ntokens,
     ninp = 512,
