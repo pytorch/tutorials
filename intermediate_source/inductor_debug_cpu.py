@@ -33,6 +33,7 @@ x = torch.randn((2, 4, 28))
 compiled_fn = torch.compile(fn) # backend=inductor as default
 result = compiled_fn(x)
 
+#########################################################################
 # Get more loggings
 # ^^^^^^^^^^^^^^^^^
 #
