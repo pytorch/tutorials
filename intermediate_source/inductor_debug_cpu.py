@@ -11,7 +11,16 @@ Inductor CPU backend debugging and profiling
 # Overview
 # --------
 
-# This document is intended to introduce the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend. You can learn how to print useful loggings, how to debug errors and what to do when the performance is not good.
+# This document is intended to introduce the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
+#     1. For the usage, we will show how to print debugging loggings and how to inductor an in-depth analysis with config parameters.
+#     2. For debugging, we will demonstrate the process to debug a functional failure. There are usually two types of functional failure.
+#        One is the error occurring during running. It prevents a model from giving the final result, such as compilation error and runtime error.
+#        The other is the accuracy problem. The model gives a final result, but the value is wrong. We usually compare the result of inductor with that of eager.
+#        The main idea of debugging is to narrow down the problem. We firstly determine that the failure occurs in inductor and then try to find the minimum code snippet with failure.
+#     3. For the profiling, we will show what to do when the performance is not good.
+#        This tutorial will walk you through the process of profiling, including how to find the time-consuming hotpot and determine the root cause. There are two typical scenarios for performance profiling.
+#        One is the case where the execution time with inductor is longer than that of eager. The other is the model regression between two PyTorch versions where both FX graph and output code could change.
+#     4. In the final part, we will propose several debugging tools to be implemented and upstreamt in the future.
 
 # Here is a simple example to run the ``torch.compile`` with Inductor.
 
