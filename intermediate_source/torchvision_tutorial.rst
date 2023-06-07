@@ -155,7 +155,7 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
            # convert everything into a torch.Tensor
            boxes = torch.as_tensor(boxes, dtype=torch.float32)
            # there is only one class
-           labels = torch.ones((num_objs,), dtype=torch.int64)
+           label = torch.as_tensor(obj_ids, dtype=torch.int64)
            masks = torch.as_tensor(masks, dtype=torch.uint8)
 
            image_id = torch.tensor([idx])
