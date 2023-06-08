@@ -105,7 +105,7 @@ print(opt_mod(torch.randn(10, 100)))
 #
 # Let's now demonstrate that using ``torch.compile`` can speed
 # up real models. We will compare standard eager mode and 
-# ``torch.compile`` by evaluating and training ResNet-18 on random data.
+# ``torch.compile`` by evaluating and training a ``torchvision`` model on random data.
 #
 # Before we start, we need to define some utility functions.
 
