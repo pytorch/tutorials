@@ -338,38 +338,46 @@ visualize_model(model_conv)
 plt.ioff()
 plt.show()
 
+
 ######################################################################
-# Save and load the model
-# ----------------------
+# Inference on custom images
+# --------------------------
 #
-# Here we have saved the trained model and loaded it for inference. We can 
-# now use our trained model to make predictions on our own images and analyze 
-# the results.
+# Use the trained model to make predictions on custom images and visualize
+# the predicted class labels along with the images.
 #
 
-def save_and_load_model(model, model_name):
-    torch.save(model.state_dict(), model_name)
-    model.load_state_dict(torch.load(model_name))
-    return model
-
-def visualize_model_upload_image(model,model_name,img_path):
+def visualize_model_predictions(model,img_path):
     was_training = model.training
-    model=save_and_load_model(model,model_name)
     model.eval()
+
     img = Image.open(img_path)
     img = data_transforms['val'](img)
     img = img.unsqueeze(0)
     img = img.to(device)
+
     with torch.no_grad():
         outputs = model(img)
         _, preds = torch.max(outputs, 1)
-        ax = plt.subplot(1, 1, 1)
+
+        ax = plt.subplot(2,2,1)
         ax.axis('off')
-        ax.set_title(f'predicted: {class_names[preds[0]]}')
+        ax.set_title(f'Predicted: {class_names[preds[0]]}')
         imshow(img.cpu().data[0])
+        
         model.train(mode=was_training)
 
-visualize_model_upload_image(model_conv,img_path='data/hymenoptera_data/val/ants/1337725712_2eb53cd742.jpg',model_name='resentconv.pth')
+######################################################################
+#
+
+visualize_model_predictions(
+    model_conv,
+    img_path='data/hymenoptera_data/val/bees/72100438_73de9f17af.jpg'
+)
+
+plt.ioff()
+plt.show()
+
 
 ######################################################################
 # Further Learning
