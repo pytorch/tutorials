@@ -36,16 +36,16 @@ with two main limitations:
 To address these scalability issues, 
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
 is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class that users can use to
-programmably set the observer or fake quant objects for each node in the model graph. It adds flexibility
+programmably set the quantization specifications for input and output of each node in the model graph. It adds flexibility
 to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
 This will allow users to express how they want an operator pattern to be observed in a more explicit
 way by annotating the appropriate nodes. A backend specific quantizer inherited from base quantizer,
-some APIs need to be overrided:
+some methods that need to be implemented:
 
 -  `annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
-   is used to annotate nodes in the graph with observer or fake quant constructors to convey the desired way of quantization.
--  `validate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L721>`__
-   is used to validate if the annotated graph is supported by the backend.
+   is used to annotate nodes in the graph with 
+   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
+   objects to convey the desired way of quantization.
 
 Imagine a backend developer who wishes to integrate a third-party backend
 with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
@@ -156,7 +156,7 @@ of how this intent is conveyed in the quantization workflow with annotation API.
 
 -  Step 2: Define the ``QuantizationSpec`` for inputs and output of the pattern. ``QuantizationSpec``
    defines the ``data type``, ``qscheme``, and other quantization parameters about users' intent of
-   how to observer/quantize a tensor.
+   how to observe or fake quantize a tensor.
 
 ::
 
@@ -172,9 +172,8 @@ of how this intent is conveyed in the quantization workflow with annotation API.
     input_act_qspec = act_quantization_spec
     output_act_qspec = act_quantization_spec
 
--  Step 3: Annotate the inputs and output of the pattern with
-   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
-   . ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is ``Dict``
+-  Step 3: Annotate the inputs and output of the pattern with ``QuantizationAnnotation``.
+   ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is ``Dict``
    to map each input ``Node`` to a ``QuantizationSpec``; ``output_qspec`` field expresses the ``QuantizationSpec`` used for
    output node; ``_annotated`` field indicates if this node has already been annotated by quantizer.
    In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec`` objects
@@ -218,8 +217,8 @@ parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` is
 can be an input edge or an output value. 
 
 -  Input edge is the connection between input node and the node consuming the input,
-   so it's a Tuple[Node, Node].
--  Output value is an fx Node.
+   so it's a ``Tuple[Node, Node]``.
+-  Output value is an fx ``Node``.
 
 Now, if we want to rewrite ``add`` annotation example with ``SharedQuantizationSpec`` to indicate
 two input tensors as sharing quantization parameters. We can define its ``QuantizationAnnotation``
