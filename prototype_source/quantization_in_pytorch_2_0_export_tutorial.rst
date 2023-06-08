@@ -266,8 +266,8 @@ of ``scale`` and ``zero_point`` explicitly.
         quant_min=0,
         quant_max=255,
         qscheme=torch.per_tensor_affine,
-        scale=2.0 / 256.0,
-        zero_point=128,
+        scale=1.0 / 256.0,
+        zero_point=0,
     )
     sigmoid_node.meta["quantization_annotation"] = QuantizationAnnotation(
         input_qspec_map={input_act: act_qspec},
@@ -289,8 +289,9 @@ to annotate this conv node.
 -  Step 2: Define ``derive_qparams_fn`` function, it accepts list of ``ObserverOrFakeQuantize`` (
    `ObserverBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/observer.py#L124>`__
    or `FakeQuantizeBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/fake_quantize.py#L60>`__)
-   as input. From each ``ObserverOrFakeQuantize`` object, user can get the ``scale``, ``zero point`` value. Combine these values together,
-   user can define its heuristic about how to derive new ``scale``, ``zero point`` value.
+   as input. From each ``ObserverOrFakeQuantize`` object, user can get the ``scale``, ``zero point`` value.
+   User can define its heuristic about how to derive new ``scale``, ``zero point`` value based on the
+   quantization parameters calculated from the observer or fake quant instances.
 -  Step 3: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` objects.
    The observer corresponding to each ``EdgeOrNode`` object will be passed into the ``derive_qparams_fn`` function;
    ``derive_qparams_fn`` function; several other quantization parameters such as ``dtype``, ``qscheme``.
@@ -327,15 +328,17 @@ to annotate this conv node.
 
 After above annotation methods defined with ``QuantizationAnnotation API``, we can now put them together to construct a ``BackendQuantizer``
 and run a `toy example <https://gist.github.com/leslie-fang-intel/b78ed682aa9b54d2608285c5a4897cfc>`__
-with ``Torchvision Resnet18``. To better understand the final example, here are some basic concepts which are used:
+with ``Torchvision Resnet18``. To better understand the final example, here are the classes and utility
+functions that are used in the example:
 
-- `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
-  consists of ``QuantizationSpec`` for activation, weight, and bias separately.
-- When annotating the model, methods of
-  `get_act_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L9>`__,
-  `get_weight_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#L26>`__, and
-  `get_bias_qspec <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/utils.py#LL42C5-L42C19>`__
-  can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
+-  `QuantizationConfig <https://github.com/pytorch/pytorch/blob/73fd7235ad25ff061c087fa4bafc6e8df4d9c299/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L103-L109>`__
+   consists of ``QuantizationSpec`` for activation, weight, and bias separately.
+-  When annotating the model,
+   `get_input_act_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L10>`__,
+   `get_output_act_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L23>`__,
+   `get_weight_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L36>`__, and
+   `get_bias_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L53>`__
+   can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
 
 6. Conclusion
 ---------------------
