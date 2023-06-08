@@ -45,7 +45,7 @@ and a decoder network unfolds that vector into a new sequence.
    :alt:
 
 To improve upon this model we'll use an `attention
-mechanism <https://arxiv.org/abs/1409.0473>`__, which lets the decoder
+mechanism <https://arxiv.org/abs/1508.04025>`__, which lets the decoder
 learn to focus over a specific range of the input sequence.
 
 **Recommended Reading:**
@@ -66,8 +66,8 @@ how they work:
    Statistical Machine Translation <https://arxiv.org/abs/1406.1078>`__
 -  `Sequence to Sequence Learning with Neural
    Networks <https://arxiv.org/abs/1409.3215>`__
--  `Neural Machine Translation by Jointly Learning to Align and
-   Translate <https://arxiv.org/abs/1409.0473>`__
+-  `Effective Approaches to Attention-based Neural Machine
+   Translation <https://arxiv.org/abs/1508.04025>`__
 -  `A Neural Conversational Model <https://arxiv.org/abs/1506.05869>`__
 
 You will also find the previous tutorials on
