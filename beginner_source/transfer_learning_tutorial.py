@@ -33,8 +33,6 @@ These two major transfer learning scenarios look as follows:
 # License: BSD
 # Author: Sasank Chilamkurthy
 
-from __future__ import print_function, division
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
