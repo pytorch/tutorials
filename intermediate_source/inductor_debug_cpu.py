@@ -401,63 +401,11 @@ with profile(
 ######################################################################
 # We will get the following profile table for the eager model:
 #
-# .. code-block:: shell
-#
-#     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#                          Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
-#     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#                   aten::addmm        33.36%     270.520ms        45.73%     370.814ms       1.024ms           362  
-#                     aten::add        19.89%     161.276ms        19.89%     161.276ms     444.287us           363  
-#                   aten::copy_        14.97%     121.416ms        14.97%     121.416ms     248.803us           488  
-#                     aten::mul         9.02%      73.151ms         9.02%      73.154ms     377.082us           194  
-#               aten::clamp_min         8.81%      71.444ms         8.81%      71.444ms     744.208us            96  
-#                     aten::bmm         5.46%      44.258ms         5.46%      44.258ms     922.042us            48  
-#                 ProfilerStep*         3.00%      24.362ms       100.00%     810.920ms     810.920ms             1  
-#                     aten::div         2.85%      23.071ms         2.89%      23.447ms     976.958us            24  
-#                aten::_softmax         1.00%       8.087ms         1.00%       8.087ms     336.958us            24  
-#                  aten::linear         0.32%       2.624ms        46.48%     376.888ms       1.041ms           362  
-#                   aten::clone         0.23%       1.859ms         2.77%      22.430ms     228.878us            98  
-#                       aten::t         0.14%       1.162ms         0.31%       2.502ms       6.912us           362  
-#                    aten::view         0.14%       1.161ms         0.14%       1.161ms       1.366us           850  
-#               aten::transpose         0.12%     938.000us         0.17%       1.377ms       3.567us           386  
-#            aten::index_select         0.12%     933.000us         0.12%     952.000us     317.333us             3  
-#                  aten::expand         0.11%     865.000us         0.12%     986.000us       2.153us           458  
-#                  aten::matmul         0.10%     808.000us         8.31%      67.420ms       1.405ms            48  
-#                     aten::cat         0.09%     701.000us         0.09%     703.000us     703.000us             1  
-#              aten::as_strided         0.08%     656.000us         0.08%     656.000us       0.681us           963  
-#                    aten::relu         0.05%     420.000us         8.86%      71.864ms     748.583us            96  
-#     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#     Self CPU time total: 810.920ms
+# .. image:: ../_static/img/eager_prof.png
 #
 # Similarly, get the table for the inductor model:
 #
-# .. code-block:: shell
-#
-#     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
-#     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#                                            mkl::_mkl_linear        68.52%     230.662ms        68.79%     231.573ms     639.704us           362  
-#                                                   aten::bmm         8.02%      26.991ms         8.02%      26.992ms     562.333us            48  
-#                                               ProfilerStep*         3.35%      11.292ms       100.00%     336.642ms     336.642ms             1  
-#               graph_0_cpp_fused_constant_pad_nd_embedding_0         0.27%     915.000us         0.27%     915.000us     915.000us             1  
-#                                                 aten::empty         0.27%     911.000us         0.27%     911.000us       2.517us           362  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_151         0.27%     901.000us         0.27%     901.000us     901.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_226         0.27%     899.000us         0.27%     899.000us     899.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_361         0.27%     898.000us         0.27%     898.000us     898.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_121         0.27%     895.000us         0.27%     895.000us     895.000us             1  
-#               graph_0_cpp_fused__mkl_linear_add_mul_relu_31         0.27%     893.000us         0.27%     893.000us     893.000us             1  
-#               graph_0_cpp_fused__mkl_linear_add_mul_relu_76         0.26%     892.000us         0.26%     892.000us     892.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_256         0.26%     892.000us         0.26%     892.000us     892.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_346         0.26%     892.000us         0.26%     892.000us     892.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_241         0.26%     891.000us         0.26%     891.000us     891.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_316         0.26%     891.000us         0.26%     891.000us     891.000us             1  
-#               graph_0_cpp_fused__mkl_linear_add_mul_relu_91         0.26%     890.000us         0.26%     890.000us     890.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_106         0.26%     890.000us         0.26%     890.000us     890.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_211         0.26%     890.000us         0.26%     890.000us     890.000us             1  
-#               graph_0_cpp_fused__mkl_linear_add_mul_relu_61         0.26%     889.000us         0.26%     889.000us     889.000us             1  
-#              graph_0_cpp_fused__mkl_linear_add_mul_relu_286         0.26%     889.000us         0.26%     889.000us     889.000us             1  
-#     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-#     Self CPU time total: 336.642ms 
+# .. image:: ../_static/img/inductor_prof.png
 #
 # From the profiling table of the eager model, we can see the most time consumption ops are [aten::addmm, aten::add, aten::copy_, aten::mul, aten::clamp_min, aten::bmm].
 # Comparing with the inductor model profiling table, we notice there are ``mkl::_mkl_linear`` and fused kernel called ``graph_0_cpp_fused_*``. They are the major
