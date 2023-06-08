@@ -442,7 +442,7 @@ class AttnDecoderRNN(nn.Module):
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
         self.fc_hidden = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
         self.fc_encoder = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
-        self.v = nn.Parameter(torch.Tensor(1, hidden_size))
+        self.alignment_vector = nn.Parameter(torch.Tensor(1, hidden_size))
         torch.nn.init.xavier_uniform_(self.v)
         self.dropout = nn.Dropout(self.dropout_p)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size)
@@ -452,7 +452,7 @@ class AttnDecoderRNN(nn.Module):
         embedded = self.embedding(input).view(1, 1, -1)
         embedded = self.dropout(embedded)
 
-        alignment_scores = self.v.mm(
+        alignment_scores = self.alignment_vector.mm(
             torch.tanh(self.fc_hidden(hidden[0]) + self.fc_encoder(encoder_outputs))
         )
         attn_weights = F.softmax(alignment_scores, dim=1)
