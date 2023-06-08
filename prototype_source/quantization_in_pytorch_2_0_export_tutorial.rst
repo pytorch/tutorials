@@ -145,7 +145,7 @@ of how this intent is conveyed in the quantization workflow with annotation API.
    to match the operator pattern; User may go through the nodes from start to the end and compare
    the node's target type to match the operator pattern. In this example, we can use the
    `get_source_partitions <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/fx/passes/utils/source_matcher_utils.py#L51>`__
-   to match this pattern. The original floating point ``add`` pattern only contain a single ``add`` node. 
+   to match this pattern. The original floating point ``add`` pattern only contain a single ``add`` node.
 
 ::
 
@@ -224,8 +224,10 @@ Now, if we want to rewrite ``add`` annotation example with ``SharedQuantizationS
 two input tensors as sharing quantization parameters. We can define its ``QuantizationAnnotation``
 as this:
 
--  Step 1: Annotate input_act0 of ``add`` with ``QuantizationSpec``.
--  Step 2: Create a ``SharedQuantizationSpec`` object with input edge defined as ``(input_act0, add_node)`` which means to
+-  Step 1: Identify the original floating point pattern in the FX graph. We can use the same
+   methods introduced in ``QuantizationSpec`` example to identify the ``add`` pattern.
+-  Step 2: Annotate input_act0 of ``add`` with ``QuantizationSpec``.
+-  Step 3: Create a ``SharedQuantizationSpec`` object with input edge defined as ``(input_act0, add_node)`` which means to
    share the observer used for this edge. Then, user can annotate input_act1 with this ``SharedQuantizationSpec``
    object.
 
@@ -251,9 +253,11 @@ predefined and fixed scale/zero_point at input and output tensors.
 is designed for this use case. To use ``FixedQParamsQuantizationSpec``, users need to pass in parameters
 of ``scale`` and ``zero_point`` explicitly.
 
--  Step 1: Create ``FixedQParamsQuantizationSpec`` object with inputs of fixed ``scale``, ``zero_point`` value.
+-  Step 1: Identify the original floating point pattern in the FX graph. We can use the same
+   methods introduced in ``QuantizationSpec`` example to identify the ``sigmoid`` pattern.
+-  Step 2: Create ``FixedQParamsQuantizationSpec`` object with inputs of fixed ``scale``, ``zero_point`` value.
    These values will be used to create the ``quantize`` node and ``dequantize`` node in the convert phase.
--  Step 2: Annotate inputs and output to use this ``FixedQParamsQuantizationSpec`` object.
+-  Step 3: Annotate inputs and output to use this ``FixedQParamsQuantizationSpec`` object.
 
 ::
 
@@ -280,15 +284,17 @@ as product of the activation tensor's ``scale`` and weight tensor's ``scale``. W
 `DerivedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L102>`__
 to annotate this conv node.
 
--  Step 1: Define ``derive_qparams_fn`` function, it accepts list of ``ObserverOrFakeQuantize`` (
+-  Step 1: Identify the original floating point pattern in the FX graph. We can use the same
+   methods introduced in ``QuantizationSpec`` example to identify the ``convolution`` pattern.
+-  Step 2: Define ``derive_qparams_fn`` function, it accepts list of ``ObserverOrFakeQuantize`` (
    `ObserverBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/observer.py#L124>`__
    or `FakeQuantizeBase <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/fake_quantize.py#L60>`__)
    as input. From each ``ObserverOrFakeQuantize`` object, user can get the ``scale``, ``zero point`` value. Combine these values together,
    user can define its heuristic about how to derive new ``scale``, ``zero point`` value.
--  Step 2: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` objects.
+-  Step 3: Define ``DerivedQuantizationSpec`` obejct, it accepts inputs of: list of ``EdgeOrNode`` objects.
    The observer corresponding to each ``EdgeOrNode`` object will be passed into the ``derive_qparams_fn`` function;
    ``derive_qparams_fn`` function; several other quantization parameters such as ``dtype``, ``qscheme``.
--  Step 3: Annotate the inputs and output of this conv node with ``QuantizationAnnotation``.
+-  Step 4: Annotate the inputs and output of this conv node with ``QuantizationAnnotation``.
 
 ::
 
