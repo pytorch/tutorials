@@ -443,7 +443,7 @@ class AttnDecoderRNN(nn.Module):
         self.fc_hidden = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
         self.fc_encoder = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
         self.alignment_vector = nn.Parameter(torch.Tensor(1, hidden_size))
-        torch.nn.init.xavier_uniform_(self.v)
+        torch.nn.init.xavier_uniform_(self.alignment_vector)
         self.dropout = nn.Dropout(self.dropout_p)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size)
         self.out = nn.Linear(self.hidden_size, self.output_size)
