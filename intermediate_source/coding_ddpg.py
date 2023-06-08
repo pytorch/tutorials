@@ -70,7 +70,6 @@ import torch.cuda
 import tqdm
 
 import torch.multiprocessing
-torch.multiprocessing.set_start_method('spawn')
 
 ###############################################################################
 # We will execute the policy on CUDA if available
@@ -766,7 +765,7 @@ def make_ddpg_actor(
         module=q_net,
     ).to(device)
 
-    # init lazy moduless
+    # initialize lazy modules
     qnet(actor(proof_environment.reset()))
     return actor, qnet
 
@@ -781,7 +780,7 @@ actor, qnet = make_ddpg_actor(
 # ~~~~~~~~~~~
 #
 # The policy is wrapped in a :class:`~torchrl.modules.OrnsteinUhlenbeckProcessWrapper`
-# exploration module, as suggesed in the original paper.
+# exploration module, as suggested in the original paper.
 # Let's define the number of frames before OU noise reaches its minimum value
 annealing_frames = 1_000_000
 
@@ -808,7 +807,7 @@ if device == torch.device("cpu"):
 #
 # Here we will use
 # :class:`~torchrl.collectors.MultiaSyncDataCollector`, a data collector that
-# will be executed in an async manner (i.e. data will be collected while
+# will be executed in an asynchronous manner (for example, data will be collected while
 # the policy is being optimized). With the :class:`MultiaSyncDataCollector`,
 # multiple workers are running rollouts separately. When a batch is asked, it
 # is gathered from the first worker that can provide it.
@@ -962,7 +961,7 @@ def make_replay_buffer(buffer_size, batch_size, random_crop_len, prefetch=3, prb
 
 
 ###############################################################################
-# We'll store the replay buffer in a temporary dirrectory on disk
+# We'll store the replay buffer in a temporary directory on disk
 
 import tempfile
 
