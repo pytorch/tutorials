@@ -69,6 +69,8 @@ warnings.filterwarnings("ignore")
 import torch.cuda
 import tqdm
 
+import torchrl
+
 import torch.multiprocessing
 
 ###############################################################################
