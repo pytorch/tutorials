@@ -16,7 +16,7 @@ Prerequisites:
 
 -  `Understanding of torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
 -  `Understanding of the quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
--  `Understanding of FX graph mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
+-  `Understanding of FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
 -  `Understanding of BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
 -  `Understanding of QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__
 
@@ -30,13 +30,13 @@ with two main limitations:
    It also requires some changes to current already complicated pattern matching code such as in the
    `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__ to support ``conv add`` fusion.
 -  Limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
-   developer only want to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
+   developer only wants to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
    team and backend developer.
 
 To address these scalability issues, 
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
 is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class that users can use to
-programmably set the quantization specifications for input and output of each node in the model graph. It adds flexibility
+programmatically set the quantization specifications for input and output of each node in the model graph. It adds flexibility
 to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
 This will allow users to express how they want an operator pattern to be observed in a more explicit
 way by annotating the appropriate nodes. A backend specific quantizer inherited from base quantizer,
@@ -85,7 +85,7 @@ quantization 2.0 with quantizer could look like this:
 
 Note: ``prepare_pt2e_quantizer`` will be updated to ``prepare_pt2e`` soon.
 
-An existing quantizer object defined for QNNPack/XNNPack is located in
+An existing quantizer object defined for QNNPack/XNNPack is in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
 Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could be:
 
@@ -172,8 +172,9 @@ of how this intent is conveyed in the quantization workflow with annotation API.
     input_act_qspec = act_quantization_spec
     output_act_qspec = act_quantization_spec
 
--  Step 3: Annotate the inputs and output of the pattern with ``QuantizationAnnotation``.
-   ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is ``Dict``
+-  Step 3: Annotate the inputs and output of the pattern with
+   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__.
+   ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is of class ``Dict``
    to map each input ``Node`` to a ``QuantizationSpec``; ``output_qspec`` field expresses the ``QuantizationSpec`` used for
    output node; ``_annotated`` field indicates if this node has already been annotated by quantizer.
    In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec`` objects
@@ -207,7 +208,7 @@ parameters can be shared among some tensors explicitly. Two typical use cases ar
 -  Example 1: One example is for ``add`` where having both inputs sharing quantization
    parameters makes operator implementation much easier. Without using of
    `SharedQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L90>`__,
-   we have to annotate ``add`` as example in above section 1, in which two inputs of ``add``
+   we must annotate ``add`` as example in above section 1, in which two inputs of ``add``
    has different quantization parameters.
 -  Example 2: Another example is that of sharing quantization parameters between inputs and output.
    This typically results from operators such as ``maxpool``, ``average_pool``, ``concat`` etc.
@@ -218,7 +219,7 @@ can be an input edge or an output value.
 
 -  Input edge is the connection between input node and the node consuming the input,
    so it's a ``Tuple[Node, Node]``.
--  Output value is an fx ``Node``.
+-  Output value is an FX ``Node``.
 
 Now, if we want to rewrite ``add`` annotation example with ``SharedQuantizationSpec`` to indicate
 two input tensors as sharing quantization parameters. We can define its ``QuantizationAnnotation``
@@ -247,7 +248,7 @@ as this:
 --------------------------------------------------------
 
 Another typical use case to annotate a quantized model is for tensors whose
-quantization parmaters are known beforehand. For example, operator like ``sigmoid``, which has
+quantization parameters are known beforehand. For example, operator like ``sigmoid``, which has
 predefined and fixed scale/zero_point at input and output tensors.
 `FixedQParamsQuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L90>`__
 is designed for this use case. To use ``FixedQParamsQuantizationSpec``, users need to pass in parameters
