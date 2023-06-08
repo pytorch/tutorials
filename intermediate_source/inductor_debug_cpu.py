@@ -10,123 +10,26 @@ Inductor CPU backend debugging and profiling
 #########################################################################
 # Overview
 # --------
-#
-# This document is intended to introduce the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
-#     1. For the usage, we will show how to print debugging loggings and how to inductor an in-depth analysis with config parameters.
-#     2. For debugging, we will demonstrate the process to debug a functional failure. There are usually two types of functional failure.
-#        One is the error occurring during running. It prevents a model from giving the final result, such as compilation error and runtime error.
-#        The other is the accuracy problem. The model gives a final result, but the value is wrong. We usually compare the result of inductor with that of eager.
-#        The main idea of debugging is to narrow down the problem. We firstly determine that the failure occurs in inductor and then try to find the minimum code snippet with failure.
-#     3. For the profiling, we will show what to do when the performance is not good.
-#        This tutorial will walk you through the process of profiling, including how to find the time-consuming hotpot and determine the root cause. There are two typical scenarios for performance profiling.
-#        One is the case where the execution time with inductor is longer than that of eager. The other is the model regression between two PyTorch versions where both FX graph and output code could change.
-#     4. In the final part, we will propose several debugging tools to be implemented and upstreamt in the future.
-#
-# Here is a simple example to run the ``torch.compile`` with Inductor.
-
-import torch
-
-def fn(x):
-    return torch.neg(x)
-
-x = torch.randn((2, 4, 28))
-compiled_fn = torch.compile(fn) # backend=inductor as default
-result = compiled_fn(x)
-
-#########################################################################
-# Get more loggings
-# ^^^^^^^^^^^^^^^^^
-#
-# The simple example above would not give any debugging info. If you'd want to get more useful logging, you can add a ``TORCH_COMPILE_DEBUG`` environment variable:
-#
-# .. code:: shell
-#
-# 	TORCH_COMPILE_DEBUG=1 python xx.py
-#
-# The time taken in each step is shown. This also does the graph visualization and prints the output code. In logging, a temporary debug tracing directory like this can be found.
-#
-# .. code:: shell
-#
-# 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
-#
-# In this directory, the following files are saved for debugging purposes.
-#
-# +-------------------------+----------------------------------------------------------+
-# | File                    | Description                                              |
-# +-------------------------+----------------------------------------------------------+
-# | fx_graph_runnable.py    | Executable FX graph, post decomps, pre pattern match     |
-# +-------------------------+----------------------------------------------------------+
-# | fx_graph_transformed.py | Transformed FX graph, post pattern match                 |
-# +-------------------------+----------------------------------------------------------+
-# | ir_post_fusion.txt      | Inductor IR before fusion                                |
-# +-------------------------+----------------------------------------------------------+
-# | ir_pre_fusion.txt       | Inductor IR after fusion                                 |
-# +-------------------------+----------------------------------------------------------+
-# | output_code.py          | Generated Python code for graph, with cpp/triton kernels |
-# +-------------------------+----------------------------------------------------------+
-#
-# ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier.
-#
-# Here is another way to print logging for Inductor:
-#
-# .. code:: shell
-#
-# 	TORCH_LOGS="+inductor,output_code,schedule" python xx.py
-#
-# +--------------+-------------------------------------------------------------+
-# | Parameter    | Description                                                 |
-# +--------------+-------------------------------------------------------------+
-# | +inductor    | Set the logging level of Inductor to DEBUG, default is INFO |
-# +--------------+-------------------------------------------------------------+
-# | output_code  | Print output code with cpp/triton kernels                   |
-# +--------------+-------------------------------------------------------------+
-# | schedule     | Print reasons for not doing vectorization in cpp kernels    |
-# +--------------+-------------------------------------------------------------+
-#
-# Conducting an in-depth analysis
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# Moreover, there are several config parameters helping the analysis.
-#
-# +--------------------------------------------------+---------------------------------------------------------------------+
-# | Parameter                                        | Description                                                         |
-# +--------------------------------------------------+---------------------------------------------------------------------+
-# | torch._inductor.config.max_fusion_size           | Set the maximum number of nodes allowed in one fusion               |
-# +--------------------------------------------------+---------------------------------------------------------------------+
-# | torch._inductor.config.cpp.simdlen               | Specify the bit width for cpp vectorization                         |
-# +--------------------------------------------------+---------------------------------------------------------------------+
-# | torch._inductor.config.cpp.min_chunk_size        | Set the minimum number of workloads one thread should at least take |
-# +--------------------------------------------------+---------------------------------------------------------------------+
-# | torch._inductor.config.cpp.enable_kernel_profile | Allow cpp kernel performance profiling via profiler                 |
-# +--------------------------------------------------+---------------------------------------------------------------------+
+# 
+# PyTorch 2.0 introduced the compilation API ``torch.compile``.
+# This new feature offers a significant speedup over eager mode execution through graph-level optimization powered by the default Inductor backend.
+# Currently, the existing tutorials primarily focus on `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_,
+# `comprehensive troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_
+# and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
+# However, there is a lack of an in-depth tutorial specifically designed for the Inductor CPU backend.
+# Therefore, this tutorial is intended to introduce the debugging and performance profiling on Inductor CPU backend by delving into the intricacies of ``torch.compile``.
+# We will start with a motivating example and demonstrate the process of debugging a failure, including the errors and the accuracy problem.
+# By enabling loggings and exploring the underlying generated code, you can learn how to narrow down the failure step by step and finally figure out the route cause.
+# For the case without failures, we will focus on the analysis of performance behavior. 
+# Comparing to eager mode, we are interested in why Inductor backend performs better or worse, maybe due to cpp vectorization or nodes fusion.
+# We will show how to conducting the performance profiling by comparing the time costs between different modes and deeply analyzing the operator-level performance. 
 
 
 ######################################################################
 # Debugging
 # ---------
 #
-# Determine component of error
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# When encountering errors or an accuracy problem, a straightforward solution to find the bug is to narrow down the problem. The first thing to do is to determine the component where the error occurs. Luckily, it can be simply achieved by changing the backend of ``torch.compile``.
-#
-# +----------------------------------------+-----------------------------------------+
-# | Code                                   | Description                             |
-# +----------------------------------------+-----------------------------------------+
-# | torch.compile(fn, backend="eager")     | Enable Dynamo                           |
-# +----------------------------------------+-----------------------------------------+
-# | torch.compile(fn, backend="aot_eager") | Enable Dynamo + AOT autograd            |
-# +----------------------------------------+-----------------------------------------+
-# | torch.compile(fn, backend="inductor")  | Enable Dynamo + AOT autograd + Inductor |
-# +----------------------------------------+-----------------------------------------+
-#
-# If the model can successfully run when the backend is set to ``eager`` or ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
-#
-#
-# Example
-# ^^^^^^^
-#
-# Here is an example for the subsequent debugging:
+# Here is a simple example to run the ``torch.compile`` using Inductor and compare its result with eager mode.
 
 import torch
 from torch._dynamo.utils import same
@@ -137,18 +40,14 @@ def foo(x1, x2):
     y = torch.cat([b], dim=0)
     return y
 
-x1 = torch.randint(256, (1,), dtype=torch.uint8)
-x2 = torch.randint(256, (8390,), dtype=torch.uint8)
+x1 = torch.randint(256, (1, 8), dtype=torch.uint8)
+x2 = torch.randint(256, (8390, 8), dtype=torch.uint8)
 
-expected_result = fn(x1, x2)
-
-compiled_fn = torch.compile(fn)
-actual_result = compiled_fn(x1, x2)
-
-assert same(expected_result, actual_result) == True
+compiled_foo = torch.compile(foo)
+result = compiled_foo(x1, x2)
 
 ######################################################################
-# The implementation of ``neg`` in the ``cpp`` codegen is as follows:
+# The correct implementation of ``neg`` in the cpp codegen is as follows:
 
 def neg(x):
     return f"decltype({x})(-{x})"
@@ -157,19 +56,114 @@ def neg(x):
 # In order to demonstrate the debugging, we will modify the function to a wrong one later.
 #
 #
-# Errors debugging
-# ^^^^^^^^^^^^^^^^
+# Get more loggings
+# ^^^^^^^^^^^^^^^^^
 #
-# If a compile error occurs, the root cause is usually shown in the traceback log.
+# The simple example above would not give any debugging info. To get more useful debugging logging, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable:
+#
+# .. code:: shell
+#
+# 	TORCH_COMPILE_DEBUG=1 python xx.py
+#
+# It will do the graph visualization and print the output code. In logging, a temporary debug tracing directory like this can be found:
+#
+# .. code:: shell
+#
+# 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
+#
+# In this directory, the following files are saved for debugging purposes.
+#
+# +-------------------------+----------------------------------------------------------+
+# | File                    | Description                                              |
+# +=========================+==========================================================+
+# | fx_graph_runnable.py    | Executable FX graph, post decomps, pre pattern match     |
+# +-------------------------+----------------------------------------------------------+
+# | fx_graph_transformed.py | Transformed FX graph, post pattern match                 |
+# +-------------------------+----------------------------------------------------------+
+# | ir_post_fusion.txt      | Inductor IR before fusion                                |
+# +-------------------------+----------------------------------------------------------+
+# | ir_pre_fusion.txt       | Inductor IR after fusion                                 |
+# +-------------------------+----------------------------------------------------------+
+# | output_code.py          | Generated Python code for graph, with C++/triton kernels |
+# +-------------------------+----------------------------------------------------------+
+#
+# Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier.
+#
+#
+# **Fx_graph_runnable:**
+
+def forward(self, arg0_1, arg1_1):
+    neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
+    maximum = torch.ops.aten.maximum.default(arg1_1, neg);  arg1_1 = neg = None
+    clone = torch.ops.aten.clone.default(maximum);  maximum = None
+    return (clone,)
+
+######################################################################
+# **C++ kernel in output_code:**
+
+cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''
+#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
+extern "C" void kernel(const unsigned char* in_ptr0,
+                       const unsigned char* in_ptr1,
+                       unsigned char* out_ptr0)
+{
+    {
+        #pragma GCC ivdep
+        for(long i0=static_cast<long>(0L); i0<static_cast<long>(8390L); i0+=static_cast<long>(1L))
+        {
+            #pragma GCC ivdep
+            for(long i1=static_cast<long>(0L); i1<static_cast<long>(8L); i1+=static_cast<long>(1L))
+            {
+                auto tmp0 = in_ptr0[static_cast<long>(i1 + (8L*i0))];
+                auto tmp1 = in_ptr1[static_cast<long>(i1)];
+                auto tmp2 = decltype(tmp1)(-tmp1);
+                auto tmp3 = max_propagate_nan(tmp0, tmp2);
+                out_ptr0[static_cast<long>(i1 + (8L*i0))] = tmp3;
+            }
+        }
+    }
+}
+''')
+
+
+######################################################################
+# Determine component of error
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# When encountering errors or accuracy problems, a straightforward solution to find the bug is to narrow down the problem. The first thing to do is to determine the component where the error occurs. Luckily, it can be simply achieved by changing the backend of ``torch.compile``.
+#
+# +----------------------------------------+-----------------------------------------+
+# | Code                                   | Description                             |
+# +========================================+=========================================+
+# | torch.compile(fn, backend="eager")     | Enable Dynamo                           |
+# +----------------------------------------+-----------------------------------------+
+# | torch.compile(fn, backend="aot_eager") | Enable Dynamo + AOT autograd            |
+# +----------------------------------------+-----------------------------------------+
+# | torch.compile(fn, backend="inductor")  | Enable Dynamo + AOT autograd + Inductor |
+# +----------------------------------------+-----------------------------------------+
+#
+# If the model can successfully run when the backend is set to ``eager`` or ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
+#
+#
+# Compilation error
+# ^^^^^^^^^^^^^^^^^
+#
+# As we know, the evolved chain of graph-level optimization is
+# ::
+#
+# 	User-input Python code -> FX graph -> IR nodes -> Output code with C++ kernels
+#
+# If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
+# This type of error indicates that bugs are introduced when lowering IR nodes to output code.
+# The root cause of compilation error is usually shown in the traceback log.
 #
 # For example, the ``neg`` function is modified like this:
 
 def neg(x):
     return f"-{x}"
 
-
 ######################################################################
-# The logging gives the following compile error with a rather clear reason. In this case, the root cause is that data types of maximum's inputs are inconsistent.
+# The logging gives the following compile error with a rather clear reason.
 #
 # .. code:: shell
 #
@@ -177,37 +171,116 @@ def neg(x):
 # 	torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
 # 	CppCompileError: C++ compile error
 # 	…
-# 	/tmp/torchinductor_root/2x/c2xgxsooklulr4u54etfnnha7dsu6xzbwdscttvs7dkpba3uwkem.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
-# 	/tmp/torchinductor_root/2x/c2xgxsooklulr4u54etfnnha7dsu6xzbwdscttvs7dkpba3uwkem.cpp:14:53: error: no matching function for call to ‘max_propagate_nan(unsigned char&, int&)’
-# 	   14 |             auto tmp3 = max_propagate_nan(tmp0, tmp2);
-# 	      |                                                     ^
-# 	In file included from /tmp/torchinductor_root/2x/c2xgxsooklulr4u54etfnnha7dsu6xzbwdscttvs7dkpba3uwkem.cpp:2:
-# 	/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note: candidate: ‘template<class scalar_t> scalar_t max_propagate_nan(scalar_t, scalar_t)’
-# 	   27 | inline scalar_t max_propagate_nan(scalar_t a, scalar_t b) {
-# 	      |                 ^~~~~~~~~~~~~~~~~
-# 	/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note:   template argument deduction/substitution failed:
-# 	/tmp/torchinductor_root/2x/c2xgxsooklulr4u54etfnnha7dsu6xzbwdscttvs7dkpba3uwkem.cpp:14:53: note:   deduced conflicting types for parameter ‘scalar_t’ (‘unsigned char’ and ‘int’)
-# 	   14 |             auto tmp3 = max_propagate_nan(tmp0, tmp2);
-# 	      |                                                     ^
+# 	/tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
+#   /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: error: no matching function for call to ‘max_propagate_nan(unsigned char&, int&)’
+#      17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+#         |                                                         ^
+#   In file included from /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:2:
+#   /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note: candidate: ‘template<class scalar_t> scalar_t max_propagate_nan(scalar_t, scalar_t)’
+#      27 | inline scalar_t max_propagate_nan(scalar_t a, scalar_t b) {
+#         |                 ^~~~~~~~~~~~~~~~~
+#   /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note:   template argument deduction/substitution failed:
+#   /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: note:   deduced conflicting types for parameter ‘scalar_t’ (‘unsigned char’ and ‘int’)
+#      17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+#         |                                                         ^
 #
 #
-# Otherwise, if the model runs with other errors, we can do the model code reduction until finding the minimum code snippet with failure. Thus, the target operators and kernels are located.
+# Let us also see the corresponding C++ kernel in output code and IR node.
+# **C++ kernel:**
+
+#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
+extern "C" void kernel(const unsigned char* in_ptr0,
+                       const unsigned char* in_ptr1,
+                       unsigned char* out_ptr0)
+{
+    {
+        #pragma GCC ivdep
+        for(long i0=static_cast<long>(0L); i0<static_cast<long>(8390L); i0+=static_cast<long>(1L))
+        {
+            #pragma GCC ivdep
+            for(long i1=static_cast<long>(0L); i1<static_cast<long>(8L); i1+=static_cast<long>(1L))
+            {
+                auto tmp0 = in_ptr0[static_cast<long>(i1 + (8L*i0))];
+                auto tmp1 = in_ptr1[static_cast<long>(i1)];
+                auto tmp2 = -tmp1;
+                auto tmp3 = max_propagate_nan(tmp0, tmp2);
+                out_ptr0[static_cast<long>(i1 + (8L*i0))] = tmp3;
+            }
+        }
+    }
+}
+
+######################################################################
+# **IR node:**
+
+buf0: SchedulerNode(ComputedBuffer)
+buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
+buf0.unmet_dependencies = []
+buf0.met_dependencies = 
+    [   MemoryDep('arg0_1', c1, {c0: 8390, c1: 8}),
+        MemoryDep('arg1_1', c0, {c0: 67120})]
+buf0.users = [NodeUser(node=OUTPUT, can_inplace=False)]
+buf0.group.device = cpu
+buf0.group.iteration = ((8390, 8), ())
+buf0.sizes = ([8390, 8], [])
+class buf0_loop_body:
+    var_ranges = {z0: 8390, z1: 8}
+    index0 = 8*z0 + z1
+    index1 = z1
+    def body(self, ops):
+        get_index = self.get_index('index0')
+        load = ops.load('arg1_1', get_index)
+        get_index_1 = self.get_index('index1')
+        load_1 = ops.load('arg0_1', get_index_1)
+        neg = ops.neg(load_1)
+        maximum = ops.maximum(load, neg)
+        get_index_2 = self.get_index('index0')
+        store = ops.store('buf0', get_index_2, maximum, None)
+        return store
+
+######################################################################
+# According to the traceback logging, the compilation error is caused by the data type inconsistency of ``max_propagate_nan``'s inputs. 
+# By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after doing ``-`` as ``tmp0`` is ``long``.
+# We can easily match ``-`` and ``max_propagate_nan`` in C++ kernel with ``ops.neg`` and ``ops.maximum`` in IR node respectively.
+# Now we sucessfully find that the root cause is the implementation of ``ops.neg`` in cpp codegen, which silently changes the data type when doing ``neg``. 
 #
 #
 # Accuracy debugging
 # ^^^^^^^^^^^^^^^^^^^
 #
-# The accuracy problem refers the case where outputs of backends eager and inductor are different. As FX graph is generated before Inductor and output code is generated after Inductor, we can narrow down the problem by comparing their outputs.
+# Otherwise, if the model runs with other errors or accuracy problem, you can use the PyTorch debugging tool called `Minifier <https://pytorch.org/functorch/stable/notebooks/minifier.html>`_. 
+# The core idea of ``Minifier`` is to keep removing the nodes and inputs of graph until finding the minimal graph with problem.
+# It helps to automatically generate a minified problematic graph through 4 strategies: truncating suffix, delta debugging, eliminating dead code and removing unused inputs.
 #
-# If a model has several graphs, the first step is to compare the final outputs of FX graph and output code for each graph, given the same input. The target is to find the first graph occurring error or with different outputs. Binary search is suggested to use for efficiency.
 #
-# When a model has only one graph or the problematic graph has been found with the above step, compare the intermediate outputs of FX graph and output code in each graph, given the same input. The idea is to continuously narrow down the problem.
+# We will now show the debugging process for the accuracy problem with the help of ``Minifer``. 
+# The accuracy problem refers to the case where outputs of backends eager and inductor are different. 
 #
-# For example, we modify the ``neg`` function like this:
+# For instance, we modify the example like this:
 
+import torch
+from torch._dynamo.utils import same
+
+def foo(x1, x2):
+    a = torch.neg(x1)
+    b = torch.maximum(x2, a)
+    y = torch.cat([b], dim=0)
+    return y
+
+x1 = torch.randn((1, 8), dtype=torch.float32)
+x2 = torch.randn((8390, 8), dtype=torch.float32)
+
+expected_result = foo(x1, x2)
+
+compiled_foo = torch.compile(foo)
+actual_result = compiled_foo(x1, x2)
+
+assert same(expected_result, actual_result) == True
+
+######################################################################
+# And also the ``neg`` function:
 def neg(x):
     return f"decltype({x})(2 * {x})"
-
 
 ######################################################################
 # An accuracy problem would be raised as follows.
@@ -220,92 +293,61 @@ def neg(x):
 # 	    assert same(expected_result, actual_result) == True
 # 	AssertionError
 #
+# To debug an accuracy problem with Minifier, two environment variables are needed:
+# .. code:: shell
 #
-# By comparing the intermediate outputs of FX graph and output code, it would be found that outputs are already different after doing ``torch.neg``.
+# 	TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 #
-# Here are the modifications of FX graph and output code:
+# Which gives us such loggings showing the steps of minifying:
 #
-# **Changes of teh FX graph:**
+# .. code:: shell
+#
+#     Trying granularity 2
+#
+#     Strategy: Eliminate dead code (G: 2) (3 nodes, 1 inputs)
+#     FAIL: Eliminate dead code
+#
+#     Strategy: Remove unused inputs (G: 2) (3 nodes, 1 inputs)
+#     FAIL: Remove unused inputs
+#
+#     Strategy: Consolidate Inputs (G: 2) (3 nodes, 1 inputs)
+#     FAIL: Consolidate Inputs
+#
+#     Strategy: Truncate suffix (G: 2) (3 nodes, 1 inputs)
+#     FAIL: Truncate suffix
+#
+#     Strategy: Delta Debugging (G: 2) (3 nodes, 1 inputs)
+#
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1333.64it/s]
+#
+#     FAIL: Delta Debugging
+#     Trying granularity 1
+#
+#     Strategy: Truncate suffix (G: 1) (3 nodes, 1 inputs)
+#     FAIL: Truncate suffix
+#
+#     Strategy: Delta Debugging (G: 1) (3 nodes, 1 inputs)
+#
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1382.43it/s]
+#
+#     FAIL: Delta Debugging
+#
+#     Strategy: Remove outputs (G: 1) (3 nodes, 1 inputs)
+#     FAIL: Remove outputs
+#
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1256.53it/s]
+#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#
+#     Made 10 queries
+#
+# We also get the final minified graph only with ``neg``:
 
-# Before
-class Repro(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, arg0_1, arg1_1):
-        neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
-        maximum = torch.ops.aten.maximum.default(arg1_1, neg);  arg1_1 = neg = None
-        clone = torch.ops.aten.clone.default(maximum);  maximum = None
-        return (clone,)
-
-# After
-class Repro(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-    
-    def forward(self, arg0_1, arg1_1):
-        neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
-        return (neg,)
+def forward(self, arg0_1):
+    neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
+    return (neg,)
 
 ######################################################################
-# **Changes of the output code:**
-
-# Before
-cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''
-#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
-extern "C" void kernel(const long* in_ptr0,
-                        const long* in_ptr1,
-                        long* out_ptr0)
-{
-    {
-        #pragma GCC ivdep
-        for(long i0=static_cast<long>(0L); i0<static_cast<long>(8390L); i0+=static_cast<long>(1L))
-        {
-            auto tmp0 = in_ptr0[static_cast<long>(i0)];
-            auto tmp1 = in_ptr1[static_cast<long>(0L)];
-            auto tmp2 = decltype(tmp1)(2 * tmp1);
-            auto tmp3 = max_propagate_nan(tmp0, tmp2);
-            out_ptr0[static_cast<long>(i0)] = tmp3;
-        }
-    }
-}
-''')
-
-def call(args):
-    arg0_1, arg1_1 = args
-    args.clear()
-    buf0 = empty_strided((8390, ), (1, ), device='cpu', dtype=torch.int64)
-    cpp_fused_cat_maximum_neg_0(c_void_p(arg1_1.data_ptr()), c_void_p(arg0_1.data_ptr()), c_void_p(buf0.data_ptr()))
-    del arg0_1
-    del arg1_1
-    return (buf0, )
-
-# After
-cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''
-#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
-extern "C" void kernel(const long* in_ptr0,
-                        const long* in_ptr1,
-                        long* out_ptr0)
-{
-    {
-        auto tmp1 = in_ptr1[static_cast<long>(0L)];
-        auto tmp2 = decltype(tmp1)(2 * tmp1);
-        out_ptr0[static_cast<long>(0L)] = tmp2;
-    }
-}
-''')
-
-def call(args):
-    arg0_1, arg1_1 = args
-    args.clear()
-    buf0 = empty_strided((1, ), (1, ), device='cpu', dtype=torch.int64)
-    cpp_fused_cat_maximum_neg_0(c_void_p(arg1_1.data_ptr()), c_void_p(arg0_1.data_ptr()), c_void_p(buf0.data_ptr()))
-    del arg0_1
-    del arg1_1
-    return (buf0, )
-
-######################################################################
-# You can use the PyTorch debugging tool called `Minifier <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_. It helps to automatically generate a minified problematic graph.
+# For more usage details about Minifier, please refer to ``Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>``_
 
 
 ######################################################################
@@ -509,13 +551,14 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 # `output_code.py`
 
 
-######################################################################
-# Future work
-# -----------
+#########################################################################
+# Conclusion
+# ----------
 #
-# Implement and upstream the debug tools
-# 	1. **Graph merger**: Merge graphs of a model into a single large graph. Thus, graphs can be compared quickly between different versions of PyTorch. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
-# 	2. **Graph matching**: In order to know what each kernel does, this tool matches C++ kernel with FX graph operators and adds corresponding operators before each kernel in the ``.cpp`` output code. `#102958 <https://github.com/pytorch/pytorch/pull/102958>`_
-# 	3. **Save inputs and outputs**: For the purpose of reproducing rapidly the failure of a large model, it is necessary to add serializations for the inputs and outputs among graphs and intermediate outputs in graphs.
-# 	4. **Test case generation**: When a user has found the operators which are inefficient with cpp kernels, a tool is needed to automatically write a test case. Specifically, one test case can be generated for each kernel, with the corresponding small FX graph and input.
-# 	5. **Minifier optimization**: Keep refining Minifier and make it adapted for more scenarios.
+# The document gives an in-depth tutorial for the Inductor CPU backend.
+# With motivating examples, we walk through the process of debugging and profiling.
+# The main idea is to narrow down the problem.
+# We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging loggings and the tool Minifier.
+# Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.
+# When the performance with Inductor is better or worse than that of eager mode, we give a solid analytical method for performance profiling.
+# We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.
