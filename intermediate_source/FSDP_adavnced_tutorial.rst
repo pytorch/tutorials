@@ -75,7 +75,7 @@ highlight different available features in FSDP that are helpful for training
 large scale model above 3B parameters. Also, we cover specific features for
 Transformer based models. The code for this tutorial is available in  `Pytorch
 Examples
-<https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/>`__.
+<https://github.com/HamidShojanazeri/examples/tree/FSDP_example/distributed/FSDP/>`__.
 
 
 *Setup*
@@ -97,13 +97,13 @@ Please create a `data` folder, download the WikiHow dataset from `wikihowAll.csv
 `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__,
 and place them in the `data` folder.  We will use the wikihow dataset from
 `summarization_dataset
-<https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
+<https://github.com/HamidShojanazeri/examples/blob/FSDP_example/distributed/FSDP/summarization_dataset.py>`__.
 
 Next, we add the following code snippets to a Python script “T5_training.py”.
 
 .. note::
    The full source code for this tutorial is available in `PyTorch examples
-   <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__.
+   <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/distributed/FSDP>`__.
 
 1.3  Import necessary packages:
 
