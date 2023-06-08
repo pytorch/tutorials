@@ -33,6 +33,7 @@ model from C++.
 
 import torch  # This is all you need to use both PyTorch and TorchScript!
 print(torch.__version__)
+torch.manual_seed(191009)  # set the seed for reproducibility
 
 
 ######################################################################
@@ -308,7 +309,7 @@ print(scripted_cell.code)
 
 # New inputs
 x, h = torch.rand(3, 4), torch.rand(3, 4)
-traced_cell(x, h)
+print(scripted_cell(x, h))
 
 
 ######################################################################
