@@ -51,8 +51,7 @@ Since oneDNN is the default acceleration library for CPU, no manual operations a
 ``conv_transpose3d``,
 ``linear``
 
-Note: For quantized linear, whether to leverage AMX depends on which quantization backend to choose.
-At present, x86 quantization backend is used by default for quantized linear, using fbgemm, while users can specify onednn backend to turn on AMX for quantized linear.
+Note: For quantized linear, whether to leverage AMX depends on the policy of the quantization backend.
 
 Guidelines of leveraging AMX with workloads
 --------------------------------------------------
