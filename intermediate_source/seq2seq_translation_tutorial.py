@@ -454,7 +454,8 @@ class AttnDecoderRNN(nn.Module):
 
         transformed_hidden = self.fc_hidden(hidden[0])
         expanded_hidden_state = transformed_hidden.expand(self.max_length, -1)
-        alignment_scores = torch.tanh(expanded_hidden_state + self.fc_encoder(encoder_outputs))
+        alignment_scores = torch.tanh(expanded_hidden_state +
+                                      self.fc_encoder(encoder_outputs))
         alignment_scores = self.alignment_vector.mm(alignment_scores.T)
         attn_weights = F.softmax(alignment_scores, dim=1)
         context_vector = attn_weights.mm(encoder_outputs)
