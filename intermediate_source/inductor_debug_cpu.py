@@ -4,7 +4,7 @@
 Inductor CPU backend debugging and profiling
 ============================================
 
-**Author**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_
+**Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_
 """
 
 #########################################################################
@@ -13,13 +13,17 @@ Inductor CPU backend debugging and profiling
 # 
 # PyTorch 2.0 introduced the compilation API ``torch.compile``.
 # This new feature offers a significant speedup over eager mode execution through graph-level optimization powered by the default Inductor backend.
+#
 # Currently, the existing tutorials primarily focus on `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_,
-# `comprehensive troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_
+# comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_
 # and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
 # However, there is a lack of an in-depth tutorial specifically designed for the Inductor CPU backend.
+#
 # Therefore, this tutorial is intended to introduce the debugging and performance profiling on Inductor CPU backend by delving into the intricacies of ``torch.compile``.
+#
 # We will start with a motivating example and demonstrate the process of debugging a failure, including the errors and the accuracy problem.
 # By enabling loggings and exploring the underlying generated code, you can learn how to narrow down the failure step by step and finally figure out the route cause.
+#
 # For the case without failures, we will focus on the analysis of performance behavior. 
 # Comparing to eager mode, we are interested in why Inductor backend performs better or worse, maybe due to cpp vectorization or nodes fusion.
 # We will show how to conducting the performance profiling by comparing the time costs between different modes and deeply analyzing the operator-level performance. 
@@ -29,7 +33,7 @@ Inductor CPU backend debugging and profiling
 # Debugging
 # ---------
 #
-# Here is a simple example to run the ``torch.compile`` using Inductor and compare its result with eager mode.
+# Here is a simple example to run the ``torch.compile`` using Inductor and compare its result with eager mode:
 
 import torch
 from torch._dynamo.utils import same
@@ -71,7 +75,7 @@ def neg(x):
 #
 # 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
 #
-# In this directory, the following files are saved for debugging purposes.
+# In this directory, the following files are saved for debugging purposes:
 #
 # +-------------------------+----------------------------------------------------------+
 # | File                    | Description                                              |
@@ -87,10 +91,10 @@ def neg(x):
 # | output_code.py          | Generated Python code for graph, with C++/triton kernels |
 # +-------------------------+----------------------------------------------------------+
 #
-# Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier.
+# Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
+# Here are the main parts of code extracted from the files:
 #
-#
-# **Fx_graph_runnable:**
+# Fx_graph_runnable:
 
 def forward(self, arg0_1, arg1_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
@@ -99,7 +103,10 @@ def forward(self, arg0_1, arg1_1):
     return (clone,)
 
 ######################################################################
-# **C++ kernel in output_code:**
+# C++ kernel in output_code:
+
+from torch._inductor.codecache import AsyncCompile
+async_compile = AsyncCompile()
 
 cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''
 #include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
@@ -151,7 +158,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 # As we know, the evolved chain of graph-level optimization is
 # ::
 #
-# 	User-input Python code -> FX graph -> IR nodes -> Output code with C++ kernels
+# 	User's Python code -> FX graph -> IR nodes -> Output code with C++ kernels
 #
 # If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
 # This type of error indicates that bugs are introduced when lowering IR nodes to output code.
@@ -186,62 +193,68 @@ def neg(x):
 #
 #
 # Let us also see the corresponding C++ kernel in output code and IR node.
-# **C++ kernel:**
-
-#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
-extern "C" void kernel(const unsigned char* in_ptr0,
-                       const unsigned char* in_ptr1,
-                       unsigned char* out_ptr0)
-{
-    {
-        #pragma GCC ivdep
-        for(long i0=static_cast<long>(0L); i0<static_cast<long>(8390L); i0+=static_cast<long>(1L))
-        {
-            #pragma GCC ivdep
-            for(long i1=static_cast<long>(0L); i1<static_cast<long>(8L); i1+=static_cast<long>(1L))
-            {
-                auto tmp0 = in_ptr0[static_cast<long>(i1 + (8L*i0))];
-                auto tmp1 = in_ptr1[static_cast<long>(i1)];
-                auto tmp2 = -tmp1;
-                auto tmp3 = max_propagate_nan(tmp0, tmp2);
-                out_ptr0[static_cast<long>(i1 + (8L*i0))] = tmp3;
-            }
-        }
-    }
-}
+#
+# C++ kernel:
+#
+# .. code:: c
+#
+#     include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"
+#     extern "C" void kernel(const unsigned char* in_ptr0,
+#                         const unsigned char* in_ptr1,
+#                         unsigned char* out_ptr0)
+#     {
+#         {
+#             #pragma GCC ivdep
+#             for(long i0=static_cast<long>(0L); i0<static_cast<long>(8390L); i0+=static_cast<long>(1L))
+#             {
+#                 #pragma GCC ivdep
+#                 for(long i1=static_cast<long>(0L); i1<static_cast<long>(8L); i1+=static_cast<long>(1L))
+#                 {
+#                     auto tmp0 = in_ptr0[static_cast<long>(i1 + (8L*i0))];
+#                     auto tmp1 = in_ptr1[static_cast<long>(i1)];
+#                     auto tmp2 = -tmp1;
+#                     auto tmp3 = max_propagate_nan(tmp0, tmp2);
+#                     out_ptr0[static_cast<long>(i1 + (8L*i0))] = tmp3;
+#                 }
+#             }
+#         }
+#     }
 
 ######################################################################
-# **IR node:**
-
-buf0: SchedulerNode(ComputedBuffer)
-buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
-buf0.unmet_dependencies = []
-buf0.met_dependencies = 
-    [   MemoryDep('arg0_1', c1, {c0: 8390, c1: 8}),
-        MemoryDep('arg1_1', c0, {c0: 67120})]
-buf0.users = [NodeUser(node=OUTPUT, can_inplace=False)]
-buf0.group.device = cpu
-buf0.group.iteration = ((8390, 8), ())
-buf0.sizes = ([8390, 8], [])
-class buf0_loop_body:
-    var_ranges = {z0: 8390, z1: 8}
-    index0 = 8*z0 + z1
-    index1 = z1
-    def body(self, ops):
-        get_index = self.get_index('index0')
-        load = ops.load('arg1_1', get_index)
-        get_index_1 = self.get_index('index1')
-        load_1 = ops.load('arg0_1', get_index_1)
-        neg = ops.neg(load_1)
-        maximum = ops.maximum(load, neg)
-        get_index_2 = self.get_index('index0')
-        store = ops.store('buf0', get_index_2, maximum, None)
-        return store
+# IR node:
+#
+# ::
+#
+#     buf0: SchedulerNode(ComputedBuffer)
+#     buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
+#     buf0.unmet_dependencies = []
+#     buf0.met_dependencies = 
+#         [   MemoryDep('arg0_1', c1, {c0: 8390, c1: 8}),
+#             MemoryDep('arg1_1', c0, {c0: 67120})]
+#     buf0.users = [NodeUser(node=OUTPUT, can_inplace=False)]
+#     buf0.group.device = cpu
+#     buf0.group.iteration = ((8390, 8), ())
+#     buf0.sizes = ([8390, 8], [])
+#     class buf0_loop_body:
+#         var_ranges = {z0: 8390, z1: 8}
+#         index0 = 8*z0 + z1
+#         index1 = z1
+#         def body(self, ops):
+#             get_index = self.get_index('index0')
+#             load = ops.load('arg1_1', get_index)
+#             get_index_1 = self.get_index('index1')
+#             load_1 = ops.load('arg0_1', get_index_1)
+#             neg = ops.neg(load_1)
+#             maximum = ops.maximum(load, neg)
+#             get_index_2 = self.get_index('index0')
+#             store = ops.store('buf0', get_index_2, maximum, None)
+#             return store
 
 ######################################################################
 # According to the traceback logging, the compilation error is caused by the data type inconsistency of ``max_propagate_nan``'s inputs. 
 # By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after doing ``-`` as ``tmp0`` is ``long``.
 # We can easily match ``-`` and ``max_propagate_nan`` in C++ kernel with ``ops.neg`` and ``ops.maximum`` in IR node respectively.
+#
 # Now we sucessfully find that the root cause is the implementation of ``ops.neg`` in cpp codegen, which silently changes the data type when doing ``neg``. 
 #
 #
@@ -249,12 +262,13 @@ class buf0_loop_body:
 # ^^^^^^^^^^^^^^^^^^^
 #
 # Otherwise, if the model runs with other errors or accuracy problem, you can use the PyTorch debugging tool called `Minifier <https://pytorch.org/functorch/stable/notebooks/minifier.html>`_. 
+#
 # The core idea of ``Minifier`` is to keep removing the nodes and inputs of graph until finding the minimal graph with problem.
 # It helps to automatically generate a minified problematic graph through 4 strategies: truncating suffix, delta debugging, eliminating dead code and removing unused inputs.
 #
 #
 # We will now show the debugging process for the accuracy problem with the help of ``Minifer``. 
-# The accuracy problem refers to the case where outputs of backends eager and inductor are different. 
+# The accuracy problem refers to the case where the outputs of backends eager and inductor are different. 
 #
 # For instance, we modify the example like this:
 
@@ -278,12 +292,13 @@ actual_result = compiled_foo(x1, x2)
 assert same(expected_result, actual_result) == True
 
 ######################################################################
-# And also the ``neg`` function:
+# And also modify the ``neg`` function:
+
 def neg(x):
     return f"decltype({x})(2 * {x})"
 
 ######################################################################
-# An accuracy problem would be raised as follows.
+# An accuracy problem would be raised as follows:
 #
 # .. code:: shell
 #
@@ -294,6 +309,7 @@ def neg(x):
 # 	AssertionError
 #
 # To debug an accuracy problem with Minifier, two environment variables are needed:
+#
 # .. code:: shell
 #
 # 	TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
@@ -340,14 +356,14 @@ def neg(x):
 #
 #     Made 10 queries
 #
-# We also get the final minified graph only with ``neg``:
+# After running, we get the final minified graph with the target node ``neg``:
 
 def forward(self, arg0_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
     return (neg,)
 
 ######################################################################
-# For more usage details about Minifier, please refer to ``Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>``_
+# For more usage details about Minifier, please refer to `Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_.
 
 
 ######################################################################
@@ -556,9 +572,12 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 # ----------
 #
 # The document gives an in-depth tutorial for the Inductor CPU backend.
+#
 # With motivating examples, we walk through the process of debugging and profiling.
 # The main idea is to narrow down the problem.
+#
 # We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging loggings and the tool Minifier.
 # Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.
+#
 # When the performance with Inductor is better or worse than that of eager mode, we give a solid analytical method for performance profiling.
 # We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.
