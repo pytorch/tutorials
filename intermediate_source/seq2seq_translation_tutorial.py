@@ -440,25 +440,26 @@ class AttnDecoderRNN(nn.Module):
         self.max_length = max_length
 
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
-        self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
-        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.fc_hidden = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+        self.fc_encoder = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+        self.alignment_vector = nn.Parameter(torch.Tensor(1, hidden_size))
+        torch.nn.init.xavier_uniform_(self.alignment_vector)
         self.dropout = nn.Dropout(self.dropout_p)
-        self.gru = nn.GRU(self.hidden_size, self.hidden_size)
+        self.gru = nn.GRU(self.hidden_size * 2, self.hidden_size)
         self.out = nn.Linear(self.hidden_size, self.output_size)
 
     def forward(self, input, hidden, encoder_outputs):
-        embedded = self.embedding(input).view(1, 1, -1)
+        embedded = self.embedding(input).view(1, -1)
         embedded = self.dropout(embedded)
 
-        attn_weights = F.softmax(
-            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
-        attn_applied = torch.bmm(attn_weights.unsqueeze(0),
-                                 encoder_outputs.unsqueeze(0))
+        transformed_hidden = self.fc_hidden(hidden[0])
+        expanded_hidden_state = transformed_hidden.expand(self.max_length, -1)
+        alignment_scores = torch.tanh(expanded_hidden_state + self.fc_encoder(encoder_outputs))
+        alignment_scores = self.alignment_vector.mm(alignment_scores.T)
+        attn_weights = F.softmax(alignment_scores, dim=1)
+        context_vector = attn_weights.mm(encoder_outputs)
 
-        output = torch.cat((embedded[0], attn_applied[0]), 1)
-        output = self.attn_combine(output).unsqueeze(0)
-
-        output = F.relu(output)
+        output = torch.cat((embedded, context_vector), 1).unsqueeze(0)
         output, hidden = self.gru(output, hidden)
 
         output = F.log_softmax(self.out(output[0]), dim=1)
