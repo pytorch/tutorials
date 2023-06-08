@@ -453,7 +453,7 @@ class AttnDecoderRNN(nn.Module):
         embedded = self.dropout(embedded)
 
         alignment_scores = self.alignment_vector.mm(
-            torch.tanh(self.fc_hidden(hidden[0]) + self.fc_encoder(encoder_outputs))
+            torch.tanh(self.fc_hidden(hidden[0]) + self.fc_encoder(encoder_outputs).T)
         )
         attn_weights = F.softmax(alignment_scores, dim=1)
         context_vector = attn_weights.mm(encoder_outputs)
