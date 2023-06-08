@@ -5,9 +5,13 @@ Leverage Advanced Matrix Extensions
 Introduction
 ============
 
-Advanced Matrix Extensions (AMX), also known as Intel® Advanced Matrix Extensions (Intel® AMX), is an extension to the x86 instruction set architecture (ISA).
+Advanced Matrix Extensions (AMX), also known as Intel® Advanced Matrix Extensions (Intel® AMX), is an x86 extension,
+which introduce two new components: a 2-dimensional register file called 'tiles' and an accelerator of Tile Matrix Multiplication (TMUL) that are able to operate on those tiles.
+AMX is designed to work on matrices to accelerate deep-learning training and inference on the CPU and is ideal for workloads like natural-language processing, recommendation systems and image recognition.
+
 Intel advances AI capabilities with 4th Gen Intel® Xeon® Scalable processors and Intel® AMX, delivering 3x to 10x higher inference and training performance versus the previous generation, see `Accelerate AI Workloads with Intel® AMX`_.
-AMX supports two data types, INT8 and BFloat16, compared to AVX512 FP32, it can achieve up to 32x and 16x acceleration, respectively, see figure 6 of `Accelerate AI Workloads with Intel® AMX`_.
+Compared to 3rd Gen Intel Xeon Scalable processors running Intel® Advanced Vector Extensions 512 Neural Network Instructions (Intel® AVX-512 VNNI),
+4th Gen Intel Xeon Scalable processors running Intel AMX can perform 2,048 INT8 operations per cycle, rather than 256 INT8 operations per cycle. They can also perform 1,024 BF16 operations per cycle, as compared to 64 FP32 operations per cycle, see page 4 of `Accelerate AI Workloads with Intel® AMX`_.
 For more detailed information of AMX, see `Intel® AMX Overview`_.
 
 
@@ -19,7 +23,34 @@ to get higher performance out-of-box on x86 CPUs with AMX support.
 For more detailed information of oneDNN, see `oneDNN`_.
 
 The operation is fully handled by oneDNN according to the execution code path generated. I.e. when a supported operation gets executed into oneDNN implementation on a hardware platform with AMX support, AMX instructions will be invoked automatically inside oneDNN.
-Since oneDNN is the default acceleration library for CPU, no manual operations are required to enable the AMX support.
+Since oneDNN is the default acceleration library for PyTorch CPU, no manual operations are required to enable the AMX support.
+
+Guidelines of leveraging AMX with workloads
+-------------------------------------------
+
+- BFloat16 data type: 
+
+Using ``torch.cpu.amp`` or ``torch.autocast("cpu")`` would utilize AMX acceleration for supported operators.
+
+::
+
+   model = model.to(memory_format=torch.channels_last)
+   with torch.cpu.amp.autocast():
+       output = model(input)
+
+Note: Use channels last format to get better performance. 
+
+- quantization:
+
+Applying quantization would utilize AMX acceleration for supported operators.
+
+- torch.compile:
+
+When the generated graph model runs into oneDNN implementations with the supported operators, AMX accelerations will be activated.
+
+
+CPU operators that can leverage AMX:
+------------------------------------
 
 - BF16 CPU ops that can leverage AMX:
 
@@ -36,13 +67,9 @@ Since oneDNN is the default acceleration library for CPU, no manual operations a
 ``addbmm``,
 ``linear``,
 ``matmul``,
-``_convolution``
 
 - Quantization CPU ops that can leverage AMX:
 
-``conv1d``,
-``conv2d``,
-``conv3d``,
 ``conv1d``,
 ``conv2d``,
 ``conv3d``,
@@ -53,34 +80,18 @@ Since oneDNN is the default acceleration library for CPU, no manual operations a
 
 Note: For quantized linear, whether to leverage AMX depends on the policy of the quantization backend.
 
-Guidelines of leveraging AMX with workloads
---------------------------------------------------
 
-- BFloat16 data type: 
-
-Using ``torch.cpu.amp`` or ``torch.autocast("cpu")`` would utilize AMX acceleration.
-
-::
-
-   model = model.to(memory_format=torch.channels_last)
-   with torch.cpu.amp.autocast():
-       output = model(input)
-
-Note: Use channels last format to get better performance. 
-
-- quantization:
-
-Applying quantization would utilize AMX acceleration.
-
-- torch.compile:
-
-When the generated graph model runs into oneDNN implementations with the supported operators mentioned in lists above, AMX accelerations will be activated.
 
 
 Confirm AMX is being utilized
 ------------------------------
 
-Set environment variable ``export ONEDNN_VERBOSE=1`` to get oneDNN verbose at runtime.
+Set environment variable ``export ONEDNN_VERBOSE=1``, or use ``torch.backends.mkldnn.verbose`` to flexibly enable oneDNN to dump verbose messages.
+
+::
+
+   with torch.backends.mkldnn.verbose(torch.backends.mkldnn.VERBOSE_ON):
+       model(input)
 
 For example, get oneDNN verbose:
 
