@@ -113,7 +113,21 @@ For example, get oneDNN verbose:
    onednn_verbose,exec,cpu,matmul,brg:avx512_core_amx_int8,undef,src_s8::blocked:ab:f0 wei_s8:p:blocked:BA16a64b4a:f0 dst_s8::blocked:ab:f0,attr-scratchpad:user ,,1x30522:30522x768:1x768,7.66382
    ...
 
-If we get the verbose of ``avx512_core_amx_bf16`` for BFloat16 or ``avx512_core_amx_int8`` for quantization with INT8, it indicates that AMX is activated.
+If you get the verbose of ``avx512_core_amx_bf16`` for BFloat16 or ``avx512_core_amx_int8`` for quantization with INT8, it indicates that AMX is activated.
+
+
+Conclusion
+----------
+
+
+In this tutorial, we briefly introduced AMX, how to utilize AMX in PyTorch to accelerate workloads, and how to confirm that AMX is being utilized.
+
+With the improvements and updates of PyTorch and oneDNN, the utilization of AMX may be subject to change accordingly.
+
+As always, if you run into any problems or have any questions, you can use
+`forum <https://discuss.pytorch.org/>`_ or `GitHub issues
+<https://github.com/pytorch/pytorch/issues>`_ to get in touch. 
+
 
 .. _Accelerate AI Workloads with Intel® AMX: https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/advanced-matrix-extensions/ai-solution-brief.html
 
