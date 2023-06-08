@@ -761,15 +761,15 @@ def evaluateRandomly(encoder, decoder, n=10):
 #
 
 hidden_size = 256
-encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+attn_decoder = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
-trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
+trainIters(encoder, attn_decoder, 75000, print_every=5000)
 
 ######################################################################
 #
 
-evaluateRandomly(encoder1, attn_decoder1)
+evaluateRandomly(encoder, attn_decoder)
 
 
 ######################################################################
@@ -787,7 +787,7 @@ evaluateRandomly(encoder1, attn_decoder1)
 #
 
 output_words, attentions = evaluate(
-    encoder1, attn_decoder1, "je suis trop froid .")
+    encoder, attn_decoder, "je suis trop froid .")
 plt.matshow(attentions.numpy())
 
 
@@ -817,7 +817,7 @@ def showAttention(input_sentence, output_words, attentions):
 
 def evaluateAndShowAttention(input_sentence):
     output_words, attentions = evaluate(
-        encoder1, attn_decoder1, input_sentence)
+        encoder, attn_decoder, input_sentence)
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
     showAttention(input_sentence, output_words, attentions)
