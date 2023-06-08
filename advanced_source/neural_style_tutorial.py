@@ -47,8 +47,6 @@ to resemble the content of the content-image and the artistic style of the style
 # -  ``torchvision.models`` (train or load pretrained models)
 # -  ``copy`` (to deep copy the models; system package)
 
-from __future__ import print_function
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
