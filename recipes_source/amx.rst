@@ -6,7 +6,7 @@ Introduction
 ============
 
 Advanced Matrix Extensions (AMX), also known as Intel® Advanced Matrix Extensions (Intel® AMX), is an x86 extension,
-which introduce two new components: a 2-dimensional register file called 'tiles' and an accelerator of Tile Matrix Multiplication (TMUL) that are able to operate on those tiles.
+which introduce two new components: a 2-dimensional register file called 'tiles' and an accelerator of Tile Matrix Multiplication (TMUL) that is able to operate on those tiles.
 AMX is designed to work on matrices to accelerate deep-learning training and inference on the CPU and is ideal for workloads like natural-language processing, recommendation systems and image recognition.
 
 Intel advances AI capabilities with 4th Gen Intel® Xeon® Scalable processors and Intel® AMX, delivering 3x to 10x higher inference and training performance versus the previous generation, see `Accelerate AI Workloads with Intel® AMX`_.
@@ -40,13 +40,19 @@ Using ``torch.cpu.amp`` or ``torch.autocast("cpu")`` would utilize AMX accelerat
 
 Note: Use channels last format to get better performance. 
 
-- quantization:
+- Quantization:
 
 Applying quantization would utilize AMX acceleration for supported operators.
 
 - torch.compile:
 
 When the generated graph model runs into oneDNN implementations with the supported operators, AMX accelerations will be activated.
+
+Note: When using PyTorch on CPUs that support AMX, the framework will automatically enable AMX usage by default.
+This means that PyTorch will attempt to leverage the AMX feature whenever possible to speed up matrix multiplication operations.
+However, it's important to note that the decision to dispatch to the AMX kernel ultimately depends on
+the internal optimization strategy of the oneDNN library and the quantization backend, which PyTorch relies on for performance enhancements.
+The specific details of how AMX utilization is handled internally by PyTorch and the oneDNN library may be subject to change with updates and improvements to the framework.
 
 
 CPU operators that can leverage AMX:
@@ -78,9 +84,6 @@ CPU operators that can leverage AMX:
 ``conv_transpose3d``,
 ``linear``
 
-Note: For quantized linear, whether to leverage AMX depends on the policy of the quantization backend.
-
-
 
 
 Confirm AMX is being utilized
@@ -91,7 +94,8 @@ Set environment variable ``export ONEDNN_VERBOSE=1``, or use ``torch.backends.mk
 ::
 
    with torch.backends.mkldnn.verbose(torch.backends.mkldnn.VERBOSE_ON):
-       model(input)
+       with torch.cpu.amp.autocast():
+           model(input)
 
 For example, get oneDNN verbose:
 
