@@ -462,8 +462,10 @@ with profile(
 # From the profiling table of the eager model, we can see the most time consumption ops are [aten::addmm, aten::add, aten::copy_, aten::mul, aten::clamp_min, aten::bmm].
 # Comparing with the inductor model profiling table, we notice there are ``mkl::_mkl_linear`` and fused kernel called ``graph_0_cpp_fused_*``. They are the major
 # optimization that the inductor model is doing. Let us discuss them separately.
-# (1) Regard to ``mkl::_mkl_linear```: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear``` in the eager model profiling table.
-# The CPU total of ``aten::linear`` is 376.888ms, at the mean time it is 231.573ms for ``mkl::_mkl_linear``. This suggests inductor model speed up ~1.63x for the "linear" part. 
+#
+# (1) Regard to ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
+# The CPU total of ``aten::linear`` is 376.888ms, at the mean time it is 231.573ms for ``mkl::_mkl_linear``. This suggests inductor model speed up ~1.63x for the "linear" part.
+#
 # (2) Regarding non-linear part: The end-to-end latency for the eager/inductor model is 802/339ms. The speed up for the non-linear part is ~3.94x.
 # Let's read the generated code to understand how the inductor achieves this impressive optimization. You are able to find the generated code by 
 # searching ``cpp_fused__mkl_linear_add_mul_relu_151`` in ``output_code.py``
@@ -553,8 +555,8 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 #     eager use: 5.780875144992024 ms/iter
 #     inductor use: 0.9588955780491233 ms/iter
 #     speed up ratio: 6.0286805751604735
-
-
+#
+#
 # This is just an example. The profiling table shows all element-wise op are fused within the inductor automatically in this model. You can read more kernels in
 # `output_code.py`
 
