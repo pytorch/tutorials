@@ -4,29 +4,33 @@
 Inductor CPU backend debugging and profiling
 ============================================
 
-**Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_
+**Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_, `Gong Jiong <https://github.com/jgong5>`_
 """
 
 #########################################################################
 # Overview
 # --------
 # 
-# PyTorch 2.0 introduced the compilation API ``torch.compile``.
+# PyTorch 2.0 introduced the compilation API called ``torch.compile``. 
 # This new feature offers a significant speedup over eager mode execution through graph-level optimization powered by the default Inductor backend.
 #
-# Currently, the existing tutorials primarily focus on `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_,
-# comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_
+# This tutorial is intended to provide an in-depth introduction on the debugging 
+# and performance profiling on Inductor CPU backend by delving into the intricacies of ``torch.compile``. 
+#
+# Meanwhile, you may also find related tutorials about ``torch.compile`` 
+# around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_, 
+# comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_ 
 # and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
-# However, there is a lack of an in-depth tutorial specifically designed for the Inductor CPU backend.
 #
-# Therefore, this tutorial is intended to introduce the debugging and performance profiling on Inductor CPU backend by delving into the intricacies of ``torch.compile``.
+# We will start debugging with a motivating example that triggers compilation issues and accuracy problems 
+# by demonstrating the process of debugging to pinpoint the problems.
 #
-# We will start with a motivating example and demonstrate the process of debugging a failure, including the errors and the accuracy problem.
-# By enabling loggings and exploring the underlying generated code, you can learn how to narrow down the failure step by step and finally figure out the route cause.
+# By enabling loggings and exploring the underlying generated code, 
+# you can learn how to narrow down the failure step by step and finally figure out the route cause.
 #
-# For the case without failures, we will focus on the analysis of performance behavior. 
-# Comparing to eager mode, we are interested in why Inductor backend performs better or worse, maybe due to cpp vectorization or nodes fusion.
-# We will show how to conducting the performance profiling by comparing the time costs between different modes and deeply analyzing the operator-level performance. 
+# Following that, we will proceed to discuss how to profile the compiled code and, 
+# through a performance comparison with eager mode, 
+# elaborate on the reasons why ``torch.compile`` can provide an additional performance boost compared to its eager counterpart.
 
 
 ######################################################################
@@ -92,7 +96,7 @@ def neg(x):
 # +-------------------------+----------------------------------------------------------+
 #
 # Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
-# Here are the main parts of code extracted from the files:
+# Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
 #
 # Fx_graph_runnable:
 
@@ -123,8 +127,11 @@ extern "C" void kernel(const unsigned char* in_ptr0,
             {
                 auto tmp0 = in_ptr0[static_cast<long>(i1 + (8L*i0))];
                 auto tmp1 = in_ptr1[static_cast<long>(i1)];
+                // Corresponding FX code line: neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
                 auto tmp2 = decltype(tmp1)(-tmp1);
+                // Corresponding FX code line: maximum = torch.ops.aten.maximum.default(arg1_1, neg);  arg1_1 = neg = None
                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+                // Corresponding FX code line: clone = torch.ops.aten.clone.default(maximum);  maximum = None
                 out_ptr0[static_cast<long>(i1 + (8L*i0))] = tmp3;
             }
         }
@@ -155,10 +162,11 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 # Compilation error
 # ^^^^^^^^^^^^^^^^^
 #
-# As we know, the evolved chain of graph-level optimization is
+# As we know, the evolved chain of graph-level optimization is like:
+#
 # ::
 #
-# 	User's Python code -> FX graph -> IR nodes -> Output code with C++ kernels
+# 	torch.neg (Python) -> torch.ops.aten.neg.default (within FX graph) -> ops.neg (within IR node) -> tmp2 = -tmp1 (within C++ kernel)
 #
 # If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
 # This type of error indicates that bugs are introduced when lowering IR nodes to output code.
@@ -319,59 +327,14 @@ def neg(x):
 # .. code:: shell
 #
 #     Started off with 6 nodes
-#     Trying granularity 4
-#     Strategy: Eliminate dead code (G: 4) (6 nodes, 2 inputs)
-#     FAIL: Eliminate dead code
-#     Strategy: Remove unused inputs (G: 4) (6 nodes, 2 inputs)
-#     FAIL: Remove unused inputs
-#     Strategy: Consolidate Inputs (G: 4) (6 nodes, 2 inputs)
-#     FAIL: Consolidate Inputs
-#     Strategy: Truncate suffix (G: 4) (6 nodes, 2 inputs)
-#     FAIL: Truncate suffix
-#     Strategy: Delta Debugging (G: 4) (6 nodes, 2 inputs)
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1212.93it/s]
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1137.28it/s]
-#     FAIL: Delta Debugging
+#
 #     Trying granularity 2
 #     Strategy: Truncate suffix (G: 2) (6 nodes, 2 inputs)
-#     >>  Loading inputs: 100%|██████████| 2/2 [00:00<00:00, 1929.75it/s]
-#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
 #     SUCCESS: Went from 6 to 4 nodes
-#     >>  Loading inputs: 100%|██████████| 2/2 [00:00<00:00, 1885.93it/s]
-#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#
 #     Trying granularity 4
-#     Strategy: Eliminate dead code (G: 4) (4 nodes, 2 inputs)
-#     FAIL: Eliminate dead code
 #     Strategy: Remove unused inputs (G: 4) (4 nodes, 2 inputs)
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1294.94it/s]
-#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
 #     SUCCESS: Went from 4 to 3 nodes
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1341.75it/s]
-#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
-#     Trying granularity 2
-#     Strategy: Eliminate dead code (G: 2) (3 nodes, 1 inputs)
-#     FAIL: Eliminate dead code
-#     Strategy: Remove unused inputs (G: 2) (3 nodes, 1 inputs)
-#     FAIL: Remove unused inputs
-#     Strategy: Consolidate Inputs (G: 2) (3 nodes, 1 inputs)
-#     FAIL: Consolidate Inputs
-#     Strategy: Truncate suffix (G: 2) (3 nodes, 1 inputs)
-#     FAIL: Truncate suffix
-#     Strategy: Delta Debugging (G: 2) (3 nodes, 1 inputs)
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1333.64it/s]
-#     FAIL: Delta Debugging
-#     Trying granularity 1
-#     Strategy: Truncate suffix (G: 1) (3 nodes, 1 inputs)
-#     FAIL: Truncate suffix
-#     Strategy: Delta Debugging (G: 1) (3 nodes, 1 inputs)
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1382.43it/s]
-#     FAIL: Delta Debugging
-#     Strategy: Remove outputs (G: 1) (3 nodes, 1 inputs)
-#     FAIL: Remove outputs
-#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1256.53it/s]
-#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
-#     Made 10 queries
-#     Wrote minimal repro out to repro.py
 #
 # After running, we get the final minified graph with the target node ``neg``:
 
@@ -595,5 +558,5 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 # We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging loggings and the tool Minifier.
 # Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.
 #
-# When the performance with Inductor is better or worse than that of eager mode, we give a solid analytical method for performance profiling.
+# When the performance with Inductor is better than that of eager mode, we provide a solid analytical method for performance profiling.
 # We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.
