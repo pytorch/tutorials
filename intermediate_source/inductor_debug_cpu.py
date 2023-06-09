@@ -318,43 +318,60 @@ def neg(x):
 #
 # .. code:: shell
 #
+#     Started off with 6 nodes
+#     Trying granularity 4
+#     Strategy: Eliminate dead code (G: 4) (6 nodes, 2 inputs)
+#     FAIL: Eliminate dead code
+#     Strategy: Remove unused inputs (G: 4) (6 nodes, 2 inputs)
+#     FAIL: Remove unused inputs
+#     Strategy: Consolidate Inputs (G: 4) (6 nodes, 2 inputs)
+#     FAIL: Consolidate Inputs
+#     Strategy: Truncate suffix (G: 4) (6 nodes, 2 inputs)
+#     FAIL: Truncate suffix
+#     Strategy: Delta Debugging (G: 4) (6 nodes, 2 inputs)
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1212.93it/s]
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1137.28it/s]
+#     FAIL: Delta Debugging
 #     Trying granularity 2
-#
+#     Strategy: Truncate suffix (G: 2) (6 nodes, 2 inputs)
+#     >>  Loading inputs: 100%|██████████| 2/2 [00:00<00:00, 1929.75it/s]
+#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#     SUCCESS: Went from 6 to 4 nodes
+#     >>  Loading inputs: 100%|██████████| 2/2 [00:00<00:00, 1885.93it/s]
+#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#     Trying granularity 4
+#     Strategy: Eliminate dead code (G: 4) (4 nodes, 2 inputs)
+#     FAIL: Eliminate dead code
+#     Strategy: Remove unused inputs (G: 4) (4 nodes, 2 inputs)
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1294.94it/s]
+#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#     SUCCESS: Went from 4 to 3 nodes
+#     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1341.75it/s]
+#     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
+#     Trying granularity 2
 #     Strategy: Eliminate dead code (G: 2) (3 nodes, 1 inputs)
 #     FAIL: Eliminate dead code
-#
 #     Strategy: Remove unused inputs (G: 2) (3 nodes, 1 inputs)
 #     FAIL: Remove unused inputs
-#
 #     Strategy: Consolidate Inputs (G: 2) (3 nodes, 1 inputs)
 #     FAIL: Consolidate Inputs
-#
 #     Strategy: Truncate suffix (G: 2) (3 nodes, 1 inputs)
 #     FAIL: Truncate suffix
-#
 #     Strategy: Delta Debugging (G: 2) (3 nodes, 1 inputs)
-#
 #     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1333.64it/s]
-#
 #     FAIL: Delta Debugging
 #     Trying granularity 1
-#
 #     Strategy: Truncate suffix (G: 1) (3 nodes, 1 inputs)
 #     FAIL: Truncate suffix
-#
 #     Strategy: Delta Debugging (G: 1) (3 nodes, 1 inputs)
-#
 #     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1382.43it/s]
-#
 #     FAIL: Delta Debugging
-#
 #     Strategy: Remove outputs (G: 1) (3 nodes, 1 inputs)
 #     FAIL: Remove outputs
-#
 #     >>  Loading inputs: 100%|██████████| 1/1 [00:00<00:00, 1256.53it/s]
 #     >>  torch._dynamo.utils: [ERROR] RMSE (res-fp64): 2.39615, (ref-fp64): 0.00000 and shape=torch.Size([1, 8])
-#
 #     Made 10 queries
+#     Wrote minimal repro out to repro.py
 #
 # After running, we get the final minified graph with the target node ``neg``:
 
