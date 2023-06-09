@@ -1,12 +1,25 @@
 Using CUDA Graphs in PyTorch C++ API
 ====================================
 
+.. note::
+   |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs.rst>`__.
+
+.. note::
+   The full source code is available on `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs>`__.
+
+Prerequisites:
+
+-  `Using the PyTorch C++ Frontend <../advanced_source/cpp_frontend.html>`__
+-  `CUDA semantics <https://pytorch.org/docs/master/notes/cuda.html>`__
+-  `Pytorch 2.0 or later`
+-  `CUDA 11 or later`
+
 NVIDIA’s CUDA Graphs have been a part of CUDA Toolkit library since the
 release of `version 10 <https://developer.nvidia.com/blog/cuda-graphs/>`_.
 They are capable of greatly reducing the CPU overhead increasing the
 performance of applications.
 
-In this tutorial we will be focusing on using CUDA Graphs for `C++
+In this tutorial, we will be focusing on using CUDA Graphs for `C++
 frontend of PyTorch <https://pytorch.org/tutorials/advanced/cpp_frontend.html>`_.
 The C++ frontend is mostly utilized in production and deployment applications which
 are important parts of PyTorch use cases. Since `the first appearance
@@ -21,7 +34,8 @@ The usage of CUDA Graphs in LibTorch (C++ Frontend) is very similar to its
 `Python counterpart <https://pytorch.org/docs/main/notes/cuda.html#cuda-graphs>`_
 but with some differences in syntax and functionality.
 
-Without further ado, let us get started!
+Getting Started
+---------------
 
 The main training loop consists of the several steps and depicted in the
 following code chunk:
@@ -38,11 +52,12 @@ following code chunk:
     optimizer.step();
   }
 
-Which are basically a forward pass, backward pass and weight updates.
+The example above includes a forward pass, a backward pass, and weight updates.
 
-In this tutorial we will be applying CUDA Graph on all the compute steps via whole-network
+In this tutorial, we will be applying CUDA Graph on all the compute steps through the whole-network
 graph capture. But before doing so, we need to slightly modify the source code. What we need
-to do is preallocate tensors for reusing them in the main training loop like so:
+to do is preallocate tensors for reusing them in the main training loop. Here is an example
+implementation:
 
 .. code-block:: cpp
 
@@ -80,7 +95,7 @@ Where ``training_step`` simply consists of forward and backward passes with corr
     optimizer.step();
   }
 
-PyTorch’s CUDA Graphs API is relying on Stream Capture which in our case would used as following:
+PyTorch’s CUDA Graphs API is relying on Stream Capture which in our case would be used like this:
 
 .. code-block:: cpp
 
@@ -92,7 +107,7 @@ PyTorch’s CUDA Graphs API is relying on Stream Capture which in our case would
   training_step(model, optimizer, data, targets, output, loss);
   graph.capture_end();
 
-Before actual graph capture it is important to run several warm-up iterations on side stream to
+Before the actual graph capture, it is important to run several warm-up iterations on side stream to
 prepare CUDA cache as well as CUDA libraries (like CUBLAS and CUDNN) that will be used during
 the training:
 
@@ -104,10 +119,11 @@ the training:
     training_step(model, optimizer, data, targets, output, loss);
   }
 
-After successful graph capture we can replace ``training_step(model, optimizer, data, targets, output, loss);``
-call via ``graph.replay();`` do the training step.
+After the successful graph capture, we can replace ``training_step(model, optimizer, data, targets, output, loss);``
+call via ``graph.replay();`` to do the training step.
 
-The full source code is available in GitHub.
+Training Results
+----------------
 
 Taking the code for a spin we can see the following output from ordinary non-graphed training:
 
@@ -169,9 +185,12 @@ While the training with the CUDA Graph produces the following output:
   user    0m7.048s
   sys    0m0.619s
 
+Conclusion
+----------
+
 As we can see, just by applying a CUDA Graph on the `MNIST example
 <https://github.com/pytorch/examples/tree/main/cpp/mnist>`_ we were able to gain the performance
-by more than 6 times for training. This kind of large perf improvement was achievable due to
-small model size. In case of larger models with heavy GPU usage the CPU overhead is less impactful
+by more than six times for training. This kind of large performance improvement was achievable due to
+the small model size. In case of larger models with heavy GPU usage, the CPU overhead is less impactful
 so the improvement will be smaller. Nevertheless, it is always advantageous to use CUDA Graphs to
 gain the performance of GPUs.
