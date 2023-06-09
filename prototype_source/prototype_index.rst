@@ -68,6 +68,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/numeric_suite_tutorial.html
    :tags: Debugging,Quantization
 
+.. customcarditem::
+   :header: Quantization in PyTorch 2.0 Export Tutorial
+   :card_description: Learn how to use the Quantization in PyTorch 2.0 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/quantization_in_pytorch_2_0_export_tutorial.html
+   :tags: Quantization
+
 .. Mobile
 
 .. customcarditem::
@@ -193,6 +200,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
+   prototype/quantization_in_pytorch_2_0_export_tutorial.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html
