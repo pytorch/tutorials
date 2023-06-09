@@ -44,15 +44,6 @@ Datasets & DataLoaders
 #  - ``download=True`` downloads the data from the internet if it's not available at ``root``.
 #  - ``transform`` and ``target_transform`` specify the feature and label transformations
 
-############################################################
-# Environment control
-# -------------------
-#
-# The following two lines of code are only necessary when Conda is used.
-
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 import torch
 from torch.utils.data import Dataset
 from torchvision import datasets
