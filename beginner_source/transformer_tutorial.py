@@ -38,8 +38,15 @@ can be easily adapted/composed.
 # of the word (see the next paragraph for more details). The
 # ``nn.TransformerEncoder`` consists of multiple layers of
 # `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
-# To produce a probability distribution over output words, the output of 
-# the ``nn.TransformerEncoder`` model is passed through a linear layer.
+# Along with the input sequence, a square attention mask is required because the
+# self-attention layers in ``nn.TransformerDecoder`` are only allowed to attend
+# the earlier positions in the sequence. For the language modeling task, any
+# tokens on the future positions should be masked. To produce a probability
+# distribution over output words, the output of the ``nn.TransformerEncoder``
+# model is passed through a linear layer to output unnormalized logits.
+# The log-softmax function isn't applied here due to the later use of
+# `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html>`__,
+# which requires the inputs to be unnormalized logits.
 #
 
 import math
