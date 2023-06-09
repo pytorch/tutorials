@@ -351,7 +351,8 @@ def forward(self, arg0_1):
 # ---------------------
 #
 # Within this section, we will demonstrate the process of conducting performance analysis for a model that has been compiled using the Inductor CPU backend.
-# In the example below, we benchmark a Huggingface Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode. The execution time and the speedup ratio of Inductor are printed after the benchmark.
+# In the example below, we benchmark a Huggingface Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode.
+# The execution time and the speedup ratio of Inductor are printed after the benchmark.
 
 from transformers import MobileBertForQuestionAnswering
 import torch
@@ -364,9 +365,9 @@ input = torch.randint(0, vocab_size, (bs, seq_length), dtype=torch.int64)
 input_dict = {"input_ids": input}
 
 # init inductor model
-inductor_model = torch.compile(model)
+compiled_model = torch.compile(model)
 with torch.no_grad():
-    inductor_model(**input_dict)
+    compiled_model(**input_dict)
 
 NUM_ITERS=100
 import timeit
@@ -379,8 +380,8 @@ with torch.no_grad():
 with torch.no_grad():
     # warmup
     for _ in range(10):
-        inductor_model(**input_dict)
-    inductor_t = timeit.timeit("inductor_model(**input_dict)", number=NUM_ITERS, globals=globals())
+        compiled_model(**input_dict)
+    inductor_t = timeit.timeit("compiled_model(**input_dict)", number=NUM_ITERS, globals=globals())
 print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
 print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
 print(f"speed up ratio: {eager_t / inductor_t}")
@@ -399,7 +400,8 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 #
 #
 # Next, let's dive deep into the performance at the operation level to understand where the speed-up comes from.
-# `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_ is a good tool to help us. Inductor CPU backend has the support to report the time of the fusion kernels to the profiler with the ``enable_kernel_profile`` configuration option:
+# `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_ is a good tool to help us. 
+# Inductor CPU backend has the support to report the time of the fusion kernels to the profiler with the ``enable_kernel_profile`` configuration option:
 
 from torch._inductor import config
 config.cpp.enable_kernel_profile = True
@@ -423,7 +425,7 @@ def trace_handler(p):
     p.export_chrome_trace(f"{RESULT_DIR}/{p.step_num}.json")
 
 for _ in range(10):
-    model(**input_dict)  # inductor_model(**input_dict) to get inductor model profiling
+    model(**input_dict)  # compiled_model(**input_dict) to get inductor model profiling
 
 total = 0
 with profile(
@@ -432,7 +434,7 @@ with profile(
     on_trace_ready=trace_handler
 ) as p:
     for _ in range(100):
-        model(**input_dict)  # inductor_model(**input_dict) to get inductor model profiling
+        model(**input_dict)  # compiled_model(**input_dict) to get inductor model profiling
         p.step()
 
 ######################################################################
@@ -450,6 +452,9 @@ with profile(
 #
 # (1) Regard to ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
 # The CPU total of ``aten::linear`` is 376.888ms, at the mean time it is 231.573ms for ``mkl::_mkl_linear``. This suggests inductor model speed up ~1.63x for the "linear" part.
+# The speed-up majorly comes from we "packed" the ``weight`` tensor to `block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
+# and invoking `cblas_sgemm_compute <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html>`_ within Inductor CPU backend
+# to have a better cache beviour during GEMM computation.
 #
 # (2) Regarding non-linear part: The end-to-end latency for the eager/inductor model is 802/339ms. The speed up for the non-linear part is ~3.94x.
 # Let's read the generated code to understand how the inductor achieves this impressive optimization. You are able to find the generated code by 
@@ -494,24 +499,25 @@ extern "C" void kernel(float* in_out_ptr0,
 
 ######################################################################
 # From the generated code above, we can see this kernel has done a typical `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on [add, add, mul, add].
-# We can infer the sizes and stride of the inputs and further bench this [add, add, mul, add] pattern.
+# This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization, 
+# we can infer the sizes and stride of the inputs and further benchmark this [add, add, mul, add] pattern.
 
 import torch
-def func(x0, x1, x3, x5, x7):
-    x2 = x0 + x1
-    x4 = x2 + x3
-    x6 = x4 * x5
-    x8 = x6 + x7
-    x3 = x8
-    return x3
+def func(arg_0, arg_1, arg_2, arg_3, arg_4):
+    add_0 = arg_0 + arg_1
+    add_1 = add_0 + arg_2
+    mul_1 = add_1 * arg_3
+    add_2 = mul_1 + arg_4
+    arg_2 = add_2
+    return arg_2
 
-x0 = torch.rand(16384, 512)
-x1 = torch.rand(1, 512)
-x3 = torch.zeros(16384, 512)
-x5 = torch.rand(1, 512)
-x7 = torch.rand(1, 512)
+arg_0 = torch.rand(16384, 512)
+arg_1 = torch.rand(1, 512)
+arg_2 = torch.zeros(16384, 512)
+arg_3 = torch.rand(1, 512)
+arg_4 = torch.rand(1, 512)
 
-input = (x0, x1, x3, x5, x7)
+input = (arg_0, arg_1, arg_2, arg_3, arg_4)
 inductor_func = torch.compile(func)
 with torch.no_grad():
     inductor_func(*input)
@@ -532,6 +538,7 @@ with torch.no_grad():
 print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
 print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
 print(f"speed up ratio: {eager_t / inductor_t}")
+
 ######################################################################
 # Output:
 #
