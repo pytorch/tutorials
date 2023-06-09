@@ -14,54 +14,46 @@ have significantly higher model coverage, better programmability, and
 a simplified UX.
 
 Prerequisites:
------------------------
+^^^^^^^^^^^^^^^^
 
--  `Understanding of torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
--  `Understanding of the quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
--  `Understanding of FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
--  `Understanding of BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
--  `Understanding of QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__
+-  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
+-  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
+-  `FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
+-  `BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
+-  `QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__
+
+Introduction:
+^^^^^^^^^^^^^^^^
 
 Previously in ``FX Graph Mode Quantization`` we were using ``QConfigMapping`` for users to specify how the model to be quantized
 and ``BackendConfig`` to specify the supported ways of quantization in their backend.
 This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
 without involvement of the quantization team:
 
--  This API has limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
-   `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
-   Supporting ``conv add`` fusion also requires some changes to current already complicated pattern matching code such as in the
-   `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__.
--  This API also has limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
-   developer only wants to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
-   team and backend developer.
--  This API uses ``QConfigMapping`` and ``BackendConfig`` as separate object. ``QConfigMapping`` describes user's
-   intention of how they want their model to be quantized. ``BackendConfig`` describes what kind of quantization a backend support.
-   ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not. And user can provide a ``QConfigMapping``
-   that is incompatible with a specific ``BackendConfig``. This is not a great UX. Ideally, we can structure this better
-   by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend
-   specific. So there will be less confusion about incompatibilities.
--  In ``QConfig``, we are exposing observer/fake_quant classes as an object for user to configure quantization.
-   This increases the things that user needs to care about, e.g. not only the ``dtype`` but also how the
-   observation should happen. These could potentially be hidden from user to make user interface simpler.
+- This API has limitation to support advanced quantization intention and complicated quantization operator patterns
+  as in the discussion of `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
+- This API uses ``QConfigMapping`` and ``BackendConfig`` as separate object in quantization configuration 
+  which may cause confusion about incompatibilities between these 2 objects. Also these quantization configurations require
+  too much quantization details users need to know which can be hidden from user interface to make it simpler.
 
-To address these scalability issues, 
+To address these issues,
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
 is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class that users can use to
 programmatically set the quantization specifications for input and output of each node in the model graph. It adds flexibility
 to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
 This will allow users to express how they want an operator pattern to be observed in a more explicit
-way by annotating the appropriate nodes. A backend specific quantizer inherited from base quantizer,
-some methods that need to be implemented:
-
--  `annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
-   is used to annotate nodes in the graph with 
-   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
-   objects to convey the desired way of quantization.
+way by annotating the appropriate nodes.
 
 Imagine a backend developer who wishes to integrate a third-party backend
 with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
-to define the backend specific quantizer. The high level architecture of
-quantization 2.0 with quantizer could look like this:
+to define the backend specific quantizer. A backend specific quantizer inherited from base quantizer.
+The main method that need to be implemented for the backend specific quantizer is the
+`annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
+which is used to annotate nodes in the graph with
+`QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
+objects to convey the desired way of quantization.
+
+The high level architecture of quantization 2.0 with quantizer could look like this:
 
 ::
 
@@ -135,6 +127,9 @@ Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could b
     convered_graph_module = convert_pt2e(prepared_graph_module)
 
     # Step 4: Lower Reference Quantized Model into the backend
+
+Annotation API:
+^^^^^^^^^^^^^^^^^^^
 
 ``Quantizer`` uses annotation API to convey quantization intent for different operators/patterns.
 Annotation API mainly consists of
@@ -366,8 +361,8 @@ functions that are used in the example:
    `get_bias_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L53>`__
    can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific pattern.
 
-6. Conclusion
----------------------
+Conclusion
+^^^^^^^^^^^^^^^^^^^
 
 With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
 how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
