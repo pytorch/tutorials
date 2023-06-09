@@ -97,7 +97,7 @@ void capture_train_graph(
 
   stream_sync(legacyStream, warmupStream);
 
-  for (C10_UNUSED const auto  iter : c10::irange(num_warmup_iters)) {
+  for (C10_UNUSED const auto iter : c10::irange(num_warmup_iters)) {
     training_step(model, optimizer, data, targets, output, loss);
   }
 
@@ -147,12 +147,9 @@ void train(
 
     if (batch_idx++ % kLogInterval == 0) {
       float train_loss = loss.item<float>();
-      std::printf(
-          "\rTrain Epoch: %ld [%5ld/%5ld] Loss: %.4f",
-          epoch,
-          batch_idx * batch.data.size(0),
-          dataset_size,
-          train_loss);
+      std::cout << "\rTrain Epoch:" << epoch << " ["
+                << batch_idx * batch.data.size(0) << "/" << dataset_size
+                << "] Loss: " << train_loss;
     }
   }
 }
@@ -187,7 +184,7 @@ void capture_test_graph(
   at::cuda::setCurrentCUDAStream(warmupStream);
   stream_sync(captureStream, legacyStream);
 
-  for (C10_UNUSED const auto  iter : c10::irange(num_warmup_iters)) {
+  for (C10_UNUSED const auto iter : c10::irange(num_warmup_iters)) {
     test_step(model, data, targets, output, loss);
     total_loss += loss;
     total_correct += output.argmax(1).eq(targets).sum();
@@ -246,16 +243,15 @@ void test(
   float test_accuracy =
       static_cast<float>(total_correct.item<int64_t>()) / dataset_size;
 
-  std::printf(
-      "\nTest set: Average loss: %.4f | Accuracy: %.3f\n",
-      test_loss,
-      test_accuracy);
+  std::cout << std::endl
+            << "Test set: Average loss: " << test_loss
+            << " | Accuracy: " << test_accuracy << std::endl;
 }
 
 int main(int argc, char* argv[]) {
   if (!torch::cuda::is_available()) {
-      std::cout << "CUDA is not available!" << std::endl;
-      return -1;
+    std::cout << "CUDA is not available!" << std::endl;
+    return -1;
   }
 
   bool use_train_graph = false;
