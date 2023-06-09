@@ -63,13 +63,13 @@ def neg(x):
 # Get more loggings
 # ^^^^^^^^^^^^^^^^^
 #
-# The simple example above would not give any debugging info. To get more useful debugging logging, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable:
+# No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
 # .. code:: shell
 #
 # 	TORCH_COMPILE_DEBUG=1 python xx.py
 #
-# It will do the graph visualization and print the output code. In logging, a temporary debug tracing directory like this can be found:
+# This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:
 #
 # .. code:: shell
 #
