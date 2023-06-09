@@ -1,5 +1,7 @@
-(prototype) Quantization in PyTorch 2.0 Export Tutorial
+(prototype) Quantization in PyTorch 2.0 Export Tutorial (Work in Progress)
 ==============================================================
+
+**Author**: `Leslie Fang <https://github.com/leslie-fang-intel>`_, `Weiwen Xia <https://github.com/Xia-Weiwen>`__, `Jiong Gong <https://github.com/jgong5>`__
 
 Today we have `FX Graph Mode
 Quantization <https://pytorch.org/docs/stable/quantization.html#prototype-fx-graph-mode-quantization>`__
@@ -339,7 +341,7 @@ functions that are used in the example:
    `get_output_act_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L23>`__,
    `get_weight_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L36>`__, and
    `get_bias_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L53>`__
-   can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific node.
+   can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific pattern.
 
 6. Conclusion
 ---------------------
