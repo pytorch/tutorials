@@ -149,7 +149,7 @@ tensor value should be observed, e.g. ``MinMaxObserver``, or ``HistogramObserver
 , or some customized observer.
 
 ``QuantizationAnnotation`` composed of ``QuantizationSpec`` objects is used to annotate input tensors
-and output tensor of a ``FX Node``. Annotating input tensors is equivalent of annotating input edges,
+and output tensor of a pattern. Annotating input tensors is equivalent of annotating input edges,
 while annotating output tensor is equivalent of annotating node. ``QuantizationAnnotation`` is a ``dataclass``
 with several fields:
 
@@ -157,7 +157,7 @@ with several fields:
 -  ``output_qspec`` field expresses the ``QuantizationSpec`` used to annotate the output tensor;
 -  ``_annotated`` field indicates if this node has already been annotated by quantizer.
 
-Thus annotation API requires quantizer to annotate edges (input tensors) or
+To conclude, annotation API requires quantizer to annotate edges (input tensors) or
 nodes (output tensor) of the graph. Now, we will have a step-by-step tutorial for
 how to use the annotation API with different types of ``QuantizationSpec``.
 
