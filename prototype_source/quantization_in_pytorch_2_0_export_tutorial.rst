@@ -27,22 +27,22 @@ and ``BackendConfig`` to specify the supported ways of quantization in their bac
 This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
 without involvement of the quantization team:
 
--  Limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
-   `issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion with oneDNN library.
-   It also requires some changes to current already complicated pattern matching code such as in the
-   `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__ to support ``conv add`` fusion.
--  Limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
+-  Current API has limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
+   `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
+   Supporting ``conv add`` fusion also requires some changes to current already complicated pattern matching code such as in the
+   `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__.
+-  Current API also has limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
    developer only wants to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
    team and backend developer.
--  Currently we use ``QConfigMapping`` and ``BackendConfig`` as separate object. ``QConfigMapping`` describes user's
+-  Current API uses ``QConfigMapping`` and ``BackendConfig`` as separate object. ``QConfigMapping`` describes user's
    intention of how they want their model to be quantized. ``BackendConfig`` describes what kind of quantization a backend support.
-   Currently ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not. And user can provide a ``QConfigMapping``
-   that is incompatible with a specific BackendConfig. This is not a great UX. Ideally we can structure this better
+   Currently, ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not. And user can provide a ``QConfigMapping``
+   that is incompatible with a specific ``BackendConfig``. This is not a great UX. Ideally, we can structure this better
    by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend
-   specific, so there will be less confusion about incompatibilities.
--  Currently in ``QConfig`` we are exposing observer/fake_quant classes as an object for user to configure quantization.
-   This increases the things that user may need to care about, e.g. not only the ``dtype`` but also how the observation should
-   happen. These could potentially be hidden from user so that the user interface is simpler.
+   specific. So there will be less confusion about incompatibilities.
+-  Currently, in ``QConfig`` we are exposing observer/fake_quant classes as an object for user to configure quantization.
+   This increases the things that user needs to care about, e.g. not only the ``dtype`` but also how the observation should
+   happen. These could potentially be hidden from user to make user interface simpler.
 
 To address these scalability issues, 
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
@@ -137,18 +137,18 @@ Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could b
     # Step 4: Lower Reference Quantized Model into the backend
 
 Quantizer uses annotation API to convey quantization intent for different operators/patterns.
-Annotation API uses ``QuantizationSpec`` (
-`definition is here <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L38>`__
-) to convey intent of how a tensor will be quantized,
+Annotation API uses
+`QuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L38>`__
+to convey intent of how a tensor will be quantized,
 e.g. dtype, bitwidth, min, max values, symmetric vs. asymmetric etc.
 Furthermore, annotation API also allows quantizer to specify how a
 tensor value should be observed, e.g. ``MinMaxObserver``, or ``HistogramObserver``
 , or some customized observer.
 
-``QuantizationSpec`` is used to annotate nodes' output tensor or input tensors. Annotating
+``QuantizationSpec`` is used to annotate nodes' input tensors or output tensor. Annotating
 input tensors is equivalent of annotating edge of the graph, while annotating output tensor is
-equivalent of annotating node. Thus annotation API requires quantizer to annotate nodes (output tensor)
-or edges (input tensors) of the graph.
+equivalent of annotating node. Thus annotation API requires quantizer to annotate
+edges (input tensors) or nodes (output tensor) of the graph.
 
 Now, we will have a step-by-step tutorial for how to use the annotation API with different types of
 ``QuantizationSpec``.
@@ -162,7 +162,7 @@ inputs, output of the pattern. Following is an example flow (take ``add`` operat
 of how this intent is conveyed in the quantization workflow with annotation API.
 
 -  Step 1: Identify the original floating point pattern in the FX graph. There are
-   several ways to identify this pattern: Quantizer may use a pattern matcher (e.g. SubgraphMatcher)
+   several ways to identify this pattern: Quantizer may use a pattern matcher
    to match the operator pattern; Quantizer may go through the nodes from start to the end and compare
    the node's target type to match the operator pattern. In this example, we can use the
    `get_source_partitions <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/fx/passes/utils/source_matcher_utils.py#L51>`__
@@ -200,7 +200,7 @@ of how this intent is conveyed in the quantization workflow with annotation API.
    ``output_qspec`` field expresses the ``QuantizationSpec`` used to
    annotate the output node; ``_annotated`` field indicates if this node has already been annotated by quantizer.
    In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec`` objects
-   created in above step 2 for two inputs and one output of ``add`` node.
+   created in above step 2 for two inputs and one output of the ``add`` node.
 
 ::
 
