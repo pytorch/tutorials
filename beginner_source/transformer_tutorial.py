@@ -2,7 +2,7 @@
 Language Modeling with ``nn.Transformer`` and torchtext
 ===============================================================
 
-This is a tutorial on training a sequence-to-sequence model that uses the
+This is a tutorial on training a model to predict the next word in a sequence using the
 `nn.Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ module.
 
 The PyTorch 1.2 release includes a standard transformer module based on the
@@ -29,7 +29,9 @@ can be easily adapted/composed.
 
 ######################################################################
 # In this tutorial, we train a ``nn.TransformerEncoder`` model on a
-# language modeling task. The language modeling task is to assign a
+# language modeling task. Please note that this tutorial does not cover
+# the training of `nn.TransformerDecoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoder.html#torch.nn.TransformerDecoder>`__, as depicted in
+# the right half of the diagram above. The language modeling task is to assign a
 # probability for the likelihood of a given word (or a sequence of words)
 # to follow a sequence of words. A sequence of tokens are passed to the embedding
 # layer first, followed by a positional encoding layer to account for the order
@@ -130,6 +132,7 @@ class PositionalEncoding(nn.Module):
 #  .. code-block:: bash
 #
 #      %%bash
+#      pip install portalocker
 #      pip install torchdata
 #
 # The vocab object is built based on the train dataset and is used to numericalize
