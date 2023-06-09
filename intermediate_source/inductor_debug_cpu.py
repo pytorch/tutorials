@@ -387,8 +387,8 @@ def forward(self, arg0_1):
 # Performance profiling
 # ---------------------
 #
-# For this part, we will describe how to analyze the inductor model performance.
-# First, we choose an eager model as a baseline. We set up a benchmark to compare the end-to-end performance between the eager model and the inductor model.
+# Within this section, we will demonstrate the process of conducting performance analysis for a model that has been compiled using the Inductor CPU backend.
+# In the example below, we benchmark a Huggingface Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode. The execution time and the speedup ratio of Inductor are printed after the benchmark.
 
 from transformers import MobileBertForQuestionAnswering
 import torch
@@ -435,9 +435,8 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 # The inductor model speed-up is 2.58x.
 #
 #
-# Secondly, we can deep dive into op-level performance to understand where is the speed-up comes from.
-# `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_ is a good tool to help us.
-# To enable kernel profile with inductor model, we need to set ``enable_kernel_profile`` by:
+# Next, let's dive deep into the performance at the operation level to understand where the speed-up comes from.
+# `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_ is a good tool to help us. Inductor CPU backend has the support to report the time of the fusion kernels to the profiler with the ``enable_kernel_profile`` configuration option:
 
 from torch._inductor import config
 config.cpp.enable_kernel_profile = True
@@ -474,11 +473,11 @@ with profile(
         p.step()
 
 ######################################################################
-# We will get the following profile table for the eager model:
+# We get the following performance profiling table for the eager-mode model:
 #
 # .. image:: ../_static/img/eager_prof.png
 #
-# Similarly, get the table for the inductor model:
+# Similarly, we also get the table for the compiled model with Inductor:
 #
 # .. image:: ../_static/img/inductor_prof.png
 #
