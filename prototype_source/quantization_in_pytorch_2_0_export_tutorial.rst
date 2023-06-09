@@ -41,8 +41,8 @@ without involvement of the quantization team:
    by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend
    specific. So there will be less confusion about incompatibilities.
 -  Currently, in ``QConfig`` we are exposing observer/fake_quant classes as an object for user to configure quantization.
-   This increases the things that user needs to care about, e.g. not only the ``dtype`` but also how the observation should
-   happen. These could potentially be hidden from user to make user interface simpler.
+   This increases the things that user needs to care about, e.g. not only the ``dtype`` but also how the
+   observation should happen. These could potentially be hidden from user to make user interface simpler.
 
 To address these scalability issues, 
 `Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
@@ -136,22 +136,30 @@ Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could b
 
     # Step 4: Lower Reference Quantized Model into the backend
 
-Quantizer uses annotation API to convey quantization intent for different operators/patterns.
-Annotation API uses
+``Quantizer`` uses annotation API to convey quantization intent for different operators/patterns.
+Annotation API mainly consists of
 `QuantizationSpec <https://github.com/pytorch/pytorch/blob/1ca2e993af6fa6934fca35da6970308ce227ddc7/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L38>`__
-to convey intent of how a tensor will be quantized,
+and 
+`QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__.
+
+``QuantizationSpec`` is used to convey intent of how a tensor will be quantized,
 e.g. dtype, bitwidth, min, max values, symmetric vs. asymmetric etc.
-Furthermore, annotation API also allows quantizer to specify how a
+Furthermore, ``QuantizationSpec`` also allows quantizer to specify how a
 tensor value should be observed, e.g. ``MinMaxObserver``, or ``HistogramObserver``
 , or some customized observer.
 
-``QuantizationSpec`` is used to annotate nodes' input tensors or output tensor. Annotating
-input tensors is equivalent of annotating edge of the graph, while annotating output tensor is
-equivalent of annotating node. Thus annotation API requires quantizer to annotate
-edges (input tensors) or nodes (output tensor) of the graph.
+``QuantizationAnnotation`` composed of ``QuantizationSpec`` objects is used to annotate input tensors
+and output tensor of a ``FX Node``. Annotating input tensors is equivalent of annotating input edges,
+while annotating output tensor is equivalent of annotating node. ``QuantizationAnnotation`` is a ``dataclass``
+with several fields:
 
-Now, we will have a step-by-step tutorial for how to use the annotation API with different types of
-``QuantizationSpec``.
+-  ``input_qspec_map`` field is of class ``Dict`` to map each input tensor (as input edge) to a ``QuantizationSpec``.
+-  ``output_qspec`` field expresses the ``QuantizationSpec`` used to annotate the output tensor;
+-  ``_annotated`` field indicates if this node has already been annotated by quantizer.
+
+Thus annotation API requires quantizer to annotate edges (input tensors) or
+nodes (output tensor) of the graph. Now, we will have a step-by-step tutorial for
+how to use the annotation API with different types of ``QuantizationSpec``.
 
 1. Annotate common operator patterns
 --------------------------------------------------------
@@ -193,13 +201,8 @@ of how this intent is conveyed in the quantization workflow with annotation API.
     input_act_qspec = act_quantization_spec
     output_act_qspec = act_quantization_spec
 
--  Step 3: Annotate the inputs and output of the pattern with
-   `QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__.
-   ``QuantizationAnnotation`` is a ``dataclass`` with several fields as: ``input_qspec_map`` field is of class ``Dict``
-   to map each input ``Node`` to a ``QuantizationSpec``. It means to annotate each input edge with this ``QuantizationSpec``;
-   ``output_qspec`` field expresses the ``QuantizationSpec`` used to
-   annotate the output node; ``_annotated`` field indicates if this node has already been annotated by quantizer.
-   In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec`` objects
+-  Step 3: Annotate the inputs and output of the pattern with ``QuantizationAnnotation``.
+   In this example, we will create the ``QuantizationAnnotation`` object with the ``QuantizationSpec``
    created in above step 2 for two inputs and one output of the ``add`` node.
 
 ::
