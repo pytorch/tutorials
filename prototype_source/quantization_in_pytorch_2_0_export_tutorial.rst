@@ -27,20 +27,20 @@ and ``BackendConfig`` to specify the supported ways of quantization in their bac
 This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
 without involvement of the quantization team:
 
--  Current API has limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
+-  This API has limitation around expressing quantization intentions for complicated operator patterns such as in the discussion of
    `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
    Supporting ``conv add`` fusion also requires some changes to current already complicated pattern matching code such as in the
    `PR-97122 <https://github.com/pytorch/pytorch/pull/97122>`__.
--  Current API also has limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
+-  This API also has limitation around supporting user's advanced quantization intention to quantize their model. For example, if backend
    developer only wants to quantize inputs and outputs when the ``linear`` has a third input, it requires co-work from quantization
    team and backend developer.
--  Current API uses ``QConfigMapping`` and ``BackendConfig`` as separate object. ``QConfigMapping`` describes user's
+-  This API uses ``QConfigMapping`` and ``BackendConfig`` as separate object. ``QConfigMapping`` describes user's
    intention of how they want their model to be quantized. ``BackendConfig`` describes what kind of quantization a backend support.
-   Currently, ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not. And user can provide a ``QConfigMapping``
+   ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not. And user can provide a ``QConfigMapping``
    that is incompatible with a specific ``BackendConfig``. This is not a great UX. Ideally, we can structure this better
    by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend
    specific. So there will be less confusion about incompatibilities.
--  Currently, in ``QConfig`` we are exposing observer/fake_quant classes as an object for user to configure quantization.
+-  In ``QConfig``, we are exposing observer/fake_quant classes as an object for user to configure quantization.
    This increases the things that user needs to care about, e.g. not only the ``dtype`` but also how the
    observation should happen. These could potentially be hidden from user to make user interface simpler.
 
