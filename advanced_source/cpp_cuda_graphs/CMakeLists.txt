@@ -3,6 +3,7 @@ project(mnist)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(Torch REQUIRED)
+find_package(Threads REQUIRED)
 
 option(DOWNLOAD_MNIST "Download the MNIST dataset from the internet" ON)
 if (DOWNLOAD_MNIST)
@@ -18,7 +19,7 @@ endif()
 
 add_executable(mnist mnist.cpp)
 target_compile_features(mnist PUBLIC cxx_range_for)
-target_link_libraries(mnist ${TORCH_LIBRARIES})
+target_link_libraries(mnist ${TORCH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")

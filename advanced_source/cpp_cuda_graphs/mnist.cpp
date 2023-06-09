@@ -89,15 +89,15 @@ void capture_train_graph(
     const short num_warmup_iters = 7) {
   model.train();
 
-  at::cuda::CUDAStream warmupStream = at::cuda::getStreamFromPool();
-  at::cuda::CUDAStream captureStream = at::cuda::getStreamFromPool();
-  at::cuda::CUDAStream legacyStream = at::cuda::getCurrentCUDAStream();
+  auto warmupStream = at::cuda::getStreamFromPool();
+  auto captureStream = at::cuda::getStreamFromPool();
+  auto legacyStream = at::cuda::getCurrentCUDAStream();
 
   at::cuda::setCurrentCUDAStream(warmupStream);
 
   stream_sync(legacyStream, warmupStream);
 
-  for (int iter = 0; iter < num_warmup_iters; iter++) {
+  for (C10_UNUSED const auto  iter : c10::irange(num_warmup_iters)) {
     training_step(model, optimizer, data, targets, output, loss);
   }
 
@@ -130,7 +130,7 @@ void train(
 
   size_t batch_idx = 0;
 
-  for (auto& batch : data_loader) {
+  for (const auto& batch : data_loader) {
     if (batch.data.size(0) != kTrainBatchSize ||
         batch.target.size(0) != kTrainBatchSize) {
       continue;
@@ -175,23 +175,22 @@ void capture_test_graph(
     torch::Tensor& loss,
     torch::Tensor& total_loss,
     torch::Tensor& total_correct,
-    at::cuda::CUDAGraph& graph) {
+    at::cuda::CUDAGraph& graph,
+    const int num_warmup_iters = 7) {
   torch::NoGradGuard no_grad;
   model.eval();
 
-  const int num_warmup_iters = 7;
-
-  at::cuda::CUDAStream warmupStream = at::cuda::getStreamFromPool();
-  at::cuda::CUDAStream captureStream = at::cuda::getStreamFromPool();
-  at::cuda::CUDAStream legacyStream = at::cuda::getCurrentCUDAStream();
+  auto warmupStream = at::cuda::getStreamFromPool();
+  auto captureStream = at::cuda::getStreamFromPool();
+  auto legacyStream = at::cuda::getCurrentCUDAStream();
 
   at::cuda::setCurrentCUDAStream(warmupStream);
   stream_sync(captureStream, legacyStream);
 
-  for (int iter = 0; iter < num_warmup_iters; iter++) {
+  for (C10_UNUSED const auto  iter : c10::irange(num_warmup_iters)) {
     test_step(model, data, targets, output, loss);
-    total_loss = total_loss + loss;
-    total_correct = total_correct + output.argmax(1).eq(targets).sum();
+    total_loss += loss;
+    total_correct += output.argmax(1).eq(targets).sum();
   }
 
   stream_sync(warmupStream, captureStream);
@@ -239,8 +238,8 @@ void test(
     } else {
       test_step(model, data, targets, output, loss);
     }
-    total_loss = total_loss + loss;
-    total_correct = total_correct + output.argmax(1).eq(targets).sum();
+    total_loss += loss;
+    total_correct += output.argmax(1).eq(targets).sum();
   }
 
   float test_loss = total_loss.item<float>() / dataset_size;
@@ -254,33 +253,29 @@ void test(
 }
 
 int main(int argc, char* argv[]) {
+  if (!torch::cuda::is_available()) {
+      std::cout << "CUDA is not available!" << std::endl;
+      return -1;
+  }
+
   bool use_train_graph = false;
   bool use_test_graph = false;
 
-  torch::manual_seed(1);
-
-  torch::DeviceType device_type;
-  if (torch::cuda::is_available()) {
-    std::cout << "CUDA is available! Training on GPU." << std::endl;
-
-    std::vector<std::string> arguments(argv + 1, argv + argc);
-    for (std::string& arg : arguments) {
-      if (arg == "--use-train-graph") {
-        std::cout << "Using CUDA Graph for training." << std::endl;
-        use_train_graph = true;
-      }
-      if (arg == "--use-test-graph") {
-        std::cout << "Using CUDA Graph for testing." << std::endl;
-        use_test_graph = true;
-      }
+  std::vector<std::string> arguments(argv + 1, argv + argc);
+  for (std::string& arg : arguments) {
+    if (arg == "--use-train-graph") {
+      std::cout << "Using CUDA Graph for training." << std::endl;
+      use_train_graph = true;
     }
-
-    device_type = torch::kCUDA;
-  } else {
-    std::cout << "CUDA is not available!" << std::endl;
-    return 1;
+    if (arg == "--use-test-graph") {
+      std::cout << "Using CUDA Graph for testing." << std::endl;
+      use_test_graph = true;
+    }
   }
-  torch::Device device(device_type);
+
+  torch::manual_seed(1);
+  torch::cuda::manual_seed(1);
+  torch::Device device(torch::kCUDA);
 
   Net model;
   model.to(device);
@@ -375,4 +370,7 @@ int main(int argc, char* argv[]) {
         test_graph,
         use_test_graph);
   }
+
+  std::cout << " Training/testing complete" << std::endl;
+  return 0;
 }
