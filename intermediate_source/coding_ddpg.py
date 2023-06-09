@@ -39,7 +39,7 @@ TorchRL objectives: Coding a DDPG loss
 # - how to evaluate your model.
 #
 # Prerequisites
-# ~~~~~~~~~~
+# ~~~~~~~~~~~~~
 #
 # This tutorial assumes that you have completed the
 # `PPO tutorial <reinforcement_ppo.html>`_ which gives
@@ -59,6 +59,8 @@ TorchRL objectives: Coding a DDPG loss
 # -----------------
 #
 
+import torchrl
+
 # sphinx_gallery_start_ignore
 import warnings
 from typing import Tuple
@@ -68,8 +70,6 @@ warnings.filterwarnings("ignore")
 
 import torch.cuda
 import tqdm
-
-import torchrl
 
 import torch.multiprocessing
 
@@ -821,7 +821,9 @@ if device == torch.device("cpu"):
 # - the total number of frames before the collector is considered empty,
 # - the maximum number of frames per trajectory (useful for non-terminating
 #   environments, like ``dm_control`` ones).
+#
 #   .. note::
+#
 #     The ``max_frames_per_traj`` passed to the collector will have the effect
 #     of registering a new :class:`~torchrl.envs.StepCounter` transform
 #     with the environment used for inference. We can achieve the same result
