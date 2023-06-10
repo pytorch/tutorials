@@ -79,8 +79,8 @@ epochs = 3
 # Creates data in default precision.
 # The same data is used for both default and mixed precision trials below.
 # You don't need to manually change inputs' ``dtype`` when enabling mixed precision.
-data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batches)]
-targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
+data = [torch.randn(batch_size, in_size, device=torch.device('cuda')) for _ in range(num_batches)]
+targets = [torch.randn(batch_size, out_size, device=torch.device('cuda')) for _ in range(num_batches)]
 
 loss_fn = torch.nn.MSELoss().cuda()
 
@@ -116,7 +116,7 @@ end_timer_and_print("Default precision:")
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         # Runs the forward pass under ``autocast``.
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
+        with torch.autocast(device_type=torch.device('cuda'), dtype=torch.float16):
             output = net(input)
             # output is float16 because linear layers ``autocast`` to float16.
             assert output.dtype is torch.float16
@@ -151,7 +151,7 @@ scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
+        with torch.autocast(device_type=torch.device('cuda'), dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
 
@@ -184,7 +184,7 @@ scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 start_timer()
 for epoch in range(epochs):
     for input, target in zip(data, targets):
-        with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=use_amp):
+        with torch.autocast(device_type=torch.device('cuda'), dtype=torch.float16, enabled=use_amp):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
@@ -202,7 +202,7 @@ end_timer_and_print("Mixed precision:")
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
+        with torch.autocast(device_type=torch.device('cuda'), dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
