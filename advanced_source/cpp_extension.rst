@@ -553,6 +553,7 @@ creation time or using ``.to(cuda_device)`` after creation::
   import torch
 
   assert torch.cuda.is_available()
+  device = "cuda" if torch.cuda.is_available() else "cpu"
   cuda_device = torch.device("cuda")  # device object representing GPU
 
   batch_size = 16
