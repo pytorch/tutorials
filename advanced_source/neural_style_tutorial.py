@@ -72,6 +72,7 @@ import copy
 # method is used to move tensors or modules to a desired device. 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_default_device(device)
 
 ######################################################################
 # Loading the Images
@@ -107,7 +108,7 @@ def image_loader(image_name):
     image = Image.open(image_name)
     # fake batch dimension required to fit network's input dimensions
     image = loader(image).unsqueeze(0)
-    return image.to(device, torch.float)
+    return image
 
 
 style_img = image_loader("./data/images/neural-style/picasso.jpg")
@@ -263,7 +264,7 @@ class StyleLoss(nn.Module):
 # network to evaluation mode using ``.eval()``.
 # 
 
-cnn = models.vgg19(pretrained=True).features.to(device).eval()
+cnn = models.vgg19(pretrained=True).features.eval()
 
 
 
@@ -273,8 +274,8 @@ cnn = models.vgg19(pretrained=True).features.to(device).eval()
 # We will use them to normalize the image before sending it into the network.
 # 
 
-cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406])
+cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225])
 
 # create a module to normalize input image so we can easily put it in a
 # ``nn.Sequential``
@@ -310,7 +311,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                content_layers=content_layers_default,
                                style_layers=style_layers_default):
     # normalization module
-    normalization = Normalization(normalization_mean, normalization_std).to(device)
+    normalization = Normalization(normalization_mean, normalization_std)
 
     # just in order to have an iterable access to or list of content/style
     # losses
@@ -375,7 +376,7 @@ input_img = content_img.clone()
 #
 # ::
 #
-#    input_img = torch.randn(content_img.data.size(), device=device)
+#    input_img = torch.randn(content_img.data.size())
 
 # add the original input image to the figure:
 plt.figure()
