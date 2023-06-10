@@ -14,7 +14,7 @@ Prerequisites:
 -  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
 
 
-`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
+`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and
 create a single DDP instance per process. DDP uses collective communications in the
