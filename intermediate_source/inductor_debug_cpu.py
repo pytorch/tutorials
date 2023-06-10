@@ -446,18 +446,18 @@ with profile(
 #
 # .. image:: ../_static/img/inductor_prof.png
 #
-# From the profiling table of the eager model, we can see the most time consumption ops are [aten::addmm, aten::add, aten::copy_, aten::mul, aten::clamp_min, aten::bmm].
-# Comparing with the inductor model profiling table, we notice there are ``mkl::_mkl_linear`` and fused kernel called ``graph_0_cpp_fused_*``. They are the major
-# optimization that the inductor model is doing. Let us discuss them separately.
+# From the profiling table of the eager model, we can see the most time consumption ops are [``aten::addmm``, ``aten::add``, ``aten::copy_``, ``aten::mul``, ``aten::clamp_min``, ``aten::bmm``].
+# Comparing with the inductor model profiling table, we notice an ``mkl::_mkl_linear`` entry and multiple fused kernels in the form ``graph_0_cpp_fused_*``. They are the major
+# optimizations that the inductor model is doing. Let us discuss them separately.
 #
-# (1) Regard to ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
-# The CPU total of ``aten::linear`` is 376.888ms, at the mean time it is 231.573ms for ``mkl::_mkl_linear``. This suggests inductor model speed up ~1.63x for the "linear" part.
-# The speed-up majorly comes from we "packed" the ``weight`` tensor to `block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
-# and invoking `cblas_sgemm_compute <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html>`_ within Inductor CPU backend
-# to have a better cache beviour during GEMM computation.
+# (1) Regarding ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
+# The CPU total of ``aten::linear`` is 376.888ms, while it is 231.573ms for ``mkl::_mkl_linear``. This suggests a ~1.63x for the "linear" part.
+# The speedup mainly comes "packing" the ``weight`` tensor to `block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
+# and invoking `cblas_sgemm_compute <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html>`_ within the Inductor CPU backend
+# to have a better cache behavior during GEMM computation.
 #
 # (2) Regarding non-linear part: The end-to-end latency for the eager/inductor model is 802/339ms. The speed up for the non-linear part is ~3.94x.
-# Let's read the generated code to understand how the inductor achieves this impressive optimization. You are able to find the generated code by 
+# Let's read the generated code to understand how the inductor achieves this impressive optimization. You can find the generated code by 
 # searching ``cpp_fused__mkl_linear_add_mul_relu_151`` in ``output_code.py``
 # 
 
