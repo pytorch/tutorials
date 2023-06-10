@@ -453,7 +453,7 @@ print("padded tensor multi-head attention takes", t2 - t1, "seconds")
 
 # embeddings are assumed to be the same
 E = E_total
-mha_lib =  torch.nn.MultiheadAttention(E, nheads, batch_first=True, device=device)
+mha_lib = torch.nn.MultiheadAttention(E, nheads, batch_first=True, device=device)
 mha_lib.eval()
 
 ######################################################################
