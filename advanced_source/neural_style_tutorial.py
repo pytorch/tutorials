@@ -107,6 +107,7 @@ loader = transforms.Compose([
 def image_loader(image_name):
     image = Image.open(image_name)
     # fake batch dimension required to fit network's input dimensions
+    image = loader(image).unsqueeze(0)
     return image.to(device, torch.float)
 
 
