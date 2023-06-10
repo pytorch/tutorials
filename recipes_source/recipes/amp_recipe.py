@@ -119,7 +119,7 @@ end_timer_and_print("Default precision:")
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         # Runs the forward pass under ``autocast``.
-        with torch.autocast(dtype=torch.float16):
+        with torch.autocast(device_type=device, dtype=torch.float16):
             output = net(input)
             # output is float16 because linear layers ``autocast`` to float16.
             assert output.dtype is torch.float16
@@ -154,7 +154,7 @@ scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.autocast(dtype=torch.float16):
+        with torch.autocast(device_type=device, dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
 
@@ -187,7 +187,7 @@ scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 start_timer()
 for epoch in range(epochs):
     for input, target in zip(data, targets):
-        with torch.autocast(dtype=torch.float16, enabled=use_amp):
+        with torch.autocast(device_type=device, dtype=torch.float16, enabled=use_amp):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
@@ -205,7 +205,7 @@ end_timer_and_print("Mixed precision:")
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        with torch.autocast(dtype=torch.float16):
+        with torch.autocast(device_type=device, dtype=torch.float16):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
