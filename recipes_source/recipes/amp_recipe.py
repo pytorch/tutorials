@@ -76,7 +76,7 @@ num_layers = 3
 num_batches = 50
 epochs = 3
 
-device = torch.device('cuda')
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.set_default_device(device)
 
 # Creates data in default precision.
