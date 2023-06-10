@@ -25,6 +25,7 @@ import torch
 import torch.nn.functional as F
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+torch.set_default_device(device)
 
 ######################################################################
 # NestedTensor Initialization
@@ -35,7 +36,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # From the Python frontend, a nestedtensor can be created from a list of tensors.
 # We denote nt[i] as the ith tensor component of a nestedtensor.
 nt = torch.nested.nested_tensor([torch.arange(12).reshape(
-    2, 6), torch.arange(18).reshape(3, 6)], dtype=torch.float, device=device)
+    2, 6), torch.arange(18).reshape(3, 6)], dtype=torch.float)
 print(f"{nt=}")
 
 ######################################################################
@@ -111,7 +112,7 @@ print(f"{nt_transposed=}")
 # Applying the operation on a nestedtensor is equivalent to
 # applying the operation to the underlying tensor components,
 # with the result being a nestedtensor as well.
-nt_mm = torch.nested.nested_tensor([torch.randn((2, 3, 4)), torch.randn((2, 3, 5))], device=device)
+nt_mm = torch.nested.nested_tensor([torch.randn((2, 3, 4)), torch.randn((2, 3, 5))])
 nt3 = torch.matmul(nt_transposed, nt_mm)
 print(f"Result of Matmul:\n {nt3}")
 
@@ -318,7 +319,7 @@ def mha_padded(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, nhea
 
     # Have to manipulate masks in order to apply them to the attention weights
     key_padding_mask = attn_mask_q.view(N, 1, 1, L_t).expand(-1, nheads, -1, -1).reshape(N*nheads, 1, L_t).to(device=device)
-    attn_mask = torch.zeros(key_padding_mask.shape, device=device, dtype=torch.float32)
+    attn_mask = torch.zeros(key_padding_mask.shape, dtype=torch.float32)
     attn_mask = attn_mask.masked_fill_(key_padding_mask, float("-inf"))
 
     # Zero out the attention weights where the mask is True by adding -inf prior to softmax
@@ -384,10 +385,10 @@ L_s = L_t
 # create inputs
 
 # create parameters
-W_q, b_q = torch.randn((E_total, E_q), device=device), torch.randn(E_total, device=device)
-W_k, b_k = torch.randn((E_total, E_k), device=device), torch.randn(E_total, device=device)
-W_v, b_v = torch.randn((E_total, E_v), device=device), torch.randn(E_total, device=device)
-W_out, b_out = torch.randn((E_out, E_total), device=device), torch.randn(E_out, device=device)
+W_q, b_q = torch.randn((E_total, E_q)), torch.randn(E_total)
+W_k, b_k = torch.randn((E_total, E_k)), torch.randn(E_total)
+W_v, b_v = torch.randn((E_total, E_v)), torch.randn(E_total)
+W_out, b_out = torch.randn((E_out, E_total)), torch.randn(E_out)
 
 # create nested input
 queries = []
@@ -396,9 +397,9 @@ values = []
 for i in range(N):
     l = sentence_lengths[i]
     s = l
-    queries.append(torch.randn((l, E_q), device=device))
-    keys   .append(torch.randn((s, E_k), device=device))
-    values .append(torch.randn((s, E_v), device=device))
+    queries.append(torch.randn((l, E_q)))
+    keys   .append(torch.randn((s, E_k)))
+    values .append(torch.randn((s, E_v)))
 query = torch.nested.nested_tensor(queries)
 key = torch.nested.nested_tensor(keys)
 value = torch.nested.nested_tensor(values)
