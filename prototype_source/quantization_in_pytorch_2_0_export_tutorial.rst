@@ -33,7 +33,7 @@ without involvement of the quantization team:
 - This API has limitation to support advanced quantization intention and complicated quantization operator patterns
   as in the discussion of `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
 - This API uses ``QConfigMapping`` and ``BackendConfig`` as separate object in quantization configuration 
-  which may cause confusion about incompatibilities between these 2 objects. Also these quantization configurations require
+  which may cause confusion about incompatibilities between these two objects. Also these quantization configurations require
   too much quantization details users need to know which can be hidden from user interface to make it simpler.
 
 To address these issues,
