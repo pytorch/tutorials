@@ -421,6 +421,22 @@ print(c2)
 # turning autograd on when it isn’t already. It may also be used as a
 # decorator.
 # 
+
+a = torch.ones(2, 3, requires_grad=True) * 2
+b = torch.ones(2, 3, requires_grad=True) * 3
+
+with torch.no_grad():
+    c1 = a + b
+    with torch.enable_grad():
+        c2 = a + b
+    c3 = a * b
+
+print(c1)
+print(c2)
+print(c3)
+
+
+##########################################################################
 # Finally, you may have a tensor that requires gradient tracking, but you
 # want a copy that does not. For this we have the ``Tensor`` object’s
 # ``detach()`` method - it creates a copy of the tensor that is *detached*

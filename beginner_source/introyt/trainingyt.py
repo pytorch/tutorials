@@ -190,7 +190,7 @@ print('Total loss for this batch: {}'.format(loss.item()))
 # scheme:
 # 
 # - Learning rate determines the size of the steps the optimizer
-#   takes. What does a different learning rate do to the your training
+#   takes. What does a different learning rate do to your training
 #   results, in terms of accuracy and convergence time?
 # - Momentum nudges the optimizer in the direction of strongest gradient over
 #   multiple steps. What does changing this value do to your results? 

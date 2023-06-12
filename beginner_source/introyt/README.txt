@@ -3,7 +3,7 @@ Introduction to PyTorch on YouTube
 
 1. introyt.rst
     Introduction to PyTorch - Youtube Series
-    https://pytorch.org/tutorials/beginner/introyt/introyt.html
+    https://pytorch.org/tutorials/beginner/introyt.html
 
 2. introyt1_tutorial.py
     Introduction to PyTorch
@@ -27,8 +27,8 @@ Introduction to PyTorch on YouTube
 
 7. trainingyt_tutorial.py
     Training with PyTorch
-    https://pytorch.org/tutorials/beginner/introyt/trainingyt_tutorial.html
+    https://pytorch.org/tutorials/beginner/introyt/trainingyt.html
     
 8. captumyt_tutorial.py
     Model Understanding with Captum
-    https://pytorch.org/tutorials/beginner/introyt/captumyt_tutorial.html
+    https://pytorch.org/tutorials/beginner/introyt/captumyt.html
