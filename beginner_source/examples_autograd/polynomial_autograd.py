@@ -18,23 +18,23 @@ import torch
 import math
 
 dtype = torch.float
-device = torch.device("cpu")
-# device = torch.device("cuda:0")  # Uncomment this to run on GPU
+device = "cuda" if torch.cuda.is_available() else "cpu"
+torch.set_default_device(device)
 
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.
-x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
+x = torch.linspace(-math.pi, math.pi, 2000, dtype=dtype)
 y = torch.sin(x)
 
 # Create random Tensors for weights. For a third order polynomial, we need
 # 4 weights: y = a + b x + c x^2 + d x^3
 # Setting requires_grad=True indicates that we want to compute gradients with
 # respect to these Tensors during the backward pass.
-a = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-b = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-c = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-d = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+a = torch.randn((), dtype=dtype, requires_grad=True)
+b = torch.randn((), dtype=dtype, requires_grad=True)
+c = torch.randn((), dtype=dtype, requires_grad=True)
+d = torch.randn((), dtype=dtype, requires_grad=True)
 
 learning_rate = 1e-6
 for t in range(2000):
