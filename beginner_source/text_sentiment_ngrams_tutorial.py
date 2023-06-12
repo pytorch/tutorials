@@ -9,11 +9,13 @@ In this tutorial, we will show how to use the torchtext library to build the dat
    - Shuffle and iterate the data with `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
 
 
-Prerequisites:
-   - | Recent 2.x version of portalocker package needs to be installed prior to running the tutorial.
-     | E.g., in Colab environment this can be done by adding following line at the top of the script:
-     | `!pip install -U portalocker>=2.0.0`
-     | (More details https://github.com/pytorch/tutorials/issues/1993)
+Prerequisites
+~~~~~~~~~~~~~~~~
+   - A recent 2.x version of the ``portalocker`` package needs to be installed prior to running the tutorial.
+     For example, in the Colab environment, this can be done by adding the following line at the top of the script:
+     .. code-block:: bash 
+     
+        !pip install -U portalocker>=2.0.0`
 
 """
 
