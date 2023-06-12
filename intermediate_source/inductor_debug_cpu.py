@@ -396,7 +396,7 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 #     inductor use: 339.95180135127157 ms/iter
 #     speed up ratio: 2.359459053287382
 #
-# The inductor model speed-up is 2.58x.
+# In our own testing, we find the Inductor CPU backend speed up the model by around 2.355x.
 #
 #
 # Next, let's dive deep into the performance at the operation level to understand where the speed-up comes from.
@@ -452,11 +452,11 @@ with profile(
 #
 # (1) Regarding ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
 # The CPU total of ``aten::linear`` is 376.888ms, while it is 231.573ms for ``mkl::_mkl_linear``. This suggests a ~1.63x for the "linear" part.
-# The speedup mainly comes "packing" the ``weight`` tensor to `block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
+# The speedup mainly comes `packing the weight tensor to block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
 # and invoking `cblas_sgemm_compute <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html>`_ within the Inductor CPU backend
 # to have a better cache behavior during GEMM computation.
 #
-# (2) Regarding non-linear part: The end-to-end latency for the eager/inductor model is 802/339ms. The speed up for the non-linear part is ~3.94x.
+# (2) Regarding other memory-intensive ops: The end-to-end latency for the eager/inductor model is 802/339ms in our testing. So we can roughly infer that the speed up for the other memory-intensive ops is around 3.94x.
 # Let's read the generated code to understand how the inductor achieves this impressive optimization. You can find the generated code by 
 # searching ``cpp_fused__mkl_linear_add_mul_relu_151`` in ``output_code.py``
 # 
