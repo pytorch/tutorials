@@ -452,7 +452,7 @@ with profile(
 #
 # (1) Regarding ``mkl::_mkl_linear``: You may notice the number of calls to this kernel is 362, which is exactly the same as ``aten::linear`` in the eager model profiling table.
 # The CPU total of ``aten::linear`` is 376.888ms, while it is 231.573ms for ``mkl::_mkl_linear``. This suggests a ~1.63x for the "linear" part.
-# The speedup mainly comes `packing the weight tensor to block memory format <https://oneapi-src.github.io/oneDNN/dev_guide_understanding_memory_formats.html>`_
+# The speedup mainly comes from `packing the weight tensor to block memory format <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-pack-002.html>`_
 # and invoking `cblas_sgemm_compute <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html>`_ within the Inductor CPU backend
 # to have a better cache behavior during GEMM computation.
 #
