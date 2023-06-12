@@ -580,17 +580,34 @@ def make_transformed_env(
 #
 
 
-def env_constructor(
+def parallel_env_constructor(
+    env_per_collector,
     transform_state_dict,
 ):
-    def make_t_env():
-        env = make_transformed_env(make_env())
-        env.transform[2].init_stats(3)
-        env.transform[2].loc.copy_(transform_state_dict["loc"])
-        env.transform[2].scale.copy_(transform_state_dict["scale"])
-        return env
-    env_creator = EnvCreator(make_t_env)
-    return env_creator
+    if env_per_collector == 1:
+
+        def make_t_env():
+            env = make_transformed_env(make_env())
+            env.transform[2].init_stats(3)
+            env.transform[2].loc.copy_(transform_state_dict["loc"])
+            env.transform[2].scale.copy_(transform_state_dict["scale"])
+            return env
+
+        env_creator = EnvCreator(make_t_env)
+        return env_creator
+
+    parallel_env = ParallelEnv(
+        num_workers=env_per_collector,
+        create_env_fn=EnvCreator(lambda: make_env()),
+        create_env_kwargs=None,
+        pin_memory=False,
+    )
+    env = make_transformed_env(parallel_env)
+    # we call `init_stats` for a limited number of steps, just to instantiate
+    # the lazy buffers.
+    env.transform[2].init_stats(3, cat_dim=1, reduce_dim=[0, 1])
+    env.transform[2].load_state_dict(transform_state_dict)
+    return env
 
 
 # The backend can be ``gym`` or ``dm_control``
