@@ -12,7 +12,7 @@ In this tutorial, we will show how to use the torchtext library to build the dat
 Prerequisites
 ~~~~~~~~~~~~~~~~
 
-- A recent 2.x version of the ``portalocker`` package needs to be installed prior to running the tutorial.
+A recent 2.x version of the ``portalocker`` package needs to be installed prior to running the tutorial.
 For example, in the Colab environment, this can be done by adding the following line at the top of the script:
 
 .. code-block:: bash 
