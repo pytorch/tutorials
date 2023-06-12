@@ -78,7 +78,7 @@ import torch.multiprocessing
 device = (
     torch.device("cpu") if torch.cuda.device_count() == 0 else torch.device("cuda:0")
 )
-collector_device = torch.device("cpu")
+collector_device = torch.device("cpu")  # Change the device to ``cuda`` to use CUDA
 
 ###############################################################################
 # TorchRL :class:`~torchrl.objectives.LossModule`
