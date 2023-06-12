@@ -78,6 +78,7 @@ import torch.multiprocessing
 device = (
     torch.device("cpu") if torch.cuda.device_count() == 0 else torch.device("cuda:0")
 )
+collector_device = torch.device("cpu")
 
 ###############################################################################
 # TorchRL :class:`~torchrl.objectives.LossModule`
@@ -449,7 +450,6 @@ def make_env(from_pixels=False):
         raise NotImplementedError
 
     env_kwargs = {
-        "device": device,
         "from_pixels": from_pixels,
         "pixels_only": from_pixels,
         "frame_skip": 2,
@@ -546,7 +546,7 @@ def make_transformed_env(
 
     env.append_transform(StepCounter(max_frames_per_traj))
 
-    # We need a marker for the start of trajectories for our Ornstein-Uhlenbeck
+    # We need a marker for the start of trajectories for our Ornstein-Uhlenbeck (OU)
     # exploration:
     env.append_transform(InitTracker())
 
@@ -580,34 +580,17 @@ def make_transformed_env(
 #
 
 
-def parallel_env_constructor(
-    env_per_collector,
+def env_constructor(
     transform_state_dict,
 ):
-    if env_per_collector == 1:
-
-        def make_t_env():
-            env = make_transformed_env(make_env())
-            env.transform[2].init_stats(3)
-            env.transform[2].loc.copy_(transform_state_dict["loc"])
-            env.transform[2].scale.copy_(transform_state_dict["scale"])
-            return env
-
-        env_creator = EnvCreator(make_t_env)
-        return env_creator
-
-    parallel_env = ParallelEnv(
-        num_workers=env_per_collector,
-        create_env_fn=EnvCreator(lambda: make_env()),
-        create_env_kwargs=None,
-        pin_memory=False,
-    )
-    env = make_transformed_env(parallel_env)
-    # we call `init_stats` for a limited number of steps, just to instantiate
-    # the lazy buffers.
-    env.transform[2].init_stats(3, cat_dim=1, reduce_dim=[0, 1])
-    env.transform[2].load_state_dict(transform_state_dict)
-    return env
+    def make_t_env():
+        env = make_transformed_env(make_env())
+        env.transform[2].init_stats(3)
+        env.transform[2].loc.copy_(transform_state_dict["loc"])
+        env.transform[2].scale.copy_(transform_state_dict["scale"])
+        return env
+    env_creator = EnvCreator(make_t_env)
+    return env_creator
 
 
 # The backend can be ``gym`` or ``dm_control``
@@ -868,9 +851,9 @@ collector = MultiaSyncDataCollector(
     init_random_frames=init_random_frames,
     reset_at_each_iter=False,
     split_trajs=False,
-    device=device,
+    device=collector_device,
     # device for execution
-    storing_device=device,
+    storing_device=collector_device,
     # device where data will be stored and passed
     update_at_each_batch=False,
     exploration_type=ExplorationType.RANDOM,
