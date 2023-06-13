@@ -64,7 +64,7 @@ def neg(x):
 # In order to demonstrate the debugging, we will modify the function to a wrong one later.
 #
 #
-# Get more loggings
+# Get more logging information
 # ^^^^^^^^^^^^^^^^^
 #
 # No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
@@ -84,15 +84,15 @@ def neg(x):
 # +-------------------------+----------------------------------------------------------+
 # | File                    | Description                                              |
 # +=========================+==========================================================+
-# | fx_graph_runnable.py    | Executable FX graph, post decomps, pre pattern match     |
+# | ``fx_graph_runnable.py``    | Executable FX graph, post decompositions, pre pattern match     |
 # +-------------------------+----------------------------------------------------------+
-# | fx_graph_transformed.py | Transformed FX graph, post pattern match                 |
+# | ``fx_graph_transformed.py`` | Transformed FX graph, post pattern match                 |
 # +-------------------------+----------------------------------------------------------+
-# | ir_post_fusion.txt      | Inductor IR before fusion                                |
+# | ``ir_post_fusion.txt``     | Inductor IR before fusion                                |
 # +-------------------------+----------------------------------------------------------+
-# | ir_pre_fusion.txt       | Inductor IR after fusion                                 |
+# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                 |
 # +-------------------------+----------------------------------------------------------+
-# | output_code.py          | Generated Python code for graph, with C++/triton kernels |
+# | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels |
 # +-------------------------+----------------------------------------------------------+
 #
 # Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
@@ -149,11 +149,11 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 # +----------------------------------------+-----------------------------------------+
 # | Code                                   | Description                             |
 # +========================================+=========================================+
-# | torch.compile(fn, backend="eager")     | Enable Dynamo                           |
+# | ``torch.compile(fn, backend="eager")``     | Enable Dynamo                           |
 # +----------------------------------------+-----------------------------------------+
-# | torch.compile(fn, backend="aot_eager") | Enable Dynamo + AOT autograd            |
+# | ``torch.compile(fn, backend="aot_eager")`` | Enable Dynamo + AOT Autograd            |
 # +----------------------------------------+-----------------------------------------+
-# | torch.compile(fn, backend="inductor")  | Enable Dynamo + AOT autograd + Inductor |
+# | ``torch.compile(fn, backend="inductor")``  | Enable Dynamo + AOT Autograd + Inductor |
 # +----------------------------------------+-----------------------------------------+
 #
 # If the model can successfully run when the backend is set to ``eager`` or ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
@@ -182,21 +182,21 @@ def neg(x):
 #
 # .. code:: shell
 #
-# 	…
-# 	torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
-# 	CppCompileError: C++ compile error
-# 	…
-# 	/tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
-#   /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: error: no matching function for call to ‘max_propagate_nan(unsigned char&, int&)’
+#    …
+#    torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
+#    CppCompileError: C++ compile error
+#    …
+#    /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
+#    /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: error: no matching function for call to ‘max_propagate_nan(unsigned char&, int&)’
 #      17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
-#         |                                                         ^
-#   In file included from /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:2:
-#   /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note: candidate: ‘template<class scalar_t> scalar_t max_propagate_nan(scalar_t, scalar_t)’
-#      27 | inline scalar_t max_propagate_nan(scalar_t a, scalar_t b) {
+#           |                                                         ^
+#    In file included from /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:2:
+#    /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note: candidate: ‘template<class scalar_t> scalar_t max_propagate_nan(scalar_t, scalar_t)’
+#    27 | inline scalar_t max_propagate_nan(scalar_t a, scalar_t b) {
 #         |                 ^~~~~~~~~~~~~~~~~
-#   /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note:   template argument deduction/substitution failed:
+#    /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note:   template argument deduction/substitution failed:
 #   /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: note:   deduced conflicting types for parameter ‘scalar_t’ (‘unsigned char’ and ‘int’)
-#      17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+#    17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
 #         |                                                         ^
 #
 #
@@ -263,7 +263,7 @@ def neg(x):
 # By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after doing ``-`` as ``tmp0`` is ``long``.
 # We can easily match ``-`` and ``max_propagate_nan`` in C++ kernel with ``ops.neg`` and ``ops.maximum`` in IR node respectively.
 #
-# Now we sucessfully find that the root cause is the implementation of ``ops.neg`` in cpp codegen, which silently changes the data type when doing ``neg``. 
+# Now we successfully find that the root cause is the implementation of ``ops.neg`` in cpp codegen, which silently changes the data type when doing ``neg``. 
 #
 #
 # Accuracy debugging
@@ -320,9 +320,9 @@ def neg(x):
 #
 # .. code:: shell
 #
-# 	TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
+#    TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 #
-# Which gives us such loggings showing the steps of minifying:
+# Which gives us logging information that demonstrates the steps of minifying:
 #
 # .. code:: shell
 #
