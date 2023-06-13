@@ -808,15 +808,16 @@ if device == torch.device("cpu"):
 # GPU, number of workers, and so on).
 #
 # Here we will use
-# :class:`~torchrl.collectors.MultiaSyncDataCollector`, a data collector that
-# will be executed in an asynchronous manner (for example, data will be collected while
-# the policy is being optimized). With the :class:`MultiaSyncDataCollector`,
-# multiple workers are running rollouts separately. When a batch is asked, it
-# is gathered from the first worker that can provide it.
+# :class:`~torchrl.collectors.SyncDataCollector`, a simple, single-process
+# data collector. TorchRL offers other collectors, such as
+# :class:`~torchrl.collectors.MultiaSyncDataCollector`, which executed the
+# rollouts in an asynchronous manner (for example, data will be collected while
+# the policy is being optimized, thereby decoupling the training and
+# data collection).
 #
 # The parameters to specify are:
 #
-# - the list of environment creation functions,
+# - an environment factory or an environment,
 # - the policy,
 # - the total number of frames before the collector is considered empty,
 # - the maximum number of frames per trajectory (useful for non-terminating
@@ -854,14 +855,11 @@ frames_per_batch = env_per_collector * traj_len
 init_random_frames = 5000
 num_collectors = 2
 
-from torchrl.collectors import MultiaSyncDataCollector
+from torchrl.collectors import SyncDataCollector
 from torchrl.envs import ExplorationType
 
-collector = MultiaSyncDataCollector(
-    create_env_fn=[
-        parallel_env,
-    ]
-    * num_collectors,
+collector = SyncDataCollector(
+    parallel_env,
     policy=actor_model_explore,
     total_frames=total_frames,
     frames_per_batch=frames_per_batch,
