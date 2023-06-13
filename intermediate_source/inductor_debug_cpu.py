@@ -146,15 +146,15 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 #
 # When encountering errors or accuracy problems, a straightforward solution to find the bug is to narrow down the problem. The first thing to do is to determine the component where the error occurs. Luckily, it can be simply achieved by changing the backend of ``torch.compile``.
 #
-# +----------------------------------------+-----------------------------------------+
-# | Code                                   | Description                             |
-# +========================================+=========================================+
+# +--------------------------------------------+-----------------------------------------+
+# | Code                                       | Description                             |
+# +============================================+=========================================+
 # | ``torch.compile(fn, backend="eager")``     | Enable Dynamo                           |
-# +----------------------------------------+-----------------------------------------+
+# +--------------------------------------------+-----------------------------------------+
 # | ``torch.compile(fn, backend="aot_eager")`` | Enable Dynamo + AOT Autograd            |
-# +----------------------------------------+-----------------------------------------+
+# +--------------------------------------------+-----------------------------------------+
 # | ``torch.compile(fn, backend="inductor")``  | Enable Dynamo + AOT Autograd + Inductor |
-# +----------------------------------------+-----------------------------------------+
+# +--------------------------------------------+-----------------------------------------+
 #
 # If the model can successfully run when the backend is set to ``eager`` or ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
 #
