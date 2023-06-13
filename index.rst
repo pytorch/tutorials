@@ -295,6 +295,14 @@ What's new in PyTorch tutorials?
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
 
+.. customcarditem::
+   :header: Code a DDPG Loss
+   :card_description: Use TorchRL to code a DDPG Loss
+   :image: _static/img/half_cheetah.gif
+   :link: intermediate/coding_ddpg.html
+   :tags: Reinforcement-Learning
+
+
 
 .. Deploying PyTorch Models in Production
 
