@@ -1,5 +1,5 @@
 ==============================================
-Leverage Advanced Matrix Extensions
+Leverage Intel® Advanced Matrix Extensions
 ==============================================
 
 Introduction

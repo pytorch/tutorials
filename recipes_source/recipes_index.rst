@@ -256,8 +256,8 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Leverage Advanced Matrix Extensions
 
 .. customcarditem::
-   :header: Leverage Advanced Matrix Extensions
-   :card_description: Learn to leverage Advanced Matrix Extensions.
+   :header: Leverage Intel® Advanced Matrix Extensions
+   :card_description: Learn to leverage Intel® Advanced Matrix Extensions.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/amx.html
    :tags: Model-Optimization
