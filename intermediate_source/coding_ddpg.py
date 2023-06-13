@@ -870,7 +870,6 @@ collector = SyncDataCollector(
     # device for execution
     storing_device=collector_device,
     # device where data will be stored and passed
-    update_at_each_batch=False,
     exploration_type=ExplorationType.RANDOM,
 )
 
