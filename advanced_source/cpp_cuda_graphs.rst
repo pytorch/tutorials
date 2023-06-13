@@ -2,17 +2,14 @@ Using CUDA Graphs in PyTorch C++ API
 ====================================
 
 .. note::
-   |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs.rst>`__.
-
-.. note::
-   The full source code is available on `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs>`__.
+   |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs.rst>`__. The full source code is available on `GitHub <https://github.com/pytorch/tutorials/blob/main/advanced_source/cpp_cuda_graphs>`__.
 
 Prerequisites:
 
 -  `Using the PyTorch C++ Frontend <../advanced_source/cpp_frontend.html>`__
 -  `CUDA semantics <https://pytorch.org/docs/master/notes/cuda.html>`__
--  `Pytorch 2.0 or later`
--  `CUDA 11 or later`
+-  Pytorch 2.0 or later
+-  CUDA 11 or later
 
 NVIDIA’s CUDA Graphs have been a part of CUDA Toolkit library since the
 release of `version 10 <https://developer.nvidia.com/blog/cuda-graphs/>`_.
