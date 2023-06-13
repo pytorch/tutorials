@@ -81,19 +81,19 @@ def neg(x):
 #
 # In this directory, the following files are saved for debugging purposes:
 #
-# +-------------------------+----------------------------------------------------------+
-# | File                    | Description                                              |
-# +=========================+==========================================================+
-# | ``fx_graph_runnable.py``    | Executable FX graph, post decompositions, pre pattern match     |
-# +-------------------------+----------------------------------------------------------+
-# | ``fx_graph_transformed.py`` | Transformed FX graph, post pattern match                 |
-# +-------------------------+----------------------------------------------------------+
-# | ``ir_post_fusion.txt``     | Inductor IR before fusion                                |
-# +-------------------------+----------------------------------------------------------+
-# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                 |
-# +-------------------------+----------------------------------------------------------+
-# | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels |
-# +-------------------------+----------------------------------------------------------+
+# +-----------------------------+-------------------------------------------------------------+
+# | File                        | Description                                                 |
+# +=============================+=============================================================+
+# | ``fx_graph_runnable.py``    | Executable FX graph, post decompositions, pre pattern match |
+# +-----------------------------+-------------------------------------------------------------+
+# | ``fx_graph_transformed.py`` | Transformed FX graph, post pattern match                    |
+# +-----------------------------+-------------------------------------------------------------+
+# | ``ir_post_fusion.txt``      | Inductor IR before fusion                                   |
+# +-----------------------------+-------------------------------------------------------------+
+# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                    |
+# +-----------------------------+-------------------------------------------------------------+
+# | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels    |
+# +-----------------------------+-------------------------------------------------------------+
 #
 # Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
 # Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
