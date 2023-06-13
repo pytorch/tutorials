@@ -351,12 +351,12 @@ def forward(self, arg0_1):
 # ---------------------
 #
 # Within this section, we will demonstrate the process of conducting performance analysis for a model that has been compiled using the Inductor CPU backend.
-# In the example below, we benchmark a Huggingface Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode.
+# In the example below, we benchmark a Hugging Face Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode.
 # The execution time and the speedup ratio of Inductor are printed after the benchmark.
 
 from transformers import MobileBertForQuestionAnswering
 import torch
-# init an eager model
+# Initialize an eager model
 model = MobileBertForQuestionAnswering.from_pretrained("csarron/mobilebert-uncased-squad-v2")
 seq_length = 128
 bs = 128
@@ -364,7 +364,7 @@ vocab_size = model.config.vocab_size
 input = torch.randint(0, vocab_size, (bs, seq_length), dtype=torch.int64)
 input_dict = {"input_ids": input}
 
-# init inductor model
+# Initialize the inductor model
 compiled_model = torch.compile(model)
 with torch.no_grad():
     compiled_model(**input_dict)
@@ -498,9 +498,9 @@ extern "C" void kernel(float* in_out_ptr0,
 ''')
 
 ######################################################################
-# From the generated code above, we can see this kernel has done a typical `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on [add, add, mul, add].
+# From the generated code above, we can see this kernel has done a typical `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on ``[add, add, mul, add]``.
 # This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization, 
-# we can infer the sizes and stride of the inputs and further benchmark this [add, add, mul, add] pattern.
+# we can infer the sizes and stride of the inputs and further benchmark this ``[add, add, mul, add]`` pattern.
 
 import torch
 def func(arg_0, arg_1, arg_2, arg_3, arg_4):
