@@ -22,74 +22,72 @@ PyTorch leverages AMX for computing intensive operators with BFloat16 and quanti
 to get higher performance out-of-box on x86 CPUs with AMX support.
 For more detailed information of oneDNN, see `oneDNN`_.
 
-The operation is fully handled by oneDNN according to the execution code path generated. I.e. when a supported operation gets executed into oneDNN implementation on a hardware platform with AMX support, AMX instructions will be invoked automatically inside oneDNN.
+The operation is fully handled by oneDNN according to the execution code path generated. For example, when a supported operation gets executed into oneDNN implementation on a hardware platform with AMX support, AMX instructions will be invoked automatically inside oneDNN.
 Since oneDNN is the default acceleration library for PyTorch CPU, no manual operations are required to enable the AMX support.
 
 Guidelines of leveraging AMX with workloads
 -------------------------------------------
 
+This section provides guidelines on how to leverage AMX with various workloads.
+
 - BFloat16 data type: 
 
-Using ``torch.cpu.amp`` or ``torch.autocast("cpu")`` would utilize AMX acceleration for supported operators.
+  - Using ``torch.cpu.amp`` or ``torch.autocast("cpu")`` would utilize AMX acceleration for supported operators.
 
-::
+   ::
 
-   model = model.to(memory_format=torch.channels_last)
-   with torch.cpu.amp.autocast():
-       output = model(input)
+      model = model.to(memory_format=torch.channels_last)
+      with torch.cpu.amp.autocast():
+         output = model(input)
 
-Note: Use channels last format to get better performance. 
+.. note:: Use ``torch.channels_last`` memory format to get better performance. 
 
 - Quantization:
 
-Applying quantization would utilize AMX acceleration for supported operators.
+  - Applying quantization would utilize AMX acceleration for supported operators.
 
 - torch.compile:
 
-When the generated graph model runs into oneDNN implementations with the supported operators, AMX accelerations will be activated.
+  - When the generated graph model runs into oneDNN implementations with the supported operators, AMX accelerations will be activated.
 
-Note: When using PyTorch on CPUs that support AMX, the framework will automatically enable AMX usage by default.
-This means that PyTorch will attempt to leverage the AMX feature whenever possible to speed up matrix multiplication operations.
-However, it's important to note that the decision to dispatch to the AMX kernel ultimately depends on
-the internal optimization strategy of the oneDNN library and the quantization backend, which PyTorch relies on for performance enhancements.
-The specific details of how AMX utilization is handled internally by PyTorch and the oneDNN library may be subject to change with updates and improvements to the framework.
+.. note:: When using PyTorch on CPUs that support AMX, the framework will automatically enable AMX usage by default. This means that PyTorch will attempt to leverage the AMX feature whenever possible to speed up matrix multiplication operations. However, it's important to note that the decision to dispatch to the AMX kernel ultimately depends on the internal optimization strategy of the oneDNN library and the quantization backend, which PyTorch relies on for performance enhancements. The specific details of how AMX utilization is handled internally by PyTorch and the oneDNN library may be subject to change with updates and improvements to the framework.
 
 
 CPU operators that can leverage AMX:
 ------------------------------------
 
-- BF16 CPU ops that can leverage AMX:
+BF16 CPU ops that can leverage AMX:
 
-``conv1d``,
-``conv2d``,
-``conv3d``,
-``conv_transpose1d``,
-``conv_transpose2d``,
-``conv_transpose3d``,
-``bmm``,
-``mm``,
-``baddbmm``,
-``addmm``,
-``addbmm``,
-``linear``,
-``matmul``,
+- ``conv1d``
+- ``conv2d``
+- ``conv3d``
+- ``conv_transpose1d``
+- ``conv_transpose2d``
+- ``conv_transpose3d``
+- ``bmm``
+- ``mm``
+- ``baddbmm``
+- ``addmm``
+- ``addbmm``
+- ``linear``
+- ``matmul``
 
-- Quantization CPU ops that can leverage AMX:
+Quantization CPU ops that can leverage AMX:
 
-``conv1d``,
-``conv2d``,
-``conv3d``,
-``conv_transpose1d``,
-``conv_transpose2d``,
-``conv_transpose3d``,
-``linear``
+- ``conv1d``
+- ``conv2d``
+- ``conv3d``
+- ``conv_transpose1d``
+- ``conv_transpose2d``
+- ``conv_transpose3d``
+- ``linear``
 
 
 
 Confirm AMX is being utilized
 ------------------------------
 
-Set environment variable ``export ONEDNN_VERBOSE=1``, or use ``torch.backends.mkldnn.verbose`` to flexibly enable oneDNN to dump verbose messages.
+Set environment variable ``export ONEDNN_VERBOSE=1``, or use ``torch.backends.mkldnn.verbose`` to enable oneDNN to dump verbose messages.
 
 ::
 
