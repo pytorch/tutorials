@@ -768,7 +768,7 @@ def make_ddpg_actor(
     ).to(device)
 
     # initialize lazy modules
-    qnet(actor(proof_environment.reset()))
+    qnet(actor(proof_environment.reset().to(device)))
     return actor, qnet
 
 
