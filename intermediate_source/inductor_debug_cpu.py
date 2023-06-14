@@ -16,10 +16,11 @@ This tutorial is intended to provide an in-depth introduction on the debugging
 and performance profiling on Inductor CPU backend by delving into the
 intricacies of ``torch.compile``.
 
-Meanwhile, you may also find related tutorials about ``torch.compile`` 
-around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_, 
-comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_ 
-and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
+Meanwhile, you may also find related tutorials about ``torch.compile``
+around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_,
+comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_
+and GPU-specific knowledge like
+`GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
 
 We will start debugging with a motivating example that triggers compilation
 issues and accuracy problems by demonstrating the process of debugging to
@@ -55,26 +56,30 @@ x2 = torch.randint(256, (8390, 8), dtype=torch.uint8)
 compiled_foo1 = torch.compile(foo1)
 result = compiled_foo1(x1, x2)
 
-######################################################################
+##############################################################################
 # The correct implementation of ``neg`` in the ``cpp`` codegen is as follows:
 
 def neg1(x):
     return f"decltype({x})(-{x})"
 
-######################################################################
+###########################################################################
 # In order to demonstrate the debugging, we will modify the function to a
 # wrong one later.
 #
 # Get more logging information
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
+# No debugging information would be provided if you run this simple example by
+# default. In order to get more useful debugging and logging information, we
+# usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
 # .. code-block:: bash
 #
 #    TORCH_COMPILE_DEBUG=1 python xx.py
 #
-# This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:
+# This would print more debug information in the output logs and also dump the
+# intermediate IRs generated during the codegen process. You can find the
+# dumped file paths in the log like below:
 #
 # .. code-block:: bash
 #
@@ -96,8 +101,10 @@ def neg1(x):
 # | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels       |
 # +-----------------------------+----------------------------------------------------------------+
 #
-# Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
-# Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
+# Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable
+# and editable in order to make debugging easier.
+# Here are the main parts of code extracted from the files and we correlate the
+# C++ generated line with the FX code line.
 #
 # ``fx_graph_runnable``:
 
@@ -161,7 +168,8 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 # +--------------------------------------------+-----------------------------------------+
 #
 # If the model can successfully run when the backend is set to ``eager`` or
-# ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure to Inductor.
+# ``aot_eager`` while it fails with ``inductor``, we can narrow down the failure
+# to Inductor.
 #
 #
 # Compilation error
@@ -173,8 +181,10 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 #
 #    torch.neg (Python) -> torch.ops.aten.neg.default (within FX graph) -> ops.neg (within IR node) -> tmp2 = -tmp1 (within C++ kernel)
 #
-# If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
-# This type of error indicates that bugs are introduced when lowering IR nodes to output code.
+# If you encounter a compilation error, there is something wrong when compiling
+# C++ kernels in the output code.
+# This type of error indicates that bugs are introduced when lowering IR nodes
+# to output code.
 # The root cause of compilation error is usually shown in the traceback log.
 #
 # For example, the ``neg`` function is modified like this:
@@ -182,7 +192,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 def neg2(x):
     return f"-{x}"
 
-######################################################################
+###########################################################################
 # The logging gives the following compile error with a rather clear reason.
 #
 # .. code-block:: bash
@@ -261,7 +271,7 @@ def neg2(x):
 #            store = ops.store('buf0', get_index_2, maximum, None)
 #            return store
 
-######################################################################
+###############################################################################
 # According to the traceback logging, the compilation error is caused by the
 # data type inconsistency of ``max_propagate_nan``'s inputs.
 # By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after
@@ -349,7 +359,8 @@ def forward2(self, arg0_1):
     return (neg,)
 
 ######################################################################
-# For more usage details about Minifier, please refer to `Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_.
+# For more usage details about Minifier, please refer to
+# `Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_.
 
 
 ######################################################################
@@ -419,7 +430,8 @@ from torch._inductor import config
 config.cpp.enable_kernel_profile = True
 
 ######################################################################
-# Following the steps in `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
+# Following the steps in
+# `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 # We are able to get the profiling table and trace files.
 
 from torch.profiler import profile, schedule, ProfilerActivity
@@ -449,7 +461,7 @@ with profile(
         model(**input_dict)  # compiled_model(**input_dict) to get inductor model profiling
         p.step()
 
-######################################################################
+############################################################################
 # We get the following performance profiling table for the eager-mode model:
 #
 # .. image:: ../_static/img/eager_prof.png
@@ -520,7 +532,7 @@ extern "C" void kernel(float* in_out_ptr0,
 }
 ''')
 
-######################################################################
+############################################################################
 # From the generated code above, we can see this kernel has done a typical
 # `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on
 # ``[add, add, mul, add]``. This is a memory-bound bottle neck preventing
