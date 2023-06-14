@@ -25,7 +25,7 @@ Inductor CPU backend debugging and profiling
 # We will start debugging with a motivating example that triggers compilation issues and accuracy problems 
 # by demonstrating the process of debugging to pinpoint the problems.
 #
-# By enabling loggings and exploring the underlying generated code, 
+# By enabling logging and exploring the underlying generated code, 
 # you can learn how to narrow down the failure step by step and finally figure out the route cause.
 #
 # Following that, we will proceed to discuss how to profile the compiled code and, 
@@ -55,7 +55,7 @@ compiled_foo = torch.compile(foo)
 result = compiled_foo(x1, x2)
 
 ######################################################################
-# The correct implementation of ``neg`` in the cpp codegen is as follows:
+# The correct implementation of ``neg`` in the ``cpp`` codegen is as follows:
 
 def neg(x):
     return f"decltype({x})(-{x})"
@@ -69,36 +69,36 @@ def neg(x):
 #
 # No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
-# .. code:: shell
+# ::
 #
 # 	TORCH_COMPILE_DEBUG=1 python xx.py
 #
 # This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:
 #
-# .. code:: shell
+# ::
 #
 # 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
 #
 # In this directory, the following files are saved for debugging purposes:
 #
-# +-----------------------------+-------------------------------------------------------------+
-# | File                        | Description                                                 |
-# +=============================+=============================================================+
-# | ``fx_graph_runnable.py``    | Executable FX graph, post decompositions, pre pattern match |
-# +-----------------------------+-------------------------------------------------------------+
-# | ``fx_graph_transformed.py`` | Transformed FX graph, post pattern match                    |
-# +-----------------------------+-------------------------------------------------------------+
-# | ``ir_post_fusion.txt``      | Inductor IR before fusion                                   |
-# +-----------------------------+-------------------------------------------------------------+
-# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                    |
-# +-----------------------------+-------------------------------------------------------------+
-# | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels    |
-# +-----------------------------+-------------------------------------------------------------+
+# +-----------------------------+----------------------------------------------------------------+
+# | File                        | Description                                                    |
+# +=============================+================================================================+
+# | ``fx_graph_runnable.py``    | Executable FX graph, after decomposition, before pattern match |
+# +-----------------------------+----------------------------------------------------------------+
+# | ``fx_graph_transformed.py`` | Transformed FX graph, after pattern match                      |
+# +-----------------------------+----------------------------------------------------------------+
+# | ``ir_post_fusion.txt``      | Inductor IR before fusion                                      |
+# +-----------------------------+----------------------------------------------------------------+
+# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                       |
+# +-----------------------------+----------------------------------------------------------------+
+# | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels       |
+# +-----------------------------+----------------------------------------------------------------+
 #
 # Note that ``fx_graph_runnable.py`` and ``output_code.py`` are both runnable and editable in order to make debugging easier. 
 # Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
 #
-# Fx_graph_runnable:
+# ``fx_graph_runnable``:
 
 def forward(self, arg0_1, arg1_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
@@ -107,7 +107,7 @@ def forward(self, arg0_1, arg1_1):
     return (clone,)
 
 ######################################################################
-# C++ kernel in output_code:
+# C++ kernel in ``output_code``:
 
 from torch._inductor.codecache import AsyncCompile
 async_compile = AsyncCompile()
@@ -180,7 +180,7 @@ def neg(x):
 ######################################################################
 # The logging gives the following compile error with a rather clear reason.
 #
-# .. code:: shell
+# ::
 #
 #    …
 #    torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
@@ -263,7 +263,7 @@ def neg(x):
 # By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after doing ``-`` as ``tmp0`` is ``long``.
 # We can easily match ``-`` and ``max_propagate_nan`` in C++ kernel with ``ops.neg`` and ``ops.maximum`` in IR node respectively.
 #
-# Now we successfully find that the root cause is the implementation of ``ops.neg`` in cpp codegen, which silently changes the data type when doing ``neg``. 
+# Now we successfully find that the root cause is the implementation of ``ops.neg`` in ``cpp`` codegen, which silently changes the data type when doing ``neg``. 
 #
 #
 # Accuracy debugging
@@ -308,7 +308,7 @@ def neg(x):
 ######################################################################
 # An accuracy problem would be raised as follows:
 #
-# .. code:: shell
+# ::
 #
 # 	torch._dynamo.utils: [ERROR] Accuracy failed: allclose not within tol=0.0001
 # 	Traceback (most recent call last):
@@ -318,13 +318,13 @@ def neg(x):
 #
 # To debug an accuracy problem with Minifier, two environment variables are needed:
 #
-# .. code:: shell
+# ::
 #
 #    TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 #
 # Which gives us logging information that demonstrates the steps of minifying:
 #
-# .. code:: shell
+# ::
 #
 #     Started off with 6 nodes
 #
@@ -562,7 +562,7 @@ print(f"speed up ratio: {eager_t / inductor_t}")
 # With motivating examples, we walk through the process of debugging and profiling.
 # The main idea is to narrow down the problem.
 #
-# We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging loggings and the tool Minifier.
+# We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging logging and the tool Minifier.
 # Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.
 #
 # When the performance with Inductor is better than that of eager mode, we provide a solid analytical method for performance profiling.
