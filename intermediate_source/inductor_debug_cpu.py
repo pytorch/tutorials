@@ -40,9 +40,8 @@ Inductor CPU backend debugging and profiling
 # Here is a simple example to run the ``torch.compile`` using Inductor and compare its result with eager mode:
 
 import torch
-from torch._dynamo.utils import same
 
-def foo(x1, x2):
+def foo1(x1, x2):
     a = torch.neg(x1)
     b = torch.maximum(x2, a)
     y = torch.cat([b], dim=0)
@@ -51,13 +50,13 @@ def foo(x1, x2):
 x1 = torch.randint(256, (1, 8), dtype=torch.uint8)
 x2 = torch.randint(256, (8390, 8), dtype=torch.uint8)
 
-compiled_foo = torch.compile(foo)
-result = compiled_foo(x1, x2)
+compiled_foo1 = torch.compile(foo1)
+result = compiled_foo1(x1, x2)
 
 ######################################################################
 # The correct implementation of ``neg`` in the ``cpp`` codegen is as follows:
 
-def neg(x):
+def neg1(x):
     return f"decltype({x})(-{x})"
 
 ######################################################################
@@ -100,7 +99,7 @@ def neg(x):
 #
 # ``fx_graph_runnable``:
 
-def forward(self, arg0_1, arg1_1):
+def forward1(self, arg0_1, arg1_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
     maximum = torch.ops.aten.maximum.default(arg1_1, neg);  arg1_1 = neg = None
     clone = torch.ops.aten.clone.default(maximum);  maximum = None
@@ -174,7 +173,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 #
 # For example, the ``neg`` function is modified like this:
 
-def neg(x):
+def neg2(x):
     return f"-{x}"
 
 ######################################################################
@@ -182,10 +181,8 @@ def neg(x):
 #
 # ::
 #
-#    …
 #    torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
 #    CppCompileError: C++ compile error
-#    …
 #    /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
 #    /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: error: no matching function for call to ‘max_propagate_nan(unsigned char&, int&)’
 #      17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
@@ -280,10 +277,9 @@ def neg(x):
 #
 # For instance, we modify the example like this:
 
-import torch
 from torch._dynamo.utils import same
 
-def foo(x1, x2):
+def foo2(x1, x2):
     a = torch.neg(x1)
     b = torch.maximum(x2, a)
     y = torch.cat([b], dim=0)
@@ -292,17 +288,17 @@ def foo(x1, x2):
 x1 = torch.randn((1, 8), dtype=torch.float32)
 x2 = torch.randn((8390, 8), dtype=torch.float32)
 
-expected_result = foo(x1, x2)
+expected_result = foo2(x1, x2)
 
-compiled_foo = torch.compile(foo)
-actual_result = compiled_foo(x1, x2)
+compiled_foo2 = torch.compile(foo2)
+actual_result = compiled_foo2(x1, x2)
 
 assert same(expected_result, actual_result) == True
 
 ######################################################################
 # And also modify the ``neg`` function:
 
-def neg(x):
+def neg3(x):
     return f"decltype({x})(2 * {x})"
 
 ######################################################################
@@ -338,7 +334,7 @@ def neg(x):
 #
 # After running, we get the final minified graph with the target node ``neg``:
 
-def forward(self, arg0_1):
+def forward2(self, arg0_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
     return (neg,)
 
@@ -355,7 +351,6 @@ def forward(self, arg0_1):
 # The execution time and the speedup ratio of Inductor are printed after the benchmark.
 
 from transformers import MobileBertForQuestionAnswering
-import torch
 # Initialize an eager model
 model = MobileBertForQuestionAnswering.from_pretrained("csarron/mobilebert-uncased-squad-v2")
 seq_length = 128
@@ -502,7 +497,6 @@ extern "C" void kernel(float* in_out_ptr0,
 # This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization, 
 # we can infer the sizes and stride of the inputs and further benchmark this ``[add, add, mul, add]`` pattern.
 
-import torch
 def func(arg_0, arg_1, arg_2, arg_3, arg_4):
     add_0 = arg_0 + arg_1
     add_1 = add_0 + arg_2
