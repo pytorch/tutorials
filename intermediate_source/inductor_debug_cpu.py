@@ -12,7 +12,7 @@ PyTorch 2.0 introduced the compilation API called ``torch.compile``.
 This new feature offers a significant speedup over eager mode execution
 through graph-level optimization powered by the default Inductor backend.
 
-This tutorial is intended to provide an in-depth introduction on the debugging 
+This tutorial is intended to provide an in-depth introduction on the debugging
 and performance profiling on Inductor CPU backend by delving into the
 intricacies of ``torch.compile``.
 
@@ -153,8 +153,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
             }
         }
     }
-}
-''')
+}''')
 
 
 ######################################################################
