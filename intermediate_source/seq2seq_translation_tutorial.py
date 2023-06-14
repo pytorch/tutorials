@@ -442,6 +442,21 @@ class DecoderRNN(nn.Module):
 #    :alt:
 #
 #
+# Bahdanau attention, also known as additive attention, is a commonly used 
+# attention mechanism in sequence-to-sequence models, particularly in neural 
+# machine translation tasks. It was introduced by Dzmitry Bahdanau et al. in their 
+# paper titled `Neural Machine Translation by Jointly Learning to Align and Translate <https://arxiv.org/pdf/1409.0473.pdf>`__. 
+# This attention mechanism employs a learned alignment model to compute attention 
+# scores between the encoder and decoder hidden states. It utilizes a feed-forward 
+# neural network to calculate alignment scores.
+#
+# However, there are alternative attention mechanisms available, such as Luong attention, 
+# which computes attention scores by taking the dot product between the decoder hidden 
+# state and the encoder hidden states. It does not involve the non-linear transformation 
+# used in Bahdanau attention.
+#
+# In this tutorial, we will be using Bahdanau attention. However, it would be a valuable 
+# exercise to explore modifying the attention mechanism to use Luong attention.
 
 class BahdanauAttention(nn.Module):
     def __init__(self, hidden_size):
@@ -775,7 +790,7 @@ input_lang, output_lang, train_dataloader = get_dataloader(batch_size)
 encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
-train(train_dataloader, encoder, decoder, 100, print_every=5, plot_every=5)
+train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
 
 ######################################################################
 #
@@ -793,18 +808,8 @@ evaluateRandomly(encoder, decoder)
 # at each time step.
 #
 # You could simply run ``plt.matshow(attentions)`` to see attention output
-# displayed as a matrix, with the columns being input steps and rows being
-# output steps:
-#
-
-output_words, attentions = evaluate(
-    encoder, decoder, 'je suis trop froid', input_lang, output_lang)
-plt.matshow(attentions.cpu().numpy()[0])
-
-
-######################################################################
-# For a better viewing experience we will do the extra work of adding axes
-# and labels:
+# displayed as a matrix. For a better viewing experience we will do the 
+# extra work of adding axes and labels:
 #
 
 def showAttention(input_sentence, output_words, attentions):
