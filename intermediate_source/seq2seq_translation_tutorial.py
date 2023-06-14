@@ -369,7 +369,6 @@ class EncoderRNN(nn.Module):
 #
 
 class DecoderRNN(nn.Module):
-    # Standard non-attentional decoder
     def __init__(self, hidden_size, output_size):
         super(DecoderRNN, self).__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
@@ -444,7 +443,7 @@ class DecoderRNN(nn.Module):
 #
 # Bahdanau attention, also known as additive attention, is a commonly used 
 # attention mechanism in sequence-to-sequence models, particularly in neural 
-# machine translation tasks. It was introduced by Dzmitry Bahdanau et al. in their 
+# machine translation tasks. It was introduced by Bahdanau et al. in their 
 # paper titled `Neural Machine Translation by Jointly Learning to Align and Translate <https://arxiv.org/pdf/1409.0473.pdf>`__. 
 # This attention mechanism employs a learned alignment model to compute attention 
 # scores between the encoder and decoder hidden states. It utilizes a feed-forward 
