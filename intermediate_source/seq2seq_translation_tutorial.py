@@ -337,13 +337,13 @@ class EncoderRNN(nn.Module):
         self.gru = nn.GRU(hidden_size, hidden_size)
 
     def forward(self, input, hidden):
-        embedded = self.embedding(input).view(1, 1, -1)
+        embedded = self.embedding(input).view(1, -1)
         output = embedded
         output, hidden = self.gru(output, hidden)
         return output, hidden
 
     def initHidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(1, self.hidden_size, device=device)
 
 ######################################################################
 # The Decoder
@@ -384,14 +384,14 @@ class DecoderRNN(nn.Module):
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
-        output = self.embedding(input).view(1, 1, -1)
+        output = self.embedding(input).view(1, -1)
         output = F.relu(output)
         output, hidden = self.gru(output, hidden)
-        output = self.softmax(self.out(output[0]))
+        output = self.softmax(self.out(output))
         return output, hidden
 
     def initHidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(1, self.hidden_size, device=device)
 
 ######################################################################
 # I encourage you to train and observe the results of this model, but to
@@ -452,7 +452,7 @@ class AttnDecoderRNN(nn.Module):
         embedded = self.embedding(input).view(1, -1)
         embedded = self.dropout(embedded)
 
-        transformed_hidden = self.fc_hidden(hidden[0])
+        transformed_hidden = self.fc_hidden(hidden)
         expanded_hidden_state = transformed_hidden.expand(self.max_length, -1)
         alignment_scores = torch.tanh(expanded_hidden_state +
                                       self.fc_encoder(encoder_outputs))
@@ -460,14 +460,14 @@ class AttnDecoderRNN(nn.Module):
         attn_weights = F.softmax(alignment_scores, dim=1)
         context_vector = attn_weights.mm(encoder_outputs)
 
-        output = torch.cat((embedded, context_vector), 1).unsqueeze(0)
+        output = torch.cat((embedded, context_vector), 1)
         output, hidden = self.gru(output, hidden)
 
-        output = F.log_softmax(self.out(output[0]), dim=1)
+        output = F.log_softmax(self.out(output), dim=1)
         return output, hidden, attn_weights
 
     def initHidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(1, self.hidden_size, device=device)
 
 
 ######################################################################
@@ -550,9 +550,9 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     for ei in range(input_length):
         encoder_output, encoder_hidden = encoder(
             input_tensor[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0, 0]
+        encoder_outputs[ei] = encoder_output[0]
 
-    decoder_input = torch.tensor([[SOS_token]], device=device)
+    decoder_input = torch.tensor([SOS_token], device=device)
 
     decoder_hidden = encoder_hidden
 
@@ -572,7 +572,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
             topv, topi = decoder_output.topk(1)
-            decoder_input = topi.squeeze().detach()  # detach from history as input
+            decoder_input = topi.squeeze(0).detach()  # detach from history as input
 
             loss += criterion(decoder_output, target_tensor[di])
             if decoder_input.item() == EOS_token:
@@ -702,9 +702,9 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         for ei in range(input_length):
             encoder_output, encoder_hidden = encoder(input_tensor[ei],
                                                      encoder_hidden)
-            encoder_outputs[ei] += encoder_output[0, 0]
+            encoder_outputs[ei] += encoder_output[0]
 
-        decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
+        decoder_input = torch.tensor([SOS_token], device=device)  # SOS
 
         decoder_hidden = encoder_hidden
 
@@ -722,7 +722,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
             else:
                 decoded_words.append(output_lang.index2word[topi.item()])
 
-            decoder_input = topi.squeeze().detach()
+            decoder_input = topi.squeeze(0).detach()
 
         return decoded_words, decoder_attentions[:di + 1]
 
