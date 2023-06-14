@@ -1,42 +1,38 @@
 # -*- coding: utf-8 -*-
-
 """
 Inductor CPU backend debugging and profiling
 ============================================
 
 **Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_, `Gong Jiong <https://github.com/jgong5>`_, `Wang Weihan <https://github.com/EikanWang>`_
+
+Overview
+--------
+
+PyTorch 2.0 introduced the compilation API called ``torch.compile``.
+This new feature offers a significant speedup over eager mode execution
+through graph-level optimization powered by the default Inductor backend.
+
+This tutorial is intended to provide an in-depth introduction on the debugging 
+and performance profiling on Inductor CPU backend by delving into the
+intricacies of ``torch.compile``.
+
+Meanwhile, you may also find related tutorials about ``torch.compile`` 
+around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_, 
+comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_ 
+and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
+
+We will start debugging with a motivating example that triggers compilation
+issues and accuracy problems by demonstrating the process of debugging to
+pinpoint the problems.
+By enabling logging and exploring the underlying generated code,
+you can learn how to narrow down the failure step by step and finally figure
+out the route cause.
+
+Following that, we will proceed to discuss how to profile the compiled code
+and, through a performance comparison with eager mode,
+elaborate on the reasons why ``torch.compile`` can provide an additional
+performance boost compared to its eager counterpart.
 """
-
-#########################################################################
-# Overview
-# --------
-#
-# PyTorch 2.0 introduced the compilation API called ``torch.compile``.
-# This new feature offers a significant speedup over eager mode execution
-# through graph-level optimization powered by the default Inductor backend.
-#
-# This tutorial is intended to provide an in-depth introduction on the debugging 
-# and performance profiling on Inductor CPU backend by delving into the
-# intricacies of ``torch.compile``.
-#
-# Meanwhile, you may also find related tutorials about ``torch.compile`` 
-# around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_, 
-# comprehensive `troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_ 
-# and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst>`_.
-#
-# We will start debugging with a motivating example that triggers compilation
-# issues and accuracy problems by demonstrating the process of debugging to
-# pinpoint the problems.
-#
-# By enabling logging and exploring the underlying generated code,
-# you can learn how to narrow down the failure step by step and finally figure
-# out the route cause.
-#
-# Following that, we will proceed to discuss how to profile the compiled code
-# and, through a performance comparison with eager mode,
-# elaborate on the reasons why ``torch.compile`` can provide an additional
-# performance boost compared to its eager counterpart.
-
 
 ######################################################################
 # Debugging
