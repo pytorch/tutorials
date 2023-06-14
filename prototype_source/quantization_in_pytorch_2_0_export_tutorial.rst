@@ -1,4 +1,4 @@
-(Prototype) Quantization in PyTorch 2.0 Export Tutorial
+Quantization in PyTorch 2.0 Export Tutorial
 ==============================================================
 
 **Author**: `Leslie Fang <https://github.com/leslie-fang-intel>`_, `Weiwen Xia <https://github.com/Xia-Weiwen>`__, `Jiong Gong <https://github.com/jgong5>`__, `Kimish Patel <https://github.com/kimishpatel>`__, `Jerry Zhang <https://github.com/jerryzh168>`__
