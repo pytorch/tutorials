@@ -42,6 +42,7 @@ Inductor CPU backend debugging and profiling
 import torch
 from torch._dynamo.utils import same
 
+print("test")
 def foo(x1, x2):
     a = torch.neg(x1)
     b = torch.maximum(x2, a)
