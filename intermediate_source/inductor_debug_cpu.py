@@ -135,7 +135,6 @@ extern "C" void kernel(const unsigned char* in_ptr0,
             }
         }
     }
-}
 }''')
 
 
@@ -489,8 +488,7 @@ extern "C" void kernel(float* in_out_ptr0,
             }
         }
     }
-}
-''')
+}''')
 
 ######################################################################
 # From the generated code above, we can see this kernel has done a typical `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on ``[add, add, mul, add]``.
