@@ -90,6 +90,7 @@ def reset_seeds(gallery_conf, fname):
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
+    torch.cuda.empty_cache() # possibly expensive
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
