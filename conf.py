@@ -217,6 +217,7 @@ html_theme_options = {
     'display_version': True,
     'navigation_with_keys': True,
     'logo_only': False,
+    'analytics_id': 'UA-117752657-2',
 }
 
 
