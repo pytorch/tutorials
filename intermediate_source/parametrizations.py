@@ -255,7 +255,7 @@ parametrize.register_parametrization(layer_spd, "weight", Symmetric())
 parametrize.register_parametrization(layer_spd, "weight", MatrixExponential())
 X = layer_spd.weight
 print(torch.dist(X, X.T))                        # X is symmetric
-print((torch.linalg.eigvalsh(X, UPLO="U") > 0.).all())  # X is positive definite
+print((torch.linalg.eigvalsh(X) > 0.).all())  # X is positive definite
 
 ###############################################################################
 # Initializing parametrizations
