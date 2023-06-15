@@ -1,6 +1,6 @@
 # 🎉 Docathon H1 2023 Leaderboard 🎉
 This is the list of the docathon contributors that have participated and contributed to the PyTorch docathon. 
-A big shutout to everyone who have participated! We have awarded points for each merged PR. 
+A big shout out to everyone who have participated! We have awarded points for each merged PR. 
 For the **easy** label, we have awarded 2 points. For the **medium** label, we have awarded 5 points. 
 For the **advanced** label, we have awarded 10 points. In some cases, we have awarded half credit for the PRs that 
 were not merged or issues that have been closed without a merged PR.
