@@ -226,8 +226,6 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
 
 result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
 result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
-print(result_from_jacobian_contraction.to("cpu"))
-print(result_from_ntk_vps.to("cpu"))
 assert torch.allclose(result_from_jacobian_contraction, result_from_ntk_vps, atol=1e-5)
 
 ######################################################################
