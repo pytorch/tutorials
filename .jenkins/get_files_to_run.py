@@ -40,21 +40,27 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
         )
 
     all_other_files = all_files.copy()
-    needs_gpu_nvidia_small_multi = list(
-        filter(lambda x: get_needs_machine(x) == "gpu.nvidia.small.multi", all_files,)
+    needs_multigpu = list(
+        filter(lambda x: get_needs_machine(x) == "multigpu", all_files,)
     )
-    needs_gpu_nvidia_medium = list(
-        filter(lambda x: get_needs_machine(x) == "gpu.nvidia.large", all_files,)
+    needs_a10 = list(
+        filter(lambda x: get_needs_machine(x) == "A10", all_files,)
     )
-    for filename in needs_gpu_nvidia_small_multi:
-        # currently, the only job that uses gpu.nvidia.small.multi is the 0th worker,
+    needs_noA10 = list(
+        filter(lambda x: get_needs_machine(x) == "noA10", all_files,)
+    )
+    for filename in needs_multigpu:
+        # currently, the only job that has has multiple GPUs is the 0th worker,
         # so we'll add all the jobs that need this machine to the 0th worker
         add_to_shard(0, filename)
         all_other_files.remove(filename)
-    for filename in needs_gpu_nvidia_medium:
-        # currently, the only job that uses gpu.nvidia.large is the 1st worker,
+    for filename in needs_a10:
+        # currently, the only job that uses an a10 GPU is the 1st worker,
         # so we'll add all the jobs that need this machine to the 1st worker
         add_to_shard(1, filename)
+        all_other_files.remove(filename)
+    for filename in needs_noA10:
+        add_to_shard(2, filename)
         all_other_files.remove(filename)
 
     sorted_files = sorted(all_other_files, key=get_duration, reverse=True,)
