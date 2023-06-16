@@ -33,6 +33,7 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
+import numpy
 import gc
 import glob
 import random
@@ -92,6 +93,7 @@ def reset_seeds(gallery_conf, fname):
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
+    numpy.random.seed(10)
     gc.collect()
 
 sphinx_gallery_conf = {
