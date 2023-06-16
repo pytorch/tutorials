@@ -462,6 +462,7 @@ with profile(
 #     -------------------------  ------------  ------------  ------------  ------------  
 #     Self CPU time total: 810.920ms
 
+######################################################################
 #
 # Similarly, we also get the table for the compiled model with Inductor (omitting some columns):
 #
