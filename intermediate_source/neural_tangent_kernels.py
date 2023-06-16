@@ -224,7 +224,7 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
     if compute == 'diagonal':
         return torch.einsum('NMKK->NMK', result)
 
-# Disable TensorFloat for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
+# Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
 with torch.backends.cudnn.flags(allow_tf32=False):
     result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
     result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
