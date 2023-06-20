@@ -4,7 +4,7 @@
 Inductor CPU backend debugging and profiling
 ============================================
 
-**Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_, `Gong Jiong <https://github.com/jgong5>`_, `Wang Weihan <https://github.com/EikanWang>`_
+**Authors**: `Xuan Liao <https://github.com/Valentine233>`_, `Haozhe Zhu <https://github.com/zhuhaozhe>`_, `Jiong Gong <https://github.com/jgong5>`_, `Weihan Wang <https://github.com/EikanWang>`_
 """
 
 #########################################################################
