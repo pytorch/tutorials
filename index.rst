@@ -135,6 +135,13 @@ What's new in PyTorch tutorials?
    :tags: Image/Video
 
 .. customcarditem::
+   :header: Unconditional Image Generation With DDIM Model 
+   :card_description: A step-by-step guide to building a complete Diffusion model for image generation.  
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png  # Image that appears with the card
+   :link: advanced_source/DDIM_tutorial.html 
+   :tags: Image/Video
+
+.. customcarditem::
    :header: Spatial Transformer Networks Tutorial
    :card_description: Learn how to augment your network using a visual attention mechanism.
    :image: _static/img/stn/Five.gif
@@ -854,6 +861,7 @@ Additional Resources
    beginner/dcgan_faces_tutorial
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
+   advanced/DDIM_tutorial
 
 .. toctree::
    :maxdepth: 2
