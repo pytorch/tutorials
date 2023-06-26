@@ -337,7 +337,7 @@ print("rollout of three steps:", rollout)
 print("Shape of the rollout TensorDict:", rollout.batch_size)
 
 ######################################################################
-# Our rollout data has a shape of ``torch.Size([3])`, which matches the number of steps
+# Our rollout data has a shape of ``torch.Size([3])``, which matches the number of steps
 # we ran it for. The ``"next"`` entry points to the data coming after the current step.
 # In most cases, the ``"next""`` data at time `t` matches the data at ``t+1``, but this
 # may not be the case if we are using some specific transformations (for example, multi-step).
