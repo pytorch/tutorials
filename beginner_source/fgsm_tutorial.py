@@ -450,5 +450,5 @@ plt.show()
 #
 # A further direction to go, depending on available resources, is to modify
 # the code to support processing work in batch, in parallel, and or distributed
-# vs. working on one attack at a time in the above for each epsilon test() loop.
+# vs working on one attack at a time in the above for each ``epsilon test()`` loop.
 #
