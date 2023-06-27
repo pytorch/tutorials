@@ -92,7 +92,6 @@ def reset_seeds(gallery_conf, fname):
     torch.cuda.empty_cache()
     torch.manual_seed(42)
     torch.set_default_device(None)
-    torch.cuda.empty_cache()
     random.seed(10)
     numpy.random.seed(10)
     gc.collect()
