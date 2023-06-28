@@ -441,20 +441,20 @@ class DecoderRNN(nn.Module):
 #    :alt:
 #
 #
-# Bahdanau attention, also known as additive attention, is a commonly used 
-# attention mechanism in sequence-to-sequence models, particularly in neural 
-# machine translation tasks. It was introduced by Bahdanau et al. in their 
-# paper titled `Neural Machine Translation by Jointly Learning to Align and Translate <https://arxiv.org/pdf/1409.0473.pdf>`__. 
-# This attention mechanism employs a learned alignment model to compute attention 
-# scores between the encoder and decoder hidden states. It utilizes a feed-forward 
+# Bahdanau attention, also known as additive attention, is a commonly used
+# attention mechanism in sequence-to-sequence models, particularly in neural
+# machine translation tasks. It was introduced by Bahdanau et al. in their
+# paper titled `Neural Machine Translation by Jointly Learning to Align and Translate <https://arxiv.org/pdf/1409.0473.pdf>`__.
+# This attention mechanism employs a learned alignment model to compute attention
+# scores between the encoder and decoder hidden states. It utilizes a feed-forward
 # neural network to calculate alignment scores.
 #
-# However, there are alternative attention mechanisms available, such as Luong attention, 
-# which computes attention scores by taking the dot product between the decoder hidden 
-# state and the encoder hidden states. It does not involve the non-linear transformation 
+# However, there are alternative attention mechanisms available, such as Luong attention,
+# which computes attention scores by taking the dot product between the decoder hidden
+# state and the encoder hidden states. It does not involve the non-linear transformation
 # used in Bahdanau attention.
 #
-# In this tutorial, we will be using Bahdanau attention. However, it would be a valuable 
+# In this tutorial, we will be using Bahdanau attention. However, it would be a valuable
 # exercise to explore modifying the attention mechanism to use Luong attention.
 
 class BahdanauAttention(nn.Module):
@@ -467,7 +467,7 @@ class BahdanauAttention(nn.Module):
     def forward(self, query, keys):
         scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
         scores = scores.squeeze(2).unsqueeze(1)
-        
+
         weights = F.softmax(scores, dim=-1)
         context = torch.bmm(weights, keys)
 
@@ -605,9 +605,9 @@ def get_dataloader(batch_size):
 # ``teacher_forcing_ratio`` up to use more of it.
 #
 
-def train_epoch(dataloader, encoder, decoder, encoder_optimizer, 
+def train_epoch(dataloader, encoder, decoder, encoder_optimizer,
           decoder_optimizer, criterion):
-    
+
     total_loss = 0
     for data in dataloader:
         input_tensor, target_tensor = data
@@ -617,7 +617,7 @@ def train_epoch(dataloader, encoder, decoder, encoder_optimizer,
 
         encoder_outputs, encoder_hidden = encoder(input_tensor)
         decoder_outputs, _, _ = decoder(encoder_outputs, encoder_hidden, target_tensor)
-        
+
         loss = criterion(
             decoder_outputs.view(-1, decoder_outputs.size(-1)),
             target_tensor.view(-1)
@@ -628,7 +628,7 @@ def train_epoch(dataloader, encoder, decoder, encoder_optimizer,
         decoder_optimizer.step()
 
         total_loss += loss.item()
-    
+
     return total_loss / len(dataloader)
 
 
@@ -671,7 +671,7 @@ def train(train_dataloader, encoder, decoder, n_epochs, learning_rate=0.001,
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
-    
+
     encoder_optimizer = optim.Adam(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate)
     criterion = nn.NLLLoss()
@@ -680,7 +680,7 @@ def train(train_dataloader, encoder, decoder, n_epochs, learning_rate=0.001,
         loss = train_epoch(train_dataloader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
         plot_loss_total += loss
-        
+
         if epoch % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
@@ -691,7 +691,7 @@ def train(train_dataloader, encoder, decoder, n_epochs, learning_rate=0.001,
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
-    
+
     showPlot(plot_losses)
 
 ######################################################################
@@ -736,7 +736,7 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
 
         _, topi = decoder_outputs.topk(1)
         decoded_ids = topi.squeeze()
-        
+
         decoded_words = []
         for idx in decoded_ids:
             if idx.item() == EOS_token:
@@ -793,7 +793,9 @@ train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
 
 ######################################################################
 #
-
+# Set dropout layers to ``eval`` mode
+encoder.eval()
+decoder.eval()
 evaluateRandomly(encoder, decoder)
 
 
@@ -807,7 +809,7 @@ evaluateRandomly(encoder, decoder)
 # at each time step.
 #
 # You could simply run ``plt.matshow(attentions)`` to see attention output
-# displayed as a matrix. For a better viewing experience we will do the 
+# displayed as a matrix. For a better viewing experience we will do the
 # extra work of adding axes and labels:
 #
 
