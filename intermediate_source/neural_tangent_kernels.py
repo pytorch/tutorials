@@ -24,7 +24,7 @@ First, some setup. Let's define a simple CNN that we wish to compute the NTK of.
 import torch
 import torch.nn as nn
 from torch.func import functional_call, vmap, vjp, jvp, jacrev
-device = 'cuda'
+device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
 
 class CNN(nn.Module):
     def __init__(self):
@@ -224,8 +224,11 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
     if compute == 'diagonal':
         return torch.einsum('NMKK->NMK', result)
 
-result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
-result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
+# Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
+with torch.backends.cudnn.flags(allow_tf32=False):
+    result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
+    result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
+
 assert torch.allclose(result_from_jacobian_contraction, result_from_ntk_vps, atol=1e-5)
 
 ######################################################################
