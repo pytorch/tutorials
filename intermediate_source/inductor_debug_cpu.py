@@ -68,13 +68,13 @@ def neg1(x):
 #
 # No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
-# ::
+# .. code-block:: shell
 #
 # 	TORCH_COMPILE_DEBUG=1 python xx.py
 #
 # This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:
 #
-# ::
+# .. code-block:: shell
 #
 # 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
 #
