@@ -178,7 +178,7 @@ def neg2(x):
 ######################################################################
 # The logging gives the following compile error with a rather clear reason.
 #
-# ::
+# .. code-block::
 #
 #    torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
 #    CppCompileError: C++ compile error
