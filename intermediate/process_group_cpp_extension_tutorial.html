@@ -406,7 +406,7 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="customize-process-group-backends-using-cpp-extensions">
 <h1>Customize Process Group Backends Using Cpp Extensions<a class="headerlink" href="#customize-process-group-backends-using-cpp-extensions" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/ftian1">Feng Tian</a>, <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a>, <a class="reference external" href="https://minsii.github.io/">Min Si</a></p>
+<p><strong>Author</strong>: <cite>Howard Huang &lt;https://github.com/H-Huang&gt;</cite>, <a class="reference external" href="https://github.com/ftian1">Feng Tian</a>, <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a>, <a class="reference external" href="https://minsii.github.io/">Min Si</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;"/></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/intermediate_source/process_group_cpp_extension_tutorial.rst">github</a>.</p>
@@ -418,8 +418,7 @@
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/cpp_extension.html">PyTorch Cpp Extension</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></p></li>
 </ul>
-<p>This tutorial demonstrates how to implement a custom <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code>
-backend and plug that into
+<p>This tutorial demonstrates how to implement a custom <code class="docutils literal notranslate"><span class="pre">Backend</span></code> and plug that into
 <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">PyTorch distributed package</a> using
 <a class="reference external" href="https://pytorch.org/docs/stable/cpp_extension.html">cpp extensions</a>. This is helpful when you need a specialized software
 stack for your hardware, or when you would like to experiment with new
@@ -434,9 +433,9 @@ training features, including
 In order to make the same collective communication API work with
 different communication backends, the distributed package abstracts collective
 communication operations into a
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/release/1.10/torch/csrc/distributed/c10d/ProcessGroup.hpp">ProcessGroup</a>
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/csrc/distributed/c10d/Backend.hpp">Backend</a>
 class. Different backends can
-then be implemented as subclasses of <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> using preferred
+then be implemented as subclasses of <code class="docutils literal notranslate"><span class="pre">Backend</span></code> using preferred
 third-party libraries. PyTorch distributed comes with three default backends,
 <code class="docutils literal notranslate"><span class="pre">ProcessGroupNCCL</span></code>, <code class="docutils literal notranslate"><span class="pre">ProcessGroupGloo</span></code>, and <code class="docutils literal notranslate"><span class="pre">ProcessGroupMPI</span></code>. However,
 beyond these three backends, there are also other communication libraries
@@ -449,28 +448,28 @@ communication algorithms (e.g.,
 <a class="reference external" href="https://cloud.google.com/blog/topics/developers-practitioners/optimize-training-performance-reduction-server-vertex-ai">Reduction Server</a>).
 Therefore, the distributed package exposes extension APIs to allow customizing
 collective communication backends.</p>
-<p>The 4 steps below show how to implement a dummy <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> backend
+<p>The 4 steps below show how to implement a dummy <code class="docutils literal notranslate"><span class="pre">Backend</span></code> backend
 and use that in Python application code. Please note that this tutorial focuses
 on demonstrating the extension APIs, instead of developing a functioning
 communication backend. Hence, the <code class="docutils literal notranslate"><span class="pre">dummy</span></code> backend just covers a subset of the
 APIs (<code class="docutils literal notranslate"><span class="pre">all_reduce</span></code> and <code class="docutils literal notranslate"><span class="pre">all_gather</span></code>), and simply sets the values of tensors
 to 0.</p>
 </div>
-<div class="section" id="step-1-implement-a-subclass-of-processgroup">
-<h2>Step 1: Implement a Subclass of <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code><a class="headerlink" href="#step-1-implement-a-subclass-of-processgroup" title="Permalink to this heading">¶</a></h2>
-<p>This first step is to implement a <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> subclass that overrides
+<div class="section" id="step-1-implement-a-subclass-of-backend">
+<h2>Step 1: Implement a Subclass of <code class="docutils literal notranslate"><span class="pre">Backend</span></code><a class="headerlink" href="#step-1-implement-a-subclass-of-backend" title="Permalink to this heading">¶</a></h2>
+<p>This first step is to implement a <code class="docutils literal notranslate"><span class="pre">Backend</span></code> subclass that overrides
 target collective communication APIs and runs the custom communication algorithm.
 The extension also needs to implement a <code class="docutils literal notranslate"><span class="pre">Work</span></code> subclass, which
 serves as a future of communication results and allows asynchronous execution in
 application code. If the extension uses third-party libraries, it can
-include the headers and call into the library APIs from the <code class="docutils literal notranslate"><span class="pre">ProcessGroupDummy</span></code>
+include the headers and call into the library APIs from the <code class="docutils literal notranslate"><span class="pre">BackendDummy</span></code>
 subclass. The two code snippets below present the implementation of <code class="docutils literal notranslate"><span class="pre">dummy.h</span></code> and
-<code class="docutils literal notranslate"><span class="pre">dummy.cpp</span></code>. See the <a class="reference external" href="https://github.com/mrshenli/dummy_collectives">dummy collectives</a>
+<code class="docutils literal notranslate"><span class="pre">dummy.cpp</span></code>. See the <a class="reference external" href="https://github.com/H-Huang/torch_collective_extension">dummy collectives</a>
 repository for the full implementation.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// file name: dummy.hpp</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/python.h&gt;</span>
 
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/ProcessGroup.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Backend.hpp&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Work.hpp&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Store.hpp&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/distributed/c10d/Types.hpp&gt;</span>
@@ -480,9 +479,9 @@ repository for the full implementation.</p>
 
 <span class="k">namespace</span><span class="w"> </span><span class="nn">c10d</span><span class="w"> </span><span class="p">{</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ProcessGroupDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ProcessGroup</span><span class="w"> </span><span class="p">{</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BackendDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Backend</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">public</span><span class="o">:</span>
-<span class="w">    </span><span class="n">ProcessGroupDummy</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+<span class="w">    </span><span class="n">BackendDummy</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
 
 <span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">allgather</span><span class="p">(</span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&gt;&amp;</span><span class="w"> </span><span class="n">outputTensors</span><span class="p">,</span>
@@ -506,9 +505,10 @@ repository for the full implementation.</p>
 <span class="w">          </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="c1">// rank, only used by recvAnySource, irrelevant in this demo</span>
 <span class="w">          </span><span class="n">opType</span><span class="p">),</span>
 <span class="w">      </span><span class="n">future_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">future</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span>
-<span class="w">    </span><span class="c1">// There are several additional helper functions that need to be</span>
-<span class="w">    </span><span class="c1">// implemented. Please refer to https://github.com/mrshenli/dummy_collectives</span>
-<span class="w">    </span><span class="c1">// for the full implementation.</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">isCompleted</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">isSuccess</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="w"> </span><span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kUnsetTimeout</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">getFuture</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
 
 <span class="w">  </span><span class="k">private</span><span class="o">:</span>
 <span class="w">    </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">c10</span><span class="o">::</span><span class="n">ivalue</span><span class="o">::</span><span class="n">Future</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future_</span><span class="p">;</span>
@@ -523,7 +523,7 @@ repository for the full implementation.</p>
 
 <span class="c1">// This is a dummy allgather that sets all output tensors to zero</span>
 <span class="c1">// Modify the implementation to conduct real communication asynchronously</span>
-<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allgather</span><span class="p">(</span>
+<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">BackendDummy</span><span class="o">::</span><span class="n">allgather</span><span class="p">(</span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&gt;&amp;</span><span class="w"> </span><span class="n">outputTensors</span><span class="p">,</span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">inputTensors</span><span class="p">,</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllgatherOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="cm">/* unused */</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -541,7 +541,7 @@ repository for the full implementation.</p>
 
 <span class="c1">// This is a dummy allreduce that sets all output tensors to zero</span>
 <span class="c1">// Modify the implementation to conduct real communication asynchronously</span>
-<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">allreduce</span><span class="p">(</span>
+<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Work</span><span class="o">&gt;</span><span class="w"> </span><span class="n">BackendDummy</span><span class="o">::</span><span class="n">allreduce</span><span class="p">(</span>
 <span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">tensors</span><span class="p">,</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">AllreduceOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">opts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tensors</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -563,38 +563,44 @@ repository for the full implementation.</p>
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/v1.9.0/torch/distributed/distributed_c10d.py#L643-L650">from Python side</a>,
 so the extension also needs to expose the constructor APIs to Python. This can
 be done by adding the following methods. In this example, <code class="docutils literal notranslate"><span class="pre">store</span></code> and
-<code class="docutils literal notranslate"><span class="pre">timeout</span></code> are ignored by the <code class="docutils literal notranslate"><span class="pre">ProcessGroupDummy</span></code> instantiation method, as
+<code class="docutils literal notranslate"><span class="pre">timeout</span></code> are ignored by the <code class="docutils literal notranslate"><span class="pre">BackendDummy</span></code> instantiation method, as
 those are not used in this dummy implementation. However, real-world extensions
 should consider using the <code class="docutils literal notranslate"><span class="pre">store</span></code> to perform rendezvous and supporting the
 <code class="docutils literal notranslate"><span class="pre">timeout</span></code> argument.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ProcessGroupDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ProcessGroup</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createProcessGroupDummy</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// file name: dummy.hpp</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BackendDummy</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Backend</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="n">Step</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">code</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">...</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Backend</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBackendDummy</span><span class="p">(</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;::</span><span class="n">c10d</span><span class="o">::</span><span class="n">Store</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">store</span><span class="p">,</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">,</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
 
-<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">ProcessGroupDummyConstructor</span><span class="p">()</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">constructor</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">BackendDummyConstructor</span><span class="p">()</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">constructor</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">py</span><span class="o">::</span><span class="n">object</span><span class="w"> </span><span class="k">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="k">module</span><span class="o">::</span><span class="k">import</span><span class="p">(</span><span class="s">"torch.distributed"</span><span class="p">);</span>
 <span class="w">        </span><span class="n">py</span><span class="o">::</span><span class="n">object</span><span class="w"> </span><span class="n">register_backend</span><span class="w"> </span><span class="o">=</span>
 <span class="w">            </span><span class="k">module</span><span class="p">.</span><span class="n">attr</span><span class="p">(</span><span class="s">"Backend"</span><span class="p">).</span><span class="n">attr</span><span class="p">(</span><span class="s">"register_backend"</span><span class="p">);</span>
 <span class="w">        </span><span class="c1">// torch.distributed.Backend.register_backend will add `dummy` as a</span>
 <span class="w">        </span><span class="c1">// new valid backend.</span>
-<span class="w">        </span><span class="n">register_backend</span><span class="p">(</span><span class="s">"dummy"</span><span class="p">,</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">cpp_function</span><span class="p">(</span><span class="n">createProcessGroupDummy</span><span class="p">));</span>
+<span class="w">        </span><span class="n">register_backend</span><span class="p">(</span><span class="s">"dummy"</span><span class="p">,</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">cpp_function</span><span class="p">(</span><span class="n">createBackendDummy</span><span class="p">));</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">ProcessGroup</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">createProcessGroupDummy</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// file name: dummy.cpp</span>
+<span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Backend</span><span class="o">&gt;</span><span class="w"> </span><span class="n">BackendDummy</span><span class="o">::</span><span class="n">createBackendDummy</span><span class="p">(</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;::</span><span class="n">c10d</span><span class="o">::</span><span class="n">Store</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="cm">/* unused */</span><span class="p">,</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">,</span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="cm">/* unused */</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">make_intrusive</span><span class="o">&lt;</span><span class="n">ProcessGroupDummy</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">make_intrusive</span><span class="o">&lt;</span><span class="n">BackendDummy</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="n">PYBIND11_MODULE</span><span class="p">(</span><span class="n">TORCH_EXTENSION_NAME</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"createProcessGroupDummy"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ProcessGroupDummy</span><span class="o">::</span><span class="n">createProcessGroupDummy</span><span class="p">);</span>
+<span class="w">    </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"createBackendDummy"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">BackendDummy</span><span class="o">::</span><span class="n">createBackendDummy</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -604,7 +610,7 @@ should consider using the <code class="docutils literal notranslate"><span class
 <p>Now, the extension source code files are ready. We can then use
 <a class="reference external" href="https://pytorch.org/docs/stable/cpp_extension.html">cpp extensions</a>
 to build it. To do that, create a <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> file that prepares the paths and
-commands. Then call <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> to install the extension.</p>
+commands. Then call <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code> to install the extension.</p>
 <p>If the extension depends on third-party libraries, you can also specify
 <code class="docutils literal notranslate"><span class="pre">libraries_dirs</span></code> and <code class="docutils literal notranslate"><span class="pre">libraries</span></code> to the cpp extension APIs. See the
 <a class="reference external" href="https://github.com/openucx/torch-ucc">torch ucc</a>
@@ -646,6 +652,10 @@ project as a real-world example.</p>
 <p>After installation, you can conveniently use the <code class="docutils literal notranslate"><span class="pre">dummy</span></code> backend when calling
 <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group">init_process_group</a>
 as if it is an builtin backend.</p>
+<p>We can specify dispatching based on backend by changing the <code class="docutils literal notranslate"><span class="pre">backend</span></code> argument of <code class="docutils literal notranslate"><span class="pre">init_process_group</span></code>. We
+can dispatch collective with CPU tensor to <code class="docutils literal notranslate"><span class="pre">gloo</span></code> backend and dispatch collective with CUDA tensor to <code class="docutils literal notranslate"><span class="pre">dummy</span></code> backend by
+specifying <code class="docutils literal notranslate"><span class="pre">cpu:gloo,cuda:dummy</span></code> as the backend argument.</p>
+<p>To send all tensors to <code class="docutils literal notranslate"><span class="pre">dummy</span></code> backend, we can simply specify <code class="docutils literal notranslate"><span class="pre">dummy</span></code> as the backend argument.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -658,20 +668,25 @@ as if it is an builtin backend.</p>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'29500'</span>
 
-<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"dummy"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Alternatively:</span>
+<span class="c1"># dist.init_process_group("dummy", rank=0, world_size=1)</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"cpu:gloo,cuda:dummy"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
+<span class="c1"># this goes through gloo</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cpu allreduce: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># this goes through dummy</span>
 <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda allreduce: </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"got RuntimeError as broadcast is not implemented in Dummy ProcessGroup"</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"got RuntimeError when calling broadcast"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -720,7 +735,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <ul>
 <li><a class="reference internal" href="#">Customize Process Group Backends Using Cpp Extensions</a><ul>
 <li><a class="reference internal" href="#basics">Basics</a></li>
-<li><a class="reference internal" href="#step-1-implement-a-subclass-of-processgroup">Step 1: Implement a Subclass of <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code></a></li>
+<li><a class="reference internal" href="#step-1-implement-a-subclass-of-backend">Step 1: Implement a Subclass of <code class="docutils literal notranslate"><span class="pre">Backend</span></code></a></li>
 <li><a class="reference internal" href="#step-2-expose-the-extension-python-apis">Step 2: Expose The Extension Python APIs</a></li>
 <li><a class="reference internal" href="#step-3-build-the-custom-extension">Step 3: Build The Custom Extension</a></li>
 <li><a class="reference internal" href="#step-4-use-the-extension-in-application">Step 4: Use The Extension in Application</a></li>
