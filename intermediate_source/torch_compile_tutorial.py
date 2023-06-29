@@ -142,7 +142,8 @@ def init_model():
 # ``mode`` argument, which we will discuss below.
 
 def evaluate(mod, inp):
-    return mod(inp)
+    with torch.no_grad():
+        return mod(inp)
 
 model = init_model()
 
