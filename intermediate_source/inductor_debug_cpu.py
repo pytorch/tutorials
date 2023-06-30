@@ -376,7 +376,7 @@ compiled_model = torch.compile(model)
 with torch.no_grad():
     compiled_model(**input_dict)
 
-NUM_ITERS=100
+NUM_ITERS=50
 import timeit
 with torch.no_grad():
     # warmup
@@ -441,7 +441,7 @@ with profile(
     schedule=my_schedule,
     on_trace_ready=trace_handler
 ) as p:
-    for _ in range(100):
+    for _ in range(50):
         model(**input_dict)  # compiled_model(**input_dict) to get inductor model profiling
         p.step()
 
@@ -450,30 +450,30 @@ with profile(
 #
 # .. code-block:: shell
 #
-#     -------------------------  ------------  ------------  ------------  
-#                          Name   CPU total %     CPU total    # of Calls  
-#     -------------------------  ------------  ------------  ------------  
-#                   aten::addmm        45.73%     370.814ms           362  
-#                     aten::add        19.89%     161.276ms           363  
-#                   aten::copy_        14.97%     121.416ms           488  
-#                     aten::mul         9.02%      73.154ms           194  
-#               aten::clamp_min         8.81%      71.444ms            96  
-#                     aten::bmm         5.46%      44.258ms            48  
-#                 ProfilerStep*       100.00%     810.920ms             1  
-#                     aten::div         2.89%      23.447ms            24  
-#                aten::_softmax         1.00%       8.087ms            24  
-#                  aten::linear        46.48%     376.888ms           362  
-#                   aten::clone         2.77%      22.430ms            98  
-#                       aten::t         0.31%       2.502ms           362  
-#                    aten::view         0.14%       1.161ms           850  
-#               aten::transpose         0.17%       1.377ms           386  
-#            aten::index_select         0.12%     952.000us             3  
-#                  aten::expand         0.12%     986.000us           458  
-#                  aten::matmul         8.31%      67.420ms            48  
-#                     aten::cat         0.09%     703.000us             1  
-#              aten::as_strided         0.08%     656.000us           963  
-#                    aten::relu         8.86%      71.864ms            96  
-#     -------------------------  ------------  ------------  ------------  
+#     -------------------------  ------------  ------------  ------------
+#                          Name   CPU total %     CPU total    # of Calls
+#     -------------------------  ------------  ------------  ------------
+#                   aten::addmm        45.73%     370.814ms           362
+#                     aten::add        19.89%     161.276ms           363
+#                   aten::copy_        14.97%     121.416ms           488
+#                     aten::mul         9.02%      73.154ms           194
+#               aten::clamp_min         8.81%      71.444ms            96
+#                     aten::bmm         5.46%      44.258ms            48
+#                 ProfilerStep*       100.00%     810.920ms             1
+#                     aten::div         2.89%      23.447ms            24
+#                aten::_softmax         1.00%       8.087ms            24
+#                  aten::linear        46.48%     376.888ms           362
+#                   aten::clone         2.77%      22.430ms            98
+#                       aten::t         0.31%       2.502ms           362
+#                    aten::view         0.14%       1.161ms           850
+#               aten::transpose         0.17%       1.377ms           386
+#            aten::index_select         0.12%     952.000us             3
+#                  aten::expand         0.12%     986.000us           458
+#                  aten::matmul         8.31%      67.420ms            48
+#                     aten::cat         0.09%     703.000us             1
+#              aten::as_strided         0.08%     656.000us           963
+#                    aten::relu         8.86%      71.864ms            96
+#     -------------------------  ------------  ------------  ------------
 #     Self CPU time total: 810.920ms
 #
 
@@ -483,30 +483,30 @@ with profile(
 #
 # .. code-block:: shell
 #
-#     -----------------------------------------------  ------------  ------------  ------------  
-#                                                Name   CPU total %     CPU total    # of Calls  
-#     -----------------------------------------------  ------------  ------------  ------------  
-#                                    mkl::_mkl_linear        68.79%     231.573ms           362  
-#                                           aten::bmm         8.02%      26.992ms            48  
-#                                       ProfilerStep*       100.00%     336.642ms             1  
-#       graph_0_cpp_fused_constant_pad_nd_embedding_0         0.27%     915.000us             1  
-#                                         aten::empty         0.27%     911.000us           362  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_151         0.27%     901.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_226         0.27%     899.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_361         0.27%     898.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_121         0.27%     895.000us             1  
-#       graph_0_cpp_fused__mkl_linear_add_mul_relu_31         0.27%     893.000us             1  
-#       graph_0_cpp_fused__mkl_linear_add_mul_relu_76         0.26%     892.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_256         0.26%     892.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_346         0.26%     892.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_241         0.26%     891.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_316         0.26%     891.000us             1  
-#       graph_0_cpp_fused__mkl_linear_add_mul_relu_91         0.26%     890.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_106         0.26%     890.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_211         0.26%     890.000us             1  
-#       graph_0_cpp_fused__mkl_linear_add_mul_relu_61         0.26%     889.000us             1  
-#      graph_0_cpp_fused__mkl_linear_add_mul_relu_286         0.26%     889.000us             1  
-#     -----------------------------------------------  ------------  ------------  ------------  
+#     -----------------------------------------------  ------------  ------------  ------------
+#                                                Name   CPU total %     CPU total    # of Calls
+#     -----------------------------------------------  ------------  ------------  ------------
+#                                    mkl::_mkl_linear        68.79%     231.573ms           362
+#                                           aten::bmm         8.02%      26.992ms            48
+#                                       ProfilerStep*       100.00%     336.642ms             1
+#       graph_0_cpp_fused_constant_pad_nd_embedding_0         0.27%     915.000us             1
+#                                         aten::empty         0.27%     911.000us           362
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_151         0.27%     901.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_226         0.27%     899.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_361         0.27%     898.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_121         0.27%     895.000us             1
+#       graph_0_cpp_fused__mkl_linear_add_mul_relu_31         0.27%     893.000us             1
+#       graph_0_cpp_fused__mkl_linear_add_mul_relu_76         0.26%     892.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_256         0.26%     892.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_346         0.26%     892.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_241         0.26%     891.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_316         0.26%     891.000us             1
+#       graph_0_cpp_fused__mkl_linear_add_mul_relu_91         0.26%     890.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_106         0.26%     890.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_211         0.26%     890.000us             1
+#       graph_0_cpp_fused__mkl_linear_add_mul_relu_61         0.26%     889.000us             1
+#      graph_0_cpp_fused__mkl_linear_add_mul_relu_286         0.26%     889.000us             1
+#     -----------------------------------------------  ------------  ------------  ------------
 #     Self CPU time total: 336.642ms 
 #
 # From the profiling table of the eager model, we can see the most time consumption ops are [``aten::addmm``, ``aten::add``, ``aten::copy_``, ``aten::mul``, ``aten::clamp_min``, ``aten::bmm``].
@@ -585,7 +585,7 @@ with torch.no_grad():
     inductor_func(*input)
 
 import timeit
-NUM_ITERS=1000
+NUM_ITERS=100
 with torch.no_grad():
     # warmup
     for _ in range(10):
