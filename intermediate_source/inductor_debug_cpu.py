@@ -352,6 +352,7 @@ def forward2(self, arg0_1):
 # We use Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and run benchmark on the first socket to demonstrate the optimization within this section.
 # We set following environment variable as a best practice to benchmark on Intel(R) CPU.
 
+
 # .. code-block:: shell
 #
 #     export KMP_BLOCKTIME=1
@@ -360,6 +361,7 @@ def forward2(self, arg0_1):
 #     export LD_PRELOAD=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}/lib/libiomp5.so:${CONDA_PREFIX:-"$(dirname $(which conda))/../"}/lib/libjemalloc.so
 #     export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
 #     numactl -C 0-31 -m 0 python bench.py
+
 
 # bench.py
 from transformers import MobileBertForQuestionAnswering
