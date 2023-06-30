@@ -4,7 +4,7 @@
 Inductor CPU backend debugging and profiling
 ============================================
 
-**Authors**: `Liao Xuan <https://github.com/Valentine233>`_, `Zhu Haozhe <https://github.com/zhuhaozhe>`_, `Gong Jiong <https://github.com/jgong5>`_, `Wang Weihan <https://github.com/EikanWang>`_
+**Authors**: `Xuan Liao <https://github.com/Valentine233>`_, `Haozhe Zhu <https://github.com/zhuhaozhe>`_, `Jiong Gong <https://github.com/jgong5>`_, `Weihan Wang <https://github.com/EikanWang>`_
 """
 
 #########################################################################
@@ -68,13 +68,13 @@ def neg1(x):
 #
 # No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
-# ::
+# .. code-block:: shell
 #
 # 	TORCH_COMPILE_DEBUG=1 python xx.py
 #
 # This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:
 #
-# ::
+# .. code-block:: shell
 #
 # 	torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
 #
@@ -178,7 +178,7 @@ def neg2(x):
 ######################################################################
 # The logging gives the following compile error with a rather clear reason.
 #
-# ::
+# .. code-block::
 #
 #    torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
 #    CppCompileError: C++ compile error
@@ -223,6 +223,7 @@ def neg2(x):
 #             }
 #         }
 #     }
+#
 
 ######################################################################
 # IR node:
@@ -461,6 +462,7 @@ with profile(
 #                    aten::relu         8.86%      71.864ms     748.583us            96  
 #     -------------------------  ------------  ------------  ------------  ------------  
 #     Self CPU time total: 810.920ms
+#
 
 ######################################################################
 #
