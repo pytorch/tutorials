@@ -352,7 +352,7 @@ def forward2(self, arg0_1):
 # We use Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and run benchmark on the first socket to demonstrate the optimization within this section.
 # We set following environment variable as a best practice to benchmark on Intel(R) CPU.
 
-
+#########################################################
 # .. code-block:: shell
 #
 #     export KMP_BLOCKTIME=1
