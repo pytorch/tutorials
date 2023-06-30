@@ -349,7 +349,19 @@ def forward2(self, arg0_1):
 # Within this section, we will demonstrate the process of conducting performance analysis for a model that has been compiled using the Inductor CPU backend.
 # In the example below, we benchmark a Hugging Face Transformer model ``MobileBertForQuestionAnswering`` with both the eager mode and the Inductor graph mode.
 # The execution time and the speedup ratio of Inductor are printed after the benchmark.
+# We use Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and run benchmark on the first socket to demonstrate the optimization within this section.
+# We set following environment variable as a best practice to benchmark on Intel(R) CPU.
 
+# .. code-block:: shell
+#
+#     export KMP_BLOCKTIME=1
+#     export KMP_SETTINGS=1
+#     export KMP_AFFINITY=granularity=fine,compact,1,0
+#     export LD_PRELOAD=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}/lib/libiomp5.so:${CONDA_PREFIX:-"$(dirname $(which conda))/../"}/lib/libjemalloc.so
+#     export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
+#     numactl -C 0-31 -m 0 python bench.py
+
+# bench.py
 from transformers import MobileBertForQuestionAnswering
 # Initialize an eager model
 model = MobileBertForQuestionAnswering.from_pretrained("csarron/mobilebert-uncased-squad-v2")
@@ -377,9 +389,9 @@ with torch.no_grad():
     for _ in range(10):
         compiled_model(**input_dict)
     inductor_t = timeit.timeit("compiled_model(**input_dict)", number=NUM_ITERS, globals=globals())
-print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
-print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
-print(f"speed up ratio: {eager_t / inductor_t}")
+# print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
+# print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
+# print(f"speed up ratio: {eager_t / inductor_t}")
 
 
 ######################################################################
@@ -405,6 +417,7 @@ config.cpp.enable_kernel_profile = True
 # Following the steps in `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 # We are able to get the profiling table and trace files.
 
+# bench.py
 from torch.profiler import profile, schedule, ProfilerActivity
 RESULT_DIR = "./prof_trace"
 my_schedule = schedule(
@@ -416,7 +429,7 @@ my_schedule = schedule(
 
 def trace_handler(p):
     output = p.key_averages().table(sort_by="self_cpu_time_total", row_limit=20)
-    print(output)
+    # print(output)
     p.export_chrome_trace(f"{RESULT_DIR}/{p.step_num}.json")
 
 for _ in range(10):
@@ -437,30 +450,30 @@ with profile(
 #
 # .. code-block:: shell
 #
-#     -------------------------  ------------  ------------  ------------  ------------  
-#                          Name   CPU total %     CPU total  CPU time avg    # of Calls  
-#     -------------------------  ------------  ------------  ------------  ------------  
-#                   aten::addmm        45.73%     370.814ms       1.024ms           362  
-#                     aten::add        19.89%     161.276ms     444.287us           363  
-#                   aten::copy_        14.97%     121.416ms     248.803us           488  
-#                     aten::mul         9.02%      73.154ms     377.082us           194  
-#               aten::clamp_min         8.81%      71.444ms     744.208us            96  
-#                     aten::bmm         5.46%      44.258ms     922.042us            48  
-#                 ProfilerStep*       100.00%     810.920ms     810.920ms             1  
-#                     aten::div         2.89%      23.447ms     976.958us            24  
-#                aten::_softmax         1.00%       8.087ms     336.958us            24  
-#                  aten::linear        46.48%     376.888ms       1.041ms           362  
-#                   aten::clone         2.77%      22.430ms     228.878us            98  
-#                       aten::t         0.31%       2.502ms       6.912us           362  
-#                    aten::view         0.14%       1.161ms       1.366us           850  
-#               aten::transpose         0.17%       1.377ms       3.567us           386  
-#            aten::index_select         0.12%     952.000us     317.333us             3  
-#                  aten::expand         0.12%     986.000us       2.153us           458  
-#                  aten::matmul         8.31%      67.420ms       1.405ms            48  
-#                     aten::cat         0.09%     703.000us     703.000us             1  
-#              aten::as_strided         0.08%     656.000us       0.681us           963  
-#                    aten::relu         8.86%      71.864ms     748.583us            96  
-#     -------------------------  ------------  ------------  ------------  ------------  
+#     -------------------------  ------------  ------------  ------------  
+#                          Name   CPU total %     CPU total    # of Calls  
+#     -------------------------  ------------  ------------  ------------  
+#                   aten::addmm        45.73%     370.814ms           362  
+#                     aten::add        19.89%     161.276ms           363  
+#                   aten::copy_        14.97%     121.416ms           488  
+#                     aten::mul         9.02%      73.154ms           194  
+#               aten::clamp_min         8.81%      71.444ms            96  
+#                     aten::bmm         5.46%      44.258ms            48  
+#                 ProfilerStep*       100.00%     810.920ms             1  
+#                     aten::div         2.89%      23.447ms            24  
+#                aten::_softmax         1.00%       8.087ms            24  
+#                  aten::linear        46.48%     376.888ms           362  
+#                   aten::clone         2.77%      22.430ms            98  
+#                       aten::t         0.31%       2.502ms           362  
+#                    aten::view         0.14%       1.161ms           850  
+#               aten::transpose         0.17%       1.377ms           386  
+#            aten::index_select         0.12%     952.000us             3  
+#                  aten::expand         0.12%     986.000us           458  
+#                  aten::matmul         8.31%      67.420ms            48  
+#                     aten::cat         0.09%     703.000us             1  
+#              aten::as_strided         0.08%     656.000us           963  
+#                    aten::relu         8.86%      71.864ms            96  
+#     -------------------------  ------------  ------------  ------------  
 #     Self CPU time total: 810.920ms
 #
 
@@ -551,6 +564,7 @@ extern "C" void kernel(float* in_out_ptr0,
 # This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization, 
 # we can infer the sizes and stride of the inputs and further benchmark this ``[add, add, mul, add]`` pattern.
 
+# bench.py
 def func(arg_0, arg_1, arg_2, arg_3, arg_4):
     add_0 = arg_0 + arg_1
     add_1 = add_0 + arg_2
@@ -583,9 +597,9 @@ with torch.no_grad():
     for _ in range(10):
         inductor_func(*input)
     inductor_t = timeit.timeit("inductor_func(*input)", number=NUM_ITERS, globals=globals())
-print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
-print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
-print(f"speed up ratio: {eager_t / inductor_t}")
+# print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")
+# print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")
+# print(f"speed up ratio: {eager_t / inductor_t}")
 
 ######################################################################
 # Output:
