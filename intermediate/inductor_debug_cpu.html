@@ -1,0 +1,1377 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inductor CPU backend debugging and profiling — PyTorch Tutorials 2.0.1+cu117 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="scaled_dot_product_attention_tutorial.html" rel="next" title="(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)"/>
+<link href="torch_compile_tutorial.html" rel="prev" title="torch.compile Tutorial"/>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+<span class="dropdown-title">torchaudio</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+<span class="dropdown-title">torchtext</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+<span class="dropdown-title">torchvision</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torcharrow">
+<span class="dropdown-title">torcharrow</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/data">
+<span class="dropdown-title">TorchData</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchrec">
+<span class="dropdown-title">TorchRec</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+<span class="dropdown-title">TorchServe</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchx/">
+<span class="dropdown-title">TorchX</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+<span class="dropdown-title">PyTorch on XLA Devices</span>
+<p></p>
+</a>
+</div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Resources
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/features">
+<span class="dropdown-title">About</span>
+<p>Learn about PyTorch’s features and capabilities</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+<p>Learn about the PyTorch foundation</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-stories">
+<span class="dropdown-title">Community Stories</span>
+<p>Learn how our community solves real, everyday machine learning problems with PyTorch.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+<p>Find events, webinars, and podcasts</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/hub">
+<span class="dropdown-title">Models (Beta)</span>
+<p>Discover, publish, and reuse pre-trained models</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  2.0.1+cu117
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_ppo.html">Reinforcement Learning (PPO) with TorchRL Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="per_sample_grads.html">Per-sample-gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inductor CPU backend debugging and profiling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/flava_finetuning_tutorial.html">TorchMultimodal Tutorial: Finetuning FLAVA</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Inductor CPU backend debugging and profiling</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/intermediate/inductor_debug_cpu.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/inductor_debug_cpu</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-inductor-debug-cpu-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="inductor-cpu-backend-debugging-and-profiling">
+<span id="sphx-glr-intermediate-inductor-debug-cpu-py"></span><h1>Inductor CPU backend debugging and profiling<a class="headerlink" href="#inductor-cpu-backend-debugging-and-profiling" title="Permalink to this heading">¶</a></h1>
+<p><strong>Authors</strong>: <a class="reference external" href="https://github.com/Valentine233">Xuan Liao</a>, <a class="reference external" href="https://github.com/zhuhaozhe">Haozhe Zhu</a>, <a class="reference external" href="https://github.com/jgong5">Jiong Gong</a>, <a class="reference external" href="https://github.com/EikanWang">Weihan Wang</a></p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>PyTorch 2.0 introduced the compilation API called <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.
+This new feature offers a significant speedup over eager mode execution through graph-level optimization powered by the default Inductor backend.</p>
+<p>This tutorial is intended to provide an in-depth introduction on the debugging
+and performance profiling on Inductor CPU backend by delving into the intricacies of <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p>
+<p>Meanwhile, you may also find related tutorials about <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>
+around <a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">basic usage</a>,
+comprehensive <a class="reference external" href="https://pytorch.org/docs/stable/dynamo/troubleshooting.html">troubleshooting</a>
+and GPU-specific knowledge like <a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/docs/source/compile/profiling_torch_compile.rst">GPU performance profiling</a>.</p>
+<p>We will start debugging with a motivating example that triggers compilation issues and accuracy problems
+by demonstrating the process of debugging to pinpoint the problems.</p>
+<p>By enabling logging and exploring the underlying generated code,
+you can learn how to narrow down the failure step by step and finally figure out the route cause.</p>
+<p>Following that, we will proceed to discuss how to profile the compiled code and,
+through a performance comparison with eager mode,
+elaborate on the reasons why <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> can provide an additional performance boost compared to its eager counterpart.</p>
+</div>
+<div class="section" id="debugging">
+<h2>Debugging<a class="headerlink" href="#debugging" title="Permalink to this heading">¶</a></h2>
+<p>Here is a simple example to run the <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> using Inductor and compare its result with eager mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">foo1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.neg.html#torch.neg" title="torch.neg"><span class="n">torch</span><span class="o">.</span><span class="n">neg</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.maximum.html#torch.maximum" title="torch.maximum"><span class="n">torch</span><span class="o">.</span><span class="n">maximum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">([</span><span class="n">b</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randint.html#torch.randint" title="torch.randint"><span class="n">torch</span><span class="o">.</span><span class="n">randint</span></a><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randint.html#torch.randint" title="torch.randint"><span class="n">torch</span><span class="o">.</span><span class="n">randint</span></a><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span></a><span class="p">)</span>
+
+<span class="n">compiled_foo1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">foo1</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a> <span class="o">=</span> <span class="n">compiled_foo1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>The correct implementation of <code class="docutils literal notranslate"><span class="pre">neg</span></code> in the <code class="docutils literal notranslate"><span class="pre">cpp</span></code> codegen is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">neg1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"decltype(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)(-</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)"</span>
+</pre></div>
+</div>
+<p>In order to demonstrate the debugging, we will modify the function to a wrong one later.</p>
+<div class="section" id="get-more-logging-information">
+<h3>Get more logging information<a class="headerlink" href="#get-more-logging-information" title="Permalink to this heading">¶</a></h3>
+<p>No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a <code class="docutils literal notranslate"><span class="pre">TORCH_COMPILE_DEBUG</span></code> environment variable like below:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">TORCH_COMPILE_DEBUG</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>xx.py
+</pre></div>
+</div>
+<p>This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>torch._inductor.debug:<span class="w"> </span><span class="o">[</span>WARNING<span class="o">]</span><span class="w"> </span>model___20<span class="w"> </span>debug<span class="w"> </span>trace:<span class="w"> </span>/tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug
+</pre></div>
+</div>
+<p>In this directory, the following files are saved for debugging purposes:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 31%"/>
+<col style="width: 69%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fx_graph_runnable.py</span></code></p></td>
+<td><p>Executable FX graph, after decomposition, before pattern match</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fx_graph_transformed.py</span></code></p></td>
+<td><p>Transformed FX graph, after pattern match</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ir_post_fusion.txt</span></code></p></td>
+<td><p>Inductor IR before fusion</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ir_pre_fusion.txt</span></code></p></td>
+<td><p>Inductor IR after fusion</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">output_code.py</span></code></p></td>
+<td><p>Generated Python code for graph, with C++/Triton kernels</p></td>
+</tr>
+</tbody>
+</table>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">fx_graph_runnable.py</span></code> and <code class="docutils literal notranslate"><span class="pre">output_code.py</span></code> are both runnable and editable in order to make debugging easier.
+Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fx_graph_runnable</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">forward1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg0_1</span><span class="p">,</span> <span class="n">arg1_1</span><span class="p">):</span>
+    <span class="n">neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">neg</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">arg0_1</span><span class="p">);</span>  <span class="n">arg0_1</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">maximum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">maximum</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">arg1_1</span><span class="p">,</span> <span class="n">neg</span><span class="p">);</span>  <span class="n">arg1_1</span> <span class="o">=</span> <span class="n">neg</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">clone</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">clone</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">maximum</span><span class="p">);</span>  <span class="n">maximum</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">clone</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>C++ kernel in <code class="docutils literal notranslate"><span class="pre">output_code</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch._inductor.codecache</span> <span class="kn">import</span> <span class="n">AsyncCompile</span>
+<span class="n">async_compile</span> <span class="o">=</span> <span class="n">AsyncCompile</span><span class="p">()</span>
+
+<span class="n">cpp_fused_cat_maximum_neg_0</span> <span class="o">=</span> <span class="n">async_compile</span><span class="o">.</span><span class="n">cpp</span><span class="p">(</span><span class="s1">'''</span>
+<span class="s1">#include "/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"</span>
+<span class="s1">extern "C" void kernel(const unsigned char* in_ptr0,</span>
+<span class="s1">                       const unsigned char* in_ptr1,</span>
+<span class="s1">                       unsigned char* out_ptr0)</span>
+<span class="s1">{</span>
+<span class="s1">    {</span>
+<span class="s1">        #pragma GCC ivdep</span>
+<span class="s1">        for(long i0=static_cast&lt;long&gt;(0L); i0&lt;static_cast&lt;long&gt;(8390L); i0+=static_cast&lt;long&gt;(1L))</span>
+<span class="s1">        {</span>
+<span class="s1">            #pragma GCC ivdep</span>
+<span class="s1">            for(long i1=static_cast&lt;long&gt;(0L); i1&lt;static_cast&lt;long&gt;(8L); i1+=static_cast&lt;long&gt;(1L))</span>
+<span class="s1">            {</span>
+<span class="s1">                auto tmp0 = in_ptr0[static_cast&lt;long&gt;(i1 + (8L*i0))];</span>
+<span class="s1">                auto tmp1 = in_ptr1[static_cast&lt;long&gt;(i1)];</span>
+<span class="s1">                // Corresponding FX code line: neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None</span>
+<span class="s1">                auto tmp2 = decltype(tmp1)(-tmp1);</span>
+<span class="s1">                // Corresponding FX code line: maximum = torch.ops.aten.maximum.default(arg1_1, neg);  arg1_1 = neg = None</span>
+<span class="s1">                auto tmp3 = max_propagate_nan(tmp0, tmp2);</span>
+<span class="s1">                // Corresponding FX code line: clone = torch.ops.aten.clone.default(maximum);  maximum = None</span>
+<span class="s1">                out_ptr0[static_cast&lt;long&gt;(i1 + (8L*i0))] = tmp3;</span>
+<span class="s1">            }</span>
+<span class="s1">        }</span>
+<span class="s1">    }</span>
+<span class="s1">}'''</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="determine-component-of-error">
+<h3>Determine component of error<a class="headerlink" href="#determine-component-of-error" title="Permalink to this heading">¶</a></h3>
+<p>When encountering errors or accuracy problems, a straightforward solution to find the bug is to narrow down the problem. The first thing to do is to determine the component where the error occurs. Luckily, it can be simply achieved by changing the backend of <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 52%"/>
+<col style="width: 48%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">torch.compile(fn,</span> <span class="pre">backend="eager")</span></code></p></td>
+<td><p>Enable Dynamo</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">torch.compile(fn,</span> <span class="pre">backend="aot_eager")</span></code></p></td>
+<td><p>Enable Dynamo + AOT Autograd</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">torch.compile(fn,</span> <span class="pre">backend="inductor")</span></code></p></td>
+<td><p>Enable Dynamo + AOT Autograd + Inductor</p></td>
+</tr>
+</tbody>
+</table>
+<p>If the model can successfully run when the backend is set to <code class="docutils literal notranslate"><span class="pre">eager</span></code> or <code class="docutils literal notranslate"><span class="pre">aot_eager</span></code> while it fails with <code class="docutils literal notranslate"><span class="pre">inductor</span></code>, we can narrow down the failure to Inductor.</p>
+</div>
+<div class="section" id="compilation-error">
+<h3>Compilation error<a class="headerlink" href="#compilation-error" title="Permalink to this heading">¶</a></h3>
+<p>As we know, the evolved chain of graph-level optimization is like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.neg.html#torch.neg" title="torch.neg"><span class="n">torch</span><span class="o">.</span><span class="n">neg</span></a> <span class="p">(</span><span class="n">Python</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">neg</span><span class="o">.</span><span class="n">default</span> <span class="p">(</span><span class="n">within</span> <span class="n">FX</span> <span class="n">graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">neg</span> <span class="p">(</span><span class="n">within</span> <span class="n">IR</span> <span class="n">node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="o">-</span><span class="n">tmp1</span> <span class="p">(</span><span class="n">within</span> <span class="n">C</span><span class="o">++</span> <span class="n">kernel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
+This type of error indicates that bugs are introduced when lowering IR nodes to output code.
+The root cause of compilation error is usually shown in the traceback log.</p>
+<p>For example, the <code class="docutils literal notranslate"><span class="pre">neg</span></code> function is modified like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">neg2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"-</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span>
+</pre></div>
+</div>
+<p>The logging gives the following compile error with a rather clear reason.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
+ CppCompileError: C++ compile error
+ /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp: In function ‘void kernel(const unsigned char*, const unsigned char*, unsigned char*)’:
+ /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: error: no matching function for call to ‘max_propagate_nan(unsigned char&amp;, int&amp;)’
+   17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+        |                                                         ^
+ In file included from /tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:2:
+ /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note: candidate: ‘template&lt;class scalar_t&gt; scalar_t max_propagate_nan(scalar_t, scalar_t)’
+ 27 | inline scalar_t max_propagate_nan(scalar_t a, scalar_t b) {
+      |                 ^~~~~~~~~~~~~~~~~
+ /tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h:27:17: note:   template argument deduction/substitution failed:
+/tmp/torchinductor_root/xg/cxga5tk3b4lkwoxyigrtocjp5s7vc5cg2ikuscf6bk6pjqip2bhx.cpp:17:57: note:   deduced conflicting types for parameter ‘scalar_t’ (‘unsigned char’ and ‘int’)
+ 17 |                 auto tmp3 = max_propagate_nan(tmp0, tmp2);
+      |                                                         ^
+</pre></div>
+</div>
+<p>Let us also see the corresponding C++ kernel in output code and IR node.</p>
+<p>C++ kernel:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">include</span><span class="w"> </span><span class="s">"/tmp/torchinductor_root/gv/cgv6n5aotqjo5w4vknjibhengeycuattfto532hkxpozszcgxr3x.h"</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">"C"</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">kernel</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">in_ptr0</span><span class="p">,</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">in_ptr1</span><span class="p">,</span>
+<span class="w">                    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">out_ptr0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="cp">#pragma GCC ivdep</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">i0</span><span class="o">=</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">0L</span><span class="p">);</span><span class="w"> </span><span class="n">i0</span><span class="o">&lt;</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">8390L</span><span class="p">);</span><span class="w"> </span><span class="n">i0</span><span class="o">+=</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">1L</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="cp">#pragma GCC ivdep</span>
+<span class="w">            </span><span class="k">for</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">i1</span><span class="o">=</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">0L</span><span class="p">);</span><span class="w"> </span><span class="n">i1</span><span class="o">&lt;</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">8L</span><span class="p">);</span><span class="w"> </span><span class="n">i1</span><span class="o">+=</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">1L</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tmp0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_ptr0</span><span class="p">[</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mf">8L</span><span class="o">*</span><span class="n">i0</span><span class="p">))];</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tmp1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_ptr1</span><span class="p">[</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i1</span><span class="p">)];</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tmp2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">tmp1</span><span class="p">;</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tmp3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">max_propagate_nan</span><span class="p">(</span><span class="n">tmp0</span><span class="p">,</span><span class="w"> </span><span class="n">tmp2</span><span class="p">);</span>
+<span class="w">                </span><span class="n">out_ptr0</span><span class="p">[</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mf">8L</span><span class="o">*</span><span class="n">i0</span><span class="p">))]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp3</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>IR node:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">buf0</span><span class="p">:</span> <span class="n">SchedulerNode</span><span class="p">(</span><span class="n">ComputedBuffer</span><span class="p">)</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">writes</span> <span class="o">=</span> <span class="p">[</span><span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'buf0'</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">67120</span><span class="p">})]</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">unmet_dependencies</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">met_dependencies</span> <span class="o">=</span>
+    <span class="p">[</span>   <span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'arg0_1'</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">8390</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span> <span class="mi">8</span><span class="p">}),</span>
+        <span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'arg1_1'</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">67120</span><span class="p">})]</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">users</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodeUser</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">OUTPUT</span><span class="p">,</span> <span class="n">can_inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">cpu</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="p">((</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">())</span>
+<span class="n">buf0</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">([</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[])</span>
+<span class="k">class</span> <span class="nc">buf0_loop_body</span><span class="p">:</span>
+    <span class="n">var_ranges</span> <span class="o">=</span> <span class="p">{</span><span class="n">z0</span><span class="p">:</span> <span class="mi">8390</span><span class="p">,</span> <span class="n">z1</span><span class="p">:</span> <span class="mi">8</span><span class="p">}</span>
+    <span class="n">index0</span> <span class="o">=</span> <span class="mi">8</span><span class="o">*</span><span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span>
+    <span class="n">index1</span> <span class="o">=</span> <span class="n">z1</span>
+    <span class="k">def</span> <span class="nf">body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+        <span class="n">get_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index0'</span><span class="p">)</span>
+        <span class="n">load</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'arg1_1'</span><span class="p">,</span> <span class="n">get_index</span><span class="p">)</span>
+        <span class="n">get_index_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index1'</span><span class="p">)</span>
+        <span class="n">load_1</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'arg0_1'</span><span class="p">,</span> <span class="n">get_index_1</span><span class="p">)</span>
+        <span class="n">neg</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">load_1</span><span class="p">)</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">neg</span><span class="p">)</span>
+        <span class="n">get_index_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index0'</span><span class="p">)</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s1">'buf0'</span><span class="p">,</span> <span class="n">get_index_2</span><span class="p">,</span> <span class="n">maximum</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">store</span>
+</pre></div>
+</div>
+<p>According to the traceback logging, the compilation error is caused by the data type inconsistency of <code class="docutils literal notranslate"><span class="pre">max_propagate_nan</span></code>’s inputs.
+By checking the C++ kernel, we know that <code class="docutils literal notranslate"><span class="pre">tmp2</span></code> is no longer <code class="docutils literal notranslate"><span class="pre">long</span></code> after doing <code class="docutils literal notranslate"><span class="pre">-</span></code> as <code class="docutils literal notranslate"><span class="pre">tmp0</span></code> is <code class="docutils literal notranslate"><span class="pre">long</span></code>.
+We can easily match <code class="docutils literal notranslate"><span class="pre">-</span></code> and <code class="docutils literal notranslate"><span class="pre">max_propagate_nan</span></code> in C++ kernel with <code class="docutils literal notranslate"><span class="pre">ops.neg</span></code> and <code class="docutils literal notranslate"><span class="pre">ops.maximum</span></code> in IR node respectively.</p>
+<p>Now we successfully find that the root cause is the implementation of <code class="docutils literal notranslate"><span class="pre">ops.neg</span></code> in <code class="docutils literal notranslate"><span class="pre">cpp</span></code> codegen, which silently changes the data type when doing <code class="docutils literal notranslate"><span class="pre">neg</span></code>.</p>
+</div>
+<div class="section" id="accuracy-debugging">
+<h3>Accuracy debugging<a class="headerlink" href="#accuracy-debugging" title="Permalink to this heading">¶</a></h3>
+<p>Otherwise, if the model runs with other errors or accuracy problem, you can use the PyTorch debugging tool called <a class="reference external" href="https://pytorch.org/functorch/stable/notebooks/minifier.html">Minifier</a>.</p>
+<p>The core idea of <code class="docutils literal notranslate"><span class="pre">Minifier</span></code> is to keep removing the nodes and inputs of graph until finding the minimal graph with problem.
+It helps to automatically generate a minified problematic graph through 4 strategies: truncating suffix, delta debugging, eliminating dead code and removing unused inputs.</p>
+<p>We will now show the debugging process for the accuracy problem with the help of <code class="docutils literal notranslate"><span class="pre">Minifer</span></code>.
+The accuracy problem refers to the case where the outputs of backends eager and inductor are different.</p>
+<p>For instance, we modify the example like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch._dynamo.utils</span> <span class="kn">import</span> <span class="n">same</span>
+
+<span class="k">def</span> <span class="nf">foo2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.neg.html#torch.neg" title="torch.neg"><span class="n">torch</span><span class="o">.</span><span class="n">neg</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.maximum.html#torch.maximum" title="torch.maximum"><span class="n">torch</span><span class="o">.</span><span class="n">maximum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">([</span><span class="n">b</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">float32</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">((</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">float32</span></a><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">expected_result</span></a> <span class="o">=</span> <span class="n">foo2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">)</span>
+
+<span class="n">compiled_foo2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">foo2</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">actual_result</span></a> <span class="o">=</span> <span class="n">compiled_foo2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x2</span></a><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">same</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">expected_result</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">actual_result</span></a><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>And also modify the <code class="docutils literal notranslate"><span class="pre">neg</span></code> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">neg3</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"decltype(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)(2 * </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)"</span>
+</pre></div>
+</div>
+<p>An accuracy problem would be raised as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">utils</span><span class="p">:</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">Accuracy</span> <span class="n">failed</span><span class="p">:</span> <span class="n">allclose</span> <span class="ow">not</span> <span class="n">within</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">"test_script.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">18</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="k">assert</span> <span class="n">same</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">expected_result</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">actual_result</span></a><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="ne">AssertionError</span>
+</pre></div>
+</div>
+<p>To debug an accuracy problem with Minifier, two environment variables are needed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TORCHDYNAMO_REPRO_AFTER</span><span class="o">=</span><span class="s2">"aot"</span> <span class="n">TORCHDYNAMO_REPRO_LEVEL</span><span class="o">=</span><span class="mi">4</span> <span class="n">python</span> <span class="n">xx</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Which gives us logging information that demonstrates the steps of minifying:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Started</span> <span class="n">off</span> <span class="k">with</span> <span class="mi">6</span> <span class="n">nodes</span>
+
+<span class="n">Trying</span> <span class="n">granularity</span> <span class="mi">2</span>
+<span class="n">Strategy</span><span class="p">:</span> <span class="n">Truncate</span> <span class="n">suffix</span> <span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="mi">6</span> <span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="n">SUCCESS</span><span class="p">:</span> <span class="n">Went</span> <span class="kn">from</span> <span class="mi">6</span> <span class="n">to</span> <span class="mi">4</span> <span class="n">nodes</span>
+
+<span class="n">Trying</span> <span class="n">granularity</span> <span class="mi">4</span>
+<span class="n">Strategy</span><span class="p">:</span> <span class="n">Remove</span> <span class="n">unused</span> <span class="n">inputs</span> <span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span> <span class="p">(</span><span class="mi">4</span> <span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="n">SUCCESS</span><span class="p">:</span> <span class="n">Went</span> <span class="kn">from</span> <span class="mi">4</span> <span class="n">to</span> <span class="mi">3</span> <span class="n">nodes</span>
+</pre></div>
+</div>
+<p>After running, we get the final minified graph with the target node <code class="docutils literal notranslate"><span class="pre">neg</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">forward2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg0_1</span><span class="p">):</span>
+    <span class="n">neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">neg</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">arg0_1</span><span class="p">);</span>  <span class="n">arg0_1</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">neg</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>For more usage details about Minifier, please refer to <a class="reference external" href="https://pytorch.org/docs/stable/dynamo/troubleshooting.html">Troubleshooting</a>.</p>
+</div>
+</div>
+<div class="section" id="performance-profiling">
+<h2>Performance profiling<a class="headerlink" href="#performance-profiling" title="Permalink to this heading">¶</a></h2>
+<p>Within this section, we will demonstrate the process of conducting performance analysis for a model that has been compiled using the Inductor CPU backend.
+In the example below, we benchmark a Hugging Face Transformer model <code class="docutils literal notranslate"><span class="pre">MobileBertForQuestionAnswering</span></code> with both the eager mode and the Inductor graph mode.
+The execution time and the speedup ratio of Inductor are printed after the benchmark.
+We use Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and run benchmark on the first socket to demonstrate the optimization within this section.
+We set following environment variable as a best practice to benchmark on Intel(R) CPU.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">KMP_BLOCKTIME</span><span class="o">=</span><span class="m">1</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">KMP_SETTINGS</span><span class="o">=</span><span class="m">1</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">KMP_AFFINITY</span><span class="o">=</span><span class="nv">granularity</span><span class="o">=</span>fine,compact,1,0
+<span class="nb">export</span><span class="w"> </span><span class="nv">LD_PRELOAD</span><span class="o">=</span><span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="k">:-</span><span class="s2">"</span><span class="k">$(</span>dirname<span class="w"> </span><span class="k">$(</span>which<span class="w"> </span>conda<span class="k">))</span><span class="s2">/../"</span><span class="si">}</span>/lib/libiomp5.so:<span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="k">:-</span><span class="s2">"</span><span class="k">$(</span>dirname<span class="w"> </span><span class="k">$(</span>which<span class="w"> </span>conda<span class="k">))</span><span class="s2">/../"</span><span class="si">}</span>/lib/libjemalloc.so
+<span class="nb">export</span><span class="w"> </span><span class="nv">MALLOC_CONF</span><span class="o">=</span><span class="s2">"oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"</span>
+numactl<span class="w"> </span>-C<span class="w"> </span><span class="m">0</span>-31<span class="w"> </span>-m<span class="w"> </span><span class="m">0</span><span class="w"> </span>python<span class="w"> </span>bench.py
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># bench.py</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">MobileBertForQuestionAnswering</span>
+<span class="c1"># Initialize an eager model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MobileBertForQuestionAnswering</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"csarron/mobilebert-uncased-squad-v2"</span><span class="p">)</span>
+<span class="n">seq_length</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">bs</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span>
+<span class="nb">input</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randint.html#torch.randint" title="torch.randint"><span class="n">torch</span><span class="o">.</span><span class="n">randint</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">int64</span></a><span class="p">)</span>
+<span class="n">input_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"input_ids"</span><span class="p">:</span> <span class="nb">input</span><span class="p">}</span>
+
+<span class="c1"># Initialize the inductor model</span>
+<a class="sphx-glr-backref-module-torch-_dynamo sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/_dynamo.html#torch._dynamo.OptimizedModule" title="torch._dynamo.OptimizedModule"><span class="n">compiled_model</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <a class="sphx-glr-backref-module-torch-_dynamo sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/_dynamo.html#torch._dynamo.OptimizedModule" title="torch._dynamo.OptimizedModule"><span class="n">compiled_model</span></a><span class="p">(</span><span class="o">**</span><span class="n">input_dict</span><span class="p">)</span>
+
+<span class="n">NUM_ITERS</span><span class="o">=</span><span class="mi">50</span>
+<span class="kn">import</span> <span class="nn">timeit</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="c1"># warmup</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">input_dict</span><span class="p">)</span>
+    <span class="n">eager_t</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s2">"model(**input_dict)"</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">NUM_ITERS</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
+
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="c1"># warmup</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <a class="sphx-glr-backref-module-torch-_dynamo sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/_dynamo.html#torch._dynamo.OptimizedModule" title="torch._dynamo.OptimizedModule"><span class="n">compiled_model</span></a><span class="p">(</span><span class="o">**</span><span class="n">input_dict</span><span class="p">)</span>
+    <span class="n">inductor_t</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s2">"compiled_model(**input_dict)"</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">NUM_ITERS</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
+<span class="c1"># print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")</span>
+<span class="c1"># print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")</span>
+<span class="c1"># print(f"speed up ratio: {eager_t / inductor_t}")</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading (…)lve/main/config.json:   0%|          | 0.00/765 [00:00&lt;?, ?B/s]
+Downloading (…)lve/main/config.json: 100%|##########| 765/765 [00:00&lt;00:00, 8.56MB/s]
+
+Downloading model.safetensors:   0%|          | 0.00/98.5M [00:00&lt;?, ?B/s]
+Downloading model.safetensors:  21%|##1       | 21.0M/98.5M [00:00&lt;00:00, 139MB/s]
+Downloading model.safetensors:  53%|#####3    | 52.4M/98.5M [00:00&lt;00:00, 212MB/s]
+Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:00&lt;00:00, 272MB/s]
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>eager<span class="w"> </span>use:<span class="w"> </span><span class="m">802</span>.1023553796113<span class="w"> </span>ms/iter
+inductor<span class="w"> </span>use:<span class="w"> </span><span class="m">339</span>.95180135127157<span class="w"> </span>ms/iter
+speed<span class="w"> </span>up<span class="w"> </span>ratio:<span class="w"> </span><span class="m">2</span>.359459053287382
+</pre></div>
+</div>
+<p>In our own testing, we find the Inductor CPU backend speed up the model by around 2.355x.</p>
+<p>Next, let’s dive deep into the performance at the operation level to understand where the speed-up comes from.
+<a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html">Pytorch Profiler</a> is a good tool to help us.
+Inductor CPU backend has the support to report the time of the fusion kernels to the profiler with the <code class="docutils literal notranslate"><span class="pre">enable_kernel_profile</span></code> configuration option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch._inductor</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">cpp</span><span class="o">.</span><span class="n">enable_kernel_profile</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>Following the steps in <a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html">Pytorch Profiler</a>
+We are able to get the profiling table and trace files.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># bench.py</span>
+<span class="kn">from</span> <span class="nn">torch.profiler</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="p">,</span> <span class="n">ProfilerActivity</span>
+<span class="n">RESULT_DIR</span> <span class="o">=</span> <span class="s2">"./prof_trace"</span>
+<span class="n">my_schedule</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="p">(</span>
+    <span class="n">skip_first</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">wait</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">warmup</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">active</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">repeat</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">trace_handler</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">p</span></a><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler._KinetoProfile.key_averages" title="torch.profiler._KinetoProfile.key_averages"><span class="n">p</span><span class="o">.</span><span class="n">key_averages</span></a><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">"self_cpu_time_total"</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="c1"># print(output)</span>
+    <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler._KinetoProfile.export_chrome_trace" title="torch.profiler._KinetoProfile.export_chrome_trace"><span class="n">p</span><span class="o">.</span><span class="n">export_chrome_trace</span></a><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">RESULT_DIR</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">p</span></a><span class="o">.</span><span class="n">step_num</span><span class="si">}</span><span class="s2">.json"</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">input_dict</span><span class="p">)</span>  <span class="c1"># compiled_model(**input_dict) to get inductor model profiling</span>
+
+<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span><a class="sphx-glr-backref-module-torch-_C-_profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.ProfilerActivity" title="torch._C._profiler.ProfilerActivity"><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span></a><span class="p">],</span>
+    <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="o">=</span><span class="n">my_schedule</span><span class="p">,</span>
+    <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">trace_handler</span>
+<span class="p">)</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">p</span></a><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+        <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">input_dict</span><span class="p">)</span>  <span class="c1"># compiled_model(**input_dict) to get inductor model profiling</span>
+        <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile.step" title="torch.profiler.profile.step"><span class="n">p</span><span class="o">.</span><span class="n">step</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p>We get the following performance profiling table for the eager-mode model (omitting some columns):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>-------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+<span class="w">                     </span>Name<span class="w">   </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">     </span>CPU<span class="w"> </span>total<span class="w">    </span><span class="c1"># of Calls</span>
+-------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+<span class="w">              </span>aten::addmm<span class="w">        </span><span class="m">45</span>.73%<span class="w">     </span><span class="m">370</span>.814ms<span class="w">           </span><span class="m">362</span>
+<span class="w">                </span>aten::add<span class="w">        </span><span class="m">19</span>.89%<span class="w">     </span><span class="m">161</span>.276ms<span class="w">           </span><span class="m">363</span>
+<span class="w">              </span>aten::copy_<span class="w">        </span><span class="m">14</span>.97%<span class="w">     </span><span class="m">121</span>.416ms<span class="w">           </span><span class="m">488</span>
+<span class="w">                </span>aten::mul<span class="w">         </span><span class="m">9</span>.02%<span class="w">      </span><span class="m">73</span>.154ms<span class="w">           </span><span class="m">194</span>
+<span class="w">          </span>aten::clamp_min<span class="w">         </span><span class="m">8</span>.81%<span class="w">      </span><span class="m">71</span>.444ms<span class="w">            </span><span class="m">96</span>
+<span class="w">                </span>aten::bmm<span class="w">         </span><span class="m">5</span>.46%<span class="w">      </span><span class="m">44</span>.258ms<span class="w">            </span><span class="m">48</span>
+<span class="w">            </span>ProfilerStep*<span class="w">       </span><span class="m">100</span>.00%<span class="w">     </span><span class="m">810</span>.920ms<span class="w">             </span><span class="m">1</span>
+<span class="w">                </span>aten::div<span class="w">         </span><span class="m">2</span>.89%<span class="w">      </span><span class="m">23</span>.447ms<span class="w">            </span><span class="m">24</span>
+<span class="w">           </span>aten::_softmax<span class="w">         </span><span class="m">1</span>.00%<span class="w">       </span><span class="m">8</span>.087ms<span class="w">            </span><span class="m">24</span>
+<span class="w">             </span>aten::linear<span class="w">        </span><span class="m">46</span>.48%<span class="w">     </span><span class="m">376</span>.888ms<span class="w">           </span><span class="m">362</span>
+<span class="w">              </span>aten::clone<span class="w">         </span><span class="m">2</span>.77%<span class="w">      </span><span class="m">22</span>.430ms<span class="w">            </span><span class="m">98</span>
+<span class="w">                  </span>aten::t<span class="w">         </span><span class="m">0</span>.31%<span class="w">       </span><span class="m">2</span>.502ms<span class="w">           </span><span class="m">362</span>
+<span class="w">               </span>aten::view<span class="w">         </span><span class="m">0</span>.14%<span class="w">       </span><span class="m">1</span>.161ms<span class="w">           </span><span class="m">850</span>
+<span class="w">          </span>aten::transpose<span class="w">         </span><span class="m">0</span>.17%<span class="w">       </span><span class="m">1</span>.377ms<span class="w">           </span><span class="m">386</span>
+<span class="w">       </span>aten::index_select<span class="w">         </span><span class="m">0</span>.12%<span class="w">     </span><span class="m">952</span>.000us<span class="w">             </span><span class="m">3</span>
+<span class="w">             </span>aten::expand<span class="w">         </span><span class="m">0</span>.12%<span class="w">     </span><span class="m">986</span>.000us<span class="w">           </span><span class="m">458</span>
+<span class="w">             </span>aten::matmul<span class="w">         </span><span class="m">8</span>.31%<span class="w">      </span><span class="m">67</span>.420ms<span class="w">            </span><span class="m">48</span>
+<span class="w">                </span>aten::cat<span class="w">         </span><span class="m">0</span>.09%<span class="w">     </span><span class="m">703</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">         </span>aten::as_strided<span class="w">         </span><span class="m">0</span>.08%<span class="w">     </span><span class="m">656</span>.000us<span class="w">           </span><span class="m">963</span>
+<span class="w">               </span>aten::relu<span class="w">         </span><span class="m">8</span>.86%<span class="w">      </span><span class="m">71</span>.864ms<span class="w">            </span><span class="m">96</span>
+-------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>total:<span class="w"> </span><span class="m">810</span>.920ms
+</pre></div>
+</div>
+<p>Similarly, we also get the table for the compiled model with Inductor (omitting some columns):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>-----------------------------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+<span class="w">                                           </span>Name<span class="w">   </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">     </span>CPU<span class="w"> </span>total<span class="w">    </span><span class="c1"># of Calls</span>
+-----------------------------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+<span class="w">                               </span>mkl::_mkl_linear<span class="w">        </span><span class="m">68</span>.79%<span class="w">     </span><span class="m">231</span>.573ms<span class="w">           </span><span class="m">362</span>
+<span class="w">                                      </span>aten::bmm<span class="w">         </span><span class="m">8</span>.02%<span class="w">      </span><span class="m">26</span>.992ms<span class="w">            </span><span class="m">48</span>
+<span class="w">                                  </span>ProfilerStep*<span class="w">       </span><span class="m">100</span>.00%<span class="w">     </span><span class="m">336</span>.642ms<span class="w">             </span><span class="m">1</span>
+<span class="w">  </span>graph_0_cpp_fused_constant_pad_nd_embedding_0<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">915</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">                                    </span>aten::empty<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">911</span>.000us<span class="w">           </span><span class="m">362</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_151<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">901</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_226<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">899</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_361<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">898</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_121<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">895</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">  </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_31<span class="w">         </span><span class="m">0</span>.27%<span class="w">     </span><span class="m">893</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">  </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_76<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">892</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_256<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">892</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_346<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">892</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_241<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">891</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_316<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">891</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">  </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_91<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">890</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_106<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">890</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_211<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">890</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w">  </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_61<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">889</span>.000us<span class="w">             </span><span class="m">1</span>
+<span class="w"> </span>graph_0_cpp_fused__mkl_linear_add_mul_relu_286<span class="w">         </span><span class="m">0</span>.26%<span class="w">     </span><span class="m">889</span>.000us<span class="w">             </span><span class="m">1</span>
+-----------------------------------------------<span class="w">  </span>------------<span class="w">  </span>------------<span class="w">  </span>------------
+Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>total:<span class="w"> </span><span class="m">336</span>.642ms
+</pre></div>
+</div>
+<p>From the profiling table of the eager model, we can see the most time consumption ops are [<code class="docutils literal notranslate"><span class="pre">aten::addmm</span></code>, <code class="docutils literal notranslate"><span class="pre">aten::add</span></code>, <code class="docutils literal notranslate"><span class="pre">aten::copy_</span></code>, <code class="docutils literal notranslate"><span class="pre">aten::mul</span></code>, <code class="docutils literal notranslate"><span class="pre">aten::clamp_min</span></code>, <code class="docutils literal notranslate"><span class="pre">aten::bmm</span></code>].
+Comparing with the inductor model profiling table, we notice an <code class="docutils literal notranslate"><span class="pre">mkl::_mkl_linear</span></code> entry and multiple fused kernels in the form <code class="docutils literal notranslate"><span class="pre">graph_0_cpp_fused_*</span></code>. They are the major
+optimizations that the inductor model is doing. Let us discuss them separately.</p>
+<p>(1) Regarding <code class="docutils literal notranslate"><span class="pre">mkl::_mkl_linear</span></code>: You may notice the number of calls to this kernel is 362, which is exactly the same as <code class="docutils literal notranslate"><span class="pre">aten::linear</span></code> in the eager model profiling table.
+The CPU total of <code class="docutils literal notranslate"><span class="pre">aten::linear</span></code> is 376.888ms, while it is 231.573ms for <code class="docutils literal notranslate"><span class="pre">mkl::_mkl_linear</span></code>. This suggests a ~1.63x for the “linear” part.
+The speedup mainly comes from <a class="reference external" href="https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-pack-002.html">packing the weight tensor to block memory format</a>
+and invoking <a class="reference external" href="https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/cblas-gemm-compute-002.html">cblas_sgemm_compute</a> within the Inductor CPU backend
+to have a better cache behavior during GEMM computation.</p>
+<p>(2) Regarding other memory-intensive ops: The end-to-end latency for the eager/inductor model is 802/339ms in our testing. So we can roughly infer that the speed up for the other memory-intensive ops is around 3.94x.
+Let’s read the generated code to understand how the inductor achieves this impressive optimization. You can find the generated code by
+searching <code class="docutils literal notranslate"><span class="pre">cpp_fused__mkl_linear_add_mul_relu_151</span></code> in <code class="docutils literal notranslate"><span class="pre">output_code.py</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cpp_fused__mkl_linear_add_mul_relu_151</span> <span class="o">=</span> <span class="n">async_compile</span><span class="o">.</span><span class="n">cpp</span><span class="p">(</span><span class="s1">'''</span>
+<span class="s1">#include &lt;ATen/record_function.h&gt;</span>
+<span class="s1">#include "/tmp/torchinductor_root/lr/clrlgu27q4ggd472umdzwsu6qcpqxcuusjxqvx2hwitjbujiiz7z.h"</span>
+<span class="s1">extern "C" void kernel(float* in_out_ptr0,</span>
+<span class="s1">                       const float* in_ptr0,</span>
+<span class="s1">                       const float* in_ptr1,</span>
+<span class="s1">                       const float* in_ptr2,</span>
+<span class="s1">                       const float* in_ptr3)</span>
+<span class="s1">{</span>
+<span class="s1">    RECORD_FUNCTION("graph_0_cpp_fused__mkl_linear_add_mul_relu_151", c10::ArrayRef&lt;c10::IValue&gt;(</span><span class="si">{}</span><span class="s1">));</span>
+<span class="s1">    #pragma omp parallel num_threads(32)</span>
+<span class="s1">    {</span>
+<span class="s1">        {</span>
+<span class="s1">            #pragma omp for</span>
+<span class="s1">            for(long i0=static_cast&lt;long&gt;(0L); i0&lt;static_cast&lt;long&gt;(16384L); i0+=static_cast&lt;long&gt;(1L))</span>
+<span class="s1">            {</span>
+<span class="s1">                for(long i1=static_cast&lt;long&gt;(0L); i1&lt;static_cast&lt;long&gt;(512L); i1+=static_cast&lt;long&gt;(8L))</span>
+<span class="s1">                {</span>
+<span class="s1">                    auto tmp0 = at::vec::Vectorized&lt;float&gt;::loadu(in_ptr0 + static_cast&lt;long&gt;(i1 + (512L*i0)));</span>
+<span class="s1">                    auto tmp1 = at::vec::Vectorized&lt;float&gt;::loadu(in_ptr1 + static_cast&lt;long&gt;(i1));</span>
+<span class="s1">                    auto tmp3 = at::vec::Vectorized&lt;float&gt;::loadu(in_out_ptr0 + static_cast&lt;long&gt;(i1 + (512L*i0)));</span>
+<span class="s1">                    auto tmp5 = at::vec::Vectorized&lt;float&gt;::loadu(in_ptr2 + static_cast&lt;long&gt;(i1));</span>
+<span class="s1">                    auto tmp7 = at::vec::Vectorized&lt;float&gt;::loadu(in_ptr3 + static_cast&lt;long&gt;(i1));</span>
+<span class="s1">                    auto tmp2 = tmp0 + tmp1;</span>
+<span class="s1">                    auto tmp4 = tmp2 + tmp3;</span>
+<span class="s1">                    auto tmp6 = tmp4 * tmp5;</span>
+<span class="s1">                    auto tmp8 = tmp6 + tmp7;</span>
+<span class="s1">                    tmp8.store(in_out_ptr0 + static_cast&lt;long&gt;(i1 + (512L*i0)));</span>
+<span class="s1">                }</span>
+<span class="s1">            }</span>
+<span class="s1">        }</span>
+<span class="s1">    }</span>
+<span class="s1">}'''</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>From the generated code above, we can see this kernel has done a typical <a class="reference external" href="https://en.wikipedia.org/wiki/Loop_fission_and_fusion">Loop Fusion</a> on <code class="docutils literal notranslate"><span class="pre">[add,</span> <span class="pre">add,</span> <span class="pre">mul,</span> <span class="pre">add]</span></code>.
+This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization,
+we can infer the sizes and stride of the inputs and further benchmark this <code class="docutils literal notranslate"><span class="pre">[add,</span> <span class="pre">add,</span> <span class="pre">mul,</span> <span class="pre">add]</span></code> pattern.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># bench.py</span>
+<span class="k">def</span> <span class="nf">func</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_0</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_3</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_4</span></a><span class="p">):</span>
+    <span class="n">add_0</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_0</span></a> <span class="o">+</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_1</span></a>
+    <span class="n">add_1</span> <span class="o">=</span> <span class="n">add_0</span> <span class="o">+</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a>
+    <span class="n">mul_1</span> <span class="o">=</span> <span class="n">add_1</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_3</span></a>
+    <span class="n">add_2</span> <span class="o">=</span> <span class="n">mul_1</span> <span class="o">+</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_4</span></a>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a> <span class="o">=</span> <span class="n">add_2</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_0</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">16384</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="torch.zeros"><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><span class="mi">16384</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_3</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_4</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_0</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_1</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_2</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_3</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">arg_4</span></a><span class="p">)</span>
+<span class="n">inductor_func</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="n">inductor_func</span><span class="p">(</span><span class="o">*</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">timeit</span>
+<span class="n">NUM_ITERS</span><span class="o">=</span><span class="mi">100</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="c1"># warmup</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">eager_t</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s2">"func(*input)"</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">NUM_ITERS</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
+
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="c1"># warmup</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">inductor_func</span><span class="p">(</span><span class="o">*</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">inductor_t</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s2">"inductor_func(*input)"</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">NUM_ITERS</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
+<span class="c1"># print(f"eager use: {eager_t * 1000 / NUM_ITERS} ms/iter")</span>
+<span class="c1"># print(f"inductor use: {inductor_t * 1000 / NUM_ITERS} ms/iter")</span>
+<span class="c1"># print(f"speed up ratio: {eager_t / inductor_t}")</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>eager<span class="w"> </span>use:<span class="w"> </span><span class="m">5</span>.780875144992024<span class="w"> </span>ms/iter
+inductor<span class="w"> </span>use:<span class="w"> </span><span class="m">0</span>.9588955780491233<span class="w"> </span>ms/iter
+speed<span class="w"> </span>up<span class="w"> </span>ratio:<span class="w"> </span><span class="m">6</span>.0286805751604735
+</pre></div>
+</div>
+<p>This is just an example. The profiling table shows all element-wise op are fused within the inductor automatically in this model. You can read more kernels in
+<cite>output_code.py</cite></p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>The document gives an in-depth tutorial for the Inductor CPU backend.</p>
+<p>With motivating examples, we walk through the process of debugging and profiling.
+The main idea is to narrow down the problem.</p>
+<p>We demonstrate step by step the way to delve deeper the issue and find the root cause of failures, with the help of debugging logging and the tool Minifier.
+Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.</p>
+<p>When the performance with Inductor is better than that of eager mode, we provide a solid analytical method for performance profiling.
+We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 11 minutes  20.004 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-inductor-debug-cpu-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/864b90f09a798ba06b420b737cd463b1/inductor_debug_cpu.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">inductor_debug_cpu.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/57fbbe6265e9c97da47580b6e60037ac/inductor_debug_cpu.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">inductor_debug_cpu.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="scaled_dot_product_attention_tutorial.html" rel="next" title="(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="torch_compile_tutorial.html" rel="prev" title="torch.compile Tutorial"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2023, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Inductor CPU backend debugging and profiling</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#debugging">Debugging</a><ul>
+<li><a class="reference internal" href="#get-more-logging-information">Get more logging information</a></li>
+<li><a class="reference internal" href="#determine-component-of-error">Determine component of error</a></li>
+<li><a class="reference internal" href="#compilation-error">Compilation error</a></li>
+<li><a class="reference internal" href="#accuracy-debugging">Accuracy debugging</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-profiling">Performance profiling</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="../_static/katex.min.js"></script>
+<script src="../_static/auto-render.min.js"></script>
+<script src="../_static/katex_autorenderer.js"></script>
+<script src="../_static/design-tabs.js"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; display: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
+</div>
+</div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li class="resources-mobile-menu-title">
+            Docs
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+</li>
+<li>
+<a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+</li>
+<li>
+<a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+</li>
+<li>
+<a href="https://pytorch.org/torcharrow">torcharrow</a>
+</li>
+<li>
+<a href="https://pytorch.org/data">TorchData</a>
+</li>
+<li>
+<a href="https://pytorch.org/torchrec">TorchRec</a>
+</li>
+<li>
+<a href="https://pytorch.org/serve/">TorchServe</a>
+</li>
+<li>
+<a href="https://pytorch.org/torchx/">TorchX</a>
+</li>
+<li>
+<a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+            Resources
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/features">About</a>
+</li>
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-stories">Community Stories</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">Models (Beta)</a>
+</li>
+</ul>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

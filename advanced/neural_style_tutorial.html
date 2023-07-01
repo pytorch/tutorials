@@ -312,6 +312,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
@@ -656,56 +657,58 @@ network to evaluation mode using <code class="docutils literal notranslate"><spa
 
   0%|          | 0.00/548M [00:00&lt;?, ?B/s]
 
-  4%|3         | 20.0M/548M [00:00&lt;00:02, 210MB/s]
+  2%|2         | 11.6M/548M [00:00&lt;00:04, 121MB/s]
 
-  7%|7         | 40.9M/548M [00:00&lt;00:02, 215MB/s]
+  4%|4         | 24.0M/548M [00:00&lt;00:04, 126MB/s]
 
- 11%|#1        | 62.3M/548M [00:00&lt;00:02, 219MB/s]
+  8%|8         | 44.2M/548M [00:00&lt;00:03, 165MB/s]
 
- 15%|#5        | 83.5M/548M [00:00&lt;00:02, 220MB/s]
+ 12%|#1        | 65.3M/548M [00:00&lt;00:02, 187MB/s]
 
- 19%|#9        | 105M/548M [00:00&lt;00:02, 222MB/s]
+ 16%|#5        | 86.2M/548M [00:00&lt;00:02, 199MB/s]
 
- 23%|##3       | 127M/548M [00:00&lt;00:01, 224MB/s]
+ 19%|#9        | 107M/548M [00:00&lt;00:02, 205MB/s]
 
- 27%|##7       | 149M/548M [00:00&lt;00:01, 227MB/s]
+ 23%|##3       | 128M/548M [00:00&lt;00:02, 210MB/s]
 
- 31%|###1      | 171M/548M [00:00&lt;00:01, 229MB/s]
+ 27%|##7       | 149M/548M [00:00&lt;00:01, 214MB/s]
 
- 35%|###5      | 193M/548M [00:00&lt;00:01, 229MB/s]
+ 31%|###1      | 170M/548M [00:00&lt;00:01, 215MB/s]
 
- 39%|###9      | 215M/548M [00:01&lt;00:01, 229MB/s]
+ 35%|###4      | 191M/548M [00:01&lt;00:01, 217MB/s]
 
- 43%|####3     | 237M/548M [00:01&lt;00:01, 231MB/s]
+ 39%|###8      | 212M/548M [00:01&lt;00:01, 218MB/s]
 
- 47%|####7     | 260M/548M [00:01&lt;00:01, 231MB/s]
+ 43%|####2     | 233M/548M [00:01&lt;00:01, 219MB/s]
 
- 51%|#####1    | 282M/548M [00:01&lt;00:01, 232MB/s]
+ 46%|####6     | 254M/548M [00:01&lt;00:01, 220MB/s]
 
- 56%|#####5    | 305M/548M [00:01&lt;00:01, 234MB/s]
+ 50%|#####     | 275M/548M [00:01&lt;00:01, 220MB/s]
 
- 60%|#####9    | 328M/548M [00:01&lt;00:00, 237MB/s]
+ 54%|#####4    | 297M/548M [00:01&lt;00:01, 221MB/s]
 
- 64%|######3   | 351M/548M [00:01&lt;00:00, 238MB/s]
+ 58%|#####7    | 318M/548M [00:01&lt;00:01, 220MB/s]
 
- 68%|######8   | 374M/548M [00:01&lt;00:00, 239MB/s]
+ 62%|######1   | 339M/548M [00:01&lt;00:01, 219MB/s]
 
- 72%|#######2  | 396M/548M [00:01&lt;00:00, 224MB/s]
+ 66%|######5   | 359M/548M [00:01&lt;00:00, 218MB/s]
 
- 76%|#######6  | 418M/548M [00:01&lt;00:00, 211MB/s]
+ 69%|######9   | 380M/548M [00:01&lt;00:00, 217MB/s]
 
- 80%|#######9  | 438M/548M [00:02&lt;00:00, 206MB/s]
+ 73%|#######3  | 401M/548M [00:02&lt;00:00, 218MB/s]
 
- 84%|########3 | 458M/548M [00:02&lt;00:00, 204MB/s]
+ 77%|#######7  | 422M/548M [00:02&lt;00:00, 219MB/s]
 
- 87%|########7 | 478M/548M [00:02&lt;00:00, 201MB/s]
+ 81%|########  | 444M/548M [00:02&lt;00:00, 221MB/s]
 
- 91%|######### | 498M/548M [00:02&lt;00:00, 203MB/s]
+ 85%|########4 | 465M/548M [00:02&lt;00:00, 220MB/s]
 
- 94%|#########4| 517M/548M [00:02&lt;00:00, 201MB/s]
+ 89%|########8 | 486M/548M [00:02&lt;00:00, 221MB/s]
 
- 98%|#########7| 536M/548M [00:02&lt;00:00, 200MB/s]
-100%|##########| 548M/548M [00:02&lt;00:00, 219MB/s]
+ 93%|#########2| 507M/548M [00:02&lt;00:00, 222MB/s]
+
+ 96%|#########6| 529M/548M [00:02&lt;00:00, 222MB/s]
+100%|##########| 548M/548M [00:02&lt;00:00, 213MB/s]
 </pre></div>
 </div>
 <p>Additionally, VGG networks are trained on images with each channel
@@ -913,25 +916,25 @@ between 0 to 1 each time the network is run.</p>
 <img alt="Output Image" class="sphx-glr-single-img" src="../_images/sphx_glr_neural_style_tutorial_004.png" srcset="../_images/sphx_glr_neural_style_tutorial_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Building the style transfer model..
 Optimizing..
 run [50]:
-Style Loss : 4.008770 Content Loss: 4.077475
+Style Loss : 4.097710 Content Loss: 4.141708
 
 run [100]:
-Style Loss : 1.129292 Content Loss: 3.021838
+Style Loss : 1.150635 Content Loss: 3.043076
 
 run [150]:
-Style Loss : 0.719200 Content Loss: 2.659608
+Style Loss : 0.723185 Content Loss: 2.661437
 
 run [200]:
-Style Loss : 0.482275 Content Loss: 2.495985
+Style Loss : 0.485837 Content Loss: 2.494134
 
 run [250]:
-Style Loss : 0.347517 Content Loss: 2.404643
+Style Loss : 0.350379 Content Loss: 2.402632
 
 run [300]:
-Style Loss : 0.266132 Content Loss: 2.350386
+Style Loss : 0.266113 Content Loss: 2.349177
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.726 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.256 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b3bcd49c4dd9be3a44c6c5d2e2a8b0cd/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></p>
