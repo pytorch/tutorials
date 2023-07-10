@@ -1,17 +1,17 @@
 """
-(prototype) torch.export
+Introducing ``torch.export``
 ========================
 
 This tutorial introduces steps to export a PyTorch program using the PyTorch 2.0 features.
 
-To begin, certain prerequisites need to be met in order to get an exported
+The following prerequisites must be met to get an exported
 program that satisfies the users’ requirements:
 
-1. Users should provide example inputs and have an good understanding of the
+* Users should provide example inputs and have an good understanding of the
 shape dynamism of all inputs, including whether they are dynamic or not, as well
 as which dimensions are dynamic.
 
-2. Users should have the ability to modify all of the code utilized in the
+* Users should have the ability to modify all of the code utilized in the
 model, including both 1st and 3rd-party libraries.
 """
 
@@ -36,11 +36,11 @@ def check_soundness(f: Callable, exported_program: ExportedProgram, *inputs):
 
 
 ######################################################################
-# Toy Program for Demo
+# Demo Program
 # --------------------
 #
 
-# Toy program to export
+# We will use the following demo program to demonstrate how ``torch_export`` works:
 
 def user_fn(x):
     if x.shape[0] > 5 and x.shape[0] < 10:
@@ -55,13 +55,14 @@ def user_fn(x):
 #
 # Given a program and rough dynamism requirements, how can we fine-tune the
 # input constraints for exportability?
+#
 # - The compiler will discover reasonable input constraints based on user’s specifications
 # - The discovered constraints are user consumeable directly
 #
 
 
 ######################################################################
-# Case 1.1. We provide any constraint
+# Case 1.1. User provides a constraint
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # By default, all dimensions are assumed to be static during tracing
@@ -89,17 +90,13 @@ check_soundness(user_fn, sound_exported, error_input)
 
 
 ######################################################################
-# Case 1.2. We will rely on the compiler to determine constraints
+# Case 1.2. Rely on the compiler to determine constraints
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-
-
-######################################################################
 # Debug logging can be enabled by setting the environment variable
 # ``TORCH_LOGS="dynamic"`` to track where the suggested constraints
 # originate
 #
-
 # We will rely on the compiler to discover reasonable constraints.
 # All we know is that dim 0 should be dynamic.
 #
@@ -128,11 +125,11 @@ check_soundness(user_fn, sound_exported, error_input)
 
 
 ######################################################################
-# Case 1.3. We want to refine what the compiler discovered
+# Case 1.3. Refine what the compiler discovered
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
-# I will make the input constraints tighter
+# We will make the input constraints tighter:
 #
 t_1 = torch.zeros([8])
 
@@ -150,7 +147,7 @@ check_soundness(user_fn, sound_exported, error_input)
 
 
 ######################################################################
-# Case 1.4. We want to make a relaxed constraint
+# Case 1.4. Make a relaxed constraint
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
@@ -172,34 +169,33 @@ print(sound_exported)
 # 2. Constraint Violation and Resolution
 # --------------------------------------
 #
-# How to make the program exportable and satisfy input constraints as
-# requirements?
+# Next, we will discuss how to make the program exportable and satisfy input constraints as
+# requirements.
 #
 
 
 ######################################################################
-# Case 2.1. When the user code does not satisfy the user-specified input constraints.
+# Case 2.1. User code does not satisfy the user-specified input constraints
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Users will have to either adjust the constraints or rewrite the program.
 #
-# The following examples will focus on demonstrating how to rewrite code
-# using other export APIs, e.g. ``cond()``, ``constrain_as_*()``, etc.
+# The following examples will focus on demonstrating how to rewrite code by
+# using other export APIs, for example ``cond()``, ``constrain_as_*()``, and other.
 #
-
-# Toy program re-write using control flow op
+# The following code demonstrates how you can rewrite our demo example by using the control flow op.
 #
-# NOTE: The example is not an ideal use case for cond(), but it serves to
-#       demonstrate how to rewrite code using cond()
+# .. note:: Although, the example is not an ideal use case for ``cond()``, it 
+#               demonstrates how you can rewrite the code.
 #
-## Original code
+# Original code:
 #
 # def user_fn(x):
 #     if x.shape[0] > 5 and x.shape[0] < 10:
 #         return x + 10
 #     else:
 #         return x * 2
-
+# Rewritten code:
 
 def user_fn_mod(x):
     def true_branch(x):
@@ -210,7 +206,7 @@ def user_fn_mod(x):
 
     return cond(x.shape[0] > 5 and x.shape[0] < 10, true_branch, false_branch, [x])
 
-# Re-apply the same relexed constraints
+# Re-apply the same relexed constraints:
 #
 t_1 = torch.zeros([8])
 
@@ -228,14 +224,14 @@ check_soundness(user_fn_mod, sound_exported, new_input)
 
 
 ######################################################################
-# Case 2.2. When example inputs trigger constraint violation
+# Case 2.2. Example inputs trigger constraint violation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Case 2.2.1 Example inputs trigger input constraint violation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 
-# Mistakenly providing an input that conflicts with input constraints.
+# One of the examples when a constraint violation happen is when the user mistakenly provides an input that conflicts with input constraints. For example: 
 #
 t_1 = torch.zeros([3])
 
@@ -272,9 +268,9 @@ t_1 = torch.rand(4, 4)
 exported = export(user_fn_ddo, (t_1,), constraints=None)
 print(exported)
 
-# Re-write with inline constraint
-# NOTE: There are different ways of re-writing to make the program exportable.
-#       User can also use torch.nonzero_static() instead!
+# Here is an example of how you can re-write this code with an inline constraint: 
+# .. note:: There are different ways of rewriting to make the program exportable.
+#       For example, you can also use ``torch.nonzero_static()``.
 #
 def user_fn_ddo_mod(x):
     y = x.nonzero()
