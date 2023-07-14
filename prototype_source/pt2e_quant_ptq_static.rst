@@ -1,56 +1,71 @@
-(prototype) FX Graph Mode Post Training Static Quantization
-===========================================================
-**Author**: `Jerry Zhang <https://github.com/jerryzh168>`_ **Edited by**: `Charles Hernandez <https://github.com/HDCharles>`_
+(prototype) PyTorch 2.0 Export Post Training Static Quantization
+================================================================
+**Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
 This tutorial introduces the steps to do post training static quantization in graph mode based on
-`torch.fx <https://github.com/pytorch/pytorch/blob/master/torch/fx/__init__.py>`_.
-The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model.
-Although there might be some effort required to make the model compatible with FX Graph Mode Quantization (symbolically traceable with ``torch.fx``),
-we'll have a separate tutorial to show how to make the part of the model we want to quantize compatible with FX Graph Mode Quantization.
-We also have a tutorial for `FX Graph Mode Post Training Dynamic Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html>`_.
-tldr; The FX Graph Mode API looks like the following:
+`torch._export.export <https://pytorch.org/docs/main/export.html>`_. Compared to `FX Graph Mode Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`, this flow is expected to have significantly higher model coverage (`88% on 14K models <https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596>`), better programmability, and a simplified UX.
+
+Exportable by `torch._export.export` is a prerequisite to use the flow, you can find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`.
+
+tldr; The PyTorch 2.0 Export Quantization API looks like the following:
 
 .. code:: python
 
   import torch
-  from torch.ao.quantization import get_default_qconfig
-  from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
-  from torch.ao.quantization import QConfigMapping
-  float_model.eval()
-  # The old 'fbgemm' is still available but 'x86' is the recommended default.
-  qconfig = get_default_qconfig("x86") 
-  qconfig_mapping = QConfigMapping().set_global(qconfig)
-  def calibrate(model, data_loader):
-      model.eval()
-      with torch.no_grad():
-          for image, target in data_loader:
-              model(image)
-  example_inputs = (next(iter(data_loader))[0]) # get an example input
-  prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
-  calibrate(prepared_model, data_loader_test)  # run calibration on sample data
-  quantized_model = convert_fx(prepared_model)  # convert the calibrated model to a quantized model
+  class M(torch.nn.Module):
+     def __init__(self):
+        super().__init__()
+        self.linear = torch.nn.Linear(5, 10)
+
+     def forward(self, x):
+        return self.linear(x)
 
 
+  example_inputs = (torch.randn(1, 5),)
+  m = M().eval()
 
-1. Motivation of FX Graph Mode Quantization
--------------------------------------------
+  # Step 1. program capture
+  m = torch._dynamo.export(m, *example_inputs, aten_graph=True)
+  # we get a model with aten ops
 
-Currently, PyTorch only has eager mode quantization as an alternative: `Static Quantization with Eager Mode in PyTorch <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
-We can see there are multiple manual steps involved in the eager mode quantization process, including:
+  # Step 2. quantization
+  from torch.ao.quantization.quantize_pt2e import (
+    prepare_pt2e,
+    convert_pt2e,
+  )
 
-- Explicitly quantize and dequantize activations-this is time consuming when floating point and quantized operations are mixed in a model.
-- Explicitly fuse modules-this requires manually identifying the sequence of convolutions, batch norms and relus and other fusion patterns.
-- Special handling is needed for pytorch tensor operations (like add, concat etc.)
-- Functionals did not have first class support (functional.conv2d and functional.linear would not get quantized)
+  from torch.ao.quantization.qnnpack_quantizer import (
+    QNNPackQuantizer,
+    get_symmetric_quantization_config,
+  )
+  # backend developer will write their own Quantizer and expose methods to allow users to express how they
+  # want the model to be quantized
+  quantizer = QNNPackQuantizer().set_global(get_symmetric_quantization_config())
+  m = prepare_pt2e(m, quantizer)
 
-Most of these required modifications comes from the underlying limitations of eager mode quantization. Eager mode works in module level since it can not inspect the code that is actually run (in the forward function), quantization is achieved by module swapping, and we don’t know how the modules are used in forward function in eager mode, so it requires users to insert QuantStub and DeQuantStub manually to mark the points they want to quantize or dequantize.
-In graph mode, we can inspect the actual code that’s been executed in forward function (e.g. aten function calls) and quantization is achieved by module and graph manipulations. Since graph mode has full visibility of the code that is run, our tool is able to automatically figure out things like which modules to fuse and where to insert observer calls, quantize/dequantize functions etc., we are able to automate the whole quantization process.
+  # calibration omitted
 
-Advantages of FX Graph Mode Quantization are:
+  m = convert_pt2e(m)
+  # we have a model with aten ops doing integer computations when possible
 
-- Simple quantization flow, minimal manual steps
-- Unlocks the possibility of doing higher level optimizations like automatic precision selection
+1. Motivation of PyTorch 2.0 Export Quantization
+------------------------------------------------
+
+Previously in FX Graph Mode Quantization we were using QConfigMapping and BackendConfig for customizations. QConfigMapping allows modeling users to specify how they want their model to be quantized, BackendConfig allows backend developers to specify the supported ways of quantization in their backend. Current API covers most use cases relatively well, but the main problem is it is not fully extensible without the involvement of the AO team. There are two main limitations for current API:
+
+(1). Limitation around expressing quantization intentions for complicated operator patterns (how an operator pattern should be observed/quantized) using existing objects: QConfig and QConfigMapping.
+(2). It also has limited support on how user can express their intention of how they want their model to be quantized (here are all the possible ways user can express their intention of how to quantize a model right now: QConfigMapping — PyTorch master documentation ), for example, if user wants to quantize the every other linear in the model, or the quantization behavior has some dependency on the actual shape of the Tensor (e.g. only observe/quantize inputs and outputs when the linear has a 3d input), AO team need to work with backend developers and modeling users to add the support.
+
+Also there are a few things that can be improved on:
+(3). Currently we use QConfigMapping and BackendConfig as separate objects, QConfigMapping describes user’s intention of how they want their model to be quantized, BackendConfig describes what kind of quantization a backend support, currently BackendConfig is backend specific, but QConfigMapping is not, and user can provide a QConfigMapping that is incompatible with a specific BackendConfig, this is not a great UX. Ideally we can structure this better by making both configuration (QConfigMapping) and quantization capability (BackendConfig) backend specific, so there will be less confusion about incompatibilities.
+
+(4). Currently in QConfig we are exposing observer/fake_quant observer classes as an object for user to configure quantization, this increases the things that user may need to care about, e.g. not only the dtype but also how the observation should happen, these could potentially be hidden from user so that the user interface is simpler.
+
+Here is a summary of benefits with the quantizer API:
+- Programmability (Addressing (1) and (2)): When a user’s quantization needs are not covered by available quantizers, users can build their own quantizer and compose it with other quantizers as mentioned earlier.
+- Simplified UX (Addressing (3)): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two BackendConfig together and since options in QConfigMappings are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
+- Separation of Concerns (Addressing (4)): As we design the quantizer API, we also decouples specification of quantization, as expressed in terms of dtype, min/max (# of bits), symmetric etc., from the observer concept. Currently the observer captures both quantization specification and how to observe (Histogram vs MinMax observer). Modeling users are freed from interacting with observer/fake quant objects with this change.
 
 2. Define Helper Functions and Prepare Dataset
 ----------------------------------------------
@@ -227,53 +242,35 @@ For post training quantization, we'll need to set model to eval mode.
     model_to_quantize.eval()
 
 
-4. Specify how to quantize the model with ``QConfigMapping``
-----------------------------------------------------------
+4. Import the Backend Specific Quantizer and Configure how to Quantize the Model
+--------------------------------------------------------------------------------
 
 .. code:: python
 
-  qconfig_mapping = QConfigMapping.set_global(default_qconfig)
-
-We use the same qconfig used in eager mode quantization, ``qconfig`` is just a named tuple
-of the observers for activation and weight. ``QConfigMapping`` contains mapping information from ops to qconfigs:
-
-.. code:: python
-
-  qconfig_mapping = (QConfigMapping()
-      .set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
-      .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a callable...
-      .set_object_type("reshape", qconfig_opt) # ...or a string of the method name
-      .set_module_name_regex("foo.*bar.*conv[0-9]+", qconfig_opt) # matched in order, first match takes precedence
-      .set_module_name("foo.bar", qconfig_opt)
-      .set_module_name_object_type_order()
+  from torch.ao.quantization.xnnpack_quantizer import (
+    XNNPackQuantizer,
+    get_symmetric_quantization_config,
   )
-      # priority (in increasing order): global, object_type, module_name_regex, module_name
-      # qconfig == None means fusion and quantization should be skipped for anything
-      # matching the rule (unless a higher priority match is found)
+  quantizer = XNNPackQuantizer()
+  quantizer.set_globa(get_symmetric_quantization_config())
 
-
-Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/qconfig.py>`_ file
-while those for ``QConfigMapping`` can be found in the `qconfig_mapping <https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/fx/qconfig_mapping.py>`
+`Quantizer` is backend specific, and each `Quantizer` will provide their own way to allow users to configure their model. Just as an example, here is the different configuration APIs supported by XNNPackQuantizer:
 
 .. code:: python
-
-    # The old 'fbgemm' is still available but 'x86' is the recommended default.
-    qconfig = get_default_qconfig("x86") 
-    qconfig_mapping = QConfigMapping().set_global(qconfig)
+  quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
+      .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a module type
+      .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op      
+      .set_module_name("foo.bar", qconfig_opt)
 
 5. Prepare the Model for Post Training Static Quantization
 ----------------------------------------------------------
 
-.. code:: python
-
-    prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
-
-prepare_fx folds BatchNorm modules into previous Conv2d modules, and insert observers
+`prepare_pt2e` folds BatchNorm modules into previous Conv2d modules, and insert observers
 in appropriate places in the model.
 
 .. code:: python
 
-    prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
+    prepared_model = prepare_pt2e(model_to_quantize, quantizer)
     print(prepared_model.graph)
 
 6. Calibration
@@ -294,12 +291,14 @@ the statistics of the Tensors and we can later use this information to calculate
 
 7. Convert the Model to a Quantized Model
 -----------------------------------------
-``convert_fx`` takes a calibrated model and produces a quantized model.
+``convert_pt2e`` takes a calibrated model and produces a quantized model.
 
 .. code:: python
 
-    quantized_model = convert_fx(prepared_model)
+    quantized_model = convert_pt2e(prepared_model)
     print(quantized_model)
+
+Note: the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>` in fx graph mode quantizaiton, previously all quantized operators are represented as `dequantize -> fp32_op -> qauntize`, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares. For more details, please see: `Quantized Model Representation <https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit>` (TODO: make this an API doc/issue).
 
 8. Evaluation
 -------------
@@ -314,47 +313,34 @@ We can now print the size and accuracy of the quantized model.
     top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
     print("[before serilaization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
-    fx_graph_mode_model_file_path = saved_model_dir + "resnet18_fx_graph_mode_quantized.pth"
+    pt2e_graph_mode_model_file_path = saved_model_dir + "resnet18_pt2e_graph_mode_quantized.pth"
 
     # this does not run due to some erros loading convrelu module:
     # ModuleAttributeError: 'ConvReLU2d' object has no attribute '_modules'
     # save the whole model directly
-    # torch.save(quantized_model, fx_graph_mode_model_file_path)
-    # loaded_quantized_model = torch.load(fx_graph_mode_model_file_path)
+    # torch.save(quantized_model, pt2e_graph_mode_model_file_path)
+    # loaded_quantized_model = torch.load(pt2e_graph_mode_model_file_path)
 
     # save with state_dict
-    # torch.save(quantized_model.state_dict(), fx_graph_mode_model_file_path)
+    # torch.save(quantized_model.state_dict(), pt2e_graph_mode_model_file_path)
     # import copy
     # model_to_quantize = copy.deepcopy(float_model)
-    # prepared_model = prepare_fx(model_to_quantize, {"": qconfig})
-    # loaded_quantized_model = convert_fx(prepared_model)
-    # loaded_quantized_model.load_state_dict(torch.load(fx_graph_mode_model_file_path))
+    # prepared_model = prepare_pt2e(model_to_quantize, {"": qconfig})
+    # loaded_quantized_model = convert_pt2e(prepared_model)
+    # loaded_quantized_model.load_state_dict(torch.load(pt2e_graph_mode_model_file_path))
 
     # save with script
-    torch.jit.save(torch.jit.script(quantized_model), fx_graph_mode_model_file_path)
-    loaded_quantized_model = torch.jit.load(fx_graph_mode_model_file_path)
+    torch.jit.save(torch.jit.script(quantized_model), pt2e_graph_mode_model_file_path)
+    loaded_quantized_model = torch.jit.load(pt2e_graph_mode_model_file_path)
 
     top1, top5 = evaluate(loaded_quantized_model, criterion, data_loader_test)
     print("[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
-If you want to get better accuracy or performance,  try changing the `qconfig_mapping`.
-We plan to add support for graph mode in the Numerical Suite so that you can
-easily determine the sensitivity towards quantization of different modules in a model. For more information, see `PyTorch Numeric Suite Tutorial <https://pytorch.org/tutorials/prototype/numeric_suite_tutorial.html>`_
+If you want to get better accuracy or performance,  try configure `quantizer` in different ways.
 
 9. Debugging Quantized Model
 ----------------------------
-We can also print the weight for quantized a non-quantized convolution op to see the difference,
-we'll first call fuse explicitly to fuse the convolution and batch norm in the model:
-Note that ``fuse_fx`` only works in eval mode.
-
-.. code:: python
-
-    fused = fuse_fx(float_model)
-
-    conv1_weight_after_fuse = fused.conv1[0].weight[0]
-    conv1_weight_after_quant = quantized_model.conv1.weight().dequantize()[0]
-
-    print(torch.max(abs(conv1_weight_after_fuse - conv1_weight_after_quant)))
+We have Numeric Suite that can help with debugging in eager mode and fx graph mode, the new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
 10. Comparison with Baseline Float Model and Eager Mode Quantization
 --------------------------------------------------------------------
@@ -370,16 +356,16 @@ Note that ``fuse_fx`` only works in eval mode.
     print("Baseline Float Model Evaluation accuracy: %2.2f, %2.2f"%(top1.avg, top5.avg))
     torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
 
-In this section, we compare the model quantized with FX graph mode quantization with the model
-quantized in eager mode. FX graph mode and eager mode produce very similar quantized models,
+In this section, we compare the model quantized with PT2 Export quantization with the model
+quantized in eager mode. PT2 Export quantization and eager mode quantization produce very similar quantized models,
 so the expectation is that the accuracy and speedup are similar as well.
 
 .. code:: python
 
-    print("Size of Fx graph mode quantized model")
+    print("Size of PT2 Export quantized model")
     print_size_of_model(quantized_model)
     top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
-    print("FX graph mode quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
+    print("PT2 Export quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
     from torchvision.models.quantization.resnet import resnet18
     eager_quantized_model = resnet18(pretrained=True, quantize=True).eval()
@@ -391,9 +377,11 @@ so the expectation is that the accuracy and speedup are similar as well.
     eager_mode_model_file = "resnet18_eager_mode_quantized.pth"
     torch.jit.save(eager_quantized_model, saved_model_dir + eager_mode_model_file)
 
-We can see that the model size and accuracy of FX graph mode and eager mode quantized model are pretty similar.
+We can see that the model size and accuracy of  graph mode and eager mode quantized model are pretty similar.
 
 Running the model in AIBench (with single threading) gives the following result:
+
+(TODO): update numbers
 
 .. code::
 
@@ -403,9 +391,9 @@ Running the model in AIBench (with single threading) gives the following result:
   Scripted Eager Mode Quantized Model:
   Self CPU time total: 50.76ms
 
-  Scripted FX Graph Mode Quantized Model:
+  Scripted PT2 Export Quantized Model:
   Self CPU time total: 50.63ms
 
-As we can see for resnet18 both FX graph mode and eager mode quantized model get similar speedup over the floating point model,
+As we can see for resnet18 both PT2 Export and eager mode quantized model get similar speedup over the floating point model,
 which is around 2-4x faster than the floating point model. But the actual speedup over floating point model may vary
 depending on model, device, build, input batch sizes, threading etc.
