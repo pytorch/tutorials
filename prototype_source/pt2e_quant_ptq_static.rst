@@ -7,7 +7,7 @@ This tutorial introduces the steps to do post training static quantization in gr
 
 Exportable by `torch._export.export` is a prerequisite to use the flow, you can find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`.
 
-tldr; The PyTorch 2.0 Export Quantization API looks like the following:
+The PyTorch 2.0 export quantization API looks like this:
 
 .. code:: python
 
@@ -52,19 +52,19 @@ tldr; The PyTorch 2.0 Export Quantization API looks like the following:
 1. Motivation of PyTorch 2.0 Export Quantization
 ------------------------------------------------
 
-Previously in FX Graph Mode Quantization we were using QConfigMapping and BackendConfig for customizations. QConfigMapping allows modeling users to specify how they want their model to be quantized, BackendConfig allows backend developers to specify the supported ways of quantization in their backend. Current API covers most use cases relatively well, but the main problem is it is not fully extensible without the involvement of the AO team. There are two main limitations for current API:
+In PyTorch versions prior to 2.0, we have FX Graph Mode Quantization that uses `QConfigMapping <https://pytorch.org/docs/main/generated/torch.ao.quantization.qconfig_mapping.QConfigMapping.html>`_ and `BackendConfig <https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.BackendConfig.html>`_ for customizations. ``QConfigMapping`` allows modeling users to specify how they want their model to be quantized, ``BackendConfig`` allows backend developers to specify the supported ways of quantization in their backend. While that API covers most use cases relatively well, it is not fully extensible. There are two main limitations for current API:
 
-(1). Limitation around expressing quantization intentions for complicated operator patterns (how an operator pattern should be observed/quantized) using existing objects: QConfig and QConfigMapping.
-(2). It also has limited support on how user can express their intention of how they want their model to be quantized (here are all the possible ways user can express their intention of how to quantize a model right now: QConfigMapping — PyTorch master documentation ), for example, if user wants to quantize the every other linear in the model, or the quantization behavior has some dependency on the actual shape of the Tensor (e.g. only observe/quantize inputs and outputs when the linear has a 3d input), AO team need to work with backend developers and modeling users to add the support.
+1. Limitation around expressing quantization intentions for complicated operator patterns (how an operator pattern should be observed/quantized) using existing objects: ``QConfig`` and ``QConfigMapping``.
+2. Limited support on how user can express their intention of how they want their model to be quantized. For example, if users want to quantize the every other linear in the model, or the quantization behavior has some dependency on the actual shape of the Tensor (for example, only observe/quantize inputs and outputs when the linear has a 3D input), backend developer or modeling users need to change the core quantization api/flow.
 
 Also there are a few things that can be improved on:
-(3). Currently we use QConfigMapping and BackendConfig as separate objects, QConfigMapping describes user’s intention of how they want their model to be quantized, BackendConfig describes what kind of quantization a backend support, currently BackendConfig is backend specific, but QConfigMapping is not, and user can provide a QConfigMapping that is incompatible with a specific BackendConfig, this is not a great UX. Ideally we can structure this better by making both configuration (QConfigMapping) and quantization capability (BackendConfig) backend specific, so there will be less confusion about incompatibilities.
+3. We use ``QConfigMapping`` and ``BackendConfig`` as separate objects, ``QConfigMapping`` describes user’s intention of how they want their model to be quantized, ``BackendConfig`` describes what kind of quantization a backend support. ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not, and user can provide a ``QConfigMapping`` that is incompatible with a specific ``BackendConfig``, this is not a great UX. Ideally we can structure this better by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend specific, so there will be less confusion about incompatibilities.
 
-(4). Currently in QConfig we are exposing observer/fake_quant observer classes as an object for user to configure quantization, this increases the things that user may need to care about, e.g. not only the dtype but also how the observation should happen, these could potentially be hidden from user so that the user interface is simpler.
+4. In ``QConfig`` we are exposing observer/fake_quant observer classes as an object for user to configure quantization, this increases the things that user may need to care about, e.g. not only the dtype but also how the observation should happen, these could potentially be hidden from user so that the user interface is simpler.
 
 Here is a summary of benefits with the quantizer API:
 - Programmability (Addressing (1) and (2)): When a user’s quantization needs are not covered by available quantizers, users can build their own quantizer and compose it with other quantizers as mentioned earlier.
-- Simplified UX (Addressing (3)): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two BackendConfig together and since options in QConfigMappings are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
+- Simplified UX (Addressing (3)): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two ``BackendConfig`` together and since options in ``QConfigMapping``s are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
 - Separation of Concerns (Addressing (4)): As we design the quantizer API, we also decouples specification of quantization, as expressed in terms of dtype, min/max (# of bits), symmetric etc., from the observer concept. Currently the observer captures both quantization specification and how to observe (Histogram vs MinMax observer). Modeling users are freed from interacting with observer/fake quant objects with this change.
 
 2. Define Helper Functions and Prepare Dataset
@@ -298,7 +298,7 @@ the statistics of the Tensors and we can later use this information to calculate
     quantized_model = convert_pt2e(prepared_model)
     print(quantized_model)
 
-Note: the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>` in fx graph mode quantizaiton, previously all quantized operators are represented as `dequantize -> fp32_op -> qauntize`, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares. For more details, please see: `Quantized Model Representation <https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit>` (TODO: make this an API doc/issue).
+.. note:: the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ in the FX graph mode quantizaiton, previously all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares. For more details, please see: `Quantized Model Representation <https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit>`_ (TODO: make this an API doc/issue).
 
 8. Evaluation
 -------------
@@ -336,11 +336,11 @@ We can now print the size and accuracy of the quantized model.
     top1, top5 = evaluate(loaded_quantized_model, criterion, data_loader_test)
     print("[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
-If you want to get better accuracy or performance,  try configure `quantizer` in different ways.
+If you want to get better accuracy or performance,  try configuring ``quantizer`` in different ways.
 
 9. Debugging Quantized Model
 ----------------------------
-We have Numeric Suite that can help with debugging in eager mode and fx graph mode, the new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
+We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
 10. Comparison with Baseline Float Model and Eager Mode Quantization
 --------------------------------------------------------------------
@@ -377,11 +377,11 @@ so the expectation is that the accuracy and speedup are similar as well.
     eager_mode_model_file = "resnet18_eager_mode_quantized.pth"
     torch.jit.save(eager_quantized_model, saved_model_dir + eager_mode_model_file)
 
-We can see that the model size and accuracy of  graph mode and eager mode quantized model are pretty similar.
+We can see that the model size and accuracy of the pytorch 2.0 export mode and eager mode quantized model are pretty similar.
 
 Running the model in AIBench (with single threading) gives the following result:
 
-(TODO): update numbers
+.. (TODO): update numbers
 
 .. code::
 
