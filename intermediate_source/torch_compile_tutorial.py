@@ -166,7 +166,6 @@ print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 # see a significant improvement compared to eager.
 
 eager_times = []
-compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
     _, eager_time = timed(lambda: evaluate(model, inp))
