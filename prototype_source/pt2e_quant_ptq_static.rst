@@ -57,15 +57,15 @@ In PyTorch versions prior to 2.0, we have FX Graph Mode Quantization that uses `
 1. Limitation around expressing quantization intentions for complicated operator patterns (how an operator pattern should be observed/quantized) using existing objects: ``QConfig`` and ``QConfigMapping``.
 2. Limited support on how user can express their intention of how they want their model to be quantized. For example, if users want to quantize the every other linear in the model, or the quantization behavior has some dependency on the actual shape of the Tensor (for example, only observe/quantize inputs and outputs when the linear has a 3D input), backend developer or modeling users need to change the core quantization api/flow.
 
-Also there are a few things that can be improved on:
+A few improvements could make the existing flow better:
 3. We use ``QConfigMapping`` and ``BackendConfig`` as separate objects, ``QConfigMapping`` describes user’s intention of how they want their model to be quantized, ``BackendConfig`` describes what kind of quantization a backend support. ``BackendConfig`` is backend specific, but ``QConfigMapping`` is not, and user can provide a ``QConfigMapping`` that is incompatible with a specific ``BackendConfig``, this is not a great UX. Ideally we can structure this better by making both configuration (``QConfigMapping``) and quantization capability (``BackendConfig``) backend specific, so there will be less confusion about incompatibilities.
 
 4. In ``QConfig`` we are exposing observer/fake_quant observer classes as an object for user to configure quantization, this increases the things that user may need to care about, e.g. not only the dtype but also how the observation should happen, these could potentially be hidden from user so that the user interface is simpler.
 
-Here is a summary of benefits with the quantizer API:
-- Programmability (Addressing (1) and (2)): When a user’s quantization needs are not covered by available quantizers, users can build their own quantizer and compose it with other quantizers as mentioned earlier.
-- Simplified UX (Addressing (3)): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two ``BackendConfig`` together and since options in ``QConfigMapping``s are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
-- Separation of Concerns (Addressing (4)): As we design the quantizer API, we also decouples specification of quantization, as expressed in terms of dtype, min/max (# of bits), symmetric etc., from the observer concept. Currently the observer captures both quantization specification and how to observe (Histogram vs MinMax observer). Modeling users are freed from interacting with observer/fake quant objects with this change.
+Here is a summary of the benefits of the new API:
+- Programmability (addressing 1. and 2.): When a user’s quantization needs are not covered by available quantizers, users can build their own quantizer and compose it with other quantizers as mentioned above.
+- Simplified UX (addressing 3.): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two ``BackendConfig`` together and since options in ``QConfigMapping``s are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
+- Separation of Concerns (addressing 4.): As we design the quantizer API, we also decouple specification of quantization, as expressed in terms of ``dtype``, min/max (# of bits), symmetric, and so on, from the observer concept. Currently, the observer captures both quantization specification and how to observe (Histogram vs MinMax observer). Modeling users are freed from interacting with observer and fake quant objects with this change.
 
 2. Define Helper Functions and Prepare Dataset
 ----------------------------------------------
@@ -73,7 +73,7 @@ Here is a summary of benefits with the quantizer API:
 We’ll start by doing the necessary imports, defining some helper functions and prepare the data.
 These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
-To run the code in this tutorial using the entire ImageNet dataset, first download imagenet by following the instructions at here `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file into the 'data_path' folder.
+To run the code in this tutorial using the entire ImageNet dataset, first download Imagenet by following the instructions at here `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file into the ``data_path`` folder.
 
 Download the `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_ and rename it to
 ``data/resnet18_pretrained_float.pth``.
@@ -235,14 +235,23 @@ Download the `torchvision resnet18 model <https://download.pytorch.org/models/re
 
 3. Set model to eval mode
 -------------------------
-For post training quantization, we'll need to set model to eval mode.
+For post training quantization, we'll need to set model to the eval mode.
 
 .. code:: python
 
     model_to_quantize.eval()
 
+4. Export the model with torch export
+-------------------------------------
 
-4. Import the Backend Specific Quantizer and Configure how to Quantize the Model
+.. code:: python
+    import torch._dynamo as torchdynamo
+
+    example_inputs = (torch.rand(2, 3, 224, 224),)
+    exported_model, _ = torchdynamo.export(model_to_quantize, *example_inputs, aten_graph=True, tracing_mode="symbolic")
+    
+
+5. Import the Backend Specific Quantizer and Configure how to Quantize the Model
 --------------------------------------------------------------------------------
 
 .. code:: python
@@ -262,20 +271,20 @@ For post training quantization, we'll need to set model to eval mode.
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op      
       .set_module_name("foo.bar", qconfig_opt)
 
-5. Prepare the Model for Post Training Static Quantization
+6. Prepare the Model for Post Training Static Quantization
 ----------------------------------------------------------
 
-`prepare_pt2e` folds BatchNorm modules into previous Conv2d modules, and insert observers
+``prepare_pt2e`` folds ``BatchNorm`` operators into preceding ``Conv2d`` operators, and inserts observers
 in appropriate places in the model.
 
 .. code:: python
 
-    prepared_model = prepare_pt2e(model_to_quantize, quantizer)
+    prepared_model = prepare_pt2e(exported_model, quantizer)
     print(prepared_model.graph)
 
-6. Calibration
+7. Calibration
 --------------
-Calibration function is run after the observers are inserted in the model.
+The calibration function is run after the observers are inserted in the model.
 The purpose for calibration is to run through some sample examples that is representative of the workload
 (for example a sample of the training data set) so that the observers in the model are able to observe
 the statistics of the Tensors and we can later use this information to calculate quantization parameters.
@@ -289,7 +298,7 @@ the statistics of the Tensors and we can later use this information to calculate
                 model(image)
     calibrate(prepared_model, data_loader_test)  # run calibration on sample data
 
-7. Convert the Model to a Quantized Model
+8. Convert the Model to a Quantized Model
 -----------------------------------------
 ``convert_pt2e`` takes a calibrated model and produces a quantized model.
 
@@ -300,7 +309,7 @@ the statistics of the Tensors and we can later use this information to calculate
 
 .. note:: the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ in the FX graph mode quantizaiton, previously all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares. For more details, please see: `Quantized Model Representation <https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit>`_ (TODO: make this an API doc/issue).
 
-8. Evaluation
+9. Evaluation
 -------------
 We can now print the size and accuracy of the quantized model.
 
@@ -338,11 +347,11 @@ We can now print the size and accuracy of the quantized model.
 
 If you want to get better accuracy or performance,  try configuring ``quantizer`` in different ways.
 
-9. Debugging Quantized Model
+10. Debugging Quantized Model
 ----------------------------
 We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
-10. Comparison with Baseline Float Model and Eager Mode Quantization
+11. Comparison with Baseline Float Model and Eager Mode Quantization
 --------------------------------------------------------------------
 
 .. code:: python
