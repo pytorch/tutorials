@@ -298,8 +298,8 @@ the statistics of the Tensors and we can later use this information to calculate
                 model(image)
     calibrate(prepared_model, data_loader_test)  # run calibration on sample data
 
-8. Convert the Model to a Quantized Model
------------------------------------------
+8. Convert the Calibrated Model to a Quantized Model
+----------------------------------------------------
 ``convert_pt2e`` takes a calibrated model and produces a quantized model.
 
 .. code:: python
@@ -309,53 +309,13 @@ the statistics of the Tensors and we can later use this information to calculate
 
 .. note:: the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ in the FX graph mode quantizaiton, previously all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares. For more details, please see: `Quantized Model Representation <https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit>`_ (TODO: make this an API doc/issue).
 
-9. Evaluation
--------------
-We can now print the size and accuracy of the quantized model.
+9. Checking Model Size and Accuracy Evaluation
+----------------------------------------------
+Now we can compare the size and model accuracy with baseline model.
 
 .. code:: python
 
-    print("Size of model before quantization")
-    print_size_of_model(float_model)
-    print("Size of model after quantization")
-    print_size_of_model(quantized_model)
-    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
-    print("[before serilaization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
-
-    pt2e_graph_mode_model_file_path = saved_model_dir + "resnet18_pt2e_graph_mode_quantized.pth"
-
-    # this does not run due to some erros loading convrelu module:
-    # ModuleAttributeError: 'ConvReLU2d' object has no attribute '_modules'
-    # save the whole model directly
-    # torch.save(quantized_model, pt2e_graph_mode_model_file_path)
-    # loaded_quantized_model = torch.load(pt2e_graph_mode_model_file_path)
-
-    # save with state_dict
-    # torch.save(quantized_model.state_dict(), pt2e_graph_mode_model_file_path)
-    # import copy
-    # model_to_quantize = copy.deepcopy(float_model)
-    # prepared_model = prepare_pt2e(model_to_quantize, {"": qconfig})
-    # loaded_quantized_model = convert_pt2e(prepared_model)
-    # loaded_quantized_model.load_state_dict(torch.load(pt2e_graph_mode_model_file_path))
-
-    # save with script
-    torch.jit.save(torch.jit.script(quantized_model), pt2e_graph_mode_model_file_path)
-    loaded_quantized_model = torch.jit.load(pt2e_graph_mode_model_file_path)
-
-    top1, top5 = evaluate(loaded_quantized_model, criterion, data_loader_test)
-    print("[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
-
-If you want to get better accuracy or performance,  try configuring ``quantizer`` in different ways.
-
-10. Debugging Quantized Model
-----------------------------
-We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
-
-11. Comparison with Baseline Float Model and Eager Mode Quantization
---------------------------------------------------------------------
-
-.. code:: python
-
+    # Baseline model size and accuracy
     scripted_float_model_file = "resnet18_scripted.pth"
 
     print("Size of baseline model")
@@ -363,46 +323,66 @@ We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-de
 
     top1, top5 = evaluate(float_model, criterion, data_loader_test)
     print("Baseline Float Model Evaluation accuracy: %2.2f, %2.2f"%(top1.avg, top5.avg))
-    torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
 
-In this section, we compare the model quantized with PT2 Export quantization with the model
-quantized in eager mode. PT2 Export quantization and eager mode quantization produce very similar quantized models,
-so the expectation is that the accuracy and speedup are similar as well.
+    # Quantized model size and accuracy
+    print("Size of model after quantization")
+    print_size_of_model(quantized_model)
+    
+    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
+    print("[before serilaization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
+
+
+Note: we can't do performance evaluation now since the model is not lowered to target device, it's just a representation of quantized computation in aten operators. Each backend should have their tutorial about how to lower to their backend, for example, we'll have separate tutorials on how to do lowering in executorch for models that target edge devices.
+
+If you want to get better accuracy or performance,  try configuring ``quantizer`` in different ways, and each ``quantizer`` will have its own way of configuration, so please consult the documentation for the
+quantization you are using to learn more about how you can have more control over how to quantize a model.
+
+10. Save and Load Quantized Model
+---------------------------------
+We'll show how to save and load the quantized model.
 
 .. code:: python
+    # 1. Save state_dict
+    pt2e_quantized_model_file_path = saved_model_dir + "resnet18_pt2e_quantized.pth"
+    torch.save(quantized_model.state_dict(), pt2e_quantized_model_file_path)
 
-    print("Size of PT2 Export quantized model")
-    print_size_of_model(quantized_model)
-    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
-    print("PT2 Export quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
+    # Get a reference output
+    example_inputs = (next(iter(data_loader))[0],)
+    ref = quantized_model(*example_inputs)
 
-    from torchvision.models.quantization.resnet import resnet18
-    eager_quantized_model = resnet18(pretrained=True, quantize=True).eval()
-    print("Size of eager mode quantized model")
-    eager_quantized_model = torch.jit.script(eager_quantized_model)
-    print_size_of_model(eager_quantized_model)
-    top1, top5 = evaluate(eager_quantized_model, criterion, data_loader_test)
-    print("eager mode quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
-    eager_mode_model_file = "resnet18_eager_mode_quantized.pth"
-    torch.jit.save(eager_quantized_model, saved_model_dir + eager_mode_model_file)
+    # 2. Initialize the quantized model and Load state_dict
+    # Rerun all steps to get a quantized model
+    model_to_quantize = load_model(saved_model_dir + float_model_file).to("cpu")
+    model_to_quantize.eval()
+    import torch._dynamo as torchdynamo
 
-We can see that the model size and accuracy of the pytorch 2.0 export mode and eager mode quantized model are pretty similar.
+    exported_model, _ = torchdynamo.export(model_to_quantize, *copy.deepcopy(example_inputs), aten_graph=True, tracing_mode="symbolic")
+    from torch.ao.quantization.pt2e.quantizer.qnnpack_quantizer import (
+          QNNPackQuantizer,
+          get_symmetric_quantization_config,
+    )
 
-Running the model in AIBench (with single threading) gives the following result:
+    quantizer = QNNPackQuantizer()
+    quantizer.set_global(get_symmetric_quantization_config())
+    prepared_model = prepare_pt2e(exported_model, quantizer)
+    prepared_model(*example_inputs)
+    loaded_quantized_model = convert_pt2e(prepared_model)
 
-.. (TODO): update numbers
+    # load the state_dict from saved file to intialized model
+    loaded_quantized_model.load_state_dict(torch.load(pt2e_quantized_model_file_path))
 
-.. code::
+    # Sanity check with sample data
+    res = loaded_quantized_model(*example_inputs)
 
-  Scripted Float Model:
-  Self CPU time total: 192.48ms
+    # 3. Evaluate the loaded quantized model
+    top1, top5 = evaluate(loaded_quantized_model, criterion, data_loader_test)
+    print("[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
-  Scripted Eager Mode Quantized Model:
-  Self CPU time total: 50.76ms
+11. Debugging Quantized Model
+----------------------------
+We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
-  Scripted PT2 Export Quantized Model:
-  Self CPU time total: 50.63ms
+13. Lowering and Performance Evaluation
+---------------------------------------
 
-As we can see for resnet18 both PT2 Export and eager mode quantized model get similar speedup over the floating point model,
-which is around 2-4x faster than the floating point model. But the actual speedup over floating point model may vary
-depending on model, device, build, input batch sizes, threading etc.
+The model produced at this point is not the final model that runs on device, it is a reference quantized model that captures the intended quantized computation from user, expressed as aten operators, to get a model that runs in real devices, we'll need to lower the model. For example for models that runs on edge devices, we can lower to executorch.
