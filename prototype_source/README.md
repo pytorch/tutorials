@@ -2,7 +2,7 @@
 
 This directory contains tutorials and recipes demonstrating prototype features in PyTorch. 
 
-**Prototype features** are not available as part of binary distributions like PyPI or Conda (except maybe behind run-time flags). To test these features we would, depending on the feature, recommend building from master or using the nightly wheels that are made available on pytorch.org. 
+**Prototype features** are part of the release and are available as part of binary distributions like PyPI or Conda. To test these features we would, depending on the feature, recommend building from master or using the nightly wheels that are made available on pytorch.org or using release wheels available from PyPI or Conda. 
 
 These are intentionally left out of the pytorch.org/tutorials build and will not show up on the website.
 
