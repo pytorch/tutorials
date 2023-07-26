@@ -1,134 +1,34 @@
-Quantization in PyTorch 2.0 Export Tutorial
-==============================================================
+How to Write a ``Quantizer`` for PyTorch 2.0 Export Quantization
+================================================================
 
 **Author**: `Leslie Fang <https://github.com/leslie-fang-intel>`_, `Weiwen Xia <https://github.com/Xia-Weiwen>`__, `Jiong Gong <https://github.com/jgong5>`__, `Kimish Patel <https://github.com/kimishpatel>`__, `Jerry Zhang <https://github.com/jerryzh168>`__
 
 .. note:: Quantization in PyTorch 2.0 export is still a work in progress.
 
-Today we have `FX Graph Mode
-Quantization <https://pytorch.org/docs/stable/quantization.html#prototype-fx-graph-mode-quantization>`__
-which uses ``symbolic_trace`` to capture the model into a graph, and then
-perform quantization transformations on top of the captured model. In a
-similar way, for Quantization 2.0 flow, we will now use the PT2 Export
-workflow to capture the model into a graph, and perform quantization
-transformations on top of the ATen dialect graph. This approach is expected to
-have significantly higher model coverage, better programmability, and
-a simplified UX.
-
 Prerequisites:
 ^^^^^^^^^^^^^^^^
 
+Required:
 -  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
+-  `(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__
+
+Optional:
 -  `FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
 -  `BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
--  `QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__
+-  `QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__   
 
-Introduction:
-^^^^^^^^^^^^^^^^
+Introduction
+^^^^^^^^^^^^^
 
-Previously in ``FX Graph Mode Quantization`` we were using ``QConfigMapping`` for users to specify how the model to be quantized
-and ``BackendConfig`` to specify the supported ways of quantization in their backend.
-This API covers most use cases relatively well, but the main problem is that this API is not fully extensible
-without involvement of the quantization team:
+`(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__ introduced the overall API for pytorch 2.0 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a ``Quantizer`` class that encodes:
+(1). What is supported quantized operator or patterns in the backend
+(2). How can users express the way they want their floating point model to be quantized, for example, quantized the whole model to be int8 symmetric quantization, or quantize only linear layers etc.
 
-- This API has limitation to support advanced quantization intention and complicated quantization operator patterns
-  as in the discussion of `Issue-96288 <https://github.com/pytorch/pytorch/issues/96288>`__ to support ``conv add`` fusion.
-- This API uses ``QConfigMapping`` and ``BackendConfig`` as separate object in quantization configuration 
-  which may cause confusion about incompatibilities between these two objects. Also these quantization configurations require
-  too much quantization details users need to know which can be hidden from user interface to make it simpler.
+Please see `here <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__ For motivations for ``Quantizer``.
 
-To address these issues,
-`Quantizer <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L160>`__
-is introduced for quantization in PyTorch 2.0 export. ``Quantizer`` is a class that users can use to
-programmatically set the quantization specifications for input and output of each node in the model graph. It adds flexibility
-to the quantization API and allows modeling users and backend developers to configure quantization programmatically.
-This will allow users to express how they want an operator pattern to be observed in a more explicit
-way by annotating the appropriate nodes.
-
-Imagine a backend developer who wishes to integrate a third-party backend
-with PyTorch's quantization 2.0 flow. To accomplish this, they would only need
-to define the backend specific quantizer. A backend specific quantizer inherited from base quantizer.
-The main method that need to be implemented for the backend specific quantizer is the
-`annotate method <https://github.com/pytorch/pytorch/blob/3e988316b5976df560c51c998303f56a234a6a1f/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py#L269>`__
-which is used to annotate nodes in the graph with
-`QuantizationAnnotation <https://github.com/pytorch/pytorch/blob/07104ca99c9d297975270fb58fda786e60b49b38/torch/ao/quantization/_pt2e/quantizer/quantizer.py#L144>`__
-objects to convey the desired way of quantization.
-
-The high level architecture of quantization 2.0 with quantizer could look like this:
-
-::
-
-    float_model(Python)                               Input
-        \                                              /
-         \                                            /
-    —-------------------------------------------------------
-    |                    Dynamo Export                     |
-    —-------------------------------------------------------
-                                |
-                        FX Graph in ATen     QNNPackQuantizer,
-                                |            or X86InductorQuantizer,
-                                |            or <Other Backend Quantizer>
-                                |                /
-    —--------------------------------------------------------
-    |                 prepare_pt2e_quantizer                |
-    —--------------------------------------------------------
-                                |
-                         Calibrate/Train
-                                |
-    —--------------------------------------------------------
-    |                      convert_pt2e                     |
-    —--------------------------------------------------------
-                                |
-                    Reference Quantized Model
-                                |
-    —--------------------------------------------------------
-    |                        Lowering                       |
-    —--------------------------------------------------------
-                                |
-            Executorch, or Inductor, or <Other Backends>
-
-Note: ``prepare_pt2e_quantizer`` will be updated to ``prepare_pt2e`` soon.
-
-An existing quantizer object defined for QNNPack/XNNPack is in
-`QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/_pt2e/quantizer/qnnpack_quantizer.py>`__.
-Taking QNNPackQuantizer as an example, the overall Quantization 2.0 flow could be:
-
-::
-
-    import torch
-    import torch._dynamo as torchdynamo
-    from torch.ao.quantization._quantize_pt2e import convert_pt2e, prepare_pt2e
-    import torch.ao.quantization._pt2e.quantizer.qnnpack_quantizer as qq
-
-    class M(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.linear = torch.nn.Linear(5, 10)
-
-        def forward(self, x):
-            return self.linear(x)
-
-    example_inputs = (torch.randn(1, 5),)
-    model = M().eval()
-
-    # Step 1: Trace the model into an FX graph of flattened ATen operators
-    exported_graph_module, guards = torchdynamo.export(
-        model,
-        *copy.deepcopy(example_inputs),
-        aten_graph=True,
-    )
-
-    # Step 2: Insert observers or fake quantize modules
-    quantizer = qq.QNNPackQuantizer()
-    operator_config = qq.get_symmetric_quantization_config(is_per_channel=True)
-    quantizer.set_global(operator_config)
-    prepared_graph_module = prepare_pt2e_quantizer(exported_graph_module, quantizer)
-
-    # Step 3: Quantize the model
-    convered_graph_module = convert_pt2e(prepared_graph_module)
-
-    # Step 4: Lower Reference Quantized Model into the backend
+An existing quantizer object defined for ``XNNPACK`` is in
+`QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/quantizer/xnnpack_quantizer.py>`__
 
 Annotation API:
 ^^^^^^^^^^^^^^^^^^^
@@ -158,7 +58,7 @@ To conclude, annotation API requires quantizer to annotate edges (input tensors)
 nodes (output tensor) of the graph. Now, we will have a step-by-step tutorial for
 how to use the annotation API with different types of ``QuantizationSpec``.
 
-1. Annotate common operator patterns
+1. Annotate Common Operator Patterns
 --------------------------------------------------------
 
 In order to use the quantized pattern/operators, e.g. ``quantized add``,
@@ -221,7 +121,7 @@ After we annotate the ``add`` node like this, in the following up quantization f
 be inserted at its two input nodes and one output node in prepare phase. And ``HistogramObserver`` will be substituted with
 ``quantize`` node and ``dequantize`` node in the convert phase.
 
-2. Annotate sharing qparams operators
+2. Annotate Operators that Shares Quantization Params
 --------------------------------------------------------
 
 It is natural that users want to annotate a quantized model where quantization
@@ -266,8 +166,8 @@ as this:
         _annotated=True,
     )
 
-3. Annotate fixed qparams operators
---------------------------------------------------------
+3. Annotate Operators with Fixed Quantization Parameters
+---------------------------------------------------------
 
 Another typical use case to annotate a quantized model is for tensors whose
 quantization parameters are known beforehand. For example, operator like ``sigmoid``, which has
@@ -298,7 +198,7 @@ of ``scale`` and ``zero_point`` explicitly.
         _annotated=True,
     )
 
-4. Annotate tensor with derived quantization parameters
+4. Annotate Tensors with Derived Quantization Parameters
 ---------------------------------------------------------------
 
 Another use case is to define the constraint for tensors whose quantization parameters are derived from other tensors.

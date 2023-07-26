@@ -69,10 +69,10 @@ Prototype features are not available as part of binary distributions like PyPI o
    :tags: Debugging,Quantization
 
 .. customcarditem::
-   :header: Quantization in PyTorch 2.0 Export Tutorial
-   :card_description: Learn how to use the Quantization in PyTorch 2.0 Export.
+   :header: How to Write a Quantizer for PyTorch 2.0 Export Quantization
+   :card_description: Learn how to implement a Quantizer for PT2.0 Export Quantization
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/quantization_in_pytorch_2_0_export_tutorial.html
+   :link: ../prototype/pt2e_quantizer.html
    :tags: Quantization
 
 .. customcarditem::

@@ -7,6 +7,40 @@ This tutorial introduces the steps to do post training static quantization in gr
 
 Exportable by `torch._export.export` is a prerequisite to use the flow, you can find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`.
 
+The high level architecture of quantization 2.0 with quantizer could look like this:
+
+::
+
+    float_model(Python)                               Input
+        \                                              /
+         \                                            /
+    —-------------------------------------------------------
+    |                    Dynamo Export                     |
+    —-------------------------------------------------------
+                                |
+                        FX Graph in ATen     XNNPACKQuantizer,
+                                |            or X86InductorQuantizer,
+                                |            or <Other Backend Quantizer>
+                                |                /
+    —--------------------------------------------------------
+    |                 prepare_pt2e                          |
+    —--------------------------------------------------------
+                                |
+                         Calibrate/Train
+                                |
+    —--------------------------------------------------------
+    |                      convert_pt2e                     |
+    —--------------------------------------------------------
+                                |
+                    Reference Quantized Model
+                                |
+    —--------------------------------------------------------
+    |                        Lowering                       |
+    —--------------------------------------------------------
+                                |
+            Executorch, or Inductor, or <Other Backends>  
+
+
 The PyTorch 2.0 export quantization API looks like this:
 
 .. code:: python
@@ -35,13 +69,13 @@ The PyTorch 2.0 export quantization API looks like this:
     convert_pt2e,
   )
 
-  from torch.ao.quantization.qnnpack_quantizer import (
-    QNNPackQuantizer,
+  from torch.ao.quantization.quantizer import (
+    XNNPACKQuantizer,
     get_symmetric_quantization_config,
   )
   # backend developer will write their own Quantizer and expose methods to allow users to express how they
   # want the model to be quantized
-  quantizer = QNNPackQuantizer().set_global(get_symmetric_quantization_config())
+  quantizer = XNNPACKQuantizer().set_global(get_symmetric_quantization_config())
   m = prepare_pt2e(m, quantizer)
 
   # calibration omitted
@@ -49,6 +83,7 @@ The PyTorch 2.0 export quantization API looks like this:
   m = convert_pt2e(m)
   # we have a model with aten ops doing integer computations when possible
 
+            
 1. Motivation of PyTorch 2.0 Export Quantization
 ------------------------------------------------
 
@@ -64,7 +99,7 @@ A few improvements could make the existing flow better:
 
 Here is a summary of the benefits of the new API:
 - Programmability (addressing 1. and 2.): When a user’s quantization needs are not covered by available quantizers, users can build their own quantizer and compose it with other quantizers as mentioned above.
-- Simplified UX (addressing 3.): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example QNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with QNNPACKQuantizer. (Previously this will be concatenating the two ``BackendConfig`` together and since options in ``QConfigMapping``s are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
+- Simplified UX (addressing 3.): Provides a single instance with which both backend and users interact. Thus you no longer have 1) user facing quantization config mapping to map users intent and 2) a separate quantization config that backends interact with to configure what backend support. We will still have a method for users to query what is supported in a quantizer. With a single instance, composing different quantization capabilities also becomes more natural than previously. For example XNNPACK does not support embedding_byte and we have native support for this in ExecuTorch. Thus if we had ExecuTorchQuantizer that only quantized embedding_byte, then it can be composed with XNNPACKQuantizer. (Previously this will be concatenating the two ``BackendConfig`` together and since options in ``QConfigMapping``s are not backend specific, user also need to figure out how to specify the configurations by themselves that matches the quantization capabilities of the combined backend. with a single quantizer instance, we can compose two quantizers and query the composed quantizer for capabilities, which makes it less error prone and cleaner, e.g. composed_quantizer.quantization_capabilities())
 - Separation of Concerns (addressing 4.): As we design the quantizer API, we also decouple specification of quantization, as expressed in terms of ``dtype``, min/max (# of bits), symmetric, and so on, from the observer concept. Currently, the observer captures both quantization specification and how to observe (Histogram vs MinMax observer). Modeling users are freed from interacting with observer and fake quant objects with this change.
 
 2. Define Helper Functions and Prepare Dataset
@@ -256,20 +291,22 @@ For post training quantization, we'll need to set model to the eval mode.
 
 .. code:: python
 
-  from torch.ao.quantization.xnnpack_quantizer import (
-    XNNPackQuantizer,
+  from torch.ao.quantization.quantizer.xnnpack_quantizer import (
+    XNNPACKQuantizer,
     get_symmetric_quantization_config,
   )
-  quantizer = XNNPackQuantizer()
+  quantizer = XNNPACKQuantizer()
   quantizer.set_globa(get_symmetric_quantization_config())
 
-`Quantizer` is backend specific, and each `Quantizer` will provide their own way to allow users to configure their model. Just as an example, here is the different configuration APIs supported by XNNPackQuantizer:
+``Quantizer`` is backend specific, and each ``Quantizer`` will provide their own way to allow users to configure their model. Just as an example, here is the different configuration APIs supported by XNNPackQuantizer:
 
 .. code:: python
   quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
       .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a module type
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op      
       .set_module_name("foo.bar", qconfig_opt)
+
+We have another `tutorial <https://pytorch.org/tutorials/prototype/quantization_in_pytorch_2_0_export_tutorial.html>`_ that talks about how to write a new ``Quantizer``.
 
 6. Prepare the Model for Post Training Static Quantization
 ----------------------------------------------------------
@@ -357,12 +394,12 @@ We'll show how to save and load the quantized model.
     import torch._dynamo as torchdynamo
 
     exported_model, _ = torchdynamo.export(model_to_quantize, *copy.deepcopy(example_inputs), aten_graph=True, tracing_mode="symbolic")
-    from torch.ao.quantization.pt2e.quantizer.qnnpack_quantizer import (
-          QNNPackQuantizer,
+    from torch.ao.quantization.quantizer.xnnpack_quantizer import (
+          XNNPACKQuantizer,
           get_symmetric_quantization_config,
     )
 
-    quantizer = QNNPackQuantizer()
+    quantizer = XNNPACKQuantizer()
     quantizer.set_global(get_symmetric_quantization_config())
     prepared_model = prepare_pt2e(exported_model, quantizer)
     prepared_model(*example_inputs)
@@ -382,7 +419,11 @@ We'll show how to save and load the quantized model.
 ----------------------------
 We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
-13. Lowering and Performance Evaluation
+12. Lowering and Performance Evaluation
 ---------------------------------------
 
 The model produced at this point is not the final model that runs on device, it is a reference quantized model that captures the intended quantized computation from user, expressed as aten operators, to get a model that runs in real devices, we'll need to lower the model. For example for models that runs on edge devices, we can lower to executorch.
+
+13. Conclusion
+--------------
+In this tutorial, we went through the overall quantization flow in PyTorch 2.0 Export Quantization using ``XNNPACKQuantizer`` and get a quantized model that could be further lowered to a backend that supports inference with XNNPACK backend. To use this for your own backend, please first follow the `tutorial <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`__ and implement a ``Quantizer`` for your backend, and then quantize the model with that ``Quantizer``.
