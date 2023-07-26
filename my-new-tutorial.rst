@@ -10,7 +10,7 @@ accelerate deployment of Transformer models with high performance on CPU and GPU
 The fastpath feature works transparently for models based either directly on 
 PyTorch core nn.module or with torchtext.  
 
-Models which can be accelerated by Better Transformer fastpath execution are those
+Models which can be accelerated by Better Transformer ``fastpath`` execution are those
 using the following PyTorch core `torch.nn.module` classes `TransformerEncoder`, 
 `TransformerEncoderLayer`, and `MultiHeadAttention`.  In addition, torchtext has 
 been updated to use the core library modules to benefit from fastpath acceleration.
