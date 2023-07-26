@@ -19,8 +19,8 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
 # NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
-pip uninstall ghstack
-pip install -r $DIR/../requirements.txt
+pip uninstall -y ghstack
+pip install --progress-bar off -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
