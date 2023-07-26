@@ -15,7 +15,8 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-export PATH=/opt/conda/bin:$PATH
+# NS: Path to python runtime should already be part of docker container
+# export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
