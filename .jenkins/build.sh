@@ -18,6 +18,8 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
+# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
+pip uninstall ghstack
 pip install -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
