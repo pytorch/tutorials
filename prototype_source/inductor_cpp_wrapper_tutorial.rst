@@ -17,13 +17,13 @@ we implemented cpp wrapper which generates cpp code to combine the generated and
 
 API
 ------------
-This feature is in prototype stage and is turned off by default.
-The API to turn this feature on is as follows:
-
+This feature is still in prototype stage. To turn it on, the below code change is needed:
 .. code:: python
 
     import torch._inductor.config as config
     config.cpp_wrapper = True
+
+This will speed up your models by reducing the python overhead in the inductor wrapper.
 
 
 Example code

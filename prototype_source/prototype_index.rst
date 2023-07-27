@@ -178,6 +178,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/maskedtensor_adagrad.html
    :tags: MaskedTensor
    
+.. Model-Optimization
+
+.. customcarditem::
+   :header: Inductor Cpp Wrapper Tutorial
+   :card_description: Speed up your models with Inductor Cpp Wrapper
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/inductor_cpp_wrapper_tutorial.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -201,6 +210,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/quantization_in_pytorch_2_0_export_tutorial.html
+   prototype/inductor_cpp_wrapper_tutorial.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html
