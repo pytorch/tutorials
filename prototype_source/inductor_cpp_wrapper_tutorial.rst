@@ -18,6 +18,7 @@ we implemented cpp wrapper which generates cpp code to combine the generated and
 API
 ------------
 This feature is still in prototype stage. To turn it on, the below code change is needed:
+
 .. code:: python
 
     import torch._inductor.config as config
