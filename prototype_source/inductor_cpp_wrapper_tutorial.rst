@@ -24,7 +24,7 @@ This feature is still in prototype stage. To turn it on, the below code change i
     import torch._inductor.config as config
     config.cpp_wrapper = True
 
-This will speed up your models by reducing the python overhead in the inductor wrapper.
+This will speed up your models by reducing the python overhead of the inductor wrapper.
 
 
 Example code
@@ -47,7 +47,7 @@ Below is an example of generated code with the default python wrapper:
         return (buf0, )
 
 By turning on cpp wrapper, the generated code for the ``call`` function becomes a cpp function
-`inductor_entry_cpp` of the CPP extension `module`:
+``inductor_entry_cpp`` of the CPP extension ``module``:
 
 .. code:: python
 
