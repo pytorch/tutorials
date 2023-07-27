@@ -347,7 +347,7 @@ the statistics of the Tensors and we can later use this information to calculate
 .. note::
    the model produced here also had some improvement upon the previous `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ in the FX graph mode quantizaiton, previously all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``, in the new flow, we choose to represent some of the operators with integer computation so that it's closer to the computation happens in hardwares.
    For example, here is how we plan to represent a quantized linear operator:
-   ```
+   
    def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_int32, bias_scale, bias_zero_point, output_scale, output_zero_point):
        x_int16 = x_int8.to(torch.int16)
        weight_int16 = weight_int8.to(torch.int16)
