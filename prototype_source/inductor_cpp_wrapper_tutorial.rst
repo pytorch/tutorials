@@ -29,7 +29,20 @@ This will speed up your models by reducing the python overhead of the inductor w
 
 Example code
 ------------
-Below is an example of generated code with the default python wrapper:
+Taken the below frontend code as an example:
+
+.. code:: python
+    import torch
+
+    def fn(x):
+        return torch.tensor(list(range(2, 40, 2)), device=x.device) + x
+
+    x = torch.randn(1)
+    opt_fn = torch.compile()(fn)
+    y = opt_fn(x)
+
+
+The main part of inductor generated code with the default python wrapper will be:
 
 .. code:: python
 
@@ -37,13 +50,9 @@ Below is an example of generated code with the default python wrapper:
         arg0_1, = args
         args.clear()
         assert_size_stride(arg0_1, (1, ), (1, ))
-        
         buf0 = empty_strided((19, ), (1, ), device='cpu', dtype=torch.float32)
-        
         cpp_fused_add_lift_fresh_0(c_void_p(constant0.data_ptr()), c_void_p(arg0_1.data_ptr()), c_void_p(buf0.data_ptr()))
-        
         del arg0_1
-        
         return (buf0, )
 
 By turning on cpp wrapper, the generated code for the ``call`` function becomes a cpp function
@@ -52,16 +61,11 @@ By turning on cpp wrapper, the generated code for the ``call`` function becomes 
 .. code:: python
 
     std::vector<at::Tensor> inductor_entry_cpp(const std::vector<at::Tensor>& args) {
-        
         at::Tensor arg0_1 = args[0];
         at::Tensor constant0 = args[1];
-        
         auto buf0 = at::empty_strided({19L, }, {1L, }, at::device(at::kCPU).dtype(at::kFloat));
-        
         cpp_fused_add_lift_fresh_0((long*)(constant0.data_ptr()), (float*)(arg0_1.data_ptr()), (float*)(buf0.data_ptr()));
-        
         arg0_1.reset();
-        
         return {buf0};
     }
 
