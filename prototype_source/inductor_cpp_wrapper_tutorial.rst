@@ -32,6 +32,7 @@ Example code
 Taken the below frontend code as an example:
 
 .. code:: python
+    
     import torch
 
     def fn(x):
