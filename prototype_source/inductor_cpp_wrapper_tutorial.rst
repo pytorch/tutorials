@@ -75,4 +75,9 @@ By turning on cpp wrapper, the generated code for the ``call`` function becomes 
 
             return f(args_tensor)
         return g
-    call = _wrap_func(module.inductor_entry_cpp)    
+    call = _wrap_func(module.inductor_entry_cpp)
+
+Conclusion
+------------
+With this tutorial, we introduces a new Cpp wrapper in TorchInductor to speed up your
+models with two lines of code change.
