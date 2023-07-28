@@ -307,7 +307,7 @@ For post training quantization, we'll need to set model to the eval mode.
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op      
       .set_module_name("foo.bar", qconfig_opt)
 
-We have another `tutorial <https://pytorch.org/tutorials/prototype/quantization_in_pytorch_2_0_export_tutorial.html>`_ that talks about how to write a new ``Quantizer``.
+We have another `tutorial <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`_ that talks about how to write a new ``Quantizer``.
 
 6. Prepare the Model for Post Training Static Quantization
 ----------------------------------------------------------
