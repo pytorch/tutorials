@@ -302,6 +302,7 @@ For post training quantization, we'll need to set model to the eval mode.
 ``Quantizer`` is backend specific, and each ``Quantizer`` will provide their own way to allow users to configure their model. Just as an example, here is the different configuration APIs supported by XNNPackQuantizer:
 
 .. code:: python
+
   quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
       .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a module type
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op      
@@ -396,6 +397,7 @@ quantization you are using to learn more about how you can have more control ove
 We'll show how to save and load the quantized model.
 
 .. code:: python
+
     # 1. Save state_dict
     pt2e_quantized_model_file_path = saved_model_dir + "resnet18_pt2e_quantized.pth"
     torch.save(quantized_model.state_dict(), pt2e_quantized_model_file_path)
@@ -434,6 +436,7 @@ We'll show how to save and load the quantized model.
 
 11. Debugging Quantized Model
 ----------------------------
+
 We have `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_ that can help with debugging in eager mode and FX graph mode. The new version of Numeric Suite working with PyTorch 2.0 Export models is still in development.
 
 12. Lowering and Performance Evaluation
