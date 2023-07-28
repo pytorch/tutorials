@@ -3,7 +3,7 @@
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
 This tutorial introduces the steps to do post training static quantization in graph mode based on
-`torch._export.export <https://pytorch.org/docs/main/export.html>`_. Compared to `FX Graph Mode Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`, this flow is expected to have significantly higher model coverage (`88% on 14K models <https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596>`), better programmability, and a simplified UX.
+`torch._export.export <https://pytorch.org/docs/main/export.html>`_. Compared to `FX Graph Mode Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`_, this flow is expected to have significantly higher model coverage (`88% on 14K models <https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596>`_), better programmability, and a simplified UX.
 
 Exportable by `torch._export.export` is a prerequisite to use the flow, you can find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`_.
 
