@@ -10,12 +10,16 @@ Prerequisites:
 
 Required:
 -  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
+   
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
+   
 -  `(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__
 
 Optional:
 -  `FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
+   
 -  `BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
+   
 -  `QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints>`__   
 
 Introduction
@@ -25,12 +29,12 @@ Introduction
 (1). What is supported quantized operator or patterns in the backend
 (2). How can users express the way they want their floating point model to be quantized, for example, quantized the whole model to be int8 symmetric quantization, or quantize only linear layers etc.
 
-Please see `here <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__ For motivations for ``Quantizer``.
+Please see `here <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html#motivation-of-pytorch-2-0-export-quantization>`__ For motivations for the new API and ``Quantizer``.
 
 An existing quantizer object defined for ``XNNPACK`` is in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/quantizer/xnnpack_quantizer.py>`__
 
-Annotation API:
+Annotation API
 ^^^^^^^^^^^^^^^^^^^
 
 ``Quantizer`` uses annotation API to convey quantization intent for different operators/patterns.
@@ -269,4 +273,4 @@ Conclusion
 With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
 how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
 Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
-are given for specific annotation use case. This is a prerequisite to be able to quantize a model in PyTorch 2.0 Export Quantization flow. Please follow `this tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_ to actually quantize a model.
+are given for specific annotation use case. This is a prerequisite to be able to quantize a model in PyTorch 2.0 Export Quantization flow. You can use `XNNPACKQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py>`_ as an example to start implementing your own ``Quantizer``. After that please follow `this tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_ to actually quantize your model.
