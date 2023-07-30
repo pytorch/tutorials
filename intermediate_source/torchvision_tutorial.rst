@@ -3,7 +3,7 @@ TorchVision Object Detection Finetuning Tutorial
 
 .. tip::
    To get the most of this tutorial, we suggest using this 
-   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/torchvision_finetuning_instance_segmentation.ipynb>`__. 
+   `Colab Version <https://colab.research.google.com/drive/1uqRjLis3g6vcVUa21SzzQ0cS0gpip0Jm?usp=sharing>`__. 
    This will allow you to experiment with the information presented below. 
 
 For this tutorial, we will be finetuning a pre-trained `Mask
@@ -96,9 +96,9 @@ have the following folder structure:
 
 Here is one example of a pair of images and segmentation masks 
 
-.. image:: ../../_static/img/tv_tutorial/tv_image01.png
+.. image:: ../_static/img/tv_tutorial/tv_image01.png
 
-.. image:: ../../_static/img/tv_tutorial/tv_image02.png
+.. image:: ../_static/img/tv_tutorial/tv_image02.png
 
 So each image has a corresponding
 segmentation mask, where each color correspond to a different instance.
@@ -191,13 +191,13 @@ R-CNN <https://arxiv.org/abs/1703.06870>`__, which is based on top of
 model that predicts both bounding boxes and class scores for potential
 objects in the image. 
 
-.. image:: ../../_static/img/tv_tutorial/tv_image03.png
+.. image:: ../_static/img/tv_tutorial/tv_image03.png
 
 Mask R-CNN adds an extra branch
 into Faster R-CNN, which also predicts segmentation masks for each
 instance.
 
-.. image:: ../../_static/img/tv_tutorial/tv_image04.png
+.. image:: ../_static/img/tv_tutorial/tv_image04.png
 
 There are two common 
 situations where one might want
@@ -506,14 +506,14 @@ After training for 10 epochs, I got the following metrics
 But what do the predictions look like? Let’s take one image in the
 dataset and verify 
 
-.. image:: ../../_static/img/tv_tutorial/tv_image05.png
+.. image:: ../_static/img/tv_tutorial/tv_image05.png
 
 The trained model predicts 9
 instances of person in this image, let’s see a couple of them: 
 
-.. image:: ../../_static/img/tv_tutorial/tv_image06.png
+.. image:: ../_static/img/tv_tutorial/tv_image06.png
 
-.. image:: ../../_static/img/tv_tutorial/tv_image07.png
+.. image:: ../_static/img/tv_tutorial/tv_image07.png
 
 The results look pretty good!
 
