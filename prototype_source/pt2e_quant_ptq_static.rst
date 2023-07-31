@@ -163,7 +163,7 @@ Here is a summary of the benefits of the new API:
   observe (Histogram vs MinMax observer). Modeling users are freed from
   interacting with observer and fake quant objects with this change.
 
-  Define Helper Functions and Prepare Dataset
+Define Helper Functions and Prepare Dataset
 -------------------------------------------
 
 We’ll start by doing the necessary imports, defining some helper functions and
