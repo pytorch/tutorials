@@ -351,6 +351,7 @@ Export the model with torch.export
 Here is how you can use ``torch.export`` to export the model:
 
 .. code-block:: python
+
     import torch._dynamo as torchdynamo
 
     example_inputs = (torch.rand(2, 3, 224, 224),)
