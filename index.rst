@@ -585,6 +585,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/scaled_dot_product_attention_tutorial.html
    :tags: Model-Optimization,Attention,Transformer
+   
+.. customcarditem::
+   :header: Knowledge Distillation in Convolutional Neural Networks
+   :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
+   :image: _static/img/thumbnails/cropped/knowledge_distillation_pytorch_logo.png
+   :link: beginner/knowledge_distillation_tutorial.html
+   :tags: Model-Optimization,Image/Video
 
 .. Parallel-and-Distributed-Training
 
@@ -979,6 +986,7 @@ Additional Resources
    intermediate/torch_compile_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
+   beginner/knowledge_distillation_tutorial
 
 .. toctree::
    :maxdepth: 2
