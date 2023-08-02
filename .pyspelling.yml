@@ -51,3 +51,68 @@ matrix:
         - code
         - pre
   - pyspelling.filters.url:
+- name: reST
+  sources:
+  - beginner_source/*.rst
+  dictionary:
+    wordlists:
+      - en-wordlist.txt
+  pipeline:
+  - pyspelling.filters.text:
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+      # Ignore text between inline back ticks
+      - open: '(div style|iframe).*'
+        close: '\n'
+      - open: '(- )?(?P<open>`+)'
+        close: '(?P=open)'
+      - open: ':figure:.*'
+        close: '\n'
+      # Ignore reStructuredText roles
+      - open: ':(?:(class|file|func|math|ref|octicon)):`'
+        content: '[^`]*'
+        close: '`'
+      - open: ':width:'
+        close: '$'
+      # Exclude raw directive
+      - open: '\.\. (raw|grid-item-card|galleryitem|includenodoc)::.*$\n*'
+        close: '\n'
+      # Ignore reStructuredText literals
+      - open: '::$'
+        close: '(?P<literal>(?:((?P<indent>[ ]+).*$)|(\n))+)'
+      # Ignore reStructuredText hyperlinks
+      - open: '\s'
+        content: '\w*'
+        close: '_'
+      # Ignore hyperlink in the DDP tutorials
+      - open: '`.*'
+        close: '`__'
+      # Ignore reStructuredText header ---
+      - open: '^'
+        content: '--*'
+        close: '$'
+      # Ignore reStructuredText header '''
+      - open: '^'
+        content: '''''*'
+        close: '$'
+      # Ignore reStructuredText block directives
+      - open: '\.\. (code-block|math)::.*$\n*'
+        content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
+        close: '(^(?![ \t]+.*$))'
+      - open: '\.\. (raw)::.*$\n*'
+        close: '^\s*$'
+      # Ignore reStructuredText substitution definitions
+      - open: '^\.\. \|[^|]+\|'
+        close: '$'
+      # Ignore reStructuredText substitutions
+      - open: '\|'
+        content: '[^|]*'
+        close: '\|_?'
+      # Ignore reStructuredText toctree
+      - open: '\.\.\s+toctree::'
+        close: '(?P<toctree>(?:((?P<indent>[ ]+).*$)|(\n))+)'
+      # Ignore directives
+      - open: '\.\.\s+(image|include|only)::'
+        close: '$'
+  - pyspelling.filters.url:
