@@ -10,10 +10,10 @@ Prerequisites:
 Introduction
 ------------
 
-Inductor wrapper generates python code to invoke generated kernels and external kernels.
+Inductor default wrapper generates python code to invoke generated kernels and external kernels.
 Python as the primary interface of PyTorch is ease-of-use and efficient for development and debugging.
 However, in deployment that requires high performance, Python as an interpreted language is slower compared
-with compiled language. We implemented Inductor cpp wrapper which leverages the PyTorch C++ APIs
+with compiled language. We implemented Inductor cpp wrapper by leveraging the PyTorch C++ APIs
 to generate pure cpp code to combine the generated and external kernels, which makes the
 execution of each captured dynamo graph in pure cpp.
 
