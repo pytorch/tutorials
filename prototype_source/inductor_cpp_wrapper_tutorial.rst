@@ -11,7 +11,7 @@ Introduction
 ------------
 
 Python as the primary interface of PyTorch is ease-of-use and efficient for development and debugging.
-Inductor default wrapper generates python code to invoke generated kernels and external kernels.
+Inductor default wrapper generates Python code to invoke generated kernels and external kernels.
 However, in deployment that requires high performance, Python as an interpreted language is slower compared
 with compiled language.
 
