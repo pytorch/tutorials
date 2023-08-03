@@ -403,10 +403,12 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<p><a class="reference external" href="ddp_series_intro.html">Introduction</a> || <a class="reference external" href="ddp_series_theory.html">What is DDP</a> || <a class="reference external" href="ddp_series_multigpu.html">Single-Node
-Multi-GPU Training</a> || <strong>Fault
-Tolerance</strong> || <a class="reference external" href="../intermediate/ddp_series_multinode.html">Multi-Node
-training</a> || <a class="reference external" href="../intermediate/ddp_series_minGPT.html">minGPT Training</a></p>
+<p><a class="reference external" href="ddp_series_intro.html">Introduction</a> ||
+<a class="reference external" href="ddp_series_theory.html">What is DDP</a> ||
+<a class="reference external" href="ddp_series_multigpu.html">Single-Node Multi-GPU Training</a> ||
+<strong>Fault Tolerance</strong> ||
+<a class="reference external" href="../intermediate/ddp_series_multinode.html">Multi-Node training</a> ||
+<a class="reference external" href="../intermediate/ddp_series_minGPT.html">minGPT Training</a></p>
 <div class="section" id="fault-tolerant-distributed-training-with-torchrun">
 <h1>Fault-tolerant Distributed Training with <code class="docutils literal notranslate"><span class="pre">torchrun</span></code><a class="headerlink" href="#fault-tolerant-distributed-training-with-torchrun" title="Permalink to this heading">¶</a></h1>
 <p>Authors: <a class="reference external" href="https://github.com/suraj813">Suraj Subramanian</a></p>
@@ -468,8 +470,8 @@ stateful attribute of the training job necessary for its continuity.</p>
 don’t need to. For instance,</p>
 <ul class="simple">
 <li><p>You don’t need to set environment variables or explicitly pass the <code class="docutils literal notranslate"><span class="pre">rank</span></code> and <code class="docutils literal notranslate"><span class="pre">world_size</span></code>; <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> assigns this along with several other <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">environment variables</a>.</p></li>
-<li><p>No need to call <code class="docutils literal notranslate"><span class="pre">mp.spawn</span></code> in your script; you only need a generic <code class="docutils literal notranslate"><span class="pre">main()</span></code> entrypoint, and launch the script with <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>. This way the same script can be run in non-distributed as well as single-node and multinode setups.</p></li>
-<li><p>Gracefully restarting training from the last saved training snapshot</p></li>
+<li><p>No need to call <code class="docutils literal notranslate"><span class="pre">mp.spawn</span></code> in your script; you only need a generic <code class="docutils literal notranslate"><span class="pre">main()</span></code> entry point, and launch the script with <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>. This way the same script can be run in non-distributed as well as single-node and multinode setups.</p></li>
+<li><p>Gracefully restarting training from the last saved training snapshot.</p></li>
 </ul>
 </div>
 <div class="section" id="graceful-restarts">
@@ -489,7 +491,7 @@ don’t need to. For instance,</p>
 </pre></div>
 </div>
 <p>If a failure occurs, <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> will terminate all the processes and restart them.
-Each process entrypoint first loads and initializes the last saved snapshot, and continues training from there.
+Each process entry point first loads and initializes the last saved snapshot, and continues training from there.
 So at any failure, you only lose the training progress from the last saved snapshot.</p>
 <p>In elastic training, whenever there are any membership changes (adding or removing nodes), <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> will terminate and spawn processes
 on available devices. Having this structure ensures your training job can continue without manual intervention.</p>
@@ -501,8 +503,7 @@ on available devices. Having this structure ensures your training job can contin
 <h2>Process group initialization<a class="headerlink" href="#process-group-initialization" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">torchrun</span></code> assigns <code class="docutils literal notranslate"><span class="pre">RANK</span></code> and <code class="docutils literal notranslate"><span class="pre">WORLD_SIZE</span></code> automatically,
-amongst <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">other env
-variables</a></p></li>
+among <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html#environment-variables">other envvariables</a></p></li>
 </ul>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- def ddp_setup(rank, world_size):</span>
 <span class="gi">+ def ddp_setup():</span>
@@ -515,12 +516,12 @@ variables</a></p></li>
 <span class="gd">-     os.environ["MASTER_PORT"] = "12355"</span>
 <span class="gd">-     init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
 <span class="gi">+     init_process_group(backend="nccl")</span>
-<span class="w"> </span>     torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+<span class="w"> </span>    torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
 </pre></div>
 </div>
 </div>
-<div class="section" id="use-torchrun-provided-env-variables">
-<h2>Use Torchrun-provided env variables<a class="headerlink" href="#use-torchrun-provided-env-variables" title="Permalink to this heading">¶</a></h2>
+<div class="section" id="use-torchrun-provided-environment-variables">
+<h2>Use torchrun-provided environment variables<a class="headerlink" href="#use-torchrun-provided-environment-variables" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.gpu_id = gpu_id</span>
 <span class="gi">+ self.gpu_id = int(os.environ["LOCAL_RANK"])</span>
 </pre></div>
@@ -571,7 +572,7 @@ over from scratch.</p>
 </div>
 <div class="section" id="running-the-script">
 <h2>Running the script<a class="headerlink" href="#running-the-script" title="Permalink to this heading">¶</a></h2>
-<p>Simply call your entrypoint function as you would for a non-multiprocessing script; <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> automatically
+<p>Simply call your entry point function as you would for a non-multiprocessing script; <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> automatically
 spawns the processes.</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>if __name__ == "__main__":
 <span class="w"> </span>  import sys
@@ -645,7 +646,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </ul>
 </li>
 <li><a class="reference internal" href="#process-group-initialization">Process group initialization</a></li>
-<li><a class="reference internal" href="#use-torchrun-provided-env-variables">Use Torchrun-provided env variables</a></li>
+<li><a class="reference internal" href="#use-torchrun-provided-environment-variables">Use torchrun-provided environment variables</a></li>
 <li><a class="reference internal" href="#saving-and-loading-snapshots">Saving and loading snapshots</a></li>
 <li><a class="reference internal" href="#loading-a-snapshot-in-the-trainer-constructor">Loading a snapshot in the Trainer constructor</a></li>
 <li><a class="reference internal" href="#resuming-training">Resuming training</a></li>

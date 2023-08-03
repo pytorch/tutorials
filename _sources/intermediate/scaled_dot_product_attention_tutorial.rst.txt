@@ -176,8 +176,8 @@ measuring performance.
 
  .. code-block:: none
 
-    The default implementation runs in 1088875.585 microseconds
-    The math implementation runs in 135042.912 microseconds
+    The default implementation runs in 1080476.183 microseconds
+    The math implementation runs in 134640.623 microseconds
     <timeit-src>:6: UserWarning:
 
     Memory efficient kernel not used because: (Triggered internally at ../aten/src/ATen/native/transformers/cuda/sdp_utils.h:545.)
@@ -195,7 +195,7 @@ measuring performance.
     Flash attention only supports sm75 and sm8x gpu architectures. Attempting to run on a sm 5.2 gpu. (Triggered internally at ../aten/src/ATen/native/transformers/cuda/sdp_utils.h:352.)
 
     FlashAttention is not supported. See warnings for reasons.
-    The memory efficient implementation runs in 1088609.369 microseconds
+    The memory efficient implementation runs in 1080144.185 microseconds
 
 
 
@@ -437,8 +437,8 @@ To demonstrate this, let's compile the ``CausalSelfAttention`` module using
 
  .. code-block:: none
 
-    The non compiled module runs in  27421.242 microseconds
-    The compiled module runs in  27413.080 microseconds
+    The non compiled module runs in  27207.732 microseconds
+    The compiled module runs in  28770.748 microseconds
 
 
 
@@ -495,36 +495,36 @@ inspect the performance characteristics of your code.
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                             Non-Compilied Causal Attention         0.48%       3.320ms         2.42%      16.692ms      16.692ms       0.000us         0.00%     855.256ms     855.256ms             1  
-                         aten::scaled_dot_product_attention         0.06%     442.000us         0.43%       2.961ms     118.440us       0.000us         0.00%     550.856ms      22.034ms            25  
-              aten::_scaled_dot_product_efficient_attention         0.09%     608.000us         0.37%       2.519ms     100.760us       0.000us         0.00%     550.856ms      22.034ms            25  
-                         aten::_efficient_attention_forward         0.09%     628.000us         0.25%       1.690ms      67.600us     549.498ms        80.18%     550.856ms      22.034ms            25  
-    void attention_kernel_batched<AttentionKernel<cutlas...         0.00%       0.000us         0.00%       0.000us       0.000us     549.498ms        80.18%     549.498ms      21.980ms            25  
-                                               aten::matmul         0.06%     438.000us         1.22%       8.409ms     168.180us       0.000us         0.00%     304.400ms       6.088ms            50  
-                                                   aten::mm         0.93%       6.392ms         1.08%       7.439ms     148.780us     135.816ms        19.82%     304.400ms       6.088ms            50  
-                                               aten::linear         0.04%     262.000us         1.31%       9.008ms     180.160us       0.000us         0.00%     281.072ms       5.621ms            50  
-    cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFla...         0.06%     394.000us         0.06%     394.000us       1.126us     163.150ms        23.81%     163.150ms     466.143us           350  
-                          maxwell_fp16_sgemm_fp16_32x128_tn         0.00%       0.000us         0.00%       0.000us       0.000us     135.816ms        19.82%     135.816ms       2.716ms            50  
+                             Non-Compilied Causal Attention         0.53%       3.598ms         2.50%      17.065ms      17.065ms       0.000us         0.00%     848.676ms     848.676ms             1  
+                         aten::scaled_dot_product_attention         0.07%     487.000us         0.45%       3.060ms     122.400us       0.000us         0.00%     547.066ms      21.883ms            25  
+              aten::_scaled_dot_product_efficient_attention         0.09%     606.000us         0.38%       2.573ms     102.920us       0.000us         0.00%     547.066ms      21.883ms            25  
+                         aten::_efficient_attention_forward         0.09%     606.000us         0.26%       1.781ms      71.240us     545.723ms        80.25%     547.066ms      21.883ms            25  
+    void attention_kernel_batched<AttentionKernel<cutlas...         0.00%       0.000us         0.00%       0.000us       0.000us     545.723ms        80.25%     545.723ms      21.829ms            25  
+                                               aten::linear         0.03%     181.000us         1.34%       9.149ms     182.980us       0.000us         0.00%     301.610ms       6.032ms            50  
+                                               aten::matmul         0.06%     419.000us         1.25%       8.520ms     170.400us       0.000us         0.00%     301.610ms       6.032ms            50  
+                                                   aten::mm         0.93%       6.363ms         1.11%       7.557ms     151.140us     134.346ms        19.75%     301.610ms       6.032ms            50  
+    cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFla...         0.06%     410.000us         0.06%     410.000us       1.175us     161.893ms        23.81%     161.893ms     463.877us           349  
+                          maxwell_fp16_sgemm_fp16_32x128_tn         0.00%       0.000us         0.00%       0.000us       0.000us     134.346ms        19.75%     134.346ms       2.687ms            50  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 688.478ms
-    Self CUDA time total: 685.314ms
+    Self CPU time total: 683.225ms
+    Self CUDA time total: 680.069ms
 
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                                  Compiled Causal Attention         0.52%       3.581ms         2.91%      20.054ms      20.054ms       0.000us         0.00%     832.823ms     832.823ms             1  
-                                           CompiledFunction         1.17%       8.075ms         2.37%      16.320ms     652.800us       0.000us         0.00%     832.823ms      33.313ms            25  
-              aten::_scaled_dot_product_efficient_attention         0.06%     420.000us         0.33%       2.251ms      90.040us       0.000us         0.00%     550.531ms      22.021ms            25  
-                         aten::_efficient_attention_forward         0.09%     629.000us         0.24%       1.661ms      66.440us     549.167ms        80.17%     550.531ms      22.021ms            25  
-    void attention_kernel_batched<AttentionKernel<cutlas...         0.00%       0.000us         0.00%       0.000us       0.000us     549.167ms        80.17%     549.167ms      21.967ms            25  
-                                                   aten::mm         0.42%       2.897ms         0.59%       4.070ms      81.400us     135.799ms        19.83%     282.292ms       5.646ms            50  
-    cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFla...         0.06%     424.000us         0.06%     424.000us       1.211us     143.770ms        20.99%     143.770ms     410.771us           350  
-                          maxwell_fp16_sgemm_fp16_32x128_tn         0.00%       0.000us         0.00%       0.000us       0.000us     135.799ms        19.83%     135.799ms       2.716ms            50  
-                                           cudaLaunchKernel         0.16%       1.112ms         0.16%       1.117ms      14.893us       4.087ms         0.60%       4.087ms      54.493us            75  
-                                        aten::empty_strided         0.13%     883.000us         0.13%     883.000us      17.660us       0.000us         0.00%       0.000us       0.000us            50  
+                                  Compiled Causal Attention         0.54%       3.693ms         3.08%      21.050ms      21.050ms       0.000us         0.00%     827.468ms     827.468ms             1  
+                                           CompiledFunction         1.26%       8.608ms         2.51%      17.174ms     686.960us       0.000us         0.00%     827.468ms      33.099ms            25  
+              aten::_scaled_dot_product_efficient_attention         0.07%     471.000us         0.35%       2.412ms      96.480us       0.000us         0.00%     547.140ms      21.886ms            25  
+                         aten::_efficient_attention_forward         0.09%     614.000us         0.26%       1.759ms      70.360us     545.795ms        80.20%     547.140ms      21.886ms            25  
+    void attention_kernel_batched<AttentionKernel<cutlas...         0.00%       0.000us         0.00%       0.000us       0.000us     545.795ms        80.20%     545.795ms      21.832ms            25  
+                                                   aten::mm         0.43%       2.915ms         0.61%       4.184ms      83.680us     134.717ms        19.80%     280.328ms       5.607ms            50  
+    cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFla...         0.06%     426.000us         0.06%     426.000us       1.221us     142.913ms        21.00%     142.913ms     409.493us           349  
+                          maxwell_fp16_sgemm_fp16_32x128_tn         0.00%       0.000us         0.00%       0.000us       0.000us     134.717ms        19.80%     134.717ms       2.694ms            50  
+                                           cudaLaunchKernel         0.18%       1.227ms         0.18%       1.227ms      16.360us       4.043ms         0.59%       4.043ms      53.907us            75  
+                                        aten::empty_strided         0.13%     902.000us         0.13%     902.000us      18.040us       0.000us         0.00%       0.000us       0.000us            50  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 688.219ms
-    Self CUDA time total: 684.966ms
+    Self CPU time total: 683.784ms
+    Self CUDA time total: 680.512ms
 
 
 
@@ -566,7 +566,7 @@ module.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  15.119 seconds)
+   **Total running time of the script:** ( 0 minutes  12.732 seconds)
 
 
 .. _sphx_glr_download_intermediate_scaled_dot_product_attention_tutorial.py:

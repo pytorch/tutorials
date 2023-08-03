@@ -9,7 +9,7 @@ relevant to any deep learning toolkit out there.
 
 I am writing this tutorial to focus specifically on NLP for people who
 have never written code in any deep learning framework (e.g, TensorFlow,
-Theano, Keras, Dynet). It assumes working knowledge of core NLP
+Theano, Keras, DyNet). It assumes working knowledge of core NLP
 problems: part-of-speech tagging, language modeling, etc. It also
 assumes familiarity with neural networks at the level of an intro AI
 class (such as one from the Russel and Norvig book). Usually, these
