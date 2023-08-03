@@ -85,7 +85,7 @@ with torch.device('meta'):
 
 m.load_state_dict(state_dict)
 
-
+###############################################################################
 # `nn.Module.load_state_dict()` is usually implemented via an in-place
 # `param_in_model.copy_(param_in_state_dict)` (i.e. a copy from the
 # parameter/buffer with the corresponding key in the state dictionary into
