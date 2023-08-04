@@ -148,9 +148,10 @@ class Quadric(nn.Module):
 #
 # NOTE: If quadric layers are part of torch.nn in the future, the model
 # can be defined like this:
-#
-#
-#
+# model = nn.Sequential(nn.Quadric(784, 16),
+#                       nn.ReLU(),
+#                       nn.Quadric(16, 10),
+#                       nn.LogSoftmax(dim=1))
 
 model = nn.Sequential(Quadric(784, 16),
                       nn.ReLU(),
