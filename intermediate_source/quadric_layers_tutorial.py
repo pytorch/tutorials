@@ -16,7 +16,7 @@ In comparison to linear layers with n weights and 1 bias (if needed) per neuron,
 Although this means a doubling in weights per neuron, the more powerful decision boundaries per neuron lead 
 in many applications to significantly less neurons per layer or even less layers and in total to less model parameters.
 
-In this tutorial, a simple classification application on the MNIST dataset  using a non convolutional model is presented.
+In this tutorial, a simple classification application on the MNIST dataset using a non convolutional model is presented.
 """
 
 # imports
