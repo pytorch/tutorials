@@ -55,8 +55,8 @@ for index in range(1, img_num + 1):
 
 ######################################################################
 # 2. Introduce quadric layer
-# NOTE: If quadric layers are part of torch.nn in the future, this defintion is not necessary anymore
 # -------------------
+# NOTE: If quadric layers are part of torch.nn in the future, this defintion is not necessary anymore
 
 class Quadric(nn.Module):
     r"""Applies a quadric transformation to the incoming data: :math:`y = x^2A^T + xB^T + b`
@@ -146,9 +146,16 @@ class Quadric(nn.Module):
 # 2. Define the model
 # -------------------
 #
-# Here we define the LSTM model architecture, following the
-# `model <https://github.com/pytorch/examples/blob/master/word_language_model/model.py>`_
-# from the word language model example.
+# NOTE: If quadric layers are part of torch.nn in the future, the model
+# can be defined like this:
+#
+#
+#
+
+model = nn.Sequential(Quadric(784, 16),
+                      nn.ReLU(),
+                      Quadric(16, 10),
+                      nn.LogSoftmax(dim=1))
 
 ######################################################################
 # Conclusion
