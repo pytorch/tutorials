@@ -8,7 +8,7 @@ Introduction
 ------------
 
 Quadric layers introduce quadratic functions with second-order decision boundaries (quadric hypersurfaces)
-and can be used as 100% drop-in layers for linear layers (torch.nn.Linear) and present a high-level means
+and can be used as 100% drop-in for linear layers (torch.nn.Linear) and present a high-level means
 to reduce overall model size.
 
 In comparison to linear layers with n weights and 1 bias (if needed) per neuron, a quadric neuron consists of
@@ -56,7 +56,7 @@ for index in range(1, img_num + 1):
 ######################################################################
 # 2. Introduce quadric layer 
 # --------------------------
-# NOTE: If quadric layers are part of torch.nn in the future, this defintion is not necessary anymore
+# NOTE: If quadric layers are part of torch.nn in the future, this definition is not necessary anymore
 
 class Quadric(nn.Module):
     r"""Applies a quadric transformation to the incoming data: :math:`y = x^2A^T + xB^T + b`
@@ -182,7 +182,7 @@ for e in range(epochs):
         print("Epoch {} - Training loss: {}".format(e, train_loss/len(train_loader)))
 
 ######################################################################
-# 4. Evaluate the model
+# 5. Evaluate the model
 # ---------------------
 
 # training data
@@ -228,6 +228,6 @@ print("\nModel Test Accuracy =", (corrects / all))
 # Quadric layers can easily be used to reduce model size in many applications just by replacing linear layers.
 #
 # Thanks for reading! Any feedback is highly appreciated. Just create an issue
-# `here <https://github.com/pytorch/pytorch/issues>`.
+# `here <https://github.com/pytorch/pytorch/issues>` if you have any.
 
 
