@@ -32,7 +32,7 @@ import math
 
 ######################################################################
 # 1. Load MNIST data
-# -------------------
+# ------------------
 transf = transforms.Compose([transforms.ToTensor(),
   transforms.Normalize((0.5,), (0.5,)),])
 
@@ -55,7 +55,7 @@ for index in range(1, img_num + 1):
 
 ######################################################################
 # 2. Introduce quadric layer 
-# -------------------
+# --------------------------
 # NOTE: If quadric layers are part of torch.nn in the future, this defintion is not necessary anymore
 
 class Quadric(nn.Module):
@@ -163,13 +163,49 @@ sum(p.numel() for p in model.parameters())
 
 ######################################################################
 # 4. Train the model
-# -------------------
+# ------------------
 
-
+loss_fn = nn.NLLLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.003, momentum=0.9)
+epochs = 20
+for e in range(epochs):
+    train_loss = 0
+    for images, labels in train_loader:
+        images = images.view(images.shape[0], -1)
+        optimizer.zero_grad()
+        output = model(images)
+        loss = loss_fn(output, labels)
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+    else:
+        print("Epoch {} - Training loss: {}".format(e, train_loss/len(train_loader)))
 
 ######################################################################
-# 5. Conclusion
-# ----------
+# 4. Evaluate the model
+# ---------------------
+
+# training set
+corrects, all = 0, 0
+for images,labels in train_loader:
+  for i in range(len(labels)):
+    img = images[i].view(1, 784)
+    with torch.inference_mode():
+        logps = model(img)
+    ps = torch.exp(logps)
+    prob = list(ps.numpy()[0])
+    inf_label = prob.index(max(prob))
+    true_label = labels.numpy()[i]
+    if(true_label == inf_label):
+      corrects += 1
+    all += 1
+
+print("Number of trained images=", all)
+print("\nModel Training Accuracy =", (corrects / all))
+
+######################################################################
+# 6. Conclusion
+# -------------
 #
 # Quadric layers can easily be used to reduce model size in many applications just by replacing linear layers.
 #
