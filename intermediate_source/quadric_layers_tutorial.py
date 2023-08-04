@@ -33,7 +33,25 @@ import math
 ######################################################################
 # 1. Load MNIST data
 # -------------------
+transf = transforms.Compose([transforms.ToTensor(),
+  transforms.Normalize((0.5,), (0.5,)),])
 
+batch_size = 128
+
+train_set = datasets.MNIST('PATH_TO_STORE_TRAINSET', download=True, train=True, transform=transf)
+test_set = datasets.MNIST('PATH_TO_STORE_TESTSET', download=True, train=False, transform=transf)
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=True)
+
+img_iter = iter(train_loader)
+images, labels = next(img_iter)
+
+figure = plt.figure()
+img_num = 60
+for index in range(1, img_num + 1):
+    plt.subplot(10, 6, index)
+    plt.axis('off')
+    plt.imshow(images[index].numpy().squeeze(), cmap='gray_r')
 
 ######################################################################
 # 2. Define the model
