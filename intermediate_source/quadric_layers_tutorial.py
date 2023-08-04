@@ -16,10 +16,16 @@ In comparison to linear layers with n weights and 1 bias (if needed) per neuron,
 Although this means a doubling in weights per neuron, the more powerful decision boundaries per neuron lead 
 in many applications to significantly less neurons per layer or even less layers and in total to less model parameters.
 
-In this tutorial, I will present a trivial example - binary classification of circular data using a quadric layer 
-with just one neuron.
-`dynamic quantization <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_ -
-to an LSTM-based next word-prediction model, closely following the
-`word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
-from the PyTorch examples.
+In this tutorial, blah blah blah.
 """
+
+######################################################################
+# Conclusion
+# ----------
+#
+# Quadric layers can easily be used to reduce model size in many applications just by replacing linear layers.
+#
+# Thanks for reading! Any feedback is highly appreciated. Just create an issue
+# `here <https://github.com/pytorch/pytorch/issues>`.
+
+
