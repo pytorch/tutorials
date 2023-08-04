@@ -16,8 +16,32 @@ In comparison to linear layers with n weights and 1 bias (if needed) per neuron,
 Although this means a doubling in weights per neuron, the more powerful decision boundaries per neuron lead 
 in many applications to significantly less neurons per layer or even less layers and in total to less model parameters.
 
-In this tutorial, blah blah blah.
+In this tutorial, a simple classification application on the MNIST dataset  using a non convolutional model is presented.
 """
+
+# imports
+import torch
+import torchvision
+from torchvision import datasets, transforms
+from torch import nn, optim, Tensor
+from torch.nn.parameter import Parameter, UninitializedParameter
+
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+######################################################################
+# 1. Load MNIST data
+# -------------------
+
+
+######################################################################
+# 2. Define the model
+# -------------------
+#
+# Here we define the LSTM model architecture, following the
+# `model <https://github.com/pytorch/examples/blob/master/word_language_model/model.py>`_
+# from the word language model example.
 
 ######################################################################
 # Conclusion
