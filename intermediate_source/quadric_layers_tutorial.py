@@ -14,7 +14,7 @@ to reduce overall model size.
 In comparison to linear layers with n weights and 1 bias (if needed) per neuron, a quadric neuron consists of
 2n weights (n quadratic weights and n linear weights) and 1 bias (if needed).
 Although this means a doubling in weights per neuron, the more powerful decision boundaries per neuron lead 
-in many applications to siginificantly less neurons per layer or even less layers and in total to less model parameters.
+in many applications to significantly less neurons per layer or even less layers and in total to less model parameters.
 
 In this tutorial, I will present a trivial example - binary classification of circular data using a quadric layer 
 with just one neuron.
