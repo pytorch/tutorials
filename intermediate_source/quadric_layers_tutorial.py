@@ -54,7 +54,7 @@ for index in range(1, img_num + 1):
     plt.imshow(images[index].numpy().squeeze(), cmap='gray_r')
 
 ######################################################################
-# 2. Introduce quadric layer
+# 2. Introduce quadric layer 
 # -------------------
 # NOTE: If quadric layers are part of torch.nn in the future, this defintion is not necessary anymore
 
@@ -143,7 +143,7 @@ class Quadric(nn.Module):
         )
 
 ######################################################################
-# 2. Define the model
+# 3. Define the model
 # -------------------
 #
 # NOTE: If quadric layers are part of torch.nn in the future, the model
@@ -158,8 +158,17 @@ model = nn.Sequential(Quadric(784, 16),
                       Quadric(16, 10),
                       nn.LogSoftmax(dim=1))
 
+# total number of model parameters
+sum(p.numel() for p in model.parameters())
+
 ######################################################################
-# Conclusion
+# 4. Train the model
+# -------------------
+
+
+
+######################################################################
+# 5. Conclusion
 # ----------
 #
 # Quadric layers can easily be used to reduce model size in many applications just by replacing linear layers.
