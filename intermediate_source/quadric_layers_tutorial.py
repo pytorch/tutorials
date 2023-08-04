@@ -179,7 +179,7 @@ for e in range(epochs):
         optimizer.step()
         train_loss += loss.item()
     else:
-        print("Epoch {} - Training loss: {}".format(e, train_loss/len(train_loader)))
+        print(f"Epoch {e} - Training loss: {train_loss/len(train_loader)}")
 
 ######################################################################
 # 5. Evaluate the model
@@ -200,8 +200,8 @@ for images,labels in train_loader:
       corrects += 1
     all += 1
 
-print("Number of trained images=", all)
-print("\nModel Training Accuracy =", (corrects / all))
+print(f"Number of training images = {all}")
+print(f"\nModel training accuracy = {corrects / all}")
 
 # test data
 corrects, all = 0, 0
@@ -218,14 +218,35 @@ for images,labels in test_loader:
       corrects += 1
     all += 1
 
-print("Number of tested images=", all)
-print("\nModel Test Accuracy =", (corrects / all))
+print(f"Number of test images = {all}")
+print(f"\nModel test accuracy = {corrects / all}")
 
 ######################################################################
 # 6. Conclusion
 # -------------
 #
 # Quadric layers can easily be used to reduce model size in many applications just by replacing linear layers.
+#
+# It is hard to quantify model size reduction because of several factors including number of epochs, training and test accuracy etc.
+#
+# In this example, with the same number of epochs and identical training and test data and virtually the same accuracy 
+# a model reduction size of ~75% could be achieved
+#
+# quadric model:
+# --------------
+# model = nn.Sequential(Quadric(784, 16),
+#                      nn.ReLU(),
+#                      Quadric(16, 10),
+#                      nn.LogSoftmax(dim=1)
+# model size: 25434 parameters
+#
+# comparable linear  model:
+# -------------------------
+# model = nn.Sequential(nn.Linear(784, 128),
+#                      nn.ReLU(),
+#                      nn.Linear(128, 10),
+#                      nn.LogSoftmax(dim=1))
+# model size: 101770 parameters
 #
 # Thanks for reading! Any feedback is highly appreciated. Just create an issue
 # `here <https://github.com/pytorch/pytorch/issues>` if you have any.
