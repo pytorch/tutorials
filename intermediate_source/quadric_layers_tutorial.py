@@ -185,7 +185,7 @@ for e in range(epochs):
 # 4. Evaluate the model
 # ---------------------
 
-# training set
+# training data
 corrects, all = 0, 0
 for images,labels in train_loader:
   for i in range(len(labels)):
@@ -202,6 +202,24 @@ for images,labels in train_loader:
 
 print("Number of trained images=", all)
 print("\nModel Training Accuracy =", (corrects / all))
+
+# test data
+corrects, all = 0, 0
+for images,labels in test_loader:
+  for i in range(len(labels)):
+    img = images[i].view(1, 784)
+    with torch.inference_mode():
+        logps = model(img)
+    ps = torch.exp(logps)
+    prob = list(ps.numpy()[0])
+    inf_label = prob.index(max(prob))
+    true_label = labels.numpy()[i]
+    if(true_label == inf_label):
+      corrects += 1
+    all += 1
+
+print("Number of tested images=", all)
+print("\nModel Test Accuracy =", (corrects / all))
 
 ######################################################################
 # 6. Conclusion
