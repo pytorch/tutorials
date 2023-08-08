@@ -48,6 +48,7 @@ Taken the below frontend code as an example:
     y = opt_fn(x)
 
 
+1. CPU
 The main part of inductor generated code with the default python wrapper will be:
 
 .. code:: python
@@ -86,6 +87,64 @@ By turning on cpp wrapper, the generated code for the ``call`` function becomes 
             return f(args_tensor)
         return g
     call = _wrap_func(module.inductor_entry_cpp)
+
+2. GPU
+Based on the same example code, below demonstrated the generated code using different wrappers on GPU.
+With the default python wrapper, the main generated code will be:
+
+.. code:: python
+
+    def call(args):
+        arg0_1, = args
+        args.clear()
+        assert_size_stride(arg0_1, (1, ), (1, ))
+        with torch.cuda._DeviceGuard(0):
+            torch.cuda.set_device(0) # no-op to ensure context
+            buf0 = empty_strided((19, ), (1, ), device='cuda', dtype=torch.float32)
+            # Source Nodes: [add, tensor], Original ATen: [aten.add, aten.lift_fresh]
+            stream0 = get_cuda_stream(0)
+            triton_poi_fused_add_lift_fresh_0.run(constant0, arg0_1, buf0, 19, grid=grid(19), stream=stream0)
+            run_intermediate_hooks('add', buf0)
+            del arg0_1
+            return (buf0, )
+
+With cpp wrapper turned on, the below equivalent cpp code will be generated:
+
+.. code:: python
+
+    std::vector<at::Tensor> inductor_entry_cpp(const std::vector<at::Tensor>& args) {
+        at::Tensor arg0_1 = args[0];
+        at::Tensor constant0 = args[1];
+
+        at::cuda::CUDAGuard device_guard(0);
+        auto buf0 = at::empty_strided({19L, }, {1L, }, at::TensorOptions(c10::Device(at::kCUDA, 0)).dtype(at::kFloat));
+        // Source Nodes: [add, tensor], Original ATen: [aten.add, aten.lift_fresh]
+        if (triton_poi_fused_add_lift_fresh_0 == nullptr) {
+            triton_poi_fused_add_lift_fresh_0 = loadKernel("/tmp/torchinductor_user/mm/cmm6xjgijjffxjku4akv55eyzibirvw6bti6uqmfnruujm5cvvmw.cubin", "triton_poi_fused_add_lift_fresh_0_0d1d2d3");
+        }
+        CUdeviceptr var_0 = reinterpret_cast<CUdeviceptr>(constant0.data_ptr());
+        CUdeviceptr var_1 = reinterpret_cast<CUdeviceptr>(arg0_1.data_ptr());
+        CUdeviceptr var_2 = reinterpret_cast<CUdeviceptr>(buf0.data_ptr());
+        auto var_3 = 19;
+        void* kernel_args_var_0[] = {&var_0, &var_1, &var_2, &var_3};
+        cudaStream_t stream0 = at::cuda::getCurrentCUDAStream(0);
+        launchKernel(triton_poi_fused_add_lift_fresh_0, 1, 1, 1, 1, 0, kernel_args_var_0, stream0);
+        arg0_1.reset();
+        return {buf0};
+    }
+
+    module = CppWrapperCodeCache.load(cpp_wrapper_src, 'inductor_entry_cpp', 'czbpeilh4qqmbyejdgsbpdfuk2ss5jigl2qjb7xs4gearrjvuwem', True)
+
+    def _wrap_func(f):
+        def g(args):
+            args_tensor = [arg if isinstance(arg, torch.Tensor) else torch.tensor(arg) for arg in args]
+            constants_tensor = [constant0]
+            args_tensor.extend(constants_tensor)
+
+            return f(args_tensor)
+        return g
+    call = _wrap_func(module.inductor_entry_cpp)
+
 
 Conclusion
 ------------
