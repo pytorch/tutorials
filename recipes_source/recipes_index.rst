@@ -130,6 +130,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/reasoning_about_shapes.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Tips for Loading an nn.Module from a Checkpoint
+   :card_description: Learn tips for loading an nn.Module from a checkpoint.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/module_load_state_dict_tips.html
+   :tags: Basics
+
 .. Interpretability
 
 .. customcarditem::
