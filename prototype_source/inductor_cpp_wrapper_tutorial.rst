@@ -49,6 +49,7 @@ Taken the below frontend code as an example:
 
 
 1. CPU
+
 The main part of inductor generated code with the default python wrapper will be:
 
 .. code:: python
@@ -89,6 +90,7 @@ By turning on cpp wrapper, the generated code for the ``call`` function becomes 
     call = _wrap_func(module.inductor_entry_cpp)
 
 2. GPU
+
 Based on the same example code, below demonstrated the generated code using different wrappers on GPU.
 With the default python wrapper, the main generated code will be:
 
