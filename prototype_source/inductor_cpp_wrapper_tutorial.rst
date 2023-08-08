@@ -91,7 +91,7 @@ By turning on cpp wrapper, the generated code for the ``call`` function becomes 
 
 2. GPU
 
-Based on the same example code, below demonstrated the generated code using different wrappers on GPU.
+Based on the same example code, below demonstrated the generated code on GPU.
 With the default python wrapper, the main generated code will be:
 
 .. code:: python
