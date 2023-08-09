@@ -104,13 +104,15 @@ def imshow(img):
 
 
 # get some random training images
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
+for data in trainloader:
+    images, labels = data
 
-# show images
-imshow(torchvision.utils.make_grid(images))
-# print labels
-print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
+    # show images
+    imshow(torchvision.utils.make_grid(images))
+    # print labels
+    print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
+    break
+
 
 
 ########################################################################
@@ -209,12 +211,13 @@ torch.save(net.state_dict(), PATH)
 #
 # Okay, first step. Let us display an image from the test set to get familiar.
 
-dataiter = iter(testloader)
-images, labels = next(dataiter)
+for data in testloader:
+    images, labels = data
 
-# print images
-imshow(torchvision.utils.make_grid(images))
-print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
+    # print images
+    imshow(torchvision.utils.make_grid(images))
+    print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
+    break
 
 ########################################################################
 # Next, let's load back in our saved model (note: saving and re-loading the model
@@ -363,5 +366,4 @@ print(device)
 # .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
 
 # %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
-del dataiter
 # %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
