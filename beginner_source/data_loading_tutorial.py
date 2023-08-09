@@ -68,8 +68,7 @@ landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
 n = 65
 img_name = landmarks_frame.iloc[n, 0]
 landmarks = landmarks_frame.iloc[n, 1:]
-landmarks = np.asarray(landmarks)
-landmarks = landmarks.astype('float').reshape(-1, 2)
+landmarks = np.asarray(landmarks, dtype=float).reshape(-1, 2)
 
 print('Image name: {}'.format(img_name))
 print('Landmarks shape: {}'.format(landmarks.shape))
@@ -144,8 +143,7 @@ class FaceLandmarksDataset(Dataset):
                                 self.landmarks_frame.iloc[idx, 0])
         image = io.imread(img_name)
         landmarks = self.landmarks_frame.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
+        landmarks = np.array([landmarks], dtype=float).reshape(-1, 2)
         sample = {'image': image, 'landmarks': landmarks}
 
         if self.transform:
