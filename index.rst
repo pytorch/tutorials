@@ -573,6 +573,13 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: Inductor CPU Backend Debugging and Profiling
+   :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/inductor_debug_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
    :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
@@ -970,6 +977,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
 
 .. toctree::
