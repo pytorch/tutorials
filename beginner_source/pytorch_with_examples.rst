@@ -2,10 +2,10 @@ Learning PyTorch with Examples
 ******************************
 **Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_
 
-.. Note::
-	This is one of our older PyTorch tutorials. You can view our latest
-	beginner content in 
-	`Learn the Basics <https://pytorch.org/tutorials/beginner/basics/intro.html>`_.
+.. note::
+   This is one of our older PyTorch tutorials. You can view our latest
+   beginner content in 
+   `Learn the Basics <https://pytorch.org/tutorials/beginner/basics/intro.html>`_.
 
 This tutorial introduces the fundamental concepts of
 `PyTorch <https://github.com/pytorch/pytorch>`__ through self-contained
@@ -21,12 +21,12 @@ as our running example. The network will have four parameters, and will be train
 gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.
 
-.. Note::
-	You can browse the individual examples at the
-	:ref:`end of this page <examples-download>`.
+.. note::
+   You can browse the individual examples at the
+   :ref:`end of this page <examples-download>`.
 
 .. contents:: Table of Contents
-	:local:
+   :local:
 
 Tensors
 =======
@@ -52,8 +52,7 @@ PyTorch: Tensors
 
 Numpy is a great framework, but it cannot utilize GPUs to accelerate its
 numerical computations. For modern deep neural networks, GPUs often
-provide speedups of `50x or
-greater <https://github.com/jcjohnson/cnn-benchmarks>`__, so
+provide speedups of `50x or greater <https://github.com/jcjohnson/cnn-benchmarks>`__, so
 unfortunately numpy won't be enough for modern deep learning.
 
 Here we introduce the most fundamental PyTorch concept: the **Tensor**.
@@ -133,11 +132,11 @@ our model:
 
 .. includenodoc:: /beginner/examples_autograd/polynomial_custom_function.py
 
-`nn` module
+``nn`` module
 ===========
 
-PyTorch: nn
------------
+PyTorch: ``nn``
+---------------
 
 Computational graphs and autograd are a very powerful paradigm for
 defining complex operators and automatically taking derivatives; however
@@ -174,20 +173,20 @@ Up to this point we have updated the weights of our models by manually
 mutating the Tensors holding learnable parameters with ``torch.no_grad()``.
 This is not a huge burden for simple optimization algorithms like stochastic
 gradient descent, but in practice we often train neural networks using more
-sophisticated optimizers like AdaGrad, RMSProp, Adam, etc.
+sophisticated optimizers like ``AdaGrad``, ``RMSProp``, ``Adam``, and other.
 
 The ``optim`` package in PyTorch abstracts the idea of an optimization
 algorithm and provides implementations of commonly used optimization
 algorithms.
 
 In this example we will use the ``nn`` package to define our model as
-before, but we will optimize the model using the RMSprop algorithm provided
+before, but we will optimize the model using the ``RMSprop`` algorithm provided
 by the ``optim`` package:
 
 .. includenodoc:: /beginner/examples_nn/polynomial_optim.py
 
-PyTorch: Custom nn Modules
---------------------------
+PyTorch: Custom ``nn`` Modules
+------------------------------
 
 Sometimes you will want to specify models that are more complex than a
 sequence of existing Modules; for these cases you can define your own
@@ -261,7 +260,7 @@ Autograd
 
     <div style='clear:both'></div>
 
-`nn` module
+``nn`` module
 -----------
 
 .. toctree::
