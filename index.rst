@@ -295,6 +295,14 @@ What's new in PyTorch tutorials?
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
 
+.. customcarditem::
+   :header: Code a DDPG Loss
+   :card_description: Use TorchRL to code a DDPG Loss
+   :image: _static/img/half_cheetah.gif
+   :link: intermediate/coding_ddpg.html
+   :tags: Reinforcement-Learning
+
+
 
 .. Deploying PyTorch Models in Production
 
@@ -562,6 +570,13 @@ What's new in PyTorch tutorials?
    :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Inductor CPU Backend Debugging and Profiling
+   :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/inductor_debug_cpu.html
    :tags: Model-Optimization
 
 .. customcarditem::
@@ -962,6 +977,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
 
 .. toctree::

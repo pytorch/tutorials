@@ -69,7 +69,7 @@ if not gpu_ok:
 
 def foo(x, y):
     a = torch.sin(x)
-    b = torch.cos(x)
+    b = torch.cos(y)
     return a + b
 opt_foo1 = torch.compile(foo)
 print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
@@ -80,7 +80,7 @@ print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 @torch.compile
 def opt_foo2(x, y):
     a = torch.sin(x)
-    b = torch.cos(x)
+    b = torch.cos(y)
     return a + b
 print(opt_foo2(torch.randn(10, 10), torch.randn(10, 10)))
 
@@ -105,7 +105,7 @@ print(opt_mod(torch.randn(10, 100)))
 #
 # Let's now demonstrate that using ``torch.compile`` can speed
 # up real models. We will compare standard eager mode and 
-# ``torch.compile`` by evaluating and training ResNet-18 on random data.
+# ``torch.compile`` by evaluating and training a ``torchvision`` model on random data.
 #
 # Before we start, we need to define some utility functions.
 
@@ -142,7 +142,8 @@ def init_model():
 # ``mode`` argument, which we will discuss below.
 
 def evaluate(mod, inp):
-    return mod(inp)
+    with torch.no_grad():
+        return mod(inp)
 
 model = init_model()
 
@@ -165,7 +166,6 @@ print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 # see a significant improvement compared to eager.
 
 eager_times = []
-compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
     _, eager_time = timed(lambda: evaluate(model, inp))

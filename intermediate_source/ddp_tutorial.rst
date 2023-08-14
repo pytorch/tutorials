@@ -14,7 +14,7 @@ Prerequisites:
 -  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
 
 
-`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
+`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and
 create a single DDP instance per process. DDP uses collective communications in the
@@ -340,11 +340,12 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
         labels = torch.randn(20, 5).to(device_id)
         loss_fn(outputs, labels).backward()
         optimizer.step()
+        dist.destroy_process_group()
         
     if __name__ == "__main__":
         demo_basic()
 
-One can then run a `torch elastic/torchrun<https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
+One can then run a `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
 on all nodes to initialize the DDP job created above:
 
 .. code:: bash

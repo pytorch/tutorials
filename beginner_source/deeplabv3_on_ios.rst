@@ -10,9 +10,9 @@ Introduction
 
 Semantic image segmentation is a computer vision task that uses semantic labels to mark specific regions of an input image. The PyTorch semantic image segmentation `DeepLabV3 model <https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101>`_ can be used to label image regions with `20 semantic classes <http://host.robots.ox.ac.uk:8080/pascal/VOC/voc2007/segexamples/index.html>`_ including, for example, bicycle, bus, car, dog, and person. Image segmentation models can be very useful in applications such as autonomous driving and scene understanding.
 
-In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorite pre-trained PyTorch models can run on iOS, and how to avoid pitfalls.
+In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorite pretrained PyTorch models can run on iOS, and how to avoid pitfalls.
 
-.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
+.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 Learning Objectives
 -------------------
@@ -29,7 +29,7 @@ In this tutorial, you will learn how to:
 
 5. Complete the UI, refactor, build and run the app to see image segmentation in action.
 
-Pre-requisites
+Prerequisites
 ---------------
 
 * PyTorch 1.6 or 1.7
@@ -100,7 +100,7 @@ So if you provide the same image input `deeplab.jpg` of size 400x400 to the mode
 3. Build a new iOS app or reuse an example app and load the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, follow Step 3 of the `Model Preparation for iOS recipe <../recipes/model_preparation_ios.html#add-the-model-and-pytorch-library-on-ios>`_ to use our model in an Xcode project with PyTorch Mobile enabled. Because both the DeepLabV3 model used in this tutorial and the MobileNet v2 model used in the PyTorch HelloWorld iOS example are computer vision models, you may choose to start with the `HelloWorld example repo <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ as a template to reuse the code that loads the model and processes the input and output.
+First, follow Step 3 of the `Model Preparation for iOS recipe <../recipes/model_preparation_ios.html#add-the-model-and-pytorch-library-on-ios>`_ to use our model in an Xcode project with PyTorch Mobile enabled. Because both the DeepLabV3 model used in this tutorial and the MobileNet v2 model used in the PyTorch Hello World iOS example are computer vision models, you may choose to start with the `HelloWorld example repo <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ as a template to reuse the code that loads the model and processes the input and output.
 
 Now let's add `deeplabv3_scripted.pt` and `deeplab.jpg` used in Step 2 to the Xcode project and modify `ViewController.swift` to resemble:
 
@@ -129,7 +129,7 @@ Then set a breakpoint at the line `return module` and build and run the app. The
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image, the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `TorchModule.mm <https://github.com/pytorch/ios-demo-app/blob/master/HelloWorld/HelloWorld/HelloWorld/TorchBridge/TorchModule.mm>`_ file from HelloWorld for input processing. Replace the `predictImage` method implementation in `TorchModule.mm` with the following code:
+After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image, the same as that of the MobileNet v2 in the Hello World example, we will reuse some of the code in the `TorchModule.mm <https://github.com/pytorch/ios-demo-app/blob/master/HelloWorld/HelloWorld/HelloWorld/TorchBridge/TorchModule.mm>`_ file from Hello World for input processing. Replace the `predictImage` method implementation in `TorchModule.mm` with the following code:
 
 .. code-block:: objective-c
 
@@ -219,11 +219,11 @@ Now we are ready to complete the app and the UI to actually see the processed re
 
 The implementation here is based on the understanding of the DeepLabV3 model which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
 
-After the output processing, you will also need to call a helper function to convert the RGB `buffer` to an `UIImage` instance to be shown on `UIImageView`. You can refer to the example code `convertRGBBufferToUIImage` defined in `UIImageHelper.mm` in the code repo.
+After the output processing, you will also need to call a helper function to convert the RGB `buffer` to an `UIImage` instance to be shown on `UIImageView`. You can refer to the example code `convertRGBBufferToUIImage` defined in `UIImageHelper.mm` in the code repository.
 
-The UI for this app is also similar to that for HelloWorld, except that you do not need the `UITextView` to show the image classification result. You can also add two buttons `Segment` and `Restart` as shown in the code repo to run the model inference and to show back the original image after the segmentation result is shown.
+The UI for this app is also similar to that for Hello World, except that you do not need the `UITextView` to show the image classification result. You can also add two buttons `Segment` and `Restart` as shown in the code repository to run the model inference and to show back the original image after the segmentation result is shown.
 
-The last step before we can run the app is to connect all the pieces together. Modify the `ViewController.swift` file to use the `predictImage`, which is refactored and changed to `segmentImage` in the repo, and helper functions you built as shown in the example code in the repo in `ViewController.swift`. Connect the buttons to the actions and you should be good to go.
+The last step before we can run the app is to connect all the pieces together. Modify the `ViewController.swift` file to use the `predictImage`, which is refactored and changed to `segmentImage` in the repository, and helper functions you built as shown in the example code in the repository in `ViewController.swift`. Connect the buttons to the actions and you should be good to go.
 
 Now when you run the app on an iOS simulator or an actual iOS device, you will see the following screens:
 
@@ -236,7 +236,7 @@ Now when you run the app on an iOS simulator or an actual iOS device, you will s
 Recap
 --------
 
-In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repo is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
+In this tutorial, we described what it takes to convert a pretrained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repository is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 More advanced topics such as quantization and using models via transfer learning or of your own on iOS will be covered soon in future demo apps and tutorials.
 

@@ -241,8 +241,8 @@ of the observers for activation and weight. ``QConfigMapping`` contains mapping 
 
   qconfig_mapping = (QConfigMapping()
       .set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
-      .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a callable...
-      .set_object_type("torch.nn.functional.add", qconfig_opt) # ...or a string of the class name
+      .set_object_type(torch.nn.Conv2d, qconfig_opt)  # can be a callable...
+      .set_object_type("reshape", qconfig_opt)  # ...or a string of the method
       .set_module_name_regex("foo.*bar.*conv[0-9]+", qconfig_opt) # matched in order, first match takes precedence
       .set_module_name("foo.bar", qconfig_opt)
       .set_module_name_object_type_order()

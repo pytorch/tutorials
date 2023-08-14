@@ -357,7 +357,7 @@ torch.backends.cudnn.benchmark = True
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Instead of calling ``torch.rand(size).cuda()`` to generate a random tensor,
 # produce the output directly on the target device:
-# ``torch.rand(size, device=torch.device('cuda'))``.
+# ``torch.rand(size, device='cuda')``.
 #
 # This is applicable to all functions which create new tensors and accept
 # ``device`` argument:
