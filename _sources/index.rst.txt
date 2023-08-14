@@ -299,7 +299,7 @@ What's new in PyTorch tutorials?
    :header: Code a DDPG Loss
    :card_description: Use TorchRL to code a DDPG Loss
    :image: _static/img/half_cheetah.gif
-   :link: intermediate/coding_ddpg.html
+   :link: advanced/coding_ddpg.html
    :tags: Reinforcement-Learning
 
 
