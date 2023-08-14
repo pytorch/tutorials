@@ -424,6 +424,13 @@ What's new in PyTorch tutorials?
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Facilitating New Backend Integration by PrivateUse1
+   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/privateuseone.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -962,6 +969,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/dispatcher
    advanced/extend_dispatcher
+   advanced/privateuseone
 
 .. toctree::
    :maxdepth: 2
