@@ -103,5 +103,6 @@ def main() -> None:
     print(" ".join(stripped_file_names))
 
 
+# dummy change
 if __name__ == "__main__":
     main()
