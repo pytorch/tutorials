@@ -1,4 +1,4 @@
-Inductor cpp wrapper tutorial
+Inductor C++ Wrapper Tutorial
 ==============================================================
 
 **Author**: `Chunyuan Wu <https://github.com/chunyuan-w>`_, `Bin Bao <https://github.com/desertfire>`__, `Jiong Gong <https://github.com/jgong5>`__
