@@ -34,7 +34,8 @@ This will speed up your models by reducing the Python overhead of the Inductor w
 
 Example code
 ------------
-Taken the below frontend code as an example:
+
+We will use the below frontend code as an example:
 
 .. code:: python
     
