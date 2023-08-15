@@ -90,7 +90,7 @@ By turning on the C++ wrapper, the generated code for the ``call`` function beco
         return g
     call = _wrap_func(module.inductor_entry_cpp)
 
-2. GPU
+**For GPU**
 
 Based on the same example code, below demonstrated the generated code on GPU.
 With the default python wrapper, the main generated code will be:
