@@ -64,8 +64,8 @@ The main part of Inductor-generated code with the default python wrapper will lo
         del arg0_1
         return (buf0, )
 
-By turning on cpp wrapper, the generated code for the ``call`` function becomes a cpp function
-``inductor_entry_cpp`` of the CPP extension ``module``:
+By turning on the C++ wrapper, the generated code for the ``call`` function becomes a  C++ function
+``inductor_entry_cpp`` of the C++ extension ``module``:
 
 .. code:: python
 
