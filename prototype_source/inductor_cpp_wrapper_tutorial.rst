@@ -50,7 +50,7 @@ Taken the below frontend code as an example:
 
 1. CPU
 
-The main part of inductor generated code with the default python wrapper will be:
+The main part of Inductor-generated code with the default python wrapper will look like this:
 
 .. code:: python
 
