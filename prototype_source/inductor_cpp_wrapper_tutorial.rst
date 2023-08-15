@@ -92,7 +92,7 @@ By turning on the C++ wrapper, the generated code for the ``call`` function beco
 
 **For GPU**
 
-Based on the same example code, the generated code for GPU can will look like this:
+Based on the same example code, the generated code for GPU will look like this:
 
 .. code:: python
 
@@ -152,3 +152,7 @@ Conclusion
 ------------
 
 In this tutorial, we introduced a new C++ wrapper in TorchInductor to speed up your models with just two lines of code changes.
+We explained the motivation of this new feature and walked through the ease-of-use API to activate this experimental feature.
+We demonstrated the Inductor-generated code using the default python wrapper and the new C++ wrapper on both CPU and GPU
+to visually showcase the difference between these two wrappers.
+This feature is still in prototype stage. If you have any feature requests or run into any issues, please file a bug report at `GitHub issues <https://github.com/pytorch/pytorch/issues>`_.
