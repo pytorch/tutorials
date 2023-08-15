@@ -46,19 +46,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # As a closing point, we often refer to this held out set as the validation set and we use a separate set, called test set after we optimize a model's performance on the validation set, to avoid selecting a model based on the greedy and biased optimization of a single metric.
 
 # Data preprocessing for CIFAR-10. We use an arbitrary batch size of 128.
-transform_train = transforms.Compose([
+transforms_cifar = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# Data preprocessing for CIFAR-10
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
 # Load CIFAR-10 dataset
-train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
+train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms_cifar)
+test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transforms_cifar)
 
 ########################################################################
 # .. note:: This section is for CPU users only who are interested in quick results. Only use this if you're interested in a small scale experiment. Keep in mind the code should run fairly fast using any GPU. Select only the first ``num_images_to_keep`` images from the train / test dataset
@@ -291,7 +286,7 @@ def train_knowledge_distillation(teacher, student, train_loader, epochs, learnin
             soft_targets = nn.functional.softmax(teacher_logits / T, dim=-1)
             soft_prob = nn.functional.log_softmax(student_logits / T, dim=-1)
 
-            # Calculate the soft targets loss. Scaled by T**2 as suggested by the authors of the paper
+            # Calculate the soft targets loss. Scaled by T**2 as suggested by the authors of the paper "Distilling the knowledge in a neural network"
             soft_targets_loss = -torch.sum(soft_targets * soft_prob) / soft_prob.size()[0] * (T**2)
 
             # Calculate the true label loss
@@ -425,7 +420,7 @@ print("Norm of 1st layer:", torch.norm(modified_light_nn.features[0].weight).ite
 # .. figure:: /../_static/img/knowledge_distillation/cosine_loss_distillation.png 
 #    :align: center
 #    
-#    In CosineLoss minimization we want to maximize the cosine similarity of the two representations by returning gradients to the student
+#    In Cosine Loss minimization we want to maximize the cosine similarity of the two representations by returning gradients to the student
 #
 
 def train_cosine_loss(teacher, student, train_loader, epochs, learning_rate, hidden_rep_loss_weight, ce_loss_weight, device):
@@ -605,7 +600,7 @@ def train_mse_loss(teacher, student, train_loader, epochs, learning_rate, featur
             # Forward pass with the student model
             student_logits, regressor_feature_map = student(inputs)
 
-            # Calculate the MSE loss
+            # Calculate the loss
             hidden_rep_loss = mse_loss(regressor_feature_map, teacher_feature_map)
 
             # Calculate the true label loss
