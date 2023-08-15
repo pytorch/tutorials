@@ -29,7 +29,7 @@ This feature is still in prototype stage. To activate this feature, add the foll
     import torch._inductor.config as config
     config.cpp_wrapper = True
 
-This will speed up your models by reducing the python overhead of the inductor wrapper.
+This will speed up your models by reducing the Python overhead of the Inductor wrapper.
 
 
 Example code
