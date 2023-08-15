@@ -22,7 +22,7 @@ thereby reducing the Python overhead within the graph.
 
 API
 ------------
-This feature is still in prototype stage. To turn it on, the below code change is needed:
+This feature is still in prototype stage. To activate this feature, add the following to your code:
 
 .. code:: python
 
