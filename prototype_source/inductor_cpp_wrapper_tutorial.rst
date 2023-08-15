@@ -110,7 +110,7 @@ Based on the same example code, the generated code for GPU can will look like th
             del arg0_1
             return (buf0, )
 
-With cpp wrapper turned on, the below equivalent cpp code will be generated:
+With the C++ wrapper turned on, the below equivalent C++ code will be generated:
 
 .. code:: python
 
