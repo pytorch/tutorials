@@ -49,7 +49,7 @@ We will use the below frontend code as an example:
     y = opt_fn(x)
 
 
-1. CPU
+**For CPU**
 
 The main part of Inductor-generated code with the default python wrapper will look like this:
 
