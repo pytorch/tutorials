@@ -4,7 +4,7 @@ Inductor C++ Wrapper Tutorial
 **Author**: `Chunyuan Wu <https://github.com/chunyuan-w>`_, `Bin Bao <https://github.com/desertfire>`__, `Jiong Gong <https://github.com/jgong5>`__
 
 Prerequisites:
-------------
+----------------
 -  `torch.compile and TorchInductor concepts in PyTorch <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
 
 Introduction
