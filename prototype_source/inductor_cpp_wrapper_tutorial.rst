@@ -150,5 +150,5 @@ With the C++ wrapper turned on, the below equivalent C++ code will be generated:
 
 Conclusion
 ------------
-With this tutorial, we introduces a new cpp wrapper in TorchInductor to speed up your
-models with two lines of code change.
+
+In this tutorial, we introduced a new C++ wrapper in TorchInductor to speed up your models with just two lines of code changes.
