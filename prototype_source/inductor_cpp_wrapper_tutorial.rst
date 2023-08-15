@@ -92,8 +92,7 @@ By turning on the C++ wrapper, the generated code for the ``call`` function beco
 
 **For GPU**
 
-Based on the same example code, below demonstrated the generated code on GPU.
-With the default python wrapper, the main generated code will be:
+Based on the same example code, the generated code for GPU can will look like this:
 
 .. code:: python
 
