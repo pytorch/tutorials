@@ -10,10 +10,9 @@ Prerequisites:
 Introduction
 ------------
 
-Python as the primary interface of PyTorch is ease-of-use and efficient for development and debugging.
-Inductor default wrapper generates Python code to invoke generated kernels and external kernels.
-However, in deployment that requires high performance, Python as an interpreted language is slower compared
-with compiled language.
+Python, as the primary interface of PyTorch, is easy to use and efficient for development and debugging. 
+The Inductor's default wrapper generates Python code to invoke generated kernels and external kernels.
+However, in deployments requiring high performance, Python, as an interpreted language, runs relatively slower compared to compiled languages.
 
 We implemented Inductor cpp wrapper by leveraging the PyTorch C++ APIs
 to generate pure cpp code to combine the generated and external kernels, which makes the
