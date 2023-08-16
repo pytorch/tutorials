@@ -646,7 +646,7 @@ test_accuracy_light_ce_and_mse_loss = test_multiple_outputs(modified_light_nn_ms
 
 ######################################################################
 # It is expected for the final method to work better than CosineLoss because now, we allowed a trainable layer between the teacher and the student, which gives the student some wiggle room when it comes to learning, rather than pushing the student to copy the teacher's representation.
-# Including the extra network is the idea behind hint based distillation.
+# Including the extra network is the idea behind hint-based distillation.
 
 print(f"Teacher accuracy: {test_accuracy_deep:.2f}%")
 print(f"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%")
