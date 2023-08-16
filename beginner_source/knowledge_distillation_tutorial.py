@@ -70,7 +70,7 @@ train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, trans
 test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transforms_cifar)
 
 ########################################################################
-# .. note:: This section is for CPU users only who are interested in quick results. Only use this if you're interested in a small scale experiment. Keep in mind the code should run fairly fast using any GPU. Select only the first ``num_images_to_keep`` images from the train / test dataset
+# .. note:: This section is for CPU users only who are interested in quick results. Use this option only if you're interested in a small scale experiment. Keep in mind the code should run fairly quickly using any GPU. Select only the first ``num_images_to_keep`` images from the train/test dataset
 #
 #    .. code-block:: python
 #
