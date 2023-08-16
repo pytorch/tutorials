@@ -655,7 +655,7 @@ print(f"Student accuracy with CE + CosineLoss: {test_accuracy_light_ce_and_cosin
 print(f"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse_loss:.2f}%")
 
 ######################################################################
-# None of the methods above increases the number of parameters for the network or inference time, so the performance increase comes at the little cost of calculating gradients during training. In ML applications we mostly care about inference time because training happens before the model deployment.
+# None of the methods above increases the number of parameters for the network or inference time, so the performance increase comes at the little cost of calculating gradients during training. In ML applications, we mostly care about inference time because training happens before the model deployment.
 # If our lightweight model is still too heavy for deployment, we can apply different ideas, such as post-training quantization. Additional losses can be applied in many tasks, not just classification, and you can experiment with quantities like coefficients, temperature, or number of neurons.
 # Feel free to tune any numbers in the tutorial above, but keep in mind, if you change the number of neurons / filters chances are a shape mismatch might occur.
 #
