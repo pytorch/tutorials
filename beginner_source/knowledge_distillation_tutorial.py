@@ -59,7 +59,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # 
 # As a closing point, we often refer to this held-out set as the validation set, and we use a separate set, called the test set, after optimizing a model's performance on the validation set. This is done to avoid selecting a model based on the greedy and biased optimization of a single metric.
 
-# Data preprocessing for CIFAR-10. We use an arbitrary batch size of 128.
+# Below we are preprocessing data for CIFAR-10. We use an arbitrary batch size of 128.
 transforms_cifar = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
