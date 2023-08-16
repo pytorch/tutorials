@@ -20,7 +20,7 @@ This allows for the execution of each captured Dynamo graph in pure C++,
 thereby reducing the Python overhead within the graph.
 
 
-API
+Enabling the API
 ------------
 This feature is still in prototype stage. To activate this feature, add the following to your code:
 
