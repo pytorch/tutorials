@@ -51,7 +51,7 @@ We will use the below frontend code as an example:
 
 **For CPU**
 
-The main part of Inductor-generated code with the default python wrapper will look like this:
+The main part of Inductor-generated code with the default Python wrapper will look like this:
 
 .. code:: python
 
