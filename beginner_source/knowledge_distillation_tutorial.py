@@ -85,7 +85,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=
 
 ######################################################################
 # Next, we need to define our model classes. Several user-defined parameters need to be set here. We use two different architectures, keeping the number of filters fixed across our experiments to ensure fair comparisons..
-# Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that work as feature extractors followed by a classifier, with 10 classes.
+# Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that serve as feature extractors, followed by a classifier with 10 classes. 
 # The number of filters and neurons is smaller for the students.
 
 # Deeper neural network class to be used as teacher
