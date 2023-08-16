@@ -45,7 +45,7 @@ warnings.filterwarnings("ignore")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ######################################################################
-# CIFAR-10 is a popular image dataset with 10 classes. Our objective is to predict one of the following classes for each input image.
+# CIFAR-10 is a popular image dataset with ten classes. Our objective is to predict one of the following classes for each input image.
 #
 # .. figure:: /../_static/img/cifar10.png 
 #    :align: center
