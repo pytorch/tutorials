@@ -88,7 +88,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=
 # Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that serve as feature extractors, followed by a classifier with 10 classes. 
 # The number of filters and neurons is smaller for the students.
 
-# Deeper neural network class to be used as teacher
+# Deeper neural network class to be used as teacher:
 class DeepNN(nn.Module):
     def __init__(self, num_classes=10):
         super(DeepNN, self).__init__()
