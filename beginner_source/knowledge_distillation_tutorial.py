@@ -57,7 +57,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # The tensors "mean=[0.485, 0.456, 0.406]" and "std=[0.229, 0.224, 0.225]" were already computed, and they represent the mean and standard deviation of each channel in the predefined subset of CIFAR-10 intended to be the training set. Notice how we use these values for the test set as well, without recomputing the mean and standard deviation from scratch.
 # This is because the network was trained on features produced by subtracting and dividing the numbers above, and we want to maintain consistency. Furthermore, in real life, we would not be able to compute the mean and standard deviation of the test set since, under our assumptions, this data would not be accessible at that point.
 # 
-# As a closing point, we often refer to this held out set as the validation set and we use a separate set, called test set after we optimize a model's performance on the validation set, to avoid selecting a model based on the greedy and biased optimization of a single metric.
+# As a closing point, we often refer to this held-out set as the validation set, and we use a separate set, called the test set, after optimizing a model's performance on the validation set. This is done to avoid selecting a model based on the greedy and biased optimization of a single metric.
 
 # Data preprocessing for CIFAR-10. We use an arbitrary batch size of 128.
 transforms_cifar = transforms.Compose([
