@@ -152,7 +152,7 @@ Conclusion
 ------------
 
 In this tutorial, we introduced a new C++ wrapper in TorchInductor to speed up your models with just two lines of code changes.
-We explained the motivation of this new feature and walked through the ease-of-use API to activate this experimental feature.
+We explained the motivation of this new feature and walked through the easy-to-use API to activate this experimental feature.
 We demonstrated the Inductor-generated code using the default python wrapper and the new C++ wrapper on both CPU and GPU
 to visually showcase the difference between these two wrappers.
 
