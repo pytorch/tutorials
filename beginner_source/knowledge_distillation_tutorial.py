@@ -6,16 +6,30 @@ Knowledge Distillation Tutorial
 """ 
 
 ######################################################################
-# From this tutorial one can learn:
-# - How to modify model classes to extract hidden representations and use them for further calculations
-# - How to modify regular train loops in pytorch to include additional losses on top of, for example, cross-entropy for classification 
-# - How to improve the performance of lightweight models, using more complex models as teachers
-# 
-# We will be using a popular image dataset, CIFAR-10 and the rest of the code should be easy to run with a simple GPU (4GB of memory should be more than enough). We will be running a number of experiments focused at improving the accuracy of a lightweight neural network, using a more powerful network as a teacher.
-# The computational cost and the speed of the lightweight network will remain unaffected, our intervention only focuses on its weights, not on its forward pass. 
-# Applications of this technology can be found in devices such as drones or mobile phones. We do not need any external packages, we have everything we need in torch(vision).
+# Knowledge is a technic that enables transfers knowledge from large, computationally expensive
+# models to smaller ones without losing validity. This allows for deployment on less powerful
+# hardware, making evaluation faster and more efficient. 
 #
-# The script will download the dataset and save it in a directory called data.
+# In this tutorial, we will run a number of experiments focused at improving the accuracy of a
+# lightweight neural network, using a more powerful network as a teacher.
+# The computational cost and the speed of the lightweight network will remain unaffected,
+# our intervention only focuses on its weights, not on its forward pass.
+# Applications of this technology can be found in devices such as drones or mobile phones.
+# In this tutorial, we do not use any external packages as everything we need is available in ``torch`` and
+# ``torchvision``.
+#
+# In this tutorial, you will learn:
+#
+# - How to modify model classes to extract hidden representations and use them for further calculations
+# - How to modify regular train loops in PyTorch to include additional losses on top of, for example, cross-entropy for classification 
+# - How to improve the performance of lightweight models by using more complex models as teachers
+#
+# Prerequisites
+# ~~~~~~~~~~~
+#
+# * 1 GPU, 4GB of memory
+# * PyTorch v2.0 or later 
+# * CIFAR-10 dataset (downloaded by the script and saved it in a directory called ``/data``)
 
 import torch
 import torch.nn as nn
