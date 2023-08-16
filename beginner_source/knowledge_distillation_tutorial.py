@@ -52,7 +52,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #    
 #    Example of CIFAR-10 images
 #
-# The input images are RGB so 3 channels and ``32x32`` pixels. Basically each image is described by ``3 * 32 * 32 = 3072`` numbers from 0 to 255.
+# The input images are RGB, so they have 3 channels and are 32x32 pixels. Basically, each image is described by 3 x 32 x 32 = 3072 numbers ranging from 0 to 255.
 # A common practice in neural networks is to normalize the input. This is done for multiple reasons like avoiding saturation in common activation functions or increased numerical stability. Our Normalization consists of subtracting the mean and dividing by the standard deviation, along each channel.
 # The tensors ``mean=[0.485, 0.456, 0.406]`` and ``std=[0.229, 0.224, 0.225]`` were already computed and they are the mean / std of each channel in the predefined subset of CIFAR-10 meant to be the train set. Notice how we use these numbers to the test set too and we do not compute the mean / std of the test set from scratch.
 # This is because the network was trained on features produced by the subtraction and division of the numbers above and we want to be consistent. Furthermore, in real life we would not be able to compute the mean and std of the test set, because we are operating under the assumption that this data would not be accessible at this point.
