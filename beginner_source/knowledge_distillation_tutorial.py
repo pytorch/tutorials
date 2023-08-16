@@ -146,7 +146,7 @@ class LightNN(nn.Module):
 # We employ 2 functions to help us produce and evaluate the results on our original classification task.
 # One function called train with the following arguments:
 #
-# - ``model``: A model instance that is to be trained (update its weights) via this function
+# - ``model``: A model instance to train (update its weights) via this function.
 # - ``train_loader``: We defined our train_loader above, its job is to feed the data into the model
 # - ``epochs``: How many times we loop over the dataset
 # - ``learning_rate``: How large do we want the steps to be towards convergence. Too large / small steps can be bad
