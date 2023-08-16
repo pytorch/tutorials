@@ -150,7 +150,7 @@ class LightNN(nn.Module):
 # - ``train_loader``: We defined our train_loader above, its job is to feed the data into the model
 # - ``epochs``: How many times we loop over the dataset
 # - ``learning_rate``: How large do we want the steps to be towards convergence. Too large / small steps can be bad
-# - ``device``: depends on CPU or GPU availability
+# - ``device``: Determines the device to run the workload on. Can be either CPU or GPU depending on availability.
 #
 # Our test function is similar, but it will be invoked with our ``test_loader``, to load images from our test set.
 #
