@@ -7,61 +7,67 @@ you already have a basic understanding of PyTorch.
 
 .. note::
 
-   This tutorial only involves the parts related to the privateuse1 mechanism that facilitates the integration of new devices,
+   This tutorial only involves the parts related to the PrivateUse1 mechanism that facilitates the integration of new devices,
    and other parts will not be covered. At the same time, not all the modules involved in this tutorial are required,
    and you can choose the modules that are helpful to you according to your actual needs.
 
 
 What is PrivateUse1?
-----------------------
+--------------------
 
 Prior to Pytorch 2.0, PyTorch provided three reserved dispatch keys (and their corresponding Autograd keys)
 for prototyping out-of-tree backend extensions, the three dispatch keys are as follows:
 
-* PrivateUse1/AutogradPrivateUse1
-* PrivateUse2/AutogradPrivateUse2
-* PrivateUse3/AutogradPrivateUse3
+* ``PrivateUse1/AutogradPrivateUse1``
+* ``PrivateUse2/AutogradPrivateUse2``
+* ``PrivateUse3/AutogradPrivateUse3``
 
-After the prototype verification is passed, you can apply for a private key for the new backend, such as cuda, xla, mps, etc.
+After the prototype verification is passed, you can apply for a private key for the new backend, such as CUDA, XLA, MPS, and so on.
 
-However, with the rapid development of Pytorch, more and more hardware manufacturers try to
-integrate their backends into Pytorch, which will cause some problems:
+However, with the rapid development of PyTorch, more and more hardware manufacturers are trying to
+integrate their backends into PyTorch, which might cause the following problems:
 
 * Every new backend integration involves a lot of file modification
-* There is currently a hard limit on the number of Dispatch Keys (DispatchKeySet 64-bit limit)
+* There is currently a hard limit on the number of Dispatch Keys (``DispatchKeySet`` 64-bit limit)
 
 .. note::
 
-   There is also a problem with integrating the new backend to Pytorch through PrivateUse1 Key, it is impossible
-   to integrate many backends at the same time. Fortunately, these out-of-tree backends are rarely used at the same time.
+   There is also a problem with integrating the new backend into PyTorch through the PrivateUse1 Key, as it is impossible
+   to integrate many backends at the same time. Fortunately, these out-of-tree backends are rarely used simultaneously.
 
 
 In view of the above reasons, the community began to recommend new backend to be integrated
-into the PyTorch via PrivateUse1.
+into the PyTorch via ``PrivateUse1``.
 
-However, the previous PrivateUse1 mechanism is not fully capable of integrating with the new backend, because it
-lacks some related support in some modules, such as Storage, AMP, Distributed, etc.
+However, the previous ``PrivateUse1`` mechanism is not fully capable of integrating with the new backend, because it
+lacks some related support in certain modules, such as Storage, AMP, Distributed, and so on.
 
 With the arrival of Pytorch 2.1.0, a series of optimizations and enhancements have been made
-for PrivateUse1 in terms of new backend integration, and it is now possible to support the integration
-of new devices rapidly and friendly
+for ``PrivateUse1`` in terms of new backend integration, and it is now possible to support the integration
+of new devices rapidly and efficiently.
 
 How to integrate new backend via PrivateUse1
----------------------------------------------
+--------------------------------------------
 
-In this section, we will discuss the details of integrating the new backend into Pytorch via PrivateUse1,
-which mainly consists of the following parts.
+In this section, we will discuss the details of integrating the new backend into Pytorch via ``PrivateUse1``,
+which mainly consists of the following parts:
+
+1. Register kernels for the new backend.
+2. Register generator for the new backend.
+3. Register device guard for the new backend.
+4. Register serialization and deserialization functions for new backend metadata.
+5. Other Modules.
 
 Register kernels for the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The new backend may have some high-performance implementations of operator, which can be registered to the dispatcher
-by ``TORCH_LIBRARY_IMPL`` API described in `Registering a Dispatched Operator in C++ <dispatcher>`_, it mainly involves
-several situations.
+by ``TORCH_LIBRARY_IMPL`` API described in `Registering a Dispatched Operator in C++ <dispatcher>`_. This involves
+several situations:
 
-1. Register all the forward operators supported by the new backend to the dispatcher and register the fallback
-   at the same time, so that when some operators are not supported by the new backend, which can fallback to the
-   CPU for execution to ensure availability of the functionality.
+1. Register all the forward operators supported by the new backend to the dispatcher, and register the fallback
+   at the same time, so that when the new backend does not support some operators, these operators can fall back
+   to the CPU for execution to ensure the availability of functions.
 
 .. code-block:: cpp
 
@@ -120,26 +126,26 @@ several situations.
     m.fallback(torch::CppFunction::makeFallthrough());
   }
 
-What needs to be added is that if new backend want to support AMP, which need to register a new ``BackendModule`` by
+What needs to be added is that if you want to support AMP in a new backend, you need to register a new ``BackendModule`` by
 ``torch._register_device_module("backend_name", BackendModule)``, and the ``BackendModule`` needs to have the following APIs:
 
 * ``get_amp_supported_dtype() -> List[torch.dtype]``
-    get the supported dtypes on new backend in AMP, which maybe supports one more dtype.
+    get the supported dtypes on the new backend in AMP, which might support one more ``dtype``.
 * ``is_autocast_enabled() -> bool``
-    check the AMP is enabled or not on new backend.
+    check the AMP is enabled or not on the new backend.
 * ``get_autocast_dtype() -> torch.dtype``
-    get the supported dtype on new backend in AMP, which is set by ``set_autocast_dtype`` or the
-    default dtype, and the default dtype is ``torch.float16``.
+    get the supported ``dtype`` on the new backend in AMP, which is set by ``set_autocast_dtype`` or the
+    default ``dtype``, and the default ``dtype`` is ``torch.float16``.
 * ``set_autocast_enabled(bool) -> None``
-    enable the AMP or not on new backend.
+    enable or disable AMP on the new backend.
 * ``set_autocast_dtype(dtype) -> None``
-    set the supported dtype on new backend in AMP, and the dtype be contained in the dtypes got
+    set the supported ``dtype`` on the new backend in AMP, and the ``dtype`` be contained in the ``dtypes`` got
     from ``get_amp_supported_dtype``.
 
 Register generator for the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is necessary to support generators corresponding to new devices. Currently, PrivateUse1 can dynamically
+It is necessary to support generators corresponding to new devices. Currently, ``PrivateUse1`` can dynamically
 register custom generators, which are mainly divided into the following steps.
 
 1. Inherit the ``GeneratorImpl`` class to implement the generator class corresponding to the new backend,
@@ -162,8 +168,8 @@ register custom generators, which are mainly divided into the following steps.
 Register device guard for the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Pytorch provides functionalities related to device, stream and event switching via DeviceGuard.
-This function is also applicable to PrivateUse1 Key.
+PyTorch provides functionalities related to device, stream, and event switching via ``DeviceGuard``.
+This function is also applicable to ``PrivateUse1`` Key.
 
 1. Inherit the ``DeviceGuardImplInterface`` class to implement the various general methods corresponding to the new backend.
 2. Call ``C10_REGISTER_GUARD_IMPL`` macro to complete dynamic registration.
@@ -176,17 +182,17 @@ This function is also applicable to PrivateUse1 Key.
 
   C10_REGISTER_GUARD_IMPL(PrivateUse1, CustomGuardImpl);
 
-Register serialization/deserialization functions for new backend metadata
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Register serialization and deserialization functions for new backend metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PyTorch is currently able to dynamically register serialization/deserialization functions to support the serialization and deserialization
 of new backend additional metadata named ``backend_meta_`` in class ``TensorImpl.ExtraMeta``. You can refer to the following steps:
 
 1. Inherit the ``BackendMeta`` class to implement ``CustomBackendMetadata`` corresponding to the new backend and
-   various fields of new backend can be customized in the class.
+   various fields of the new backend can be customized in the class.
 2. Implement the serialization and deserialization functions of the new backend, the function signatures are 
-   ``void(const at::Tensor&, std::unordered_map<std::string, bool>&)``
-3. Call ``TensorBackendMetaRegistry`` macro to complete dynamic registration.
+   ``void(const at::Tensor&, std::unordered_map<std::string, bool>&)``.
+3. Call the ``TensorBackendMetaRegistry`` macro to complete dynamic registration.
 
 .. code-block:: cpp
 
@@ -204,27 +210,31 @@ of new backend additional metadata named ``backend_meta_`` in class ``TensorImpl
 
   TensorBackendMetaRegistry(c10::DeviceType::PrivateUse1, &for_serialization, &for_deserialization);
 
-Others
-^^^^^^
+Other Modules
+^^^^^^^^^^^^^
 
 In addition to the above-mentioned parts, there are some other modules that can be expanded through ``PrivateUse1``,
-such as ``distributed collective communication``, ``benchmark timer``, etc., which will be added in the future.
-One example about PrivateUse1 integration is `Ascend NPU <https://github.com/ascend/pytorch>`_.
+such as ``distributed collective communication``, ``benchmark timer``, and others, which will be added in the future.
+One example about ``PrivateUse1`` integration is `Ascend NPU <https://github.com/ascend/pytorch>`_.
 
 
 How to Improve User Experience with Privateuse1
 -----------------------------------------------
 
-The primary goal of integrating new devices through PrivateUse1 is to meet the basic functional requirements,
+The primary goal of integrating new devices through ``PrivateUse1`` is to meet the basic functional requirements,
 and the next thing to do is to improve usability, which mainly involves the following aspects.
+
+1. Register new backend module to Pytorch.
+2. Generate methods and properties related to the new backend.
+3. Generate methods and properties related to the new backend.
 
 Register new backend module to Pytorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some cuda-related interfaces in Pytorch can be called through the following form: ``torch.cuda.xxx``. Therefore, in order to
-comply with the user habits, the new backend implemented through the privateuse1 mechanism also needs to provide similar interfaces.
+Some CUDA-related interfaces in PyTorch can be called through the following form: ``torch.cuda.xxx``. Therefore, in order to
+comply with user habits, the new backend implemented through the ``PrivateUse1`` mechanism should also provide similar interfaces.
 
-Taking the ``Ascend NPU`` as an example.
+For example, using``Ascend NPU``:
 
 .. code-block:: python
 
@@ -232,40 +242,38 @@ Taking the ``Ascend NPU`` as an example.
 
 After doing the above operations, users can call some exclusive APIs of ``Ascend NPU`` through ``torch.npu.xxx``
 
-Rename privateuse1 to a custom name for the new backend
+Rename PrivateUse1 to a custom name for the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PrivateUse1 Key is the internal mechanism of the new backend integrated into PyTorch. For users, compared with ``PrivateUse1``,
+``PrivateUse1`` Key is the internal mechanism of the new backend integrated into PyTorch. For users, compared with ``PrivateUse1``,
 the custom name strongly related to the new backend should be more friendly.
 
 Taking the ``Ascend NPU`` as an example, the first usage will be more user-friendly.
 
 .. code-block:: python
 
-  torch.rand([2,2],device='npu:0')
-  torch.rand([2,2],device='privateuse1:0')
+  torch.rand((2,2),device='npu:0')
+  torch.rand((2,2),device='privateuse1:0')
 
-Now, PyTorch provides a new C++/Python API for the self-named "PrivateUse1" backend, which is very simple to use.
+Now, PyTorch provides a new C++/Python API for the self-named ``PrivateUse1`` backend, which is very simple to use.
 
-For Python:
+.. tab-set-code::
 
-.. code-block:: python
+  .. code-block:: python
 
-  torch.rename_privateuse1_backend("npu")
+      torch.rename_privateuse1_backend("npu")
 
-For C++:
+  .. code-block:: C++
 
-.. code-block:: cpp
-
-  c10::register_privateuse1_backend("npu")
+      c10::register_privateuse1_backend("npu")
 
 Generate methods and properties related to the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After rename privateuse1 to custome name, automatically generate properties and methods related to the new backend name
+After renaming ``PrivateUse1`` to a custome name, automatically generate properties and methods related to the new backend name
 in the ``Tensor, nn, Storage`` modules for the new backend.
 
-Taking the ``Ascend NPU`` as an example as follows:
+Here is an example for ``Ascend NPU``:
 
 .. code-block:: python
 
@@ -273,7 +281,7 @@ Taking the ``Ascend NPU`` as an example as follows:
   unsupported_dtype = [torch.quint8]
   torch.utils.generate_methods_for_privateuse1_backend(for_tensor=True, for_module=True, for_storage=True, unsupported_dtype=unsupported_dtype)
 
-Then, you can use the following methods and properties.
+Then, you can use the following methods and properties:
 
 .. code-block:: python
 
@@ -286,17 +294,17 @@ Then, you can use the following methods and properties.
 Future Work
 -----------
 
-The improvement of the PrivateUse1 mechanism is still in progress, so the integration method of PrivateUse1
-of the new module will be added in turn, here are a few items that we're actively working on in the future:
+The improvement of the ``PrivateUse1`` mechanism is still in progress, so the integration method of ``PrivateUse1``
+of the new module will be added in turn. Here are a few items that we are actively working on:
 
 * Add the integration method of ``distributed collective communication``.
 * Add the integration method of ``benchmark timer``.
 
-Stay in touch
--------------
+Conclusion
+----------
 
-Please `file an issue on github <https://github.com/pytorch/pytorch/issues>`_ if you have any bug reports
-or questions.
+This tutorial walked you through how to integrate new backends into PyTorch via ``PrivateUse1``, including but not limited to
+operator registration, generator registration, device guard registration and so on. At the same time, some methods are introduced
+to improve the user experience.
 
-If you're interested in helping in any of the future work items above, please reach out to us
-through Github or Slack!
+As always, please use our forum or `file an issue on github <https://github.com/pytorch/pytorch/issues>`_ if you run into any problems or have questions.
