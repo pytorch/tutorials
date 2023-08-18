@@ -40,10 +40,9 @@ import torchvision.datasets as datasets
 # Check if GPU is available, and if not, use the CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+######################################################################
 # Loading CIFAR-10
 # ----------------
-
-######################################################################
 # CIFAR-10 is a popular image dataset with ten classes. Our objective is to predict one of the following classes for each input image.
 #
 # .. figure:: /../_static/img/cifar10.png 
@@ -78,9 +77,7 @@ train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, trans
 test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transforms_cifar)
 
 ########################################################################
-# .. note:: This section is for CPU users only who are interested in quick results.
-# Use this option only if you're interested in a small scale experiment.
-# Keep in mind the code should run fairly quickly using any GPU. Select only the first ``num_images_to_keep`` images from the train/test dataset
+# .. note:: This section is for CPU users only who are interested in quick results. Use this option only if you're interested in a small scale experiment. Keep in mind the code should run fairly quickly using any GPU. Select only the first ``num_images_to_keep`` images from the train/test dataset
 #
 #    .. code-block:: python
 #
@@ -93,10 +90,9 @@ test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, trans
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=2)
 
+######################################################################
 # Defining model classes and utility functions
 # --------------------------------------------
-
-######################################################################
 # Next, we need to define our model classes. Several user-defined parameters need to be set here. We use two different architectures, keeping the number of filters fixed across our experiments to ensure fair comparisons.
 # Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that serve as feature extractors, followed by a classifier with 10 classes. 
 # The number of filters and neurons is smaller for the students.
@@ -189,7 +185,7 @@ def train(model, train_loader, epochs, learning_rate, device):
             optimizer.zero_grad()
             outputs = model(inputs)
 
-            # outputs: Output of the network for the collection of images. A vector of dimensionality batch_size
+            # outputs: Output of the network for the collection of images. A tensor of dimensionality batch_size x num_classes
             # labels: The actual labels of the images. Vector of dimensionality batch_size
             loss = criterion(outputs, labels)
             loss.backward()
@@ -220,10 +216,9 @@ def test(model, test_loader, device):
     print(f"Test Accuracy: {accuracy:.2f}%")
     return accuracy
 
+######################################################################
 # Cross-entropy runs
 # ------------------
-
-######################################################################
 # For reproducibility, we need to set the torch manual seed. We train networks using different methods, so to compare them fairly,
 # it makes sense to initialize the networks with the same weights.
 # Start by training the teacher network using cross-entropy:
@@ -273,10 +268,9 @@ test_accuracy_light_ce = test(nn_light, test_loader, device)
 print(f"Teacher accuracy: {test_accuracy_deep:.2f}%")
 print(f"Student accuracy: {test_accuracy_light_ce:.2f}%")
 
+######################################################################
 # Knowledge distillation run
 # --------------------------
-
-######################################################################
 # Now let's try to improve the test accuracy of the student network by incorporating the teacher.
 # Knowledge distillation is a straightforward technique to achieve this,
 # based on the fact that both networks output a probability distribution over our classes.
@@ -354,10 +348,9 @@ print(f"Teacher accuracy: {test_accuracy_deep:.2f}%")
 print(f"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%")
 print(f"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%")
 
+######################################################################
 # Cosine loss minimization run
 # ----------------------------
-
-######################################################################
 # Feel free to play around with the temperature parameter that controls the softness of the softmax function and the loss coefficients.
 # In neural networks, it is easy to include to include additional loss functions to the main objectives to achieve goals like better generalization.
 # Let's try including an objective for the student, but now let's focus on their hidden states rather than their output layers. In the previous example,
@@ -567,10 +560,9 @@ def test_multiple_outputs(model, test_loader, device):
 train_cosine_loss(teacher=modified_nn_deep, student=modified_light_nn, train_loader=train_loader, epochs=10, learning_rate=0.001, hidden_rep_loss_weight=0.25, ce_loss_weight=0.75, device=device)
 test_accuracy_light_ce_and_cosine_loss = test_multiple_outputs(modified_light_nn, test_loader, device)
 
+######################################################################
 # Intermediate regressor run
 # --------------------------
-
-######################################################################
 # Our naive minimization does not guarantee better results for several reasons, one being the dimensionality of the vectors.
 # Cosine similarity generally works better than Euclidean distance for vectors of higher dimensionality,
 # but we were dealing with vectors with 1024 components each, so it is much harder to extract meaningful similarities.
@@ -734,10 +726,9 @@ print(f"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%")
 print(f"Student accuracy with CE + CosineLoss: {test_accuracy_light_ce_and_cosine_loss:.2f}%")
 print(f"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse_loss:.2f}%")
 
+######################################################################
 # Conclusions
 # --------------------------------------------
-
-######################################################################
 # None of the methods above increases the number of parameters for the network or inference time,
 # so the performance increase comes at the little cost of calculating gradients during training.
 # In ML applications, we mostly care about inference time because training happens before the model deployment.
