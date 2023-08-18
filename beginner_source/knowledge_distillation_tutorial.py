@@ -446,8 +446,8 @@ print("Norm of 1st layer for modified_deep_nn:", torch.norm(modified_nn_deep.fea
 
 # Initialize a modified lightweight network with the same seed as our other lightweight instances. This will be trained from scratch to examine the effectiveness of cosine loss minimization.
 torch.manual_seed(42)
-modified_light_nn = ModifiedLightNNCosine(num_classes=10).to(device)
-print("Norm of 1st layer:", torch.norm(modified_light_nn.features[0].weight).item())
+modified_nn_light = ModifiedLightNNCosine(num_classes=10).to(device)
+print("Norm of 1st layer:", torch.norm(modified_nn_light.features[0].weight).item())
 
 ######################################################################
 # Naturally, we need to change the train loop because now the model returns a tuple ``(logits, hidden_representation)``. Using a sample input tensor
@@ -457,7 +457,7 @@ print("Norm of 1st layer:", torch.norm(modified_light_nn.features[0].weight).ite
 sample_input = torch.randn(128, 3, 32, 32).to(device) # Batch size: 128, Filters: 3, Image size: 32x32
 
 # Pass the input through the student
-logits, hidden_representation = modified_light_nn(sample_input)
+logits, hidden_representation = modified_nn_light(sample_input)
 
 # Print the shapes of the tensors
 print("Student logits shape:", logits.shape) # batch_size x total_classes
@@ -551,8 +551,8 @@ def test_multiple_outputs(model, test_loader, device):
 # For now, we can run a simple train-test session.
 
 # Train and test the lightweight network with cross entropy loss
-train_cosine_loss(teacher=modified_nn_deep, student=modified_light_nn, train_loader=train_loader, epochs=10, learning_rate=0.001, hidden_rep_loss_weight=0.25, ce_loss_weight=0.75, device=device)
-test_accuracy_light_ce_and_cosine_loss = test_multiple_outputs(modified_light_nn, test_loader, device)
+train_cosine_loss(teacher=modified_nn_deep, student=modified_nn_light, train_loader=train_loader, epochs=10, learning_rate=0.001, hidden_rep_loss_weight=0.25, ce_loss_weight=0.75, device=device)
+test_accuracy_light_ce_and_cosine_loss = test_multiple_outputs(modified_nn_light, test_loader, device)
 
 ######################################################################
 # Intermediate regressor run
@@ -699,15 +699,15 @@ def train_mse_loss(teacher, student, train_loader, epochs, learning_rate, featur
 
 # Initialize a ModifiedLightNNRegressor
 torch.manual_seed(42)
-modified_light_nn_mse = ModifiedLightNNRegressor(num_classes=10).to(device)
+modified_nn_light_reg = ModifiedLightNNRegressor(num_classes=10).to(device)
 
 # We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance
 modified_nn_deep_reg = ModifiedDeepNNRegressor(num_classes=10).to(device)
 modified_nn_deep_reg.load_state_dict(nn_deep.state_dict())
 
 # Train and test once again
-train_mse_loss(teacher=modified_nn_deep_reg, student=modified_light_nn_mse, train_loader=train_loader, epochs=10, learning_rate=0.001, feature_map_weight=0.25, ce_loss_weight=0.75, device=device)
-test_accuracy_light_ce_and_mse_loss = test_multiple_outputs(modified_light_nn_mse, test_loader, device)
+train_mse_loss(teacher=modified_nn_deep_reg, student=modified_nn_light_reg, train_loader=train_loader, epochs=10, learning_rate=0.001, feature_map_weight=0.25, ce_loss_weight=0.75, device=device)
+test_accuracy_light_ce_and_mse_loss = test_multiple_outputs(modified_nn_light_reg, test_loader, device)
 
 ######################################################################
 # It is expected that the final method will work better than ``CosineLoss`` because now we have allowed a trainable layer between the teacher and the student,
