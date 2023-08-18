@@ -437,6 +437,7 @@ Convert the Calibrated Model to a Quantized Model
    Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
 
    .. code-block:: python
+
       def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
           x_fp32 = torch.ops.quantized_decomposed.dequantize_per_tensor(
                    x_i8, x_scale, x_zero_point, x_quant_min, x_quant_max, torch.int8)
@@ -448,9 +449,9 @@ Convert the Calibrated Model to a Quantized Model
           out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
           return out_i8
      
-     * Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (e.g. quantized linear), other ops are represented as (dq -> float32_op -> q), and q/dq are decomposed into more primitive operators.
+     * Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (dq -> float32_op -> q), and q/dq are decomposed into more primitive operators.
 
-       You can get this representation by: convert_pt2e(..., use_reference_representation=True)
+       You can get this representation by: ``convert_pt2e(..., use_reference_representation=True)``
 
     .. code-block:: python
        # Reference Quantized Pattern for quantized linear
@@ -465,7 +466,7 @@ Convert the Calibrated Model to a Quantized Model
            return out_int8
 
 
-   Please see `<here https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/representation/rewrite.py>`_ for the most up to date reference representations.
+   See `here <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/representation/rewrite.py>`_ for the most up-to-date reference representations.
 
 
 Checking Model Size and Accuracy Evaluation

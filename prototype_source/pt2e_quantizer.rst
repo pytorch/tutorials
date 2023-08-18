@@ -146,29 +146,34 @@ parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` is
 can be an input edge or an output value.
 
 .. note::
-   * Sharing is Transitive
-     Some Tensors might be effectively be using shared quantization spec due to (1) two nodes/edges are
+   * Sharing is transitive
+
+     Some Tensors might be effectively using shared quantization spec due to (1) two nodes/edges are
      configured to use SharedQuantizationSpec (2) there is existing sharing of some of the nodes
 
-     For example, let's say we have two conv nodes conv1 and conv2, and both of them are fed into a cat
-     node. `cat([conv1_out, conv2_out], ...)` Let's say output of conv1, conv2 and first input of cat are configured
-     with the same configurations of QuantizationSpec, second input of cat is configured to use SharedQuantizationSpec
+     For example, let's say we have two ``conv`` nodes ``conv1`` and ``conv2``, and both of them are fed into a ``cat``
+     node. `cat([conv1_out, conv2_out], ...)` Let's say output of ``conv1``, ``conv2`` and the first input of ``cat`` are configured
+     with the same configurations of ``QuantizationSpec``, second input of ``cat`` is configured to use ``SharedQuantizationSpec``
      with the first input.
-     conv1_out: qspec1(dtype=torch.int8, ...)
-     conv2_out: qspec1(dtype=torch.int8, ...)
-     cat_input0: qspec1(dtype=torch.int8, ...)
-     cat_input1: SharedQuantizationSpec((conv1, cat))  # conv1 node is the first input of cat
      
-     First of all, the output of conv1 are implicitly sharing quantization parameter (and observer object)
-     with first input of cat, and same for output of conv2 and second input of cat.
-     So since user configures the two input of cat to share quantization parameters, by transitivity,
-     conv2_out and conv1_out will also be sharing quantization parameters. In the observed graph, you
+     .. code-block::
+     
+       conv1_out: qspec1(dtype=torch.int8, ...)
+       conv2_out: qspec1(dtype=torch.int8, ...)
+       cat_input0: qspec1(dtype=torch.int8, ...)
+       cat_input1: SharedQuantizationSpec((conv1, cat))  # conv1 node is the first input of cat
+     
+     First of all, the output of ``conv1`` is implicitly sharing quantization parameter (and observer object)
+     with the first input of ``cat``, and same for output of ``conv2`` and the second input of ``cat``.
+     So since user configures the two inputs of ``cat`` to share quantization parameters, by transitivity,
+     ``conv2_out`` and ``conv1_out`` will also be sharing quantization parameters. In the observed graph, you
      will see:
-     ```
+     .. code-block::
+     
      conv1 -> obs -> cat
      conv2 -> obs   /
-     ```
-     and both `obs` will be the same observer instance
+
+     and both ``obs`` will be the same observer instance.
 
 
 -  Input edge is the connection between input node and the node consuming the input,
