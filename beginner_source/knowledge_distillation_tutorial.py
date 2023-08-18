@@ -353,13 +353,7 @@ print(f"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%")
 # ----------------------------
 # Feel free to play around with the temperature parameter that controls the softness of the softmax function and the loss coefficients.
 # In neural networks, it is easy to include to include additional loss functions to the main objectives to achieve goals like better generalization.
-# Let's try including an objective for the student, but now let's focus on their hidden states rather than their output layers. In the previous example,
-# the teacher's representation after the convolutional layers had the following shape:
-#
-# ``(batch_size, num_filters_for_last_conv_layer, 8, 8)``
-#
-# Same for the student, with the only exception being the number of filters, where here we have fewer filters.
-# 
+# Let's try including an objective for the student, but now let's focus on their hidden states rather than their output layers.
 # Our goal is to convey information from the teacher's representation to the student by including a naive loss function,
 # whose minimization implies that the flattened vectors that are subsequently passed to the classifiers have become more *similar* as the loss decreases.
 # Of course, the teacher does not update its weights, so the minimization depends only on the student's weights.
@@ -734,7 +728,7 @@ print(f"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse
 # In ML applications, we mostly care about inference time because training happens before the model deployment.
 # If our lightweight model is still too heavy for deployment, we can apply different ideas, such as post-training quantization.
 # Additional losses can be applied in many tasks, not just classification, and you can experiment with quantities like coefficients,
-# temperature, or number of neurons. # Feel free to tune any numbers in the tutorial above,
+# temperature, or number of neurons. Feel free to tune any numbers in the tutorial above,
 # but keep in mind, if you change the number of neurons / filters chances are a shape mismatch might occur.
 #
 # For more information, see:
