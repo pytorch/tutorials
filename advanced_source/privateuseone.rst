@@ -4,6 +4,7 @@ Facilitating New Backend Integration by PrivateUse1
 In this tutorial we will walk through some necessary steps to integrate a new backend
 living outside ``pytorch/pytorch`` repo by ``PrivateUse1``. Note that this tutorial assumes that
 you already have a basic understanding of PyTorch.
+you are an advanced user of PyTorch.
 
 .. note::
 
@@ -303,8 +304,6 @@ of the new module will be added in turn. Here are a few items that we are active
 Conclusion
 ----------
 
-This tutorial walked you through how to integrate new backends into PyTorch via ``PrivateUse1``, including but not limited to
-operator registration, generator registration, device guard registration and so on. At the same time, some methods are introduced
+This tutorial walked you through the process of integrating new backends into PyTorch via ``PrivateUse1``, including but not limited to
+operator registration, generator registration, device guard registration, and so on. At the same time, some methods are introduced
 to improve the user experience.
-
-As always, please use our forum or `file an issue on github <https://github.com/pytorch/pytorch/issues>`_ if you run into any problems or have questions.
