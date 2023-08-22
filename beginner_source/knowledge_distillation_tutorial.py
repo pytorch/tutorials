@@ -29,7 +29,7 @@ Knowledge Distillation Tutorial
 #
 # * 1 GPU, 4GB of memory
 # * PyTorch v2.0 or later 
-# * CIFAR-10 dataset (downloaded by the script and saved it in a directory called ``/data``)
+# * CIFAR-10 dataset (downloaded by the script and saved in a directory called ``/data``)
 
 import torch
 import torch.nn as nn
@@ -156,7 +156,7 @@ class LightNN(nn.Module):
 # One function is called ``train`` and takes the following arguments:
 #
 # - ``model``: A model instance to train (update its weights) via this function.
-# - ``train_loader``: we defined our ``train_loader`` above, and its job is to feed the data into the model.
+# - ``train_loader``: We defined our ``train_loader`` above, and its job is to feed the data into the model.
 # - ``epochs``: How many times we loop over the dataset.
 # - ``learning_rate``: The learning rate determines how large our steps towards convergence should be. Too large or too small steps can be detrimental.
 # - ``device``: Determines the device to run the workload on. Can be either CPU or GPU depending on availability.
@@ -166,7 +166,7 @@ class LightNN(nn.Module):
 # .. figure:: /../_static/img/knowledge_distillation/ce_only.png 
 #    :align: center
 #    
-#    Train both networks with Cross-Entropy. The student will be used as a baseline
+#    Train both networks with Cross-Entropy. The student will be used as a baseline:
 #
 
 def train(model, train_loader, epochs, learning_rate, device):
@@ -250,14 +250,14 @@ print("Norm of 1st layer of nn_light:", torch.norm(nn_light.features[0].weight).
 print("Norm of 1st layer of new_nn_light:", torch.norm(new_nn_light.features[0].weight).item())
 
 ######################################################################
-# Print the total number of parameters in each model.
+# Print the total number of parameters in each model:
 total_params_deep = "{:,}".format(sum(p.numel() for p in nn_deep.parameters()))
 print(f"DeepNN parameters: {total_params_deep}")
 total_params_light = "{:,}".format(sum(p.numel() for p in nn_light.parameters()))
 print(f"LightNN parameters: {total_params_light}")
 
 ######################################################################
-# Train and test the lightweight network with cross entropy loss
+# Train and test the lightweight network with cross entropy loss:
 train(nn_light, train_loader, epochs=10, learning_rate=0.001, device=device)
 test_accuracy_light_ce = test(nn_light, test_loader, device)
 
@@ -295,7 +295,7 @@ print(f"Student accuracy: {test_accuracy_light_ce:.2f}%")
 # .. figure:: /../_static/img/knowledge_distillation/distillation_output_loss.png 
 #    :align: center
 #    
-#    Distillation loss is calculated from the logits of the networks. It only returns gradients to the student
+#    Distillation loss is calculated from the logits of the networks. It only returns gradients to the student:
 #
 
 def train_knowledge_distillation(teacher, student, train_loader, epochs, learning_rate, T, soft_target_loss_weight, ce_loss_weight, device):
@@ -479,7 +479,7 @@ print("Teacher hidden representation shape:", hidden_representation.shape) # bat
 # .. figure:: /../_static/img/knowledge_distillation/cosine_loss_distillation.png 
 #    :align: center
 #    
-#    In Cosine Loss minimization we want to maximize the cosine similarity of the two representations by returning gradients to the student
+#    In Cosine Loss minimization, we want to maximize the cosine similarity of the two representations by returning gradients to the student:
 #
 
 def train_cosine_loss(teacher, student, train_loader, epochs, learning_rate, hidden_rep_loss_weight, ce_loss_weight, device):
@@ -589,7 +589,7 @@ print("Teacher's feature extractor output shape: ", convolutional_fe_output_teac
 # .. figure:: /../_static/img/knowledge_distillation/fitnets_knowledge_distill.png 
 #    :align: center
 #    
-#    The trainable layer matches the shapes of the intermediate tensors and Mean Squared Error ``(MSE)`` is properly defined
+#    The trainable layer matches the shapes of the intermediate tensors and Mean Squared Error (MSE) is properly defined:
 #
 
 class ModifiedDeepNNRegressor(nn.Module):
@@ -721,7 +721,7 @@ print(f"Student accuracy with CE + CosineLoss: {test_accuracy_light_ce_and_cosin
 print(f"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse_loss:.2f}%")
 
 ######################################################################
-# Conclusions
+# Conclusion
 # --------------------------------------------
 # None of the methods above increases the number of parameters for the network or inference time,
 # so the performance increase comes at the little cost of calculating gradients during training.
@@ -732,6 +732,7 @@ print(f"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse
 # but keep in mind, if you change the number of neurons / filters chances are a shape mismatch might occur.
 #
 # For more information, see:
+#
 # * `Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015) <https://arxiv.org/abs/1503.02531>`_
 #
 # * `Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015) <https://arxiv.org/abs/1412.6550>`_
