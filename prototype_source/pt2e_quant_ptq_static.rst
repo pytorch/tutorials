@@ -436,11 +436,13 @@ Convert the Calibrated Model to a Quantized Model
     print(quantized_model)
 
 .. note::
-   At this step, we currently have two representations that you can choose from, but what exact representation
-   we offer in the long term might change based on feedbacks from users.
+   At this step, we currently have two representations that you can choose from, but exact representation
+   we offer in the long term might change based on feedback from PyTorch users.
 
    * Q/DQ Representation (default)
-   Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
+      
+      Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019- 
+ Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
 
    .. code-block:: python
 
@@ -455,11 +457,12 @@ Convert the Calibrated Model to a Quantized Model
           out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
           return out_i8
      
-     * Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (dq -> float32_op -> q), and q/dq are decomposed into more primitive operators.
+     * Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
 
-       You can get this representation by: ``convert_pt2e(..., use_reference_representation=True)``
+       You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
     .. code-block:: python
+    
        # Reference Quantized Pattern for quantized linear
        def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
            x_int16 = x_int8.to(torch.int16)
