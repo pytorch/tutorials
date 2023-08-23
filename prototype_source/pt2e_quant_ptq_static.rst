@@ -53,6 +53,7 @@ The PyTorch 2.0 export quantization API looks like this:
 .. code:: python
 
   import torch
+  from torch._export import capture_pre_autograd_graph
   class M(torch.nn.Module):
      def __init__(self):
         super().__init__()
@@ -66,7 +67,9 @@ The PyTorch 2.0 export quantization API looks like this:
   m = M().eval()
 
   # Step 1. program capture
-  m = torch._dynamo.export(m, *example_inputs, aten_graph=True)
+  # NOTE: this API will be updated to torch.export API in the future, but the captured
+  # result shoud mostly stay the same
+  m = capture_pre_autograd_graph(m, *example_inputs)
   # we get a model with aten ops
 
 
@@ -352,10 +355,13 @@ Here is how you can use ``torch.export`` to export the model:
 
 .. code-block:: python
 
-    import torch._dynamo as torchdynamo
+    from torch._export import capture_pre_autograd_graph
 
     example_inputs = (torch.rand(2, 3, 224, 224),)
-    exported_model, _ = torchdynamo.export(model_to_quantize, *example_inputs, aten_graph=True, tracing_mode="symbolic")
+    exported_model, _ = capture_pre_autograd_graph(model_to_quantize, *example_inputs)
+
+
+``capture_pre_autograd_graph`` is a short term API, it will be updated to use the offical ``torch.export`` API when that is ready.
 
 
 Import the Backend Specific Quantizer and Configure how to Quantize the Model
