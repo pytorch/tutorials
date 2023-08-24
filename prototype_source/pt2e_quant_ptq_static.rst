@@ -435,47 +435,47 @@ Convert the Calibrated Model to a Quantized Model
     quantized_model = convert_pt2e(prepared_model)
     print(quantized_model)
 
-.. note::
-   At this step, we currently have two representations that you can choose from, but exact representation
-   we offer in the long term might change based on feedback from PyTorch users.
+At this step, we currently have two representations that you can choose from, but exact representation
+we offer in the long term might change based on feedback from PyTorch users.
 
-   * Q/DQ Representation (default)
+* Q/DQ Representation (default)
       
-      Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019- 
+  Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019- 
  Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
 
-   .. code-block:: python
+.. code-block:: python
 
-      def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
-          x_fp32 = torch.ops.quantized_decomposed.dequantize_per_tensor(
-                   x_i8, x_scale, x_zero_point, x_quant_min, x_quant_max, torch.int8)
-          weight_fp32 = torch.ops.quantized_decomposed.dequantize_per_tensor(
-                   weight_i8, weight_scale, weight_zero_point, weight_quant_min, weight_quant_max, torch.int8)
-          weight_permuted = torch.ops.aten.permute_copy.default(weight_fp32, [1, 0]);
-          out_fp32 = torch.ops.aten.addmm.default(bias_fp32, x_fp32, weight_permuted)
-          out_i8 = torch.ops.quantized_decomposed.quantize_per_tensor(
-          out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
-          return out_i8
+   def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
+       x_fp32 = torch.ops.quantized_decomposed.dequantize_per_tensor(
+                x_i8, x_scale, x_zero_point, x_quant_min, x_quant_max, torch.int8)
+       weight_fp32 = torch.ops.quantized_decomposed.dequantize_per_tensor(
+                weight_i8, weight_scale, weight_zero_point, weight_quant_min, weight_quant_max, torch.int8)
+       weight_permuted = torch.ops.aten.permute_copy.default(weight_fp32, [1, 0]);
+       out_fp32 = torch.ops.aten.addmm.default(bias_fp32, x_fp32, weight_permuted)
+       out_i8 = torch.ops.quantized_decomposed.quantize_per_tensor(
+       out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
+       return out_i8
      
-     * Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
+* Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
 
-       You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
+You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
-    .. code-block:: python
-    
-       # Reference Quantized Pattern for quantized linear
-       def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
-           x_int16 = x_int8.to(torch.int16)
-           weight_int16 = weight_int8.to(torch.int16)
-           acc_int32 = torch.ops.out_dtype(torch.mm, torch.int32, (x_int16 - x_zero_point), (weight_int16 - weight_zero_point))
-           acc_rescaled_int32 = torch.ops.out_dtype(torch.ops.aten.mul.Scalar, torch.int32, acc_int32, x_scale * weight_scale / output_scale)
-           bias_scale = x_scale * weight_scale
-           bias_int32 = out_dtype(torch.ops.aten.mul.Tensor, torch.int32, bias_fp32, bias_scale / out_scale)
-           out_int8 = torch.ops.aten.clamp(acc_rescaled_int32 + bias_int32 + output_zero_point, qmin, qmax).to(torch.int8)
-           return out_int8
+.. code-block:: python
+   
+  # Reference Quantized Pattern for quantized linear
+  def quantized_linear(x_int8, x_scale, x_zero_point, weight_int8, weight_scale, weight_zero_point, bias_fp32, output_scale, output_zero_point):
+      x_int16 = x_int8.to(torch.int16)
+      weight_int16 = weight_int8.to(torch.int16)
+      acc_int32 = torch.ops.out_dtype(torch.mm, torch.int32, (x_int16 - x_zero_point), (weight_int16 - weight_zero_point))
+      bias_scale = x_scale * weight_scale
+      bias_int32 = out_dtype(torch.ops.aten.div.Tensor, torch.int32, bias_fp32, bias_scale)
+      acc_int32 = acc_int32 + bias_int32
+      acc_int32 = torch.ops.out_dtype(torch.ops.aten.mul.Scalar, torch.int32, acc_int32, x_scale * weight_scale / output_scale) + output_zero_point
+      out_int8 = torch.ops.aten.clamp(acc_int32, qmin, qmax).to(torch.int8)
+      return out_int8
 
 
-   See `here <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/representation/rewrite.py>`_ for the most up-to-date reference representations.
+See `here <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/representation/rewrite.py>`_ for the most up-to-date reference representations.
 
 
 Checking Model Size and Accuracy Evaluation
