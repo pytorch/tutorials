@@ -26,7 +26,7 @@ adding new custom datasets. The dataset should inherit from the standard
 The only specificity that we require is that the dataset ``__getitem__``
 should return a tuple:
 
--  image: :class:`torchvision.datapoints.Image` of shape ``[3, H, W]`` or a PIL Image of size ``(H, W)``
+-  image: :class:`torchvision.datapoints.Image` of shape ``[3, H, W]``, a pure tensor, or a PIL Image of size ``(H, W)``
 -  target: a dict containing the following fields
 
    -  ``boxes``, :class:`torchvision.datapoints.BoundingBoxes` of shape ``[N, 4]``:
@@ -105,7 +105,7 @@ built-in transformations (`new Transforms API <https://pytorch.org/vision/stable
 for the given object detection and segmentation task.
 Namely, image tensors will be wrapped by :class:`torchvision.datapoints.Image`, bounding boxes into
 :class:`torchvision.datapoints.BoundingBoxes` and masks into :class:`torchvision.datapoints.Mask`.
-As datapoints are :class:`torch.Tensor` subclasses, wrapped objects are also tensors and inherit plain
+As datapoints are :class:`torch.Tensor` subclasses, wrapped objects are also tensors and inherit the plain
 :class:`torch.Tensor` API. For more information about torchvision datapoints see
 `this documentation <https://pytorch.org/vision/main/auto_examples/v2_transforms/plot_transforms_v2.html#sphx-glr-auto-examples-v2-transforms-plot-transforms-v2-py>`_.
 
