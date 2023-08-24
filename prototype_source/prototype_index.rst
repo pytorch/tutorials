@@ -82,6 +82,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/pt2e_quant_ptq_static.html
    :tags: Quantization          
 
+.. customcarditem::
+   :header: PyTorch 2.0 Export Static Quantization-Aware Training
+   :card_description: Learn how to use static Quantization-Aware-Training in PyTorch 2.0 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_qat_static.html
+   :tags: Quantization
+
 .. Mobile
 
 .. customcarditem::
