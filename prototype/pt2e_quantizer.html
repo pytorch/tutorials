@@ -524,15 +524,15 @@
 </div>
 <div class="section" id="prerequisites">
 <h2>Prerequisites:<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h2>
-<p>Required:
--  <a class="reference external" href="https://pytorch.org/docs/stable/dynamo/index.html">Torchdynamo concepts in PyTorch</a></p>
+<p>Required:</p>
 <ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/dynamo/index.html">Torchdynamo concepts in PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/master/quantization.html#quantization-api-summary">Quantization concepts in PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html">(prototype) PyTorch 2.0 Export Post Training Static Quantization</a></p></li>
 </ul>
-<p>Optional:
--  <a class="reference external" href="https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html">FX Graph Mode post training static quantization</a></p>
+<p>Optional:</p>
 <ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html">FX Graph Mode post training static quantization</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend">BackendConfig in PyTorch Quantization FX Graph Mode</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/backend_config_tutorial.html#set-up-qconfigmapping-that-satisfies-the-backend-constraints">QConfig and QConfigMapping in PyTorch Quantization FX Graph Mode</a></p></li>
 </ul>
@@ -647,6 +647,38 @@ This typically results from operators such as <code class="docutils literal notr
 <p><code class="docutils literal notranslate"><span class="pre">SharedQuantizationSpec</span></code> is designed for this use case to annotate tensors whose quantization
 parameters are shared with other tensors. Input of <code class="docutils literal notranslate"><span class="pre">SharedQuantizationSpec</span></code> is an <code class="docutils literal notranslate"><span class="pre">EdgeOrNode</span></code> object which
 can be an input edge or an output value.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li><p>Sharing is transitive</p>
+<p>Some tensors might be effectively using shared quantization spec due to:</p>
+<ul class="simple">
+<li><p>Two nodes/edges are configured to use <code class="docutils literal notranslate"><span class="pre">SharedQuantizationSpec</span></code>.</p></li>
+<li><p>There is existing sharing of some nodes.</p></li>
+</ul>
+<p>For example, let’s say we have two <code class="docutils literal notranslate"><span class="pre">conv</span></code> nodes <code class="docutils literal notranslate"><span class="pre">conv1</span></code> and <code class="docutils literal notranslate"><span class="pre">conv2</span></code>, and both of them are fed into a <code class="docutils literal notranslate"><span class="pre">cat</span></code>
+node: <code class="docutils literal notranslate"><span class="pre">cat([conv1_out,</span> <span class="pre">conv2_out],</span> <span class="pre">...)</span></code>. Let’s say the output of <code class="docutils literal notranslate"><span class="pre">conv1</span></code>, <code class="docutils literal notranslate"><span class="pre">conv2</span></code>, and the first input of <code class="docutils literal notranslate"><span class="pre">cat</span></code> are configured
+with the same configurations of <code class="docutils literal notranslate"><span class="pre">QuantizationSpec</span></code>. The second input of <code class="docutils literal notranslate"><span class="pre">cat</span></code> is configured to use <code class="docutils literal notranslate"><span class="pre">SharedQuantizationSpec</span></code>
+with the first input.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conv1_out</span><span class="p">:</span> <span class="n">qspec1</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">conv2_out</span><span class="p">:</span> <span class="n">qspec1</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">cat_input0</span><span class="p">:</span> <span class="n">qspec1</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">cat_input1</span><span class="p">:</span> <span class="n">SharedQuantizationSpec</span><span class="p">((</span><span class="n">conv1</span><span class="p">,</span> <span class="n">cat</span><span class="p">))</span>  <span class="c1"># conv1 node is the first input of cat</span>
+</pre></div>
+</div>
+<p>First of all, the output of <code class="docutils literal notranslate"><span class="pre">conv1</span></code> is implicitly sharing quantization parameters (and observer object)
+with the first input of <code class="docutils literal notranslate"><span class="pre">cat</span></code>, and the same is true for the output of <code class="docutils literal notranslate"><span class="pre">conv2</span></code> and the second input of <code class="docutils literal notranslate"><span class="pre">cat</span></code>.
+Therefore, since the user configures the two inputs of <code class="docutils literal notranslate"><span class="pre">cat</span></code> to share quantization parameters, by transitivity,
+<code class="docutils literal notranslate"><span class="pre">conv2_out</span></code> and <code class="docutils literal notranslate"><span class="pre">conv1_out</span></code> will also be sharing quantization parameters. In the observed graph, you
+will see the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conv1</span> <span class="o">-&gt;</span> <span class="n">obs</span> <span class="o">-&gt;</span> <span class="n">cat</span>
+<span class="n">conv2</span> <span class="o">-&gt;</span> <span class="n">obs</span>   <span class="o">/</span>
+</pre></div>
+</div>
+<p>and both <code class="docutils literal notranslate"><span class="pre">obs</span></code> will be the same observer instance.</p>
+</li>
+</ul>
+</div>
 <ul class="simple">
 <li><p>Input edge is the connection between input node and the node consuming the input,
 so it’s a <code class="docutils literal notranslate"><span class="pre">Tuple[Node,</span> <span class="pre">Node]</span></code>.</p></li>

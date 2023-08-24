@@ -533,7 +533,7 @@ this:</p>
     \                                              /
      \                                            /
 —-------------------------------------------------------
-|                    Dynamo Export                     |
+|                        Export                        |
 —-------------------------------------------------------
                             |
                     FX Graph in ATen     XNNPACKQuantizer,
@@ -541,19 +541,19 @@ this:</p>
                             |            or &lt;Other Backend Quantizer&gt;
                             |                /
 —--------------------------------------------------------
-|                 prepare_pt2e                          |
+|                     prepare_pt2e                      |
 —--------------------------------------------------------
                             |
                      Calibrate/Train
                             |
 —--------------------------------------------------------
-|                      convert_pt2e                     |
+|                    convert_pt2e                       |
 —--------------------------------------------------------
                             |
                 Reference Quantized Model
                             |
 —--------------------------------------------------------
-|                        Lowering                       |
+|                       Lowering                        |
 —--------------------------------------------------------
                             |
         Executorch, or Inductor, or &lt;Other Backends&gt;
@@ -561,6 +561,7 @@ this:</p>
 </div>
 <p>The PyTorch 2.0 export quantization API looks like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">capture_pre_autograd_graph</span>
 <span class="k">class</span> <span class="nc">M</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -574,7 +575,9 @@ this:</p>
 <span class="n">m</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
 <span class="c1"># Step 1. program capture</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="o">*</span><span class="n">example_inputs</span><span class="p">,</span> <span class="n">aten_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># NOTE: this API will be updated to torch.export API in the future, but the captured</span>
+<span class="c1"># result shoud mostly stay the same</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
 <span class="c1"># we get a model with aten ops</span>
 
 
@@ -686,8 +689,6 @@ and rename it to <code class="docutils literal notranslate"><span class="pre">da
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch.ao.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span><span class="p">,</span> <span class="n">QConfigMapping</span>
-<span class="kn">from</span> <span class="nn">torch.ao.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span><span class="p">,</span> <span class="n">fuse_fx</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
@@ -848,12 +849,16 @@ and rename it to <code class="docutils literal notranslate"><span class="pre">da
 <div class="section" id="export-the-model-with-torch-export">
 <h2>Export the model with torch.export<a class="headerlink" href="#export-the-model-with-torch-export" title="Permalink to this heading">¶</a></h2>
 <p>Here is how you can use <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> to export the model:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch._dynamo</span> <span class="k">as</span> <span class="nn">torchdynamo</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">capture_pre_autograd_graph</span>
 
 <span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),)</span>
-<span class="n">exported_model</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torchdynamo</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="o">*</span><span class="n">example_inputs</span><span class="p">,</span> <span class="n">aten_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tracing_mode</span><span class="o">=</span><span class="s2">&quot;symbolic&quot;</span><span class="p">)</span>
+<span class="n">exported_model</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
+<span class="c1"># or capture with dynamic dimensions</span>
+<span class="c1"># from torch._export import dynamic_dim</span>
+<span class="c1"># exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs, constraints=[dynamic_dim(example_inputs[0], 0)])</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">capture_pre_autograd_graph</span></code> is a short term API, it will be updated to use the offical <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> API when that is ready.</p>
 </div>
 <div class="section" id="import-the-backend-specific-quantizer-and-configure-how-to-quantize-the-model">
 <h2>Import the Backend Specific Quantizer and Configure how to Quantize the Model<a class="headerlink" href="#import-the-backend-specific-quantizer-and-configure-how-to-quantize-the-model" title="Permalink to this heading">¶</a></h2>
@@ -915,24 +920,46 @@ parameters.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>the model produced here also had some improvement upon the previous
-<a class="reference external" href="https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md">representations</a> in the FX graph mode quantizaiton, previously all quantized operators are represented as <code class="docutils literal notranslate"><span class="pre">dequantize</span> <span class="pre">-&gt;</span> <span class="pre">fp32_op</span> <span class="pre">-&gt;</span> <span class="pre">qauntize</span></code>, in the new flow, we choose to represent some of the operators with integer computation so that it’s closer to the computation happens in hardwares.
-For example, here is how we plan to represent a quantized linear operator:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">quantized_linear</span><span class="p">(</span><span class="n">x_int8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">weight_int8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">bias_int32</span><span class="p">,</span> <span class="n">bias_scale</span><span class="p">,</span> <span class="n">bias_zero_point</span><span class="p">,</span> <span class="n">output_scale</span><span class="p">,</span> <span class="n">output_zero_point</span><span class="p">):</span>
+<p>At this step, we currently have two representations that you can choose from, but exact representation
+we offer in the long term might change based on feedback from PyTorch users.</p>
+<ul>
+<li><p>Q/DQ Representation (default)</p>
+<p>Previous documentation for <a href="#id1"><span class="problematic" id="id2">`</span></a>representations &lt;<a class="reference external" href="https://github.com/pytorch/rfcs/blob/master/RFC-0019">https://github.com/pytorch/rfcs/blob/master/RFC-0019</a>-</p>
+</li>
+</ul>
+<blockquote>
+<div><p>Extending-PyTorch-Quantization-to-Custom-Backends.md&gt;`_ all quantized operators are represented as <code class="docutils literal notranslate"><span class="pre">dequantize</span> <span class="pre">-&gt;</span> <span class="pre">fp32_op</span> <span class="pre">-&gt;</span> <span class="pre">qauntize</span></code>.</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">quantized_linear</span><span class="p">(</span><span class="n">x_int8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">weight_int8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">bias_fp32</span><span class="p">,</span> <span class="n">output_scale</span><span class="p">,</span> <span class="n">output_zero_point</span><span class="p">):</span>
+    <span class="n">x_fp32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">quantized_decomposed</span><span class="o">.</span><span class="n">dequantize_per_tensor</span><span class="p">(</span>
+             <span class="n">x_i8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">x_quant_min</span><span class="p">,</span> <span class="n">x_quant_max</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="n">weight_fp32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">quantized_decomposed</span><span class="o">.</span><span class="n">dequantize_per_tensor</span><span class="p">(</span>
+             <span class="n">weight_i8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">weight_quant_min</span><span class="p">,</span> <span class="n">weight_quant_max</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="n">weight_permuted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">permute_copy</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">weight_fp32</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]);</span>
+    <span class="n">out_fp32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">addmm</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">bias_fp32</span><span class="p">,</span> <span class="n">x_fp32</span><span class="p">,</span> <span class="n">weight_permuted</span><span class="p">)</span>
+    <span class="n">out_i8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">quantized_decomposed</span><span class="o">.</span><span class="n">quantize_per_tensor</span><span class="p">(</span>
+    <span class="n">out_fp32</span><span class="p">,</span> <span class="n">out_scale</span><span class="p">,</span> <span class="n">out_zero_point</span><span class="p">,</span> <span class="n">out_quant_min</span><span class="p">,</span> <span class="n">out_quant_max</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out_i8</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (<code class="docutils literal notranslate"><span class="pre">dq</span> <span class="pre">-&gt;</span> <span class="pre">float32_op</span> <span class="pre">-&gt;</span> <span class="pre">q</span></code>), and <code class="docutils literal notranslate"><span class="pre">q/dq</span></code> are decomposed into more primitive operators.</p></li>
+</ul>
+<p>You can get this representation by using <code class="docutils literal notranslate"><span class="pre">convert_pt2e(...,</span> <span class="pre">use_reference_representation=True)</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reference Quantized Pattern for quantized linear</span>
+<span class="k">def</span> <span class="nf">quantized_linear</span><span class="p">(</span><span class="n">x_int8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">weight_int8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">bias_fp32</span><span class="p">,</span> <span class="n">output_scale</span><span class="p">,</span> <span class="n">output_zero_point</span><span class="p">):</span>
     <span class="n">x_int16</span> <span class="o">=</span> <span class="n">x_int8</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
     <span class="n">weight_int16</span> <span class="o">=</span> <span class="n">weight_int8</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
     <span class="n">acc_int32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">out_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="p">(</span><span class="n">x_int16</span> <span class="o">-</span> <span class="n">x_zero_point</span><span class="p">),</span> <span class="p">(</span><span class="n">weight_int16</span> <span class="o">-</span> <span class="n">weight_zero_point</span><span class="p">))</span>
-    <span class="n">acc_rescaled_int32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">out_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">mul</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">acc_int32</span><span class="p">,</span> <span class="n">x_scale</span> <span class="o">*</span> <span class="n">weight_scale</span> <span class="o">/</span> <span class="n">output_scale</span><span class="p">)</span>
-    <span class="n">bias_int32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">out_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">mul</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">bias_int32</span> <span class="o">-</span> <span class="n">bias_zero_point</span><span class="p">,</span> <span class="n">bias_scale</span> <span class="o">/</span> <span class="n">output_scale</span><span class="p">))</span>
-    <span class="n">out_int8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">acc_rescaled_int32</span> <span class="o">+</span> <span class="n">bias_int32</span> <span class="o">+</span> <span class="n">output_zero_point</span><span class="p">,</span> <span class="n">qmin</span><span class="p">,</span> <span class="n">qmax</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="n">bias_scale</span> <span class="o">=</span> <span class="n">x_scale</span> <span class="o">*</span> <span class="n">weight_scale</span>
+    <span class="n">bias_int32</span> <span class="o">=</span> <span class="n">out_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">div</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">bias_fp32</span><span class="p">,</span> <span class="n">bias_scale</span><span class="p">)</span>
+    <span class="n">acc_int32</span> <span class="o">=</span> <span class="n">acc_int32</span> <span class="o">+</span> <span class="n">bias_int32</span>
+    <span class="n">acc_int32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">out_dtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">mul</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">acc_int32</span><span class="p">,</span> <span class="n">x_scale</span> <span class="o">*</span> <span class="n">weight_scale</span> <span class="o">/</span> <span class="n">output_scale</span><span class="p">)</span> <span class="o">+</span> <span class="n">output_zero_point</span>
+    <span class="n">out_int8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">acc_int32</span><span class="p">,</span> <span class="n">qmin</span><span class="p">,</span> <span class="n">qmax</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">out_int8</span>
 </pre></div>
 </div>
-<p>For more details, please see:
-<a class="reference external" href="https://docs.google.com/document/d/17h-OEtD4o_hoVuPqUFsdm5uo7psiNMY8ThN03F9ZZwg/edit">Quantized Model Representation</a>.</p>
-</div>
+<p>See <a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/representation/rewrite.py">here</a> for the most up-to-date reference representations.</p>
 </div>
 <div class="section" id="checking-model-size-and-accuracy-evaluation">
 <h2>Checking Model Size and Accuracy Evaluation<a class="headerlink" href="#checking-model-size-and-accuracy-evaluation" title="Permalink to this heading">¶</a></h2>
@@ -981,9 +1008,9 @@ over how to quantize a model.</p>
 <span class="c1"># Rerun all steps to get a quantized model</span>
 <span class="n">model_to_quantize</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 <span class="n">model_to_quantize</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="kn">import</span> <span class="nn">torch._dynamo</span> <span class="k">as</span> <span class="nn">torchdynamo</span>
+<span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">capture_pre_autograd_graph</span>
 
-<span class="n">exported_model</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torchdynamo</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="o">*</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">),</span> <span class="n">aten_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tracing_mode</span><span class="o">=</span><span class="s2">&quot;symbolic&quot;</span><span class="p">)</span>
+<span class="n">exported_model</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">torch.ao.quantization.quantizer.xnnpack_quantizer</span> <span class="kn">import</span> <span class="p">(</span>
       <span class="n">XNNPACKQuantizer</span><span class="p">,</span>
       <span class="n">get_symmetric_quantization_config</span><span class="p">,</span>
