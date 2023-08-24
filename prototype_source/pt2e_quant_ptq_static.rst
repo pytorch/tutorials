@@ -22,7 +22,7 @@ this:
         \                                              /
          \                                            /
     —-------------------------------------------------------
-    |                    Dynamo Export                     |
+    |                        Export                        |
     —-------------------------------------------------------
                                 |
                         FX Graph in ATen     XNNPACKQuantizer,
@@ -30,19 +30,19 @@ this:
                                 |            or <Other Backend Quantizer>
                                 |                /
     —--------------------------------------------------------
-    |                 prepare_pt2e                          |
+    |                     prepare_pt2e                      |
     —--------------------------------------------------------
                                 |
                          Calibrate/Train
                                 |
     —--------------------------------------------------------
-    |                      convert_pt2e                     |
+    |                    convert_pt2e                       |
     —--------------------------------------------------------
                                 |
                     Reference Quantized Model
                                 |
     —--------------------------------------------------------
-    |                        Lowering                       |
+    |                       Lowering                        |
     —--------------------------------------------------------
                                 |
             Executorch, or Inductor, or <Other Backends>
@@ -189,8 +189,6 @@ and rename it to ``data/resnet18_pretrained_float.pth``.
     import numpy as np
 
     import torch
-    from torch.ao.quantization import get_default_qconfig, QConfigMapping
-    from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx, fuse_fx
     import torch.nn as nn
     from torch.utils.data import DataLoader
 
@@ -358,7 +356,10 @@ Here is how you can use ``torch.export`` to export the model:
     from torch._export import capture_pre_autograd_graph
 
     example_inputs = (torch.rand(2, 3, 224, 224),)
-    exported_model, _ = capture_pre_autograd_graph(model_to_quantize, *example_inputs)
+    exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs)
+    # or capture with dynamic dimensions
+    # from torch._export import dynamic_dim
+    # exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs, constraints=[dynamic_dim(example_inputs[0], 0)])
 
 
 ``capture_pre_autograd_graph`` is a short term API, it will be updated to use the offical ``torch.export`` API when that is ready.
@@ -532,9 +533,9 @@ We'll show how to save and load the quantized model.
     # Rerun all steps to get a quantized model
     model_to_quantize = load_model(saved_model_dir + float_model_file).to("cpu")
     model_to_quantize.eval()
-    import torch._dynamo as torchdynamo
+    from torch._export import capture_pre_autograd_graph
 
-    exported_model, _ = torchdynamo.export(model_to_quantize, *copy.deepcopy(example_inputs), aten_graph=True, tracing_mode="symbolic")
+    exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs)
     from torch.ao.quantization.quantizer.xnnpack_quantizer import (
           XNNPACKQuantizer,
           get_symmetric_quantization_config,
