@@ -415,12 +415,12 @@
 This will allow you to experiment with the information presented below.</p>
 </div>
 <p>For this tutorial, we will be finetuning a pre-trained <a class="reference external" href="https://arxiv.org/abs/1703.06870">Mask
-R-CNN</a> model in the <a class="reference external" href="https://www.cis.upenn.edu/~jshi/ped_html/">Penn-Fudan
+R-CNN</a> model on the <a class="reference external" href="https://www.cis.upenn.edu/~jshi/ped_html/">Penn-Fudan
 Database for Pedestrian Detection and
 Segmentation</a>. It contains
 170 images with 345 instances of pedestrians, and we will use it to
 illustrate how to use the new features in torchvision in order to train
-an instance segmentation model on a custom dataset.</p>
+an object detection and instance segmentation model on a custom dataset.</p>
 <div class="section" id="defining-the-dataset">
 <h2>Defining the Dataset<a class="headerlink" href="#defining-the-dataset" title="Permalink to this heading">¶</a></h2>
 <p>The reference scripts for training object detection, instance
@@ -429,45 +429,41 @@ adding new custom datasets. The dataset should inherit from the standard
 <code class="docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code> class, and implement <code class="docutils literal notranslate"><span class="pre">__len__</span></code> and
 <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>.</p>
 <p>The only specificity that we require is that the dataset <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>
-should return:</p>
+should return a tuple:</p>
 <ul class="simple">
-<li><p>image: a PIL Image of size <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W)</span></code></p></li>
+<li><p>image: <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Image.html#torchvision.datapoints.Image" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Image</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>, a pure tensor, or a PIL Image of size <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W)</span></code></p></li>
 <li><p>target: a dict containing the following fields</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">boxes</span> <span class="pre">(FloatTensor[N,</span> <span class="pre">4])</span></code>: the coordinates of the <code class="docutils literal notranslate"><span class="pre">N</span></code>
-bounding boxes in <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1]</span></code> format, ranging from <code class="docutils literal notranslate"><span class="pre">0</span></code>
+<li><p><code class="docutils literal notranslate"><span class="pre">boxes</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.BoundingBoxes</span></code> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">4]</span></code>:
+the coordinates of the <code class="docutils literal notranslate"><span class="pre">N</span></code> bounding boxes in <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1]</span></code> format, ranging from <code class="docutils literal notranslate"><span class="pre">0</span></code>
 to <code class="docutils literal notranslate"><span class="pre">W</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">H</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">labels</span> <span class="pre">(Int64Tensor[N])</span></code>: the label for each bounding box. <code class="docutils literal notranslate"><span class="pre">0</span></code> represents always the background class.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">image_id</span> <span class="pre">(Int64Tensor[1])</span></code>: an image identifier. It should be
+<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code>, integer <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the label for each bounding box.
+<code class="docutils literal notranslate"><span class="pre">0</span></code> represents always the background class.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_id</span></code>, int: an image identifier. It should be
 unique between all the images in the dataset, and is used during
 evaluation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">area</span> <span class="pre">(Tensor[N])</span></code>: The area of the bounding box. This is used
+<li><p><code class="docutils literal notranslate"><span class="pre">area</span></code>, float <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the area of the bounding box. This is used
 during evaluation with the COCO metric, to separate the metric
 scores between small, medium and large boxes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">iscrowd</span> <span class="pre">(UInt8Tensor[N])</span></code>: instances with iscrowd=True will be
+<li><p><code class="docutils literal notranslate"><span class="pre">iscrowd</span></code>, uint8 <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: instances with iscrowd=True will be
 ignored during evaluation.</p></li>
-<li><p>(optionally) <code class="docutils literal notranslate"><span class="pre">masks</span> <span class="pre">(UInt8Tensor[N,</span> <span class="pre">H,</span> <span class="pre">W])</span></code>: The segmentation
+<li><p>(optionally) <code class="docutils literal notranslate"><span class="pre">masks</span></code>, <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Mask.html#torchvision.datapoints.Mask" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Mask</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>: the segmentation
 masks for each one of the objects</p></li>
-<li><p>(optionally) <code class="docutils literal notranslate"><span class="pre">keypoints</span> <span class="pre">(FloatTensor[N,</span> <span class="pre">K,</span> <span class="pre">3])</span></code>: For each one of
-the N objects, it contains the K keypoints in
-<code class="docutils literal notranslate"><span class="pre">[x,</span> <span class="pre">y,</span> <span class="pre">visibility]</span></code> format, defining the object. visibility=0
-means that the keypoint is not visible. Note that for data
-augmentation, the notion of flipping a keypoint is dependent on
-the data representation, and you should probably adapt
-<code class="docutils literal notranslate"><span class="pre">references/detection/transforms.py</span></code> for your new keypoint
-representation</p></li>
 </ul>
 </li>
 </ul>
-<p>If your model returns the above methods, they will make it work for both
-training and evaluation, and will use the evaluation scripts from
+<p>If your dataset is compliant with above requirements then it will work for both
+training and evaluation codes from the reference script. Evaluation code will use scripts from
 <code class="docutils literal notranslate"><span class="pre">pycocotools</span></code> which can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pycocotools</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For Windows, please install <code class="docutils literal notranslate"><span class="pre">pycocotools</span></code> from <a class="reference external" href="https://github.com/gautamchitnis/cocoapi">gautamchitnis</a> with command</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/gautamchitnis/cocoapi.git@cocodataset-master#subdirectory=PythonAPI</span></code></p>
 </div>
-<p>One note on the <code class="docutils literal notranslate"><span class="pre">labels</span></code>. The model considers class <code class="docutils literal notranslate"><span class="pre">0</span></code> as background. If your dataset does not contain the background class, you should not have <code class="docutils literal notranslate"><span class="pre">0</span></code> in your <code class="docutils literal notranslate"><span class="pre">labels</span></code>. For example, assuming you have just two classes, <em>cat</em> and <em>dog</em>, you can define <code class="docutils literal notranslate"><span class="pre">1</span></code> (not <code class="docutils literal notranslate"><span class="pre">0</span></code>) to represent <em>cats</em> and <code class="docutils literal notranslate"><span class="pre">2</span></code> to represent <em>dogs</em>. So, for instance, if one of the images has both classes, your <code class="docutils literal notranslate"><span class="pre">labels</span></code> tensor should look like <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code>.</p>
+<p>One note on the <code class="docutils literal notranslate"><span class="pre">labels</span></code>. The model considers class <code class="docutils literal notranslate"><span class="pre">0</span></code> as background. If your dataset does not contain the background class,
+you should not have <code class="docutils literal notranslate"><span class="pre">0</span></code> in your <code class="docutils literal notranslate"><span class="pre">labels</span></code>. For example, assuming you have just two classes, <em>cat</em> and <em>dog</em>, you can
+define <code class="docutils literal notranslate"><span class="pre">1</span></code> (not <code class="docutils literal notranslate"><span class="pre">0</span></code>) to represent <em>cats</em> and <code class="docutils literal notranslate"><span class="pre">2</span></code> to represent <em>dogs</em>. So, for instance, if one of the images has both
+classes, your <code class="docutils literal notranslate"><span class="pre">labels</span></code> tensor should look like <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code>.</p>
 <p>Additionally, if you want to use aspect ratio grouping during training
 (so that each batch only contains images with similar aspect ratios),
 then it is recommended to also implement a <code class="docutils literal notranslate"><span class="pre">get_height_and_width</span></code>
@@ -500,11 +496,23 @@ have the following folder structure:</p>
 <img alt="../_static/img/tv_tutorial/tv_image02.png" src="../_static/img/tv_tutorial/tv_image02.png"/>
 <p>So each image has a corresponding
 segmentation mask, where each color correspond to a different instance.
-Let’s write a <code class="docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code> class for this dataset.</p>
+Let’s write a <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code></a> class for this dataset.
+In the code below, we are wrapping images, bounding boxes and masks into
+<code class="docutils literal notranslate"><span class="pre">torchvision.datapoints</span></code> classes so that we will be able to apply torchvision
+built-in transformations (<a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">new Transforms API</a>)
+for the given object detection and segmentation task.
+Namely, image tensors will be wrapped by <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Image.html#torchvision.datapoints.Image" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Image</span></code></a>, bounding boxes into
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.BoundingBoxes</span></code> and masks into <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Mask.html#torchvision.datapoints.Mask" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Mask</span></code></a>.
+As datapoints are <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> subclasses, wrapped objects are also tensors and inherit the plain
+<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> API. For more information about torchvision datapoints see
+<a class="reference external" href="https://pytorch.org/vision/main/auto_examples/v2_transforms/plot_transforms_v2.html#sphx-glr-auto-examples-v2-transforms-plot-transforms-v2-py">this documentation</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span> <span class="nn">torchvision.io</span> <span class="kn">import</span> <span class="n">read_image</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">masks_to_boxes</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datapoints</span> <span class="k">as</span> <span class="n">dp</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms.v2</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
 
 <span class="k">class</span> <span class="nc">PennFudanDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
@@ -520,48 +528,36 @@ Let’s write a <code class="docutils literal notranslate"><span class="pre">tor
         <span class="c1"># load images and masks</span>
         <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">"PNGImages"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">imgs</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
         <span class="n">mask_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">"PedMasks"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">)</span>
-        <span class="c1"># note that we haven't converted the mask to RGB,</span>
-        <span class="c1"># because each color corresponds to a different instance</span>
-        <span class="c1"># with 0 being background</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mask_path</span><span class="p">)</span>
-        <span class="c1"># convert the PIL Image into a numpy array</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">read_image</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">read_image</span><span class="p">(</span><span class="n">mask_path</span><span class="p">)</span>
         <span class="c1"># instances are encoded as different colors</span>
-        <span class="n">obj_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">obj_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
         <span class="c1"># first id is the background, so remove it</span>
         <span class="n">obj_ids</span> <span class="o">=</span> <span class="n">obj_ids</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">num_objs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj_ids</span><span class="p">)</span>
 
         <span class="c1"># split the color-encoded mask into a set</span>
         <span class="c1"># of binary masks</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">==</span> <span class="n">obj_ids</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="n">obj_ids</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 
         <span class="c1"># get bounding box coordinates for each mask</span>
-        <span class="n">num_objs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj_ids</span><span class="p">)</span>
-        <span class="n">boxes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_objs</span><span class="p">):</span>
-            <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">xmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">xmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">])</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">masks_to_boxes</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
 
-        <span class="c1"># convert everything into a torch.Tensor</span>
-        <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="c1"># there is only one class</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">num_objs</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 
         <span class="n">image_id</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">idx</span><span class="p">])</span>
         <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="c1"># suppose all instances are not crowd</span>
         <span class="n">iscrowd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_objs</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
+        <span class="c1"># Wrap sample and targets into torchvision datapoints:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
         <span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">target</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">boxes</span>
+        <span class="n">target</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"XYXY"</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">get_size</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+        <span class="n">target</span><span class="p">[</span><span class="s2">"masks"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
-        <span class="n">target</span><span class="p">[</span><span class="s2">"masks"</span><span class="p">]</span> <span class="o">=</span> <span class="n">masks</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"image_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_id</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span> <span class="o">=</span> <span class="n">area</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"iscrowd"</span><span class="p">]</span> <span class="o">=</span> <span class="n">iscrowd</span>
@@ -660,9 +656,9 @@ way of doing it:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="an-instance-segmentation-model-for-pennfudan-dataset">
-<h3>An Instance segmentation model for PennFudan Dataset<a class="headerlink" href="#an-instance-segmentation-model-for-pennfudan-dataset" title="Permalink to this heading">¶</a></h3>
-<p>In our case, we want to fine-tune from a pre-trained model, given that
+<div class="section" id="object-detection-and-instance-segmentation-model-for-pennfudan-dataset">
+<h3>Object detection and instance segmentation model for PennFudan Dataset<a class="headerlink" href="#object-detection-and-instance-segmentation-model-for-pennfudan-dataset" title="Permalink to this heading">¶</a></h3>
+<p>In our case, we want to finetune from a pre-trained model, given that
 our dataset is very small, so we will be following approach number 1.</p>
 <p>Here we want to also compute the instance segmentation masks, so we will
 be using Mask R-CNN:</p>
@@ -699,19 +695,21 @@ on your custom dataset.</p>
 <h2>Putting everything together<a class="headerlink" href="#putting-everything-together" title="Permalink to this heading">¶</a></h2>
 <p>In <code class="docutils literal notranslate"><span class="pre">references/detection/</span></code>, we have a number of helper functions to
 simplify training and evaluating detection models. Here, we will use
-<code class="docutils literal notranslate"><span class="pre">references/detection/engine.py</span></code>, <code class="docutils literal notranslate"><span class="pre">references/detection/utils.py</span></code>
-and <code class="docutils literal notranslate"><span class="pre">references/detection/transforms.py</span></code>. Just copy everything under
-<code class="docutils literal notranslate"><span class="pre">references/detection</span></code> to your folder and use them here.</p>
+<code class="docutils literal notranslate"><span class="pre">references/detection/engine.py</span></code> and <code class="docutils literal notranslate"><span class="pre">references/detection/utils.py</span></code>.
+Just copy everything under <code class="docutils literal notranslate"><span class="pre">references/detection</span></code> to your folder and use them here.</p>
+<p>Since v0.15.0 torchvision provides <a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">new Transforms API</a>
+to easily write data augmentation pipelines for Object Detection and Segmentation tasks.</p>
 <p>Let’s write some helper functions for data augmentation /
 transformation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">transforms</span> <span class="k">as</span> <span class="nn">T</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">v2</span> <span class="k">as</span> <span class="n">T</span>
+
 
 <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="n">train</span><span class="p">):</span>
     <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">PILToTensor</span><span class="p">())</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ConvertImageDtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">train</span><span class="p">:</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+       <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ToDtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ToPureTensor</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -723,13 +721,13 @@ expects during training and inference time on sample data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">detection</span><span class="o">.</span><span class="n">fasterrcnn_resnet50_fpn</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"DEFAULT"</span><span class="p">)</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
- <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
- <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+    <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
 <span class="c1"># For Training</span>
-<span class="n">images</span><span class="p">,</span><span class="n">targets</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))</span>
+<span class="n">images</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))</span>
 <span class="n">images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">)</span>
 <span class="n">targets</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">targets</span><span class="p">)</span>   <span class="c1"># Returns losses and detections</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>   <span class="c1"># Returns losses and detections</span>
 <span class="c1"># For inference</span>
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">)]</span>
@@ -885,7 +883,7 @@ instances of person in this image, let’s see a couple of them:</p>
 <div class="section" id="wrapping-up">
 <h2>Wrapping up<a class="headerlink" href="#wrapping-up" title="Permalink to this heading">¶</a></h2>
 <p>In this tutorial, you have learned how to create your own training
-pipeline for instance segmentation models, on a custom dataset. For
+pipeline for object detection models on a custom dataset. For
 that, you wrote a <code class="docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code> class that returns the
 images and the ground truth boxes and segmentation masks. You also
 leveraged a Mask R-CNN model pre-trained on COCO train2017 in order to
@@ -947,7 +945,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#defining-your-model">Defining your model</a><ul>
 <li><a class="reference internal" href="#finetuning-from-a-pretrained-model">1 - Finetuning from a pretrained model</a></li>
 <li><a class="reference internal" href="#modifying-the-model-to-add-a-different-backbone">2 - Modifying the model to add a different backbone</a></li>
-<li><a class="reference internal" href="#an-instance-segmentation-model-for-pennfudan-dataset">An Instance segmentation model for PennFudan Dataset</a></li>
+<li><a class="reference internal" href="#object-detection-and-instance-segmentation-model-for-pennfudan-dataset">Object detection and instance segmentation model for PennFudan Dataset</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#putting-everything-together">Putting everything together</a></li>
