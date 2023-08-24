@@ -12,7 +12,7 @@ Database for Pedestrian Detection and
 Segmentation <https://www.cis.upenn.edu/~jshi/ped_html/>`__. It contains
 170 images with 345 instances of pedestrians, and we will use it to
 illustrate how to use the new features in torchvision in order to train
-an object detection model on a custom dataset.
+an object detection and instance segmentation model on a custom dataset.
 
 Defining the Dataset
 --------------------
@@ -26,22 +26,23 @@ adding new custom datasets. The dataset should inherit from the standard
 The only specificity that we require is that the dataset ``__getitem__``
 should return a tuple:
 
--  image: ``torchvision.datapoints.Image[3, H, W]`` or a PIL Image of size ``(H, W)``
+-  image: :class:`torchvision.datapoints.Image` of shape ``[3, H, W]`` or a PIL Image of size ``(H, W)``
 -  target: a dict containing the following fields
 
-   -  ``boxes (torchvision.datapoints.BoundingBoxes[N, 4])``: the coordinates of the ``N``
-      bounding boxes in ``[x0, y0, x1, y1]`` format, ranging from ``0``
+   -  ``boxes``, :class:`torchvision.datapoints.BoundingBoxes` of shape ``[N, 4]``:
+      the coordinates of the ``N`` bounding boxes in ``[x0, y0, x1, y1]`` format, ranging from ``0``
       to ``W`` and ``0`` to ``H``
-   -  ``labels (Int64Tensor[N])``: the label for each bounding box. ``0`` represents always the background class.
-   -  ``image_id (int)``: an image identifier. It should be
+   -  ``labels``, integer :class:`torch.Tensor` of shape ``[N]``: the label for each bounding box.
+      ``0`` represents always the background class.
+   -  ``image_id``, int: an image identifier. It should be
       unique between all the images in the dataset, and is used during
       evaluation
-   -  ``area (Float32Tensor[N])``: The area of the bounding box. This is used
+   -  ``area``, float :class:`torch.Tensor` of shape ``[N]``: the area of the bounding box. This is used
       during evaluation with the COCO metric, to separate the metric
       scores between small, medium and large boxes.
-   -  ``iscrowd (UInt8Tensor[N])``: instances with iscrowd=True will be
+   -  ``iscrowd``, uint8 :class:`torch.Tensor` of shape ``[N]``: instances with iscrowd=True will be
       ignored during evaluation.
-   -  (optionally) ``masks (torchvision.datapoints.Mask[N, H, W])``: The segmentation
+   -  (optionally) ``masks``, :class:`torchvision.datapoints.Mask` of shape ``[N, H, W]``: the segmentation
       masks for each one of the objects
 
 If your dataset is compliant with above requirements then it will work for both
@@ -97,12 +98,16 @@ Here is one example of a pair of images and segmentation masks
 
 So each image has a corresponding
 segmentation mask, where each color correspond to a different instance.
-Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
+Let’s write a :class:`torch.utils.data.Dataset` class for this dataset.
 In the code below, we are wrapping images, bounding boxes and masks into
-``torchvision.datapoints`` structures so that we will be able to apply torchvision
+``torchvision.datapoints`` classes so that we will be able to apply torchvision
 built-in transformations (`new Transforms API <https://pytorch.org/vision/stable/transforms.html>`_)
-that cover the object detection and segmentation tasks.
-For more information about torchvision datapoints see `this documentation <https://pytorch.org/vision/stable/datapoints.html>`_.
+for the given object detection and segmentation task.
+Namely, image tensors will be wrapped by :class:`torchvision.datapoints.Image`, bounding boxes into
+:class:`torchvision.datapoints.BoundingBoxes` and masks into :class:`torchvision.datapoints.Mask`.
+As datapoints are :class:`torch.Tensor` subclasses, wrapped objects are also tensors and inherit plain
+:class:`torch.Tensor` API. For more information about torchvision datapoints see
+`this documentation <https://pytorch.org/vision/main/auto_examples/v2_transforms/plot_transforms_v2.html#sphx-glr-auto-examples-v2-transforms-plot-transforms-v2-py>`_.
 
 .. code:: python
 
@@ -264,8 +269,8 @@ way of doing it:
                       rpn_anchor_generator=anchor_generator,
                       box_roi_pool=roi_pooler)
 
-Object detection model for PennFudan Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Object detection and instance segmentation model for PennFudan Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In our case, we want to finetune from a pre-trained model, given that
 our dataset is very small, so we will be following approach number 1.
