@@ -369,7 +369,7 @@ performance benefit with oneDNN Graph is only exhibited by machines with AVX512_
 instruction set architecture (ISA).
 The following code snippets serves as an example of using ``BFloat16`` datatype for inference with oneDNN Graph:
 
-.. GENERATED FROM PYTHON SOURCE LINES 293-307
+.. GENERATED FROM PYTHON SOURCE LINES 293-311
 
 .. code-block:: default
 
@@ -378,6 +378,10 @@ The following code snippets serves as an example of using ``BFloat16`` datatype 
     torch._C._jit_set_autocast_mode(False)
 
     with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bfloat16):
+        # Conv-BatchNorm folding for CNN-based Vision Models should be done with ``torch.fx.experimental.optimization.fuse`` when AMP is used
+        import torch.fx.experimental.optimization as optimization
+        # Please note that optimization.fuse need not be called when AMP is not used
+        model = optimization.fuse(model)
         model = torch.jit.trace(model, (example_input))
         model = torch.jit.freeze(model)
         # a couple of warm-up runs
@@ -388,18 +392,18 @@ The following code snippets serves as an example of using ``BFloat16`` datatype 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-311
+.. GENERATED FROM PYTHON SOURCE LINES 312-315
 
 Train a model on CPU with PyTorch ``DistributedDataParallel``(DDP) functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) ``oneCCL`` (collective communications library) for efficient distributed deep learning training implementing such collectives like ``allreduce``, ``allgather``, ``alltoall``, implements PyTorch C10D ``ProcessGroup`` API and can be dynamically loaded as external ``ProcessGroup``. Upon optimizations implemented in PyTorch DDP module, ``torch-ccl`` accelerates communication operations. Beside the optimizations made to communication kernels, ``torch-ccl`` also features simultaneous computation-communication functionality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 313-315
+.. GENERATED FROM PYTHON SOURCE LINES 317-319
 
 GPU specific optimizations
 --------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-325
+.. GENERATED FROM PYTHON SOURCE LINES 321-329
 
 Enable cuDNN auto-tuner
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -410,14 +414,14 @@ kernel with the best performance on a given hardware for a given input size.
 For convolutional networks (other types currently not supported), enable cuDNN
 autotuner before launching the training loop by setting:
 
-.. GENERATED FROM PYTHON SOURCE LINES 325-327
+.. GENERATED FROM PYTHON SOURCE LINES 329-331
 
 .. code-block:: default
 
 
     torch.backends.cudnn.benchmark = True
 
-.. GENERATED FROM PYTHON SOURCE LINES 328-335
+.. GENERATED FROM PYTHON SOURCE LINES 332-339
 
 * the auto-tuner decisions may be non-deterministic; different algorithm may
   be selected for different runs.  For more details see
@@ -427,7 +431,7 @@ autotuner before launching the training loop by setting:
   associated with algorithm selection for each input size.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 338-354
+.. GENERATED FROM PYTHON SOURCE LINES 342-358
 
 Avoid unnecessary CPU-GPU synchronization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -446,7 +450,7 @@ When possible, avoid operations which require synchronizations, for example:
   tensors e.g. ``if (cuda_tensor != 0).all()``
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 356-368
+.. GENERATED FROM PYTHON SOURCE LINES 360-372
 
 Create tensors directly on the target device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -461,7 +465,7 @@ This is applicable to all functions which create new tensors and accept
 `torch.full() <https://pytorch.org/docs/stable/generated/torch.full.html#torch.full>`_
 and similar.
 
-.. GENERATED FROM PYTHON SOURCE LINES 370-400
+.. GENERATED FROM PYTHON SOURCE LINES 374-404
 
 Use mixed precision and AMP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -494,7 +498,7 @@ To use Tensor Cores:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 402-426
+.. GENERATED FROM PYTHON SOURCE LINES 406-430
 
 Preallocate memory in case of variable input length
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -521,12 +525,12 @@ following steps:
 #. proceed to regular training
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 428-430
+.. GENERATED FROM PYTHON SOURCE LINES 432-434
 
 Distributed optimizations
 -------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 432-443
+.. GENERATED FROM PYTHON SOURCE LINES 436-447
 
 Use efficient data-parallel backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -540,7 +544,7 @@ multiple-GPUs. For more information refer to the
 `relevant section of CUDA Best Practices <https://pytorch.org/docs/stable/notes/cuda.html#use-nn-parallel-distributeddataparallel-instead-of-multiprocessing-or-nn-dataparallel>`_
 from PyTorch documentation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 445-461
+.. GENERATED FROM PYTHON SOURCE LINES 449-465
 
 Skip unnecessary all-reduce if training with ``DistributedDataParallel`` and gradient accumulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,7 +563,7 @@ context manager which disables gradient all-reduce for particular iteration.
 accumulation, the last iteration should follow the default execution and
 perform the required gradient all-reduce.
 
-.. GENERATED FROM PYTHON SOURCE LINES 463-483
+.. GENERATED FROM PYTHON SOURCE LINES 467-487
 
 Match the order of layers in constructors and during the execution if using ``DistributedDataParallel``(find_unused_parameters=True)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -582,7 +586,7 @@ operations encountered during the backward pass. With
 ``find_unused_parameters=False`` it's not necessary to reorder layers or
 parameters to achieve optimal performance.
 
-.. GENERATED FROM PYTHON SOURCE LINES 485-502
+.. GENERATED FROM PYTHON SOURCE LINES 489-506
 
 Load-balance workload in a distributed setting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
