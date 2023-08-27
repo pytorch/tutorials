@@ -95,7 +95,7 @@ for param in tinymodel.linear2.parameters():
 # The most basic type of neural network layer is a *linear* or *fully
 # connected* layer. This is a layer where every input influences every
 # output of the layer to a degree specified by the layer’s weights. If a
-# model has *m* inputs and *n* outputs, the weights will be an *m* x *n*
+# model has *m* inputs and *n* outputs, the weights will be an *n* x *m*
 # matrix. For example:
 # 
 
