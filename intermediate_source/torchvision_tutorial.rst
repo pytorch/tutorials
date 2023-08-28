@@ -151,7 +151,7 @@ As datapoints are :class:`torch.Tensor` subclasses, wrapped objects are also ten
            # there is only one class
            labels = torch.ones((num_objs,), dtype=torch.int64)
 
-           image_id = torch.tensor([idx])
+           image_id = idx
            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
            # suppose all instances are not crowd
            iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
