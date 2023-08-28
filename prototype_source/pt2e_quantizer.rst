@@ -9,6 +9,7 @@ Prerequisites:
 ^^^^^^^^^^^^^^^^
 
 Required:
+
 -  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
    
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
@@ -16,6 +17,7 @@ Required:
 -  `(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__
 
 Optional:
+
 -  `FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
    
 -  `BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
@@ -141,7 +143,42 @@ parameters can be shared among some tensors explicitly. Two typical use cases ar
 
 ``SharedQuantizationSpec`` is designed for this use case to annotate tensors whose quantization
 parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` is an ``EdgeOrNode`` object which 
-can be an input edge or an output value. 
+can be an input edge or an output value.
+
+.. note::
+
+   * Sharing is transitive
+
+     Some tensors might be effectively using shared quantization spec due to:
+     
+     * Two nodes/edges are configured to use ``SharedQuantizationSpec``.
+     * There is existing sharing of some nodes.
+     
+     For example, let's say we have two ``conv`` nodes ``conv1`` and ``conv2``, and both of them are fed into a ``cat``
+     node: ``cat([conv1_out, conv2_out], ...)``. Let's say the output of ``conv1``, ``conv2``, and the first input of ``cat`` are configured
+     with the same configurations of ``QuantizationSpec``. The second input of ``cat`` is configured to use ``SharedQuantizationSpec``
+     with the first input.
+     
+     .. code-block::
+     
+       conv1_out: qspec1(dtype=torch.int8, ...)
+       conv2_out: qspec1(dtype=torch.int8, ...)
+       cat_input0: qspec1(dtype=torch.int8, ...)
+       cat_input1: SharedQuantizationSpec((conv1, cat))  # conv1 node is the first input of cat
+     
+     First of all, the output of ``conv1`` is implicitly sharing quantization parameters (and observer object)
+     with the first input of ``cat``, and the same is true for the output of ``conv2`` and the second input of ``cat``.
+     Therefore, since the user configures the two inputs of ``cat`` to share quantization parameters, by transitivity,
+     ``conv2_out`` and ``conv1_out`` will also be sharing quantization parameters. In the observed graph, you
+     will see the following:
+     
+     .. code-block::
+     
+         conv1 -> obs -> cat
+         conv2 -> obs   /
+
+     and both ``obs`` will be the same observer instance.
+
 
 -  Input edge is the connection between input node and the node consuming the input,
    so it's a ``Tuple[Node, Node]``.
