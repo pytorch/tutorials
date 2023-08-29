@@ -26,7 +26,7 @@ pip install --progress-bar off -r $DIR/../requirements.txt
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.1 for testing
 pip uninstall -y torch torchvision torchaudio torchtext torchdata
-pip3 install torch torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121 torchvision torchaudio 
+pip3 install torch torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
 pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
 
 # Install two language tokenizers for Translation with TorchText tutorial
