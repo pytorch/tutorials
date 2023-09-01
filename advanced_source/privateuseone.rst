@@ -235,7 +235,7 @@ Register new backend module to Pytorch
 Some CUDA-related interfaces in PyTorch can be called through the following form: ``torch.cuda.xxx``. Therefore, in order to
 comply with user habits, the new backend implemented through the ``PrivateUse1`` mechanism should also provide similar interfaces.
 
-For example, using``Ascend NPU``:
+For example, using ``Ascend NPU``:
 
 .. code-block:: python
 
