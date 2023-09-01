@@ -510,7 +510,7 @@ Now we can compare the size and model accuracy with baseline model.
 
 .. note::
    The weights are still in fp32 right now, we may do constant propagation for quantize op to
-   get integer weights in the future
+   get integer weights in the future.
 
 If you want to get better accuracy or performance,  try configuring
 ``quantizer`` in different ways, and each ``quantizer`` will have its own way
