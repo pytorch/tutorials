@@ -526,7 +526,7 @@ We'll show how to save and load the quantized model.
 
 .. code-block:: python
 
-    # 0. Store reference output for example inputs and check evaluation accuracy
+    # 0. Store reference output, for example, inputs, and check evaluation accuracy:
     example_inputs = (next(iter(data_loader))[0],)
     ref = quantized_model(*example_inputs)
     top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
@@ -544,7 +544,7 @@ We'll show how to save and load the quantized model.
     loaded_quantized_ep = torch.export.load(pt2e_quantized_model_file_path)
     loaded_quantized_model = loaded_quantized_ep.module()
 
-    # 3. Check results for example inputs and checke evaluation accuracy again
+    # 3. Check results for example inputs and check evaluation accuracy again:
     res = loaded_quantized_model(*example_inputs)
     print("diff:", ref - res)
     
@@ -583,8 +583,8 @@ The model produced at this point is not the final model that runs on the device,
 it is a reference quantized model that captures the intended quantized computation
 from the user, expressed as ATen operators and some additional quantize/dequantize operators,
 to get a model that runs on real devices, we'll need to lower the model.
-For example for the models that run on edge devices, we can lower with delegation and executorch runtime
-operators..
+For example, for the models that run on edge devices, we can lower with delegation and ExecuTorch runtime
+operators.
 
 Conclusion
 --------------
