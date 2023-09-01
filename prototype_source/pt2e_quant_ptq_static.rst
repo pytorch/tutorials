@@ -523,7 +523,9 @@ Save and Load Quantized Model
 
 We'll show how to save and load the quantized model.
 
+
 .. code-block:: python
+
     # 0. Store reference output for example inputs and check evaluation accuracy
     example_inputs = (next(iter(data_loader))[0],)
     ref = quantized_model(*example_inputs)
@@ -551,7 +553,10 @@ We'll show how to save and load the quantized model.
 
 
 Output:
+
+
 .. code-block:: python
+                
    [before serialization] Evaluation accuracy on test dataset: 79.82, 94.55
    diff: tensor([[0., 0., 0.,  ..., 0., 0., 0.],
            [0., 0., 0.,  ..., 0., 0., 0.],
@@ -576,9 +581,10 @@ Lowering and Performance Evaluation
 
 The model produced at this point is not the final model that runs on the device,
 it is a reference quantized model that captures the intended quantized computation
-from the user, expressed as ATen operators, to get a model that runs on real
-devices, we'll need to lower the model. For example for the models that run on
-edge devices, we can lower to executorch.
+from the user, expressed as ATen operators and some additional quantize/dequantize operators,
+to get a model that runs on real devices, we'll need to lower the model.
+For example for the models that run on edge devices, we can lower with delegation and executorch runtime
+operators..
 
 Conclusion
 --------------
