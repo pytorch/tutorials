@@ -508,6 +508,10 @@ Now we can compare the size and model accuracy with baseline model.
    target device, it's just a representation of quantized computation in ATen
    operators.
 
+.. note::
+   The weights are still in fp32 right now, we may do constant propagation for quantize op to
+   get integer weights in the future
+
 If you want to get better accuracy or performance,  try configuring
 ``quantizer`` in different ways, and each ``quantizer`` will have its own way
 of configuration, so please consult the documentation for the
@@ -520,45 +524,48 @@ Save and Load Quantized Model
 We'll show how to save and load the quantized model.
 
 .. code-block:: python
-
-    # 1. Save state_dict
-    pt2e_quantized_model_file_path = saved_model_dir + "resnet18_pt2e_quantized.pth"
-    torch.save(quantized_model.state_dict(), pt2e_quantized_model_file_path)
-
-    # Get a reference output
+    # 0. Store reference output for example inputs and check evaluation accuracy
     example_inputs = (next(iter(data_loader))[0],)
     ref = quantized_model(*example_inputs)
+    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
+    print("[before serialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
-    # 2. Initialize the quantized model and Load state_dict
-    # Rerun all steps to get a quantized model
-    model_to_quantize = load_model(saved_model_dir + float_model_file).to("cpu")
-    model_to_quantize.eval()
-    from torch._export import capture_pre_autograd_graph
+    # 1. Export the model and Save ExportedProgram
+    pt2e_quantized_model_file_path = saved_model_dir + "resnet18_pt2e_quantized.pth"
+    # capture the model to get an ExportedProgram
+    quantized_ep = torch.export.export(quantized_model, example_inputs)
+    # use torch.export.save to save an ExportedProgram
+    torch.export.save(quantized_ep, pt2e_quantized_model_file_path)
 
-    exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs)
-    from torch.ao.quantization.quantizer.xnnpack_quantizer import (
-          XNNPACKQuantizer,
-          get_symmetric_quantization_config,
-    )
 
-    quantizer = XNNPACKQuantizer()
-    quantizer.set_global(get_symmetric_quantization_config())
-    prepared_model = prepare_pt2e(exported_model, quantizer)
-    prepared_model(*example_inputs)
-    loaded_quantized_model = convert_pt2e(prepared_model)
+    # 2. Load the saved ExportedProgram
+    loaded_quantized_ep = torch.export.load(pt2e_quantized_model_file_path)
+    loaded_quantized_model = loaded_quantized_ep.module()
 
-    # load the state_dict from saved file to intialized model
-    loaded_quantized_model.load_state_dict(torch.load(pt2e_quantized_model_file_path))
-
-    # Sanity check with sample data
+    # 3. Check results for example inputs and checke evaluation accuracy again
     res = loaded_quantized_model(*example_inputs)
-
-    # 3. Evaluate the loaded quantized model
+    print("diff:", ref - res)
+    
     top1, top5 = evaluate(loaded_quantized_model, criterion, data_loader_test)
     print("[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f"%(top1.avg, top5.avg))
 
+
+Output:
+.. code-block:: python
+   [before serialization] Evaluation accuracy on test dataset: 79.82, 94.55
+   diff: tensor([[0., 0., 0.,  ..., 0., 0., 0.],
+           [0., 0., 0.,  ..., 0., 0., 0.],
+           [0., 0., 0.,  ..., 0., 0., 0.],
+           ...,
+           [0., 0., 0.,  ..., 0., 0., 0.],
+           [0., 0., 0.,  ..., 0., 0., 0.],
+           [0., 0., 0.,  ..., 0., 0., 0.]])
+
+   [after serialization/deserialization] Evaluation accuracy on test dataset: 79.82, 94.55
+
+
 Debugging the Quantized Model
-----------------------------
+------------------------------
 
 You can use `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_
 that can help with debugging in eager mode and FX graph mode. The new version of
