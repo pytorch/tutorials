@@ -987,6 +987,11 @@ we offer in the long term might change based on feedback from PyTorch users.</p>
 target device, it’s just a representation of quantized computation in ATen
 operators.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The weights are still in fp32 right now, we may do constant propagation for quantize op to
+get integer weights in the future.</p>
+</div>
 <p>If you want to get better accuracy or performance,  try configuring
 <code class="docutils literal notranslate"><span class="pre">quantizer</span></code> in different ways, and each <code class="docutils literal notranslate"><span class="pre">quantizer</span></code> will have its own way
 of configuration, so please consult the documentation for the
@@ -996,41 +1001,43 @@ over how to quantize a model.</p>
 <div class="section" id="save-and-load-quantized-model">
 <h2>Save and Load Quantized Model<a class="headerlink" href="#save-and-load-quantized-model" title="Permalink to this heading">¶</a></h2>
 <p>We’ll show how to save and load the quantized model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Save state_dict</span>
-<span class="n">pt2e_quantized_model_file_path</span> <span class="o">=</span> <span class="n">saved_model_dir</span> <span class="o">+</span> <span class="s2">&quot;resnet18_pt2e_quantized.pth&quot;</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">quantized_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">pt2e_quantized_model_file_path</span><span class="p">)</span>
-
-<span class="c1"># Get a reference output</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 0. Store reference output, for example, inputs, and check evaluation accuracy:</span>
 <span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))[</span><span class="mi">0</span><span class="p">],)</span>
 <span class="n">ref</span> <span class="o">=</span> <span class="n">quantized_model</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
+<span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[before serialization] Evaluation accuracy on test dataset: </span><span class="si">%2.2f</span><span class="s2">, </span><span class="si">%2.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">,</span> <span class="n">top5</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
 
-<span class="c1"># 2. Initialize the quantized model and Load state_dict</span>
-<span class="c1"># Rerun all steps to get a quantized model</span>
-<span class="n">model_to_quantize</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
-<span class="n">model_to_quantize</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">capture_pre_autograd_graph</span>
+<span class="c1"># 1. Export the model and Save ExportedProgram</span>
+<span class="n">pt2e_quantized_model_file_path</span> <span class="o">=</span> <span class="n">saved_model_dir</span> <span class="o">+</span> <span class="s2">&quot;resnet18_pt2e_quantized.pth&quot;</span>
+<span class="c1"># capture the model to get an ExportedProgram</span>
+<span class="n">quantized_ep</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
+<span class="c1"># use torch.export.save to save an ExportedProgram</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">quantized_ep</span><span class="p">,</span> <span class="n">pt2e_quantized_model_file_path</span><span class="p">)</span>
 
-<span class="n">exported_model</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">model_to_quantize</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">torch.ao.quantization.quantizer.xnnpack_quantizer</span> <span class="kn">import</span> <span class="p">(</span>
-      <span class="n">XNNPACKQuantizer</span><span class="p">,</span>
-      <span class="n">get_symmetric_quantization_config</span><span class="p">,</span>
-<span class="p">)</span>
 
-<span class="n">quantizer</span> <span class="o">=</span> <span class="n">XNNPACKQuantizer</span><span class="p">()</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">get_symmetric_quantization_config</span><span class="p">())</span>
-<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_pt2e</span><span class="p">(</span><span class="n">exported_model</span><span class="p">,</span> <span class="n">quantizer</span><span class="p">)</span>
-<span class="n">prepared_model</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
-<span class="n">loaded_quantized_model</span> <span class="o">=</span> <span class="n">convert_pt2e</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>
+<span class="c1"># 2. Load the saved ExportedProgram</span>
+<span class="n">loaded_quantized_ep</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pt2e_quantized_model_file_path</span><span class="p">)</span>
+<span class="n">loaded_quantized_model</span> <span class="o">=</span> <span class="n">loaded_quantized_ep</span><span class="o">.</span><span class="n">module</span><span class="p">()</span>
 
-<span class="c1"># load the state_dict from saved file to intialized model</span>
-<span class="n">loaded_quantized_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pt2e_quantized_model_file_path</span><span class="p">))</span>
-
-<span class="c1"># Sanity check with sample data</span>
+<span class="c1"># 3. Check results for example inputs and check evaluation accuracy again:</span>
 <span class="n">res</span> <span class="o">=</span> <span class="n">loaded_quantized_model</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;diff:&quot;</span><span class="p">,</span> <span class="n">ref</span> <span class="o">-</span> <span class="n">res</span><span class="p">)</span>
 
-<span class="c1"># 3. Evaluate the loaded quantized model</span>
 <span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">loaded_quantized_model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[after serialization/deserialization] Evaluation accuracy on test dataset: </span><span class="si">%2.2f</span><span class="s2">, </span><span class="si">%2.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">,</span> <span class="n">top5</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">before</span> <span class="n">serialization</span><span class="p">]</span> <span class="n">Evaluation</span> <span class="n">accuracy</span> <span class="n">on</span> <span class="n">test</span> <span class="n">dataset</span><span class="p">:</span> <span class="mf">79.82</span><span class="p">,</span> <span class="mf">94.55</span>
+<span class="n">diff</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+
+<span class="p">[</span><span class="n">after</span> <span class="n">serialization</span><span class="o">/</span><span class="n">deserialization</span><span class="p">]</span> <span class="n">Evaluation</span> <span class="n">accuracy</span> <span class="n">on</span> <span class="n">test</span> <span class="n">dataset</span><span class="p">:</span> <span class="mf">79.82</span><span class="p">,</span> <span class="mf">94.55</span>
 </pre></div>
 </div>
 </div>
@@ -1044,9 +1051,10 @@ Numeric Suite working with PyTorch 2.0 Export models is still in development.</p
 <h2>Lowering and Performance Evaluation<a class="headerlink" href="#lowering-and-performance-evaluation" title="Permalink to this heading">¶</a></h2>
 <p>The model produced at this point is not the final model that runs on the device,
 it is a reference quantized model that captures the intended quantized computation
-from the user, expressed as ATen operators, to get a model that runs on real
-devices, we’ll need to lower the model. For example for the models that run on
-edge devices, we can lower to executorch.</p>
+from the user, expressed as ATen operators and some additional quantize/dequantize operators,
+to get a model that runs on real devices, we’ll need to lower the model.
+For example, for the models that run on edge devices, we can lower with delegation and ExecuTorch runtime
+operators.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
