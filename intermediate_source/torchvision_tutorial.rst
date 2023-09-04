@@ -400,6 +400,11 @@ expects during training and inference time on sample data.
     predictions = model(x)  # Returns predictions
     print(predictions[0])
 
+::
+
+    {'loss_classifier': tensor(0.0820, grad_fn=<NllLossBackward0>), 'loss_box_reg': tensor(0.0278, grad_fn=<DivBackward0>), 'loss_objectness': tensor(0.0027, grad_fn=<BinaryCrossEntropyWithLogitsBackward0>), 'loss_rpn_box_reg': tensor(0.0036, grad_fn=<DivBackward0>)}
+    {'boxes': tensor([], size=(0, 4), grad_fn=<StackBackward0>), 'labels': tensor([], dtype=torch.int64), 'scores': tensor([], grad_fn=<IndexBackward0>)}
+
 
 Let’s now write the main function which performs the training and the
 validation:
@@ -474,6 +479,102 @@ validation:
 
     print("That's it!")
 
+::
+
+    Epoch: [0]  [ 0/60]  eta: 0:02:43  lr: 0.000090  loss: 2.8181 (2.8181)  loss_classifier: 0.5218 (0.5218)  loss_box_reg: 0.1272 (0.1272)  loss_mask: 2.1324 (2.1324)  loss_objectness: 0.0346 (0.0346)  loss_rpn_box_reg: 0.0022 (0.0022)  time: 2.7332  data: 0.4483  max mem: 1984
+    Epoch: [0]  [10/60]  eta: 0:00:24  lr: 0.000936  loss: 1.3190 (1.6752)  loss_classifier: 0.4611 (0.4213)  loss_box_reg: 0.2928 (0.3031)  loss_mask: 0.6962 (0.9183)  loss_objectness: 0.0238 (0.0253)  loss_rpn_box_reg: 0.0074 (0.0072)  time: 0.4944  data: 0.0439  max mem: 2762
+    Epoch: [0]  [20/60]  eta: 0:00:13  lr: 0.001783  loss: 0.9419 (1.2621)  loss_classifier: 0.2171 (0.3037)  loss_box_reg: 0.2906 (0.3064)  loss_mask: 0.4174 (0.6243)  loss_objectness: 0.0190 (0.0210)  loss_rpn_box_reg: 0.0059 (0.0068)  time: 0.2108  data: 0.0042  max mem: 2823
+    Epoch: [0]  [30/60]  eta: 0:00:08  lr: 0.002629  loss: 0.6349 (1.0344)  loss_classifier: 0.1184 (0.2339)  loss_box_reg: 0.2706 (0.2873)  loss_mask: 0.2276 (0.4897)  loss_objectness: 0.0065 (0.0168)  loss_rpn_box_reg: 0.0059 (0.0067)  time: 0.1650  data: 0.0051  max mem: 2823
+    Epoch: [0]  [40/60]  eta: 0:00:05  lr: 0.003476  loss: 0.4631 (0.8771)  loss_classifier: 0.0650 (0.1884)  loss_box_reg: 0.1924 (0.2604)  loss_mask: 0.1734 (0.4084)  loss_objectness: 0.0029 (0.0135)  loss_rpn_box_reg: 0.0051 (0.0063)  time: 0.1760  data: 0.0052  max mem: 2823
+    Epoch: [0]  [50/60]  eta: 0:00:02  lr: 0.004323  loss: 0.3261 (0.7754)  loss_classifier: 0.0368 (0.1606)  loss_box_reg: 0.1424 (0.2366)  loss_mask: 0.1479 (0.3599)  loss_objectness: 0.0022 (0.0116)  loss_rpn_box_reg: 0.0051 (0.0067)  time: 0.1775  data: 0.0052  max mem: 2823
+    Epoch: [0]  [59/60]  eta: 0:00:00  lr: 0.005000  loss: 0.3261 (0.7075)  loss_classifier: 0.0415 (0.1433)  loss_box_reg: 0.1114 (0.2157)  loss_mask: 0.1573 (0.3316)  loss_objectness: 0.0020 (0.0103)  loss_rpn_box_reg: 0.0052 (0.0066)  time: 0.2064  data: 0.0049  max mem: 2823
+    Epoch: [0] Total time: 0:00:14 (0.2412 s / it)
+    creating index...
+    index created!
+    Test:  [ 0/50]  eta: 0:00:25  model_time: 0.1576 (0.1576)  evaluator_time: 0.0029 (0.0029)  time: 0.5063  data: 0.3452  max mem: 2823
+    Test:  [49/50]  eta: 0:00:00  model_time: 0.0335 (0.0701)  evaluator_time: 0.0025 (0.0038)  time: 0.0594  data: 0.0025  max mem: 2823
+    Test: Total time: 0:00:04 (0.0862 s / it)
+    Averaged stats: model_time: 0.0335 (0.0701)  evaluator_time: 0.0025 (0.0038)
+    Accumulating evaluation results...
+    DONE (t=0.01s).
+    Accumulating evaluation results...
+    DONE (t=0.01s).
+    IoU metric: bbox
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.722
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.987
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.938
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.359
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.752
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.730
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.353
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.762
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.762
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.500
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.775
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.769
+    IoU metric: segm
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.726
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.993
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.913
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.344
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.593
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.743
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.360
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.760
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.760
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.633
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.662
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.772
+
+    ...
+
+    Epoch: [4]  [ 0/60]  eta: 0:00:32  lr: 0.000500  loss: 0.1593 (0.1593)  loss_classifier: 0.0194 (0.0194)  loss_box_reg: 0.0272 (0.0272)  loss_mask: 0.1046 (0.1046)  loss_objectness: 0.0044 (0.0044)  loss_rpn_box_reg: 0.0037 (0.0037)  time: 0.5369  data: 0.3801  max mem: 3064
+    Epoch: [4]  [10/60]  eta: 0:00:10  lr: 0.000500  loss: 0.1609 (0.1870)  loss_classifier: 0.0194 (0.0236)  loss_box_reg: 0.0272 (0.0383)  loss_mask: 0.1140 (0.1190)  loss_objectness: 0.0005 (0.0023)  loss_rpn_box_reg: 0.0029 (0.0037)  time: 0.2016  data: 0.0378  max mem: 3064
+    Epoch: [4]  [20/60]  eta: 0:00:08  lr: 0.000500  loss: 0.1652 (0.1826)  loss_classifier: 0.0224 (0.0242)  loss_box_reg: 0.0286 (0.0374)  loss_mask: 0.1075 (0.1165)  loss_objectness: 0.0003 (0.0016)  loss_rpn_box_reg: 0.0016 (0.0029)  time: 0.1866  data: 0.0044  max mem: 3064
+    Epoch: [4]  [30/60]  eta: 0:00:06  lr: 0.000500  loss: 0.1676 (0.1884)  loss_classifier: 0.0245 (0.0264)  loss_box_reg: 0.0286 (0.0401)  loss_mask: 0.1075 (0.1175)  loss_objectness: 0.0003 (0.0013)  loss_rpn_box_reg: 0.0018 (0.0030)  time: 0.2106  data: 0.0055  max mem: 3064
+    Epoch: [4]  [40/60]  eta: 0:00:03  lr: 0.000500  loss: 0.1726 (0.1884)  loss_classifier: 0.0245 (0.0265)  loss_box_reg: 0.0283 (0.0394)  loss_mask: 0.1187 (0.1184)  loss_objectness: 0.0003 (0.0011)  loss_rpn_box_reg: 0.0020 (0.0029)  time: 0.1897  data: 0.0056  max mem: 3064
+    Epoch: [4]  [50/60]  eta: 0:00:01  lr: 0.000500  loss: 0.1910 (0.1938)  loss_classifier: 0.0273 (0.0280)  loss_box_reg: 0.0414 (0.0418)  loss_mask: 0.1177 (0.1198)  loss_objectness: 0.0003 (0.0010)  loss_rpn_box_reg: 0.0022 (0.0031)  time: 0.1623  data: 0.0056  max mem: 3064
+    Epoch: [4]  [59/60]  eta: 0:00:00  lr: 0.000500  loss: 0.1732 (0.1888)  loss_classifier: 0.0273 (0.0278)  loss_box_reg: 0.0327 (0.0405)  loss_mask: 0.0993 (0.1165)  loss_objectness: 0.0003 (0.0010)  loss_rpn_box_reg: 0.0023 (0.0030)  time: 0.1732  data: 0.0056  max mem: 3064
+    Epoch: [4] Total time: 0:00:11 (0.1920 s / it)
+    creating index...
+    index created!
+    Test:  [ 0/50]  eta: 0:00:21  model_time: 0.0589 (0.0589)  evaluator_time: 0.0032 (0.0032)  time: 0.4269  data: 0.3641  max mem: 3064
+    Test:  [49/50]  eta: 0:00:00  model_time: 0.0515 (0.0521)  evaluator_time: 0.0020 (0.0031)  time: 0.0579  data: 0.0024  max mem: 3064
+    Test: Total time: 0:00:03 (0.0679 s / it)
+    Averaged stats: model_time: 0.0515 (0.0521)  evaluator_time: 0.0020 (0.0031)
+    Accumulating evaluation results...
+    DONE (t=0.01s).
+    Accumulating evaluation results...
+    DONE (t=0.01s).
+    IoU metric: bbox
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.846
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.997
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.978
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.412
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.689
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.864
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.417
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.876
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.876
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.567
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.750
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.896
+    IoU metric: segm
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.777
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.997
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.961
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.424
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.631
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.791
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.373
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.814
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.814
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.633
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.713
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.827
+
+    That's it!
+
 
 So after one epoch of training, we obtain a COCO-style mAP > 50, and
 a mask mAP of 65.
@@ -510,6 +611,9 @@ dataset and verify
 
     plt.figure(figsize=(12, 12))
     plt.imshow(output_image.permute(1, 2, 0))
+
+
+.. image:: ../../_static/img/tv_tutorial/tv_image06.png
 
 
 The results look good!
