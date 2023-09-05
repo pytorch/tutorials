@@ -421,6 +421,12 @@ Segmentation</a>. It contains
 170 images with 345 instances of pedestrians, and we will use it to
 illustrate how to use the new features in torchvision in order to train
 an object detection and instance segmentation model on a custom dataset.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial works only with torchvision version &gt;=0.16 or nightly.
+If you’re using torchvision&lt;=0.15, please follow
+<a class="reference external" href="https://github.com/pytorch/tutorials/blob/d686b662932a380a58b7683425faa00c06bcf502/intermediate_source/torchvision_tutorial.rst">this tutorial instead</a>.</p>
+</div>
 <div class="section" id="defining-the-dataset">
 <h2>Defining the Dataset<a class="headerlink" href="#defining-the-dataset" title="Permalink to this heading">¶</a></h2>
 <p>The reference scripts for training object detection, instance
@@ -430,26 +436,46 @@ adding new custom datasets. The dataset should inherit from the standard
 <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>.</p>
 <p>The only specificity that we require is that the dataset <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>
 should return a tuple:</p>
-<ul class="simple">
-<li><p>image: <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Image.html#torchvision.datapoints.Image" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Image</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>, a pure tensor, or a PIL Image of size <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W)</span></code></p></li>
-<li><p>target: a dict containing the following fields</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">boxes</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.BoundingBoxes</span></code> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">4]</span></code>:
-the coordinates of the <code class="docutils literal notranslate"><span class="pre">N</span></code> bounding boxes in <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1]</span></code> format, ranging from <code class="docutils literal notranslate"><span class="pre">0</span></code>
-to <code class="docutils literal notranslate"><span class="pre">W</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">H</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code>, integer <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the label for each bounding box.
-<code class="docutils literal notranslate"><span class="pre">0</span></code> represents always the background class.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">image_id</span></code>, int: an image identifier. It should be
-unique between all the images in the dataset, and is used during
-evaluation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">area</span></code>, float <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the area of the bounding box. This is used
-during evaluation with the COCO metric, to separate the metric
-scores between small, medium and large boxes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">iscrowd</span></code>, uint8 <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: instances with iscrowd=True will be
-ignored during evaluation.</p></li>
-<li><p>(optionally) <code class="docutils literal notranslate"><span class="pre">masks</span></code>, <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Mask.html#torchvision.datapoints.Mask" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Mask</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>: the segmentation
-masks for each one of the objects</p></li>
+<li><p>image: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.Image</span></code> of shape <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>, a pure tensor, or a PIL Image of size <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W)</span></code></p></li>
+<li><p>target: a dict containing the following fields</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">boxes</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.BoundingBoxes</span></code> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">4]</span></code>:</dt><dd><p>the coordinates of the <code class="docutils literal notranslate"><span class="pre">N</span></code> bounding boxes in <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1]</span></code> format, ranging from <code class="docutils literal notranslate"><span class="pre">0</span></code>
+to <code class="docutils literal notranslate"><span class="pre">W</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">H</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">labels</span></code>, integer <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the label for each bounding box.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">0</span></code> represents always the background class.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">image_id</span></code>, int: an image identifier. It should be</dt><dd><p>unique between all the images in the dataset, and is used during
+evaluation</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">area</span></code>, float <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: the area of the bounding box. This is used</dt><dd><p>during evaluation with the COCO metric, to separate the metric
+scores between small, medium and large boxes.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">iscrowd</span></code>, uint8 <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape <code class="docutils literal notranslate"><span class="pre">[N]</span></code>: instances with <code class="docutils literal notranslate"><span class="pre">iscrowd=True</span></code> will be</dt><dd><p>ignored during evaluation.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>(optionally) <code class="docutils literal notranslate"><span class="pre">masks</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.Mask</span></code> of shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">H,</span> <span class="pre">W]</span></code>: the segmentation</dt><dd><p>masks for each one of the objects</p>
+</dd>
+</dl>
+</li>
 </ul>
+</div></blockquote>
 </li>
 </ul>
 <p>If your dataset is compliant with above requirements then it will work for both
@@ -463,7 +489,7 @@ training and evaluation codes from the reference script. Evaluation code will us
 <p>One note on the <code class="docutils literal notranslate"><span class="pre">labels</span></code>. The model considers class <code class="docutils literal notranslate"><span class="pre">0</span></code> as background. If your dataset does not contain the background class,
 you should not have <code class="docutils literal notranslate"><span class="pre">0</span></code> in your <code class="docutils literal notranslate"><span class="pre">labels</span></code>. For example, assuming you have just two classes, <em>cat</em> and <em>dog</em>, you can
 define <code class="docutils literal notranslate"><span class="pre">1</span></code> (not <code class="docutils literal notranslate"><span class="pre">0</span></code>) to represent <em>cats</em> and <code class="docutils literal notranslate"><span class="pre">2</span></code> to represent <em>dogs</em>. So, for instance, if one of the images has both
-classes, your <code class="docutils literal notranslate"><span class="pre">labels</span></code> tensor should look like <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code>.</p>
+classes, your <code class="docutils literal notranslate"><span class="pre">labels</span></code> tensor should look like <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2]</span></code>.</p>
 <p>Additionally, if you want to use aspect ratio grouping during training
 (so that each batch only contains images with similar aspect ratios),
 then it is recommended to also implement a <code class="docutils literal notranslate"><span class="pre">get_height_and_width</span></code>
@@ -478,17 +504,17 @@ extracting the zip
 file</a>, we
 have the following folder structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PennFudanPed</span><span class="o">/</span>
-  <span class="n">PedMasks</span><span class="o">/</span>
-    <span class="n">FudanPed00001_mask</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00002_mask</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00003_mask</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00004_mask</span><span class="o">.</span><span class="n">png</span>
-    <span class="o">...</span>
-  <span class="n">PNGImages</span><span class="o">/</span>
-    <span class="n">FudanPed00001</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00002</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00003</span><span class="o">.</span><span class="n">png</span>
-    <span class="n">FudanPed00004</span><span class="o">.</span><span class="n">png</span>
+    <span class="n">PedMasks</span><span class="o">/</span>
+        <span class="n">FudanPed00001_mask</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00002_mask</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00003_mask</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00004_mask</span><span class="o">.</span><span class="n">png</span>
+        <span class="o">...</span>
+    <span class="n">PNGImages</span><span class="o">/</span>
+        <span class="n">FudanPed00001</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00002</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00003</span><span class="o">.</span><span class="n">png</span>
+        <span class="n">FudanPed00004</span><span class="o">.</span><span class="n">png</span>
 </pre></div>
 </div>
 <p>Here is one example of a pair of images and segmentation masks</p>
@@ -498,20 +524,20 @@ have the following folder structure:</p>
 segmentation mask, where each color correspond to a different instance.
 Let’s write a <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code></a> class for this dataset.
 In the code below, we are wrapping images, bounding boxes and masks into
-<code class="docutils literal notranslate"><span class="pre">torchvision.datapoints</span></code> classes so that we will be able to apply torchvision
+<code class="docutils literal notranslate"><span class="pre">torchvision.TVTensor</span></code> classes so that we will be able to apply torchvision
 built-in transformations (<a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">new Transforms API</a>)
 for the given object detection and segmentation task.
-Namely, image tensors will be wrapped by <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Image.html#torchvision.datapoints.Image" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Image</span></code></a>, bounding boxes into
-<code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.BoundingBoxes</span></code> and masks into <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.datapoints.Mask.html#torchvision.datapoints.Mask" title="(in Torchvision vmain (0.15.2a0+fa99a53 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.datapoints.Mask</span></code></a>.
-As datapoints are <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> subclasses, wrapped objects are also tensors and inherit the plain
-<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> API. For more information about torchvision datapoints see
-<a class="reference external" href="https://pytorch.org/vision/main/auto_examples/v2_transforms/plot_transforms_v2.html#sphx-glr-auto-examples-v2-transforms-plot-transforms-v2-py">this documentation</a>.</p>
+Namely, image tensors will be wrapped by <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.Image</span></code>, bounding boxes into
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.BoundingBoxes</span></code> and masks into <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvision.tv_tensors.Mask</span></code>.
+As <code class="docutils literal notranslate"><span class="pre">torchvision.TVTensor</span></code> are <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> subclasses, wrapped objects are also tensors and inherit the plain
+<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> API. For more information about torchvision <code class="docutils literal notranslate"><span class="pre">tv_tensors</span></code> see
+<a class="reference external" href="https://pytorch.org/vision/main/auto_examples/transforms/plot_transforms_getting_started.html#what-are-tvtensors">this documentation</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="kn">from</span> <span class="nn">torchvision.io</span> <span class="kn">import</span> <span class="n">read_image</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">masks_to_boxes</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datapoints</span> <span class="k">as</span> <span class="n">dp</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 <span class="kn">from</span> <span class="nn">torchvision.transforms.v2</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
 
@@ -551,12 +577,12 @@ As datapoints are <a class="reference external" href="https://pytorch.org/docs/s
         <span class="c1"># suppose all instances are not crowd</span>
         <span class="n">iscrowd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_objs</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
-        <span class="c1"># Wrap sample and targets into torchvision datapoints:</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="c1"># Wrap sample and targets into torchvision tv_tensors:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 
         <span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">target</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"XYXY"</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">get_size</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
-        <span class="n">target</span><span class="p">[</span><span class="s2">"masks"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">target</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"XYXY"</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">get_size</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+        <span class="n">target</span><span class="p">[</span><span class="s2">"masks"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"image_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_id</span>
         <span class="n">target</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span> <span class="o">=</span> <span class="n">area</span>
@@ -589,7 +615,7 @@ instance.</p>
 <img alt="../_static/img/tv_tutorial/tv_image04.png" src="../_static/img/tv_tutorial/tv_image04.png"/>
 <p>There are two common
 situations where one might want
-to modify one of the available models in torchvision modelzoo. The first
+to modify one of the available models in TorchVision Model Zoo. The first
 is when we want to start from a pre-trained model, and just finetune the
 last layer. The other is when we want to replace the backbone of the
 model with a different one (for faster predictions, for example).</p>
@@ -624,7 +650,7 @@ way of doing it:</p>
 <span class="c1"># load a pre-trained model for classification and return</span>
 <span class="c1"># only the features</span>
 <span class="n">backbone</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"DEFAULT"</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
-<span class="c1"># FasterRCNN needs to know the number of</span>
+<span class="c1"># ``FasterRCNN`` needs to know the number of</span>
 <span class="c1"># output channels in a backbone. For mobilenet_v2, it's 1280</span>
 <span class="c1"># so we need to add it here</span>
 <span class="n">backbone</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="mi">1280</span>
@@ -634,25 +660,31 @@ way of doing it:</p>
 <span class="c1"># ratios. We have a Tuple[Tuple[int]] because each feature</span>
 <span class="c1"># map could potentially have different sizes and</span>
 <span class="c1"># aspect ratios</span>
-<span class="n">anchor_generator</span> <span class="o">=</span> <span class="n">AnchorGenerator</span><span class="p">(</span><span class="n">sizes</span><span class="o">=</span><span class="p">((</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">),),</span>
-                                   <span class="n">aspect_ratios</span><span class="o">=</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),))</span>
+<span class="n">anchor_generator</span> <span class="o">=</span> <span class="n">AnchorGenerator</span><span class="p">(</span>
+    <span class="n">sizes</span><span class="o">=</span><span class="p">((</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">),),</span>
+    <span class="n">aspect_ratios</span><span class="o">=</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),)</span>
+<span class="p">)</span>
 
 <span class="c1"># let's define what are the feature maps that we will</span>
 <span class="c1"># use to perform the region of interest cropping, as well as</span>
 <span class="c1"># the size of the crop after rescaling.</span>
 <span class="c1"># if your backbone returns a Tensor, featmap_names is expected to</span>
 <span class="c1"># be [0]. More generally, the backbone should return an</span>
-<span class="c1"># OrderedDict[Tensor], and in featmap_names you can choose which</span>
+<span class="c1"># ``OrderedDict[Tensor]``, and in ``featmap_names`` you can choose which</span>
 <span class="c1"># feature maps to use.</span>
-<span class="n">roi_pooler</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">MultiScaleRoIAlign</span><span class="p">(</span><span class="n">featmap_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'0'</span><span class="p">],</span>
-                                                <span class="n">output_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
-                                                <span class="n">sampling_ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">roi_pooler</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">MultiScaleRoIAlign</span><span class="p">(</span>
+    <span class="n">featmap_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'0'</span><span class="p">],</span>
+    <span class="n">output_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="n">sampling_ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="c1"># put the pieces together inside a FasterRCNN model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">FasterRCNN</span><span class="p">(</span><span class="n">backbone</span><span class="p">,</span>
-                   <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                   <span class="n">rpn_anchor_generator</span><span class="o">=</span><span class="n">anchor_generator</span><span class="p">,</span>
-                   <span class="n">box_roi_pool</span><span class="o">=</span><span class="n">roi_pooler</span><span class="p">)</span>
+<span class="c1"># put the pieces together inside a Faster-RCNN model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">FasterRCNN</span><span class="p">(</span>
+    <span class="n">backbone</span><span class="p">,</span>
+    <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">rpn_anchor_generator</span><span class="o">=</span><span class="n">anchor_generator</span><span class="p">,</span>
+    <span class="n">box_roi_pool</span><span class="o">=</span><span class="n">roi_pooler</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -680,9 +712,11 @@ be using Mask R-CNN:</p>
     <span class="n">in_features_mask</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">roi_heads</span><span class="o">.</span><span class="n">mask_predictor</span><span class="o">.</span><span class="n">conv5_mask</span><span class="o">.</span><span class="n">in_channels</span>
     <span class="n">hidden_layer</span> <span class="o">=</span> <span class="mi">256</span>
     <span class="c1"># and replace the mask predictor with a new one</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">roi_heads</span><span class="o">.</span><span class="n">mask_predictor</span> <span class="o">=</span> <span class="n">MaskRCNNPredictor</span><span class="p">(</span><span class="n">in_features_mask</span><span class="p">,</span>
-                                                       <span class="n">hidden_layer</span><span class="p">,</span>
-                                                       <span class="n">num_classes</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">roi_heads</span><span class="o">.</span><span class="n">mask_predictor</span> <span class="o">=</span> <span class="n">MaskRCNNPredictor</span><span class="p">(</span>
+        <span class="n">in_features_mask</span><span class="p">,</span>
+        <span class="n">hidden_layer</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 </pre></div>
@@ -696,7 +730,15 @@ on your custom dataset.</p>
 <p>In <code class="docutils literal notranslate"><span class="pre">references/detection/</span></code>, we have a number of helper functions to
 simplify training and evaluating detection models. Here, we will use
 <code class="docutils literal notranslate"><span class="pre">references/detection/engine.py</span></code> and <code class="docutils literal notranslate"><span class="pre">references/detection/utils.py</span></code>.
-Just copy everything under <code class="docutils literal notranslate"><span class="pre">references/detection</span></code> to your folder and use them here.</p>
+Just download everything under <code class="docutils literal notranslate"><span class="pre">references/detection</span></code> to your folder and use them here.
+On Linux if you have <code class="docutils literal notranslate"><span class="pre">wget</span></code>, you can download them using below commands:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">"wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/engine.py"</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">"wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/utils.py"</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">"wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/coco_utils.py"</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">"wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/coco_eval.py"</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">"wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/transforms.py"</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Since v0.15.0 torchvision provides <a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">new Transforms API</a>
 to easily write data augmentation pipelines for Object Detection and Segmentation tasks.</p>
 <p>Let’s write some helper functions for data augmentation /
@@ -707,7 +749,7 @@ transformation:</p>
 <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="n">train</span><span class="p">):</span>
     <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">train</span><span class="p">:</span>
-       <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
     <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ToDtype</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="n">transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ToPureTensor</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
@@ -718,167 +760,237 @@ transformation:</p>
 <h2>Testing <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method (Optional)<a class="headerlink" href="#testing-forward-method-optional" title="Permalink to this heading">¶</a></h2>
 <p>Before iterating over the dataset, it’s good to see what the model
 expects during training and inference time on sample data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">detection</span><span class="o">.</span><span class="n">fasterrcnn_resnet50_fpn</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"DEFAULT"</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">utils</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">detection</span><span class="o">.</span><span class="n">fasterrcnn_resnet50_fpn</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"DEFAULT"</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'data/PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-    <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+    <span class="n">dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+
 <span class="c1"># For Training</span>
 <span class="n">images</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))</span>
 <span class="n">images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">)</span>
 <span class="n">targets</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>   <span class="c1"># Returns losses and detections</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>  <span class="c1"># Returns losses and detections</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
 <span class="c1"># For inference</span>
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">)]</span>
-<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>           <span class="c1"># Returns predictions</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Returns predictions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">'loss_classifier'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.0820</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">NllLossBackward0</span><span class="o">&gt;</span><span class="p">),</span> <span class="s1">'loss_box_reg'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.0278</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">DivBackward0</span><span class="o">&gt;</span><span class="p">),</span> <span class="s1">'loss_objectness'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.0027</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">BinaryCrossEntropyWithLogitsBackward0</span><span class="o">&gt;</span><span class="p">),</span> <span class="s1">'loss_rpn_box_reg'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.0036</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">DivBackward0</span><span class="o">&gt;</span><span class="p">)}</span>
+<span class="p">{</span><span class="s1">'boxes'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([],</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">StackBackward0</span><span class="o">&gt;</span><span class="p">),</span> <span class="s1">'labels'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="s1">'scores'</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([],</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">IndexBackward0</span><span class="o">&gt;</span><span class="p">)}</span>
 </pre></div>
 </div>
 <p>Let’s now write the main function which performs the training and the
 validation:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">engine</span> <span class="kn">import</span> <span class="n">train_one_epoch</span><span class="p">,</span> <span class="n">evaluate</span>
-<span class="kn">import</span> <span class="nn">utils</span>
 
+<span class="c1"># train on the GPU or on the CPU, if a GPU is not available</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="c1"># train on the GPU or on the CPU, if a GPU is not available</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
+<span class="c1"># our dataset has two classes only - background and person</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># use our dataset and defined transformations</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'data/PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">dataset_test</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'data/PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
-    <span class="c1"># our dataset has two classes only - background and person</span>
-    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="c1"># use our dataset and defined transformations</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="n">dataset_test</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1"># split the dataset in train and test set</span>
+<span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">indices</span><span class="p">[:</span><span class="o">-</span><span class="mi">50</span><span class="p">])</span>
+<span class="n">dataset_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Subset</span><span class="p">(</span><span class="n">dataset_test</span><span class="p">,</span> <span class="n">indices</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:])</span>
 
-    <span class="c1"># split the dataset in train and test set</span>
-    <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">indices</span><span class="p">[:</span><span class="o">-</span><span class="mi">50</span><span class="p">])</span>
-    <span class="n">dataset_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Subset</span><span class="p">(</span><span class="n">dataset_test</span><span class="p">,</span> <span class="n">indices</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:])</span>
+<span class="c1"># define training and validation data loaders</span>
+<span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span>
+<span class="p">)</span>
 
-    <span class="c1"># define training and validation data loaders</span>
-    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-        <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-        <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+<span class="n">data_loader_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">dataset_test</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span>
+<span class="p">)</span>
 
-    <span class="n">data_loader_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-        <span class="n">dataset_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-        <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+<span class="c1"># get the model using our helper function</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">get_model_instance_segmentation</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span>
 
-    <span class="c1"># get the model using our helper function</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">get_model_instance_segmentation</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span>
+<span class="c1"># move model to the right device</span>
+<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="c1"># move model to the right device</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="c1"># construct an optimizer</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">]</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">,</span>
+    <span class="n">lr</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.0005</span>
+<span class="p">)</span>
 
-    <span class="c1"># construct an optimizer</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">]</span>
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
-                                <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">)</span>
-    <span class="c1"># and a learning rate scheduler</span>
-    <span class="n">lr_scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span>
-                                                   <span class="n">step_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                                                   <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="c1"># and a learning rate scheduler</span>
+<span class="n">lr_scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">step_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span>
+<span class="p">)</span>
 
-    <span class="c1"># let's train it for 10 epochs</span>
-    <span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="c1"># let's train it for 5 epochs</span>
+<span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">5</span>
 
-    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
-        <span class="c1"># train for one epoch, printing every 10 iterations</span>
-        <span class="n">train_one_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">print_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-        <span class="c1"># update the learning rate</span>
-        <span class="n">lr_scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="c1"># evaluate on the test dataset</span>
-        <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
+    <span class="c1"># train for one epoch, printing every 10 iterations</span>
+    <span class="n">train_one_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">print_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="c1"># update the learning rate</span>
+    <span class="n">lr_scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="c1"># evaluate on the test dataset</span>
+    <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"That's it!"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"That's it!"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You should get as output for the first epoch:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch: [0]  [ 0/60]  eta: 0:01:18  lr: 0.000090  loss: 2.5213 (2.5213)  loss_classifier: 0.8025 (0.8025)  loss_box_reg: 0.2634 (0.2634)  loss_mask: 1.4265 (1.4265)  loss_objectness: 0.0190 (0.0190)  loss_rpn_box_reg: 0.0099 (0.0099)  time: 1.3121  data: 0.3024  max mem: 3485
-Epoch: [0]  [10/60]  eta: 0:00:20  lr: 0.000936  loss: 1.3007 (1.5313)  loss_classifier: 0.3979 (0.4719)  loss_box_reg: 0.2454 (0.2272)  loss_mask: 0.6089 (0.7953)  loss_objectness: 0.0197 (0.0228)  loss_rpn_box_reg: 0.0121 (0.0141)  time: 0.4198  data: 0.0298  max mem: 5081
-Epoch: [0]  [20/60]  eta: 0:00:15  lr: 0.001783  loss: 0.7567 (1.1056)  loss_classifier: 0.2221 (0.3319)  loss_box_reg: 0.2002 (0.2106)  loss_mask: 0.2904 (0.5332)  loss_objectness: 0.0146 (0.0176)  loss_rpn_box_reg: 0.0094 (0.0123)  time: 0.3293  data: 0.0035  max mem: 5081
-Epoch: [0]  [30/60]  eta: 0:00:11  lr: 0.002629  loss: 0.4705 (0.8935)  loss_classifier: 0.0991 (0.2517)  loss_box_reg: 0.1578 (0.1957)  loss_mask: 0.1970 (0.4204)  loss_objectness: 0.0061 (0.0140)  loss_rpn_box_reg: 0.0075 (0.0118)  time: 0.3403  data: 0.0044  max mem: 5081
-Epoch: [0]  [40/60]  eta: 0:00:07  lr: 0.003476  loss: 0.3901 (0.7568)  loss_classifier: 0.0648 (0.2022)  loss_box_reg: 0.1207 (0.1736)  loss_mask: 0.1705 (0.3585)  loss_objectness: 0.0018 (0.0113)  loss_rpn_box_reg: 0.0075 (0.0112)  time: 0.3407  data: 0.0044  max mem: 5081
-Epoch: [0]  [50/60]  eta: 0:00:03  lr: 0.004323  loss: 0.3237 (0.6703)  loss_classifier: 0.0474 (0.1731)  loss_box_reg: 0.1109 (0.1561)  loss_mask: 0.1658 (0.3201)  loss_objectness: 0.0015 (0.0093)  loss_rpn_box_reg: 0.0093 (0.0116)  time: 0.3379  data: 0.0043  max mem: 5081
-Epoch: [0]  [59/60]  eta: 0:00:00  lr: 0.005000  loss: 0.2540 (0.6082)  loss_classifier: 0.0309 (0.1526)  loss_box_reg: 0.0463 (0.1405)  loss_mask: 0.1568 (0.2945)  loss_objectness: 0.0012 (0.0083)  loss_rpn_box_reg: 0.0093 (0.0123)  time: 0.3489  data: 0.0042  max mem: 5081
-Epoch: [0] Total time: 0:00:21 (0.3570 s / it)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch: [0]  [ 0/60]  eta: 0:02:43  lr: 0.000090  loss: 2.8181 (2.8181)  loss_classifier: 0.5218 (0.5218)  loss_box_reg: 0.1272 (0.1272)  loss_mask: 2.1324 (2.1324)  loss_objectness: 0.0346 (0.0346)  loss_rpn_box_reg: 0.0022 (0.0022)  time: 2.7332  data: 0.4483  max mem: 1984
+Epoch: [0]  [10/60]  eta: 0:00:24  lr: 0.000936  loss: 1.3190 (1.6752)  loss_classifier: 0.4611 (0.4213)  loss_box_reg: 0.2928 (0.3031)  loss_mask: 0.6962 (0.9183)  loss_objectness: 0.0238 (0.0253)  loss_rpn_box_reg: 0.0074 (0.0072)  time: 0.4944  data: 0.0439  max mem: 2762
+Epoch: [0]  [20/60]  eta: 0:00:13  lr: 0.001783  loss: 0.9419 (1.2621)  loss_classifier: 0.2171 (0.3037)  loss_box_reg: 0.2906 (0.3064)  loss_mask: 0.4174 (0.6243)  loss_objectness: 0.0190 (0.0210)  loss_rpn_box_reg: 0.0059 (0.0068)  time: 0.2108  data: 0.0042  max mem: 2823
+Epoch: [0]  [30/60]  eta: 0:00:08  lr: 0.002629  loss: 0.6349 (1.0344)  loss_classifier: 0.1184 (0.2339)  loss_box_reg: 0.2706 (0.2873)  loss_mask: 0.2276 (0.4897)  loss_objectness: 0.0065 (0.0168)  loss_rpn_box_reg: 0.0059 (0.0067)  time: 0.1650  data: 0.0051  max mem: 2823
+Epoch: [0]  [40/60]  eta: 0:00:05  lr: 0.003476  loss: 0.4631 (0.8771)  loss_classifier: 0.0650 (0.1884)  loss_box_reg: 0.1924 (0.2604)  loss_mask: 0.1734 (0.4084)  loss_objectness: 0.0029 (0.0135)  loss_rpn_box_reg: 0.0051 (0.0063)  time: 0.1760  data: 0.0052  max mem: 2823
+Epoch: [0]  [50/60]  eta: 0:00:02  lr: 0.004323  loss: 0.3261 (0.7754)  loss_classifier: 0.0368 (0.1606)  loss_box_reg: 0.1424 (0.2366)  loss_mask: 0.1479 (0.3599)  loss_objectness: 0.0022 (0.0116)  loss_rpn_box_reg: 0.0051 (0.0067)  time: 0.1775  data: 0.0052  max mem: 2823
+Epoch: [0]  [59/60]  eta: 0:00:00  lr: 0.005000  loss: 0.3261 (0.7075)  loss_classifier: 0.0415 (0.1433)  loss_box_reg: 0.1114 (0.2157)  loss_mask: 0.1573 (0.3316)  loss_objectness: 0.0020 (0.0103)  loss_rpn_box_reg: 0.0052 (0.0066)  time: 0.2064  data: 0.0049  max mem: 2823
+Epoch: [0] Total time: 0:00:14 (0.2412 s / it)
 creating index...
 index created!
-Test:  [ 0/50]  eta: 0:00:19  model_time: 0.2152 (0.2152)  evaluator_time: 0.0133 (0.0133)  time: 0.4000  data: 0.1701  max mem: 5081
-Test:  [49/50]  eta: 0:00:00  model_time: 0.0628 (0.0687)  evaluator_time: 0.0039 (0.0064)  time: 0.0735  data: 0.0022  max mem: 5081
-Test: Total time: 0:00:04 (0.0828 s / it)
-Averaged stats: model_time: 0.0628 (0.0687)  evaluator_time: 0.0039 (0.0064)
+Test:  [ 0/50]  eta: 0:00:25  model_time: 0.1576 (0.1576)  evaluator_time: 0.0029 (0.0029)  time: 0.5063  data: 0.3452  max mem: 2823
+Test:  [49/50]  eta: 0:00:00  model_time: 0.0335 (0.0701)  evaluator_time: 0.0025 (0.0038)  time: 0.0594  data: 0.0025  max mem: 2823
+Test: Total time: 0:00:04 (0.0862 s / it)
+Averaged stats: model_time: 0.0335 (0.0701)  evaluator_time: 0.0025 (0.0038)
 Accumulating evaluation results...
 DONE (t=0.01s).
 Accumulating evaluation results...
 DONE (t=0.01s).
 IoU metric: bbox
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.606
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.984
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.780
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.313
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.582
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.612
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.270
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.672
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.672
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.650
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.755
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.664
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.722
+Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.987
+Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.938
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.359
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.752
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.730
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.353
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.762
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.762
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.500
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.775
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.769
 IoU metric: segm
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.704
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.979
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.871
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.325
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.488
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.727
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.316
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.748
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.749
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.650
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.673
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.758
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.726
+Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.993
+Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.913
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.344
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.593
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.743
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.360
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.760
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.760
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.633
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.662
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.772
+
+...
+
+Epoch: [4]  [ 0/60]  eta: 0:00:32  lr: 0.000500  loss: 0.1593 (0.1593)  loss_classifier: 0.0194 (0.0194)  loss_box_reg: 0.0272 (0.0272)  loss_mask: 0.1046 (0.1046)  loss_objectness: 0.0044 (0.0044)  loss_rpn_box_reg: 0.0037 (0.0037)  time: 0.5369  data: 0.3801  max mem: 3064
+Epoch: [4]  [10/60]  eta: 0:00:10  lr: 0.000500  loss: 0.1609 (0.1870)  loss_classifier: 0.0194 (0.0236)  loss_box_reg: 0.0272 (0.0383)  loss_mask: 0.1140 (0.1190)  loss_objectness: 0.0005 (0.0023)  loss_rpn_box_reg: 0.0029 (0.0037)  time: 0.2016  data: 0.0378  max mem: 3064
+Epoch: [4]  [20/60]  eta: 0:00:08  lr: 0.000500  loss: 0.1652 (0.1826)  loss_classifier: 0.0224 (0.0242)  loss_box_reg: 0.0286 (0.0374)  loss_mask: 0.1075 (0.1165)  loss_objectness: 0.0003 (0.0016)  loss_rpn_box_reg: 0.0016 (0.0029)  time: 0.1866  data: 0.0044  max mem: 3064
+Epoch: [4]  [30/60]  eta: 0:00:06  lr: 0.000500  loss: 0.1676 (0.1884)  loss_classifier: 0.0245 (0.0264)  loss_box_reg: 0.0286 (0.0401)  loss_mask: 0.1075 (0.1175)  loss_objectness: 0.0003 (0.0013)  loss_rpn_box_reg: 0.0018 (0.0030)  time: 0.2106  data: 0.0055  max mem: 3064
+Epoch: [4]  [40/60]  eta: 0:00:03  lr: 0.000500  loss: 0.1726 (0.1884)  loss_classifier: 0.0245 (0.0265)  loss_box_reg: 0.0283 (0.0394)  loss_mask: 0.1187 (0.1184)  loss_objectness: 0.0003 (0.0011)  loss_rpn_box_reg: 0.0020 (0.0029)  time: 0.1897  data: 0.0056  max mem: 3064
+Epoch: [4]  [50/60]  eta: 0:00:01  lr: 0.000500  loss: 0.1910 (0.1938)  loss_classifier: 0.0273 (0.0280)  loss_box_reg: 0.0414 (0.0418)  loss_mask: 0.1177 (0.1198)  loss_objectness: 0.0003 (0.0010)  loss_rpn_box_reg: 0.0022 (0.0031)  time: 0.1623  data: 0.0056  max mem: 3064
+Epoch: [4]  [59/60]  eta: 0:00:00  lr: 0.000500  loss: 0.1732 (0.1888)  loss_classifier: 0.0273 (0.0278)  loss_box_reg: 0.0327 (0.0405)  loss_mask: 0.0993 (0.1165)  loss_objectness: 0.0003 (0.0010)  loss_rpn_box_reg: 0.0023 (0.0030)  time: 0.1732  data: 0.0056  max mem: 3064
+Epoch: [4] Total time: 0:00:11 (0.1920 s / it)
+creating index...
+index created!
+Test:  [ 0/50]  eta: 0:00:21  model_time: 0.0589 (0.0589)  evaluator_time: 0.0032 (0.0032)  time: 0.4269  data: 0.3641  max mem: 3064
+Test:  [49/50]  eta: 0:00:00  model_time: 0.0515 (0.0521)  evaluator_time: 0.0020 (0.0031)  time: 0.0579  data: 0.0024  max mem: 3064
+Test: Total time: 0:00:03 (0.0679 s / it)
+Averaged stats: model_time: 0.0515 (0.0521)  evaluator_time: 0.0020 (0.0031)
+Accumulating evaluation results...
+DONE (t=0.01s).
+Accumulating evaluation results...
+DONE (t=0.01s).
+IoU metric: bbox
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.846
+Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.997
+Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.978
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.412
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.689
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.864
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.417
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.876
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.876
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.567
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.750
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.896
+IoU metric: segm
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.777
+Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.997
+Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.961
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.424
+Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.631
+Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.791
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.373
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.814
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.814
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.633
+Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.713
+Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.827
+
+That's it!
 </pre></div>
 </div>
-<p>So after one epoch of training, we obtain a COCO-style mAP of 60.6, and
-a mask mAP of 70.4.</p>
-<p>After training for 10 epochs, I got the following metrics</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IoU</span> <span class="n">metric</span><span class="p">:</span> <span class="n">bbox</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.799</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span>      <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.969</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.75</span>      <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.935</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">small</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.349</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span><span class="n">medium</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.592</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">large</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.831</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span>  <span class="mi">1</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.324</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span> <span class="mi">10</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.844</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.844</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">small</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.400</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span><span class="n">medium</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.777</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">large</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.870</span>
-<span class="n">IoU</span> <span class="n">metric</span><span class="p">:</span> <span class="n">segm</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.761</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span>      <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.969</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.75</span>      <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.919</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">small</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.341</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span><span class="n">medium</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.464</span>
- <span class="n">Average</span> <span class="n">Precision</span>  <span class="p">(</span><span class="n">AP</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">large</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.788</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span>  <span class="mi">1</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.303</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span> <span class="mi">10</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.799</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span>   <span class="nb">all</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.799</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">small</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.400</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span><span class="n">medium</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.769</span>
- <span class="n">Average</span> <span class="n">Recall</span>     <span class="p">(</span><span class="n">AR</span><span class="p">)</span> <span class="o">@</span><span class="p">[</span> <span class="n">IoU</span><span class="o">=</span><span class="mf">0.50</span><span class="p">:</span><span class="mf">0.95</span> <span class="o">|</span> <span class="n">area</span><span class="o">=</span> <span class="n">large</span> <span class="o">|</span> <span class="n">maxDets</span><span class="o">=</span><span class="mi">100</span> <span class="p">]</span> <span class="o">=</span> <span class="mf">0.818</span>
-</pre></div>
-</div>
+<p>So after one epoch of training, we obtain a COCO-style mAP &gt; 50, and
+a mask mAP of 65.</p>
 <p>But what do the predictions look like? Let’s take one image in the
 dataset and verify</p>
 <img alt="../_static/img/tv_tutorial/tv_image05.png" src="../_static/img/tv_tutorial/tv_image05.png"/>
-<p>The trained model predicts 9
-instances of person in this image, let’s see a couple of them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">draw_bounding_boxes</span><span class="p">,</span> <span class="n">draw_segmentation_masks</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">read_image</span><span class="p">(</span><span class="s2">"../_static/img/tv_tutorial/tv_image05.png"</span><span class="p">)</span>
+<span class="n">eval_transform</span> <span class="o">=</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">eval_transform</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="c1"># convert RGBA -&gt; RGB and move to device</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="p">])</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="p">(</span><span class="mf">255.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">image</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="n">pred_labels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"pedestrian: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">],</span> <span class="n">pred</span><span class="p">[</span><span class="s2">"scores"</span><span class="p">])]</span>
+<span class="n">pred_boxes</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">]</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+<span class="n">output_image</span> <span class="o">=</span> <span class="n">draw_bounding_boxes</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">,</span> <span class="n">pred_labels</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
+
+<span class="n">masks</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="s2">"masks"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.7</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">output_image</span> <span class="o">=</span> <span class="n">draw_segmentation_masks</span><span class="p">(</span><span class="n">output_image</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">output_image</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
 <img alt="../_static/img/tv_tutorial/tv_image06.png" src="../_static/img/tv_tutorial/tv_image06.png"/>
-<img alt="../_static/img/tv_tutorial/tv_image07.png" src="../_static/img/tv_tutorial/tv_image07.png"/>
-<p>The results look pretty good!</p>
+<p>The results look good!</p>
 </div>
 <div class="section" id="wrapping-up">
 <h2>Wrapping up<a class="headerlink" href="#wrapping-up" title="Permalink to this heading">¶</a></h2>
@@ -888,9 +1000,9 @@ that, you wrote a <code class="docutils literal notranslate"><span class="pre">t
 images and the ground truth boxes and segmentation masks. You also
 leveraged a Mask R-CNN model pre-trained on COCO train2017 in order to
 perform transfer learning on this new dataset.</p>
-<p>For a more complete example, which includes multi-machine / multi-gpu
+<p>For a more complete example, which includes multi-machine / multi-GPU
 training, check <code class="docutils literal notranslate"><span class="pre">references/detection/train.py</span></code>, which is present in
-the torchvision repo.</p>
+the torchvision repository.</p>
 <p>You can download a full source file for this tutorial
 <a class="reference external" href="https://pytorch.org/tutorials/_static/tv-training-code.py">here</a>.</p>
 </div>
