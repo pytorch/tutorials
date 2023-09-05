@@ -5,6 +5,14 @@ TorchVision Object Detection Finetuning Tutorial
 """
 
 ######################################################################
+#
+# .. tip::
+#
+#     To get the most of this tutorial, we suggest using this
+#     `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/torchvision_finetuning_instance_segmentation.ipynb>`__.
+#     This will allow you to experiment with the information presented below.
+#
+#
 # For this tutorial, we will be finetuning a pre-trained `Mask
 # R-CNN <https://arxiv.org/abs/1703.06870>`__ model on the `Penn-Fudan
 # Database for Pedestrian Detection and
@@ -17,6 +25,8 @@ TorchVision Object Detection Finetuning Tutorial
 # .. note ::
 #
 #     This tutorial works only with torchvision version >=0.16 or nightly.
+#     If you're using torchvision<=0.15, please follow
+#     `this tutorial instead <https://github.com/pytorch/tutorials/blob/d686b662932a380a58b7683425faa00c06bcf502/intermediate_source/torchvision_tutorial.rst>`_.
 #
 #
 # Defining the Dataset
@@ -252,8 +262,10 @@ backbone.out_channels = 1280
 # ratios. We have a Tuple[Tuple[int]] because each feature
 # map could potentially have different sizes and
 # aspect ratios
-anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
-                                    aspect_ratios=((0.5, 1.0, 2.0),))
+anchor_generator = AnchorGenerator(
+    sizes=((32, 64, 128, 256, 512),),
+    aspect_ratios=((0.5, 1.0, 2.0),)
+)
 
 # let's define what are the feature maps that we will
 # use to perform the region of interest cropping, as well as
@@ -262,15 +274,19 @@ anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
 # be [0]. More generally, the backbone should return an
 # ``OrderedDict[Tensor]``, and in ``featmap_names`` you can choose which
 # feature maps to use.
-roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
-                                                output_size=7,
-                                                sampling_ratio=2)
+roi_pooler = torchvision.ops.MultiScaleRoIAlign(
+    featmap_names=['0'],
+    output_size=7,
+    sampling_ratio=2
+)
 
 # put the pieces together inside a Faster-RCNN model
-model = FasterRCNN(backbone,
-                     num_classes=2,
-                     rpn_anchor_generator=anchor_generator,
-                     box_roi_pool=roi_pooler)
+model = FasterRCNN(
+    backbone,
+    num_classes=2,
+    rpn_anchor_generator=anchor_generator,
+    box_roi_pool=roi_pooler
+)
 
 ######################################################################
 # Object detection and instance segmentation model for PennFudan Dataset
@@ -301,9 +317,11 @@ def get_model_instance_segmentation(num_classes):
     in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
     hidden_layer = 256
     # and replace the mask predictor with a new one
-    model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask,
-                                                        hidden_layer,
-                                                        num_classes)
+    model.roi_heads.mask_predictor = MaskRCNNPredictor(
+        in_features_mask,
+        hidden_layer,
+        num_classes
+    )
 
     return model
 
@@ -508,3 +526,5 @@ plt.imshow(output_image.permute(1, 2, 0))
 # training, check ``references/detection/train.py``, which is present in
 # the torchvision repository.
 #
+# You can download a full source file for this tutorial
+# `here <https://pytorch.org/tutorials/_static/tv-training-code.py>`__.

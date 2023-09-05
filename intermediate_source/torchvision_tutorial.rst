@@ -20,6 +20,8 @@ an object detection and instance segmentation model on a custom dataset.
 .. note ::
 
     This tutorial works only with torchvision version >=0.16 or nightly.
+    If you're using torchvision<=0.15, please follow
+    `this tutorial instead <https://github.com/pytorch/tutorials/blob/d686b662932a380a58b7683425faa00c06bcf502/intermediate_source/torchvision_tutorial.rst>`_.
 
 
 Defining the Dataset
@@ -631,3 +633,6 @@ perform transfer learning on this new dataset.
 For a more complete example, which includes multi-machine / multi-GPU
 training, check ``references/detection/train.py``, which is present in
 the torchvision repository.
+
+You can download a full source file for this tutorial
+`here <https://pytorch.org/tutorials/_static/tv-training-code.py>`__.
