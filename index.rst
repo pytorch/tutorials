@@ -272,6 +272,16 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 
+.. ONNX
+
+.. customcarditem::
+   :header: (optional) Exporting a PyTorch Model to ONNX using TorchScript backend and Running it using ONNX Runtime
+   :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
+   :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
+   :link: advanced/super_resolution_with_onnxruntime.html
+   :tags: ONNX,Production
+
+
 .. Reinforcement Learning
 
 .. customcarditem::
@@ -327,13 +337,6 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
    :link: advanced/cpp_export.html
    :tags: Production,TorchScript
-
-.. customcarditem::
-   :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
-   :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
-   :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
-   :link: advanced/super_resolution_with_onnxruntime.html
-   :tags: Production
 
 .. Code Transformations with FX
 
@@ -918,6 +921,7 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
+   beginner/onnx/intro_onnx
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
