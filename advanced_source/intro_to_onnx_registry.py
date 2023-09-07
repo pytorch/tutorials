@@ -93,8 +93,9 @@ custom_aten = onnxscript.values.Opset(domain="custom.aten", version=1)
 
 # NOTE: The function signature must match the signature of the unsupported ATen operator.
 # https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
+# NOTE: All attributes must be annotated with type hints.
 @onnxscript.script(custom_aten)
-def custom_aten_add(x, y, alpha=1):
+def custom_aten_add(x, y, alpha: float = 1.0):
     alpha = opset18.CastLike(alpha, y)
     y = opset18.Mul(y, alpha)
     return opset18.Add(x, y)
@@ -112,18 +113,18 @@ export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
 export_output = torch.onnx.dynamo_export(aten_add_model, input_add_x, input_add_y, export_options=export_options)
 
 # Make sure the model uses custom_aten_add instead of aten::add.Tensor
-# The graph has two graph nodes, one for input, and one for custom_aten_add,
-# and inside custom_aten_add, there are three function nodes, one for each
-# operator.
+# The graph has one graph nodes for custom_aten_add, and inside 
+# custom_aten_add, there are four function nodes, one for each
+# operator, and one for constant attribute.
 # graph node domain is the custom domain we registered
-assert export_output.model_proto.graph.node[1].domain == "custom.aten"
-assert len(export_output.model_proto.graph.node) == 2
+assert export_output.model_proto.graph.node[0].domain == "custom.aten"
+assert len(export_output.model_proto.graph.node) == 1
 # graph node name is the function name
-assert export_output.model_proto.graph.node[1].op_type == "custom_aten_add"
+assert export_output.model_proto.graph.node[0].op_type == "custom_aten_add"
 # function node domain is empty because we use standard ONNX operators
-assert export_output.model_proto.functions[0].node[2].domain == ""
+assert export_output.model_proto.functions[0].node[3].domain == ""
 # function node name is the standard ONNX operator name
-assert export_output.model_proto.functions[0].node[2].op_type == "Add"
+assert export_output.model_proto.functions[0].node[3].op_type == "Add"
 
 # %%
 # TODO: Check the ONNX model with Netron
