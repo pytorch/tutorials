@@ -317,7 +317,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # on the same set of functions for both modules.
 # The reason for this here is that ``torch.compile`` is very good at removing the
 # framework overhead associated with PyTorch. If your model is launching
-# large, efficient CUDA kernels, which in this case ``CausaulSelfAttention``
+# large, efficient CUDA kernels, which in this case ``CausalSelfAttention``
 # is, then the overhead of PyTorch can be hidden.
 #
 # In reality, your module does not normally consist of a singular
