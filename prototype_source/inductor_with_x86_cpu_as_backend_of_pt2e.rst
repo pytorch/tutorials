@@ -12,7 +12,7 @@ Prerequisites
 Introduction
 ^^^^^^^^^^^^^^
 
-This tutorial introduces the steps to use PyTorch 2.0 Export Quantization flow and TorchInductor to do post training static quantization
+This tutorial introduces the steps to use PyTorch 2.0 Export Quantization flow and TorchInductor to do post-training static quantization
 in graph mode on X86 CPU. 
 
 - New Quantization 2.0 flow uses the PT2 Export workflow to capture the model into a graph and perform quantization transformations on top of the ATen dialect graph. This approach is expected to have significantly higher model coverage, better programmability, and a simplified UX.
@@ -25,16 +25,16 @@ The high-level architecture of quantization 2.0 with Inductor could look like th
     float_model(Python)                               Input
         \                                              /
          \                                            /
-    —-------------------------------------------------------
-    |                    Torch Export                     |
-    —-------------------------------------------------------
+    —--------------------------------------------------------
+    |                    Torch Export                       |
+    —--------------------------------------------------------
                                 |
                         FX Graph in ATen     
                                 |            X86InductorQuantizer
                                 |                 /
                                 |                /
     —--------------------------------------------------------
-    |                    prepare_pt2e                      |
+    |                    prepare_pt2e                       |
     —--------------------------------------------------------
                                 |
                          Calibrate/Train
@@ -61,7 +61,7 @@ Now, we will have a step-by-step tutorial for how to use it with `torchvision re
 1. Graph capture
 -------------------
 
-We will start by doing the necessary imports, capturing the FX Graph from eager module.
+We will start by doing the necessary imports, capturing the FX Graph from the eager module.
 
 ::
 
@@ -80,7 +80,7 @@ We will start by doing the necessary imports, capturing the FX Graph from eager 
     # Set the model to eval mode
     model = model.eval()
 
-    # Create the data, using the dummy data here as example
+    # Create the data, using the dummy data here as an example
     traced_bs = 50
     x = torch.randn(traced_bs, 3, 224, 224).contiguous(memory_format=torch.channels_last)
     example_inputs = (x,)
@@ -88,12 +88,12 @@ We will start by doing the necessary imports, capturing the FX Graph from eager 
     # Capture the FX Graph to be quantized
     with torch.no_grad():
         # For PyTorch Master, using the API of `capture_pre_autograd_graph`
-        # Note 1: `capture_pre_autograd_graph` is also a short term API, it will be updated to use the offical `torch.export` API when that is ready.
+        # Note 1: `capture_pre_autograd_graph` is also a short-term API, it will be updated to use the official `torch.export` API when that is ready.
         exported_model = capture_pre_autograd_graph(
             model,
             example_inputs
         )
-        # Note 2: For PyTorch 2.1 release, please using the API of `torch._dynamo.export` to capture the FX Graph
+        # Note 2: For PyTorch 2.1 release, please use the API of `torch._dynamo.export` to capture the FX Graph
         # exported_model, guards = torch._dynamo.export(
         #     model,
         #     *copy.deepcopy(example_inputs),
@@ -122,7 +122,7 @@ When Vector Neural Network Instruction is not available, the onednn backend sile
 `multiplications are 7-bit x 8-bit <https://oneapi-src.github.io/oneDNN/dev_guide_int8_computations.html#inputs-of-mixed-type-u8-and-s8>`_. In other words, potential
 numeric saturation and accuracy issue may happen when running on CPU without Vector Neural Network Instruction.
 
-After we import the backend specific Quantizer, we will prepare the Modeil for Post Training Static Quantization.
+After we import the backend-specific Quantizer, we will prepare the model for post-training static quantization.
 `prepare_pt2e` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
 
 ::
@@ -130,14 +130,14 @@ After we import the backend specific Quantizer, we will prepare the Modeil for P
     # PT2E Quantization flow
     prepared_model = prepare_pt2e(exported_model, quantizer)
 
-Now, we will calibrate the `prepared_model` after the observers inserted in the model.
+Now, we will calibrate the `prepared_model` after the observers are inserted in the model.
 
 ::
 
-    # We use the dummy data as example here
+    # We use the dummy data as an example here
     prepared_model(*example_inputs)
 
-    # User can define its own dataset to calibrate
+    # Alternatively: user can define the dataset to calibrate
     # def calibrate(model, data_loader):
     #     model.eval()
     #     with torch.no_grad():
@@ -157,7 +157,7 @@ After these steps, we finished applying the Quantization flow and we will get th
 3. Lowering into Inductor
 ---------------------------
 
-After we get the reference quantized model, we will further lower it into Inductor backend.
+After we get the reference quantized model, we will further lower it into the inductor backend.
 
 ::
 
@@ -167,8 +167,8 @@ After we get the reference quantized model, we will further lower it into Induct
     optimized_model(*example_inputs)
 
 
-Put all these code together, we will have the `toy example code <https://gist.github.com/leslie-fang-intel/3f1652ef8296ce916717e938d887e86a>`_.
-Please note that, since the Inductor `freeze` feature does not default turn on yet, please running your example code with `TORCHINDUCTOR_FREEZING=1`.
+Put all these codes together, we will have the `toy example code <https://gist.github.com/leslie-fang-intel/3f1652ef8296ce916717e938d887e86a>`_.
+Please note that since the Inductor `freeze` feature does not default turn on yet, run your example code with `TORCHINDUCTOR_FREEZING=1`.
 For example:
 
 ::
@@ -179,4 +179,4 @@ For example:
 ---------------
 
 With this tutorial, we introduce how to use Inductor with X86 CPU in PyTorch 2.0 Quantization. Users can learn about
-how to use ``X86InductorQuantizer`` to quantize a model and lowering it into the Inductor on X86 CPU device.
+how to use ``X86InductorQuantizer`` to quantize a model and lower it into the Inductor with X86 CPU devices.
