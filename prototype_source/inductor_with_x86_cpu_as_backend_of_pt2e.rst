@@ -58,8 +58,8 @@ further boost the models' performance by leveraging the
 
 Now, we will have a step-by-step tutorial for how to use it with `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_.
 
-1. Graph capture
--------------------
+1. Capture FX Graph
+---------------------
 
 We will start by doing the necessary imports, capturing the FX Graph from the eager module.
 
@@ -103,8 +103,8 @@ We will start by doing the necessary imports, capturing the FX Graph from the ea
 
 Now, we will have the FX Module to be quantized.
 
-2. Quantization flow
-----------------------
+2. Apply Quantization Flow
+----------------------------
 
 After we capture the FX Module to be quantized, we will import the Backend Quantizer for X86 CPU and configure how to
 quantize the model.
@@ -154,8 +154,8 @@ Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt
 After these steps, we finished applying the quantization flow and we will get the reference quantized model.
 
 
-3. Lowering into Inductor
----------------------------
+3. Lower into Inductor
+------------------------
 
 After we get the reference quantized model, we will further lower it into the inductor backend.
 
