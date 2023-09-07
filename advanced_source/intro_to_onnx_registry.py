@@ -12,7 +12,7 @@ the capability to address unsupported operators in ONNX.
 In this tutorial we will cover the following scenarios:
 
 1. Unsupported ATen operators
-2. Unsupported PyTorch operators with existing ONNX RUNTIME support
+2. Unsupported ATen operators with existing ONNX RUNTIME support
 3. Unsupported PyTorch operators with no ONNX RUNTIME support
 
 """
@@ -24,6 +24,10 @@ torch.manual_seed(191009)  # set the seed for reproducibility
 
 import onnxscript  # pip install onnxscript-preview
 print(onnxscript.__version__)
+
+# NOTE: opset18 is the only version of ONNX operators we are 
+# using in torch.onnx.dynamo_export for now.
+from onnxscript import opset18
 
 import onnxruntime  # pip install onnxruntime
 print(onnxruntime.__version__)
@@ -45,72 +49,55 @@ warnings.filterwarnings('ignore')
 # In this section, we will demonstrate how to address unsupported ATen 
 # operators.
 #
+# If the model cannot be exported to ONNX because aten::add.Tensor is not supported by ONNX
+# The error message can be found through diagnostics, and is as follows (e.g. aten::add.Tensor):
+#    ``RuntimeErrorWithDiagnostic: Unsupported FX nodes: {'call_function': ['aten.add.Tensor']}. ``
+#
 # To support unsupported ATen operators, we need two things:
 # 1. The unsupported ATen operator namespace, operator name, and the
-#    corresponding overload. (e.g. <namespace>::<op_name>.<overload> - aten::add.Tensor)
+#    corresponding overload. (e.g. <namespace>::<op_name>.<overload> - aten::add.Tensor),
+#    which can be found in the error message.
 # 2. The implementation of the operator in onnxscript.
-#
 
 # %%
-# NOTE: Setup the environment for an unsupported ATen operator
-# To observe the error of unsupported ATen operators,
-# we can start out by making a simple model that uses an ATen operator
-# that is supported by ONNX, but deleted purposely in this tutorial. 
-# We’ll use ``aten::add`` operator.
+# NOTE: ``is_registered_op`` is a method in ONNX registry that checks
+# whether the operator is supported by ONNX. If the operator is not
+# supported, it will return False. Otherwise, it will return True.
 
 onnx_registry = torch.onnx.OnnxRegistry()
-# aten::add.default and aten::add.Tensor is supported by ONNX
+# aten::add.default and aten::add.Tensor are supported by ONNX
 print(f"aten::add.default is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='default')}")
+# aten::add.Tensor is the one invoked by torch.ops.aten.add
 print(f"aten::add.Tensor is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}")
 
 # %%
-# NOTE: This is a hack to delete an existing operator from ONNX registry
-from torch.onnx._internal.fx import registration
-hack_to_delete_aten_add_default = registration.OpName.from_name_parts(namespace="aten", op_name="add")
-hack_to_delete_aten_add_tensor = registration.OpName.from_name_parts(namespace="aten", op_name="add", overload="Tensor")
-del onnx_registry._registry[hack_to_delete_aten_add_default]
-del onnx_registry._registry[hack_to_delete_aten_add_tensor]
-print(f"aten::add.default is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='default')}")
-print(f"aten::add.Tensor is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}")
+# In this example, we will pretend aten::add.Tensor is not supported by ONNX
+# registry, and we will show how to support it. ONNX registry supports operator
+# registration overrided by user. In this case, we will override the registration
+# of aten::add.Tensor with our own implementation.
 
 # %%
-# Now aten::add is not supported by ONNX, Let's try to export 
-# a model with aten::add operator to ONNX to see what happens.
-
 class Model(torch.nn.Module):
     def forward(self, x, y):
         # specifically call out aten::add
         return torch.ops.aten.add(x, y)
 
-x = torch.randn(3, 4)
-y = torch.randn(3, 4)
-model = Model()
-export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
-
-try:
-    export_output = torch.onnx.dynamo_export(model, x, y, export_options=export_options)
-except torch.onnx.OnnxExporterError as e:
-    print(f"Caught exception: {e}")
-
-# %%
-# The model cannot be exported to ONNX because aten::add.Tensor is not supported by ONNX
-# The error message can be found through diagnostics, and is as follows:
-#    ``RuntimeErrorWithDiagnostic: Unsupported FX nodes: {'call_function': ['aten.add.Tensor']}. ``
-
-# The error message gives us the first thing we need to support unsupported ATen operators:
-# the unsupported ATen operator namespace, operator name, and the corresponding overload.
-# (e.g. <namespace>::<op_name>.<overload> - aten::add.Tensor)
+input_add_x = torch.randn(3, 4)
+input_add_y = torch.randn(3, 4)
+aten_add_model = Model()
 
 # %%
 # Let's create a onnxscript function to support aten::add.Tensor.
 # This can be named anything, and shows later on Netron graph.
 custom_aten = onnxscript.values.Opset(domain="custom.aten", version=1)
 
-# NOTE: opset18 is the only version of ONNX operators we are 
-# using in torch.onnx.dynamo_export for now.
+# NOTE: The function signature must match the signature of the unsupported ATen operator.
+# https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
 @onnxscript.script(custom_aten)
-def custom_aten_add(x, y):
-    return onnxscript.opset18.Add(x, y)
+def custom_aten_add(x, y, alpha=1):
+    alpha = opset18.CastLike(alpha, y)
+    y = opset18.Mul(y, alpha)
+    return opset18.Add(x, y)
 
 
 
@@ -122,18 +109,112 @@ def custom_aten_add(x, y):
 onnx_registry.register_op(namespace="aten", op_name="add", overload="Tensor", function=custom_aten_add)
 print(f"aten::add.Tensor is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}")
 export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
-export_output = torch.onnx.dynamo_export(model, x, y, export_options=export_options)
-print(export_output.model_proto)
+export_output = torch.onnx.dynamo_export(aten_add_model, input_add_x, input_add_y, export_options=export_options)
+
+# Make sure the model uses custom_aten_add instead of aten::add.Tensor
+# The graph has two graph nodes, one for input, and one for custom_aten_add,
+# and inside custom_aten_add, there are three function nodes, one for each
+# operator.
+# graph node domain is the custom domain we registered
+assert export_output.model_proto.graph.node[1].domain == "custom.aten"
+assert len(export_output.model_proto.graph.node) == 2
+# graph node name is the function name
+assert export_output.model_proto.graph.node[1].op_type == "custom_aten_add"
+# function node domain is empty because we use standard ONNX operators
+assert export_output.model_proto.functions[0].node[2].domain == ""
+# function node name is the standard ONNX operator name
+assert export_output.model_proto.functions[0].node[2].op_type == "Add"
 
 # %%
-# Check the ONNX model with Netron
+# TODO: Check the ONNX model with Netron
 # ...
 
 # %%
+# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+export_output.save("./custom_add_model.onnx")
+ort_session = onnxruntime.InferenceSession("./custom_add_model.onnx", providers=['CPUExecutionProvider'])
+
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+onnx_input = export_output.adapt_torch_inputs_to_onnx(input_add_x, input_add_y)
+onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
+onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+
+# The output can be a single tensor or a list of tensors, depending on the model.
+# Let's execute the PyTorch model and use it as benchmark next
+torch_outputs = aten_add_model(input_add_x, input_add_y)
+torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+
+# Now we can compare both results
+assert len(torch_outputs) == len(onnxruntime_outputs)
+for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
+    torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
+
+# %%
 ######################################################################
-# Unsupported PyTorch operators with existing ONNX RUNTIME support
+# Unsupported ATen operators with existing ONNX RUNTIME support
 # -----------------------------------------------------------------
 #
 # 
+
+# %%
+class CustomGelu(torch.nn.Module):
+    def forward(self, x):
+        return torch.ops.aten.gelu(x)
+
+custom_ort = onnxscript.values.Opset(domain="com.microsoft", version=1)
+
+@onnxscript.script(custom_ort)
+def custom_aten_gelu(x, approximate: str = "none"):
+    # We know com.microsoft::Gelu is supported by ONNX RUNTIME
+    # It's only not supported by ONNX
+    return custom_ort.Gelu(x)
+
+# %%
+onnx_registry = torch.onnx.OnnxRegistry()
+onnx_registry.register_op(namespace="aten", op_name="gelu", overload="default", function=custom_aten_gelu)
+export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
+
+aten_gelu_model = CustomGelu()
+input_gelu_x = torch.randn(3, 3)
+
+export_output = torch.onnx.dynamo_export(aten_gelu_model, input_gelu_x, export_options=export_options)
+
+# Make sure the model uses custom_aten_add instead of aten::add.Tensor
+# graph node domain is the custom domain we registered
+assert export_output.model_proto.graph.node[0].domain == "com.microsoft"
+# graph node name is the function name
+assert export_output.model_proto.graph.node[0].op_type == "custom_aten_gelu"
+# function node domain is the custom domain we registered
+assert export_output.model_proto.functions[0].node[0].domain == "com.microsoft"
+# function node name is the node name used in the function
+assert export_output.model_proto.functions[0].node[0].op_type == "Gelu"
+
+
+# %%
+# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+export_output.save("./custom_gelu_model.onnx")
+ort_session = onnxruntime.InferenceSession("./custom_gelu_model.onnx", providers=['CPUExecutionProvider'])
+
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+onnx_input = export_output.adapt_torch_inputs_to_onnx(input_gelu_x)
+onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
+onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+
+# The output can be a single tensor or a list of tensors, depending on the model.
+# Let's execute the PyTorch model and use it as benchmark next
+torch_outputs = aten_gelu_model(input_gelu_x)
+torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+
+# Now we can compare both results
+assert len(torch_outputs) == len(onnxruntime_outputs)
+for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
+    torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
+
+# %%
+
 
 
