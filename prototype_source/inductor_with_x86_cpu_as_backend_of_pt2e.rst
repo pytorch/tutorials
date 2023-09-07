@@ -117,20 +117,20 @@ quantize the model.
 
 .. note::
 
-- The default quantization configuration in `X86InductorQuantizer` uses 8-bits for both weights and activations, as indicated by the argument `reduce_range=False`.
+- The default quantization configuration in ``X86InductorQuantizer`` uses 8-bits for both weights and activations, as indicated by the argument ``reduce_range=False``.
   When Vector Neural Network Instruction is not available, the onednn backend silently chooses kernels that assume
   `multiplications are 7-bit x 8-bit <https://oneapi-src.github.io/oneDNN/dev_guide_int8_computations.html#inputs-of-mixed-type-u8-and-s8>`_. In other words, potential
   numeric saturation and accuracy issue may happen when running on CPU without Vector Neural Network Instruction.
 
 After we import the backend-specific Quantizer, we will prepare the model for post-training static quantization.
-`prepare_pt2e` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
+``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
 
 ::
 
     # PT2E Quantization flow
     prepared_model = prepare_pt2e(exported_model, quantizer)
 
-Now, we will calibrate the `prepared_model` after the observers are inserted in the model.
+Now, we will calibrate the ``prepared_model`` after the observers are inserted in the model.
 
 ::
 
@@ -145,13 +145,13 @@ Now, we will calibrate the `prepared_model` after the observers are inserted in 
     #             model(image)
     # calibrate(prepared_model, data_loader_test)  # run calibration on sample data
 
-Finally, we will convert the Calibrated Model to a Quantized Model. `convert_pt2e` takes a calibrated model and produces a reference quantized model.
+Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt2e`` takes a calibrated model and produces a reference quantized model.
 
 ::
 
     converted_model = convert_pt2e(prepared_model).eval()
 
-After these steps, we finished applying the Quantization flow and we will get the reference quantized model.
+After these steps, we finished applying the quantization flow and we will get the reference quantized model.
 
 
 3. Lowering into Inductor
@@ -168,7 +168,7 @@ After we get the reference quantized model, we will further lower it into the in
 
 
 Put all these codes together, we will have the `toy example code <https://gist.github.com/leslie-fang-intel/3f1652ef8296ce916717e938d887e86a>`_.
-Please note that since the Inductor `freeze` feature does not default turn on yet, run your example code with `TORCHINDUCTOR_FREEZING=1`.
+Please note that since the Inductor ``freeze`` feature does not default turn on yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
 For example:
 
 ::
@@ -179,4 +179,4 @@ For example:
 ---------------
 
 With this tutorial, we introduce how to use Inductor with X86 CPU in PyTorch 2.0 Quantization. Users can learn about
-how to use ``X86InductorQuantizer`` to quantize a model and lower it into the Inductor with X86 CPU devices.
+how to use ``X86InductorQuantizer`` to quantize a model and lower it into the inductor with X86 CPU devices.
