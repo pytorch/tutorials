@@ -216,6 +216,88 @@ for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
     torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
 
 # %%
+######################################################################
+# Unsupported PyTorch operators with no ONNX RUNTIME support
+# ----------------------------------------------------------
+#
+#
 
+
+# %%
+# NOTE: This is a beta feature in PyTorch, and is subject to change.
+
+from torch._custom_op import impl as custom_op
+
+@custom_op.custom_op("mylibrary::foo_op")
+def foo_op(x: torch.Tensor) -> torch.Tensor:
+    ...
+
+@foo_op.impl_abstract()
+def foo_op_impl_abstract(x):
+    return torch.empty_like(x)
+
+@foo_op.impl("cpu")
+def foo_op_impl(x):
+    return torch.round(x + x)
+
+torch._dynamo.allow_in_graph(foo_op)
+
+class CustomFoo(torch.nn.Module):
+    def forward(self, x):
+        return foo_op(x)
+
+input_foo_x = torch.randn(3)
+custom_foo_model = CustomFoo()
+
+# %%
+custom_opset = onnxscript.values.Opset(domain="test.customop", version=1)
+
+# Exporter for torch.ops.foo.bar.default.
+@onnxscript.script(custom_opset)
+def custom_foo(x):
+    # The same as opset18.Add(x, x)
+    add_x = custom_opset.CustomOpOne(x, x)
+    # The same as opset18.Round(x, x)
+    round_x = custom_opset.CustomOpTwo(add_x)
+    # Cast to FLOAT to match the ONNX type
+    return opset18.Cast(round_x, to=1)
+
+# %%
+onnx_registry = torch.onnx.OnnxRegistry()
+onnx_registry.register_op(namespace="mylibrary", op_name="foo_op", overload="default", function=custom_foo)
+
+export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
+export_output = torch.onnx.dynamo_export(custom_foo_model, input_foo_x, export_options=export_options)
+
+assert export_output.model_proto.graph.node[0].domain == "test.customop"
+assert export_output.model_proto.graph.node[0].op_type == "custom_foo"
+assert export_output.model_proto.functions[0].node[0].domain == "test.customop"
+assert export_output.model_proto.functions[0].node[0].op_type == "CustomOpOne"
+assert export_output.model_proto.functions[0].node[1].domain == "test.customop"
+assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
+
+# %%
+# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+export_output.save("./custom_foo_model.onnx")
+ort_session_options = onnxruntime.SessionOptions()
+ort_session_options.register_custom_ops_library("/home/titaiwang/onnxruntime/build/Linux/RelWithDebInfo/libcustom_op_library.so")
+ort_session = onnxruntime.InferenceSession("./custom_foo_model.onnx", providers=['CPUExecutionProvider'], sess_options=ort_session_options)
+
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+onnx_input = export_output.adapt_torch_inputs_to_onnx(input_foo_x)
+onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
+onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+
+# The output can be a single tensor or a list of tensors, depending on the model.
+# Let's execute the PyTorch model and use it as benchmark next
+torch_outputs = custom_foo_model(input_foo_x)
+torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+
+# Now we can compare both results
+assert len(torch_outputs) == len(onnxruntime_outputs)
+for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
+    torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
 
 
