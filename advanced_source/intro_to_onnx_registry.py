@@ -4,18 +4,31 @@ Introduction to ONNX Registry
 ===========================
 
 **Authors:** Ti-Tai Wang (titaiwang@microsoft.com)
-
-This tutorial is an introduction to ONNX registry, which 
-empowers us to create our own ONNX registry, granting us 
-the capability to address unsupported operators in ONNX.
-
-In this tutorial we will cover the following scenarios:
-
-1. Unsupported ATen operators
-2. Unsupported ATen operators with existing ONNX RUNTIME support
-3. Unsupported PyTorch operators with no ONNX RUNTIME support
-
 """
+
+# %%
+###############################################################################
+# Overview
+# ~~~~~~~~
+#
+# This tutorial is an introduction to ONNX registry, which 
+# empowers us to create our own ONNX registry, granting us 
+# the capability to address unsupported operators in ONNX.
+#
+# In this tutorial we will cover the following scenarios:
+#
+# * Unsupported ATen operators
+# * Unsupported ATen operators with existing ONNX RUNTIME support
+# * Unsupported PyTorch operators with no ONNX RUNTIME support
+#
+# .. note::
+#
+#   This tutorial requires PyTorch 2.1.0 or later.
+#
+# .. note::
+#
+#   This tutorial requires `onnxscript <https://github.com/microsoft/onnxscript#readme>``
+#
 
 # %%
 import torch
@@ -41,15 +54,13 @@ warnings.filterwarnings('ignore')
 # Unsupported ATen operators
 # ---------------------------------
 #
-# ATen operators are the operators that are implemented in PyTorch, and
-# ONNX exporter team has to manually implement the conversion from ATen
-# operators to ONNX operators through onnxscript. Although ONNX exporter
-# team has been doing their best to support as many ATen operators as
-# possible, there are still some ATen operators that are not supported.
-# In this section, we will demonstrate how to address unsupported ATen 
-# operators.
+# ATen operators are implemented in PyTorch, and the ONNX exporter team must manually implement the 
+# conversion from ATen operators to ONNX operators through onnxscript. Although the ONNX exporter 
+# team has been making their best efforts to support as many ATen operators as possible, some ATen
+# operators are still not supported. In this section, we will demonstrate how to address unsupported
+# ATen operators as a user.
 #
-# If the model cannot be exported to ONNX because aten::add.Tensor is not supported by ONNX
+# If the model cannot be exported to ONNX, for instance, aten::add.Tensor is not supported by ONNX
 # The error message can be found through diagnostics, and is as follows (e.g. aten::add.Tensor):
 #    ``RuntimeErrorWithDiagnostic: Unsupported FX nodes: {'call_function': ['aten.add.Tensor']}. ``
 #
@@ -57,7 +68,8 @@ warnings.filterwarnings('ignore')
 # 1. The unsupported ATen operator namespace, operator name, and the
 #    corresponding overload. (e.g. <namespace>::<op_name>.<overload> - aten::add.Tensor),
 #    which can be found in the error message.
-# 2. The implementation of the operator in onnxscript.
+# 2. The implementation of the operator in `onnxscript <https://github.com/microsoft/onnxscript>`.
+#
 
 # %%
 # NOTE: ``is_registered_op`` is a method in ONNX registry that checks
@@ -71,10 +83,14 @@ print(f"aten::add.default is supported by ONNX registry: {onnx_registry.is_regis
 print(f"aten::add.Tensor is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}")
 
 # %%
-# In this example, we will pretend aten::add.Tensor is not supported by ONNX
-# registry, and we will show how to support it. ONNX registry supports operator
-# registration overrided by user. In this case, we will override the registration
-# of aten::add.Tensor with our own implementation.
+######################################################################
+#
+# In this example, we will assume that aten::add.Tensor is not supported by the ONNX registry, 
+# and we will demonstrate how to support it. The ONNX registry allows user overrides for operator 
+# registration. In this case, we will override the registration of aten::add.Tensor with our 
+# implementation and verify it. However, this unsupported operator should return False when 
+# checked with `is_registered_op`.
+#
 
 # %%
 class Model(torch.nn.Module):
@@ -100,13 +116,10 @@ def custom_aten_add(x, y, alpha: float = 1.0):
     y = opset18.Mul(y, alpha)
     return opset18.Add(x, y)
 
-
-
 # %%
 # Now we have both things we need to support unsupported ATen operators.
 # Let's register the custom_aten_add function to ONNX registry, and 
 # export the model to ONNX again.
-
 onnx_registry.register_op(namespace="aten", op_name="add", overload="Tensor", function=custom_aten_add)
 print(f"aten::add.Tensor is supported by ONNX registry: {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}")
 export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
@@ -127,11 +140,18 @@ assert export_output.model_proto.functions[0].node[3].domain == ""
 assert export_output.model_proto.functions[0].node[3].op_type == "Add"
 
 # %%
-# TODO: Check the ONNX model with Netron
-# ...
+######################################################################
+#
+# custom_aten_add_model ONNX graph in Netron:
+# .. image:: ../_static/img/onnx/custom_aten_add_model.png
+#
+# Inside the custom_aten_add function:
+# .. image:: ../_static/img/onnx/custom_aten_add_function.png
+#
+# After checking the ONNX graph, we can use ONNX Runtime to run the model,
 
 # %%
-# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+# Use ONNX Runtime to run the model, and compare the results with PyTorch
 export_output.save("./custom_add_model.onnx")
 ort_session = onnxruntime.InferenceSession("./custom_add_model.onnx", providers=['CPUExecutionProvider'])
 
@@ -142,12 +162,9 @@ onnx_input = export_output.adapt_torch_inputs_to_onnx(input_add_x, input_add_y)
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
-# The output can be a single tensor or a list of tensors, depending on the model.
-# Let's execute the PyTorch model and use it as benchmark next
 torch_outputs = aten_add_model(input_add_x, input_add_y)
 torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
 
-# Now we can compare both results
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
     torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
@@ -155,9 +172,21 @@ for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
 # %%
 ######################################################################
 # Unsupported ATen operators with existing ONNX RUNTIME support
-# -----------------------------------------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+# In this case, the unsupported ATen operator is supported by ONNX RUNTIME but not 
+# supported by ONNX spec. This occurs because ONNX RUNTIME users can implement their 
+# custom operators, which ONNX RUNTIME supports. When the need arises, ONNX RUNTIME 
+# will contribute these custom operators to the ONNX spec. Therefore, in the ONNX registry, 
+# we only need to register the operator with the recognized namespace and operator name.
+#
+
+# %%
+######################################################################
 # 
+# In the following example, we would like to use the Gelu in ONNX Runtime, 
+# which is not the same Gelu in ONNX spec. Thus, we register the Gelu with
+# the namespace "com.microsoft" and operator name "Gelu".
 
 # %%
 class CustomGelu(torch.nn.Module):
@@ -194,7 +223,17 @@ assert export_output.model_proto.functions[0].node[0].op_type == "Gelu"
 
 
 # %%
-# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+######################################################################
+#
+# custom_aten_gelu_model ONNX graph in Netron:
+# .. image:: ../_static/img/onnx/custom_aten_gelu_model.png
+#
+# Inside the custom_aten_gelu function:
+# .. image:: ../_static/img/onnx/custom_aten_gelu_function.png
+#
+# After checking the ONNX graph, we can use ONNX Runtime to run the model,
+
+# %%
 export_output.save("./custom_gelu_model.onnx")
 ort_session = onnxruntime.InferenceSession("./custom_gelu_model.onnx", providers=['CPUExecutionProvider'])
 
@@ -205,12 +244,9 @@ onnx_input = export_output.adapt_torch_inputs_to_onnx(input_gelu_x)
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
-# The output can be a single tensor or a list of tensors, depending on the model.
-# Let's execute the PyTorch model and use it as benchmark next
 torch_outputs = aten_gelu_model(input_gelu_x)
 torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
 
-# Now we can compare both results
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
     torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
@@ -218,14 +254,27 @@ for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
 # %%
 ######################################################################
 # Unsupported PyTorch operators with no ONNX RUNTIME support
-# ----------------------------------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+# In this case, the operator is not supported by any frameworks, and we
+# would like to use it in ONNX graph. Therefore, we need to implement
+# the operator in three places:
+#
+# 1. PyTorch FX graph
+# 2. ONNX registry
+# 3. `ONNX RUNTIME <https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md>`
 #
 
+# %%
+######################################################################
+#
+# Firstly, we need to implement the operator in PyTorch FX graph.
+# In this example, we will implement a custom operator that takes
+# one tensor input, and returns an input. The operator adds the input
+# to itself, and returns the rounded result.
 
 # %%
 # NOTE: This is a beta feature in PyTorch, and is subject to change.
-
 from torch._custom_op import impl as custom_op
 
 @custom_op.custom_op("mylibrary::foo_op")
@@ -238,6 +287,7 @@ def foo_op_impl_abstract(x):
 
 @foo_op.impl("cpu")
 def foo_op_impl(x):
+    # add x to itself, and round the result
     return torch.round(x + x)
 
 torch._dynamo.allow_in_graph(foo_op)
@@ -248,6 +298,18 @@ class CustomFoo(torch.nn.Module):
 
 input_foo_x = torch.randn(3)
 custom_foo_model = CustomFoo()
+
+# %%
+######################################################################
+#
+# For the step 2 and 3, we need to implement the operator in ONNX registry.
+# In this example, we will implement the operator in ONNX registry
+# with the namespace "test.customop" and operator name "CustomOpOne",
+# and "CustomOpTwo". These two ops are registered and built in:
+# https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/testdata/custom_op_library/cpu/cpu_ops.cc
+#
+# Please make sure you have implemented the custom operators in cpp, and built 
+# ONNX RUNTIME with the custom op library
 
 # %%
 custom_opset = onnxscript.values.Opset(domain="test.customop", version=1)
@@ -277,9 +339,21 @@ assert export_output.model_proto.functions[0].node[1].domain == "test.customop"
 assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
 
 # %%
-# Now we can use ONNX Runtime to run the model, and compare the results with PyTorch
+######################################################################
+#
+# custom_foo_model ONNX graph in Netron:
+# .. image:: ../_static/img/onnx/custom_foo_model.png
+#
+# Inside the custom_foo function:
+# .. image:: ../_static/img/onnx/custom_foo_function.png
+#
+# After checking the ONNX graph, we can use ONNX Runtime to run the model,
+
+# %%
 export_output.save("./custom_foo_model.onnx")
 ort_session_options = onnxruntime.SessionOptions()
+
+# NOTE: Link the custom op library to ONNX Runtime
 ort_session_options.register_custom_ops_library("/home/titaiwang/onnxruntime/build/Linux/RelWithDebInfo/libcustom_op_library.so")
 ort_session = onnxruntime.InferenceSession("./custom_foo_model.onnx", providers=['CPUExecutionProvider'], sess_options=ort_session_options)
 
