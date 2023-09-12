@@ -183,4 +183,5 @@ For example:
 
 With this tutorial, we introduce how to use Inductor with X86 CPU in PyTorch 2.0 Quantization. Users can learn about
 how to use ``X86InductorQuantizer`` to quantize a model and lower it into the inductor with X86 CPU devices. If you require new quantization
-features for the ``X86InductorQuantizer``, please submit a new issue in PyTorch GitHub repository labeled as ``Feature request``. 
+features for the ``X86InductorQuantizer``, please submit a new issue in PyTorch GitHub repository labeled as ``oncall: quantization`` and assign
+it to `Leslie Fang <https://github.com/leslie-fang-intel>`_.
