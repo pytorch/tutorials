@@ -62,7 +62,7 @@ print(exported_mod(torch.randn(8, 100), torch.randn(8, 100)))
 # that is, the computation graph of all PyTorch operations.
 # The FX graph has some important properties:
 # - The operations are "ATen-level" operations.
-# - The graph is "functionalized", meaning that no operations are mutatations.
+# - The graph is "functionalized", meaning that no operations are mutations.
 #
 # The ``graph_module`` attribute is the ``GraphModule`` that wraps the ``graph`` attribute
 # so that it can be ran as a ``torch.nn.Module``.
