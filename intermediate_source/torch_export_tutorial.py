@@ -36,7 +36,11 @@ torch.export Tutorial
 # a dictionary of keyword arguments.
 
 import torch
+<<<<<<< HEAD
 from torch.export import export
+=======
+from torch._export import export
+>>>>>>> fa78acf373502939b314e3f0ba7662ad5893488d
 
 class MyModule(torch.nn.Module):
     def __init__(self):
