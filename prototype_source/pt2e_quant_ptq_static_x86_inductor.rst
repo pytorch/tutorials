@@ -154,7 +154,7 @@ Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt
 
     converted_model = convert_pt2e(prepared_model)
 
-After these steps, we finished applying the quantization flow and we will get the reference quantized model.
+After these steps, we finished running the quantization flow and we will get the reference quantized model.
 
 
 3. Lower into Inductor
