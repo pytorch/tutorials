@@ -3,7 +3,7 @@
 """
 torch.export Tutorial
 ================
-**Author:** William Wen
+**Author:** William Wen, Zhengxu Chen
 """
 
 ######################################################################
@@ -423,15 +423,36 @@ print(exported_custom_op_example(torch.randn(3, 3)))
 ######################################################################
 # ExportDB
 # --------
-# `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ is a resource for ``torch.export``
-# developers. It documents types of code supported by ``torch.export`` and provides example code to
-# assist developers in modifying existing code to be compatible with ``torch.export``.
-# ExportDB is not exhaustive and is intended to only cover the most common confusing use cases.
-#
-# We can look through ExportDB in order to understand how to modify the below code to make it
-# compatible with ``torch.export``.
+# ``torch.export`` will only ever export a single computation graph from a PyTorch program. Because of this requirement,
+# there will be Python or PyTorch features that are not compatible with ``torch.export``, which will require users to
+# rewrite parts of their model code. We have seen examples of this earlier in the tutorial -- for example, rewriting
+# if-statements using ``cond``.
 
-# TODO actually come up with an example
+# `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ is the standard reference that documents
+# supported and unsupported Python/PyTorch features for ``torch.export``. It is essentially a list a program samples, each
+# of which represents the usage of one particular Python/PyTorch feature and its interaction with ``torch.export``.
+# Examples are also tagged by category so that they can be more easily searched.
+#
+# For example, let's use ExportDB to get a better understanding of how the predicate works in the ``cond`` operator.
+# We can look at the example called ``cond_predicate``, which has a ``torch.cond`` tag. The example code looks like:
+
+def cond_predicate(x):
+    """
+    The conditional statement (aka predicate) passed to cond() must be one of the following:
+      - torch.Tensor with a single element
+      - boolean expression
+    NOTE: If the `pred` is test on a dim with batch size < 2, it will be specialized.
+    """
+    pred = x.dim() > 2 and x.shape[2] > 10
+    return control_flow.cond(pred, lambda x: x.cos(), lambda y: y.sin(), [x])
+
+# More generally, ExportDB can be used as a reference when one of the following occurs:
+# 1. Before attempting ``torch.export``, you know ahead of time that your model uses some tricky Python/PyTorch features
+#    and you want to know if ``torch.export`` covers that feature.
+# 2. When attempting ``torch.export``, there is a failure and it's unclear how to work around it.
+
+# ExportDB is not exhaustive, but is intended to cover all use cases found in typical PyTorch code. Feel free to reach
+# out if there is an important Python/PyTorch feature that should be added to ExportDB or supported by ``torch.export``.
 
 ######################################################################
 # Conclusion
