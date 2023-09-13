@@ -160,7 +160,7 @@ After these steps, we finished applying the quantization flow and we will get th
 3. Lower into Inductor
 ------------------------
 
-After we get the reference quantized model, we will further lower it into the inductor backend.
+After we get the reference quantized model, we will further lower it to the inductor backend.
 
 ::
 
