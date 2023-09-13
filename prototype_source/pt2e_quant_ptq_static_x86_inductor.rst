@@ -91,7 +91,8 @@ We will start by doing the necessary imports, capturing the FX Graph from the ea
 
     # Capture the FX Graph to be quantized
     with torch.no_grad():
-        # For PyTorch Master, using the API of `capture_pre_autograd_graph`
+         # if you are using the PyTorch nightlies or building from source with the pytorch master,
+        # use the API of `capture_pre_autograd_graph`
         # Note 1: `capture_pre_autograd_graph` is also a short-term API, it will be updated to use the official `torch.export` API when that is ready.
         exported_model = capture_pre_autograd_graph(
             model,
