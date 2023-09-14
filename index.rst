@@ -1045,3 +1045,11 @@ Additional Resources
    :caption: Multimodality
 
    beginner/flava_finetuning_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: ONNX
+
+   advanced/onnx_registry_tutorial

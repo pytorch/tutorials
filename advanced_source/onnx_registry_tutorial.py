@@ -220,12 +220,11 @@ export_output = torch.onnx.dynamo_export(
 
 
 ######################################################################
-# Make sure the model uses custom_aten_add instead of aten::add.Tensor
-# The graph has one graph nodes for custom_aten_add, and inside
-# custom_aten_add, there are four function nodes, one for each
-# operator, and one for constant attribute.
+# Make sure the model uses custom_aten_gelu instead of aten::gelu
+# The graph has one graph nodes for custom_aten_gelu, and inside
+# custom_aten_gelu, there is a function node for Gelu with namespace
+# "com.microsoft".
 #
-
 
 # graph node domain is the custom domain we registered
 assert export_output.model_proto.graph.node[0].domain == "com.microsoft"
@@ -238,7 +237,6 @@ assert export_output.model_proto.functions[0].node[0].op_type == "Gelu"
 
 
 ######################################################################
-#
 # custom_aten_gelu_model ONNX graph in Netron:
 # .. image:: ../_static/img/onnx/custom_aten_gelu_model.png
 #
@@ -315,7 +313,6 @@ custom_foo_model = CustomFoo()
 
 
 ######################################################################
-#
 # For the step 2 and 3, we need to implement the operator in ONNX registry.
 # In this example, we will implement the operator in ONNX registry
 # with the namespace "test.customop" and operator name "CustomOpOne",
@@ -349,14 +346,11 @@ export_output = torch.onnx.dynamo_export(
     custom_foo_model, input_foo_x, export_options=export_options
     )
 
-
 ######################################################################
-# Make sure the model uses custom_aten_add instead of aten::add.Tensor
-# The graph has one graph nodes for custom_aten_add, and inside
-# custom_aten_add, there are four function nodes, one for each
-# operator, and one for constant attribute.
+# The exported model proto is accessible through export_output.model_proto.
+# The graph has one graph nodes for custom_foo, and inside custom_foo,
+# there are two function nodes, one for each operator.
 #
-
 
 assert export_output.model_proto.graph.node[0].domain == "test.customop"
 assert export_output.model_proto.graph.node[0].op_type == "custom_foo"
@@ -377,12 +371,27 @@ assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
 # After checking the ONNX graph, we can use ONNX Runtime to run the model,
 #
 
+######################################################################
+# To link your custom op library to ONNX Runtime, you need to use
+# compile your cpp code into a shared library, and link it to ONNX Runtime.
+# Please follow the instructions below:
+#
+# 1. Implement your custom op in cpp by following the instructions here:
+#    https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md
+# 2. Download ONNX Runtime source code from here:
+#    https://github.com/microsoft/onnxruntime/releases
+# 3. Compile and link your custom op library to ONNX RUNTIME:
+#    e.g.:gcc -shared -o libcustom_op_library.so custom_op_library.cc -L /path/to/downloaded/ort/lib/ -lonnxruntime -fPIC
+# 4. Register the custom op library to ONNX Runtime with python API
+#
+
 export_output.save("./custom_foo_model.onnx")
 ort_session_options = onnxruntime.SessionOptions()
 
 # NOTE: Link the custom op library to ONNX Runtime
+# TODO: Can I upload .so file to github?
 ort_session_options.register_custom_ops_library(
-    "/home/titaiwang/onnxruntime/build/Linux/RelWithDebInfo/libcustom_op_library.so"
+    "/path/to/libcustom_op_library.so"
     )
 ort_session = onnxruntime.InferenceSession(
     "./custom_foo_model.onnx", providers=['CPUExecutionProvider'], sess_options=ort_session_options)
