@@ -454,9 +454,9 @@ we offer in the long term might change based on feedback from PyTorch users.
        out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
        return out_i8
      
-* Reference Quantized Model Representation (available in nightlies)
+* Reference Quantized Model Representation (available in the nightly build)
 
-  We will have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
+  We will have a special representation for selected ops, for example, quantized linear. Other ops are represented as ``dq -> float32_op -> q`` and ``q/dq`` are decomposed into more primitive operators.
 
 You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
