@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 `Introduction to ONNX <intro_onnx.html>`_ ||
-**Export a PyTorch model to ONNX**
+**Export a PyTorch model to ONNX** ||
+`Introduction to ONNX Registry <onnx_registry_tutorial.html>`_
 
 Export a PyTorch model to ONNX
 ==============================
@@ -104,7 +105,7 @@ export_output = torch.onnx.dynamo_export(torch_model, torch_input)
 export_output.save("my_image_classifier.onnx")
 
 ######################################################################
-# The ONNX file can be loaded back into memory and checked if it is well formed with the following code:
+# You can load the ONNX file back into memory and check if it is well formed with the following code:
 
 import onnx
 onnx_model = onnx.load("my_image_classifier.onnx")
@@ -115,7 +116,7 @@ onnx.checker.check_model(onnx_model)
 # ----------------------------------------------
 #
 # Now that we have our model saved in a file, we can visualize it with `Netron <https://github.com/lutzroeder/netron>`_.
-# Netron can either be installed on macos, Linux or Windows computers, or run directly from the browser.
+# Netron can either be installed on macOS, Linux or Windows computers, or run directly from the browser.
 # Let's try the web version by opening the following link: https://netron.app/.
 #
 # .. image:: ../../_static/img/onnx/netron_web_ui.png
