@@ -10,7 +10,7 @@ this flow is expected to have significantly higher model coverage
 (`88% on 14K models <https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596>`_),
 better programmability, and a simplified UX.
 
-Exportable by `torch._export.export` is a prerequisite to use the flow, you can
+Exportable by `torch.export.export` is a prerequisite to use the flow, you can
 find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`_.
 
 The high level architecture of quantization 2.0 with quantizer could look like
@@ -18,17 +18,15 @@ this:
 
 ::
 
-    float_model(Python)                               Input
+    float_model(Python)                          Example Input
         \                                              /
          \                                            /
     —-------------------------------------------------------
-    |                        Export                        |
+    |                        export                        |
     —-------------------------------------------------------
                                 |
-                        FX Graph in ATen     XNNPACKQuantizer,
-                                |            or X86InductorQuantizer,
-                                |            or <Other Backend Quantizer>
-                                |                /
+                        FX Graph in ATen     Backend Specific Quantizer
+                                |                       /
     —--------------------------------------------------------
     |                     prepare_pt2e                      |
     —--------------------------------------------------------
@@ -441,8 +439,7 @@ we offer in the long term might change based on feedback from PyTorch users.
 
 * Q/DQ Representation (default)
       
-  Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019- 
- Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
+  Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
 
 .. code-block:: python
 
@@ -457,7 +454,9 @@ we offer in the long term might change based on feedback from PyTorch users.
        out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
        return out_i8
      
-* Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
+* Reference Quantized Model Representation (available in nightlies)
+
+  We will have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
 
 You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
@@ -515,7 +514,7 @@ Now we can compare the size and model accuracy with baseline model.
 If you want to get better accuracy or performance,  try configuring
 ``quantizer`` in different ways, and each ``quantizer`` will have its own way
 of configuration, so please consult the documentation for the
-quantization you are using to learn more about how you can have more control
+quantizer you are using to learn more about how you can have more control
 over how to quantize a model.
 
 Save and Load Quantized Model
