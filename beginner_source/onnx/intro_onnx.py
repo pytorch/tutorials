@@ -1,6 +1,7 @@
 """
 **Introduction to ONNX** ||
-`Export a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_
+`Export a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_ ||
+`Introduction to ONNX Registry <onnx_registry_tutorial.html>`_
 
 Introduction to ONNX
 ====================
@@ -32,12 +33,20 @@ bytecode analysis that preserves the dynamic nature of the model instead of usin
 Dependencies
 ------------
 
+PyTorch 2.1.0 or newer is required.
+
 The ONNX exporter depends on extra Python packages:
 
   - `ONNX <https://onnx.ai>`_
   - `ONNX Script <https://onnxscript.ai>`_
 
 They can be installed through `pip <https://pypi.org/project/pip/>`_:
+
+.. note::
+   This tutorial leverages `onnxscript <https://github.com/microsoft/onnxscript#readme>`__
+   to create custom ONNX operators. onnxscript is a Python library that allows users to
+   create custom ONNX operators in Python. It is a prerequisite learning material for
+   this tutorial. Please make sure you have read the onnxscript tutorial before proceeding.
 
 .. code-block:: bash
 

@@ -281,6 +281,13 @@ What's new in PyTorch tutorials?
    :link: beginner/onnx/export_simple_model_to_onnx_tutorial.html
    :tags: Production,ONNX,Backends
 
+.. customcarditem::
+   :header: Introduction to ONNX Registry
+   :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: advanced/onnx_registry_tutorial.html 
+   :tags: Production,ONNX,Backends
+
 .. Reinforcement Learning
 
 .. customcarditem::
