@@ -37,13 +37,13 @@ this:
     |                    convert_pt2e                       |
     —--------------------------------------------------------
                                 |
-                    Reference Quantized Model
+                        Quantized Model
                                 |
     —--------------------------------------------------------
     |                       Lowering                        |
     —--------------------------------------------------------
                                 |
-            Executorch, or Inductor, or <Other Backends>
+            Executorch, Inductor or <Other Backends>
 
 
 The PyTorch 2.0 export quantization API looks like this:
@@ -375,7 +375,7 @@ The following code snippets describes how to quantize the model:
     get_symmetric_quantization_config,
   )
   quantizer = XNNPACKQuantizer()
-  quantizer.set_globa(get_symmetric_quantization_config())
+  quantizer.set_global(get_symmetric_quantization_config())
 
 ``Quantizer`` is backend specific, and each ``Quantizer`` will provide their
 own way to allow users to configure their model. Just as an example, here is
@@ -383,7 +383,7 @@ the different configuration APIs supported by ``XNNPackQuantizer``:
 
 .. code-block:: python
 
-  quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
+  quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional quantization config
       .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a module type
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op
       .set_module_name("foo.bar", qconfig_opt)
