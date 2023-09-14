@@ -28,7 +28,10 @@ Introduction to ONNX Registry
 #
 # .. note::
 #
-#   This tutorial requires `onnxscript <https://github.com/microsoft/onnxscript#readme>``
+#   This tutorial leverages `onnxscript <https://github.com/microsoft/onnxscript#readme>`__
+#   to create custom ONNX operators. onnxscript is a Python library that allows users to
+#   create custom ONNX operators in Python. It is a prerequisite learning material for
+#   this tutorial. Please make sure you have read the onnxscript tutorial before proceeding.
 #
 
 
@@ -51,11 +54,11 @@ print(onnxruntime.__version__)
 # Unsupported ATen operators
 # ---------------------------------
 #
-# ATen operators are implemented in PyTorch, and the ONNX exporter team must manually implement the
+# ATen operators are implemented by PyTorch, and the ONNX exporter team must manually implement the
 # conversion from ATen operators to ONNX operators through onnxscript. Although the ONNX exporter
 # team has been making their best efforts to support as many ATen operators as possible, some ATen
 # operators are still not supported. In this section, we will demonstrate how to address unsupported
-# ATen operators as a user.
+# ATen operators as an user.
 #
 # If the model cannot be exported to ONNX, for instance, aten::add.Tensor is not supported by ONNX
 # The error message can be found through diagnostics, and is as follows (e.g. aten::add.Tensor):
@@ -65,7 +68,7 @@ print(onnxruntime.__version__)
 # 1. The unsupported ATen operator namespace, operator name, and the
 #    corresponding overload. (e.g. <namespace>::<op_name>.<overload> - aten::add.Tensor),
 #    which can be found in the error message.
-# 2. The implementation of the operator in `onnxscript <https://github.com/microsoft/onnxscript>`.
+# 2. The implementation of the operator in `onnxscript <https://github.com/microsoft/onnxscript>`__.
 #
 
 
@@ -154,6 +157,7 @@ assert export_output.model_proto.functions[0].node[3].op_type == "Add"
 # .. image:: ../_static/img/onnx/custom_aten_add_function.png
 #
 # After checking the ONNX graph, we can use ONNX Runtime to run the model,
+#
 
 
 # Use ONNX Runtime to run the model, and compare the results with PyTorch
@@ -197,8 +201,12 @@ class CustomGelu(torch.nn.Module):
     def forward(self, input_x):
         return torch.ops.aten.gelu(input_x)
 
+# com.microsoft is an official ONNX RUNTIME namspace
 custom_ort = onnxscript.values.Opset(domain="com.microsoft", version=1)
 
+# NOTE: The function signature must match the signature of the unsupported ATen operator.
+# https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
+# NOTE: All attributes must be annotated with type hints.
 @onnxscript.script(custom_ort)
 def custom_aten_gelu(input_x, approximate: str = "none"):
     # We know com.microsoft::Gelu is supported by ONNX RUNTIME
@@ -276,58 +284,65 @@ for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
 #
 # 1. PyTorch FX graph
 # 2. ONNX registry
-# 3. `ONNX RUNTIME <https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md>`
+# 3. ONNX RUNTIME
 #
-
-######################################################################
+# In the following example, we would like to use a custom operator
+# that takes one tensor input, and returns an input. The operator adds
+# the input to itself, and returns the rounded result.
+#
+# **Custom Ops Registration in PyTorch FX Graph (Beta)**
+#
 # Firstly, we need to implement the operator in PyTorch FX graph.
-# In this example, we will implement a custom operator that takes
-# one tensor input, and returns an input. The operator adds the input
-# to itself, and returns the rounded result.
-
+# This can be done by using torch._custom_op.
+#
 
 # NOTE: This is a beta feature in PyTorch, and is subject to change.
 from torch._custom_op import impl as custom_op
 
-@custom_op.custom_op("mylibrary::foo_op")
-def foo_op(tensor_x: torch.Tensor) -> torch.Tensor:
+@custom_op.custom_op("mylibrary::addandround_op")
+def addandround_op(tensor_x: torch.Tensor) -> torch.Tensor:
     ...
 
-@foo_op.impl_abstract()
-def foo_op_impl_abstract(tensor_x):
+@addandround_op.impl_abstract()
+def addandround_op_impl_abstract(tensor_x):
     return torch.empty_like(tensor_x)
 
-@foo_op.impl("cpu")
-def foo_op_impl(tensor_x):
+@addandround_op.impl("cpu")
+def addandround_op_impl(tensor_x):
     # add x to itself, and round the result
     return torch.round(tensor_x + tensor_x)
 
-torch._dynamo.allow_in_graph(foo_op)
+torch._dynamo.allow_in_graph(addandround_op)
 
 class CustomFoo(torch.nn.Module):
     def forward(self, tensor_x):
-        return foo_op(tensor_x)
+        return addandround_op(tensor_x)
 
-input_foo_x = torch.randn(3)
-custom_foo_model = CustomFoo()
+input_addandround_x = torch.randn(3)
+custom_addandround_model = CustomFoo()
 
 
 ######################################################################
+# **Custom Ops Registration in ONNX Registry**
+#
 # For the step 2 and 3, we need to implement the operator in ONNX registry.
 # In this example, we will implement the operator in ONNX registry
 # with the namespace "test.customop" and operator name "CustomOpOne",
-# and "CustomOpTwo". These two ops are registered and built in:
-# https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/testdata/custom_op_library/cpu/cpu_ops.cc
+# and "CustomOpTwo". These two ops are registered and built in
+# `cpu_ops.cc <https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/testdata/custom_op_library/cpu/cpu_ops.cc>`__.
 #
 # Please make sure you have implemented the custom operators in cpp, and built
 # ONNX RUNTIME with the custom op library
+#
 
 
 custom_opset = onnxscript.values.Opset(domain="test.customop", version=1)
 
-# Exporter for torch.ops.foo.bar.default.
+# NOTE: The function signature must match the signature of the unsupported ATen operator.
+# https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
+# NOTE: All attributes must be annotated with type hints.
 @onnxscript.script(custom_opset)
-def custom_foo(input_x):
+def custom_addandround(input_x):
     # The same as opset18.Add(x, x)
     add_x = custom_opset.CustomOpOne(input_x, input_x)
     # The same as opset18.Round(x, x)
@@ -338,22 +353,24 @@ def custom_foo(input_x):
 
 onnx_registry = torch.onnx.OnnxRegistry()
 onnx_registry.register_op(
-    namespace="mylibrary", op_name="foo_op", overload="default", function=custom_foo
+    namespace="mylibrary", op_name="addandround_op", overload="default", function=custom_addandround
     )
 
 export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
 export_output = torch.onnx.dynamo_export(
-    custom_foo_model, input_foo_x, export_options=export_options
+    custom_addandround_model, input_addandround_x, export_options=export_options
     )
+export_output.save("./custom_addandround_model.onnx")
+
 
 ######################################################################
 # The exported model proto is accessible through export_output.model_proto.
-# The graph has one graph nodes for custom_foo, and inside custom_foo,
+# The graph has one graph nodes for custom_addandround, and inside custom_addandround,
 # there are two function nodes, one for each operator.
 #
 
 assert export_output.model_proto.graph.node[0].domain == "test.customop"
-assert export_output.model_proto.graph.node[0].op_type == "custom_foo"
+assert export_output.model_proto.graph.node[0].op_type == "custom_addandround"
 assert export_output.model_proto.functions[0].node[0].domain == "test.customop"
 assert export_output.model_proto.functions[0].node[0].op_type == "CustomOpOne"
 assert export_output.model_proto.functions[0].node[1].domain == "test.customop"
@@ -361,56 +378,56 @@ assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
 
 
 ######################################################################
+# custom_addandround_model ONNX graph in Netron:
+# .. image:: ../_static/img/onnx/custom_addandround_model.png
 #
-# custom_foo_model ONNX graph in Netron:
-# .. image:: ../_static/img/onnx/custom_foo_model.png
-#
-# Inside the custom_foo function:
-# .. image:: ../_static/img/onnx/custom_foo_function.png
-#
-# After checking the ONNX graph, we can use ONNX Runtime to run the model,
+# Inside the custom_addandround function:
+# .. image:: ../_static/img/onnx/custom_addandround_function.png
 #
 
 ######################################################################
-# To link your custom op library to ONNX Runtime, you need to use
+# **Custom Ops Registration in ONNX RUNTIME**
+#
+# To link your custom op library to ONNX Runtime, you need to
 # compile your cpp code into a shared library, and link it to ONNX Runtime.
 # Please follow the instructions below:
 #
-# 1. Implement your custom op in cpp by following the instructions here:
-#    https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md
-# 2. Download ONNX Runtime source code from here:
-#    https://github.com/microsoft/onnxruntime/releases
-# 3. Compile and link your custom op library to ONNX RUNTIME:
-#    e.g.:gcc -shared -o libcustom_op_library.so custom_op_library.cc -L /path/to/downloaded/ort/lib/ -lonnxruntime -fPIC
-# 4. Register the custom op library to ONNX Runtime with python API
+# 1. Implement your custom op in cpp by following
+#    `ONNX RUNTIME instructions <`https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md>`__.
+# 2. Download ONNX Runtime source distribution from
+#    `ONNX RUNTIME releases <https://github.com/microsoft/onnxruntime/releases>`__.
+# 3. Compile and link your custom op library to ONNX RUNTIME, for example:
 #
-
-export_output.save("./custom_foo_model.onnx")
-ort_session_options = onnxruntime.SessionOptions()
-
-# NOTE: Link the custom op library to ONNX Runtime
-# TODO: Can I upload .so file to github?
-ort_session_options.register_custom_ops_library(
-    "/path/to/libcustom_op_library.so"
-    )
-ort_session = onnxruntime.InferenceSession(
-    "./custom_foo_model.onnx", providers=['CPUExecutionProvider'], sess_options=ort_session_options)
-
-def to_numpy(tensor):
-    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-
-onnx_input = export_output.adapt_torch_inputs_to_onnx(input_foo_x)
-onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
-onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
-
-# The output can be a single tensor or a list of tensors, depending on the model.
-# Let's execute the PyTorch model and use it as benchmark next
-torch_outputs = custom_foo_model(input_foo_x)
-torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
-
-# Now we can compare both results
-assert len(torch_outputs) == len(onnxruntime_outputs)
-for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
-    torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
+# .. code-block:: bash
+#
+#    $ gcc -shared -o libcustom_op_library.so custom_op_library.cc -L /path/to/downloaded/ort/lib/ -lonnxruntime -fPIC
+#
+# 4. Run the model with ONNX Runtime python API
+#
+# .. code-block:: python
+#
+#     ort_session_options = onnxruntime.SessionOptions()
+#
+#     # NOTE: Link the custom op library to ONNX Runtime and replace the path
+#     # with the path to your custom op library
+#     ort_session_options.register_custom_ops_library(
+#         "/path/to/libcustom_op_library.so"
+#     )
+#     ort_session = onnxruntime.InferenceSession(
+#         "./custom_addandround_model.onnx", providers=['CPUExecutionProvider'], sess_options=ort_session_options)
+#
+#     def to_numpy(tensor):
+#         return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+#
+#     onnx_input = export_output.adapt_torch_inputs_to_onnx(input_addandround_x)
+#     onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
+#     onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+#
+#     torch_outputs = custom_addandround_model(input_addandround_x)
+#     torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+#
+#     assert len(torch_outputs) == len(onnxruntime_outputs)
+#     for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
+#         torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
 
 
