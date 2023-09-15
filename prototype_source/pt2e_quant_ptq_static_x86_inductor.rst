@@ -173,6 +173,7 @@ After we get the reference quantized model, we will further lower it to the indu
 
 Put all these codes together, we will have the toy example code.
 Please note that since the Inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
+
 For example:
 
 ::
