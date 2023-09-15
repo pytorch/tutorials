@@ -65,7 +65,7 @@ Now, we will walk you through a step-by-step tutorial for how to use it with `to
 1. Capture FX Graph
 ---------------------
 
-We will start by doing the necessary imports, capturing the FX Graph from the eager module.
+We will start by performing the necessary imports, capturing the FX Graph from the eager module.
 
 ::
 
