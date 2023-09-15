@@ -22,18 +22,18 @@ This flow of quantization 2.0 with Inductor mainly includes three steps:
 
 - Step 1: Capture the FX Graph from the eager Model based on the `torch export mechanism <https://pytorch.org/docs/main/export.html>`_.
 - Step 2: Apply the Quantization flow based on the captured FX Graph, including defining the backend-specific quantizer, generating the prepared model with observers,
-  performing the prepared model's calibration, and converting the prepared model into the reference quantized model.
-- Step 3: Lower the reference quantized model into inductor with the API ``torch.compile``.
+  performing the prepared model's calibration, and converting the prepared model into the quantized model.
+- Step 3: Lower the quantized model into inductor with the API ``torch.compile``.
 
 The high-level architecture of this flow could look like this:
 
 ::
 
-    float_model(Python)                               Input
+    float_model(Python)                          Example Input
         \                                              /
          \                                            /
     —--------------------------------------------------------
-    |                   Capture FX Graph                    |
+    |                         export                       |
     —--------------------------------------------------------
                                 |
                         FX Graph in ATen     
@@ -47,7 +47,7 @@ The high-level architecture of this flow could look like this:
     |                      convert_pt2e                     |
     —--------------------------------------------------------
                                 |
-                    Reference Quantized Model
+                         Quantized Model
                                 |
     —--------------------------------------------------------
     |                    Lower into Inductor                |
@@ -149,19 +149,19 @@ Now, we will calibrate the ``prepared_model`` after the observers are inserted i
     #             model(image)
     # calibrate(prepared_model, data_loader_test)  # run calibration on sample data
 
-Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt2e`` takes a calibrated model and produces a reference quantized model.
+Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt2e`` takes a calibrated model and produces a quantized model.
 
 ::
 
     converted_model = convert_pt2e(prepared_model)
 
-After these steps, we finished running the quantization flow and we will get the reference quantized model.
+After these steps, we finished running the quantization flow and we will get the quantized model.
 
 
 3. Lower into Inductor
 ------------------------
 
-After we get the reference quantized model, we will further lower it to the inductor backend.
+After we get the quantized model, we will further lower it to the inductor backend.
 
 ::
 
