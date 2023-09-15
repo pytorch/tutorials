@@ -122,7 +122,7 @@ quantize the model.
 
 .. note::
 
-- The default quantization configuration in ``X86InductorQuantizer`` uses 8-bits for both activations and weights.
+   The default quantization configuration in ``X86InductorQuantizer`` uses 8-bits for both activations and weights.
   When Vector Neural Network Instruction is not available, the onednn backend silently chooses kernels that assume
   `multiplications are 7-bit x 8-bit <https://oneapi-src.github.io/oneDNN/dev_guide_int8_computations.html#inputs-of-mixed-type-u8-and-s8>`_. In other words, potential
   numeric saturation and accuracy issue may happen when running on CPU without Vector Neural Network Instruction.
