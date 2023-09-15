@@ -457,8 +457,7 @@ we offer in the long term might change based on feedback from PyTorch users.
 * Reference Quantized Model Representation (available in the nightly build)
 
   We will have a special representation for selected ops, for example, quantized linear. Other ops are represented as ``dq -> float32_op -> q`` and ``q/dq`` are decomposed into more primitive operators.
-
-You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
+  You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
 .. code-block:: python
    
