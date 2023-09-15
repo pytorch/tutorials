@@ -60,7 +60,7 @@ and outstanding out-of-box performance with the compiler backend. Especially on 
 further boost the models' performance by leveraging the
 `advanced-matrix-extensions <https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/advanced-matrix-extensions/overview.html>`_ feature.
 
-Now, we will have a step-by-step tutorial for how to use it with `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_.
+Now, we will walk you through a step-by-step tutorial for how to use it with `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_.
 
 1. Capture FX Graph
 ---------------------
