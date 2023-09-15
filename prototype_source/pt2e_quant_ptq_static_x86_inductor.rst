@@ -22,7 +22,7 @@ This flow of quantization 2.0 with Inductor mainly includes three steps:
 
 - Step 1: Capture the FX Graph from the eager Model based on the `torch export mechanism <https://pytorch.org/docs/main/export.html>`_.
 - Step 2: Apply the Quantization flow based on the captured FX Graph, including defining the backend-specific quantizer, generating the prepared model with observers,
-  doing the prepared model's calibration, and converting the prepared model into the reference quantized model.
+  performing the prepared model's calibration, and converting the prepared model into the reference quantized model.
 - Step 3: Lower the reference quantized model into inductor with the API ``torch.compile``.
 
 The high-level architecture of this flow could look like this:
