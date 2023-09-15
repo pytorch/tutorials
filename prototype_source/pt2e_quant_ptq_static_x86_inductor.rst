@@ -107,7 +107,7 @@ We will start by performing the necessary imports, capturing the FX Graph from t
         # )
 
 
-Now, we will have the FX Module to be quantized.
+Next, we will have the FX Module to be quantized.
 
 2. Apply Quantization
 ----------------------------
