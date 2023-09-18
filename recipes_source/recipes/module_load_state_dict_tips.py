@@ -50,6 +50,7 @@ state_dict = torch.load('checkpoint.pth')
 m = SomeModule(1000)
 m.load_state_dict(state_dict)
 
+#############################################################################
 # The second example does not use any of the features listed above and will be
 # less compute and memory efficient for loading a checkpoint. In the following
 # sections, we will discuss each of the features in further detail.
@@ -57,7 +58,7 @@ m.load_state_dict(state_dict)
 #####################################################################################
 # Using ``torch.load(mmap=True)``
 # -------------------------------
-# First, let us consider what happens when we load the checkpoint with``torch.load``.
+# First, let us consider what happens when we load the checkpoint with ``torch.load``.
 # When we save a checkpoint with ``torch.save``, tensor storages are tagged with the device they are
 # saved on. With ``torch.load``, tensor storages will be loaded to the device
 # they were tagged with (unless this behavior is overridden using the
@@ -66,8 +67,7 @@ m.load_state_dict(state_dict)
 # loaded into CPU RAM, which can be undesirable when:
 #
 # * CPU RAM is smaller than the size of the checkpoint.
-# * Waiting for the entire checkpoint to be loaded into RAM before
-#    performing, for example, some per-tensor processing.
+# * Waiting for the entire checkpoint to be loaded into RAM before performing, for example, some per-tensor processing.
 
 start_time = time.time()
 state_dict = torch.load('checkpoint.pth')
@@ -114,10 +114,11 @@ m = SomeModule(1000)
 # This allocates memory for all parameters/buffers and initializes them per
 # the default initialization schemes defined in ``SomeModule.__init__()``, which
 # is wasteful when we want to load a checkpoint for the following reasons:
-# * The result of the initialization kernels will be overwritten by ``load_state_dict()``
-#    without ever being used, so initialization is wasteful.
-# * We are allocating memory for these parameters/buffers in RAM while ``torch.load`` of
-#    the saved state dictionary also allocates memory in RAM for the parameters/buffers in the checkpoint.
+#
+# * The result of the initialization kernels will be overwritten by ``load_state_dict()`` without ever being used, so
+#   initialization is wasteful.
+# * We are allocating memory for these parameters/buffers in RAM while ``torch.load`` of the saved state dictionary also
+#   allocates memory in RAM for the parameters/buffers in the checkpoint.
 #
 # In order to solve these two problems, we can use the ``torch.device()``
 # context manager with ``device='meta'`` when we instantiate the ``nn.Module()``.
