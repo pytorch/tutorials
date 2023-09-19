@@ -525,21 +525,19 @@ to <a class="reference external" href="https://pytorch.org/tutorials/prototype/f
 this flow is expected to have significantly higher model coverage
 (<a class="reference external" href="https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596">88% on 14K models</a>),
 better programmability, and a simplified UX.</p>
-<p>Exportable by <cite>torch._export.export</cite> is a prerequisite to use the flow, you can
+<p>Exportable by <cite>torch.export.export</cite> is a prerequisite to use the flow, you can
 find what are the constructs that’s supported in <a class="reference external" href="https://pytorch.org/docs/main/generated/exportdb/index.html">Export DB</a>.</p>
 <p>The high level architecture of quantization 2.0 with quantizer could look like
 this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>float_model(Python)                               Input
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>float_model(Python)                          Example Input
     \                                              /
      \                                            /
 —-------------------------------------------------------
-|                        Export                        |
+|                        export                        |
 —-------------------------------------------------------
                             |
-                    FX Graph in ATen     XNNPACKQuantizer,
-                            |            or X86InductorQuantizer,
-                            |            or &lt;Other Backend Quantizer&gt;
-                            |                /
+                    FX Graph in ATen     Backend Specific Quantizer
+                            |                       /
 —--------------------------------------------------------
 |                     prepare_pt2e                      |
 —--------------------------------------------------------
@@ -550,13 +548,13 @@ this:</p>
 |                    convert_pt2e                       |
 —--------------------------------------------------------
                             |
-                Reference Quantized Model
+                    Quantized Model
                             |
 —--------------------------------------------------------
 |                       Lowering                        |
 —--------------------------------------------------------
                             |
-        Executorch, or Inductor, or &lt;Other Backends&gt;
+        Executorch, Inductor or &lt;Other Backends&gt;
 </pre></div>
 </div>
 <p>The PyTorch 2.0 export quantization API looks like this:</p>
@@ -868,13 +866,13 @@ and rename it to <code class="docutils literal notranslate"><span class="pre">da
   <span class="n">get_symmetric_quantization_config</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">quantizer</span> <span class="o">=</span> <span class="n">XNNPACKQuantizer</span><span class="p">()</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">set_globa</span><span class="p">(</span><span class="n">get_symmetric_quantization_config</span><span class="p">())</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">get_symmetric_quantization_config</span><span class="p">())</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> is backend specific, and each <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> will provide their
 own way to allow users to configure their model. Just as an example, here is
 the different configuration APIs supported by <code class="docutils literal notranslate"><span class="pre">XNNPackQuantizer</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">quantizer</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig_opt</span><span class="p">)</span>  <span class="c1"># qconfig_opt is an optional qconfig, either a valid qconfig or None</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">quantizer</span><span class="o">.</span><span class="n">set_global</span><span class="p">(</span><span class="n">qconfig_opt</span><span class="p">)</span>  <span class="c1"># qconfig_opt is an optional quantization config</span>
     <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span> <span class="c1"># can be a module type</span>
     <span class="o">.</span><span class="n">set_object_type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">linear</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span> <span class="c1"># or torch functional op</span>
     <span class="o">.</span><span class="n">set_module_name</span><span class="p">(</span><span class="s2">&quot;foo.bar&quot;</span><span class="p">,</span> <span class="n">qconfig_opt</span><span class="p">)</span>
@@ -924,12 +922,9 @@ parameters.</p>
 we offer in the long term might change based on feedback from PyTorch users.</p>
 <ul>
 <li><p>Q/DQ Representation (default)</p>
-<p>Previous documentation for <a href="#id1"><span class="problematic" id="id2">`</span></a>representations &lt;<a class="reference external" href="https://github.com/pytorch/rfcs/blob/master/RFC-0019">https://github.com/pytorch/rfcs/blob/master/RFC-0019</a>-</p>
+<p>Previous documentation for <a class="reference external" href="https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md">representations</a> all quantized operators are represented as <code class="docutils literal notranslate"><span class="pre">dequantize</span> <span class="pre">-&gt;</span> <span class="pre">fp32_op</span> <span class="pre">-&gt;</span> <span class="pre">qauntize</span></code>.</p>
 </li>
 </ul>
-<blockquote>
-<div><p>Extending-PyTorch-Quantization-to-Custom-Backends.md&gt;`_ all quantized operators are represented as <code class="docutils literal notranslate"><span class="pre">dequantize</span> <span class="pre">-&gt;</span> <span class="pre">fp32_op</span> <span class="pre">-&gt;</span> <span class="pre">qauntize</span></code>.</p>
-</div></blockquote>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">quantized_linear</span><span class="p">(</span><span class="n">x_int8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">weight_int8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">bias_fp32</span><span class="p">,</span> <span class="n">output_scale</span><span class="p">,</span> <span class="n">output_zero_point</span><span class="p">):</span>
     <span class="n">x_fp32</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">quantized_decomposed</span><span class="o">.</span><span class="n">dequantize_per_tensor</span><span class="p">(</span>
              <span class="n">x_i8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">x_quant_min</span><span class="p">,</span> <span class="n">x_quant_max</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
@@ -942,10 +937,12 @@ we offer in the long term might change based on feedback from PyTorch users.</p>
     <span class="k">return</span> <span class="n">out_i8</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (<code class="docutils literal notranslate"><span class="pre">dq</span> <span class="pre">-&gt;</span> <span class="pre">float32_op</span> <span class="pre">-&gt;</span> <span class="pre">q</span></code>), and <code class="docutils literal notranslate"><span class="pre">q/dq</span></code> are decomposed into more primitive operators.</p></li>
+<ul>
+<li><p>Reference Quantized Model Representation (available in the nightly build)</p>
+<p>We will have a special representation for selected ops, for example, quantized linear. Other ops are represented as <code class="docutils literal notranslate"><span class="pre">dq</span> <span class="pre">-&gt;</span> <span class="pre">float32_op</span> <span class="pre">-&gt;</span> <span class="pre">q</span></code> and <code class="docutils literal notranslate"><span class="pre">q/dq</span></code> are decomposed into more primitive operators.
+You can get this representation by using <code class="docutils literal notranslate"><span class="pre">convert_pt2e(...,</span> <span class="pre">use_reference_representation=True)</span></code>.</p>
+</li>
 </ul>
-<p>You can get this representation by using <code class="docutils literal notranslate"><span class="pre">convert_pt2e(...,</span> <span class="pre">use_reference_representation=True)</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reference Quantized Pattern for quantized linear</span>
 <span class="k">def</span> <span class="nf">quantized_linear</span><span class="p">(</span><span class="n">x_int8</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">x_zero_point</span><span class="p">,</span> <span class="n">weight_int8</span><span class="p">,</span> <span class="n">weight_scale</span><span class="p">,</span> <span class="n">weight_zero_point</span><span class="p">,</span> <span class="n">bias_fp32</span><span class="p">,</span> <span class="n">output_scale</span><span class="p">,</span> <span class="n">output_zero_point</span><span class="p">):</span>
     <span class="n">x_int16</span> <span class="o">=</span> <span class="n">x_int8</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
@@ -995,7 +992,7 @@ get integer weights in the future.</p>
 <p>If you want to get better accuracy or performance,  try configuring
 <code class="docutils literal notranslate"><span class="pre">quantizer</span></code> in different ways, and each <code class="docutils literal notranslate"><span class="pre">quantizer</span></code> will have its own way
 of configuration, so please consult the documentation for the
-quantization you are using to learn more about how you can have more control
+quantizer you are using to learn more about how you can have more control
 over how to quantize a model.</p>
 </div>
 <div class="section" id="save-and-load-quantized-model">
