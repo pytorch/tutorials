@@ -33,8 +33,8 @@ class SomeModule(torch.nn.Module):
 m = SomeModule(1000)
 torch.save(m.state_dict(), 'checkpoint.pth')
 
-##############################################################################
-# The follow snippet demonstrates the use of the the ``mmap`` keyword argument
+#################################################################################
+# The following snippet demonstrates the use of the the ``mmap`` keyword argument
 # to ``torch.load``, the ``torch.device()`` context manager and the ``assign``
 # keyword argument to ``nn.Module.load_state_dict()``.
 
