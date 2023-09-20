@@ -7,25 +7,42 @@ torch.export Tutorial
 """
 
 ######################################################################
-# :func:`torch.export` is the PyTorch 2.0 way to export PyTorch models into
-# static and standardized model representations, intended
+# :func:`torch.export` is the PyTorch 2 way to export PyTorch models into
+# standardized model representations, intended
 # to be run on different (i.e. Python-less) environments.
 #
 # In this tutorial, you will learn how to use :func:`torch.export` to extract
-# `ExportedProgram`s (i.e. single-graph representations) from PyTorch programs.
+# ``ExportedProgram``'s (i.e. single-graph representations) from PyTorch programs.
 # We also detail some considerations/modifications that you may need
 # to make in order to make your model compatible with ``torch.export``.
 #
+# **Contents**
 # .. contents::
 #     :local:
 
 ######################################################################
-# Exporting a PyTorch model using ``torch.export``
-# ------------------------------------------------
+# Basic Usage
+# -----------
 #
-# ``torch.export`` takes in a callable (including ``torch.nn.Module`` s),
-# a tuple of positional arguments, and optionally (not shown in the example below),
-# a dictionary of keyword arguments and a list of constraints (covered later).
+# ``torch.export`` extracts single-graph representations from PyTorch programs
+# by tracing the target function, given example inputs.
+#
+# The signature of ``torch.export`` is:
+#
+# .. code:: python
+#
+#     export(
+#         f: Callable,
+#         args: Tuple[Any, ...],
+#         kwargs: Optional[Dict[str, Any]] = None,
+#         *,
+#         constraints: Optional[List[Constraint]] = None
+#     ) -> ExportedProgram
+#
+# ``torch.export`` traces the tensor computation graph from calling ``f(*args, **kwargs)``
+# and wraps it in an ``ExportedProgram``, which can be serialized or executed later with
+# different inputs. Note that while the output ``ExportedGraph`` is callable, it is not a
+# ``torch.nn.Module``. We will detail the ``constraints`` argument later in the tutorial.
 
 import torch
 from torch.export import export
@@ -41,11 +58,6 @@ class MyModule(torch.nn.Module):
 mod = MyModule()
 exported_mod = export(mod, (torch.randn(8, 100), torch.randn(8, 100)))
 print(type(exported_mod))
-
-######################################################################
-# ``torch.export`` returns an ``ExportedProgram``. It is not a ``torch.nn.Module``,
-# but it can still be run as a function:
-
 print(exported_mod(torch.randn(8, 100), torch.randn(8, 100)))
 
 ######################################################################
@@ -79,18 +91,25 @@ exported_mod.graph_module.print_readable()
 # - ``range_constraints`` and ``equality_constraints`` -- Constraints, covered later
 
 print(exported_mod.graph_signature)
+print(exported_mod.range_constraints)
+print(exported_mod.equality_constraints)
 
 ######################################################################
-# Comparison to ``torch.compile``
-# -------------------------------
+# See the ``torch.export`` `documentation <https://pytorch.org/docs/main/export.html#torch.export.export>`__
+# for more details.
+
+######################################################################
+# Graph Breaks
+# ------------
 #
-# Although ``torch.export`` is built on top of the ``torch.compile``
-# components, the key limitation of ``torch.export`` is that it does not
+# Although ``torch.export`` shares components with ``torch.compile``,
+# the key limitation of ``torch.export``, especially when compared to ``torch.compile``, is that it does not
 # support graph breaks. This is because handling graph breaks involves interpreting
 # the unsupported operation with default Python evaluation, which is incompatible
-# with the export use case.
+# with the export use case. Therefore, in order to make your model code compatible
+# with ``torch.export``, you will need to modify your code to remove graph breaks.
 #
-# A graph break is necessary in the following cases:
+# A graph break is necessary in cases such as:
 #
 # - data-dependent control flow
 
@@ -146,8 +165,13 @@ except Exception:
     tb.print_exc()
 
 ######################################################################
+# The sections below demonstrate some ways you can modify your code
+# in order to remove graph breaks.
+
+######################################################################
 # Control Flow Ops
 # ----------------
+#
 # .. warning::
 #
 #     ``cond`` is a prototype feature in PyTorch, included as a part of the ``torch.export`` release.
@@ -157,7 +181,9 @@ except Exception:
 # ``torch.export`` actually does support data-dependent control flow.
 # But these need to be expressed using control flow ops. For example,
 # we can fix the control flow example above using the ``cond`` op, like so:
-# <!-- TODO link to docs about cond when it is out -->
+
+# ..
+#     [TODO] link to docs about cond when it is out
 
 from functorch.experimental.control_flow import cond
 
@@ -178,37 +204,36 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 # - The predicate (i.e. ``x.sum() > 0``) must result in a boolean or a single-element tensor.
 # - The operands (i.e. ``[x]``) must be tensors.
 # - The branch function (i.e. ``true_fn`` and ``false_fn``) signature must match with the
-# operands and they must both return a single tensor with the same metadata (for example, ``dtype``, ``shape``, etc.).
+#   operands and they must both return a single tensor with the same metadata (for example, ``dtype``, ``shape``, etc.).
 # - Branch functions cannot mutate input or global variables.
 # - Branch functions cannot access closure variables, except for ``self`` if the function is
 # defined in the scope of a method.
 
-# <!-- NOTE map is not documented at the moment
-
 ######################################################################
-# We can also use ``map``, which applies a function across the first dimension
-# of the first tensor argument.
-
-# from functorch.experimental.control_flow import map
-
-# def map_example(xs):
-#     def map_fn(x, const):
-#         def true_fn(x):
-#             return x + const
-#         def false_fn(x):
-#             return x - const
-#         return control_flow.cond(x.sum() > 0, true_fn, false_fn, [x])
-#     return control_flow.map(map_fn, xs, torch.tensor([2.0]))
-
-# exported_map_example= export(map_example, (torch.randn(4, 3),))
-# inp = torch.cat((torch.ones(2, 3), -torch.ones(2, 3)))
-# print(exported_map_example(inp))
-
-# -->
+# ..
+#     [NOTE] map is not documented at the moment
+#     We can also use ``map``, which applies a function across the first dimension
+#     of the first tensor argument.
+#
+#     from functorch.experimental.control_flow import map
+#
+#     def map_example(xs):
+#         def map_fn(x, const):
+#             def true_fn(x):
+#                 return x + const
+#             def false_fn(x):
+#                 return x - const
+#             return control_flow.cond(x.sum() > 0, true_fn, false_fn, [x])
+#         return control_flow.map(map_fn, xs, torch.tensor([2.0]))
+#
+#     exported_map_example= export(map_example, (torch.randn(4, 3),))
+#     inp = torch.cat((torch.ones(2, 3), -torch.ones(2, 3)))
+#     print(exported_map_example(inp))
 
 ######################################################################
 # Constraints
 # -----------
+#
 # .. warning::
 #
 #     The constraints API is a prototype feature in PyTorch, included as a part of the torch.export release.
@@ -230,7 +255,9 @@ except Exception:
 # relax some of these constraints. We use ``torch.export.dynamic_dim`` to
 # express shape constraints manually.
 #
-# <!-- TODO link to doc of dynamic_dim when it is available -->
+# ..
+#     [TODO] link to doc of dynamic_dim when it is available
+#
 # Using ``dynamic_dim`` on a tensor's dimension marks it as dynamic (i.e. unconstrained), and
 # we can provide additional upper and lower bound shape constraints.
 # The first argument of ``dynamic_dim`` is the tensor variable we wish
@@ -269,8 +296,8 @@ except Exception:
     tb.print_exc()
 
 ######################################################################
-# Note that if our inputs to ``torch.export`` do not satisfy the constraints,
-# we get an error.
+# Note that if our example inputs to ``torch.export`` do not satisfy the constraints,
+# then we get an error.
 
 constraints1_bad = [
     dynamic_dim(inp1, 0),
@@ -309,7 +336,9 @@ except Exception:
 
 ######################################################################
 # We can actually use ``torch.export`` to guide us as to which constraints
-# are necessary. We can do this by relaxing all constraints and letting ``torch.export``
+# are necessary. We can do this by relaxing all constraints (recall that if we
+# do not provide constraints for a dimension, the default behavior is to constrain
+# to the exact shape value of the example input) and letting ``torch.export``
 # error out.
 
 inp4 = torch.randn(8, 16)
@@ -372,10 +401,7 @@ print(exported_constraints_example3.equality_constraints)
 # We can also constrain on individual values in the source code itself using
 # ``constrain_as_value`` and ``constrain_as_size``. ``constrain_as_value`` specifies
 # that a given integer value is expected to fall within the provided minimum/maximum bounds (inclusive).
-# If a bound is not provided, then it is assumed to be unbounded. ``constrain_as_size``
-# is similar to ``constrain_as_value``, except that it should be used on integer values that
-# will be used to specify tensor shapes -- in particular, the value must not be 0 or 1 because
-# many operations have special behavior for tensors with a shape value of 0 or 1.
+# If a bound is not provided, then it is assumed to be unbounded.
 
 from torch.export import constrain_as_size, constrain_as_value
 
@@ -393,6 +419,11 @@ try:
 except Exception:
     tb.print_exc()
 
+######################################################################
+# ``constrain_as_size`` is similar to ``constrain_as_value``, except that it should be used on integer values that
+# will be used to specify tensor shapes -- in particular, the value must not be 0 or 1 because
+# many operations have special behavior for tensors with a shape value of 0 or 1.
+
 def constraints_example5(x, y):
     b = y.item()
     constrain_as_size(b)
@@ -409,15 +440,18 @@ except Exception:
 ######################################################################
 # Custom Ops
 # ----------
+#
 # ``torch.export`` can export PyTorch programs with custom operators.
 #
-# NOTE: the API for registering custom ops is still under active development
-# and may change without notice.
+# .. warning::
+#
+#     The API for registering custom ops is still under active development
+#     and may change without notice.
 #
 # Currently, the steps to register a custom op for use by ``torch.export`` are:
 #
 # - Define the custom op using ``torch.library`` (`reference <https://pytorch.org/docs/main/library.html>`__)
-# as with any other custom op
+#   as with any other custom op
 
 from torch.library import Library, impl
 
@@ -430,13 +464,15 @@ def custom_op(x):
     print("custom_op called!")
     return torch.relu(x)
 
+######################################################################
 # - Define a ``"Meta"`` implementation of the custom op that returns an empty
-# tensor with the same shape as the expected output
+#   tensor with the same shape as the expected output
 
 @impl(m, "custom_op", "Meta")
 def custom_op_meta(x):
     return torch.empty_like(x)
 
+######################################################################
 # - Call the custom op from the code you want to export using ``torch.ops``
 
 def custom_op_example(x):
@@ -445,12 +481,14 @@ def custom_op_example(x):
     x = torch.cos(x)
     return x
 
+######################################################################
 # - Export the code as before
 
 exported_custom_op_example = export(custom_op_example, (torch.randn(3, 3),))
 exported_custom_op_example.graph_module.print_readable()
 print(exported_custom_op_example(torch.randn(3, 3)))
 
+######################################################################
 # Note in the above outputs that the custom op is included in the exported graph.
 # And when we call the exported graph as a function, the original custom op is called,
 # as evidenced by the ``print`` call.
@@ -458,11 +496,12 @@ print(exported_custom_op_example(torch.randn(3, 3)))
 ######################################################################
 # ExportDB
 # --------
+#
 # ``torch.export`` will only ever export a single computation graph from a PyTorch program. Because of this requirement,
 # there will be Python or PyTorch features that are not compatible with ``torch.export``, which will require users to
 # rewrite parts of their model code. We have seen examples of this earlier in the tutorial -- for example, rewriting
 # if-statements using ``cond``.
-
+#
 # `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ is the standard reference that documents
 # supported and unsupported Python/PyTorch features for ``torch.export``. It is essentially a list a program samples, each
 # of which represents the usage of one particular Python/PyTorch feature and its interaction with ``torch.export``.
@@ -481,17 +520,20 @@ def cond_predicate(x):
     pred = x.dim() > 2 and x.shape[2] > 10
     return cond(pred, lambda x: x.cos(), lambda y: y.sin(), [x])
 
+######################################################################
 # More generally, ExportDB can be used as a reference when one of the following occurs:
+#
 # 1. Before attempting ``torch.export``, you know ahead of time that your model uses some tricky Python/PyTorch features
 #    and you want to know if ``torch.export`` covers that feature.
 # 2. When attempting ``torch.export``, there is a failure and it's unclear how to work around it.
-
+#
 # ExportDB is not exhaustive, but is intended to cover all use cases found in typical PyTorch code. Feel free to reach
 # out if there is an important Python/PyTorch feature that should be added to ExportDB or supported by ``torch.export``.
 
 ######################################################################
 # Conclusion
 # ----------
-# We introduced ``torch.export``, the new PyTorch 2.0 way to export single computation
+#
+# We introduced ``torch.export``, the new PyTorch 2 way to export single computation
 # graphs from PyTorch programs. In particular, we demonstrate several code modifications
 # and considerations (control flow ops, constraints, etc.) that need to be made in order to export a graph.
