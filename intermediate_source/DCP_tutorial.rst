@@ -197,7 +197,7 @@ After saving, let’s create the same FSDP-wrapped model, and load the saved sta
         )
 
 If you would like to load the saved checkpoint into a non-FSDP wrapped model in a non-distributed setup, perhaps for inference, you can also do that with DCP.
-By default, DCP saves and loads a distributed state_dict in Single Program Multiple Data(SPMD) style. To load without a distributed setup, please set ``no_dist`` to ``True`` when loading with DCP.
+By default, DCP saves and loads a distributed ``state_dict`` in Single Program Multiple Data(SPMD) style. To load without a distributed setup, please set ``no_dist`` to ``True`` when loading with DCP.
 
 .. code-block:: python
     import os
