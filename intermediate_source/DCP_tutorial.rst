@@ -116,7 +116,8 @@ Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy inp
         )
 
 
-*Load*
+Loading
+~~~~~~~
 
 After saving, let’s create the same FSDP wrapped model, and load the saved state dict from storage into the model. You can load in the same world size or different world size.
 
