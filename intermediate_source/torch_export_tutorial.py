@@ -7,7 +7,13 @@ torch.export Tutorial
 """
 
 ######################################################################
-# :func:`torch.export` is the PyTorch 2 way to export PyTorch models into
+#
+# .. warning::
+#
+#     ``torch.export`` and its related features are in prototype status and are subject to backwards compatibility
+#     breaking changes. This tutorial provides a snapshot of ``torch.export`` usage as of PyTorch 2.1.
+#
+# :func:`torch.export` is the PyTorch 2.X way to export PyTorch models into
 # standardized model representations, intended
 # to be run on different (i.e. Python-less) environments.
 #
@@ -17,6 +23,7 @@ torch.export Tutorial
 # to make in order to make your model compatible with ``torch.export``.
 #
 # **Contents**
+#
 # .. contents::
 #     :local:
 
@@ -72,7 +79,7 @@ print(exported_mod(torch.randn(8, 100), torch.randn(8, 100)))
 #
 # The ``graph_module`` attribute is the ``GraphModule`` that wraps the ``graph`` attribute
 # so that it can be ran as a ``torch.nn.Module``.
-# We can use ``graph_module``'s ``print_readable` to print a Python code representation
+# We can use ``graph_module``'s ``print_readable``` to print a Python code representation
 # of ``graph``:
 
 print(exported_mod)
@@ -88,7 +95,7 @@ exported_mod.graph_module.print_readable()
 # Other attributes of interest in ``ExportedProgram`` include:
 #
 # - ``graph_signature`` -- the inputs, outputs, parameters, buffers, etc. of the exported graph.
-# - ``range_constraints`` and ``equality_constraints`` -- Constraints, covered later
+# - ``range_constraints`` and ``equality_constraints`` -- constraints, covered later
 
 print(exported_mod.graph_signature)
 print(exported_mod.range_constraints)
@@ -172,16 +179,10 @@ except Exception:
 # Control Flow Ops
 # ----------------
 #
-# .. warning::
-#
-#     ``cond`` is a prototype feature in PyTorch, included as a part of the ``torch.export`` release.
-#     Future changes may break backwards compatibility.
-#     Please look forward to a more stable implementation in a future version of PyTorch.
-#
 # ``torch.export`` actually does support data-dependent control flow.
 # But these need to be expressed using control flow ops. For example,
 # we can fix the control flow example above using the ``cond`` op, like so:
-
+#
 # ..
 #     [TODO] link to docs about cond when it is out
 
@@ -207,7 +208,7 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 #   operands and they must both return a single tensor with the same metadata (for example, ``dtype``, ``shape``, etc.).
 # - Branch functions cannot mutate input or global variables.
 # - Branch functions cannot access closure variables, except for ``self`` if the function is
-# defined in the scope of a method.
+#   defined in the scope of a method.
 
 ######################################################################
 # ..
@@ -233,11 +234,6 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 ######################################################################
 # Constraints
 # -----------
-#
-# .. warning::
-#
-#     The constraints API is a prototype feature in PyTorch, included as a part of the torch.export release.
-#     Backwards compatibility is not guaranteed. We anticipate releasing a more stable constraints API in the future.
 #
 # Ops can have different specializations/behaviors for different tensor shapes, so by default,
 # ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
@@ -351,7 +347,7 @@ def constraints_example3(x, y):
 
 constraints3 = (
     [dynamic_dim(inp4, i) for i in range(inp4.dim())] +
-    [dynamic_dim(inp5, i) for i in range(inp4.dim())]
+    [dynamic_dim(inp5, i) for i in range(inp5.dim())]
 )
 
 try:
@@ -387,6 +383,8 @@ print(exported_constraints_example3(torch.randn(4, 32), torch.randn(32, 64)))
 import logging
 torch._logging.set_logs(dynamic=logging.INFO, dynamo=logging.INFO)
 exported_constraints_example3 = export(constraints_example3, (inp4, inp5), constraints=constraints3_fixed)
+
+# reset to previous values
 torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
 
 ######################################################################
@@ -443,10 +441,6 @@ except Exception:
 #
 # ``torch.export`` can export PyTorch programs with custom operators.
 #
-# .. warning::
-#
-#     The API for registering custom ops is still under active development
-#     and may change without notice.
 #
 # Currently, the steps to register a custom op for use by ``torch.export`` are:
 #
@@ -534,6 +528,6 @@ def cond_predicate(x):
 # Conclusion
 # ----------
 #
-# We introduced ``torch.export``, the new PyTorch 2 way to export single computation
+# We introduced ``torch.export``, the new PyTorch 2.X way to export single computation
 # graphs from PyTorch programs. In particular, we demonstrate several code modifications
 # and considerations (control flow ops, constraints, etc.) that need to be made in order to export a graph.
