@@ -265,7 +265,7 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 .. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext 
+   :header: Pre-process custom text dataset using Torchtext
    :card_description: Learn how to use torchtext to prepare a custom dataset
    :image: _static/img/thumbnails/cropped/torch_text_logo.png
    :link: beginner/torchtext_custom_dataset_tutorial.html
@@ -585,7 +585,7 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/scaled_dot_product_attention_tutorial.html
    :tags: Model-Optimization,Attention,Transformer
-   
+
 .. customcarditem::
    :header: Knowledge Distillation in Convolutional Neural Networks
    :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
@@ -700,6 +700,13 @@ What's new in PyTorch tutorials?
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_adavnced_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Getting Started with Distributed Checkpoint (DCP)
+   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-DCP.png
+   :link: intermediate/DCP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. Mobile
@@ -1011,6 +1018,7 @@ Additional Resources
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
    advanced/generic_join
+   intermediate/DCP_tutorial
 
 .. toctree::
    :maxdepth: 2
