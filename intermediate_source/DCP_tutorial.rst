@@ -14,7 +14,8 @@ In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model.
 
 How DCP works
 --------------
-torch.distributed.checkpoint enables saving and loading models from multiple ranks in parallel.
+
+:func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel.
 In addition, checkpointing automatically handles fully-qualified-name (FQN) mappings across models and optimizers, enabling load-time resharding across differing cluster topologies.
 
 DCP is different than torch.save and torch.load in a few significant ways:
