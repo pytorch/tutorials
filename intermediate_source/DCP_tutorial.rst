@@ -28,7 +28,8 @@ How to use DCP
 
 Here we use a toy model wrapped with FSDP for demonstration purposes. Similarly, the APIs and logic can be applied to larger models for checkpointing.
 
-*Save*
+Saving
+~~~~~~
 
 Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy input data, and save it.
 
