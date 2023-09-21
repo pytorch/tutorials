@@ -26,7 +26,7 @@ DCP is different from :func:`torch.save` and :func:`torch.load` in a few signifi
 How to use DCP
 --------------
 
-Here we use a toy model wrapped with FSDP for demonstration purposes. Similarly the APIs and logic can be applied to larger models for checkpointing.
+Here we use a toy model wrapped with FSDP for demonstration purposes. Similarly, the APIs and logic can be applied to larger models for checkpointing.
 
 *Save*
 
