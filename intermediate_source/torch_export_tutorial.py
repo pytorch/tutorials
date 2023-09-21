@@ -48,8 +48,9 @@ torch.export Tutorial
 #
 # ``torch.export`` traces the tensor computation graph from calling ``f(*args, **kwargs)``
 # and wraps it in an ``ExportedProgram``, which can be serialized or executed later with
-# different inputs. Note that while the output ``ExportedGraph`` is callable, it is not a
-# ``torch.nn.Module``. We will detail the ``constraints`` argument later in the tutorial.
+# different inputs. Note that while the output ``ExportedGraph`` is callable and can be
+# called in the same way as the original input callable, it is not a ``torch.nn.Module``.
+# We will detail the ``constraints`` argument later in the tutorial.
 
 import torch
 from torch.export import export
@@ -79,11 +80,9 @@ print(exported_mod(torch.randn(8, 100), torch.randn(8, 100)))
 #
 # The ``graph_module`` attribute is the ``GraphModule`` that wraps the ``graph`` attribute
 # so that it can be ran as a ``torch.nn.Module``.
-# We can use ``graph_module``'s ``print_readable``` to print a Python code representation
-# of ``graph``:
 
 print(exported_mod)
-exported_mod.graph_module.print_readable()
+print(exported_mod.graph_module)
 
 ######################################################################
 # The printed code shows that FX graph only contains ATen-level ops (such as ``torch.ops.aten``)
@@ -98,8 +97,6 @@ exported_mod.graph_module.print_readable()
 # - ``range_constraints`` and ``equality_constraints`` -- constraints, covered later
 
 print(exported_mod.graph_signature)
-print(exported_mod.range_constraints)
-print(exported_mod.equality_constraints)
 
 ######################################################################
 # See the ``torch.export`` `documentation <https://pytorch.org/docs/main/export.html#torch.export.export>`__
@@ -238,11 +235,22 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 # Ops can have different specializations/behaviors for different tensor shapes, so by default,
 # ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
 # example inputs given to the initial ``torch.export`` call.
-# If we try to run the first ``ExportedProgram`` example with a tensor
+# If we try to run the ``ExportedProgram`` in the example below with a tensor
 # with a different shape, we get an error:
 
+class MyModule2(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lin = torch.nn.Linear(100, 10)
+
+    def forward(self, x, y):
+        return torch.nn.functional.relu(self.lin(x + y), inplace=True)
+
+mod2 = MyModule2()
+exported_mod2 = export(mod2, (torch.randn(8, 100), torch.randn(8, 100)))
+
 try:
-    exported_mod(torch.randn(10, 100), torch.randn(10, 100))
+    exported_mod2(torch.randn(10, 100), torch.randn(10, 100))
 except Exception:
     tb.print_exc()
 
@@ -355,11 +363,13 @@ try:
 except Exception:
     tb.print_exc()
 
+######################################################################
+# We can see that the error message suggests to us to use some additional code
+# to specify the necessary constraints. Let us use that code (exact code may differ slightly):
+
 def specify_constraints(x, y):
     return [
         # x:
-        dynamic_dim(x, 0),
-        dynamic_dim(x, 1),
         dynamic_dim(x, 0) <= 16,
 
         # y:
