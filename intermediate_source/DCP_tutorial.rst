@@ -18,7 +18,7 @@ How DCP works
 :func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel.
 In addition, checkpointing automatically handles fully-qualified-name (FQN) mappings across models and optimizers, enabling load-time resharding across differing cluster topologies.
 
-DCP is different than torch.save and torch.load in a few significant ways:
+DCP is different from :func:`torch.save` and :func:`torch.load` in a few significant ways:
 * It produces multiple files per checkpoint, with at least one per rank.
 * It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.
 
