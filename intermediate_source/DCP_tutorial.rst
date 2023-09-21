@@ -6,7 +6,7 @@ Getting Started with Distributed Checkpoint (DCP)
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/DCP_tutorial.rst>`__.
 
-Checkpointing AI models during distributed training could be challenging, as parameters and gradients are partitioned across GPUs and the number of GPUs available could change when resume training.
+Checkpointing AI models during distributed training could be challenging, as parameters and gradients are partitioned across GPUs and the number of GPUs available could change when you resume training.
 Pytorch Distributed Checkpointing (DCP) can help make this process easier.
 
 In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model.
