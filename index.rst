@@ -702,13 +702,6 @@ What's new in PyTorch tutorials?
    :link: intermediate/FSDP_adavnced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
-.. customcarditem::
-   :header: Getting Started with Distributed Checkpoint (DCP)
-   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
-   :image: _static/img/thumbnails/cropped/Getting-Started-with-DCP.png
-   :link: intermediate/DCP_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
 .. Mobile
 
 .. customcarditem::
@@ -1018,7 +1011,6 @@ Additional Resources
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
    advanced/generic_join
-   intermediate/DCP_tutorial
 
 .. toctree::
    :maxdepth: 2

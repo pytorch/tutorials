@@ -6,7 +6,14 @@ Getting Started with Distributed Checkpoint (DCP)
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/DCP_tutorial.rst>`__.
 
-Checkpointing AI models during distributed training could be challenging, as parameters and gradients are partitioned across GPUs and the number of GPUs available could change when you resume training.
+
+Prerequisites:
+
+-  `FullyShardedDataParallel API documents <https://pytorch.org/docs/master/fsdp.html>`__
+-  `torch.load API documents <https://pytorch.org/docs/stable/generated/torch.load.html>`__
+
+
+Checkpointing AI models during distributed training could be challenging, as parameters and gradients are partitioned across trainers and the number of trainers available could change when you resume training.
 Pytorch Distributed Checkpointing (DCP) can help make this process easier.
 
 In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model.
@@ -22,6 +29,9 @@ DCP is different from :func:`torch.save` and :func:`torch.load` in a few signifi
 * It produces multiple files per checkpoint, with at least one per rank.
 * It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.
 
+.. note::
+  The code in this tutorial runs on an 8-GPU server, but it can be easily
+  generalized to other environments.
 
 How to use DCP
 --------------
@@ -89,6 +99,7 @@ Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy inp
         optimizer.step()
 
         # set FSDP StateDictType to SHARDED_STATE_DICT so we can use DCP to checkpoint sharded model state dict
+        # note that we do not support FSDP StateDictType.LOCAL_STATE_DICT
         FSDP.set_state_dict_type(
             model,
             StateDictType.SHARDED_STATE_DICT,
@@ -115,11 +126,23 @@ Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy inp
             join=True,
         )
 
+Please go ahead and check the `checkpoint` directory. You should see 8 checkpoint files as shown below.
+
+.. figure:: /_static/img/distributed/distributed_checkpoint_generated_files.png
+   :width: 100%
+   :align: center
+   :alt: Distributed Checkpoint
 
 Loading
 ~~~~~~~
 
 After saving, let’s create the same FSDP-wrapped model, and load the saved state dict from storage into the model. You can load in the same world size or different world size.
+
+Please note that you will have to call :func:`model.state_dict` prior to loading and pass it to DCP's :func:`load_state_dict` API.
+This is fundamentally different from :func:`torch.load`, as :func:`torch.load` simply requires the path to the checkpoint prior for loading.
+The reason that we need the state_dict prior to loading is:
+* DCP uses the pre-allocated storage from model state_dict to load from the checkpoint directory. During loading, the state_dict passed in will be updated in place.
+* DCP requires the sharding information from the model prior to loading to support resharding.
 
 .. code-block:: python
 
@@ -173,6 +196,8 @@ After saving, let’s create the same FSDP-wrapped model, and load the saved sta
             model,
             StateDictType.SHARDED_STATE_DICT,
         )
+        # different from ``torch.load()``, DCP requires model state_dict prior to loading to get
+        # the allocated storage and sharding information.
         state_dict = {
             "model": model.state_dict(),
         }
@@ -198,6 +223,9 @@ After saving, let’s create the same FSDP-wrapped model, and load the saved sta
 
 If you would like to load the saved checkpoint into a non-FSDP wrapped model in a non-distributed setup, perhaps for inference, you can also do that with DCP.
 By default, DCP saves and loads a distributed ``state_dict`` in Single Program Multiple Data(SPMD) style. To load without a distributed setup, please set ``no_dist`` to ``True`` when loading with DCP.
+
+.. note::
+  Distributed checkpoint support for Multi-Program Multi-Data is still under development.
 
 .. code-block:: python
     import os
@@ -239,3 +267,13 @@ By default, DCP saves and loads a distributed ``state_dict`` in Single Program M
     if __name__ == "__main__":
         print(f"Running basic DCP checkpoint loading example.")
         run_checkpoint_load_example()
+
+
+Conclusion
+----------
+In conclusion, we have learned how to use DCP's :func:`save_state_dict` and :func:`load_state_dict` APIs, as well as how they are different form :func:`torch.save` and :func:`torch.load`.
+
+For more information, please see the following:
+
+-  `Saving and loading models tutorial <https://pytorch.org/tutorials/beginner/saving_loading_models.html>`__
+-  `Getting started with FullyShardedDataParallel tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
