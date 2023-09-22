@@ -69,7 +69,6 @@ def user_fn(x):
 # unless one is explicitly specified as dynamic using ``dynamic_dim()``.
 # So there is no constraint discovery.
 #
-
 # All dimensions are exported statically
 # Expect to see the exported program is specialized at dim 0.
 t_1 = torch.zeros([8])
