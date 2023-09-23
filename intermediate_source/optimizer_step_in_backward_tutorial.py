@@ -5,13 +5,14 @@ How to save memory by fusing the optimizer step into the backward pass
 
 Hello there! This tutorial aims to showcase one way of reducing the
 memory footprint of a training loop by reducing the memory taken by
-the gradients. Say you have a model and you're interested in ways to
+the *gradients*. Say you have a model and you're interested in ways to
 optimize memory to avoid OOMing or simply to ooze more out of your GPU.
-Well, you _might_ be in luck! We will explore
+Well, you _might_ be in luck (if gradients take up a portion of your
+memory and you do not need to do gradient accumulation)! We will explore
 
 1. What takes up memory during your training or finetuning loop,
-2. Capturing and visualizing memory snapshots to determine the memory bottleneck,
-3. The new `tensor.post_accumulate_grad_hook(hook)` API, and finally, if relevant,
+2. How to capture and visualize memory snapshots to determine the bottleneck,
+3. The new `Tensor.register_post_accumulate_grad_hook(hook)` API, and finally,
 4. How everything fits together in 10 lines to achieve memory savings
 
 The ingredients and tools required:
@@ -57,14 +58,16 @@ def train(model, optimizer):
 # We are about to look at some memory snapshots, so we should be prepared to
 # analyze them properly. People normally consider training memory to consist of
 #
-# 1. Model parameters (size P)
-# 2. Activations (size A)
-# 3. Gradients, which are the same size as the model parameters, so size G = P
-# 4. Optimizer state, which is usually a relation to the model parameters. In
-#    this case, Adam state requires 2x the model parameters, so size O = 2P
-# 5. Intermediate tensors, which are allocated throughout the compute. We will
-#    not worry about them for now as they are usually small and ephemeral.
+#     1. Model parameters (size P)
+#     2. Activations (size A)
+#     3. Gradients, which are the same size as the model parameters, so size G = P
+#     4. Optimizer state, which is usually a relation to the model parameters. In
+#        this case, Adam state requires 2x the model parameters, so size O = 2P
+#     5. Intermediate tensors, which are allocated throughout the compute. We will
+#        not worry about them for now as they are usually small and ephemeral.
 #
+# Capturing and visualizing memory snapshots
+# """"""""""""""""""""""""""""""""""""""""""
 # Let's get us a memory snapshot! As your code runs, consider what you may expect
 # the CUDA memory timeline to look like.
 
@@ -72,84 +75,189 @@ def train(model, optimizer):
 torch.cuda.memory._record_memory_history()
 
 # train 3 steps
-train(model, optimizer)
+for _ in range(3):
+  train(model, optimizer)
 
 # save a snapshot of the memory allocations
-s = torch.cuda.memory._snapshot()
-with open(f"snapshot.pickle", "wb") as f:
-    dump(s, f)
+# s = torch.cuda.memory._snapshot()
+# with open(f"snapshot.pickle", "wb") as f:
+#     dump(s, f)
 
-raise RuntimeError("Stop here and open up the snapshot in Zach Devito's CUDA Memory Visualizer")
+# tell CUDA to stop recording memory allocations now
+torch.cuda.memory._record_memory_history(enabled=None)
 
 ###############################################################################
 # Now open up the snapshot in Zach Devito's [CUDA Memory Visualizer](
 # https://zdevito.github.io/assets/viz/) by dragging the snapshot.pickle file.
 # Does the memory timeline match your expectations?
 # 
+# .. figure:: /_static/img/optim_step_in_bwd/snapshot.jpg
+#    :alt: snapshot.png loaded into CUDA Memory Visualizer
+# 
 # The model parameters have already been loaded in memory before the training
-# step, so we anticipate seeing a chunk of memory devoted to the weights right
-# off the bat. As we start our forward, memory should be allocated gradually
-# for the activations, or the tensors we are saving to be able to compute gradients
-# in the backward. Once we start the backward, the activations should be gradually
-# freed while memory of the gradients start building up.
+# step, so we see a chunk of memory devoted to the weights right off the bat.
+# As we start our forward, memory is allocated gradually for the activations, or 
+# the tensors we are saving to be able to compute gradients in the backward. 
+# Once we start the backward, the activations are gradually freed while memory
+# of the gradients start building up.
 # 
 # Lastly, as the optimizer kicks in, its state will be lazily initialized, so we 
-# should see the optimizer state memory gradually increase during the end of the
-# first training loop only. In future loops, the optimizer memory will remain and
-# be inplace updated. The memory for the gradients should be freed accordingly
-# by the end of every training loop.
-
-m = SomeModule()
-
-###############################################################################
-# This allocates memory for all parameters/buffers and initializes them per
-# the default initialization schemes defined in `SomeModule.__init__()`, which
-# is wasteful when we want to load a checkpoint as
-#     1. We are running the initialization kernels where the results are
-#        immediately overwritten by `load_state_dict()`
-#     2. We are allocating memory for these parameters/buffers in RAM while
-#        `torch.load` of the saved state dictionary also allocates memory for
-#        the parameters/buffers in the checkpoint.
+# should see the optimizer state memory gradually increase during the optimizer
+# step of the first training loop only. In future loops, the optimizer memory
+# will remain and be updated in-place. The memory for the gradients are then
+# freed accordingly at the end of every training loop when zero_grad is called.
+# 
+# Where is the memory bottleneck in this training loop? Or, in other words,
+# where is the peak memory?
+# 
+# The peak memory usage is during the optimizer step! Note the memory then
+# consists of ~1.2GB of params, ~1.2GB of gradients, and ~2.4GB=2*1.2GB of
+# the optimizer state as expected. The last ~1.2GB comes from Adam optimizer
+# requiring memory for intermediates, totalling to ~6GB of peak memory.
+# Technically, you can remove the need for the last 1.2GB for optimizer
+# intermediates if you set `Adam(model.parameters(), foreach=False)` which
+# would trade off runtime for memory. If switching off the foreach runtime
+# optimization is sufficient in memory savings for you, nice, but please
+# read on if you're curious how this tutorial can help you do better!
+# With the technique we will soon introduce, we will reduce peak memory by
+# removing the need for the ~1.2GB of **gradients memory** as well as **optimizer
+# intermediates memory**. Now do the math--what would the new peak memory be?
+# The answer will be revealed in the next snapshot :D.
 #
-# In order to solve these two problems, we can use the `torch.device()`
-# context manager with `device='meta'` when we instantiate the `nn.Module()`.
-
-with torch.device('meta'):
-  meta_m = SomeModule()
-
-###############################################################################
-# The [`torch.device()`](https://pytorch.org/docs/main/tensor_attributes.html#torch-device)
-# context manager makes sure that factory calls will be performed as if they
-# were passed device as an argument. However, it does not affect factory
-# function calls which are called with an explicit device argument.
+# DISCLAIMER. Yes. Is the time for the disclaimer:
+# 
+# Is this technique applicable to you? Only if gradients take up sizable memory.
+# """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+# The technique of fusing the optimizer step into the backward only targets
+# reducing *gradient* memory (and as a side effect also optimizer intermediates
+# memory). In our example above, the gradients eat up 20% of the memory pie, which
+# is quite sizable!
 #
-# Tensors on the `meta` device do not carry data. However, they possess all
-# other metadata a tensor carries such as `.size()` and `.stride()`,
-# `.requires_grad` etc.
+# This may not be the case for you, for example, if your weights are already tiny,
+# (say, due to applying LoRa,) then the gradients do not take much space in your
+# training loop and the wins are way less exciting. In that case, you should
+# first try other techniques like activations checkpointing, distributed
+# training, quantization, or reducing the batch size. Then, when the gradients
+# are part of the bottleneck again, come back to this tutorial!
+# 
+# Still here? Cool, let's introduce our new `register_post_accumulate_grad_hook(hook)`
+# API on Tensor.
 #
-# Next, we consider the loading of the state dictionary.
-
-m.load_state_dict(state_dict)
-
-###############################################################################
-# `nn.Module.load_state_dict()` is usually implemented via an in-place
-# `param_in_model.copy_(param_in_state_dict)` (i.e. a copy from the
-# parameter/buffer with the corresponding key in the state dictionary into
-# the parameters/buffers in the `nn.Module`).
+# `Tensor.register_post_accumulate_grad_hook(hook)` API and our technique
+# """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+# Our technique relies on not having to save the gradients during `backward()`. Instead,
+# once a gradient has been accumulated, we will immediately apply the optimizer to
+# the corresponding parameter and drop that gradient entirely! This removes the need
+# for holding onto a big buffer of gradients until the optimizer step.
 #
-# However, an in-place copy into a tensor on the `meta` device is a no-op.
-# In order to avoid this, we can pass the `assign=True` keyword argument to
-# `load_state_dict()`.
+# So how can we unlock the behavior of applying the optimizer more eagerly? Well,
+# in 2.1, we've added a new API [`Tensor.register_post_accumulate_grad_hook(hook)`](
+# https://pytorch.org/docs/main/generated/torch.Tensor.register_post_accumulate_grad_hook.html#torch.Tensor.register_post_accumulate_grad_hook)
+# that would allow us to add a hook onto a Tensor once its `.grad` field has been
+# accumulated. We will encapsulate the optimizer step into this hook. How?
+# 
+# How everything fits together in 10 lines
+# """"""""""""""""""""""""""""""""""""""""
+# Remember our model and optimizer setup from the beginning? I'll leave them commented
+# out below so we don't spend resources rerunning the code.
 
-meta_m.load_state_dict(state_dict, assign=True)
+# model = models.vit_l_16(weights='DEFAULT').cuda()
+# optimizer = torch.optim.Adam(model.parameters())
+
+# Instead of having just *one* optimizer, we will have a Dict of optimizers
+# for every parameter so we could reference them in our hook.
+optimizer_dict = {p: torch.optim.Adam([p]) for p in model.parameters()}
+
+# Define our hook, which will call the optimizer `step()` and `zero_grad()`
+def optimizer_hook(parameter) -> None:
+  optimizer_dict[parameter].step()
+  optimizer_dict[parameter].zero_grad()
+
+# Register the hook onto every parameter
+for p in model.parameters():
+   p.register_post_accumulate_grad_hook(optimizer_hook)
+
+# Now remember our previous `train()` function? Since the optimizer has been
+# fused into the backward, we can remove the optimizer step and zero_grad calls.
+def train(model):
+  # create our fake image input: tensor shape is batch_size, channels, height, width
+  fake_image = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE).cuda()
+
+  # call our forward and backward
+  loss = model.forward(fake_image)
+  loss.sum().backward()
+
+  # optimizer update --> no longer needed!
+  # optimizer.step()
+  # optimizer.zero_grad()
+
+########################################################################
+# I believe that was about 10 lines of changes in our sample model. I do
+# recognize that it could be a fairly intrusive change to switch out the
+# optimizer for a optimizer dictionary, especially for those who use
+# `LRScheduler`s or manipulate optimizer configuration throughout the
+# training epochs. Working out this API with those changes will be more
+# involved and likely requires moving more configuration into global
+# state but should not be impossible. That said, a next step for us is
+# to make this API easier to adopt with LRSchedulers and other features
+# you are already used to.
+# 
+# But let me get back to convincing you that this technique is worth it.
+# We will consult our friend, the memory snapshot.
+
+# del optimizer memory from before to get a clean slate
+del optimizer
+
+# tell CUDA to start recording memory allocations
+torch.cuda.memory._record_memory_history()
+
+# train 3 steps. note that we no longer pass the optimizer into train()
+for _ in range(3):
+  train(model)
+
+# save a snapshot of the memory allocations
+s = torch.cuda.memory._snapshot()
+with open(f"snapshot-opt-in-bwd.pickle", "wb") as f:
+    dump(s, f)
+
+# tell CUDA to stop recording memory allocations now
+torch.cuda.memory._record_memory_history(enabled=None)
 
 ###############################################################################
-# Another caveat here is that since optimizers hold a reference to
-# `nn.Module.parameters()`, the optimizer must be initialized after the module
-# is loaded from state dict if `assign=True` is passed.
-
-###############################################################################
-# To recap, in this tutorial, we learned about `torch.load(mmap=True)`, the
-# `torch.device()` context manager with `device=meta` and the
-# `nn.Module.load_state_dict(assign=True)` and how these tools could be used
-# to aid when loading a model from a checkpoint.
+# Yes, take some time to drag your snapshot into the CUDA Memory Visualizer.
+# 
+# .. figure:: /_static/img/optim_step_in_bwd/snapshot_opt_in_bwd.jpg
+#    :alt: snapshot.png loaded into CUDA Memory Visualizer
+#
+# Several major observations:
+#     1. There is no more optimizer step! Right...we fused that into the backward.
+#     2. Likewise, the backward drags longer and there are more random allocations
+#        for intermediates. This is expected, as the optimizer step requires 
+#        intermediates.
+#     3. Most importantly! The peak memory is lower! It is now ~4GB (which I
+#        hope is close to your answer earlier :).) 
+# 
+# Note that there is no longer any big chunk of memory allocated for the gradients
+# compared to before, accounting for ~1.2GB of memory savings. Instead, we've freed
+# each gradient very quickly after they've been computed by moving the optimizer 
+# step as far ahead as we can. Woohoo! By the way, the other ~1.2GB of memory savings
+# comes from breaking apart the optimizer into per-parameter optimizers, so the
+# intermediates have proportionally shrunk. I'd like to stress this detail is less
+# important than the gradient memory savings, as you can get optimizer intermediates
+# savings from just turning `foreach=False` without this technique.
+# 
+# You may be correctly wondering: if we saved 2.4GB of memory, why is the peak memory
+# NOT 6GB - 2.4GB = 3.6GB? Well, the peak has moved! The peak is now near the start
+# of the backward step, when we still have activations in memory, where before, the peak
+# was during the optimizer step when the activations had been freed. The ~0.4GB difference
+# accounting for ~4.0GB - ~3.6GB is thus due to the activations memory. One can then
+# imagine that this technique can be coupled with activations checkpointing for more
+# memory wins.
+#
+# Recap
+# """""
+# In this tutorial, we learned about the memory saving technique of
+# fusing the optimizer into the backward step through the new
+# `Tensor.register_post_accumulate_grad_hook()` API and *when* to apply this
+# technique (when gradients memory is significant). Along the way, we also learned
+# about memory snapshots, which are generally useful in memory optimization.
