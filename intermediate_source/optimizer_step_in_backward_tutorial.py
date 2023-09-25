@@ -72,7 +72,7 @@ def train(model, optimizer):
 # the CUDA memory timeline to look like.
 
 # tell CUDA to start recording memory allocations
-torch.cuda.memory._record_memory_history()
+torch.cuda.memory._record_memory_history(enabled='all')
 
 # train 3 steps
 for _ in range(3):
@@ -209,7 +209,7 @@ def train(model):
 del optimizer
 
 # tell CUDA to start recording memory allocations
-torch.cuda.memory._record_memory_history()
+torch.cuda.memory._record_memory_history(enabled='all')
 
 # train 3 steps. note that we no longer pass the optimizer into train()
 for _ in range(3):
