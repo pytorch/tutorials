@@ -504,7 +504,7 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: Parametrizations Tutorial
-   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
    :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
@@ -514,6 +514,13 @@ What's new in PyTorch tutorials?
    :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: intermediate/pruning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
+   :header: How to save memory by fusing the optimizer step into the backward pass
+   :card_description: Learn a memory-saving technique through fusing the optimizer step into the backward pass using memory snapshots.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/optimizer_step_in_backward_tutorial.html
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
