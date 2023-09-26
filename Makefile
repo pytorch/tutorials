@@ -82,7 +82,7 @@ download:
 	tar $(TAROPTS) -xzf $(DATADIR)/UrbanSound8K.tar.gz -C ./beginner_source/data/
 
 	# Download model for beginner_source/fgsm_tutorial.py
-	wget -nv -N 'https://docs.google.com/uc?export=download&id=1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl' -O $(DATADIR)/lenet_mnist_model.pth
+	wget -nv 'https://docs.google.com/uc?export=download&id=1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl' -O $(DATADIR)/lenet_mnist_model.pth
 	cp $(DATADIR)/lenet_mnist_model.pth ./beginner_source/data/lenet_mnist_model.pth
 
 	# Download model for advanced_source/dynamic_quantization_tutorial.py
