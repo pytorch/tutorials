@@ -521,7 +521,7 @@ What's new in PyTorch tutorials?
    :card_description: Learn a memory-saving technique through fusing the optimizer step into the backward pass using memory snapshots.
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/optimizer_step_in_backward_tutorial.html
-   :tags: Model-Optimization,Best-Practice
+   :tags: Model-Optimization,Best-Practice,CUDA,Frontend-APIs
 
 .. customcarditem::
    :header: (beta) Dynamic Quantization on an LSTM Word Language Model
