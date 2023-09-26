@@ -181,7 +181,7 @@ except Exception:
 # we can fix the control flow example above using the ``cond`` op, like so:
 #
 # ..
-#     [TODO] link to docs about cond when it is out
+#     [TODO] link to docs about ``cond`` when it is out
 
 from functorch.experimental.control_flow import cond
 
@@ -516,7 +516,7 @@ print(exported_custom_op_example(torch.randn(3, 3)))
 
 def cond_predicate(x):
     """
-    The conditional statement (aka predicate) passed to cond() must be one of the following:
+    The conditional statement (aka predicate) passed to ``cond()`` must be one of the following:
       - torch.Tensor with a single element
       - boolean expression
     NOTE: If the `pred` is test on a dim with batch size < 2, it will be specialized.
