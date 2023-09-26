@@ -52,7 +52,7 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
         add_to_shard(0, filename)
         all_other_files.remove(filename)
     for filename in needs_a10g:
-        # currently, the only job that uses linux.g5.4xlarge.nvidia.gpu (sm86, A10G) is the 1st worker,
+        # currently, workers 1-5 use linux.g5.4xlarge.nvidia.gpu (sm86, A10G),
         # so we'll add all the jobs that need this machine to the 1st worker
         add_to_shard(1, filename)
         all_other_files.remove(filename)
