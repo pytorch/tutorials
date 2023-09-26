@@ -7,7 +7,7 @@ graph mode based on `torch.export.export <https://pytorch.org/docs/main/export.h
 For more details about PyTorch 2.0 Export Quantization in general, refer
 to the `static post training quantization tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_.
 
-The PyTorch 2.0 Export QAT flow looks like the following. It is similar
+The PyTorch 2.0 Export QAT flow looks like the following—it is similar
 to the post training quantization (PTQ) flow for the most part:
 
 .. code:: python
@@ -55,28 +55,28 @@ to the post training quantization (PTQ) flow for the most part:
   # move the quantized model to eval mode, equivalent to `m.eval()`
   torch.ao.quantization.move_exported_model_to_eval(m)
 
-Note that calling `model.eval()` or `model.train()` after program capture is
+Note that calling ``model.eval()`` or ``model.train()`` after program capture is
 not allowed, because these methods no longer correctly change the behavior of
 certain ops like dropout and batch normalization. Instead, please use
-`torch.ao.quantization.move_exported_model_to_eval()` and
-`torch.ao.quantization.move_exported_model_to_train()` (coming soon)
+``torch.ao.quantization.move_exported_model_to_eval()`` and
+``torch.ao.quantization.move_exported_model_to_train()`` (coming soon)
 respectively.
 
 
-Define Helper Functions and Prepare Dataset
+Define Helper Functions and Prepare the Dataset
 -------------------------------------------
 
-We’ll start by doing the necessary imports, defining some helper functions and
-prepare the data. These steps are very similar to the ones defined in the
-`static post training quantization tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
-
 To run the code in this tutorial using the entire ImageNet dataset, first
-download Imagenet by following the instructions at here
+download ImageNet by following the instructions in
 `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file
 into the ``data_path`` folder.
 
-Download the `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_
+Next, download the `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_
 and rename it to ``data/resnet18_pretrained_float.pth``.
+
+We’ll start by doing the necessary imports, defining some helper functions and
+prepare the data. These steps are very similar to the ones defined in the
+`static post training quantization tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_:
 
 .. code:: python
 
@@ -286,14 +286,15 @@ Here is how you can use ``torch.export`` to export the model:
         example_inputs,
         constraints=[dynamic_dim(example_inputs[0], 0)],
     )
+.. note::
 
-``capture_pre_autograd_graph`` is a short term API, it will be updated to use the offical ``torch.export`` API when that is ready.
+   ``capture_pre_autograd_graph`` is a short term API, it will be updated to use the offical ``torch.export`` API when that is ready.
 
 
 Import the Backend Specific Quantizer and Configure how to Quantize the Model
 -----------------------------------------------------------------------------
 
-The following code snippets describes how to quantize the model:
+The following code snippets describe how to quantize the model:
 
 .. code-block:: python
 
@@ -331,13 +332,13 @@ of ATen ops in the prepared graph.
 
     If your model contains batch normalization, the actual ATen ops you get
     in the graph depend on the model's device when you export the model.
-    If the model is on CPU, then you'll get `torch.ops.aten._native_batch_norm_legit`.
-    If the model is on CUDA, then you'll get `torch.ops.aten.cudnn_batch_norm`.
+    If the model is on CPU, then you'll get ``torch.ops.aten._native_batch_norm_legit``.
+    If the model is on CUDA, then you'll get ``torch.ops.aten.cudnn_batch_norm``.
     However, this is not fundamental and may be subject to change in the future.
 
-    Between these two ops, it has been shown that `torch.ops.aten.cudnn_batch_norm`
+    Between these two ops, it has been shown that ``torch.ops.aten.cudnn_batch_norm``
     provides better numerics on models like MobileNetV2. To get this op, either
-    call `model.cuda()` before export, or run the following after prepare to manually
+    call ``model.cuda()`` before export, or run the following after prepare to manually
     swap the ops:
 
     .. code:: python
@@ -352,6 +353,11 @@ of ATen ops in the prepared graph.
 
 Training Loop
 -----------------------------------------------------------------------------
+
+The training loop is similar to the ones in previous versions of QAT. To achieve
+better accuracies, you may optionally disable observers and updating batch
+normalization statistics after a certain number of epochs, or evaluate the QAT
+or the quantized model trained so far every ``N`` epochs.
 
 .. code:: python
 
@@ -440,7 +446,7 @@ Convert the Trained Model to a Quantized Model
 
 ``convert_pt2e`` takes a calibrated model and produces a quantized model.
 Note that, before inference, you must first call
-`torch.ao.quantization.move_exported_model_to_eval()` to ensure certain ops
+``torch.ao.quantization.move_exported_model_to_eval()`` to ensure certain ops
 like dropout behave correctly in the eval graph. Otherwise, we would continue
 to incorrectly apply dropout in the forward pass during inference, for example.
 
