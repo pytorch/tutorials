@@ -42,12 +42,12 @@ Model Interpretability using Captum
 # 
 
 import torchvision
-from torchvision import transforms
+from torchvision import models, transforms
 from PIL import Image
 import requests
 from io import BytesIO
 
-model = torchvision.models.resnet18(pretrained=True).eval()
+model = torchvision.models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1).eval()
 
 response = requests.get("https://image.freepik.com/free-photo/two-beautiful-puppies-cat-dog_58409-6024.jpg")
 img = Image.open(BytesIO(response.content))
