@@ -460,7 +460,7 @@ We will also evaluate the model to show the accuracy degredation of zero-shot pr
     # pruned eval metrics: {'exact_match': 40.59602649006622, 'f1': 56.51610004515979}
 
 In this state, we can start fine-tuning the model, updating the elements that wouldn't be pruned to better account for the accuracy loss.
-Once we've reached a satisfied state, we can call `squash_mask` to fuse the mask and the weight together. This will remove the parameterizations and we are left with a zeroed-out 2:4 dense model.
+Once we've reached a satisfied state, we can call ``squash_mask`` to fuse the mask and the weight together. This will remove the parameterizations and we are left with a zeroed-out 2:4 dense model.
 
 .. code:: python
 
