@@ -29,7 +29,7 @@ Requirements
 .. note::
 
     This tutorial is designed for beginners to semi-structured sparsity / sparsity in general.
-    For users with existing 2:4 sparse models, accelerating nn.Linear layers for inference is as easy as running the following:
+    For users with existing 2:4 sparse models, accelerating ``nn.Linear`` layers for inference is as easy as running the following:
 
     .. code:: python
 
