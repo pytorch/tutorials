@@ -92,7 +92,7 @@ However, the accuracy of a model suffers from the lack of granularity in this ap
 
 Semi-structured sparsity provides a 2x (theoretical) speedup at a much lower sparsity level (50%), while still being granular enough to preserve model accuracy.
 Thus semi-structured sparsity exists in a sweet spot, providing meaning performance benefits while not degrading model accuracy when combined with retraining / fine-tuning.
-NVIDIA has shown in their `whitepaper <https://arxiv.org/abs/2104.08378>`_ that a simple pardigram of magnitude pruning once to be 2:4 sparse and then retraining the model yields nearly identical model accuracies.
+NVIDIA has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_ that a simple paradigm of magnitude pruning once to be 2:4 sparse and then retraining the model yields nearly identical model accuracies.
 
 
 +---------------------+-------------+--------+------------+-------------+
