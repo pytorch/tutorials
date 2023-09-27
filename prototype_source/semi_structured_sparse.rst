@@ -482,7 +482,7 @@ Once we've reached a satisfied state, we can call `squash_mask` to fuse the mask
 
 Acclerating 2:4 sparse models for inference
 -------------------------------------------
-Now that we have a model in this format, we can accelerate it for inference just like in the quickstart guide.
+Now that we have a model in this format, we can accelerate it for inference just like in the QuickStart Guide.
 
 .. code:: python
 
