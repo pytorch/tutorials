@@ -12,6 +12,8 @@ Usage Example
 Train FP32
 ----------
 
+Check the example below to learn how to utilize the `ipex` backend with `torch.compile` for model training with FP32 data type.
+
 .. code:: python
 
    import torch
@@ -61,6 +63,8 @@ Train FP32
 
 Train BF16
 ----------
+
+Check the example below to learn how to utilize the `ipex` backend with `torch.compile` for model training with BFloat16 data type.
 
 .. code:: python
 
@@ -113,6 +117,8 @@ Train BF16
 Inference FP32
 --------------
 
+Check the example below to learn how to utilize the `ipex` backend with `torch.compile` for model inference with FP32 data type.
+
 .. code:: python
 
    import torch
@@ -137,6 +143,8 @@ Inference FP32
 
 Inference BF16
 --------------
+
+Check the example below to learn how to utilize the `ipex` backend with `torch.compile` for model inference with BFloat16 data type.
 
 .. code:: python
 
