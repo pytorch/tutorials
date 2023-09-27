@@ -1,13 +1,13 @@
-(prototype) PyTorch 2.0 Export Quantization-Aware Training (QAT)
+(prototype) PyTorch 2 Export Quantization-Aware Training (QAT)
 ================================================================
 **Author**: `Andrew Or <https://github.com/andrewor14>`_
 
 This tutorial shows how to perform quantization-aware training (QAT) in
 graph mode based on `torch.export.export <https://pytorch.org/docs/main/export.html>`_.
-For more details about PyTorch 2.0 Export Quantization in general, refer
-to the `static post training quantization tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_.
+For more details about PyTorch 2 Export Quantization in general, refer
+to the `post training quantization tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_.
 
-The PyTorch 2.0 Export QAT flow looks like the following—it is similar
+The PyTorch 2 Export QAT flow looks like the following—it is similar
 to the post training quantization (PTQ) flow for the most part:
 
 .. code:: python
@@ -76,7 +76,7 @@ and rename it to ``data/resnet18_pretrained_float.pth``.
 
 We’ll start by doing the necessary imports, defining some helper functions and
 prepare the data. These steps are very similar to the ones defined in the
-`static post training quantization tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_:
+`static eager mode post training quantization tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_:
 
 .. code:: python
 
@@ -405,7 +405,7 @@ or the quantized model trained so far every ``N`` epochs.
 Saving and Loading Model Checkpoints
 ----------------------------------------------------------
 
-Model checkpoints for the PyTorch 2.0 Export QAT flow are
+Model checkpoints for the PyTorch 2 Export QAT flow are
 the same as in any other training flow. They are useful for
 pausing training and resuming it later, recovering from
 failed training runs, and performing inference on different
@@ -469,8 +469,8 @@ Conclusion
 --------------
 
 In this tutorial, we demonstrated how to run Quantization-Aware Training (QAT)
-flow in PyTorch 2.0 Export Quantization. After convert, the rest of the flow
+flow in PyTorch 2 Export Quantization. After convert, the rest of the flow
 is the same as Post-Training Quantization (PTQ); the user can
 serialize/deserialize the model and further lower it to a backend that supports
 inference with XNNPACK backend. For more detail, follow the
-`static PTQ tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_.
+`PTQ tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_.
