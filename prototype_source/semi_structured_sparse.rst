@@ -540,4 +540,3 @@ In this tutorial, we have shown how to prune BERT to be 2:4 sparse and how to ac
 By taking advantage of our SparseSemiStructuredTensor subclass, we were able to achieve a 1.3x speedup over the fp16 baseline.
 We also demonstrated the benefits of 2:4 sparsity by fine-tuning BERT to recover any lost F1 (86.92 dense vs 86.48 sparse).
 
-Please feel free to raise an `issue <https://github.com/pytorch/pytorch/issues>`_ if you need any support, and thanks for reading
