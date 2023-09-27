@@ -114,7 +114,7 @@ NVIDIA has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_ that
 +---------------------+-------------+--------+------------+-------------+
 
 Semi-structured sparsity has an additional advantage from a workflow perspective.
-Because the sparsity level is fixed at 50%, it is easier to decompose the problem of sparsifing a model into two distinct subproblems:
+Because the sparsity level is fixed at 50%, it is easier to decompose the problem of sparsifying a model into two distinct subproblems:
 
 * Accuracy - How can we find a set of 2:4 sparse weights that minimize the accuracy degradation of our model?
 * Performance - How can we accelerate our 2:4 sparse weights for inference and reduced memory overhead?
