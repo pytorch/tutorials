@@ -82,7 +82,7 @@ For semi-structured sparsity, we store exactly half of the original parameters a
     :width: 80%
 
 
-However, this is not the only way to store sparse tensors. There exist other formats like `COO <https://pytorch.org/docs/2.1/sparse.html#sparse-coo-tensors>`_ representation, which is used with **unstructured sparsity**.
+However, this is not the only way to store sparse tensors. There are other formats like `COO <https://pytorch.org/docs/2.1/sparse.html#sparse-coo-tensors>`_ representation, which are used with **unstructured sparsity**.
 In this sparsity pattern, we mask each parameter independently, which needs the flexibilty that COO represntation offers. For a given sparsity level, unstructured sparsity is usually the least damaging to the accuracy of the model.
 However, COO matrix multiplication is difficult to accelerate on GPUs and needs very high sparsity levels (>90% in practice ) to be faster than dense matrix multiplication.
 
