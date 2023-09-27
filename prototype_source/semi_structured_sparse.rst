@@ -23,8 +23,8 @@ Finally, we will accelerate this 2:4 sparse model for inference, yielding a 1.3x
 Requirements
 --------------
 
-1. PyTorch >= 2.1.
-2. A NVIDIA GPU with semi-structured sparsity support (Compute Capability 8.0+).
+* PyTorch >= 2.1.
+* A NVIDIA GPU with semi-structured sparsity support (Compute Capability 8.0+).
 
 .. note::
 
