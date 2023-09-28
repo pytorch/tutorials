@@ -113,7 +113,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 # where is the peak memory?
 # 
 # The peak memory usage is during the optimizer step! Note the memory then
-# consists of ~1.2GB of params, ~1.2GB of gradients, and ~2.4GB=2*1.2GB of
+# consists of ~1.2GB of parameters, ~1.2GB of gradients, and ~2.4GB=2*1.2GB of
 # the optimizer state as expected. The last ~1.2GB comes from Adam optimizer
 # requiring memory for intermediates, totaling to ~6GB of peak memory.
 # Technically, you can remove the need for the last 1.2GB for optimizer
