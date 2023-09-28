@@ -308,6 +308,6 @@ Conclusion
 ^^^^^^^^^^^^^^^^^^^
 
 With this tutorial, we introduce the new quantization path in PyTorch 2. Users can learn about
-how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2 flow.
+how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the PyTorch 2 Export Quantization flow.
 Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
 are given for specific annotation use case. You can use `XNNPACKQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py>`_ as an example to start implementing your own ``Quantizer``. After that please follow `this tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_ to actually quantize your model.
