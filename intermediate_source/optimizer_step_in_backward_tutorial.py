@@ -18,7 +18,8 @@ We will explore the following:
 
 To run this tutorial, you will need:
 *  PyTorch 2.1.0 or newer with ``torchvision``
-*  1 CUDA GPU
+*  1 CUDA GPU if you'd like to run the memory visualizations locally.
+   Otherwise, this technique would benefit similarly on any device.
 
 Let us start by importing the required modules and models. We will use a
 vision transformer model from torchvision, but feel free to substitute
@@ -60,9 +61,9 @@ def train(model, optimizer):
 # analyze them properly. Typically, training memory consists of:
 #
 #  * Model parameters (size P)
-#  * Activations (size A)
+#  * Activations that are saved for the backward pass (size A)
 #  * Gradients, which are the same size as the model parameters, so size G = P.
-#  * Optimizer state, which is usually a relation to the model parameters. In
+#  * Optimizer state, which is proportional to the size of the parameters. In
 #    this case, the state for Adam requires 2x the model parameters, so size O = 2P.
 #  * Intermediate tensors, which are allocated throughout the compute. We will
 #    not worry about them for now as they are usually small and ephemeral.
@@ -88,8 +89,8 @@ with open(f"snapshot.pickle", "wb") as f:
 torch.cuda.memory._record_memory_history(enabled=None)
 
 ###############################################################################
-# Now open up the snapshot in Zach Devito's [CUDA Memory Visualizer](
-# https://zdevito.github.io/assets/viz/) by dragging and dropping the
+# Now open up the snapshot in the CUDA Memory Visualizer at
+# https://pytorch.org/memory_viz by dragging and dropping the
 # ``snapshot.pickle`` file. Does the memory timeline match your expectations?
 # 
 # .. figure:: /_static/img/optim_step_in_bwd/snapshot.jpg
@@ -114,7 +115,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 # The peak memory usage is during the optimizer step! Note the memory then
 # consists of ~1.2GB of params, ~1.2GB of gradients, and ~2.4GB=2*1.2GB of
 # the optimizer state as expected. The last ~1.2GB comes from Adam optimizer
-# requiring memory for intermediates, totalling to ~6GB of peak memory.
+# requiring memory for intermediates, totaling to ~6GB of peak memory.
 # Technically, you can remove the need for the last 1.2GB for optimizer
 # intermediates if you set ``Adam(model.parameters(), foreach=False)`` which
 # would trade off runtime for memory. If switching off the ``foreach`` runtime
@@ -168,7 +169,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 
 # Instead of having just *one* optimizer, we will have a ``dict`` of optimizers
 # for every parameter so we could reference them in our hook.
-optimizer_dict = {p: torch.optim.Adam([p]) for p in model.parameters()}
+optimizer_dict = {p: torch.optim.Adam([p], foreach=False) for p in model.parameters()}
 
 # Define our hook, which will call the optimizer ``step()`` and ``zero_grad()``
 def optimizer_hook(parameter) -> None:
@@ -200,14 +201,14 @@ def train(model):
 # ``LRScheduler``s or manipulate optimizer configuration throughout the
 # training epochs. Working out this API with those changes will be more
 # involved and will likely require moving more configuration into global
-# state but should not be impossible. That said, a next step for us is
-# to make this API easier to adopt with LRSchedulers and other features
+# state but should not be impossible. That said, a next step for PyTorch
+# is to make this API easier to adopt with LRSchedulers and other features
 # you are already used to.
 # 
 # But let me get back to convincing you that this technique is worth it.
 # We will consult our friend, the memory snapshot.
 
-# del optimizer memory from before to get a clean slate for the next
+# delete optimizer memory from before to get a clean slate for the next
 # memory snapshot
 del optimizer
 
@@ -243,7 +244,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 # Note that there is no longer any big chunk of memory allocated for the gradients
 # compared to before, accounting for ~1.2GB of memory savings. Instead, we've freed
 # each gradient very quickly after they've been computed by moving the optimizer 
-# step as far ahead as we can. Woo-hoo! By the way, the other ~1.2GB of memory savings
+# step as far ahead as we can. Woohoo! By the way, the other ~1.2GB of memory savings
 # comes from breaking apart the optimizer into per-parameter optimizers, so the
 # intermediates have proportionally shrunk. This detail is `less important` than
 # the gradient memory savings, as you can get optimizer intermediates savings
