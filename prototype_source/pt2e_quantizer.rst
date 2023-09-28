@@ -3,8 +3,6 @@ How to Write a ``Quantizer`` for PyTorch 2 Export Quantization
 
 **Author**: `Leslie Fang <https://github.com/leslie-fang-intel>`_, `Weiwen Xia <https://github.com/Xia-Weiwen>`__, `Jiong Gong <https://github.com/jgong5>`__, `Kimish Patel <https://github.com/kimishpatel>`__, `Jerry Zhang <https://github.com/jerryzh168>`__
 
-.. note:: Quantization in PyTorch 2 export is still a work in progress.
-
 Prerequisites:
 ^^^^^^^^^^^^^^^^
 
@@ -14,7 +12,7 @@ Required:
    
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
    
--  `(prototype) PyTorch 2 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__
+-  `(prototype) PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__
 
 Optional:
 
@@ -27,7 +25,7 @@ Optional:
 Introduction
 ^^^^^^^^^^^^^
 
-`(prototype) PyTorch 2 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__ introduced the overall API for pytorch 2 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a ``Quantizer`` class that encodes:
+`(prototype) PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__ introduced the overall API for pytorch 2 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a ``Quantizer`` class that encodes:
 (1). What is supported quantized operator or patterns in the backend
 (2). How can users express the way they want their floating point model to be quantized, for example, quantized the whole model to be int8 symmetric quantization, or quantize only linear layers etc.
 

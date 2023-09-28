@@ -1,4 +1,4 @@
-(prototype) PyTorch 2 Export Post Training Static Quantization
+(prototype) PyTorch 2 Export Post Training Quantization
 ================================================================
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
@@ -394,7 +394,7 @@ the different configuration APIs supported by ``XNNPackQuantizer``:
    `tutorial <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`_
    that describes how to write a new ``Quantizer``.
 
-Prepare the Model for Post Training Static Quantization
+Prepare the Model for Post Training Quantization
 ----------------------------------------------------------
 
 ``prepare_pt2e`` folds ``BatchNorm`` operators into preceding ``Conv2d``

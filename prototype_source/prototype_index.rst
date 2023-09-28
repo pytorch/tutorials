@@ -224,7 +224,9 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/inductor_cpp_wrapper_tutorial.html
-   prototype/quantization_in_pytorch_2_export_tutorial.html
+   prototype/pt2e_quantizer.html
+   prototype/pt2e_quant_ptq.html
+   prototype/pt2e_quant_qat.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html
