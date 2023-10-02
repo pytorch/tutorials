@@ -5,12 +5,8 @@
 Like other forms of sparsity, **semi-structured sparsity** is a model optimization technique that seeks to reduce the memory overhead and latency of a neural network at the expense of some model accuracy.
 It is also known as **fine-grained structured sparsity** or **2:4 structured sparsity**.
 
-Semi-structured sparsity derives its name from its unique sparsity pattern, where n out of every 2n elements are pruned.
-In practice, we most often see n = 2, hence 2:4 sparsity. This sparsity pattern is particularly interesting for two reasons:
-
-1. Unlike previous sparse formats, semi-structured sparsity was designed to be efficiently accelerated on GPUs.
-   NVIDIA introduced hardware support for semi-structured sparstiy in their Ampere architecture, and have also released fast sparse kernels via CUTLASS/`cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`_.
-2. At the same time, semi-structured sparsity tends to have a milder impact on model accuracy compared to other sparse formats, especially when accounting for more advanced pruning / fine-tuning methods.
+Semi-structured sparsity derives its name from its unique sparsity pattern, where n out of every 2n elements are pruned. We most often see n=2, hence 2:4 sprasity
+Semi-structured sparsity is particulary interesting because it can be efficiently accelerated on GPUs and at the same time doesn't degrade model accuracy as much as other sparsity patterns.
 
 With the introduction of `semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_, it is possible to prune and accelerate a semi-structured sparse model without leaving PyTorch.
 We will explain this process in this tutorial.
@@ -29,7 +25,7 @@ Requirements
 .. note::
 
     This tutorial is designed for beginners to semi-structured sparsity / sparsity in general.
-    For users with existing 2:4 sparse models, accelerating ``nn.Linear`` layers for inference is as easy as running the following:
+    For users with existing 2:4 sparse models, accelerating ``nn.Linear`` layers for inference with ``to_sparse_semi_structured`` is as easy as:
 
     .. code:: python
 
@@ -63,7 +59,7 @@ Requirements
             assert torch.allclose(sparse_output, dense_output, atol=1e-3)
             print(f"Dense: {dense_t:.3f}ms Sparse: {sparse_t:.3f}ms | Speedup: {(dense_t / sparse_t):.3f}x")
 
-    On my machine (A100 80GB), I see: `Dense: 0.870ms Sparse: 0.630ms | Speedup: 1.382x`
+    On an A100 80GB, we see: `Dense: 0.870ms Sparse: 0.630ms | Speedup: 1.382x`
 
 
 What problem does semi-structured sparsity solve?
@@ -71,28 +67,26 @@ What problem does semi-structured sparsity solve?
 The general motivation behind sparsity is simple: if there are zeros in your network, you can avoid storing / doing compute with those parameters.
 However, the specifics of sparsity are tricky. Zeroing out parameters doesn't affect the latency / memory overhead of our model out of the box.
 
-This is because the dense tensor itself still contains the pruned elements and will still operate on those elements during matrix multiplication.
-In order to realize performance gains, we need to swap out our dense kernels for sparse kernels.
+This is because the dense tensor still contains the pruned (zero) elements, which the dense matrix multiplication kernel will still operate on this elements.
+In order to realize performance gains, we need to swap out dense kernels for sparse kernels, which skip calculation involving pruned elements.
 
-These sparse kerenels work by allowing us to skip calculations involving pruned elements. To do this, these kerenls work on sparse matrices, which are do not store the pruned elements and store the specified elements in a compressed format.
+To do this, these kernels work on sparse matrices, which do not store the pruned elements and store the specified elements in a compressed format.
+
 For semi-structured sparsity, we store exactly half of the original parameters along with some compressed metadata about how the elements were arranged.
 
 .. image:: https://developer-blogs.nvidia.com/wp-content/uploads/2023/06/2-4-structured-sparsity-pattern.png
     :align: center
     :width: 80%
 
+    Image sourced from `NVIDIA blog post <https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/>`_ on semi-structured sparsity.
 
-However, this is not the only way to store sparse tensors. There are other formats like `COO <https://pytorch.org/docs/2.1/sparse.html#sparse-coo-tensors>`_ representation, which are used with **unstructured sparsity**.
-In this sparsity pattern, we mask each parameter independently, which needs the flexibilty that COO represntation offers. For a given sparsity level, unstructured sparsity is usually the least damaging to the accuracy of the model.
-However, COO matrix multiplication is difficult to accelerate on GPUs and needs very high sparsity levels (>90% in practice ) to be faster than dense matrix multiplication.
+There are many different sparse layouts, each with their own benefits and drawbacks. 2:4 semi-structured sparsity is particulariy interesting for two reasons:
+1. Unlike previous sparse formats, semi-structured sparsity was designed to be efficiently accelerated on GPUs.
+   In 2020, NVIDIA introduced hardware support for semi-structured sparstiy with their Ampere architecture, and have also released fast sparse kernels via CUTLASS/`cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`_.
+2. At the same time, semi-structured sparsity tends to have a milder impact on model accuracy compared to other sparse formats, especially when accounting for more advanced pruning / fine-tuning methods.
+   NVIDIA has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_ that a simple paradigm of magnitude pruning once to be 2:4 sparse and then retraining the model yields nearly identical model accuracies.
 
-Alternatively, one could seek to get around this problem by using **structured sparsity**, also known as **structured pruning**. For a given weight tensor, we seek to remove parameters one row / column at a time.
-The advantage of this approach is that we can reuse the existing dense kernels for faster matrix multiplication. This idea can be extended to pruning filters for convolutional layers, or even entire layers / heads of a network at once.
-However, the accuracy of a model suffers from the lack of granularity in this approach.
-
-Semi-structured sparsity provides a 2x (theoretical) speedup at a much lower sparsity level (50%), while still being granular enough to preserve model accuracy.
-Thus semi-structured sparsity exists in a sweet spot, providing meaning performance benefits while not degrading model accuracy when combined with retraining / fine-tuning.
-NVIDIA has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_ that a simple paradigm of magnitude pruning once to be 2:4 sparse and then retraining the model yields nearly identical model accuracies.
+Semi-structured exists in a sweet spot, providing a 2x (theoretical) speedup at a much lower sparsity level (50%), while still being granular enough to preserve model accuracy.
 
 
 +---------------------+-------------+--------+------------+-------------+
@@ -539,4 +533,3 @@ Conclusion
 In this tutorial, we have shown how to prune BERT to be 2:4 sparse and how to accelerate a 2:4 sparse model for inference.
 By taking advantage of our SparseSemiStructuredTensor subclass, we were able to achieve a 1.3x speedup over the fp16 baseline.
 We also demonstrated the benefits of 2:4 sparsity by fine-tuning BERT to recover any lost F1 (86.92 dense vs 86.48 sparse).
-

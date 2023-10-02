@@ -545,13 +545,6 @@ What's new in PyTorch tutorials?
    :tags: Quantization
 
 .. customcarditem::
-   :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
-   :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: prototype/semi_structured_sparse.html
-   :tags: Model-Optimziation 
-
-.. customcarditem::
    :header: Grokking PyTorch Intel CPU Performance from First Principles
    :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png

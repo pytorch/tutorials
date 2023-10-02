@@ -82,6 +82,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/pt2e_quant_ptq_static.html
    :tags: Quantization          
 
+.. Sparsity
+
+.. customcarditem::
+   :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
+   :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: prototype/semi_structured_sparse.html
+   :tags: Model-Optimziation
+
 .. Mobile
 
 .. customcarditem::
