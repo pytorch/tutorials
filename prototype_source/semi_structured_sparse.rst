@@ -1,12 +1,12 @@
-(prototype) Accelelerating BERT with semi-structured (2:4) sparsity
+(prototype) Accelerating BERT with semi-structured (2:4) sparsity
 ================================================================
 **Author**: `Jesse Cai <https://github.com/jcaip>`_
 
 Like other forms of sparsity, **semi-structured sparsity** is a model optimization technique that seeks to reduce the memory overhead and latency of a neural network at the expense of some model accuracy.
 It is also known as **fine-grained structured sparsity** or **2:4 structured sparsity**.
 
-Semi-structured sparsity derives its name from its unique sparsity pattern, where n out of every 2n elements are pruned. We most often see n=2, hence 2:4 sprasity
-Semi-structured sparsity is particulary interesting because it can be efficiently accelerated on GPUs and at the same time doesn't degrade model accuracy as much as other sparsity patterns.
+Semi-structured sparsity derives its name from its unique sparsity pattern, where n out of every 2n elements are pruned. We most often see n=2, hence 2:4 sparsity
+Semi-structured sparsity is particularly interesting because it can be efficiently accelerated on GPUs and doesn't degrade model accuracy as much as other sparsity patterns.
 
 With the introduction of `semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_, it is possible to prune and accelerate a semi-structured sparse model without leaving PyTorch.
 We will explain this process in this tutorial.
@@ -80,9 +80,9 @@ For semi-structured sparsity, we store exactly half of the original parameters a
 
     Image sourced from `NVIDIA blog post <https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/>`_ on semi-structured sparsity.
 
-There are many different sparse layouts, each with their own benefits and drawbacks. 2:4 semi-structured sparsity is particulariy interesting for two reasons:
+There are many different sparse layouts, each with their own benefits and drawbacks. The 2:4 semi-structured sparse layout is particularly interesting for two reasons:
 1. Unlike previous sparse formats, semi-structured sparsity was designed to be efficiently accelerated on GPUs.
-   In 2020, NVIDIA introduced hardware support for semi-structured sparstiy with their Ampere architecture, and have also released fast sparse kernels via CUTLASS/`cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`_.
+   In 2020, NVIDIA introduced hardware support for semi-structured sparsity with their Ampere architecture, and have also released fast sparse kernels via CUTLASS/`cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`_.
 2. At the same time, semi-structured sparsity tends to have a milder impact on model accuracy compared to other sparse formats, especially when accounting for more advanced pruning / fine-tuning methods.
    NVIDIA has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_ that a simple paradigm of magnitude pruning once to be 2:4 sparse and then retraining the model yields nearly identical model accuracies.
 
@@ -336,8 +336,8 @@ We will get started by loading our model and tokenizer, and then setting up our 
     data_collator = transformers.DataCollatorWithPadding(tokenizer=tokenizer)
 
 
-Next, we'll train a quick baseline of our model on SQuAD. Running the following code gives me an F1 score of 86.9.
-This is quite close to the reported NVIDIA score and the difference is likely due to BERT-base vs. BERT-large or fine-tuning hyperparams.
+Next, we'll train a quick baseline of our model on SQuAD. This task asks our model to identify spans, or segments of text, in a given context (Wikipedia articles) that answer a given question.
+Running the following code gives me an F1 score of 86.9. This is quite close to the reported NVIDIA score and the difference is likely due to BERT-base vs. BERT-large or fine-tuning hyperparams.
 
 .. code:: python
 
@@ -385,11 +385,11 @@ This is quite close to the reported NVIDIA score and the difference is likely du
 
 Pruning BERT to be 2:4 sparse
 -----------------------------
-Now that we have our baseline, it's time we prune BERT. There are many different pruning strategies, but one ofthe most common is **magnitude pruning**, which seeks to remove the weights
+Now that we have our baseline, it's time we prune BERT. There are many different pruning strategies, but one of the most common is **magnitude pruning**, which seeks to remove the weights
 with the lowest L1 norm. Magnitude pruning was used by NVIDIA in all their results and is a common baseline.
 
 To do this, we will use the ``torch.ao.pruning`` package, which contains a weight-norm (magnitude) sparsifier.
-These sparsifiers work by applying mask parameterizations to the weight tensors in a model. This let's them simulate sparsity by masking out the pruned weights.
+These sparsifiers work by applying mask parameterizations to the weight tensors in a model. This lets them simulate sparsity by masking out the pruned weights.
 
 We'll also have to decide what layers of the model to apply sparsity to, which in this case is all of the `nn.Linear` layers, except for the task-specific head outputs.
 That's because semi-structured sparsity has `shape constraints <https://pytorch.org/docs/2.1/sparse.html#constructing-sparse-semi-structured-tensors>`_, and the task-specific nn.Linear layers do not satisfy them.
@@ -412,7 +412,7 @@ That's because semi-structured sparsity has `shape constraints <https://pytorch.
         if isinstance(module, nn.Linear) and "layer" in fqn
     ]
 
-The first step for pruning the model is to insert paramtterizations for masking the weights of the model. This is done by the prepare step.
+The first step for pruning the model is to insert paramterizations for masking the weights of the model. This is done by the prepare step.
 Anytime we try to access the ``.weight`` we will get ``mask * weight`` instead.
 
 .. code:: python
