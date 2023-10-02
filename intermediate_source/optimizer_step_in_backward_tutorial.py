@@ -17,6 +17,7 @@ We will explore the following:
 4. How everything fits together in 10 lines to achieve memory savings.
 
 To run this tutorial, you will need:
+
 *  PyTorch 2.1.0 or newer with ``torchvision``
 *  1 CUDA GPU if you'd like to run the memory visualizations locally.
    Otherwise, this technique would benefit similarly on any device.
