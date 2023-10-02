@@ -265,7 +265,7 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 .. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext 
+   :header: Pre-process custom text dataset using Torchtext
    :card_description: Learn how to use torchtext to prepare a custom dataset
    :image: _static/img/thumbnails/cropped/torch_text_logo.png
    :link: beginner/torchtext_custom_dataset_tutorial.html
@@ -421,6 +421,13 @@ What's new in PyTorch tutorials?
    :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/extend_dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
+   :header: Facilitating New Backend Integration by PrivateUse1
+   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with the native PyTorch backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/privateuseone.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
@@ -592,7 +599,7 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/scaled_dot_product_attention_tutorial.html
    :tags: Model-Optimization,Attention,Transformer
-   
+
 .. customcarditem::
    :header: Knowledge Distillation in Convolutional Neural Networks
    :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
@@ -969,6 +976,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/dispatcher
    advanced/extend_dispatcher
+   advanced/privateuseone
 
 .. toctree::
    :maxdepth: 2
