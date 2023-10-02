@@ -1,4 +1,4 @@
-(prototype) PyTorch 2.0 Export Post Training Static Quantization
+(prototype) PyTorch 2 Export Post Training Quantization
 ================================================================
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
@@ -13,7 +13,7 @@ better programmability, and a simplified UX.
 Exportable by `torch.export.export` is a prerequisite to use the flow, you can
 find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`_.
 
-The high level architecture of quantization 2.0 with quantizer could look like
+The high level architecture of quantization 2 with quantizer could look like
 this:
 
 ::
@@ -46,7 +46,7 @@ this:
             Executorch, Inductor or <Other Backends>
 
 
-The PyTorch 2.0 export quantization API looks like this:
+The PyTorch 2 export quantization API looks like this:
 
 .. code:: python
 
@@ -93,10 +93,10 @@ The PyTorch 2.0 export quantization API looks like this:
   # we have a model with aten ops doing integer computations when possible
 
 
-Motivation of PyTorch 2.0 Export Quantization
+Motivation of PyTorch 2 Export Quantization
 ---------------------------------------------
 
-In PyTorch versions prior to 2.0, we have FX Graph Mode Quantization that uses
+In PyTorch versions prior to 2, we have FX Graph Mode Quantization that uses
 `QConfigMapping <https://pytorch.org/docs/main/generated/torch.ao.quantization.qconfig_mapping.QConfigMapping.html>`_
 and `BackendConfig <https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.BackendConfig.html>`_
 for customizations. ``QConfigMapping`` allows modeling users to specify how
@@ -394,7 +394,7 @@ the different configuration APIs supported by ``XNNPackQuantizer``:
    `tutorial <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`_
    that describes how to write a new ``Quantizer``.
 
-Prepare the Model for Post Training Static Quantization
+Prepare the Model for Post Training Quantization
 ----------------------------------------------------------
 
 ``prepare_pt2e`` folds ``BatchNorm`` operators into preceding ``Conv2d``
@@ -572,7 +572,7 @@ Debugging the Quantized Model
 
 You can use `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_
 that can help with debugging in eager mode and FX graph mode. The new version of
-Numeric Suite working with PyTorch 2.0 Export models is still in development.
+Numeric Suite working with PyTorch 2 Export models is still in development.
 
 Lowering and Performance Evaluation
 ------------------------------------
@@ -587,7 +587,7 @@ operators.
 Conclusion
 --------------
 
-In this tutorial, we went through the overall quantization flow in PyTorch 2.0
+In this tutorial, we went through the overall quantization flow in PyTorch 2
 Export Quantization using ``XNNPACKQuantizer`` and got a quantized model that
 could be further lowered to a backend that supports inference with XNNPACK
 backend. To use this for your own backend, please first follow the
