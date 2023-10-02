@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How to Write a Quantizer for PyTorch 2.0 Export Quantization &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
+  <title>How to Write a Quantizer for PyTorch 2 Export Quantization &mdash; PyTorch Tutorials 2.0.1+cu117 documentation</title>
   
 
   
@@ -457,7 +457,7 @@
       </li>
 
         
-      <li>How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2.0 Export Quantization</li>
+      <li>How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2 Export Quantization</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -516,20 +516,16 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="section" id="how-to-write-a-quantizer-for-pytorch-2-0-export-quantization">
-<h1>How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2.0 Export Quantization<a class="headerlink" href="#how-to-write-a-quantizer-for-pytorch-2-0-export-quantization" title="Permalink to this heading">¶</a></h1>
+  <div class="section" id="how-to-write-a-quantizer-for-pytorch-2-export-quantization">
+<h1>How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2 Export Quantization<a class="headerlink" href="#how-to-write-a-quantizer-for-pytorch-2-export-quantization" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/leslie-fang-intel">Leslie Fang</a>, <a class="reference external" href="https://github.com/Xia-Weiwen">Weiwen Xia</a>, <a class="reference external" href="https://github.com/jgong5">Jiong Gong</a>, <a class="reference external" href="https://github.com/kimishpatel">Kimish Patel</a>, <a class="reference external" href="https://github.com/jerryzh168">Jerry Zhang</a></p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Quantization in PyTorch 2.0 export is still a work in progress.</p>
-</div>
 <div class="section" id="prerequisites">
 <h2>Prerequisites:<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h2>
 <p>Required:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/dynamo/index.html">Torchdynamo concepts in PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/master/quantization.html#quantization-api-summary">Quantization concepts in PyTorch</a></p></li>
-<li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html">(prototype) PyTorch 2.0 Export Post Training Static Quantization</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html">(prototype) PyTorch 2 Export Post Training Quantization</a></p></li>
 </ul>
 <p>Optional:</p>
 <ul class="simple">
@@ -540,10 +536,10 @@
 </div>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html">(prototype) PyTorch 2.0 Export Post Training Static Quantization</a> introduced the overall API for pytorch 2.0 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> class that encodes:
+<p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html">(prototype) PyTorch 2 Export Post Training Quantization</a> introduced the overall API for pytorch 2 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> class that encodes:
 (1). What is supported quantized operator or patterns in the backend
 (2). How can users express the way they want their floating point model to be quantized, for example, quantized the whole model to be int8 symmetric quantization, or quantize only linear layers etc.</p>
-<p>Please see <a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html#motivation-of-pytorch-2-0-export-quantization">here</a> For motivations for the new API and <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code>.</p>
+<p>Please see <a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html#motivation-of-pytorch-2-export-quantization">here</a> For motivations for the new API and <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code>.</p>
 <p>An existing quantizer object defined for <code class="docutils literal notranslate"><span class="pre">XNNPACK</span></code> is in
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/quantizer/xnnpack_quantizer.py">QNNPackQuantizer</a></p>
 </div>
@@ -806,10 +802,10 @@ can be used to get the <code class="docutils literal notranslate"><span class="p
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
-how to define a <code class="docutils literal notranslate"><span class="pre">BackendQuantizer</span></code> with the <code class="docutils literal notranslate"><span class="pre">QuantizationAnnotation</span> <span class="pre">API</span></code> and integrate it into the quantization 2.0 flow.
+<p>With this tutorial, we introduce the new quantization path in PyTorch 2. Users can learn about
+how to define a <code class="docutils literal notranslate"><span class="pre">BackendQuantizer</span></code> with the <code class="docutils literal notranslate"><span class="pre">QuantizationAnnotation</span> <span class="pre">API</span></code> and integrate it into the PyTorch 2 Export Quantization flow.
 Examples of <code class="docutils literal notranslate"><span class="pre">QuantizationSpec</span></code>, <code class="docutils literal notranslate"><span class="pre">SharedQuantizationSpec</span></code>, <code class="docutils literal notranslate"><span class="pre">FixedQParamsQuantizationSpec</span></code>, and <code class="docutils literal notranslate"><span class="pre">DerivedQuantizationSpec</span></code>
-are given for specific annotation use case. This is a prerequisite to be able to quantize a model in PyTorch 2.0 Export Quantization flow. You can use <a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py">XNNPACKQuantizer</a> as an example to start implementing your own <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code>. After that please follow <a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html">this tutorial</a> to actually quantize your model.</p>
+are given for specific annotation use case. You can use <a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py">XNNPACKQuantizer</a> as an example to start implementing your own <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code>. After that please follow <a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html">this tutorial</a> to actually quantize your model.</p>
 </div>
 </div>
 
@@ -865,7 +861,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2.0 Export Quantization</a><ul>
+<li><a class="reference internal" href="#">How to Write a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> for PyTorch 2 Export Quantization</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites:</a></li>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#annotation-api">Annotation API</a><ul>
