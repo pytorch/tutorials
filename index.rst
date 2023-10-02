@@ -265,7 +265,7 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 .. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext 
+   :header: Pre-process custom text dataset using Torchtext
    :card_description: Learn how to use torchtext to prepare a custom dataset
    :image: _static/img/thumbnails/cropped/torch_text_logo.png
    :link: beginner/torchtext_custom_dataset_tutorial.html
@@ -299,7 +299,7 @@ What's new in PyTorch tutorials?
    :header: Code a DDPG Loss
    :card_description: Use TorchRL to code a DDPG Loss
    :image: _static/img/half_cheetah.gif
-   :link: intermediate/coding_ddpg.html
+   :link: advanced/coding_ddpg.html
    :tags: Reinforcement-Learning
 
 
@@ -421,6 +421,13 @@ What's new in PyTorch tutorials?
    :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/extend_dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
+   :header: Facilitating New Backend Integration by PrivateUse1
+   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with the native PyTorch backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/privateuseone.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
@@ -585,6 +592,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/scaled_dot_product_attention_tutorial.html
    :tags: Model-Optimization,Attention,Transformer
+
+.. customcarditem::
+   :header: Knowledge Distillation in Convolutional Neural Networks
+   :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
+   :image: _static/img/thumbnails/cropped/knowledge_distillation_pytorch_logo.png
+   :link: beginner/knowledge_distillation_tutorial.html
+   :tags: Model-Optimization,Image/Video
 
 .. Parallel-and-Distributed-Training
 
@@ -955,6 +969,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/dispatcher
    advanced/extend_dispatcher
+   advanced/privateuseone
 
 .. toctree::
    :maxdepth: 2
@@ -979,6 +994,7 @@ Additional Resources
    intermediate/torch_compile_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
+   beginner/knowledge_distillation_tutorial
 
 .. toctree::
    :maxdepth: 2

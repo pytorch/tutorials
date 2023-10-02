@@ -15,17 +15,19 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-export PATH=/opt/conda/bin:$PATH
+# NS: Path to python runtime should already be part of docker container
+# export PATH=/opt/conda/bin:$PATH
 rm -rf src
-pip install -r $DIR/../requirements.txt
+# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
+pip uninstall -y ghstack
+pip install --progress-bar off -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
-# RC Link
-# pip uninstall -y torch torchvision torchaudio torchtext
-# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch  torchvision torchaudio torchtext
-# pip uninstall -y torch torchvision torchaudio torchtext
-# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu116/torch_test.html torch torchdata torchvision torchaudio torchtext
+# Install 2.1 for testing
+pip uninstall -y torch torchvision torchaudio torchtext torchdata
+pip3 install torch torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
+pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm

@@ -124,6 +124,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: Torch Compile IPEX Backend
+   :card_description: Learn how to use torch.compile IPEX backend
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_backend_ipex.html
+   :tags: Basics
+
+.. customcarditem::
    :header: Reasoning about Shapes in PyTorch
    :card_description: Learn how to use the meta device to reason about shapes in your model.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -303,6 +310,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_optim_torchscript.html
    :tags: Distributed-Training,TorchScript
 
+   .. customcarditem::
+   :header: Getting Started with Distributed Checkpoint (DCP)
+   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
+   :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
+   :link: ../recipes/DCP_tutorial.html
+   :tags: Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -338,6 +352,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/intel_extension_for_pytorch
+   /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling

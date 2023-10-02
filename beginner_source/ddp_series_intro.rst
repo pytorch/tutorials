@@ -1,7 +1,8 @@
-**Introduction** \|\| `What is DDP <ddp_series_theory.html>`__ \|\| `Single-Node
-Multi-GPU Training <ddp_series_multigpu.html>`__ \|\| `Fault
-Tolerance <ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
-training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
+**Introduction** \|\| `What is DDP <ddp_series_theory.html>`__ \|\|
+`Single-Node Multi-GPU Training <ddp_series_multigpu.html>`__ \|\|
+`Fault Tolerance <ddp_series_fault_tolerance.html>`__ \|\|
+`Multi-Node training <../intermediate/ddp_series_multinode.html>`__ \|\|
+`minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 Distributed Data Parallel in PyTorch - Video Tutorials
 ======================================================
@@ -34,9 +35,9 @@ You will need multiple CUDA GPUs to run the tutorial code. Typically,
 this can be done on a cloud instance with multiple GPUs (the tutorials
 use an Amazon EC2 P3 instance with 4 GPUs).
 
-The tutorial code is hosted at this `github
-repo <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series>`__. Clone the repo and
-follow along!
+The tutorial code is hosted in this
+`github repo <https://github.com/pytorch/examples/tree/main/distributed/ddp-tutorial-series>`__.
+Clone the repository and follow along!
 
 Tutorial sections
 -----------------
