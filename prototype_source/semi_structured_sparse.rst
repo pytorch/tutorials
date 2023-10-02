@@ -134,7 +134,7 @@ Now that we've learned a little more about semi-structured sparsity, let's apply
 
 Intro & Setup
 -------------
-Let's start off by importing all the packages we need.
+Let's start by importing all the packages we need.
 
 .. code:: python
 
@@ -394,7 +394,7 @@ Pruning BERT to be 2:4 sparse
 Now that we have our baseline, it's time we prune BERT. There are many different pruning strategies, but one ofthe most common is **magnitude pruning**, which seeks to remove the weights
 with the lowest L1 norm. Magnitude pruning was used by NVIDIA in all their results and is a common baseline.
 
-To do this, we will use the `torch.ao.pruning` package, which contains a weight-norm (magnitude) sparsifier.
+To do this, we will use the ``torch.ao.pruning`` package, which contains a weight-norm (magnitude) sparsifier.
 These sparsifiers work by applying mask parameterizations to the weight tensors in a model. This let's them simulate sparsity by masking out the pruned weights.
 
 We'll also have to decide what layers of the model to apply sparsity to, which in this case is all of the `nn.Linear` layers, except for the task-specific head outputs.
@@ -419,7 +419,7 @@ That's because semi-structured sparsity has `shape constraints <https://pytorch.
     ]
 
 The first step for pruning the model is to insert paramtterizations for masking the weights of the model. This is done by the prepare step.
-Now anytime we try to access the `.weight` we will get `mask * weight` instead.
+Anytime we try to access the ``.weight`` we will get ``mask * weight`` instead.
 
 .. code:: python
 
@@ -440,10 +440,10 @@ Now anytime we try to access the `.weight` we will get `mask * weight` instead.
     #   (dropout): Dropout(p=0.1, inplace=False)
     # )
 
-Then, we'll take a single pruning step. All pruners implement a `update_mask()` method that updates the mask with the logic being determined by the pruner implementation.
-The step method calls this update_mask functions for the weights specified in the sparse config.
+Then, we'll take a single pruning step. All pruners implement a ``update_mask()`` method that updates the mask with the logic being determined by the pruner implementation.
+The step method calls this ``update_mask`` functions for the weights specified in the sparse config.
 
-We will also evaluate the model to show the accuracy degredation of zero-shot pruning, or pruning without fine-tuning / retraining.
+We will also evaluate the model to show the accuracy degradation of zero-shot pruning, or pruning without fine-tuning / retraining.
 
 .. code:: python
 
