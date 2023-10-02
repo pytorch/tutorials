@@ -130,7 +130,7 @@ Because the sparsity level is fixed at 50%, it is easier to decompose the proble
 The natural handoff point between these two problems are zeroed-out dense tensors. Our inference solution is designed to compress and accelerate tensors in this format.
 We anticipate many users coming up with custom masking solution, as this is an active area of research.
 
-Now that we've learned a little more about semi-structured sparsity, let's apply it to a BERT model trained on a questino-answering task, SQuAD.
+Now that we've learned a little more about semi-structured sparsity, let's apply it to a BERT model trained on a question answering task, SQuAD.
 
 Intro & Setup
 -------------
