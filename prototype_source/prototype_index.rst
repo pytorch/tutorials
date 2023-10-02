@@ -82,6 +82,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/pt2e_quant_ptq_static.html
    :tags: Quantization          
 
+.. customcarditem::
+   :header: PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor
+   :card_description: Learn how to use TorchInductor with X86 CPU as backend of Quantization in PyTorch 2 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_ptq_x86_inductor.html
+   :tags: Quantization    
+
 .. Mobile
 
 .. customcarditem::
