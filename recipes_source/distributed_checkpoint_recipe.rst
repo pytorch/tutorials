@@ -4,7 +4,7 @@ Getting Started with Distributed Checkpoint (DCP)
 **Author**: `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/DCP_tutorial.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__.
 
 
 Prerequisites:
@@ -26,6 +26,7 @@ How DCP works
 In addition, checkpointing automatically handles fully-qualified-name (FQN) mappings across models and optimizers, enabling load-time resharding across differing cluster topologies.
 
 DCP is different from :func:`torch.save` and :func:`torch.load` in a few significant ways:
+
 * It produces multiple files per checkpoint, with at least one per rank.
 * It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.
 
@@ -140,7 +141,8 @@ After saving, let’s create the same FSDP-wrapped model, and load the saved sta
 
 Please note that you will have to call :func:`model.state_dict` prior to loading and pass it to DCP's :func:`load_state_dict` API.
 This is fundamentally different from :func:`torch.load`, as :func:`torch.load` simply requires the path to the checkpoint prior for loading.
-The reason that we need the state_dict prior to loading is:
+The reason that we need the ``state_dict`` prior to loading is:
+
 * DCP uses the pre-allocated storage from model state_dict to load from the checkpoint directory. During loading, the state_dict passed in will be updated in place.
 * DCP requires the sharding information from the model prior to loading to support resharding.
 
