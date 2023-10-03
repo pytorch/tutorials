@@ -47,7 +47,7 @@ Requirements
                             globals={"linear": linear,
                                      "x": x}).blocked_autorange().median * 1e3
 
-            # acclerate via SparseSemiStructuredTensor
+            # accelerate via SparseSemiStructuredTensor
             linear.weight = torch.nn.Parameter(to_sparse_semi_structured(linear.weight))
 
             sparse_output = linear(x)
@@ -474,7 +474,7 @@ Once we've reached a satisfied state, we can call ``squash_mask`` to fuse the ma
     #        [ 0.0244,  0.0921, -0.0000, -0.0000,  ..., -0.0000, -0.0784,  0.0000,  0.0761],
     #        [ 0.0000,  0.0225, -0.0395, -0.0000,  ..., -0.0000,  0.0684, -0.0344, -0.0000]], device='cuda:0', requires_grad=True)
 
-Acclerating 2:4 sparse models for inference
+Accelerating 2:4 sparse models for inference
 -------------------------------------------
 Now that we have a model in this format, we can accelerate it for inference just like in the QuickStart Guide.
 
