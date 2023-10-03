@@ -11,15 +11,15 @@ torch.compile Tutorial
 # ``torch.compile`` makes PyTorch code run faster by
 # JIT-compiling PyTorch code into optimized kernels,
 # all while requiring minimal code changes.
-# 
+#
 # In this tutorial, we cover basic ``torch.compile`` usage,
 # and demonstrate the advantages of ``torch.compile`` over
 # previous PyTorch compiler solutions, such as
-# `TorchScript <https://pytorch.org/docs/stable/jit.html>`__ and 
+# `TorchScript <https://pytorch.org/docs/stable/jit.html>`__ and
 # `FX Tracing <https://pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace>`__.
 #
 # **Contents**
-# 
+#
 # - Basic Usage
 # - Demonstrating Speedups
 # - Comparison to TorchScript and FX Tracing
@@ -59,7 +59,7 @@ if not gpu_ok:
 #
 # ``torch.compile`` is included in the latest PyTorch..
 # Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
-# binary. If Triton is still missing, try installing ``torchtriton`` via pip 
+# binary. If Triton is still missing, try installing ``torchtriton`` via pip
 # (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
 # for CUDA 11.7).
 #
@@ -104,7 +104,7 @@ print(opt_mod(torch.randn(10, 100)))
 # -----------------------
 #
 # Let's now demonstrate that using ``torch.compile`` can speed
-# up real models. We will compare standard eager mode and 
+# up real models. We will compare standard eager mode and
 # ``torch.compile`` by evaluating and training a ``torchvision`` model on random data.
 #
 # Before we start, we need to define some utility functions.
@@ -253,7 +253,7 @@ print("~" * 10)
 ######################################################################
 # Comparison to TorchScript and FX Tracing
 # -----------------------------------------
-# 
+#
 # We have seen that ``torch.compile`` can speed up PyTorch code.
 # Why else should we use ``torch.compile`` over existing PyTorch
 # compiler solutions, such as TorchScript or FX Tracing? Primarily, the
@@ -261,7 +261,7 @@ print("~" * 10)
 # arbitrary Python code with minimal changes to existing code.
 #
 # One case that ``torch.compile`` can handle that other compiler
-# solutions struggle with is data-dependent control flow (the 
+# solutions struggle with is data-dependent control flow (the
 # ``if x.sum() < 0:`` line below).
 
 def f1(x, y):
@@ -399,7 +399,7 @@ print("compile 3:", test_fns(f3, compile_f3, (inp2,)))
 # `FX graphs <https://pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__, which can
 # then be further optimized. TorchDynamo extracts FX graphs by analyzing Python bytecode
 # during runtime and detecting calls to PyTorch operations.
-# 
+#
 # Normally, TorchInductor, another component of ``torch.compile``,
 # further compiles the FX graphs into optimized kernels,
 # but TorchDynamo allows for different backends to be used. In order to inspect
@@ -463,10 +463,8 @@ opt_bar(inp1, -inp2)
 
 # Reset since we are using a different backend.
 torch._dynamo.reset()
-explanation, out_guards, graphs, ops_per_graph, break_reasons, explanation_verbose = torch._dynamo.explain(
-    bar, torch.randn(10), torch.randn(10)
-)
-print(explanation_verbose)
+explain_output = torch._dynamo.explain(bar)(torch.randn(10), torch.randn(10))
+print(explain_output)
 
 ######################################################################
 # In order to maximize speedup, graph breaks should be limited.
@@ -487,16 +485,18 @@ opt_model = torch.compile(init_model(), fullgraph=True)
 print(opt_model(generate_data(16)[0]))
 
 ######################################################################
+# <!----TODO: replace this section with a link to the torch.export tutorial when done --->
+#
 # Finally, if we simply want TorchDynamo to output the FX graph for export,
 # we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
 # ``fullgraph=True``, raises an error if TorchDynamo breaks the graph.
 
 try:
-    torch._dynamo.export(bar, torch.randn(10), torch.randn(10))
+    torch._dynamo.export(bar)(torch.randn(10), torch.randn(10))
 except:
     tb.print_exc()
 
-model_exp = torch._dynamo.export(init_model(), generate_data(16)[0])
+model_exp = torch._dynamo.export(init_model())(generate_data(16)[0])
 print(model_exp[0](generate_data(16)[0]))
 
 ######################################################################
