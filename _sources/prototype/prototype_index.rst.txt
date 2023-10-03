@@ -81,13 +81,23 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/pt2e_quant_ptq.html
    :tags: Quantization          
-
+   
 .. customcarditem::
    :header: PyTorch 2 Export Quantization-Aware Training
    :card_description: Learn how to use Quantization-Aware-Training in PyTorch 2 Export.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/pt2e_quant_qat.html
    :tags: Quantization
+
+
+.. Sparsity
+
+.. customcarditem::
+   :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
+   :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: prototype/semi_structured_sparse.html
+   :tags: Model-Optimziation
 
 .. Mobile
 
