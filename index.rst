@@ -3,14 +3,15 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Implementing High Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html?utm_source=whats_new_tutorials&utm_medium=scaled_dot_product_attention_tutorial>`__
-* `torch.compile Tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torch_compile>`__
-* `Per Sample Gradients <https://pytorch.org/tutorials/intermediate/per_sample_grads.html?utm_source=whats_new_tutorials&utm_medium=per_sample_grads>`__
-* `Jacobians, Hessians, hvp, vhp, and more: composing function transforms <https://pytorch.org/tutorials/intermediate/jacobians_hessians.html?utm_source=whats_new_tutorials&utm_medium=jacobians_hessians>`__
-* `Model Ensembling <https://pytorch.org/tutorials/intermediate/ensembling.html?utm_source=whats_new_tutorials&utm_medium=ensembling>`__
-* `Neural Tangent Kernels <https://pytorch.org/tutorials/intermediate/neural_tangent_kernels.html?utm_source=whats_new_tutorials&utm_medium=neural_tangent_kernels>`__
-* `Reinforcement Learning (PPO) with TorchRL Tutorial <https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html?utm_source=whats_new_tutorials&utm_medium=reinforcement_ppo>`__
-* `Changing Default Device <https://pytorch.org/tutorials/recipes/recipes/changing_default_device.html?utm_source=whats_new_tutorials&utm_medium=changing_default_device>`__
+* `Getting Started with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html>`__
+* `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+* `Facilitating New Backend Integration by PrivateUse1 <https://pytorch.org/tutorials/advanced/privateuseone.html>`__
+* `(prototype) Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/prototype/semi_structured_sparse.html>`__
+* `(prototype) PyTorch 2 Export Quantization-Aware Training (QAT) <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`__
+* `(prototype) PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`__
+* `(prototype) Inductor C++ Wrapper Tutorial <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`__
+* `How to save memory by fusing the optimizer step into the backward pass <https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html>`__
+* `Tips for Loading an ``nn.Module`` from a Checkpoint <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html>`__
 
 
 .. raw:: html
