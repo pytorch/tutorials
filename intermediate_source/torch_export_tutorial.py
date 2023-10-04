@@ -33,8 +33,13 @@ torch.export Tutorial
 #
 # ``torch.export`` extracts single-graph representations from PyTorch programs
 # by tracing the target function, given example inputs.
+# ``torch.export.export()`` is the main entrypoint for ``torch.export``.
 #
-# The signature of ``torch.export`` is:
+# In this tutorial, ``torch.export`` and ``torch.export.export()`` are practically synonymous,
+# though ``torch.export`` generally refers to the PyTorch 2.X export process, and ``torch.export.export()``
+# generally refers to the actual function call.
+#
+# The signature of ``torch.export.export()`` is:
 #
 # .. code:: python
 #
@@ -43,14 +48,14 @@ torch.export Tutorial
 #         args: Tuple[Any, ...],
 #         kwargs: Optional[Dict[str, Any]] = None,
 #         *,
-#         constraints: Optional[List[Constraint]] = None
+#         dynamic_shapes: Optional[Dict[str, Dict[int, Dim]]] = None
 #     ) -> ExportedProgram
 #
-# ``torch.export`` traces the tensor computation graph from calling ``f(*args, **kwargs)``
+# ``torch.export.export()`` traces the tensor computation graph from calling ``f(*args, **kwargs)``
 # and wraps it in an ``ExportedProgram``, which can be serialized or executed later with
 # different inputs. Note that while the output ``ExportedGraph`` is callable and can be
 # called in the same way as the original input callable, it is not a ``torch.nn.Module``.
-# We will detail the ``constraints`` argument later in the tutorial.
+# We will detail the ``dynamic_shapes`` argument later in the tutorial.
 
 import torch
 from torch.export import export
@@ -229,12 +234,12 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 #     print(exported_map_example(inp))
 
 ######################################################################
-# Constraints
-# -----------
+# Constraints/Dynamic Shapes
+# --------------------------
 #
 # Ops can have different specializations/behaviors for different tensor shapes, so by default,
 # ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
-# example inputs given to the initial ``torch.export`` call.
+# example inputs given to the initial ``torch.export.export()`` call.
 # If we try to run the ``ExportedProgram`` in the example below with a tensor
 # with a different shape, we get an error:
 
@@ -255,91 +260,107 @@ except Exception:
     tb.print_exc()
 
 ######################################################################
-# We can modify the ``torch.export`` call to
-# relax some of these constraints. We use ``torch.export.dynamic_dim`` to
-# express shape constraints manually.
+# We can relax this constraint using the ``dynamic_shapes`` argument of
+# ``torch.export.export()``, which allows us to specify (using ``torch.export.Dim``)
+# which dimensions of the input tensors are dynamic.
 #
 # ..
-#     [TODO] link to doc of dynamic_dim when it is available
+#     [TODO] link to doc of Dim when it is available
 #
-# Using ``dynamic_dim`` on a tensor's dimension marks it as dynamic (i.e. unconstrained), and
-# we can provide additional upper and lower bound shape constraints.
-# The first argument of ``dynamic_dim`` is the tensor variable we wish
-# to specify a dimension constraint for. The second argument specifies
-# the dimension of the first argument the constraint applies to.
+# For each tensor argument of the input callable, we can specify a mapping from the dimension
+# to a ``torch.export.Dim``.
+# A ``torch.export.Dim`` is essentially a named symbolic integer with optional
+# minimum and maximum bounds.
+#
+# Then, the format of ``torch.export.export()``'s ``dynamic_shapes`` argument is a mapping
+# from the input callable's tensor argument names, to dimension --> dim mappings as described above.
+# If there is no ``torch.export.Dim`` given to a tensor argument's dimension, then that dimension is
+# assumed to be static.
+#
+# The first argument of ``torch.export.Dim`` is the name for the symbolic integer, used for debugging.
+# Then we can specify an optional minimum and maximum bound (inclusive). Below, we show example usage.
+#
 # In the example below, our input
 # ``inp1`` has an unconstrained first dimension, but the size of the second
-# dimension must be in the interval (3, 18].
+# dimension must be in the interval [4, 18].
 
-from torch.export import dynamic_dim
+from torch.export import Dim
 
-inp1 = torch.randn(10, 10)
+inp1 = torch.randn(10, 10, 10)
 
-def constraints_example1(x):
+def dynamic_shapes_example1(x):
     x = x[:, 2:]
     return torch.relu(x)
 
-constraints1 = [
-    dynamic_dim(inp1, 0),
-    3 < dynamic_dim(inp1, 1),
-    dynamic_dim(inp1, 1) <= 18,
-]
+inp1_dim0 = Dim("inp1_dim0")
+inp1_dim1 = Dim("inp1_dim1", min=4, max=18)
+dynamic_shapes1 = {
+    {"x": {0: inp1_dim0, 1: inp1_dim1}}
+}
 
-exported_constraints_example1 = export(constraints_example1, (inp1,), constraints=constraints1)
+exported_dynamic_shapes_example1 = export(dynamic_shapes_example1, (inp1,), dynamic_shapes=dynamic_shapes1)
 
-print(exported_constraints_example1(torch.randn(5, 5)))
+print(exported_dynamic_shapes_example1(torch.randn(5, 5, 10)))
 
 try:
-    exported_constraints_example1(torch.randn(8, 1))
+    exported_dynamic_shapes_example1(torch.randn(8, 1, 10))
 except Exception:
     tb.print_exc()
 
 try:
-    exported_constraints_example1(torch.randn(8, 20))
+    exported_dynamic_shapes_example1(torch.randn(8, 20, 10))
 except Exception:
     tb.print_exc()
 
-######################################################################
-# Note that if our example inputs to ``torch.export`` do not satisfy the constraints,
-# then we get an error.
-
-constraints1_bad = [
-    dynamic_dim(inp1, 0),
-    10 < dynamic_dim(inp1, 1),
-    dynamic_dim(inp1, 1) <= 18,
-]
 try:
-    export(constraints_example1, (inp1,), constraints=constraints1_bad)
+    exported_dynamic_shapes_example1(torch.randn(8, 8, 9))
 except Exception:
     tb.print_exc()
 
 ######################################################################
-# We can also use ``dynamic_dim`` to enforce expected equalities between
-# dimensions, for example, in matrix multiplication:
+# Note that if our example inputs to ``torch.export`` do not satisfy the constraints
+# given by ``dynamic_shapes``, then we get an error.
+
+inp1_dim1_bad = Dim("inp1_dim1_bad", min=11, max=18)
+dynamic_shapes1_bad = {
+    {"x": {0: inp1_dim0, 1: inp1_dim1_bad}},
+}
+
+try:
+    export(dynamic_shapes_example1, (inp1,), dynamic_shapes=dynamic_shapes1_bad)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# We can enforce that equalities between dimensions of different tensors
+# by using the same ``torch.export.Dim`` object, for example, in matrix multiplication:
 
 inp2 = torch.randn(4, 8)
 inp3 = torch.randn(8, 2)
 
-def constraints_example2(x, y):
+def dynamic_shapes_example2(x, y):
     return x @ y
 
-constraints2 = [
-    dynamic_dim(inp2, 0),
-    dynamic_dim(inp2, 1) == dynamic_dim(inp3, 0),
-    dynamic_dim(inp3, 1),
-]
+inp2_dim0 = Dim("inp2_dim0")
+inner_dim = Dim("inner_dim")
+inp3_dim1 = Dim("inp3_dim1")
 
-exported_constraints_example2 = export(constraints_example2, (inp2, inp3), constraints=constraints2)
+dynamic_shapes2 = {
+    {"x": {0: inp2_dim0, 1: inner_dim}},
+    {"y": {0: inner_dim, 1: inp3_dim1}},
+}
 
-print(exported_constraints_example2(torch.randn(2, 16), torch.randn(16, 4)))
+exported_dynamic_shapes_example2 = export(dynamic_shapes_example2, (inp2, inp3), dynamic_shapes=dynamic_shapes2)
+
+print(exported_dynamic_shapes_example2(torch.randn(2, 16), torch.randn(16, 4)))
 
 try:
-    exported_constraints_example2(torch.randn(4, 8), torch.randn(4, 2))
+    exported_dynamic_shapes_example2(torch.randn(4, 8), torch.randn(4, 2))
 except Exception:
     tb.print_exc()
 
 ######################################################################
-# We can actually use ``torch.export`` to guide us as to which constraints
+# We can actually use ``torch.export`` to guide us as to which ``dynamic_shapes`` constraints
 # are necessary. We can do this by relaxing all constraints (recall that if we
 # do not provide constraints for a dimension, the default behavior is to constrain
 # to the exact shape value of the example input) and letting ``torch.export``
@@ -348,20 +369,22 @@ except Exception:
 inp4 = torch.randn(8, 16)
 inp5 = torch.randn(16, 32)
 
-def constraints_example3(x, y):
+def dynamic_shapes_example3(x, y):
     if x.shape[0] <= 16:
         return x @ y[:, :16]
     return y
 
-constraints3 = (
-    [dynamic_dim(inp4, i) for i in range(inp4.dim())] +
-    [dynamic_dim(inp5, i) for i in range(inp5.dim())]
-)
+dynamic_shapes3 = {
+    {"x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())}},
+    {"y": {i: Dim(f"inp5_dim{i}") for i in range(inp5.dim())}},
+}
 
 try:
-    export(constraints_example3, (inp4, inp5), constraints=constraints3)
+    export(dynamic_shapes_example3, (inp4, inp5), dynamic_shapes=dynamic_shapes3)
 except Exception:
     tb.print_exc()
+
+breakpoint()
 
 ######################################################################
 # We can see that the error message suggests to us to use some additional code
@@ -378,12 +401,12 @@ def specify_constraints(x, y):
     ]
 
 constraints3_fixed = specify_constraints(inp4, inp5)
-exported_constraints_example3 = export(constraints_example3, (inp4, inp5), constraints=constraints3_fixed)
-print(exported_constraints_example3(torch.randn(4, 32), torch.randn(32, 64)))
+exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), constraints=constraints3_fixed)
+print(exported_dynamic_shapes_example3(torch.randn(4, 32), torch.randn(32, 64)))
 
 ######################################################################
 # Note that in the example above, because we constrained the value of ``x.shape[0]`` in
-# ``constraints_example3``, the exported program is sound even though there is a
+# ``dynamic_shapes_example3``, the exported program is sound even though there is a
 # raw ``if`` statement.
 #
 # If you want to see why ``torch.export`` generated these constraints, you can
@@ -392,7 +415,7 @@ print(exported_constraints_example3(torch.randn(4, 32), torch.randn(32, 64)))
 
 import logging
 torch._logging.set_logs(dynamic=logging.INFO, dynamo=logging.INFO)
-exported_constraints_example3 = export(constraints_example3, (inp4, inp5), constraints=constraints3_fixed)
+exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), constraints=constraints3_fixed)
 
 # reset to previous values
 torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
@@ -402,8 +425,8 @@ torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
 # ``equality_constraints`` attributes. The logging above reveals what the symbols ``s0, s1, ...``
 # represent.
 
-print(exported_constraints_example3.range_constraints)
-print(exported_constraints_example3.equality_constraints)
+print(exported_dynamic_shapes_example3.range_constraints)
+print(exported_dynamic_shapes_example3.equality_constraints)
 
 ######################################################################
 # We can also constrain on individual values in the source code itself using
@@ -413,17 +436,17 @@ print(exported_constraints_example3.equality_constraints)
 
 from torch.export import constrain_as_size, constrain_as_value
 
-def constraints_example4(x, y):
+def dynamic_shapes_example4(x, y):
     b = y.item()
     constrain_as_value(b, 3, 5)
     if b >= 3:
        return x.cos()
     return x.sin()
 
-exported_constraints_example4 = export(constraints_example4, (torch.randn(3, 3), torch.tensor([4])))
-print(exported_constraints_example4(torch.randn(3, 3), torch.tensor([5])))
+exported_dynamic_shapes_example4 = export(dynamic_shapes_example4, (torch.randn(3, 3), torch.tensor([4])))
+print(exported_dynamic_shapes_example4(torch.randn(3, 3), torch.tensor([5])))
 try:
-    exported_constraints_example4(torch.randn(3, 3), torch.randn([2]))
+    exported_dynamic_shapes_example4(torch.randn(3, 3), torch.randn([2]))
 except Exception:
     tb.print_exc()
 
@@ -432,16 +455,16 @@ except Exception:
 # will be used to specify tensor shapes -- in particular, the value must not be 0 or 1 because
 # many operations have special behavior for tensors with a shape value of 0 or 1.
 
-def constraints_example5(x, y):
+def dynamic_shapes_example5(x, y):
     b = y.item()
     constrain_as_size(b)
     z = torch.ones(b, 4)
     return x.sum() + z.sum()
 
-exported_constraints_example5 = export(constraints_example5, (torch.randn(2, 2), torch.tensor([4])))
-print(exported_constraints_example5(torch.randn(2, 2), torch.tensor([5])))
+exported_dynamic_shapes_example5 = export(dynamic_shapes_example5, (torch.randn(2, 2), torch.tensor([4])))
+print(exported_dynamic_shapes_example5(torch.randn(2, 2), torch.tensor([5])))
 try:
-    exported_constraints_example5(torch.randn(2, 2), torch.randn([1]))
+    exported_dynamic_shapes_example5(torch.randn(2, 2), torch.randn([1]))
 except Exception:
     tb.print_exc()
 
