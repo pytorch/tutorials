@@ -12,3 +12,7 @@ ONNX
 3. onnx_registry_tutorial.py
     Introduction to ONNX
     https://pytorch.org/tutorials/beginner/onnx/onnx_registry_tutorial.html
+
+4. onnx_diagnostics_tutorial.py
+    Introduction to ONNX Diagnostics
+    https://pytorch.org/tutorials/beginner/onnx/onnx_diagnostics_tutorial.html

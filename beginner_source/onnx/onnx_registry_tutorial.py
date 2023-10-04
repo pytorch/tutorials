@@ -3,7 +3,8 @@
 """
 `Introduction to ONNX <intro_onnx.html>`_ ||
 `Export a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_ ||
-**Introduction to ONNX Registry**
+**Introduction to ONNX Registry** ||
+`Introduction to ONNX Diagnostics <onnx_diagnostics_tutorial.html>`_
 
 Introduction to ONNX Registry
 =============================
