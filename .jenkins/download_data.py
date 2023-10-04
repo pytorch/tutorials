@@ -16,6 +16,20 @@ PROTOTYPE_DATA_DIR = REPO_BASE_DIR / "prototype_source" / "data"
 FILES_TO_RUN = os.getenv("FILES_TO_RUN")
 
 
+def size_fmt(nbytes: int) -> str:
+    """Returns a formatted file size string"""
+    KB = 1024
+    MB = 1024 * KB
+    GB = 1024 * MB
+    if abs(nbytes) >= GB:
+        return f"{nbytes * 1.0 / GB:.2f} Gb"
+    elif abs(nbytes) >= MB:
+        return f"{nbytes * 1.0 / MB:.2f} Mb"
+    elif abs(nbytes) >= KB:
+        return f"{nbytes * 1.0 / KB:.2f} Kb"
+    return str(nbytes) + " bytes"
+
+
 def download_url_to_file(url: str,
                          dst: Optional[str] = None,
                          prefix: Optional[Path] = None,
@@ -46,7 +60,7 @@ def download_url_to_file(url: str,
     if sha256 is not None and sha256 != digest:
         Path(dst).unlink()
         raise RuntimeError(f"Downloaded {url} has unexpected sha256sum {digest} should be {sha256}")
-    print(f"Downloaded {url} sha256sum={digest} size={file_size}")
+    print(f"Downloaded {url} sha256sum={digest} size={size_fmt(file_size)}")
     return Path(dst)
 
 
@@ -71,7 +85,7 @@ def download_nlp_data() -> None:
                              sha256="fb317e80248faeb62dc25ef3390ae24ca34b94e276bbc5141fd8862c2200bff5",
                              )
     # This will unzip all files in data.zip to intermediate_source/data/ folder
-    unzip(z, INTERMEDIATE_DATA_DIR)
+    unzip(z, INTERMEDIATE_DATA_DIR.parent)
 
 
 def download_dcgan_data() -> None:
@@ -80,7 +94,7 @@ def download_dcgan_data() -> None:
                              prefix=DATA_DIR,
                              sha256="46fb89443c578308acf364d7d379fe1b9efb793042c0af734b6112e4fd3a8c74",
                              )
-    unzip(z, BEGINNER_DATA_DIR)
+    unzip(z, BEGINNER_DATA_DIR / "celeba")
 
 
 def download_lenet_mnist() -> None:
@@ -99,8 +113,11 @@ def main() -> None:
     INTERMEDIATE_DATA_DIR.mkdir(exist_ok=True)
     PROTOTYPE_DATA_DIR.mkdir(exist_ok=True)
 
-    download_hymenoptera_data()
-    download_nlp_data()
+    if FILES_TO_RUN is None or "transfer_learning_tutoria" in FILES_TO_RUN:
+        download_hymenoptera_data()
+    nlp_tutorials = ["seq2seq_translation_tutorial", "char_rnn_classification_tutorial", "char_rnn_generation_tutorial"]
+    if FILES_TO_RUN is None or any(x in FILES_TO_RUN for x in nlp_tutorials):
+        download_nlp_data()
     if FILES_TO_RUN is None or "dcgan_faces_tutorial" in FILES_TO_RUN:
         download_dcgan_data()
     if FILES_TO_RUN is None or "fgsm_tutorial" in FILES_TO_RUN:
