@@ -1,5 +1,6 @@
 """
-**Introduction to ONNX**
+**Introduction to ONNX** ||
+`Export a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_
 
 Introduction to ONNX
 ====================
@@ -21,7 +22,7 @@ including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
     but this tutorial will focus on the ``torch.onnx.dynamo_export``.
 
 The TorchDynamo engine is leveraged to hook into Python's frame evaluation API and dynamically rewrite its
-bytecode into an  `FX graph <https://pytorch.org/docs/stable/fx.html>`_.
+bytecode into an `FX graph <https://pytorch.org/docs/stable/fx.html>`_.
 The resulting FX Graph is polished before it is finally translated into an
 `ONNX graph <https://github.com/onnx/onnx/blob/main/docs/IR.md>`_.
 
@@ -42,7 +43,15 @@ They can be installed through `pip <https://pypi.org/project/pip/>`_:
 
   pip install --upgrade onnx onnxscript
 
-.. include:: /beginner_source/basics/onnx_toc.txt
+Further reading
+---------------
+
+The list below refers to tutorials that ranges from basic examples to advanced scenarios,
+not necessarily in the order they are listed.
+Feel free to jump directly to specific topics of your interest or
+sit tight and have fun going through all of them to learn all there is about the ONNX exporter.
+
+.. include:: /beginner_source/onnx/onnx_toc.txt
 
 .. toctree::
    :hidden:

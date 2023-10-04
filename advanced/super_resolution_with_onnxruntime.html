@@ -419,20 +419,31 @@ to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="optional-exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnx-runtime">
 <span id="sphx-glr-advanced-super-resolution-with-onnxruntime-py"></span><h1>(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime<a class="headerlink" href="#optional-exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnx-runtime" title="Permalink to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As of PyTorch 2.1, there are two versions of ONNX Exporter.</p>
+<ul class="simple">
+<li><p><a href="#id1"><span class="problematic" id="id2">``</span></a>torch.onnx.dynamo_export`is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export</span></code> is based on TorchScript backend and has been available since PyTorch 1.2.0</p></li>
+</ul>
+</div>
 <p>In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format and then run it with ONNX Runtime.</p>
-<p>ONNX Runtime is a performance-focused engine for ONNX models,
+in PyTorch into the ONNX format using the TorchScript <a href="#id3"><span class="problematic" id="id4">``</span></a>torch.onnx.export` ONNX exporter.</p>
+<p>The exported model will be executed with ONNX Runtime.
+ONNX Runtime is a performance-focused engine for ONNX models,
 which inferences efficiently across multiple platforms and hardware
 (Windows, Linux, and Mac and on both CPUs and GPUs).
 ONNX Runtime has proved to considerably increase performance over
 multiple models as explained <a class="reference external" href="https://cloudblogs.microsoft.com/opensource/2019/05/22/onnx-runtime-machine-learning-inferencing-0-4-release">here</a></p>
 <p>For this tutorial, you will need to install <a class="reference external" href="https://github.com/onnx/onnx">ONNX</a>
 and <a class="reference external" href="https://github.com/microsoft/onnxruntime">ONNX Runtime</a>.
-You can get binary builds of ONNX and ONNX Runtime with
-<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">onnx</span> <span class="pre">onnxruntime</span></code>.
-ONNX Runtime recommends using the latest stable runtime for PyTorch.</p>
+You can get binary builds of ONNX and ONNX Runtime with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%bash
+pip<span class="w"> </span>install<span class="w"> </span>onnxruntime
+</pre></div>
+</div>
+<p>ONNX Runtime recommends using the latest stable runtime for PyTorch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
-<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
@@ -576,7 +587,7 @@ The output of this call is a list containing the outputs of the model
 computed by ONNX Runtime.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">onnxruntime</span>
 
-<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span><span class="s2">"super_resolution.onnx"</span><span class="p">)</span>
+<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span><span class="s2">"super_resolution.onnx"</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="p">[</span><span class="s2">"CPUExecutionProvider"</span><span class="p">])</span>
 
 <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
