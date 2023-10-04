@@ -61,3 +61,4 @@ model = torch.load('model.pth')
 # Related Tutorials
 # -----------------
 # `Saving and Loading a General Checkpoint in PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html>`_
+# `Tips for loading an `nn.Module` from a checkpoint <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html?highlight=loading%20nn%20module%20from%20checkpoint>`_
