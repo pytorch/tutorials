@@ -61,11 +61,6 @@ download:
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus_v2.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/cornell_movie_dialogs_corpus_v2.zip -d beginner_source/data/
 
-	# Download dataset for beginner_source/audio_classifier_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz -P $(DATADIR)
-	tar $(TAROPTS) -xzf $(DATADIR)/UrbanSound8K.tar.gz -C ./beginner_source/data/
-
-
 	# Download model for advanced_source/dynamic_quantization_tutorial.py
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth -P $(DATADIR)
 	cp $(DATADIR)/word_language_model_quantize.pth advanced_source/data/word_language_model_quantize.pth
