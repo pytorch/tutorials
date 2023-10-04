@@ -736,6 +736,47 @@ By default, DCP saves and loads a distributed <code class="docutils literal notr
 <p class="admonition-title">Note</p>
 <p>Distributed checkpoint support for Multi-Program Multi-Data is still under development.</p>
 </div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed.checkpoint</span> <span class="k">as</span> <span class="nn">DCP</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+
+<span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ToyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+
+<span class="k">def</span> <span class="nf">run_checkpoint_load_example</span><span class="p">():</span>
+    <span class="c1"># create the non FSDP-wrapped toy model</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span>
+    <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># turn no_dist to be true to load in non-distributed setting</span>
+    <span class="n">DCP</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
+        <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span>
+        <span class="n">storage_reader</span><span class="o">=</span><span class="n">DCP</span><span class="o">.</span><span class="n">FileSystemReader</span><span class="p">(</span><span class="n">CHECKPOINT_DIR</span><span class="p">),</span>
+        <span class="n">no_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running basic DCP checkpoint loading example.&quot;</span><span class="p">)</span>
+    <span class="n">run_checkpoint_load_example</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="conclusion">
