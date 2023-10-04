@@ -113,7 +113,7 @@ def main() -> None:
     INTERMEDIATE_DATA_DIR.mkdir(exist_ok=True)
     PROTOTYPE_DATA_DIR.mkdir(exist_ok=True)
 
-    if FILES_TO_RUN is None or "transfer_learning_tutoria" in FILES_TO_RUN:
+    if FILES_TO_RUN is None or "transfer_learning_tutorial" in FILES_TO_RUN:
         download_hymenoptera_data()
     nlp_tutorials = ["seq2seq_translation_tutorial", "char_rnn_classification_tutorial", "char_rnn_generation_tutorial"]
     if FILES_TO_RUN is None or any(x in FILES_TO_RUN for x in nlp_tutorials):
