@@ -423,7 +423,7 @@ def constraints_example4(x, y):
 exported_constraints_example4 = export(constraints_example4, (torch.randn(3, 3), torch.tensor([4])))
 print(exported_constraints_example4(torch.randn(3, 3), torch.tensor([5])))
 try:
-    exported_constraints_example4(torch.randn(3, 3), torch.randn([2]))
+    exported_constraints_example4(torch.randn(3, 3), torch.tensor([2]))
 except Exception:
     tb.print_exc()
 
@@ -441,7 +441,7 @@ def constraints_example5(x, y):
 exported_constraints_example5 = export(constraints_example5, (torch.randn(2, 2), torch.tensor([4])))
 print(exported_constraints_example5(torch.randn(2, 2), torch.tensor([5])))
 try:
-    exported_constraints_example5(torch.randn(2, 2), torch.randn([1]))
+    exported_constraints_example5(torch.randn(2, 2), torch.tensor([1]))
 except Exception:
     tb.print_exc()
 
