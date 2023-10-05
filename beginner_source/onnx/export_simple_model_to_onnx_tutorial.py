@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 `Introduction to ONNX <intro_onnx.html>`_ ||
-**Export a PyTorch model to ONNX** ||
-`Introduction to ONNX Registry <onnx_registry_tutorial.html>`_
+**Exporting a PyTorch model to ONNX** ||
+`Extending the ONNX Registry <onnx_registry_tutorial.html>`_
 
 Export a PyTorch model to ONNX
 ==============================
@@ -168,9 +168,9 @@ onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(
 
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
-######################################################################
+####################################################################
 # 7. Compare the PyTorch results with the ones from the ONNX Runtime
-# -----------------------------------------------------------------
+# ------------------------------------------------------------------
 #
 # The best way to determine whether the exported model is looking good is through numerical evaluation
 # against PyTorch, which is our source of truth.
