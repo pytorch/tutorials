@@ -286,7 +286,7 @@ except Exception:
 
 from torch.export import Dim
 
-inp1 = torch.randn(10, 10, 10)
+inp1 = torch.randn(10, 10, 2)
 
 def dynamic_shapes_example1(x):
     x = x[:, 2:]
@@ -295,25 +295,25 @@ def dynamic_shapes_example1(x):
 inp1_dim0 = Dim("inp1_dim0")
 inp1_dim1 = Dim("inp1_dim1", min=4, max=18)
 dynamic_shapes1 = {
-    {"x": {0: inp1_dim0, 1: inp1_dim1}}
+    "x": {0: inp1_dim0, 1: inp1_dim1},
 }
 
 exported_dynamic_shapes_example1 = export(dynamic_shapes_example1, (inp1,), dynamic_shapes=dynamic_shapes1)
 
-print(exported_dynamic_shapes_example1(torch.randn(5, 5, 10)))
+print(exported_dynamic_shapes_example1(torch.randn(5, 5, 2)))
 
 try:
-    exported_dynamic_shapes_example1(torch.randn(8, 1, 10))
+    exported_dynamic_shapes_example1(torch.randn(8, 1, 2))
 except Exception:
     tb.print_exc()
 
 try:
-    exported_dynamic_shapes_example1(torch.randn(8, 20, 10))
+    exported_dynamic_shapes_example1(torch.randn(8, 20, 2))
 except Exception:
     tb.print_exc()
 
 try:
-    exported_dynamic_shapes_example1(torch.randn(8, 8, 9))
+    exported_dynamic_shapes_example1(torch.randn(8, 8, 3))
 except Exception:
     tb.print_exc()
 
@@ -323,7 +323,7 @@ except Exception:
 
 inp1_dim1_bad = Dim("inp1_dim1_bad", min=11, max=18)
 dynamic_shapes1_bad = {
-    {"x": {0: inp1_dim0, 1: inp1_dim1_bad}},
+    "x": {0: inp1_dim0, 1: inp1_dim1_bad},
 }
 
 try:
@@ -346,8 +346,8 @@ inner_dim = Dim("inner_dim")
 inp3_dim1 = Dim("inp3_dim1")
 
 dynamic_shapes2 = {
-    {"x": {0: inp2_dim0, 1: inner_dim}},
-    {"y": {0: inner_dim, 1: inp3_dim1}},
+    "x": {0: inp2_dim0, 1: inner_dim},
+    "y": {0: inner_dim, 1: inp3_dim1},
 }
 
 exported_dynamic_shapes_example2 = export(dynamic_shapes_example2, (inp2, inp3), dynamic_shapes=dynamic_shapes2)
@@ -375,8 +375,8 @@ def dynamic_shapes_example3(x, y):
     return y
 
 dynamic_shapes3 = {
-    {"x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())}},
-    {"y": {i: Dim(f"inp5_dim{i}") for i in range(inp5.dim())}},
+    "x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())},
+    "y": {i: Dim(f"inp5_dim{i}") for i in range(inp5.dim())},
 }
 
 try:
@@ -384,24 +384,25 @@ try:
 except Exception:
     tb.print_exc()
 
-breakpoint()
-
 ######################################################################
-# We can see that the error message suggests to us to use some additional code
-# to specify the necessary constraints. Let us use that code (exact code may differ slightly):
+# We can see that the error message gives us suggested fixes to our
+# dynamic shape constraints. Let us follow those suggestions (exact
+# suggestions may differ slightly):
 
-def specify_constraints(x, y):
-    return [
-        # x:
-        dynamic_dim(x, 0) <= 16,
+def suggested_fixes():
+    inp4_dim1 = Dim('shared_dim')
+    # suggested fixes below
+    inp4_dim0 = Dim('inp4_dim0', max=16)
+    inp5_dim1 = Dim('inp5_dim1', min=17)
+    inp5_dim0 = inp4_dim1
+    # end of suggested fixes
+    return {
+        "x": {0: inp4_dim0, 1: inp4_dim1},
+        "y": {0: inp5_dim0, 1: inp5_dim1},
+    }
 
-        # y:
-        16 < dynamic_dim(y, 1),
-        dynamic_dim(y, 0) == dynamic_dim(x, 1),
-    ]
-
-constraints3_fixed = specify_constraints(inp4, inp5)
-exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), constraints=constraints3_fixed)
+dynamic_shapes3_fixed = suggested_fixes()
+exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
 print(exported_dynamic_shapes_example3(torch.randn(4, 32), torch.randn(32, 64)))
 
 ######################################################################
@@ -415,7 +416,7 @@ print(exported_dynamic_shapes_example3(torch.randn(4, 32), torch.randn(32, 64)))
 
 import logging
 torch._logging.set_logs(dynamic=logging.INFO, dynamo=logging.INFO)
-exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), constraints=constraints3_fixed)
+exported_dynamic_shapes_example3 = export(dynamic_shapes_example3, (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
 
 # reset to previous values
 torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
@@ -446,7 +447,7 @@ def dynamic_shapes_example4(x, y):
 exported_dynamic_shapes_example4 = export(dynamic_shapes_example4, (torch.randn(3, 3), torch.tensor([4])))
 print(exported_dynamic_shapes_example4(torch.randn(3, 3), torch.tensor([5])))
 try:
-    exported_dynamic_shapes_example4(torch.randn(3, 3), torch.randn([2]))
+    exported_dynamic_shapes_example4(torch.randn(3, 3), torch.tensor([2]))
 except Exception:
     tb.print_exc()
 
@@ -464,7 +465,7 @@ def dynamic_shapes_example5(x, y):
 exported_dynamic_shapes_example5 = export(dynamic_shapes_example5, (torch.randn(2, 2), torch.tensor([4])))
 print(exported_dynamic_shapes_example5(torch.randn(2, 2), torch.tensor([5])))
 try:
-    exported_dynamic_shapes_example5(torch.randn(2, 2), torch.randn([1]))
+    exported_dynamic_shapes_example5(torch.randn(2, 2), torch.tensor([1]))
 except Exception:
     tb.print_exc()
 
