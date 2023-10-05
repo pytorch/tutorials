@@ -1,10 +1,17 @@
 """
 (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
-========================================================================
+===================================================================================
+
+.. Note::
+    As of PyTorch 2.1, there are two versions of ONNX Exporter.
+
+    * ``torch.onnx.dynamo_export`is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0
+    * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0
 
 In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format and then run it with ONNX Runtime.
+in PyTorch into the ONNX format using the TorchScript ``torch.onnx.export` ONNX exporter.
 
+The exported model will be executed with ONNX Runtime.
 ONNX Runtime is a performance-focused engine for ONNX models,
 which inferences efficiently across multiple platforms and hardware
 (Windows, Linux, and Mac and on both CPUs and GPUs).
@@ -15,13 +22,17 @@ multiple models as explained `here
 For this tutorial, you will need to install `ONNX <https://github.com/onnx/onnx>`__
 and `ONNX Runtime <https://github.com/microsoft/onnxruntime>`__.
 You can get binary builds of ONNX and ONNX Runtime with
-``pip install onnx onnxruntime``.
+
+.. code-block:: bash
+
+   %%bash
+   pip install onnxruntime
+
 ONNX Runtime recommends using the latest stable runtime for PyTorch.
 
 """
 
 # Some standard imports
-import io
 import numpy as np
 
 from torch import nn
@@ -185,7 +196,7 @@ onnx.checker.check_model(onnx_model)
 
 import onnxruntime
 
-ort_session = onnxruntime.InferenceSession("super_resolution.onnx")
+ort_session = onnxruntime.InferenceSession("super_resolution.onnx", providers=["CPUExecutionProvider"])
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
