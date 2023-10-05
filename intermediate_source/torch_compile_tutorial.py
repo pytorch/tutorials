@@ -20,11 +20,8 @@ torch.compile Tutorial
 #
 # **Contents**
 #
-# - Basic Usage
-# - Demonstrating Speedups
-# - Comparison to TorchScript and FX Tracing
-# - TorchDynamo and FX Graphs
-# - Conclusion
+# .. contents::
+#     :local:
 #
 # **Required pip Dependencies**
 #
@@ -485,19 +482,12 @@ opt_model = torch.compile(init_model(), fullgraph=True)
 print(opt_model(generate_data(16)[0]))
 
 ######################################################################
-# <!----TODO: replace this section with a link to the torch.export tutorial when done --->
-#
-# Finally, if we simply want TorchDynamo to output the FX graph for export,
-# we can use ``torch._dynamo.export``. Note that ``torch._dynamo.export``, like
-# ``fullgraph=True``, raises an error if TorchDynamo breaks the graph.
-
-try:
-    torch._dynamo.export(bar)(torch.randn(10), torch.randn(10))
-except:
-    tb.print_exc()
-
-model_exp = torch._dynamo.export(init_model())(generate_data(16)[0])
-print(model_exp[0](generate_data(16)[0]))
+# We can use ``torch.export`` (from PyTorch 2.1+) to extract a single, exportable
+# FX graph from the input PyTorch program. The exported graph is intended to be
+# run on different (i.e. Python-less) environments. One important restriction
+# is that the ``torch.export`` does not support graph breaks. Please check
+# `this tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+# for more details on ``torch.export``.
 
 ######################################################################
 # Conclusion

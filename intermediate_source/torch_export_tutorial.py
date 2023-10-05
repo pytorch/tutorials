@@ -423,7 +423,7 @@ def constraints_example4(x, y):
 exported_constraints_example4 = export(constraints_example4, (torch.randn(3, 3), torch.tensor([4])))
 print(exported_constraints_example4(torch.randn(3, 3), torch.tensor([5])))
 try:
-    exported_constraints_example4(torch.randn(3, 3), torch.randn([2]))
+    exported_constraints_example4(torch.randn(3, 3), torch.tensor([2]))
 except Exception:
     tb.print_exc()
 
@@ -441,7 +441,7 @@ def constraints_example5(x, y):
 exported_constraints_example5 = export(constraints_example5, (torch.randn(2, 2), torch.tensor([4])))
 print(exported_constraints_example5(torch.randn(2, 2), torch.tensor([5])))
 try:
-    exported_constraints_example5(torch.randn(2, 2), torch.randn([1]))
+    exported_constraints_example5(torch.randn(2, 2), torch.tensor([1]))
 except Exception:
     tb.print_exc()
 
@@ -496,6 +496,10 @@ print(exported_custom_op_example(torch.randn(3, 3)))
 # Note in the above outputs that the custom op is included in the exported graph.
 # And when we call the exported graph as a function, the original custom op is called,
 # as evidenced by the ``print`` call.
+#
+# If you have a custom operator implemented in C++, please refer to
+# `this document <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz>`__
+# to make it compatible with ``torch.export``.
 
 ######################################################################
 # ExportDB
