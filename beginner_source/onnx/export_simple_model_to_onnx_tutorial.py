@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 `Introduction to ONNX <intro_onnx.html>`_ ||
-**Export a PyTorch model to ONNX**
+**Exporting a PyTorch model to ONNX** ||
+`Extending the ONNX Registry <onnx_registry_tutorial.html>`_
 
 Export a PyTorch model to ONNX
 ==============================
@@ -104,7 +105,7 @@ export_output = torch.onnx.dynamo_export(torch_model, torch_input)
 export_output.save("my_image_classifier.onnx")
 
 ######################################################################
-# The ONNX file can be loaded back into memory and checked if it is well formed with the following code:
+# You can load the ONNX file back into memory and check if it is well formed with the following code:
 
 import onnx
 onnx_model = onnx.load("my_image_classifier.onnx")
@@ -167,9 +168,9 @@ onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(
 
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
-######################################################################
+####################################################################
 # 7. Compare the PyTorch results with the ones from the ONNX Runtime
-# -----------------------------------------------------------------
+# ------------------------------------------------------------------
 #
 # The best way to determine whether the exported model is looking good is through numerical evaluation
 # against PyTorch, which is our source of truth.
