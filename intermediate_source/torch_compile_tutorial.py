@@ -139,8 +139,7 @@ def init_model():
 # ``mode`` argument, which we will discuss below.
 
 def evaluate(mod, inp):
-    with torch.no_grad():
-        return mod(inp)
+    return mod(inp)
 
 model = init_model()
 
@@ -151,8 +150,9 @@ torch._dynamo.reset()
 evaluate_opt = torch.compile(evaluate, mode="reduce-overhead")
 
 inp = generate_data(16)[0]
-print("eager:", timed(lambda: evaluate(model, inp))[1])
-print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
+with torch.no_grad():
+    print("eager:", timed(lambda: evaluate(model, inp))[1])
+    print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 
 ######################################################################
 # Notice that ``torch.compile`` takes a lot longer to complete
@@ -165,7 +165,8 @@ print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 eager_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, eager_time = timed(lambda: evaluate(model, inp))
+    with torch.no_grad():
+        _, eager_time = timed(lambda: evaluate(model, inp))
     eager_times.append(eager_time)
     print(f"eager eval time {i}: {eager_time}")
 
@@ -174,7 +175,8 @@ print("~" * 10)
 compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, compile_time = timed(lambda: evaluate_opt(model, inp))
+    with torch.no_grad():
+        _, compile_time = timed(lambda: evaluate_opt(model, inp))
     compile_times.append(compile_time)
     print(f"compile eval time {i}: {compile_time}")
 print("~" * 10)
@@ -183,6 +185,7 @@ import numpy as np
 eager_med = np.median(eager_times)
 compile_med = np.median(compile_times)
 speedup = eager_med / compile_med
+assert(speedup > 1)
 print(f"(eval) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x")
 print("~" * 10)
 
@@ -239,6 +242,7 @@ print("~" * 10)
 eager_med = np.median(eager_times)
 compile_med = np.median(compile_times)
 speedup = eager_med / compile_med
+assert(speedup > 1)
 print(f"(train) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x")
 print("~" * 10)
 
