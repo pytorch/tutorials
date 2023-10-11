@@ -497,12 +497,12 @@ some of the most useful are:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">schedule</span></code> - callable that takes step (int) as a single parameter
 and returns the profiler action to perform at each step.</p>
-<p>In this example with <code class="docutils literal notranslate"><span class="pre">wait=1,</span> <span class="pre">warmup=1,</span> <span class="pre">active=3,</span> <span class="pre">repeat=2</span></code>,
+<p>In this example with <code class="docutils literal notranslate"><span class="pre">wait=1,</span> <span class="pre">warmup=1,</span> <span class="pre">active=3,</span> <span class="pre">repeat=1</span></code>,
 profiler will skip the first step/iteration,
 start warming up on the second,
 record the following three iterations,
 after which the trace will become available and on_trace_ready (when set) is called.
-In total, the cycle repeats twice. Each cycle is called a “span” in TensorBoard plugin.</p>
+In total, the cycle repeats once. Each cycle is called a “span” in TensorBoard plugin.</p>
 <p>During <code class="docutils literal notranslate"><span class="pre">wait</span></code> steps, the profiler is disabled.
 During <code class="docutils literal notranslate"><span class="pre">warmup</span></code> steps, the profiler starts tracing but the results are discarded.
 This is for reducing the profiling overhead.
@@ -521,31 +521,31 @@ If the TensorBoard is launched in VS Code (<a class="reference external" href="h
 clicking a stack frame will navigate to the specific code line.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span>
-        <span class="n">schedule</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">schedule</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
         <span class="n">on_trace_ready</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.tensorboard_trace_handler" title="torch.profiler.tensorboard_trace_handler"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span></a><span class="p">(</span><span class="s1">'./log/resnet18'</span><span class="p">),</span>
         <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># Need to call this at each step to notify profiler of steps' boundary.</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">train</span><span class="p">(</span><span class="n">batch_data</span><span class="p">)</span>
-        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># Need to call this at the end of each step to notify profiler of steps' boundary.</span>
 </pre></div>
 </div>
 <p>Alternatively, the following non-context manager start/stop is supported as well.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span></a><span class="p">(</span>
-        <span class="n">schedule</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">schedule</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
         <span class="n">on_trace_ready</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/profiler.html#torch.profiler.tensorboard_trace_handler" title="torch.profiler.tensorboard_trace_handler"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span></a><span class="p">(</span><span class="s1">'./log/resnet18'</span><span class="p">),</span>
         <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">prof</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">break</span>
     <span class="n">train</span><span class="p">(</span><span class="n">batch_data</span><span class="p">)</span>
-    <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 <span class="n">prof</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -556,6 +556,11 @@ clicking a stack frame will navigate to the specific code line.</p></li>
 </div>
 <div class="section" id="use-tensorboard-to-view-results-and-analyze-model-performance">
 <h3>4. Use TensorBoard to view results and analyze model performance<a class="headerlink" href="#use-tensorboard-to-view-results-and-analyze-model-performance" title="Permalink to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>TensorBoard Plugin support has been deprecated, so some of these functions may not
+work as previously. Please take a look at the replacement, <a class="reference external" href="https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis">HTA</a>.</p>
+</div>
 <p>Install PyTorch Profiler TensorBoard Plugin.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch_tb_profiler</span>
 </pre></div>
@@ -721,8 +726,9 @@ this worker may be a straggler which may have more computation workload than oth
 <p>Take a look at the following documents to continue your learning,
 and feel free to open an issue <a class="reference external" href="https://github.com/pytorch/kineto/issues">here</a>.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/pytorch/kineto/tree/master/tb_plugin">Pytorch TensorBoard Profiler github</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/kineto/tree/master/tb_plugin">PyTorch TensorBoard Profiler Github</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/master/profiler.html">torch.profiler API</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis">HTA</a></p></li>
 </ul>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-tensorboard-profiler-tutorial-py">
