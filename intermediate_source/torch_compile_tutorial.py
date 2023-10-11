@@ -250,7 +250,7 @@ print("~" * 10)
 #
 # We remark that the speedup numbers presented in this tutorial are for
 # demonstration purposes only. Official speedup values can be seen at the
-# `TorchInductor performance dashboard <https://hud.pytorch.org/benchmark/compilers>`__
+# `TorchInductor performance dashboard <https://hud.pytorch.org/benchmark/compilers>`__.
 
 ######################################################################
 # Comparison to TorchScript and FX Tracing
