@@ -13,6 +13,10 @@ torch.export Tutorial
 #     ``torch.export`` and its related features are in prototype status and are subject to backwards compatibility
 #     breaking changes. This tutorial provides a snapshot of ``torch.export`` usage as of PyTorch 2.1.
 #
+# .. note::
+#     The `torch.export nightly tutorial <https://pytorch.org/tutorials/intermediate/torch_export_nightly_tutorial.html>`__
+#     demonstrates some APIs that are present in the nightly binaries, but are not present in the PyTorch 2.1 release.
+#
 # :func:`torch.export` is the PyTorch 2.X way to export PyTorch models into
 # standardized model representations, intended
 # to be run on different (i.e. Python-less) environments.
