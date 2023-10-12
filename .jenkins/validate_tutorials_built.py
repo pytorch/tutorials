@@ -22,7 +22,7 @@ NOT_RUN = [
     "beginner_source/former_torchies/tensor_tutorial_old",
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
-    "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756 
+    "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756
     "intermediate_source/parametrizations",
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",

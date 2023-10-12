@@ -6,17 +6,10 @@ TorchVision Object Detection Finetuning Tutorial
 
 ######################################################################
 #
-# .. tip::
-#
-#     To get the most of this tutorial, we suggest using this
-#     `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/torchvision_finetuning_instance_segmentation.ipynb>`__.
-#     This will allow you to experiment with the information presented below.
-#
-#
 # For this tutorial, we will be finetuning a pre-trained `Mask
-# R-CNN <https://arxiv.org/abs/1703.06870>`__ model on the `Penn-Fudan
+# R-CNN <https://arxiv.org/abs/1703.06870>`_ model on the `Penn-Fudan
 # Database for Pedestrian Detection and
-# Segmentation <https://www.cis.upenn.edu/~jshi/ped_html/>`__. It contains
+# Segmentation <https://www.cis.upenn.edu/~jshi/ped_html/>`_. It contains
 # 170 images with 345 instances of pedestrians, and we will use it to
 # illustrate how to use the new features in torchvision in order to train
 # an object detection and instance segmentation model on a custom dataset.
@@ -65,7 +58,7 @@ TorchVision Object Detection Finetuning Tutorial
 # ``pycocotools`` which can be installed with ``pip install pycocotools``.
 #
 # .. note ::
-#   For Windows, please install ``pycocotools`` from `gautamchitnis <https://github.com/gautamchitnis/cocoapi>`__ with command
+#   For Windows, please install ``pycocotools`` from `gautamchitnis <https://github.com/gautamchitnis/cocoapi>`_ with command
 #
 #   ``pip install git+https://github.com/gautamchitnis/cocoapi.git@cocodataset-master#subdirectory=PythonAPI``
 #
@@ -85,10 +78,16 @@ TorchVision Object Detection Finetuning Tutorial
 # Writing a custom dataset for PennFudan
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Let’s write a dataset for the PennFudan dataset. After `downloading and
-# extracting the zip
-# file <https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip>`__, we
-# have the following folder structure:
+# Let’s write a dataset for the PennFudan dataset. First, let's download the dataset and
+# extract the `zip file <https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip>`_:
+#
+# .. code:: python
+#
+#     wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P data
+#     cd data && unzip PennFudanPed.zip
+#
+#
+# We have the following folder structure:
 #
 # ::
 #
@@ -196,8 +195,8 @@ class PennFudanDataset(torch.utils.data.Dataset):
 # -------------------
 #
 # In this tutorial, we will be using `Mask
-# R-CNN <https://arxiv.org/abs/1703.06870>`__, which is based on top of
-# `Faster R-CNN <https://arxiv.org/abs/1506.01497>`__. Faster R-CNN is a
+# R-CNN <https://arxiv.org/abs/1703.06870>`_, which is based on top of
+# `Faster R-CNN <https://arxiv.org/abs/1506.01497>`_. Faster R-CNN is a
 # model that predicts both bounding boxes and class scores for potential
 # objects in the image.
 #
@@ -484,7 +483,7 @@ import matplotlib.pyplot as plt
 from torchvision.utils import draw_bounding_boxes, draw_segmentation_masks
 
 
-image = read_image("../_static/img/tv_tutorial/tv_image05.png")
+image = read_image("data/PennFudanPed/PNGImages/FudanPed00046.png")
 eval_transform = get_transform(train=False)
 
 model.eval()
@@ -527,4 +526,4 @@ plt.imshow(output_image.permute(1, 2, 0))
 # the torchvision repository.
 #
 # You can download a full source file for this tutorial
-# `here <https://pytorch.org/tutorials/_static/tv-training-code.py>`__.
+# `here <https://pytorch.org/tutorials/_static/tv-training-code.py>`_.
