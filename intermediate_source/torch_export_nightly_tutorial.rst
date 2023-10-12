@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 torch.export Nightly Tutorial
 =============================
 **Author:** William Wen, Zhengxu Chen
