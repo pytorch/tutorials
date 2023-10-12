@@ -28,7 +28,7 @@ TorchVision Object Detection Finetuning Tutorial
 # The reference scripts for training object detection, instance
 # segmentation and person keypoint detection allows for easily supporting
 # adding new custom datasets. The dataset should inherit from the standard
-# ``torch.utils.data.Dataset`` class, and implement ``__len__`` and
+# :class:`torch.utils.data.Dataset` class, and implement ``__len__`` and
 # ``__getitem__``.
 #
 # The only specificity that we require is that the dataset ``__getitem__``
@@ -105,21 +105,33 @@ TorchVision Object Detection Finetuning Tutorial
 #        FudanPed00004.png
 #
 # Here is one example of a pair of images and segmentation masks
-#
-# .. image:: ../../_static/img/tv_tutorial/tv_image01.png
-#
-# .. image:: ../../_static/img/tv_tutorial/tv_image02.png
-#
+
+import matplotlib.pyplot as plt
+from torchvision.io import read_image
+
+
+image = read_image("data/PennFudanPed/PNGImages/FudanPed00046.png")
+mask = read_image("data/PennFudanPed/PedMasks/FudanPed00046_mask.png")
+
+plt.figure(figsize=(16, 8))
+plt.subplot(121)
+plt.title("Image")
+plt.imshow(image.permute(1, 2, 0))
+plt.subplot(122)
+plt.title("Mask")
+plt.imshow(mask.permute(1, 2, 0))
+
+######################################################################
 # So each image has a corresponding
 # segmentation mask, where each color correspond to a different instance.
 # Let’s write a :class:`torch.utils.data.Dataset` class for this dataset.
 # In the code below, we are wrapping images, bounding boxes and masks into
-# ``torchvision.TVTensor`` classes so that we will be able to apply torchvision
+# :class:`torchvision.tv_tensors.TVTensor` classes so that we will be able to apply torchvision
 # built-in transformations (`new Transforms API <https://pytorch.org/vision/stable/transforms.html>`_)
 # for the given object detection and segmentation task.
 # Namely, image tensors will be wrapped by :class:`torchvision.tv_tensors.Image`, bounding boxes into
 # :class:`torchvision.tv_tensors.BoundingBoxes` and masks into :class:`torchvision.tv_tensors.Mask`.
-# As ``torchvision.TVTensor`` are :class:`torch.Tensor` subclasses, wrapped objects are also tensors and inherit the plain
+# As :class:`torchvision.tv_tensors.TVTensor` are :class:`torch.Tensor` subclasses, wrapped objects are also tensors and inherit the plain
 # :class:`torch.Tensor` API. For more information about torchvision ``tv_tensors`` see
 # `this documentation <https://pytorch.org/vision/main/auto_examples/transforms/plot_transforms_getting_started.html#what-are-tvtensors>`_.
 
@@ -476,8 +488,6 @@ print("That's it!")
 # But what do the predictions look like? Let’s take one image in the
 # dataset and verify
 #
-# .. image:: ../../_static/img/tv_tutorial/tv_image05.png
-#
 import matplotlib.pyplot as plt
 
 from torchvision.utils import draw_bounding_boxes, draw_segmentation_masks
@@ -516,7 +526,7 @@ plt.imshow(output_image.permute(1, 2, 0))
 #
 # In this tutorial, you have learned how to create your own training
 # pipeline for object detection models on a custom dataset. For
-# that, you wrote a ``torch.utils.data.Dataset`` class that returns the
+# that, you wrote a :class:`torch.utils.data.Dataset` class that returns the
 # images and the ground truth boxes and segmentation masks. You also
 # leveraged a Mask R-CNN model pre-trained on COCO train2017 in order to
 # perform transfer learning on this new dataset.
@@ -525,5 +535,3 @@ plt.imshow(output_image.permute(1, 2, 0))
 # training, check ``references/detection/train.py``, which is present in
 # the torchvision repository.
 #
-# You can download a full source file for this tutorial
-# `here <https://pytorch.org/tutorials/_static/tv-training-code.py>`_.
