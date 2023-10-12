@@ -356,6 +356,7 @@ os.system("wget https://raw.githubusercontent.com/pytorch/vision/main/references
 os.system("wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/coco_eval.py")
 os.system("wget https://raw.githubusercontent.com/pytorch/vision/main/references/detection/transforms.py")
 
+######################################################################
 # Since v0.15.0 torchvision provides `new Transforms API <https://pytorch.org/vision/stable/transforms.html>`_
 # to easily write data augmentation pipelines for Object Detection and Segmentation tasks.
 #
@@ -373,7 +374,7 @@ def get_transform(train):
     transforms.append(T.ToPureTensor())
     return T.Compose(transforms)
 
-
+######################################################################
 # Testing ``forward()`` method (Optional)
 # ---------------------------------------
 #
@@ -466,8 +467,8 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(
     gamma=0.1
 )
 
-# let's train it for 5 epochs
-num_epochs = 5
+# let's train it just for 2 epochs
+num_epochs = 2
 
 for epoch in range(num_epochs):
     # train for one epoch, printing every 10 iterations
