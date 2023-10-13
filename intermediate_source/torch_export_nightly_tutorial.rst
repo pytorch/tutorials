@@ -116,12 +116,12 @@ so that it can be ran as a ``torch.nn.Module``.
             def forward(self, arg0_1: f32[10, 100], arg1_1: f32[10], arg2_1: f32[8, 100], arg3_1: f32[8, 100]):
                 # File: torch_export_nightly_tutorial.py:69, code: return torch.nn.functional.relu(self.lin(x + y), inplace=True)
                 add: f32[8, 100] = torch.ops.aten.add.Tensor(arg2_1, arg3_1);  arg2_1 = arg3_1 = None
-                permute: f32[100, 10] = torch.ops.aten.permute.default(arg0_1, [1, 0]);  arg0_1 = None
-                addmm: f32[8, 10] = torch.ops.aten.addmm.default(arg1_1, add, permute);  arg1_1 = add = permute = None
+                t: f32[100, 10] = torch.ops.aten.t.default(arg0_1);  arg0_1 = None
+                addmm: f32[8, 10] = torch.ops.aten.addmm.default(arg1_1, add, t);  arg1_1 = add = t = None
                 relu: f32[8, 10] = torch.ops.aten.relu.default(addmm);  addmm = None
                 return (relu,)
 
-    Graph signature: ExportGraphSignature(parameters=['lin.weight', 'lin.bias'], buffers=[], user_inputs=['arg2_1', 'arg3_1'], user_outputs=['relu'], inputs_to_parameters={'arg0_1': 'lin.weight', 'arg1_1': 'lin.bias'}, inputs_to_buffers={}, buffers_to_mutate={}, backward_signature=None, assertion_dep_token=None)
+    Graph signature: ExportGraphSignature(input_specs=[InputSpec(kind=<InputKind.PARAMETER: 2>, arg=TensorArgument(name='arg0_1'), target='lin.weight'), InputSpec(kind=<InputKind.PARAMETER: 2>, arg=TensorArgument(name='arg1_1'), target='lin.bias'), InputSpec(kind=<InputKind.USER_INPUT: 1>, arg=TensorArgument(name='arg2_1'), target=None), InputSpec(kind=<InputKind.USER_INPUT: 1>, arg=TensorArgument(name='arg3_1'), target=None)], output_specs=[OutputSpec(kind=<OutputKind.USER_OUTPUT: 1>, arg=TensorArgument(name='relu'), target=None)])
     Range constraints: {}
     Equality constraints: []
 
@@ -131,12 +131,10 @@ so that it can be ran as a ``torch.nn.Module``.
 
     def forward(self, arg0_1, arg1_1, arg2_1, arg3_1):
         add = torch.ops.aten.add.Tensor(arg2_1, arg3_1);  arg2_1 = arg3_1 = None
-        permute = torch.ops.aten.permute.default(arg0_1, [1, 0]);  arg0_1 = None
-        addmm = torch.ops.aten.addmm.default(arg1_1, add, permute);  arg1_1 = add = permute = None
+        t = torch.ops.aten.t.default(arg0_1);  arg0_1 = None
+        addmm = torch.ops.aten.addmm.default(arg1_1, add, t);  arg1_1 = add = t = None
         relu = torch.ops.aten.relu.default(addmm);  addmm = None
         return (relu,)
-
-    # To see more debug info, please use `graph_module.print_readable()`
 
 The printed code shows that FX graph only contains ATen-level ops (such as ``torch.ops.aten``)
 and that mutations were removed. For example, the mutating op ``torch.nn.functional.relu(..., inplace=True)``
@@ -269,9 +267,6 @@ Control Flow Ops
 But these need to be expressed using control flow ops. For example,
 we can fix the control flow example above using the ``cond`` op, like so:
 
-..
-    [TODO] link to docs about ``cond`` when it is out
-
 .. code-block:: python
 
     from functorch.experimental.control_flow import cond
@@ -305,6 +300,8 @@ There are limitations to ``cond`` that one should be aware of:
 - Branch functions cannot mutate input or global variables.
 - Branch functions cannot access closure variables, except for ``self`` if the function is
   defined in the scope of a method.
+
+For more details about ``cond``, check out the `documentation <https://pytorch.org/docs/main/cond.html>`__.
 
 ..
     [NOTE] map is not documented at the moment
@@ -682,6 +679,139 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
 Note in the above outputs that the custom op is included in the exported graph.
 And when we call the exported graph as a function, the original custom op is called,
 as evidenced by the ``print`` call.
+
+If you have a custom operator implemented in C++, please refer to
+`this document <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz>`__
+to make it compatible with ``torch.export``.
+
+Decompositions
+--------------
+
+The graph produced by ``torch.export`` by default returns a graph containing
+only functional ATen operators. This functional ATen operator set (or "opset") contains around 2000
+operators, all of which are functional, that is, they do not
+mutate or alias inputs.  You can find a list of all ATen operators
+`here <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml>`__
+and you can inspect if an operator is functional by checking
+``op._schema.is_mutable``, for example:
+
+.. code-block:: python
+
+    print(torch.ops.aten.add.Tensor._schema.is_mutable)
+    print(torch.ops.aten.add_.Tensor._schema.is_mutable)
+
+.. code-block:: bash
+
+    False
+    True
+
+By default, the environment in which you want to run the exported graph
+should support all ~2000 of these operators.
+However, you can use the following API on the exported program
+if your specific environment is only able to support a subset of
+the ~2000 operators.
+
+.. code-block:: python
+
+    def run_decompositions(
+        self: ExportedProgram,
+        decomposition_table: Optional[Dict[torch._ops.OperatorBase, Callable]]
+    ) -> ExportedProgram
+
+``run_decompositions`` takes in a decomposition table, which is a mapping of
+operators to a function specifying how to reduce, or decompose, that operator
+into an equivalent sequence of other ATen operators.
+
+The default decomposition table for ``run_decompositions`` is the
+`Core ATen decomposition table <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L252>`__
+which will decompose the all ATen operators to the
+`Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__
+which consists of only ~180 operators.
+
+.. code-block:: python
+
+    class M(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.linear = torch.nn.Linear(3, 4)
+
+        def forward(self, x):
+            return self.linear(x)
+
+    ep = export(M(), (torch.randn(2, 3),))
+    print(ep.graph)
+
+    core_ir_ep = ep.run_decompositions()
+    print(core_ir_ep.graph)
+
+.. code-block:: bash
+
+    graph():
+        %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+        %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+        %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+        %t : [num_users=1] = call_function[target=torch.ops.aten.t.default](args = (%arg0_1,), kwargs = {})
+        %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %t), kwargs = {})
+        return (addmm,)
+    graph():
+        %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+        %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+        %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+        %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%arg0_1, [1, 0]), kwargs = {})
+        %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %permute), kwargs = {})
+        return (addmm,)
+
+Notice that after running ``run_decompositions`` the
+``torch.ops.aten.t.default`` operator, which is not part of the Core ATen
+Opset, has been replaced with ``torch.ops.aten.permute.default`` which is part
+of the Core ATen Opset.
+
+Most ATen operators already have decompositions, which are located
+`here <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py>`__.
+If you would like to use some of these existing decomposition functions,
+you can pass in a list of operators you would like to decompose to the
+:func:`get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
+function, which will return a decomposition table using the pre-implemented
+decompositions.
+
+.. code-block:: python
+
+    class M(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.linear = torch.nn.Linear(3, 4)
+
+        def forward(self, x):
+            return self.linear(x)
+
+    ep = export(M(), (torch.randn(2, 3),))
+    print(ep.graph)
+
+    from torch._decomp import get_decompositions
+    decomp_table = get_decompositions([torch.ops.aten.t.default, torch.ops.aten.transpose.int])
+    core_ir_ep = ep.run_decompositions(decomp_table)
+    print(core_ir_ep.graph)
+
+.. code-block:: bash
+
+    graph():
+        %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+        %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+        %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+        %t : [num_users=1] = call_function[target=torch.ops.aten.t.default](args = (%arg0_1,), kwargs = {})
+        %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %t), kwargs = {})
+        return (addmm,)
+    graph():
+        %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+        %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+        %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+        %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%arg0_1, [1, 0]), kwargs = {})
+        %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %permute), kwargs = {})
+        return (addmm,)
+
+If there is no existing decomposition function for an ATen operator that you would
+like to decompose, feel free to send a pull request into PyTorch
+implementing the decomposition!
 
 ExportDB
 --------

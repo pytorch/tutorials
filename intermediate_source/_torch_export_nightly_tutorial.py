@@ -3,7 +3,7 @@
 """
 torch.export Nightly Tutorial
 ================
-**Author:** William Wen, Zhengxu Chen
+**Author:** William Wen, Zhengxu Chen, Angela Yi
 """
 
 ######################################################################
@@ -184,9 +184,6 @@ except Exception:
 # ``torch.export`` actually does support data-dependent control flow.
 # But these need to be expressed using control flow ops. For example,
 # we can fix the control flow example above using the ``cond`` op, like so:
-#
-# ..
-#     [TODO] link to docs about ``cond`` when it is out
 
 from functorch.experimental.control_flow import cond
 
@@ -211,6 +208,8 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 # - Branch functions cannot mutate input or global variables.
 # - Branch functions cannot access closure variables, except for ``self`` if the function is
 #   defined in the scope of a method.
+#
+# For more details about ``cond``, check out the `documentation <https://pytorch.org/docs/main/cond.html>`__.
 
 ######################################################################
 # ..
@@ -261,11 +260,9 @@ except Exception:
 
 ######################################################################
 # We can relax this constraint using the ``dynamic_shapes`` argument of
-# ``torch.export.export()``, which allows us to specify (using ``torch.export.Dim``)
+# ``torch.export.export()``, which allows us to specify, using ``torch.export.Dim``
+# (`documentation <https://pytorch.org/docs/main/export.html#torch.export.Dim>`__),
 # which dimensions of the input tensors are dynamic.
-#
-# ..
-#     [TODO] link to doc of Dim when it is available
 #
 # For each tensor argument of the input callable, we can specify a mapping from the dimension
 # to a ``torch.export.Dim``.
@@ -430,46 +427,6 @@ print(exported_dynamic_shapes_example3.range_constraints)
 print(exported_dynamic_shapes_example3.equality_constraints)
 
 ######################################################################
-# We can also constrain on individual values in the source code itself using
-# ``constrain_as_value`` and ``constrain_as_size``. ``constrain_as_value`` specifies
-# that a given integer value is expected to fall within the provided minimum/maximum bounds (inclusive).
-# If a bound is not provided, then it is assumed to be unbounded.
-
-from torch.export import constrain_as_size, constrain_as_value
-
-def dynamic_shapes_example4(x, y):
-    b = y.item()
-    constrain_as_value(b, 3, 5)
-    if b >= 3:
-       return x.cos()
-    return x.sin()
-
-exported_dynamic_shapes_example4 = export(dynamic_shapes_example4, (torch.randn(3, 3), torch.tensor([4])))
-print(exported_dynamic_shapes_example4(torch.randn(3, 3), torch.tensor([5])))
-try:
-    exported_dynamic_shapes_example4(torch.randn(3, 3), torch.tensor([2]))
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# ``constrain_as_size`` is similar to ``constrain_as_value``, except that it should be used on integer values that
-# will be used to specify tensor shapes -- in particular, the value must not be 0 or 1 because
-# many operations have special behavior for tensors with a shape value of 0 or 1.
-
-def dynamic_shapes_example5(x, y):
-    b = y.item()
-    constrain_as_size(b)
-    z = torch.ones(b, 4)
-    return x.sum() + z.sum()
-
-exported_dynamic_shapes_example5 = export(dynamic_shapes_example5, (torch.randn(2, 2), torch.tensor([4])))
-print(exported_dynamic_shapes_example5(torch.randn(2, 2), torch.tensor([5])))
-try:
-    exported_dynamic_shapes_example5(torch.randn(2, 2), torch.tensor([1]))
-except Exception:
-    tb.print_exc()
-
-######################################################################
 # Custom Ops
 # ----------
 #
@@ -520,6 +477,99 @@ print(exported_custom_op_example(torch.randn(3, 3)))
 # Note in the above outputs that the custom op is included in the exported graph.
 # And when we call the exported graph as a function, the original custom op is called,
 # as evidenced by the ``print`` call.
+#
+# If you have a custom operator implemented in C++, please refer to
+# `this document <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz>`__
+# to make it compatible with ``torch.export``.
+
+######################################################################
+# Decompositions
+# --------------
+#
+# The graph produced by ``torch.export`` by default returns a graph containing
+# only functional ATen operators. This functional ATen operator set (or "opset") contains around 2000
+# operators, all of which are functional, that is, they do not
+# mutate or alias inputs.  You can find a list of all ATen operators
+# `here <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml>`__
+# and you can inspect if an operator is functional by checking
+# ``op._schema.is_mutable``, for example:
+
+print(torch.ops.aten.add.Tensor._schema.is_mutable)
+print(torch.ops.aten.add_.Tensor._schema.is_mutable)
+
+######################################################################
+# By default, the environment in which you want to run the exported graph
+# should support all ~2000 of these operators.
+# However, you can use the following API on the exported program
+# if your specific environment is only able to support a subset of
+# the ~2000 operators.
+#
+# .. code:: python
+#
+#     def run_decompositions(
+#         self: ExportedProgram,
+#         decomposition_table: Optional[Dict[torch._ops.OperatorBase, Callable]]
+#     ) -> ExportedProgram
+#
+# ``run_decompositions`` takes in a decomposition table, which is a mapping of
+# operators to a function specifying how to reduce, or decompose, that operator
+# into an equivalent sequence of other ATen operators.
+#
+# The default decomposition table for ``run_decompositions`` is the
+# `Core ATen decomposition table <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L252>`__
+# which will decompose the all ATen operators to the
+# `Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__
+# which consists of only ~180 operators.
+
+class M(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = torch.nn.Linear(3, 4)
+
+    def forward(self, x):
+        return self.linear(x)
+
+ep = export(M(), (torch.randn(2, 3),))
+print(ep.graph)
+
+core_ir_ep = ep.run_decompositions()
+print(core_ir_ep.graph)
+
+######################################################################
+# Notice that after running ``run_decompositions`` the
+# ``torch.ops.aten.t.default`` operator, which is not part of the Core ATen
+# Opset, has been replaced with ``torch.ops.aten.permute.default`` which is part
+# of the Core ATen Opset.
+
+######################################################################
+# Most ATen operators already have decompositions, which are located
+# `here <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py>`__.
+# If you would like to use some of these existing decomposition functions,
+# you can pass in a list of operators you would like to decompose to the
+# :func:`get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
+# function, which will return a decomposition table using the pre-implemented
+# decompositions.
+
+class M(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = torch.nn.Linear(3, 4)
+
+    def forward(self, x):
+        return self.linear(x)
+
+ep = export(M(), (torch.randn(2, 3),))
+print(ep.graph)
+
+from torch._decomp import get_decompositions
+decomp_table = get_decompositions([torch.ops.aten.t.default, torch.ops.aten.transpose.int])
+core_ir_ep = ep.run_decompositions(decomp_table)
+print(core_ir_ep.graph)
+
+######################################################################
+# If there is no existing decomposition function for an ATen operator that you would
+# like to decompose, feel free to send a pull request into PyTorch
+# implementing the decomposition!
 
 ######################################################################
 # ExportDB
