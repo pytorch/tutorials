@@ -1,6 +1,6 @@
 torch.export Nightly Tutorial
 =============================
-**Author:** William Wen, Zhengxu Chen
+**Author:** William Wen, Zhengxu Chen, Angela Yi
 
 
 .. warning::
