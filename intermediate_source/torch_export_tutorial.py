@@ -104,6 +104,48 @@ print(exported_mod.graph_module)
 print(exported_mod.graph_signature)
 
 ######################################################################
+The graph produced by ``torch.export`` by default returns a graph containing
+only functional ATen operators. This operator set (or "opset") is around 2000 operators, and 
+contains only functional operators (operators that do not mutate or alias inputs).
+You can find a list of all ATen operators 
+`here <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml>`__
+and you can inspect if an operator is function by checking ``op._schema.is_mutable``.
+
+However, if your specific environment is unable to support all ~2000 of these operators,
+and you would like to reduce the operator set to a specific set of operators for your environment,
+you can utilize the following API on the exported program:
+
+.. code:: python
+
+    def run_decompositions(
+        self: ExportedProgram, 
+        decomposition_table: Optional[Dict[torch._ops.OperatorBase, Callable]]
+    ) -> ExportedProgram
+
+``run_decompositions`` takes in a decomposition table which is a mapping of operators
+to a function specifying how to reduce, or decompose, that operator into an equivalent sequence
+of other ATen operators.
+
+A given decomposition table is the 
+`Core ATen decomposition table <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L252>`__
+which will decompose the all ATen operators to the 
+`Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__
+which consists of only ~180 operators. By default, if no decomposition table is passed to 
+``run_decompositions``, this function will decompose the given ExportedProgram to the 
+Core ATen Operator Set. 
+
+A set of decompositions is already implemented for most ATen operators in the PyTorch codebase,
+which are located
+`here <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py>`__. 
+If you would like to use these existing decomposition function instead of writing your own, 
+you can pass in a list of operators you would like to decompose to the
+`get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__ 
+function, and it will return a decomposition table using the pre-implemented decompositions. 
+
+If there is no exisitng decomposition function for an ATen operator you would like to decompose, feel free
+to send a pull request into PyTorch implementing the decomposition!
+
+######################################################################
 # See the ``torch.export`` `documentation <https://pytorch.org/docs/main/export.html#torch.export.export>`__
 # for more details.
 
