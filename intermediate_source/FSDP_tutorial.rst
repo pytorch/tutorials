@@ -8,7 +8,7 @@ Getting Started with Fully Sharded Data Parallel(FSDP)
 
 Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. 
 It also comes with considerable engineering complexity to handle the training of these very large models.
-`Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
+`PyTorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
 
 In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
 `GPT 3 models up to 1T parameters <https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
@@ -18,7 +18,7 @@ How FSDP works
 --------------
 In `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__, (DDP) training, each process/ worker owns a replica of the model and processes a batch of data, finally it uses all-reduce to sum up gradients over different workers. In DDP the model weights and optimizer states are replicated across all workers. FSDP is a type of data parallelism that shards model parameters, optimizer states and gradients across DDP ranks. 
 
-FSDP GPU memory footprint would be smaller than DDP across all workers. This makes the training of some very large models feasible and helps to fit larger models or batch sizes for our training job. This would come with the cost of increased communication volume. The communication overhead is reduced by internal optimizations like communication and computation overlapping.
+When training with FSDP, the GPU memory footprint is smaller than when training with DDP across all workers. This makes the training of some very large models feasible by allowing larger models or batch sizes to fit on device. This comes with the cost of increased communication volume. The communication overhead is reduced by internal optimizations like overlapping communication and computation.
 
 .. figure:: /_static/img/distributed/fsdp_workflow.png
    :width: 100%
@@ -27,7 +27,7 @@ FSDP GPU memory footprint would be smaller than DDP across all workers. This mak
 
    FSDP Workflow
 
-At high level FSDP works as follow:
+At a high level FSDP works as follow:
 
 *In constructor*
 
@@ -48,11 +48,11 @@ At high level FSDP works as follow:
 
 How to use FSDP
 --------------
-Here we use a toy model to run training on MNIST dataset for demonstration purposes. Similarly the APIs and logic can be applied to larger models for training. 
+Here we use a toy model to run training on the MNIST dataset for demonstration purposes. The APIs and logic can be applied to training larger models as well. 
 
 *Setup*
 
-1.1 Install Pytorch along with Torchvision
+1.1 Install PyTorch along with Torchvision
 
 .. code-block:: bash 
 
@@ -139,7 +139,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             output = F.log_softmax(x, dim=1)
             return output
 
-2.2 define a train function 
+2.2 Define a train function 
 
 .. code-block:: python
 
@@ -189,7 +189,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 2.4 Define a distributed train function that wraps the model in FSDP
 
-**Note: to save the FSDP model, we need to call the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.**
+**Note: to save the FSDP model, we need to call the state_dict on each rank then on Rank 0 save the overall states. This is only available in PyTorch nightlies, current PyTorch release is 1.11 at the moment.**
 
 .. code-block:: python
 
@@ -319,7 +319,7 @@ Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will di
     )
  )
 
-Following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler. 
+Following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch Profiler. 
 
 
 .. figure:: /_static/img/distributed/FSDP_memory.gif
@@ -381,7 +381,7 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
 
     CUDA event elapsed time on training loop 41.89130859375sec
 
-Following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler. 
+The following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch Profiler. 
 It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.
 
 .. figure:: /_static/img/distributed/FSDP_autowrap.gif
@@ -423,7 +423,7 @@ Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving th
 
     CUDA event elapsed time on training loop 39.77766015625sec
 
-Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch profiler. 
+Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch profiler. 
 
 .. figure:: /_static/img/distributed/DDP_memory.gif
    :width: 100%
