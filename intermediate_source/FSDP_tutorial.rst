@@ -250,7 +250,6 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         if args.save_model:
             # use a barrier to make sure training is done on all ranks
             dist.barrier()
-            # state_dict for FSDP model is only available on Nightlies for now
             states = model.state_dict()
             if rank == 0:
                 torch.save(states, "mnist_cnn.pt")
@@ -259,7 +258,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 
 
-2.5 Finally parsing the arguments and setting the main function
+2.5 Finally parse the arguments and set the main function
 
 .. code-block:: python
 
@@ -319,7 +318,7 @@ Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will di
     )
  )
 
-Following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch Profiler. 
+The following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch Profiler. 
 
 
 .. figure:: /_static/img/distributed/FSDP_memory.gif
@@ -329,7 +328,7 @@ Following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AW
 
    FSDP Peak Memory Usage
 
-*Applying fsdp_auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
+Applying *fsdp_auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
 The way it works is that, suppose your model contains 100 Linear layers. If you do FSDP(model), there will only be one FSDP unit which wraps the entire model. 
 In that case, the allgather would collect the full parameters for all 100 linear layers, and hence won't save CUDA memory for parameter sharding.
 Also, there is only one blocking allgather call for the all 100 linear layers, there will not be communication and computation overlapping between layers. 
@@ -354,7 +353,7 @@ Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning
     model = FSDP(model,
         fsdp_auto_wrap_policy=my_auto_wrap_policy)
 
-Applying the FSDP_auto_wrap_policy, the model would be as follows:
+Applying the fsdp_auto_wrap_policy, the model would be as follows:
 
 .. code-block:: bash
 
@@ -381,7 +380,7 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
 
     CUDA event elapsed time on training loop 41.89130859375sec
 
-The following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch Profiler. 
+The following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on a g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch Profiler. 
 It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.
 
 .. figure:: /_static/img/distributed/FSDP_autowrap.gif
@@ -391,11 +390,11 @@ It can be observed that the peak memory usage on each device is smaller compared
 
    FSDP Peak Memory Usage using Auto_wrap policy
 
-*CPU Off-loading*: In case the model is very large that even with FSDP wouldn't fit into gpus, then CPU offload can be helpful here. 
+*CPU Off-loading*: In case the model is very large that even with FSDP wouldn't fit into GPUs, then CPU offload can be helpful here. 
 
 Currently, only parameter and gradient CPU offload is supported. It can be enabled via passing in cpu_offload=CPUOffload(offload_params=True).
 
-Note that this currently implicitly enables gradient offloading to CPU in order for params and grads to be on the same device to work with the optimizer. This API is subject to change. Default is None in which case there will be no offloading.
+Note that this currently implicitly enables gradient offloading to CPU in order for params and grads to be on the same device to work with the optimizer. This API is subject to change. The default is None in which case there will be no offloading.
 
 Using this feature may slow down the training considerably, due to frequent copying of tensors from host to device, but it could help improve memory efficiency and train larger scale models. 
 
@@ -409,7 +408,7 @@ In 2.4 we just add it to the FSDP wrapper
         cpu_offload=CPUOffload(offload_params=True))
 
 
-Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving the changes in “DDP_mnist.py”.
+Compare it with DDP, if in 2.4 we just normally wrap the model in DPP, saving the changes in “DDP_mnist.py”.
 
 .. code-block:: python
 
@@ -423,7 +422,7 @@ Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving th
 
     CUDA event elapsed time on training loop 39.77766015625sec
 
-Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from PyTorch profiler. 
+The following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch profiler. 
 
 .. figure:: /_static/img/distributed/DDP_memory.gif
    :width: 100%
@@ -434,8 +433,8 @@ Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS
 
 
 Considering the toy example and tiny MNIST model we defined here, we can observe the difference between peak memory usage of DDP and FSDP. 
-In DDP each process holds a replica of the model, so the memory footprint is higher compared to FSDP that shards the model parameter, optimizer states and gradients over DDP ranks.
+In DDP each process holds a replica of the model, so the memory footprint is higher compared to FSDP which shards the model parameters, optimizer states and gradients over DDP ranks.
 The peak memory usage using FSDP with auto_wrap policy is the lowest followed by FSDP and DDP. 
 
-Also, looking at timings, considering the small model and running the training on a single machine, FSDP with/out auto_wrap policy performed almost as fast as DDP.
+Also, looking at timings, considering the small model and running the training on a single machine, FSDP with and without auto_wrap policy performed almost as fast as DDP.
 This example does not represent most of the real applications, for detailed analysis and comparison between DDP and FSDP please refer to this `blog post  <https://pytorch.medium.com/6c8da2be180d>`__ .
