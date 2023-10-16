@@ -385,7 +385,7 @@ Example::
       name_node_map["conv"].meta["quantization_annotation"] = ...
       name_node_map["relu"].meta["quantization_annotation"] = ...
 
-This should be easier to use than the original ``SubgraphMatcher``, however, it may not work if some of the operators are captured as multiple ops, e.g. if ``torch.nn.functional.conv2d`` is captured as multiple ops, then the inputs ``x``, ``weight``, ``bias`` may not be the direct inputs to the final operator marked by ``conv``, in this case we'll need to revert to the same way of access mentioned in the previous example.
+This should be easier to use than the original ``SubgraphMatcher`` around finding the node we want to annotate or use. However, it may not work if some of the operators are captured as multiple ops. For example, if ``torch.nn.functional.conv2d`` is captured as multiple ops, then the inputs ``x``, ``weight``, ``bias`` may not be the direct inputs to the final operator marked by ``conv``, in this case we'll need to revert to the same way of access mentioned in the previous example.
 
 Example::
 
