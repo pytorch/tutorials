@@ -546,7 +546,7 @@ print(core_ir_ep.graph)
 # `here <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py>`__.
 # If you would like to use some of these existing decomposition functions,
 # you can pass in a list of operators you would like to decompose to the
-# :func:`get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
+# `get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
 # function, which will return a decomposition table using the pre-implemented
 # decompositions.
 
