@@ -304,7 +304,7 @@ functions that are used in the example:
 
 A Note on IR for PT2E Quantization Flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-IR means the intermediate representation of the model, for example, ``torch`` IR (``torch.nn`` modules, ``torch.nn.functional`` ops) or ``aten`` IR (``torch.ops.aten.linear``, ...). PT2E Quantization Flow is using pre autograd aten IR (the output of `torch.export` API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can do annotations on them, So the question is how do we match the pattern?
+IR means the intermediate representation of the model, for example, ``torch`` IR (``torch.nn`` modules, ``torch.nn.functional`` ops) or ``aten`` IR (``torch.ops.aten.linear``, ...). PT2E Quantization Flow is using pre autograd aten IR (the output of `torch.export` API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can attach annotations on them, So the question is how do we match the pattern?
 
 1. Matching ``aten`` IR directly
 ------------------------------------
@@ -363,7 +363,7 @@ With this, the ``Quantizer`` will still be valid even when the implementation fo
 One caveat is that if inputs of the pattern has multiple users, we don't have a good way to identify which user node we want to annotate except for checking the aten op target.
 
 Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible ``aten`` IR outcomes captured from the ``torch`` IR pattern.
-      
+
 3. Using ``SubgraphMatcherWithNameNodeMap``
 ----------------------------------------------
 We also introduced a different SubgraphMatcher util called ``SubgraphMatcherWithNameNodeMap`` to make it easier to query the nodes that people want to annotate.
@@ -400,7 +400,15 @@ Example::
       ...
 
 
-Similar to ``SubgraphMatcher``, we also need to make sure to capture the PyTorch pattern with different example inputs to cover all possible ``aten`` IR variants.      
+Similar to ``SubgraphMatcher``, we also need to make sure to capture the PyTorch pattern with different example inputs to cover all possible ``aten`` IR variants.
+
+4. General Recommentation
+----------------------------------------------
+Given the above UX and constraints/caveats, we recommend people to start with option 3. and make sure the first operator in the pattern are functional ops that map to one aten op (e.g. F.conv2d, F.linear), and provide enough variants of example inputs. (We may provide some (pattern, list of example_inputs) so people can just use them directly in the future)
+
+If people are uncertain if some functional operator is going to be traced into multiple aten operators then they can pick option 2.
+
+We would not recommend option 1. since that's the least stable in all three options.
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^
