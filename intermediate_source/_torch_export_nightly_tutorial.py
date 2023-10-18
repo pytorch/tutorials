@@ -33,7 +33,7 @@ torch.export Nightly Tutorial
 #
 # ``torch.export`` extracts single-graph representations from PyTorch programs
 # by tracing the target function, given example inputs.
-# ``torch.export.export()`` is the main entrypoint for ``torch.export``.
+# ``torch.export.export()`` is the main entry point for ``torch.export``.
 #
 # In this tutorial, ``torch.export`` and ``torch.export.export()`` are practically synonymous,
 # though ``torch.export`` generally refers to the PyTorch 2.X export process, and ``torch.export.export()``
@@ -547,8 +547,8 @@ print(core_ir_ep.graph)
 # If you would like to use some of these existing decomposition functions,
 # you can pass in a list of operators you would like to decompose to the
 # `get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
-# function, which will return a decomposition table using the pre-implemented
-# decompositions.
+# function, which will return a decomposition table using existing
+# decomposition implementations.
 
 class M(torch.nn.Module):
     def __init__(self):
