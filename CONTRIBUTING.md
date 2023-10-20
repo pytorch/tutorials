@@ -27,7 +27,7 @@ issue.
 
 # Contributor License Agreement ("CLA")
 
-In order to accept a pull request, you need to submit a CLA. You only
+In order to submit a pull request, you need to submit a CLA. You only
 need to do this once and you will be able to work on all of Facebook's
 open source projects, not just PyTorch.
 
@@ -43,8 +43,11 @@ this source tree.
 
 # Updates to existing tutorials
 
-We welcome your pull requests (PR) for updates and fixes.
+At a high level, here is the process for submitting a PR for a fix or
+other update.
 
+1. For fixes, please ensure that the bug that you are fixing is being
+   tracked as a GitHub Issue in the `pytorch/tutorials` repository.
 1. If you haven't already, complete the Contributor License Agreement
    ("CLA").
 1. Fork the repo and create a branch from
@@ -78,6 +81,22 @@ There are three types of tutorial content that we host on
   examples of how to use specific features, which differentiates them
   from full-length tutorials. Recipes can be interactive or
   non-interactive.
+
+
+## Interactive (notebook) vs Non-interactive (reStructuredText) ##
+
+We prefer interactive (notebook) based tutorials for PyTorch. Their
+interactive nature enhances their pedagogical value. Also, because these
+tutorials are run when they are built, it is easier to verify that they
+are still working correctly as PyTorch (or dependent libraries) are
+periodically updated.
+
+All that said, there are circumstances in which reStructuredText
+tutorials are indicated. For example, if the tutorial has special
+hardware requirements, such as needing multiple GPUs, which would not be
+supported on common workstations--or on Google Colab. Another example,
+would be if the tutorial required a language, such as C++, that wasn't
+supported in Jupyter notebooks.
 
 
 # Managing data that is used by your tutorial 
@@ -114,8 +133,8 @@ situations, resolving the breaking issue would normally be sufficient to
 make the tutorial available again.
 
 Another situation in which a tutorial might be deprecated is if it
-consistently receives low ratings--or low usage--by the community. Again,
-if this occurs, we will attempt to contact you.
+consistently receives low ratings--or low usage--by the community.
+Again, if this occurs, we will attempt to contact you.
 
 If we identify, or suspect, that your tutorial--or a package that your
 tutorial uses--has a **security or privacy** issue, we will immediately
@@ -149,8 +168,9 @@ objectives will help to eliminate extraneous information.
 ## Learning objectives ##
 
 To create the learning objectives, focus on what the user will
-implement. Set expectations by explicitly stating what the recipe will
-cover and what users will implement by the end. Here are some examples:
+implement. Set expectations by explicitly stating what the tutorial or
+recipe will cover and what users will implement by the end. Here are
+some examples:
 
 - Create a custom dataset
 - Integrate a dataset using a library
@@ -291,10 +311,10 @@ example, if the tutorial is in `beginner_source`, the link will be
 ### Tags ###
 
 Choose tags from the existing tags in the file. Reach out to a project
-maintainer to create a new tag. The list of tags should not have any
-white space between the words. Multi-word tags, such as “Getting
-Started”, should be hyphenated: Getting-Started. Otherwise, the tutorial
-might fail to build, and the cards will not display properly.
+maintainer to create a new tag. The tags should not have any white space
+between the words. Multi-word tags, such as “Getting Started”, should be
+hyphenated: "Getting-Started". Otherwise, the tutorial might fail to
+build, and the cards will not display properly.
 
 
 ### Image ###
@@ -333,10 +353,11 @@ The following command builds an HTML version of the tutorial website.
     ```
 
 This command does not run your tutorial code. To build the tutorial in a
-way that executes the code, use `make docs`. However, unless you have a
-GPU-powered machine and a proper PyTorch CUDA setup, running this `make`
-command locally won't work. The continuous integration (CI) system will
-test your tutorial when you submit your PR.
+way that executes the code, use you could use `make docs`. However,
+unless you have a GPU-powered machine and a proper PyTorch CUDA setup,
+running this `make` command locally won't work. A more practical
+alternative might be to let the continuous integration (CI) system test
+your tutorial when you submit your PR. (See below.)
 
 
 ## Submit the PR ##
@@ -360,10 +381,13 @@ Submit the changes as a PR to the main branch of
 1. Address all feedback comments from your reviewers.
 1. Make sure all CI checks are passing.
 
-Once you submit your PR, you can see a generated Netlify preview of your
-build. You can see an example Netlify preview at the following URL:
 
->  <https://deploy-preview-954--pytorch-tutorials-preview.netlify.app/>
+## Previewing your docs ##
+
+The CI system on GitHub generates a preview build of the tutorials that
+includes your changes. The **pytorch-bot** will post on the page for
+your PR with a link to the preview. If the CI checks have completed, and
+you still don't see the link, try refreshing the page.
 
 
 ## Do not merge the PR yourself ##
