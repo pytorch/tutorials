@@ -306,8 +306,8 @@ A Note on IR for PT2E Quantization Flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 IR means the intermediate representation of the model, for example, ``torch`` IR (``torch.nn`` modules, ``torch.nn.functional`` ops) or ``aten`` IR (``torch.ops.aten.linear``, ...). PT2E Quantization Flow is using pre autograd aten IR (the output of `torch.export` API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can attach annotations on them, So the question is how do we match the pattern?
 
-1. Matching ``aten`` IR directly
-------------------------------------
+Motivation: Problem of Matching ``aten`` IR directly
+--------------------------------------------------------
 
 The most straightforward way might be matching ``aten`` IR directly.
 
@@ -337,44 +337,17 @@ Example::
 
 However one problem for using this IR is that the representation might change if the PyTorch implementation for modules or functional ops changed. But this could be unexpected since modeling users typically assume that when the eager mode model code doesn't change, they should get the same model representation after program capture as well. One concrete effect for this problem is that if a ``Quantizer`` do annotations based on recognizing ``aten`` IR patterns, then it may fail to recognzing the pattern after PyTorch version update, and the same eager mode floating point may be left unquantized.
 
-2. Using ``SubgraphMatcher``
---------------------------------
-Because of this, we recommend people to recognize the pattern through ``SubgraphMatcher``, through capturing a ``torch`` IR pattern (with the same program capture used for capturing the floating point model), instead of using the ``aten`` IR pattern directly.
+Recommendation: Use ``SubgraphMatcherWithNameNodeMap`` for pattern matching
+-----------------------------------------------------------------------------
+Because of this, we recommend people to recognize the pattern through ``SubgraphMatcherWithNameNodeMap`` (an improved version of ``SubgraphMatcher`` that makes it easier to query the nodes that people want to annotate), through capturing a ``torch`` IR pattern (with the same program capture used for capturing the floating point model), instead of using the ``aten`` IR pattern directly.
 
 Example::
 
-  def conv_relu_pattern(x, weight, bias):
-      conv = torch.nn.functional.conv2d(x, weight, bias)
-      relu = torch.nn.functional.relu(conv)
-      return relu
-
-  matcher = SubgraphMatcher(conv_relu_pattern)
-  matches = matcher.match(model)
-  for match in matches:
-      # find input and output of the pattern
-      # annotate the nodes
-      inputs, output = _find_input_and_output(match)
-      inputs[0].users[0].meta["quantization_annotation"] = ...
-      inputs[1].users[0].meta["quantization_annotation"] = ...
-      output.meta["quantization_annotation"] = ...
-
-With this, the ``Quantizer`` will still be valid even when the implementation for nn modules and functionals changes, the ``aten`` IR for floating point model will change, but since we capture the pattern again instead of hardcoding the ``aten`` IR for the pattern, we'll get the updated ``aten`` IR as well and will still be able to match the pattern.
-
-One caveat is that if inputs of the pattern has multiple users, we don't have a good way to identify which user node we want to annotate except for checking the aten op target.
-
-Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible ``aten`` IR outcomes captured from the ``torch`` IR pattern.
-
-3. Using ``SubgraphMatcherWithNameNodeMap``
-----------------------------------------------
-We also introduced a different SubgraphMatcher util called ``SubgraphMatcherWithNameNodeMap`` to make it easier to query the nodes that people want to annotate.
-
-Example::
-  
-  def conv_relu_pattern(x, weight, bias):
-      conv = torch.nn.functional.conv2d(x, weight, bias)
-      relu = torch.nn.functional.relu(conv)
+  def conv_relu_pattern(input, weight, bias):
+      conv = torch.nn.functional.conv2d(input, weight, bias)
+      output = torch.nn.functional.relu(conv)
       # returns an additional dict that includes a map from name to node that we want to annotate
-      return relu, {"conv": conv, "relu": relu, "x": x, "weight": weight, "bias": bias}
+      return relu, {"input": input, "weight": weight, "bias": bias, "output": output}
 
   matcher = SubgraphMatcherWithNameNodeMap(conv_relu_pattern)
   matches = matcher.match(model)
@@ -382,33 +355,22 @@ Example::
       # find input and output of the pattern
       # annotate the nodes
       name_node_map = match.name_node_map
-      name_node_map["conv"].meta["quantization_annotation"] = ...
-      name_node_map["relu"].meta["quantization_annotation"] = ...
+      input_node = name_node_map["input"]
+      weight_node = name_node_map["weight"]
+      bias_node = name_node_map["bias"]
+      output_node = name_node_map["relu"]
+      input_node.users[0].meta["quantization_annotation"] = ...
+      weight_node.users[0].meta["quantization_annotation"] = ...
+      bias_node.users[0].meta["quantization_annotation"] = ...
+      output_node.meta["quantization_annotation"] = ...
 
-This should be easier to use than the original ``SubgraphMatcher`` around finding the node we want to annotate or use. However, it may not work if some of the operators are captured as multiple ops. For example, if ``torch.nn.functional.conv2d`` is captured as multiple ops, then the inputs ``x``, ``weight``, ``bias`` may not be the direct inputs to the final operator marked by ``conv``, in this case we'll need to revert to the same way of access mentioned in the previous example.
+With this, the ``Quantizer`` will still be valid even when the implementation for nn modules and functionals changes, the ``aten`` IR for floating point model will change, but since we capture the pattern again instead of hardcoding the ``aten`` IR for the pattern, we'll get the updated ``aten`` IR as well and will still be able to match the pattern.
 
-Example::
+One caveat is that if inputs of the pattern has multiple users, we don't have a good way to identify which user node we want to annotate except for checking the aten op target.
 
-  for match in matches:
-      # find input and output of the pattern
-      # annotate the nodes
-      name_node_map = match.name_node_map
-      input_x = name_node_map["x"]
-      # since input_x may not be the input of name_node_map["conv"]
-      # we'll get the user nodes of this op and annotate that instead
-      input_x.users[0].meta["quantization_annotation"] = ...
-      ...
+Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible ``aten`` IR outcomes captured from the ``torch`` IR pattern.
 
-
-Similar to ``SubgraphMatcher``, we also need to make sure to capture the PyTorch pattern with different example inputs to cover all possible ``aten`` IR variants.
-
-4. General Recommentation
-----------------------------------------------
-Given the above UX and constraints/caveats, we recommend people to start with option 3. and make sure the first operator in the pattern are functional ops that map to one aten op (e.g. F.conv2d, F.linear), and provide enough variants of example inputs. (We may provide some (pattern, list of example_inputs) so people can just use them directly in the future)
-
-If people are uncertain if some functional operator is going to be traced into multiple aten operators then they can pick option 2.
-
-We would not recommend option 1. since that's the least stable in all three options.
+Note: We may provide some (pattern, list of example_inputs) or some pre-generated matcher object so people can just use them directly in the future.
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^
