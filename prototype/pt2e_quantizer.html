@@ -817,6 +817,70 @@ can be used to get the <code class="docutils literal notranslate"><span class="p
 </ul>
 </div>
 </div>
+<div class="section" id="a-note-on-ir-for-pt2e-quantization-flow">
+<h2>A Note on IR for PT2E Quantization Flow<a class="headerlink" href="#a-note-on-ir-for-pt2e-quantization-flow" title="Permalink to this heading">¶</a></h2>
+<p>IR means the intermediate representation of the model, for example, <code class="docutils literal notranslate"><span class="pre">torch</span></code> IR (<code class="docutils literal notranslate"><span class="pre">torch.nn</span></code> modules, <code class="docutils literal notranslate"><span class="pre">torch.nn.functional</span></code> ops) or <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR (<code class="docutils literal notranslate"><span class="pre">torch.ops.aten.linear</span></code>, …). PT2E Quantization Flow is using pre autograd aten IR (the output of <cite>torch.export</cite> API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can attach annotations on them, So the question is how do we match the pattern?</p>
+<div class="section" id="motivation-problem-of-matching-aten-ir-directly">
+<h3>Motivation: Problem of Matching <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR directly<a class="headerlink" href="#motivation-problem-of-matching-aten-ir-directly" title="Permalink to this heading">¶</a></h3>
+<p>The most straightforward way might be matching <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR directly.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">gm</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">op</span> <span class="o">!=</span> <span class="s2">&quot;call_function&quot;</span> <span class="ow">or</span> <span class="n">n</span><span class="o">.</span><span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+          <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">relu</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+          <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">relu_</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+      <span class="p">]:</span>
+          <span class="k">continue</span>
+      <span class="n">relu_node</span> <span class="o">=</span> <span class="n">n</span>
+      <span class="n">maybe_conv_node</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+      <span class="k">if</span> <span class="p">(</span>
+          <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maybe_conv_node</span><span class="p">,</span> <span class="n">Node</span><span class="p">)</span>
+          <span class="ow">or</span> <span class="n">maybe_conv_node</span><span class="o">.</span><span class="n">op</span> <span class="o">!=</span> <span class="s2">&quot;call_function&quot;</span>
+          <span class="ow">or</span> <span class="n">maybe_conv_node</span><span class="o">.</span><span class="n">target</span>
+          <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+              <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">conv1d</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+              <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">conv2d</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+          <span class="p">]</span>
+      <span class="p">):</span>
+          <span class="k">continue</span>
+
+      <span class="c1"># annotate conv and relu nodes</span>
+      <span class="o">...</span>
+</pre></div>
+</div>
+<p>However one problem for using this IR is that the representation might change if the PyTorch implementation for modules or functional ops changed. But this could be unexpected since modeling users typically assume that when the eager mode model code doesn’t change, they should get the same model representation after program capture as well. One concrete effect for this problem is that if a <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> do annotations based on recognizing <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR patterns, then it may fail to recognzing the pattern after PyTorch version update, and the same eager mode floating point may be left unquantized.</p>
+</div>
+<div class="section" id="recommendation-use-subgraphmatcherwithnamenodemap-for-pattern-matching">
+<h3>Recommendation: Use <code class="docutils literal notranslate"><span class="pre">SubgraphMatcherWithNameNodeMap</span></code> for pattern matching<a class="headerlink" href="#recommendation-use-subgraphmatcherwithnamenodemap-for-pattern-matching" title="Permalink to this heading">¶</a></h3>
+<p>Because of this, we recommend people to recognize the pattern through <code class="docutils literal notranslate"><span class="pre">SubgraphMatcherWithNameNodeMap</span></code> (an improved version of <code class="docutils literal notranslate"><span class="pre">SubgraphMatcher</span></code> that makes it easier to query the nodes that people want to annotate), through capturing a <code class="docutils literal notranslate"><span class="pre">torch</span></code> IR pattern (with the same program capture used for capturing the floating point model), instead of using the <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR pattern directly.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">conv_relu_pattern</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
+    <span class="c1"># returns an additional dict that includes a map from name to node that we want to annotate</span>
+    <span class="k">return</span> <span class="n">relu</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="n">weight</span><span class="p">,</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span> <span class="n">bias</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">}</span>
+
+<span class="n">matcher</span> <span class="o">=</span> <span class="n">SubgraphMatcherWithNameNodeMap</span><span class="p">(</span><span class="n">conv_relu_pattern</span><span class="p">)</span>
+<span class="n">matches</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+    <span class="c1"># find input and output of the pattern</span>
+    <span class="c1"># annotate the nodes</span>
+    <span class="n">name_node_map</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">name_node_map</span>
+    <span class="n">input_node</span> <span class="o">=</span> <span class="n">name_node_map</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span>
+    <span class="n">weight_node</span> <span class="o">=</span> <span class="n">name_node_map</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+    <span class="n">bias_node</span> <span class="o">=</span> <span class="n">name_node_map</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">]</span>
+    <span class="n">output_node</span> <span class="o">=</span> <span class="n">name_node_map</span><span class="p">[</span><span class="s2">&quot;relu&quot;</span><span class="p">]</span>
+    <span class="n">input_node</span><span class="o">.</span><span class="n">users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;quantization_annotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="n">weight_node</span><span class="o">.</span><span class="n">users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;quantization_annotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="n">bias_node</span><span class="o">.</span><span class="n">users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;quantization_annotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="n">output_node</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;quantization_annotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>With this, the <code class="docutils literal notranslate"><span class="pre">Quantizer</span></code> will still be valid even when the implementation for nn modules and functionals changes, the <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR for floating point model will change, but since we capture the pattern again instead of hardcoding the <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR for the pattern, we’ll get the updated <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR as well and will still be able to match the pattern.</p>
+<p>One caveat is that if inputs of the pattern has multiple users, we don’t have a good way to identify which user node we want to annotate except for checking the aten op target.</p>
+<p>Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR outcomes captured from the <code class="docutils literal notranslate"><span class="pre">torch</span></code> IR pattern.</p>
+<p>Note: We may provide some (pattern, list of example_inputs) or some pre-generated matcher object so people can just use them directly in the future.</p>
+</div>
+</div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>With this tutorial, we introduce the new quantization path in PyTorch 2. Users can learn about
@@ -887,6 +951,11 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#annotate-operators-with-fixed-quantization-parameters">3. Annotate Operators with Fixed Quantization Parameters</a></li>
 <li><a class="reference internal" href="#annotate-tensors-with-derived-quantization-parameters">4. Annotate Tensors with Derived Quantization Parameters</a></li>
 <li><a class="reference internal" href="#a-toy-example-with-resnet18">5. A Toy Example with Resnet18</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#a-note-on-ir-for-pt2e-quantization-flow">A Note on IR for PT2E Quantization Flow</a><ul>
+<li><a class="reference internal" href="#motivation-problem-of-matching-aten-ir-directly">Motivation: Problem of Matching <code class="docutils literal notranslate"><span class="pre">aten</span></code> IR directly</a></li>
+<li><a class="reference internal" href="#recommendation-use-subgraphmatcherwithnamenodemap-for-pattern-matching">Recommendation: Use <code class="docutils literal notranslate"><span class="pre">SubgraphMatcherWithNameNodeMap</span></code> for pattern matching</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
