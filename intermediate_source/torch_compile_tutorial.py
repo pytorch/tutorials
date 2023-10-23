@@ -54,7 +54,7 @@ if not gpu_ok:
 # Basic Usage
 # ------------
 #
-# ``torch.compile`` is included in the latest PyTorch..
+# ``torch.compile`` is included in the latest PyTorch.
 # Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
 # binary. If Triton is still missing, try installing ``torchtriton`` via pip
 # (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
