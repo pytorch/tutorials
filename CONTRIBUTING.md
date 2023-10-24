@@ -86,10 +86,10 @@ There are three types of tutorial content that we host on
 ## Interactive (notebook) vs Non-interactive (reStructuredText) ##
 
 We prefer interactive (notebook) based tutorials for PyTorch. Their
-interactive nature enhances their pedagogical value. Also, because these
-tutorials are run when they are built, it is easier to verify that they
-are still working correctly as PyTorch (or dependent libraries) are
-periodically updated.
+interactive nature makes it easier for our users to learn PyTorch.
+Also, because these tutorials are run when they are built, it is easier
+to verify that they are still working correctly as PyTorch (or dependent
+libraries) are periodically updated.
 
 All that said, there are circumstances in which reStructuredText
 tutorials are indicated. For example, if the tutorial has special
@@ -249,8 +249,8 @@ as a guide.
 
 Submit your tutorial as either a Python (`.py`) file or a
 reStructuredText (`.rst`) file. For Python files, the filename for your
-tutorial should end in "`_tutorial.py`"; for example,
-"`cool_pytorch_feature_tutorial.py`". 
+tutorial should end in `_tutorial.py`; for example,
+`cool_pytorch_feature_tutorial.py`. 
 
 Do not submit a Jupyter notebook. If you develop your tutorial in
 Jupyter, you'll need to convert it to Python. This
@@ -385,9 +385,17 @@ Submit the changes as a PR to the main branch of
 ## Previewing your docs ##
 
 The CI system on GitHub generates a preview build of the tutorials that
-includes your changes. The **pytorch-bot** will post on the page for
-your PR with a link to the preview. If the CI checks have completed, and
-you still don't see the link, try refreshing the page.
+includes your changes. 
+
+Your PR will be available at
+
+```
+https://docs-preview.pytorch.org/pytorch/tutorials/<PR-number>/index.html
+```
+
+The **pytorch-bot** will post on the page for your PR with a link to the
+preview. If the CI checks have completed, and you still don't see the
+link, try refreshing the page.
 
 
 ## Do not merge the PR yourself ##
