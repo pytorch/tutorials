@@ -378,7 +378,7 @@ print(d)
 #
 # -  The multiplication operation that created ``b`` was 
 #    broadcast over every “layer” of ``a``.
-# -  For ``c``, the operation was broadcast over ever layer and row of
+# -  For ``c``, the operation was broadcast over every layer and row of
 #    ``a`` - every 3-element column is identical. 
 # -  For ``d``, we switched it around - now every *row* is identical,
 #    across layers and columns.
