@@ -315,6 +315,7 @@ Now that those are defined, we just need one additional helper function, which w
 We will get started by loading our model and tokenizer, and then setting up our dataset.
 
 .. code:: python
+
     # load model
     model_name = "bert-base-cased"
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
@@ -344,6 +345,7 @@ Running the following code gives me an F1 score of 86.9. This is quite close to 
     training_args = transformers.TrainingArguments(
         "trainer",
         num_train_epochs=1,
+        lr_scheduler_type="constant",
         per_device_train_batch_size=64,
         per_device_eval_batch_size=512,
     )
@@ -446,7 +448,7 @@ We will also evaluate the model to show the accuracy degradation of zero-shot pr
         with torch.inference_mode():
             predictions = trainer.predict(tokenized_squad_dataset["validation"])
         pruned = compute_metrics(
-            *predictions.predictions
+            *predictions.predictions,
             tokenized_squad_dataset["validation"],
             squad_dataset["validation"],
         )
@@ -498,7 +500,7 @@ Now that we have a model in this format, we can accelerate it for inference just
     print("sparse eval metrics: ", metrics_sparse)
     sparse_perf = measure_execution_time(
         model,
-        batch_sizes_perf_cuda,
+        batch_sizes,
         tokenized_squad_dataset["validation"],
     )
     print("sparse perf metrics: ", sparse_perf)
