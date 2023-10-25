@@ -54,7 +54,7 @@ if not gpu_ok:
 # Basic Usage
 # ------------
 #
-# ``torch.compile`` is included in the latest PyTorch..
+# ``torch.compile`` is included in the latest PyTorch.
 # Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
 # binary. If Triton is still missing, try installing ``torchtriton`` via pip
 # (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
@@ -138,21 +138,18 @@ def init_model():
 # Note that in the call to ``torch.compile``, we have have the additional
 # ``mode`` argument, which we will discuss below.
 
-def evaluate(mod, inp):
-    with torch.no_grad():
-        return mod(inp)
-
 model = init_model()
 
 # Reset since we are using a different mode.
 import torch._dynamo
 torch._dynamo.reset()
 
-evaluate_opt = torch.compile(evaluate, mode="reduce-overhead")
+model_opt = torch.compile(model, mode="reduce-overhead")
 
 inp = generate_data(16)[0]
-print("eager:", timed(lambda: evaluate(model, inp))[1])
-print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
+with torch.no_grad():
+    print("eager:", timed(lambda: model(inp))[1])
+    print("compile:", timed(lambda: model_opt(inp))[1])
 
 ######################################################################
 # Notice that ``torch.compile`` takes a lot longer to complete
@@ -165,7 +162,8 @@ print("compile:", timed(lambda: evaluate_opt(model, inp))[1])
 eager_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, eager_time = timed(lambda: evaluate(model, inp))
+    with torch.no_grad():
+        _, eager_time = timed(lambda: model(inp))
     eager_times.append(eager_time)
     print(f"eager eval time {i}: {eager_time}")
 
@@ -174,7 +172,8 @@ print("~" * 10)
 compile_times = []
 for i in range(N_ITERS):
     inp = generate_data(16)[0]
-    _, compile_time = timed(lambda: evaluate_opt(model, inp))
+    with torch.no_grad():
+        _, compile_time = timed(lambda: model_opt(inp))
     compile_times.append(compile_time)
     print(f"compile eval time {i}: {compile_time}")
 print("~" * 10)
@@ -183,6 +182,7 @@ import numpy as np
 eager_med = np.median(eager_times)
 compile_med = np.median(compile_times)
 speedup = eager_med / compile_med
+assert(speedup > 1)
 print(f"(eval) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x")
 print("~" * 10)
 
@@ -195,10 +195,14 @@ print("~" * 10)
 # GPU compute and the observed speedup may be less significant.
 #
 # You may also see different speedup results depending on the chosen ``mode``
-# argument. Since our model and data are small, we want to reduce overhead as
-# much as possible, and so we chose ``"reduce-overhead"``. For your own models,
+# argument. The ``"reduce-overhead"`` mode uses CUDA graphs to further reduce
+# the overhead of Python. For your own models,
 # you may need to experiment with different modes to maximize speedup. You can
 # read more about modes `here <https://pytorch.org/get-started/pytorch-2.0/#user-experience>`__.
+#
+# You may might also notice that the second time we run our model with ``torch.compile`` is significantly
+# slower than the other runs, although it is much faster than the first run. This is because the ``"reduce-overhead"``
+# mode runs a few warm-up iterations for CUDA graphs.
 #
 # For general PyTorch benchmarking, you can try using ``torch.utils.benchmark`` instead of the ``timed``
 # function we defined above. We wrote our own timing function in this tutorial to show
@@ -239,6 +243,7 @@ print("~" * 10)
 eager_med = np.median(eager_times)
 compile_med = np.median(compile_times)
 speedup = eager_med / compile_med
+assert(speedup > 1)
 print(f"(train) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x")
 print("~" * 10)
 
@@ -246,6 +251,10 @@ print("~" * 10)
 # Again, we can see that ``torch.compile`` takes longer in the first
 # iteration, as it must compile the model, but in subsequent iterations, we see
 # significant speedups compared to eager.
+#
+# We remark that the speedup numbers presented in this tutorial are for
+# demonstration purposes only. Official speedup values can be seen at the
+# `TorchInductor performance dashboard <https://hud.pytorch.org/benchmark/compilers>`__.
 
 ######################################################################
 # Comparison to TorchScript and FX Tracing
