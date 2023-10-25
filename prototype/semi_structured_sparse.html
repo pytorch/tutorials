@@ -866,11 +866,33 @@ These were adapted from <a class="reference external" href="https://huggingface.
 </pre></div>
 </div>
 <p>We will get started by loading our model and tokenizer, and then setting up our dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load model</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;bert-base-cased&quot;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">AutoModelForQuestionAnswering</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading tokenizer: </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading model: </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># set up train and val dataset</span>
+<span class="n">squad_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;squad&quot;</span><span class="p">)</span>
+<span class="n">tokenized_squad_dataset</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">squad_dataset</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">preprocess_train_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">),</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">preprocess_validation_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">),</span>
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">remove_columns</span><span class="o">=</span><span class="n">squad_dataset</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">data_collator</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">DataCollatorWithPadding</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Next, we’ll train a quick baseline of our model on SQuAD. This task asks our model to identify spans, or segments of text, in a given context (Wikipedia articles) that answer a given question.
 Running the following code gives me an F1 score of 86.9. This is quite close to the reported NVIDIA score and the difference is likely due to BERT-base vs. BERT-large or fine-tuning hyperparams.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">training_args</span> <span class="o">=</span> <span class="n">transformers</span><span class="o">.</span><span class="n">TrainingArguments</span><span class="p">(</span>
     <span class="s2">&quot;trainer&quot;</span><span class="p">,</span>
     <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">lr_scheduler_type</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
     <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
     <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
 <span class="p">)</span>
@@ -965,7 +987,7 @@ The step method calls this <code class="docutils literal notranslate"><span clas
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
         <span class="n">predictions</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">])</span>
     <span class="n">pruned</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">predictions</span><span class="o">.</span><span class="n">predictions</span>
+        <span class="o">*</span><span class="n">predictions</span><span class="o">.</span><span class="n">predictions</span><span class="p">,</span>
         <span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">],</span>
         <span class="n">squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">],</span>
     <span class="p">)</span>
@@ -1014,7 +1036,7 @@ Once we’ve reached a satisfied state, we can call <code class="docutils litera
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sparse eval metrics: &quot;</span><span class="p">,</span> <span class="n">metrics_sparse</span><span class="p">)</span>
 <span class="n">sparse_perf</span> <span class="o">=</span> <span class="n">measure_execution_time</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span>
-    <span class="n">batch_sizes_perf_cuda</span><span class="p">,</span>
+    <span class="n">batch_sizes</span><span class="p">,</span>
     <span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">&quot;validation&quot;</span><span class="p">],</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sparse perf metrics: &quot;</span><span class="p">,</span> <span class="n">sparse_perf</span><span class="p">)</span>
