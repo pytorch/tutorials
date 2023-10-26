@@ -55,7 +55,7 @@ or
 GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 ```
 
-The `GALLERY_PATTERN` variable respects regular expressions. 
+The `GALLERY_PATTERN` variable respects regular expressions.
 
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
