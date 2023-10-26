@@ -124,9 +124,8 @@ from torch._inductor.utils import aot_inductor_launcher
 
 aot_inductor_model_container = torch.utils.cpp_extension.load_inline(
     name="aot_inductor",
-    cpp_sources=[aot_inductor_launcher],
+    cpp_sources=[aot_inductor_launcher(so_path, "cuda")],
     functions=["run"],
-    extra_ldflags=[so_path],
     with_cuda=True,
 )
 
