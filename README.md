@@ -5,7 +5,16 @@ All the tutorials are now presented as sphinx style documentation at:
 
 ## [https://pytorch.org/tutorials](https://pytorch.org/tutorials)
 
+# Asking a question
 
+If you have a question about a tutorial, post in https://dev-discuss.pytorch.org/ rather than creating an issue in this repo. Your question will be answered much faster on dev-discuss forum.
+
+# Submitting an issue
+
+You can submit the following types of issues:
+
+* Feature request - request a new tutorial to be added. Please explain why this tutorial is needed and how it demonstrates PyTorch value
+* Bug report - reporting an failiure or outdated information in the existing tutorial. When submitting a bug report, please run: `python3 -mtorch.utils.collect_env` to get information about your environment.
 
 # Contributing
 
@@ -46,7 +55,7 @@ or
 GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 ```
 
-The `GALLERY_PATTERN` variable respects regular expressions.
+The `GALLERY_PATTERN` variable respects regular expressions. 
 
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
