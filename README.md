@@ -31,7 +31,7 @@ If you are starting off with a Jupyter notebook, you can use [this script](https
 
 ## Building locally
 
-The tutorial build is very large and requires a GPU. If your machine does not have a GPU device, you can preview your HTML build without actually downloading the data and running the tutorial code: 
+The tutorial build is very large and requires a GPU. If your machine does not have a GPU device, you can preview your HTML build without downloading the data and running the tutorial code: 
 
 1. Install required dependencies by running: `pip install -r requirements.txt`.
 
