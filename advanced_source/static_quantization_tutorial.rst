@@ -59,7 +59,7 @@ to enable quantization:
 - Replace ReLU6 with ReLU 
  
 Note: this code is taken from 
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.  
+`here <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv2.py>`_.
 
 .. code:: python
 
