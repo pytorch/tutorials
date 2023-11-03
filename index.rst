@@ -313,13 +313,18 @@ What's new in PyTorch tutorials?
    :tags: Reinforcement-Learning
 
 .. customcarditem::
+   :header: Recurrent DQN
+   :card_description: Use TorchRL to train recurrent policies
+   :image: _static/img/rollout_recurrent.png
+   :link: intermediate/dqn_with_rnn_tutorial.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
    :header: Code a DDPG Loss
    :card_description: Use TorchRL to code a DDPG Loss
    :image: _static/img/half_cheetah.gif
    :link: advanced/coding_ddpg.html
    :tags: Reinforcement-Learning
-
-
 
 .. Deploying PyTorch Models in Production
 
