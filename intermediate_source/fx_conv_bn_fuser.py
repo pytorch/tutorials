@@ -104,7 +104,9 @@ def fuse_conv_bn_eval(conv, bn):
     module `C` such that C(x) == B(A(x)) in inference mode.
     """
     assert(not (conv.training or bn.training)), "Fusion only for eval!"
-    fused_conv = copy.deepcopy(conv)
+    fused_conv = type(conv)(conv.in_channels, conv.out_channels, conv.kernel_size)
+    fused_conv.load_state_dict(conv.state_dict())
+    fused_conv.eval()
 
     fused_conv.weight, fused_conv.bias = \
         fuse_conv_bn_weights(fused_conv.weight, fused_conv.bias,
