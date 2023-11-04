@@ -46,6 +46,15 @@ At a high level FSDP works as follow:
 * Run reduce_scatter to sync gradients
 * Discard parameters. 
 
+The key insight behind full parameter sharding is that we can decompose the all-reduce operations in DDP into separate reduce-scatter and all-gather operations.
+
+.. figure:: /_static/img/distributed/fsdp_sharding.png
+   :width: 100%
+   :align: center
+   :alt: FSDP allreduce
+
+   FSDP Allreduce
+
 How to use FSDP
 --------------
 Here we use a toy model to run training on the MNIST dataset for demonstration purposes. The APIs and logic can be applied to training larger models as well. 
