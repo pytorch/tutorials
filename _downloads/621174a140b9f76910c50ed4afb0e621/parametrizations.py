@@ -227,7 +227,7 @@ class CayleyMap(nn.Module):
 
     def forward(self, X):
         # (I + X)(I - X)^{-1}
-        return torch.solve(self.Id + X, self.Id - X).solution
+        return torch.linalg.solve(self.Id - X, self.Id + X)
 
 layer = nn.Linear(3, 3)
 parametrize.register_parametrization(layer, "weight", Skew())
@@ -301,13 +301,13 @@ class CayleyMap(nn.Module):
     def forward(self, X):
         # Assume X skew-symmetric
         # (I + X)(I - X)^{-1}
-        return torch.solve(self.Id + X, self.Id - X).solution
+        return torch.linalg.solve(self.Id - X, self.Id + X)
 
     def right_inverse(self, A):
         # Assume A orthogonal
         # See https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map
         # (X - I)(X + I)^{-1}
-        return torch.solve(X - self.Id, self.Id + X).solution
+        return torch.linalg.solve(X + self.Id, self.Id - X)
 
 layer_orthogonal = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
