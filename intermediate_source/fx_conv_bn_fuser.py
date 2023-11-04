@@ -150,7 +150,9 @@ def replace_node_module(node: fx.Node, modules: Dict[str, Any], new_module: torc
 
 
 def fuse(model: torch.nn.Module) -> torch.nn.Module:
-    model = copy.deepcopy(model)
+    model, state_dict = type(model)(), model.state_dict()
+    model.load_state_dict(state_dict)
+    model.eval()
     # The first step of most FX passes is to symbolically trace our model to
     # obtain a `GraphModule`. This is a representation of our original model
     # that is functionally identical to our original model, except that we now
