@@ -428,7 +428,7 @@ if traj_lens:
 # You should now be able:
 #
 # - Create an LSTM module that acts as a :class:`tensordict.nn.TensorDictModule`
-# - Indicate to the LSTMModule that a reset is needed via an :class:`torchrl.envs.InitTracker`
+# - Indicate to the LSTM module that a reset is needed via an :class:`torchrl.envs.InitTracker`
 #   transform
 # - Incorporate this module in a policy and in a loss module
 # - Make sure that the collector is made aware of the recurrent state entries
