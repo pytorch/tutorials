@@ -42,17 +42,17 @@ Recurrent DQN: Training recurrent policies
 #
 # The core idea of using RNNs in TorchRL is to use TensorDict as a data carrier
 # for the hidden states from one step to another. We'll build a policy that
-# reads the previous recurrent state from the current tensordict, and writes the
-# current recurrent states in the tensordict of the next state:
+# reads the previous recurrent state from the current TensorDict, and writes the
+# current recurrent states in the TensorDict of the next state:
 #
 # .. figure:: /_static/img/rollout_recurrent.png
 #    :alt: Data collection with a recurrent policy
 #
-# As this figure shows, our env populates the tensordict with zeroed recurrent
+# As this figure shows, our environment populates the TensorDict with zeroed recurrent
 # states which are read by the policy together with the observation to produce an
 # action, and recurrent states that will be used for the next step.
 # When the :func:`torchrl.envs.step_mdp` function is called, the recurrent states
-# from the next state are brought to the current tensordict. Let's see how this
+# from the next state are brought to the current TensorDict. Let's see how this
 # is implemented in practice.
 
 ######################################################################
@@ -112,10 +112,10 @@ device = torch.device(0) if torch.cuda.device_count() else torch.device("cpu")
 #
 # - :class:`torchrl.envs.InitTracker` will stamp the
 #   calls to :meth:`torchrl.envs.EnvBase.reset` by adding a ``"is_init"``
-#   boolean mask in the tensordict that will track which steps require a reset
+#   boolean mask in the TensorDict that will track which steps require a reset
 #   of the RNN hidden states.
 # - The :class:`torchrl.envs.TensorDictPrimer` transform is a bit more
-#   technical: per se, it is not required to use RNN policies. However, it
+#   technical. It is not required to use RNN policies. However, it
 #   instructs the environment (and subsequently the collector) that some extra
 #   keys are to be expected. Once added, a call to `env.reset()` will populate
 #   the entries indicated in the primer with zeroed tensors. Knowing that
@@ -163,7 +163,7 @@ td = env.reset()
 # Convolutional network
 # ~~~~~~~~~~~~~~~~~~~~~
 #
-# We build a convolutional network flanked with a :class:torch.nn.AdaptiveAvgPool2d`
+# We build a convolutional network flanked with a :class:`torch.nn.AdaptiveAvgPool2d`
 # that will squash the output in a vector of size 64. The :class:`torchrl.modules.ConvNet`
 # can assist us with this:
 #
@@ -193,7 +193,7 @@ n_cells = feature(env.reset())["embed"].shape[-1]
 # to incorporate LSTMs in your code-base. It is a :class:`tensordict.nn.TensorDictModuleBase`
 # subclass: as such, it has a set of ``in_keys`` and ``out_keys`` that indicate
 # what values should be expected to be read and written/updated during the
-# execution of the module. The class comes with customizable pre-defined
+# execution of the module. The class comes with customizable predefined
 # values for these attributes to facilitate its construction.
 #
 # .. note::
@@ -202,7 +202,7 @@ n_cells = feature(env.reset())["embed"].shape[-1]
 #   However, to respect TorchRL's conventions, this LSTM must have the ``batch_first``
 #   attribute set to ``True`` which is **not** the default in PyTorch. However,
 #   our :class:`torchrl.modules.LSTMModule` changes this default
-#   behaviour, so we're good with a native call.
+#   behavior, so we're good with a native call.
 #
 #   Also, the LSTM cannot have a ``bidirectional`` attribute set to ``True`` as
 #   this wouldn't be usable in online settings. In this case, the default value
@@ -218,17 +218,17 @@ lstm = LSTMModule(
 )
 
 ######################################################################
-# Let us look at the lstm class, specifically its in and out_keys:
+# Let us look at the LSTM Module class, specifically its in and out_keys:
 print("in_keys", lstm.in_keys)
 print("out_keys", lstm.out_keys)
 
 ######################################################################
 # We can see that these values contain the key we indicated as the in_key (and out_key)
 # as well as recurrent key names. The out_keys are preceded by a "next" prefix
-# that indicates that they will need to be written in the "next" tensordict.
+# that indicates that they will need to be written in the "next" TensorDict.
 # We use this convention (which can be overridden by passing the in_keys/out_keys
 # arguments) to make sure that a call to :func:`torchrl.envs.step_mdp` will
-# move the recurrent state to the root tensordict, making it available to the
+# move the recurrent state to the root TensorDict, making it available to the
 # RNN during the following call (see figure in the intro).
 #
 # As mentioned earlier, we have one more optional transform to add to our
@@ -239,7 +239,7 @@ print("out_keys", lstm.out_keys)
 env.append_transform(lstm.make_tensordict_primer())
 
 ######################################################################
-# and that's it! We can print the env to check that everything looks good now
+# and that's it! We can print the environment to check that everything looks good now
 # that we have added the primer:
 print(env)
 
@@ -406,10 +406,9 @@ for i, data in enumerate(collector):
     stoch_policy.step(data.numel())
     updater.step()
 
-    if i % 50 == 0:
-        with set_exploration_type(ExplorationType.MODE), torch.no_grad():
-            rollout = env.rollout(10000, stoch_policy)
-            traj_lens.append(rollout.get(("next", "step_count")).max().item())
+    with set_exploration_type(ExplorationType.MODE), torch.no_grad():
+        rollout = env.rollout(10000, stoch_policy)
+        traj_lens.append(rollout.get(("next", "step_count")).max().item())
 
 ######################################################################
 # Let's plot our results:
@@ -428,18 +427,17 @@ if traj_lens:
 # We have seen how an RNN can be incorporated in a policy in torchrl.
 # You should now be able:
 #
-# - To create an LSTM module that acts as a TensorDictModule;
-# - How to indicate to the LSTMModule that a reset is needed via an :class:`torchrl.envs.InitTracker`
-#   transform.
-# - Incorporate this module in a policy and in a loss module;
+# - Create an LSTM module that acts as a :class:`tensordict.nn.TensorDictModule`
+# - Indicate to the LSTMModule that a reset is needed via an :class:`torchrl.envs.InitTracker`
+#   transform
+# - Incorporate this module in a policy and in a loss module
 # - Make sure that the collector is made aware of the recurrent state entries
 #   such that they can be stored in the replay buffer along with the rest of
-#   the data.
+#   the data
 #
 
 #
 # Further Reading
 # ---------------
 #
-# * Link1
-# * Link2
+# -  `TorchRL <https://pytorch.org/rl/>`
