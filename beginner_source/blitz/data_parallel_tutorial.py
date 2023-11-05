@@ -9,7 +9,7 @@ It's very easy to use GPUs with PyTorch. You can put the model on a GPU:
 
 .. code:: python
 
-    device = torch.device("cuda:0")
+    device = torch.device("cuda")
     model.to(device)
 
 Then, you can copy all your tensors to the GPU:
