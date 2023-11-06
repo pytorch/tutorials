@@ -125,7 +125,7 @@ Next, we can export the model to ONNX format.
 
     torch_model = MyModel()
     torch_input = torch.randn(1, 1, 32, 32)
-    export_output = torch.onnx.dynamo_export(torch_model, torch_input)
+    onnx_program = torch.onnx.dynamo_export(torch_model, torch_input)
 
 
 
@@ -146,7 +146,7 @@ Next, we can export the model to ONNX format.
 .. GENERATED FROM PYTHON SOURCE LINES 96-104
 
 As we can see, we didn't need any code change to the model.
-The resulting ONNX model is stored within ``torch.onnx.ExportOutput`` as a binary protobuf file.
+The resulting ONNX model is stored within ``torch.onnx.ONNXProgram`` as a binary protobuf file.
 
 4. Save the ONNX model in a file
 --------------------------------
@@ -159,7 +159,7 @@ we can save it to disk with the following code:
 .. code-block:: default
 
 
-    export_output.save("my_image_classifier.onnx")
+    onnx_program.save("my_image_classifier.onnx")
 
 
 
@@ -238,7 +238,7 @@ and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it co
 
     import onnxruntime
 
-    onnx_input = export_output.adapt_torch_inputs_to_onnx(torch_input)
+    onnx_input = onnx_program.adapt_torch_inputs_to_onnx(torch_input)
     print(f"Input length: {len(onnx_input)}")
     print(f"Sample input: {onnx_input}")
 
@@ -288,7 +288,7 @@ Before comparing the results, we need to convert the PyTorch's output to match O
 
 
     torch_outputs = torch_model(torch_input)
-    torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+    torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
     assert len(torch_outputs) == len(onnxruntime_outputs)
     for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -340,7 +340,7 @@ sit tight and have fun going through all of them to learn all there is about the
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.733 seconds)
+   **Total running time of the script:** ( 0 minutes  0.723 seconds)
 
 
 .. _sphx_glr_download_beginner_onnx_export_simple_model_to_onnx_tutorial.py:
