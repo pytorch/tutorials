@@ -51,7 +51,7 @@ Key learnings:
 # Another advantage of stateless environments is that they can enable
 # batched execution of transition simulations. If the backend and the
 # implementation allow it, an algebraic operation can be executed seamlessly on
-# scalars, vectors or tensors. This tutorial gives such examples.
+# scalars, vectors, or tensors. This tutorial gives such examples.
 #
 # This tutorial will be structured as follows:
 #
