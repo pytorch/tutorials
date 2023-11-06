@@ -893,7 +893,7 @@ plot()
 #   an environment (:func:`step`, :func:`reset", seeding and building specs).
 #   We saw how these methods and classes interact with the
 #   :class:`tensordict.TensorDict` class;
-# * how to test that an environment is properly coded using
+# * How to test that an environment is properly coded using
 #   :func:`~torchrl.envs.utils.check_env_specs`;
 # * How to append transforms in the context of stateless environments and how
 #   to write custom transformations;
