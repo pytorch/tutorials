@@ -435,9 +435,8 @@ if traj_lens:
 #   such that they can be stored in the replay buffer along with the rest of
 #   the data
 #
-
-#
 # Further Reading
 # ---------------
 #
 # -  `TorchRL <https://pytorch.org/rl/>`
+
