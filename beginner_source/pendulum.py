@@ -16,6 +16,7 @@ It is freely inspired by the Pendulum-v1 implementation from `OpenAI-Gym/Farama-
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
 Key learnings:
+
 - How to design an environment in TorchRL:
   - Writing specs (input, observation and reward);
   - Implementing behaviour: seeding, reset and step.
