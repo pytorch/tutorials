@@ -782,7 +782,7 @@ print("rollout of len 3 (batch size of 10):", rollout)
 # ------------------------
 #
 # In this example, we will train a simple policy using the reward as a
-# differentiable objective (i.e. a negative loss).
+# differentiable objective, such as a negative loss.
 # We will take advantage of the fact that our dynamic system is fully
 # differentiable to backpropagate through the trajectory return and adjust the
 # weights of our policy to maximise this value directly. Of course, in many
