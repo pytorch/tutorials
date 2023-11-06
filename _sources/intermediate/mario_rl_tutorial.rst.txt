@@ -62,7 +62,7 @@ as your companion. The full code is available
     import numpy as np
     from pathlib import Path
     from collections import deque
-    import random, datetime, os, copy
+    import random, datetime, os
 
     # Gym is an OpenAI toolkit for RL
     import gym
@@ -518,7 +518,7 @@ later).
 Neural Network
 ~~~~~~~~~~~~~~~~~~
 
-.. GENERATED FROM PYTHON SOURCE LINES 411-453
+.. GENERATED FROM PYTHON SOURCE LINES 411-457
 
 .. code-block:: default
 
@@ -538,7 +538,23 @@ Neural Network
             if w != 84:
                 raise ValueError(f"Expecting input width: 84, got: {w}")
 
-            self.online = nn.Sequential(
+            self.online = self.__build_cnn(c, output_dim)
+
+            self.target = self.__build_cnn(c, output_dim)
+            self.target.load_state_dict(self.online.state_dict())
+
+            # Q_target parameters are frozen.
+            for p in self.target.parameters():
+                p.requires_grad = False
+
+        def forward(self, input, model):
+            if model == "online":
+                return self.online(input)
+            elif model == "target":
+                return self.target(input)
+
+        def __build_cnn(self, c, output_dim):
+            return nn.Sequential(
                 nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
                 nn.ReLU(),
                 nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
@@ -551,17 +567,6 @@ Neural Network
                 nn.Linear(512, output_dim),
             )
 
-            self.target = copy.deepcopy(self.online)
-
-            # Q_target parameters are frozen.
-            for p in self.target.parameters():
-                p.requires_grad = False
-
-        def forward(self, input, model):
-            if model == "online":
-                return self.online(input)
-            elif model == "target":
-                return self.target(input)
 
 
 
@@ -570,8 +575,7 @@ Neural Network
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 454-489
+.. GENERATED FROM PYTHON SOURCE LINES 458-493
 
 TD Estimate & TD Target
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -609,7 +613,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 (because we don’t need to backpropagate on :math:`\theta_{target}`).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 489-512
+.. GENERATED FROM PYTHON SOURCE LINES 493-516
 
 .. code-block:: default
 
@@ -643,7 +647,7 @@ decorator on ``td_target()`` to disable gradient calculations here
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 513-536
+.. GENERATED FROM PYTHON SOURCE LINES 517-540
 
 Updating the model
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -669,7 +673,7 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 536-555
+.. GENERATED FROM PYTHON SOURCE LINES 540-559
 
 .. code-block:: default
 
@@ -699,13 +703,13 @@ Instead, we periodically copy :math:`\theta_{online}` to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 556-559
+.. GENERATED FROM PYTHON SOURCE LINES 560-563
 
 Save checkpoint
 ~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 559-573
+.. GENERATED FROM PYTHON SOURCE LINES 563-577
 
 .. code-block:: default
 
@@ -730,13 +734,13 @@ Save checkpoint
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 574-577
+.. GENERATED FROM PYTHON SOURCE LINES 578-581
 
 Putting it all together
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 577-614
+.. GENERATED FROM PYTHON SOURCE LINES 581-618
 
 .. code-block:: default
 
@@ -784,13 +788,13 @@ Putting it all together
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 615-618
+.. GENERATED FROM PYTHON SOURCE LINES 619-622
 
 Logging
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 618-727
+.. GENERATED FROM PYTHON SOURCE LINES 622-731
 
 .. code-block:: default
 
@@ -910,7 +914,7 @@ Logging
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 728-734
+.. GENERATED FROM PYTHON SOURCE LINES 732-738
 
 Let’s play!
 """""""""""""""
@@ -919,7 +923,7 @@ In this example we run the training loop for 40 episodes, but for Mario to truly
 his world, we suggest running the loop for at least 40,000 episodes!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 734-781
+.. GENERATED FROM PYTHON SOURCE LINES 738-785
 
 .. code-block:: default
 
@@ -989,12 +993,12 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
 
-    Episode 0 - Step 163 - Epsilon 0.9999592508251706 - Mean Reward 635.0 - Mean Length 163.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.996 - Time 2023-11-06T20:18:10
+    Episode 0 - Step 163 - Epsilon 0.9999592508251706 - Mean Reward 635.0 - Mean Length 163.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 2.044 - Time 2023-11-06T20:44:20
     /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torchvision/transforms/functional.py:1603: UserWarning:
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
 
-    Episode 20 - Step 5007 - Epsilon 0.9987490329557962 - Mean Reward 667.429 - Mean Length 238.429 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 60.345 - Time 2023-11-06T20:19:11
+    Episode 20 - Step 5007 - Epsilon 0.9987490329557962 - Mean Reward 667.429 - Mean Length 238.429 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 61.646 - Time 2023-11-06T20:45:22
     /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torchvision/transforms/functional.py:1603: UserWarning:
 
     The default value of the antialias parameter of all the resizing transforms (Resize(), RandomResizedCrop(), etc.) will change from None to True in v0.17, in order to be consistent across the PIL and Tensor backends. To suppress this warning, directly pass antialias=True (recommended, future default), antialias=None (current default, which means False for Tensors and True for PIL), or antialias=False (only works on Tensors - PIL will still use antialiasing). This also applies if you are using the inference transforms from the models weights: update the call to weights.transforms(antialias=True).
@@ -1003,7 +1007,7 @@ his world, we suggest running the loop for at least 40,000 episodes!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 782-788
+.. GENERATED FROM PYTHON SOURCE LINES 786-792
 
 Conclusion
 """""""""""""""
@@ -1015,7 +1019,7 @@ to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  51.552 seconds)
+   **Total running time of the script:** ( 1 minutes  53.850 seconds)
 
 
 .. _sphx_glr_download_intermediate_mario_rl_tutorial.py:
