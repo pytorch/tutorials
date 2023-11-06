@@ -948,6 +948,7 @@ Additional Resources
    :hidden:
    :caption: Reinforcement Learning
 
+   beginner/pendulum
    intermediate/reinforcement_q_learning
    intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
