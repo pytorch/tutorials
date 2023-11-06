@@ -26,7 +26,7 @@ You can get binary builds of ONNX and ONNX Runtime with
 .. code-block:: bash
 
    %%bash
-   pip install onnxruntime
+   pip install onnx onnxruntime
 
 ONNX Runtime recommends using the latest stable runtime for PyTorch.
 
