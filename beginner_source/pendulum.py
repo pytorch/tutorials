@@ -23,7 +23,7 @@ Key learnings:
 - Transforming your environment inputs and outputs, and writing your own
   transforms;
 - How to use :class:`tensordict.TensorDict` to carry arbitrary data structures
-  from step to step.
+  step-by-step.
 
   In the process, we will touch three crucial components of TorchRL:
 
