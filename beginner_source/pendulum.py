@@ -764,7 +764,7 @@ td = env.rand_step(td)
 print("rand step (batch size of 10)", td)
 
 ######################################################################
-# executing a rollout with a batch of data requires us to reset the env
+# Executing a rollout with a batch of data requires us to reset the env
 # out of the rollout function, since we need to define the batch_size
 # dynamically and this is not supported by :func:`EnvBase.rollout`:
 #
