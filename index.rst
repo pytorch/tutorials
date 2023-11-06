@@ -146,7 +146,7 @@ What's new in PyTorch tutorials?
    :header: Inference on Whole Slide Images with TIAToolbox
    :card_description: Learn how to use the TIAToolbox to perform inference on whole slide images.
    :image: _static/img/thumbnails/cropped/TIAToolbox-Tutorial.png
-   :link: intermediate/05-patch-prediction.html
+   :link: intermediate/tiatoolbox_tutorial.html
    :tags: Image/Video
 
 .. Audio
