@@ -114,7 +114,7 @@ print(f"aten::add.Tensor is supported by ONNX registry: \
       {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}"
       )
 export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
-export_output = torch.onnx.dynamo_export(
+onnx_program = torch.onnx.dynamo_export(
     aten_add_model, input_add_x, input_add_y, export_options=export_options
     )
 
@@ -125,14 +125,14 @@ export_output = torch.onnx.dynamo_export(
 #
 
 # graph node domain is the custom domain we registered
-assert export_output.model_proto.graph.node[0].domain == "custom.aten"
-assert len(export_output.model_proto.graph.node) == 1
+assert onnx_program.model_proto.graph.node[0].domain == "custom.aten"
+assert len(onnx_program.model_proto.graph.node) == 1
 # graph node name is the function name
-assert export_output.model_proto.graph.node[0].op_type == "custom_aten_add"
+assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_add"
 # function node domain is empty because we use standard ONNX operators
-assert export_output.model_proto.functions[0].node[3].domain == ""
+assert onnx_program.model_proto.functions[0].node[3].domain == ""
 # function node name is the standard ONNX operator name
-assert export_output.model_proto.functions[0].node[3].op_type == "Add"
+assert onnx_program.model_proto.functions[0].node[3].op_type == "Add"
 
 
 ######################################################################
@@ -155,7 +155,7 @@ assert export_output.model_proto.functions[0].node[3].op_type == "Add"
 
 
 # Use ONNX Runtime to run the model, and compare the results with PyTorch
-export_output.save("./custom_add_model.onnx")
+onnx_program.save("./custom_add_model.onnx")
 ort_session = onnxruntime.InferenceSession(
     "./custom_add_model.onnx", providers=['CPUExecutionProvider']
     )
@@ -163,12 +163,12 @@ ort_session = onnxruntime.InferenceSession(
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
-onnx_input = export_output.adapt_torch_inputs_to_onnx(input_add_x, input_add_y)
+onnx_input = onnx_program.adapt_torch_inputs_to_onnx(input_add_x, input_add_y)
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
 torch_outputs = aten_add_model(input_add_x, input_add_y)
-torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -225,7 +225,7 @@ export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
 aten_gelu_model = CustomGelu()
 input_gelu_x = torch.randn(3, 3)
 
-export_output = torch.onnx.dynamo_export(
+onnx_program = torch.onnx.dynamo_export(
     aten_gelu_model, input_gelu_x, export_options=export_options
     )
 
@@ -238,13 +238,13 @@ export_output = torch.onnx.dynamo_export(
 #
 
 # graph node domain is the custom domain we registered
-assert export_output.model_proto.graph.node[0].domain == "com.microsoft"
+assert onnx_program.model_proto.graph.node[0].domain == "com.microsoft"
 # graph node name is the function name
-assert export_output.model_proto.graph.node[0].op_type == "custom_aten_gelu"
+assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_gelu"
 # function node domain is the custom domain we registered
-assert export_output.model_proto.functions[0].node[0].domain == "com.microsoft"
+assert onnx_program.model_proto.functions[0].node[0].domain == "com.microsoft"
 # function node name is the node name used in the function
-assert export_output.model_proto.functions[0].node[0].op_type == "Gelu"
+assert onnx_program.model_proto.functions[0].node[0].op_type == "Gelu"
 
 
 ######################################################################
@@ -263,7 +263,7 @@ assert export_output.model_proto.functions[0].node[0].op_type == "Gelu"
 # and compare the results with PyTorch.
 #
 
-export_output.save("./custom_gelu_model.onnx")
+onnx_program.save("./custom_gelu_model.onnx")
 ort_session = onnxruntime.InferenceSession(
     "./custom_gelu_model.onnx", providers=['CPUExecutionProvider']
     )
@@ -271,12 +271,12 @@ ort_session = onnxruntime.InferenceSession(
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
-onnx_input = export_output.adapt_torch_inputs_to_onnx(input_gelu_x)
+onnx_input = onnx_program.adapt_torch_inputs_to_onnx(input_gelu_x)
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 
 torch_outputs = aten_gelu_model(input_gelu_x)
-torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -365,24 +365,24 @@ onnx_registry.register_op(
     )
 
 export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
-export_output = torch.onnx.dynamo_export(
+onnx_program = torch.onnx.dynamo_export(
     custom_addandround_model, input_addandround_x, export_options=export_options
     )
-export_output.save("./custom_addandround_model.onnx")
+onnx_program.save("./custom_addandround_model.onnx")
 
 
 ######################################################################
-# The ``export_output`` exposes the exported model as protobuf through ``export_output.model_proto``.
+# The ``onnx_program`` exposes the exported model as protobuf through ``onnx_program.model_proto``.
 # The graph has one graph nodes for ``custom_addandround``, and inside ``custom_addandround``,
 # there are two function nodes, one for each operator.
 #
 
-assert export_output.model_proto.graph.node[0].domain == "test.customop"
-assert export_output.model_proto.graph.node[0].op_type == "custom_addandround"
-assert export_output.model_proto.functions[0].node[0].domain == "test.customop"
-assert export_output.model_proto.functions[0].node[0].op_type == "CustomOpOne"
-assert export_output.model_proto.functions[0].node[1].domain == "test.customop"
-assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
+assert onnx_program.model_proto.graph.node[0].domain == "test.customop"
+assert onnx_program.model_proto.graph.node[0].op_type == "custom_addandround"
+assert onnx_program.model_proto.functions[0].node[0].domain == "test.customop"
+assert onnx_program.model_proto.functions[0].node[0].op_type == "CustomOpOne"
+assert onnx_program.model_proto.functions[0].node[1].domain == "test.customop"
+assert onnx_program.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
 
 
 ######################################################################
@@ -432,12 +432,12 @@ assert export_output.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
 #    def to_numpy(tensor):
 #        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 #
-#    onnx_input = export_output.adapt_torch_inputs_to_onnx(input_addandround_x)
+#    onnx_input = onnx_program.adapt_torch_inputs_to_onnx(input_addandround_x)
 #    onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 #    onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 #
 #    torch_outputs = custom_addandround_model(input_addandround_x)
-#    torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+#    torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 #
 #    assert len(torch_outputs) == len(onnxruntime_outputs)
 #    for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
