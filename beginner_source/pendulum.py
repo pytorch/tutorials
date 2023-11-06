@@ -2,7 +2,7 @@
 
 """
 Pendulum: Writing your environment and transforms with TorchRL
-=================
+==============================================================
 
 **Author**: `Vincent Moens <https://github.com/vmoens>`_
 
@@ -11,7 +11,7 @@ is an integrative part of reinforcement learning and control engineering.
 
 TorchRL provides a set of tools to do this in multiple contexts.
 This tutorial demonstrates how to use PyTorch and ``torchrl`` code a pendulum
-simulator from the ground up.
+in a simulator environment from the ground up.
 It is freely inspired by the Pendulum-v1 implementation from `OpenAI-Gym/Farama-Gymnasium
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
