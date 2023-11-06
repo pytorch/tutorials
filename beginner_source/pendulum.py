@@ -15,6 +15,11 @@ in a simulator environment from the ground up.
 It is freely inspired by the Pendulum-v1 implementation from `OpenAI-Gym/Farama-Gymnasium
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
+.. figure:: /_static/img/pendulum.gif
+   :alt: Pendulum
+
+   Simple Pendulum
+
 Key learnings:
 
 - How to design an environment in TorchRL:
