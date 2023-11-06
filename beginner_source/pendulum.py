@@ -889,7 +889,7 @@ plot()
 # In this tutorial, we have learned how to code a stateless environment from
 # scratch. We touched the subjects of:
 #
-# * the four essential components that need to be taken care of when coding
+# * The four essential components that need to be taken care of when coding
 #   an environment (:func:`step`, :func:`reset", seeding and building specs).
 #   We saw how these methods and classes interact with the
 #   :class:`tensordict.TensorDict` class;
