@@ -26,6 +26,7 @@ NOT_RUN = [
     "intermediate_source/parametrizations",
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",
+    "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/ddp_pipeline",  # requires 4 gpus
     "prototype_source/fx_graph_mode_ptq_dynamic",

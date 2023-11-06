@@ -180,6 +180,10 @@ For example:
 
     TORCHINDUCTOR_FREEZING=1 python example_x86inductorquantizer_pytorch_2_1.py
 
+With PyTorch 2.1 release, all CNN models from TorchBench test suite have been measured and proven effective comparing with Inductor FP32 inference path. Please refer
+to `this document <https://dev-discuss.pytorch.org/t/torchinductor-update-6-cpu-backend-performance-update-and-new-features-in-pytorch-2-1/1514#int8-inference-with-post-training-static-quantization-3>`_
+for detail benchmark number.
+
 4. Conclusion
 ---------------
 

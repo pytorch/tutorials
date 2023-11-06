@@ -302,6 +302,76 @@ functions that are used in the example:
    `get_bias_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L53>`__
    can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific pattern.
 
+A Note on IR for PT2E Quantization Flow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IR means the intermediate representation of the model, for example, ``torch`` IR (``torch.nn`` modules, ``torch.nn.functional`` ops) or ``aten`` IR (``torch.ops.aten.linear``, ...). PT2E Quantization Flow is using pre autograd aten IR (the output of `torch.export` API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can attach annotations on them, So the question is how do we match the pattern?
+
+Motivation: Problem of Matching ``aten`` IR directly
+--------------------------------------------------------
+
+The most straightforward way might be matching ``aten`` IR directly.
+
+Example::
+
+  for n in gm.graph.nodes:
+        if n.op != "call_function" or n.target not in [
+            torch.ops.aten.relu.default,
+            torch.ops.aten.relu_.default,
+        ]:
+            continue
+        relu_node = n
+        maybe_conv_node = n.args[0]
+        if (
+            not isinstance(maybe_conv_node, Node)
+            or maybe_conv_node.op != "call_function"
+            or maybe_conv_node.target
+            not in [
+                torch.ops.aten.conv1d.default,
+                torch.ops.aten.conv2d.default,
+            ]
+        ):
+            continue
+
+        # annotate conv and relu nodes
+        ...
+
+However one problem for using this IR is that the representation might change if the PyTorch implementation for modules or functional ops changed. But this could be unexpected since modeling users typically assume that when the eager mode model code doesn't change, they should get the same model representation after program capture as well. One concrete effect for this problem is that if a ``Quantizer`` do annotations based on recognizing ``aten`` IR patterns, then it may fail to recognzing the pattern after PyTorch version update, and the same eager mode floating point may be left unquantized.
+
+Recommendation: Use ``SubgraphMatcherWithNameNodeMap`` for pattern matching
+-----------------------------------------------------------------------------
+Because of this, we recommend people to recognize the pattern through ``SubgraphMatcherWithNameNodeMap`` (an improved version of ``SubgraphMatcher`` that makes it easier to query the nodes that people want to annotate), through capturing a ``torch`` IR pattern (with the same program capture used for capturing the floating point model), instead of using the ``aten`` IR pattern directly.
+
+Example::
+
+  def conv_relu_pattern(input, weight, bias):
+      conv = torch.nn.functional.conv2d(input, weight, bias)
+      output = torch.nn.functional.relu(conv)
+      # returns an additional dict that includes a map from name to node that we want to annotate
+      return relu, {"input": input, "weight": weight, "bias": bias, "output": output}
+
+  matcher = SubgraphMatcherWithNameNodeMap(conv_relu_pattern)
+  matches = matcher.match(model)
+  for match in matches:
+      # find input and output of the pattern
+      # annotate the nodes
+      name_node_map = match.name_node_map
+      input_node = name_node_map["input"]
+      weight_node = name_node_map["weight"]
+      bias_node = name_node_map["bias"]
+      output_node = name_node_map["relu"]
+      input_node.users[0].meta["quantization_annotation"] = ...
+      weight_node.users[0].meta["quantization_annotation"] = ...
+      bias_node.users[0].meta["quantization_annotation"] = ...
+      output_node.meta["quantization_annotation"] = ...
+
+With this, the ``Quantizer`` will still be valid even when the implementation for nn modules and functionals changes, the ``aten`` IR for floating point model will change, but since we capture the pattern again instead of hardcoding the ``aten`` IR for the pattern, we'll get the updated ``aten`` IR as well and will still be able to match the pattern.
+
+One caveat is that if inputs of the pattern has multiple users, we don't have a good way to identify which user node we want to annotate except for checking the aten op target.
+
+Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible ``aten`` IR outcomes captured from the ``torch`` IR pattern.
+
+Note: We may provide some (pattern, list of example_inputs) or some pre-generated matcher object so people can just use them directly in the future.
+
 Conclusion
 ^^^^^^^^^^^^^^^^^^^
 

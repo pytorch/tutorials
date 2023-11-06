@@ -5,7 +5,16 @@ All the tutorials are now presented as sphinx style documentation at:
 
 ## [https://pytorch.org/tutorials](https://pytorch.org/tutorials)
 
+# Asking a question
 
+If you have a question about a tutorial, post in https://dev-discuss.pytorch.org/ rather than creating an issue in this repo. Your question will be answered much faster on the dev-discuss forum.
+
+# Submitting an issue
+
+You can submit the following types of issues:
+
+* Feature request - request a new tutorial to be added. Please explain why this tutorial is needed and how it demonstrates PyTorch value.
+* Bug report - report a failiure or outdated information in an existing tutorial. When submitting a bug report, please run: `python3 -m torch.utils.collect_env` to get information about your environment and add the output to the bug report.
 
 # Contributing
 
