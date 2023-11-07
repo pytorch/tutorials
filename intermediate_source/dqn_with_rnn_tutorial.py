@@ -33,7 +33,7 @@ Recurrent DQN: Training recurrent policies
 # consecutive steps, and use this as an input to the policy along with the
 # current observation.
 #
-# This tutorial shows how to incorporate an RNN in a policy.
+# This tutorial shows how to incorporate an RNN in a policy using TorchRL.
 #
 # Key learnings:
 #
@@ -51,7 +51,7 @@ Recurrent DQN: Training recurrent policies
 # As this figure shows, our environment populates the TensorDict with zeroed recurrent
 # states which are read by the policy together with the observation to produce an
 # action, and recurrent states that will be used for the next step.
-# When the :func:`torchrl.envs.step_mdp` function is called, the recurrent states
+# When the :func:`~torchrl.envs.utils.step_mdp` function is called, the recurrent states
 # from the next state are brought to the current TensorDict. Let's see how this
 # is implemented in practice.
 
@@ -60,7 +60,7 @@ Recurrent DQN: Training recurrent policies
 #
 # .. code-block:: bash
 #
-#    !pip3 install torchrl-nightly
+#    !pip3 install torchrl
 #    !pip3 install gym[mujoco]
 #    !pip3 install tqdm
 #
@@ -104,17 +104,17 @@ device = torch.device(0) if torch.cuda.device_count() else torch.device("cpu")
 # 84x84, scaling down the rewards and normalizing the observations.
 #
 # .. note::
-#   The :class:`torchrl.envs.StepCounter` transform is accessory. Since the CartPole
+#   The :class:`~torchrl.envs.transforms.StepCounter` transform is accessory. Since the CartPole
 #   task goal is to make trajectories as long as possible, counting the steps
 #   can help us track the performance of our policy.
 #
 # Two transforms are important for the purpose of this tutorial:
 #
-# - :class:`torchrl.envs.InitTracker` will stamp the
-#   calls to :meth:`torchrl.envs.EnvBase.reset` by adding a ``"is_init"``
+# - :class:`~torchrl.envs.transforms.InitTracker` will stamp the
+#   calls to :meth:`~torchrl.envs.EnvBase.reset` by adding a ``"is_init"``
 #   boolean mask in the TensorDict that will track which steps require a reset
 #   of the RNN hidden states.
-# - The :class:`torchrl.envs.TensorDictPrimer` transform is a bit more
+# - The :class:`~torchrl.envs.transforms.TensorDictPrimer` transform is a bit more
 #   technical. It is not required to use RNN policies. However, it
 #   instructs the environment (and subsequently the collector) that some extra
 #   keys are to be expected. Once added, a call to `env.reset()` will populate
@@ -127,7 +127,7 @@ device = torch.device(0) if torch.cuda.device_count() else torch.device("cpu")
 #   the training of our policy, but it will make the recurrent keys disappear
 #   from the collected data and the replay buffer, which will in turn lead to
 #   a slightly less optimal training.
-#   Fortunately, the :class:`torchrl.modules.LSTMModule` we propose is
+#   Fortunately, the :class:`~torchrl.modules.LSTMModule` we propose is
 #   equipped with a helper method to build just that transform for us, so
 #   we can wait until we build it!
 #
@@ -155,16 +155,16 @@ td = env.reset()
 # Policy
 # ------
 #
-# Our policy will have 3 components: a :class:`torchrl.modules.ConvNet`
-# backbone, an :class:`torchrl.modules.LSTMModule` memory layer and a shallow
-# :class:`torchrl.modules.MLP` block that will map the LSTM output onto the
+# Our policy will have 3 components: a :class:`~torchrl.modules.ConvNet`
+# backbone, an :class:`~torchrl.modules.LSTMModule` memory layer and a shallow
+# :class:`~torchrl.modules.MLP` block that will map the LSTM output onto the
 # action values.
 #
 # Convolutional network
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # We build a convolutional network flanked with a :class:`torch.nn.AdaptiveAvgPool2d`
-# that will squash the output in a vector of size 64. The :class:`torchrl.modules.ConvNet`
+# that will squash the output in a vector of size 64. The :class:`~torchrl.modules.ConvNet`
 # can assist us with this:
 #
 
@@ -189,8 +189,8 @@ n_cells = feature(env.reset())["embed"].shape[-1]
 # LSTM Module
 # ~~~~~~~~~~~
 #
-# TorchRL provides a specialized :class:`torchrl.modules.LSTMModule` class
-# to incorporate LSTMs in your code-base. It is a :class:`tensordict.nn.TensorDictModuleBase`
+# TorchRL provides a specialized :class:`~torchrl.modules.LSTMModule` class
+# to incorporate LSTMs in your code-base. It is a :class:`~tensordict.nn.TensorDictModuleBase`
 # subclass: as such, it has a set of ``in_keys`` and ``out_keys`` that indicate
 # what values should be expected to be read and written/updated during the
 # execution of the module. The class comes with customizable predefined
@@ -201,7 +201,7 @@ n_cells = feature(env.reset())["embed"].shape[-1]
 #   dropout or multi-layered LSTMs.
 #   However, to respect TorchRL's conventions, this LSTM must have the ``batch_first``
 #   attribute set to ``True`` which is **not** the default in PyTorch. However,
-#   our :class:`torchrl.modules.LSTMModule` changes this default
+#   our :class:`~torchrl.modules.LSTMModule` changes this default
 #   behavior, so we're good with a native call.
 #
 #   Also, the LSTM cannot have a ``bidirectional`` attribute set to ``True`` as
@@ -227,13 +227,13 @@ print("out_keys", lstm.out_keys)
 # as well as recurrent key names. The out_keys are preceded by a "next" prefix
 # that indicates that they will need to be written in the "next" TensorDict.
 # We use this convention (which can be overridden by passing the in_keys/out_keys
-# arguments) to make sure that a call to :func:`torchrl.envs.step_mdp` will
+# arguments) to make sure that a call to :func:`~torchrl.envs.utils.step_mdp` will
 # move the recurrent state to the root TensorDict, making it available to the
 # RNN during the following call (see figure in the intro).
 #
 # As mentioned earlier, we have one more optional transform to add to our
 # environment to make sure that the recurrent states are passed to the buffer.
-# The :meth:`torchrl.modules.LSTMModule.make_tensordict_primer` method does
+# The :meth:`~torchrl.modules.LSTMModule.make_tensordict_primer` method does
 # exactly that:
 #
 env.append_transform(lstm.make_tensordict_primer())
@@ -268,7 +268,7 @@ mlp = Mod(mlp, in_keys=["embed"], out_keys=["action_value"])
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # The last part of our policy is the Q-Value Module.
-# The Q-Value module :class:`torchrl.modules.QValueModule`
+# The Q-Value module :class:`~torchrl.modules.tensordict_module.QValueModule`
 # will read the ``"action_values"`` key that is produced by our MLP and
 # from it, gather the action that has the maximum value.
 # The only thing we need to do is to specify the action space, which can be done
@@ -280,12 +280,12 @@ qval = QValueModule(action_space=env.action_spec)
 ######################################################################
 # .. note::
 #   TorchRL also provides a wrapper class :class:`torchrl.modules.QValueActor` that
-#   wraps a module in a Sequential together with a :class:`torchrl.modules.QValueModule`
+#   wraps a module in a Sequential together with a :class:`~torchrl.modules.tensordict_module.QValueModule`
 #   like we are doing explicitly here. There is little advantage to do this
 #   and the process is less transparent, but the end results will be similar to
 #   what we do here.
 #
-# We can now put things together in a :class:`tensordict.nn.TensorDictSequential`
+# We can now put things together in a :class:`~tensordict.nn.TensorDictSequential`
 #
 stoch_policy = Seq(feature, lstm, mlp, qval)
 
@@ -293,7 +293,7 @@ stoch_policy = Seq(feature, lstm, mlp, qval)
 # DQN being a deterministic algorithm, exploration is a crucial part of it.
 # We'll be using an :math:`\epsilon`-greedy policy with an epsilon of 0.2 decaying
 # progressively to 0.
-# This decay is achieved via a call to :meth:`torchrl.modules.EGreedyWrapper.step`
+# This decay is achieved via a call to :meth:`~torchrl.modules.EGreedyWrapper.step`
 # (see training loop below).
 #
 stoch_policy = EGreedyWrapper(
@@ -311,7 +311,7 @@ stoch_policy = EGreedyWrapper(
 # To use it, we just need to tell the LSTM module to run on "recurrent-mode"
 # when used by the loss.
 # As we'll usually want to have two copies of the LSTM module, we do this by
-# calling a :meth:`torchrl.modules.LSTMModule.set_recurrent_mode` method that
+# calling a :meth:`~torchrl.modules.LSTMModule.set_recurrent_mode` method that
 # will return a new instance of the LSTM (with shared weights) that will
 # assume that the input data is sequential in nature.
 #
@@ -329,7 +329,7 @@ policy(env.reset())
 #
 # Out DQN loss requires us to pass the policy and, again, the action-space.
 # While this may seem redundant, it is important as we want to make sure that
-# the :class:`torchrl.objectives.DQNLoss` and the :class:`torchrl.modules.QValueModule`
+# the :class:`~torchrl.objectives.DQNLoss` and the :class:`~torchrl.modules.tensordict_module.QValueModule`
 # classes are compatible, but aren't strongly dependent on each other.
 #
 # To use the Double-DQN, we ask for a ``delay_value`` argument that will
@@ -339,7 +339,7 @@ loss_fn = DQNLoss(policy, action_space=env.action_spec, delay_value=True)
 
 ######################################################################
 # Since we are using a double DQN, we need to update the target parameters.
-# We'll use a  :class:`torchrl.objectives.SoftUpdate` instance to carry out
+# We'll use a  :class:`~torchrl.objectives.SoftUpdate` instance to carry out
 # this work.
 #
 updater = SoftUpdate(loss_fn, eps=0.95)
@@ -355,7 +355,7 @@ optim = torch.optim.Adam(policy.parameters(), lr=3e-4)
 # will be designed to store 20 thousands trajectories of 50 steps each.
 # At each optimization step (16 per data collection), we'll collect 4 items
 # from our buffer, for a total of 200 transitions.
-# We'll use a :class:`torchrl.data.LazyMemmapStorage` storage to keep the data
+# We'll use a :class:`~torchrl.data.replay_buffers.LazyMemmapStorage` storage to keep the data
 # on disk.
 #
 # .. note::
@@ -394,7 +394,7 @@ for i, data in enumerate(collector):
     # it is important to pass data that is not flattened
     rb.extend(data.unsqueeze(0).to_tensordict().cpu())
     for _ in range(utd):
-        s = rb.sample().to(device)
+        s = rb.sample().to(device, non_blocking=True)
         loss_vals = loss_fn(s)
         loss_vals["loss"].backward()
         optim.step()
@@ -424,11 +424,11 @@ if traj_lens:
 # Conclusion
 # ----------
 #
-# We have seen how an RNN can be incorporated in a policy in torchrl.
+# We have seen how an RNN can be incorporated in a policy in TorchRL.
 # You should now be able:
 #
-# - Create an LSTM module that acts as a :class:`tensordict.nn.TensorDictModule`
-# - Indicate to the LSTM module that a reset is needed via an :class:`torchrl.envs.InitTracker`
+# - Create an LSTM module that acts as a :class:`~tensordict.nn.TensorDictModule`
+# - Indicate to the LSTM module that a reset is needed via an :class:`~torchrl.envs.transforms.InitTracker`
 #   transform
 # - Incorporate this module in a policy and in a loss module
 # - Make sure that the collector is made aware of the recurrent state entries
@@ -437,6 +437,5 @@ if traj_lens:
 #
 # Further Reading
 # ---------------
-#
-# -  `TorchRL <https://pytorch.org/rl/>`
-
+# 
+# - The TorchRL documentation can be found `here <https://pytorch.org/rl/>`_.
