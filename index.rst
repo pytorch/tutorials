@@ -323,7 +323,7 @@ What's new in PyTorch tutorials?
    :header: Writing your environment and transforms
    :card_description: Use TorchRL to code a Pendulum
    :image: _static/img/pendulum.gif
-   :link: intermediate/pendulum.html
+   :link: advanced/pendulum.html
    :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
@@ -953,7 +953,7 @@ Additional Resources
    :hidden:
    :caption: Reinforcement Learning
 
-   intermediate/pendulum
+   advanced/pendulum
    intermediate/reinforcement_q_learning
    intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
