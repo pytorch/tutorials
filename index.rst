@@ -953,10 +953,10 @@ Additional Resources
    :hidden:
    :caption: Reinforcement Learning
 
-   advanced/pendulum
    intermediate/reinforcement_q_learning
    intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
+   advanced/pendulum
 
 .. toctree::
    :maxdepth: 2
