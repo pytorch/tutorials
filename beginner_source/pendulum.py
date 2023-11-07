@@ -792,7 +792,7 @@ print("rollout of len 3 (batch size of 10):", rollout)
 # differentiable to backpropagate through the trajectory return and adjust the
 # weights of our policy to maximize this value directly. Of course, in many
 # settings many of the assumptions we make do not hold, such as
-# differentiability of the system and full access to the underlying mechanics.
+# differentiable system and full access to the underlying mechanics.
 #
 # Still, this is a very simple example that showcases how a training loop can
 # be coded with a custom environment in TorchRL.
