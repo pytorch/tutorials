@@ -70,7 +70,7 @@ Key learnings:
 #   including: the possibility of transforming inputs, the vectorized execution
 #   of the simulation and the possibility of backpropagation through the
 #   simulation graph.
-# * Finally, will train a simple policy to solve the system we implemented.
+# * Finally, we will train a simple policy to solve the system we implemented.
 #
 from collections import defaultdict
 from typing import Optional
@@ -97,7 +97,7 @@ DEFAULT_X = np.pi
 DEFAULT_Y = 1.0
 
 ######################################################################
-# There are four things one must take care of when designing a new environment
+# There are four things you must take care of when designing a new environment
 # class:
 #
 # * :meth:`EnvBase._reset`, which codes for the resetting of the simulator
@@ -107,7 +107,7 @@ DEFAULT_Y = 1.0
 # * the environment specs.
 #
 # Let us first describe the problem at hand: we would like to model a simple
-# pendulum, over which we can control the torque applied on its fixed point.
+# pendulum over which we can control the torque applied on its fixed point.
 # Our goal is to place the pendulum in upward position (angular position at 0
 # by convention) and having it standing still in that position.
 # To design our dynamic system, we need to define two equations: the motion
@@ -156,17 +156,17 @@ DEFAULT_Y = 1.0
 #
 # The :func:`_step` method should do the following:
 #
-#   1. read the input keys (such as ``"action"``) and execute the simulation
+#   1. Read the input keys (such as ``"action"``) and execute the simulation
 #      based on these;
-#   2. retrieve observations, done state and reward;
-#   3. write the set of observation value along with the reward and done state
+#   2. Retrieve observations, done state and reward;
+#   3. Write the set of observation values along with the reward and done state
 #      at the corresponding entries in a new :class:`TensorDict`.
 #
 # Next, the :meth:`~torchrl.envs.EnvBase.step` method will merge the output
-# of :meth:`~torchrl.envs.EnvBase.step` in the input tensordict to enforce
+# of :meth:`~torchrl.envs.EnvBase.step` in the input ``tensordict`` to enforce
 # input/output consistency.
 #
-# Typically, for stateful environments, this will look like
+# Typically, for stateful environments, this will look like this: 
 #
 # .. code-block::
 #
@@ -199,7 +199,7 @@ DEFAULT_Y = 1.0
 #       device=cpu,
 #       is_shared=False)
 #
-# Notice that the root tensordict has not changed, the only modification is the
+# Notice that the root ``tensordict`` has not changed, the only modification is the
 # appearance of a new ``"next"`` entry that contains the new information.
 #
 # In the Pendulum example, our :meth:`_step` method will read the relevant
@@ -269,7 +269,7 @@ def angle_normalize(x):
 # omitted, it will be filled as ``False`` by the parent method
 # :meth:`~torchrl.envs.EnvBase.reset`). In some contexts, it is required that
 # the ``_reset`` method receives a command from the function that called
-# it (e.g. in multi-agent settings we may want to indicate which agents need
+# it (for example, in multi-agent settings we may want to indicate which agents need
 # to be reset). This is why the :meth:`~torchrl.envs.EnvBase._reset` method
 # also expects a tensordict as input, albeit it may perfectly be empty or
 # ``None``.
@@ -377,8 +377,8 @@ def _reset(self, tensordict):
 # the expected input and output shapes. This is something that should be
 # accurately coded in stateful settings.
 #
-# For non batch-locked environments such as the one in our example (see below),
-# this is irrelevant as the environment batch-size will most likely be empty.
+# For non batch-locked environments, such as the one in our example (see below),
+# this is irrelevant as the environment batch size will most likely be empty.
 #
 
 
@@ -438,8 +438,8 @@ def make_composite_from_td(td):
 # ---------------------------------
 #
 # Seeding an environment is a common operation when initializing an experiment.
-# :func:`EnvBase._set_seed` only goal is to set the seed of the contained
-# simulator. If possible, this operation should not call `reset()` or interact
+# The only goal of :func:`EnvBase._set_seed` is to set the seed of the contained
+# simulator. If possible, this operation should not call ``reset()`` or interact
 # with the environment execution. The parent :func:`EnvBase.set_seed` method
 # incorporates a mechanism that allows seeding multiple environments with a
 # different pseudo-random and reproducible seed.
@@ -493,7 +493,7 @@ def gen_params(g=10.0, batch_size=None) -> TensorDictBase:
 ######################################################################
 # We define the environment as non-``batch_locked`` by turning the homonymous
 # attribute to ``False``. This means that we will **not** enforce the input
-# tensordict to have a batch-size that matches the one of the environment.
+# ``tensordict`` to have a ``batch-size`` that matches the one of the environment.
 #
 # The following code will just put together the pieces we have coded above.
 #
@@ -703,7 +703,7 @@ env.append_transform(t_cos)
 
 ######################################################################
 # Concatenates the observations onto an "observation" entry.
-# del_keys=False ensures that we keep these values for the next
+# ``del_keys=False`` ensures that we keep these values for the next
 # iteration.
 cat_transform = CatTensors(
     in_keys=["sin", "cos", "thdot"], dim=-1, out_key="observation", del_keys=False
