@@ -778,7 +778,7 @@ for e in range(episodes):
 
     logger.log_episode()
 
-    if e % 20 == 0:
+    if (e % 20 == 0) or (e == episodes - 1):
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 
