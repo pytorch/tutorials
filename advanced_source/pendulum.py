@@ -47,11 +47,11 @@ Key learnings:
 # types of environments, but stateless environments are more generic and hence
 # cover a broader range of features of the environment API in TorchRL.
 #
-# modelling stateless environments gives users full control over the input and
-# outputs of the simulator: one can reset an experiment at any stage. It also
-# assumes that we have some control over a task, which may not always be the
-# case: solving a problem where we cannot control the current state is more
-# challenging but has a much wider set of applications.
+# Modelling stateless environments gives users full control over the input and
+# outputs of the simulator: one can reset an experiment at any stage or actively 
+# modify the dynamics from the outside. However, it assumes that we have some control 
+# over a task, which may not always be the case: solving a problem where we cannot 
+# control the current state is more challenging but has a much wider set of applications.
 #
 # Another advantage of stateless environments is that they can enable
 # batched execution of transition simulations. If the backend and the
@@ -460,7 +460,7 @@ def _set_seed(self, seed: Optional[int]):
 # construction, so we must take care of calling the :func:`_make_spec` method
 # within :func:`PendulumEnv.__init__`.
 #
-# We add a static method :func:`PendulumEnv.gen_params` which deterministically
+# We add a static method :meth:`PendulumEnv.gen_params` which deterministically
 # generates a set of hyperparameters to be used during execution:
 #
 
@@ -572,8 +572,8 @@ print("random step tensordict", td)
 # Writing environment transforms for stateless simulators is slightly more
 # complicated than for stateful ones: transforming an output entry that needs
 # to be read at the following iteration requires to apply the inverse transform
-# before calling :func:`env.step` at the next step.
-# This is an ideal scenario to showcase all the features of torchrl's
+# before calling :func:`meth.step` at the next step.
+# This is an ideal scenario to showcase all the features of TorchRL's
 # transforms!
 #
 # For instance, in the following transformed environment we unsqueeze the entries
@@ -604,26 +604,32 @@ env = TransformedEnv(
 # - Adapting the environment specs.
 #
 # A transform can be used in two settings: on its own, it can be used as a
-# :class:`torch.nn.Module`. It can also be used appended to a
-# :class:`~torchrl.envs.TransformedEnv`. The structure of the class allows to
+# :class:`~torch.nn.Module`. It can also be used appended to a
+# :class:`~torchrl.envs.transforms.TransformedEnv`. The structure of the class allows to
 # customize the behavior in the different contexts.
 #
-# A :class:`~torchrl.envs.Transform` skeleton can be summarized as follows:
+# A :class:`~torchrl.envs.transforms.Transform` skeleton can be summarized as follows:
 #
 # .. code-block::
 #
 #   class Transform(nn.Module):
 #       def forward(self, tensordict):
+#           ...
 #       def _apply_transform(self, tensordict):
+#           ...
 #       def _step(self, tensordict):
+#           ...
 #       def _call(self, tensordict):
+#           ...
 #       def inv(self, tensordict):
+#           ...
 #       def _inv_apply_transform(self, tensordict):
+#           ...
 #
 # There are three entry points (:func:`forward`, :func:`_step` and :func:`inv`)
 # which all receive :class:`tensordict.TensorDict` instances. The first two
-# will eventually go through the keys indicated by :obj:`Transform.in_keys`
-# and call :func:`Transform._apply_transform` to each of these. The results will
+# will eventually go through the keys indicated by :obj:`~tochrl.envs.transforms.Transform.in_keys`
+# and call :meth:`~torchrl.envs.transforms.Transform._apply_transform` to each of these. The results will
 # be written in the entries pointed by :obj:`Transform.out_keys` if provided
 # (if not the ``in_keys`` will be updated with the transformed values).
 # If inverse transforms need to be executed, a similar data flow will be
@@ -729,7 +735,7 @@ check_env_specs(env)
 #
 # * gather the data and return
 #
-# These operations have been conveniently wrapped in the :func:`EnvBase.rollout`
+# These operations have been conveniently wrapped in the :meth:`~torchrl.envs.EnvBase.rollout`
 # method, from which we provide a simplified version here below.
 
 
@@ -770,7 +776,7 @@ print("rand step (batch size of 10)", td)
 ######################################################################
 # Executing a rollout with a batch of data requires us to reset the env
 # out of the rollout function, since we need to define the batch_size
-# dynamically and this is not supported by :func:`EnvBase.rollout`:
+# dynamically and this is not supported by :meth:`~torchrl.envs.EnvBase.rollout`:
 #
 
 rollout = env.rollout(
@@ -894,9 +900,9 @@ plot()
 # scratch. We touched the subjects of:
 #
 # * The four essential components that need to be taken care of when coding
-#   an environment (:func:`step`, :func:`reset", seeding and building specs).
+#   an environment (``step``, ``reset``, seeding and building specs).
 #   We saw how these methods and classes interact with the
-#   :class:`tensordict.TensorDict` class;
+#   :class:`~tensordict.TensorDict` class;
 # * How to test that an environment is properly coded using
 #   :func:`~torchrl.envs.utils.check_env_specs`;
 # * How to append transforms in the context of stateless environments and how
