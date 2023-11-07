@@ -43,7 +43,7 @@ from PIL import Image
 import numpy as np
 from pathlib import Path
 from collections import deque
-import random, datetime, os, copy
+import random, datetime, os
 
 # Gym is an OpenAI toolkit for RL
 import gym
@@ -424,7 +424,23 @@ class MarioNet(nn.Module):
         if w != 84:
             raise ValueError(f"Expecting input width: 84, got: {w}")
 
-        self.online = nn.Sequential(
+        self.online = self.__build_cnn(c, output_dim)
+
+        self.target = self.__build_cnn(c, output_dim)
+        self.target.load_state_dict(self.online.state_dict())
+
+        # Q_target parameters are frozen.
+        for p in self.target.parameters():
+            p.requires_grad = False
+
+    def forward(self, input, model):
+        if model == "online":
+            return self.online(input)
+        elif model == "target":
+            return self.target(input)
+
+    def __build_cnn(self, c, output_dim):
+        return nn.Sequential(
             nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
@@ -436,18 +452,6 @@ class MarioNet(nn.Module):
             nn.ReLU(),
             nn.Linear(512, output_dim),
         )
-
-        self.target = copy.deepcopy(self.online)
-
-        # Q_target parameters are frozen.
-        for p in self.target.parameters():
-            p.requires_grad = False
-
-    def forward(self, input, model):
-        if model == "online":
-            return self.online(input)
-        elif model == "target":
-            return self.target(input)
 
 
 ######################################################################
@@ -774,7 +778,7 @@ for e in range(episodes):
 
     logger.log_episode()
 
-    if e % 20 == 0:
+    if (e % 20 == 0) or (e == episodes - 1):
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 
