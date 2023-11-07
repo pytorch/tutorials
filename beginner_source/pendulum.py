@@ -24,7 +24,7 @@ Key learnings:
 
 - How to design an environment in TorchRL:
   - Writing specs (input, observation and reward);
-  - Implementing behaviour: seeding, reset and step.
+  - Implementing behavior: seeding, reset and step.
 - Transforming your environment inputs and outputs, and writing your own
   transforms;
 - How to use :class:`tensordict.TensorDict` to carry arbitrary data structures
@@ -47,7 +47,7 @@ Key learnings:
 # types of environments, but stateless environments are more generic and hence
 # cover a broader range of features of the environment API in torchrl.
 #
-# Modelling stateless environments gives users full control over the input and
+# modelling stateless environments gives users full control over the input and
 # outputs of the simulator: one can reset an experiment at any stage. It also
 # assumes that we have some control over a task, which may not always be the
 # case: solving a problem where we cannot control the current state is more
@@ -68,7 +68,7 @@ Key learnings:
 #   during training with transforms.
 # * We will explore new avenues that follow from the TorchRL's API,
 #   including: the possibility of transforming inputs, the vectorized execution
-#   of the simulation and the possibility of backpropagating through the
+#   of the simulation and the possibility of backpropagation through the
 #   simulation graph.
 # * Finally, will train a simple policy to solve the system we implemented.
 #
@@ -606,7 +606,7 @@ env = TransformedEnv(
 # A transform can be used in two settings: on its own, it can be used as a
 # :class:`torch.nn.Module`. It can also be used appended to a
 # :class:`~torchrl.envs.TransformedEnv`. The structure of the class allows to
-# customize the behaviour in the different contexts.
+# customize the behavior in the different contexts.
 #
 # A :class:`~torchrl.envs.Transform` skeleton can be summarized as follows:
 #
@@ -730,7 +730,7 @@ check_env_specs(env)
 #
 # * gather the data and return
 #
-# These operations have been convinently wrapped in the :func:`EnvBase.rollout`
+# These operations have been conveniently wrapped in the :func:`EnvBase.rollout`
 # method, from which we provide a simplified version here below.
 
 
@@ -790,7 +790,7 @@ print("rollout of len 3 (batch size of 10):", rollout)
 # differentiable objective, such as a negative loss.
 # We will take advantage of the fact that our dynamic system is fully
 # differentiable to backpropagate through the trajectory return and adjust the
-# weights of our policy to maximise this value directly. Of course, in many
+# weights of our policy to maximize this value directly. Of course, in many
 # settings many of the assumptions we make do not hold, such as
 # differentiability of the system and full access to the underlying mechanics.
 #
