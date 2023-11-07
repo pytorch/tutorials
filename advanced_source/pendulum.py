@@ -17,6 +17,7 @@ control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
 .. figure:: /_static/img/pendulum.gif
    :alt: Pendulum
+   :align: center
 
    Simple Pendulum
 
