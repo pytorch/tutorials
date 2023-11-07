@@ -10,8 +10,8 @@ Creating an environment (a simulator or an interface to a physical control syste
 is an integrative part of reinforcement learning and control engineering.
 
 TorchRL provides a set of tools to do this in multiple contexts.
-This tutorial demonstrates how to use PyTorch and ``torchrl`` code a pendulum
-in a simulator environment from the ground up.
+This tutorial demonstrates how to use PyTorch and TorchRL code a pendulum 
+simulator from the ground up.
 It is freely inspired by the Pendulum-v1 implementation from `OpenAI-Gym/Farama-Gymnasium
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
 
@@ -27,8 +27,8 @@ Key learnings:
   - Implementing behavior: seeding, reset and step.
 - Transforming your environment inputs and outputs, and writing your own
   transforms;
-- How to use :class:`tensordict.TensorDict` to carry arbitrary data structures
-  step-by-step.
+- How to use :class:`~tensordict.TensorDict` to carry arbitrary data structures 
+  through the codebase.
 
   In the process, we will touch three crucial components of TorchRL:
 
@@ -45,7 +45,7 @@ Key learnings:
 # transition, stateless environments expect the current state to be provided to
 # them at each step, along with the action undertaken. TorchRL supports both
 # types of environments, but stateless environments are more generic and hence
-# cover a broader range of features of the environment API in torchrl.
+# cover a broader range of features of the environment API in TorchRL.
 #
 # modelling stateless environments gives users full control over the input and
 # outputs of the simulator: one can reset an experiment at any stage. It also
@@ -61,8 +61,8 @@ Key learnings:
 # This tutorial will be structured as follows:
 #
 # * We will first get acquainted with the environment properties:
-#   its shape (``batch_size``), its methods (mainly :meth:`EnvBase.step`,
-#   :meth:`EnvBase.reset` and :meth:`EnvBase.set_seed`)
+#   its shape (``batch_size``), its methods (mainly :meth:`~torchrl.envs.EnvBase.step`,
+#   :meth:`~torchrl.envs.EnvBase.reset` and :meth:`~torchrl.envs.EnvBase.set_seed`)
 #   and finally its specs.
 # * After having coded our simulator, we will demonstrate how it can be used
 #   during training with transforms.
@@ -633,7 +633,6 @@ env = TransformedEnv(
 # The following figure summarized this flow for environments and replay
 # buffers.
 #
-# .. figure:: /_static/img/transforms.png
 #
 #    Transform API
 #
