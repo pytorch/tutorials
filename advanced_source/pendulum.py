@@ -303,7 +303,7 @@ def _reset(self, tensordict):
     low_th = -high_th
     low_thdot = -high_thdot
 
-    # for non batch-locked envs, the input tensordict shape dictates the number
+    # for non batch-locked envs, the input ``tensordict`` shape dictates the number
     # of simulators run simultaneously. In other contexts, the initial
     # random state's shape will depend upon the environment batch-size instead.
     th = (
