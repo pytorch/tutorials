@@ -398,7 +398,7 @@ def _make_spec(self, td_params):
             shape=(),
             dtype=torch.float32,
         ),
-        # we need to add the "params" to the observation specs, as we want
+        # we need to add the ``params`` to the observation specs, as we want
         # to pass it at each step during a rollout
         params=make_composite_from_td(td_params["params"]),
         shape=(),
@@ -418,7 +418,7 @@ def _make_spec(self, td_params):
 
 
 def make_composite_from_td(td):
-    # custom funtion to convert a tensordict in a similar spec structure
+    # custom function to convert a ``tensordict`` in a similar spec structure
     # of unbounded values.
     composite = CompositeSpec(
         {
@@ -558,8 +558,8 @@ print("reset tensordict", td)
 
 ######################################################################
 # We can run the :func:`env.rand_step` to generate
-# an action randomly from the ``action_spec`` domain. A tensordict containing
-# the hyperparams and the current state **must** be passed since our
+# an action randomly from the ``action_spec`` domain. A ``tensordict`` containing
+# the hyperparameters and the current state **must** be passed since our
 # environment is stateless. In stateful contexts, ``env.rand_step()`` works
 # perfectly too.
 #
@@ -577,14 +577,14 @@ print("random step tensordict", td)
 # This is an ideal scenario to showcase all the features of TorchRL's
 # transforms!
 #
-# For instance, in the following transformed environment we unsqueeze the entries
+# For instance, in the following transformed environment we ``unsqueeze`` the entries
 # ``["th", "thdot"]`` to be able to stack them along the last
 # dimension. We also pass them as ``in_keys_inv`` to squeeze them back to their
 # original shape once they are passed as input in the next iteration.
 #
 env = TransformedEnv(
     env,
-    # Unsqueezes the observations that we will concatenate
+    # ``Unsqueeze`` the observations that we will concatenate
     UnsqueezeTransform(
         unsqueeze_dim=-1,
         in_keys=["th", "thdot"],
@@ -717,7 +717,7 @@ cat_transform = CatTensors(
 env.append_transform(cat_transform)
 
 ######################################################################
-# Once more, let us check that our env specs match what is received:
+# Once more, let us check that our environment specs match what is received:
 check_env_specs(env)
 
 ######################################################################
@@ -764,7 +764,7 @@ print("data from rollout:", simple_rollout(100))
 # make any assumptions regarding the input data shape, we can seamlessly
 # execute it over batches of data. Even better: for non-batch-locked
 # environments such as our Pendulum, we can change the batch size on the fly
-# without recreating the env.
+# without recreating the environment.
 # To do this, we just generate parameters with the desired shape.
 #
 
@@ -775,7 +775,7 @@ td = env.rand_step(td)
 print("rand step (batch size of 10)", td)
 
 ######################################################################
-# Executing a rollout with a batch of data requires us to reset the env
+# Executing a rollout with a batch of data requires us to reset the environment
 # out of the rollout function, since we need to define the batch_size
 # dynamically and this is not supported by :meth:`~torchrl.envs.EnvBase.rollout`:
 #
