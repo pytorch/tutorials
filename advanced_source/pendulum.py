@@ -48,7 +48,7 @@ Key learnings:
 # types of environments, but stateless environments are more generic and hence
 # cover a broader range of features of the environment API in TorchRL.
 #
-# Modelling stateless environments gives users full control over the input and
+# Modeling stateless environments gives users full control over the input and
 # outputs of the simulator: one can reset an experiment at any stage or actively 
 # modify the dynamics from the outside. However, it assumes that we have some control 
 # over a task, which may not always be the case: solving a problem where we cannot 
