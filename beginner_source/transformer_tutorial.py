@@ -91,10 +91,11 @@ class TransformerModel(nn.Module):
         """
         src = self.embedding(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
+        if src_mask is None:
+            src_mask = nn.Transformer.generate_square_subsequent_mask(len(src)).to(device)
         output = self.transformer_encoder(src, src_mask)
         output = self.linear(output)
         return output
-
 
 ######################################################################
 # ``PositionalEncoding`` module injects some information about the
