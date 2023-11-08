@@ -97,6 +97,7 @@ class TransformerModel(nn.Module):
         output = self.linear(output)
         return output
 
+
 ######################################################################
 # ``PositionalEncoding`` module injects some information about the
 # relative or absolute position of the tokens in the sequence. The
