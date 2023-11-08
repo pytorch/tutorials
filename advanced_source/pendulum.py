@@ -29,7 +29,7 @@ Key learnings:
 - Transforming your environment inputs and outputs, and writing your own
   transforms;
 - How to use :class:`~tensordict.TensorDict` to carry arbitrary data structures 
-  through the codebase.
+  through the ``codebase``.
 
   In the process, we will touch three crucial components of TorchRL:
 
@@ -149,10 +149,10 @@ DEFAULT_Y = 1.0
 # method that receives a :class:`tensordict.TensorDict`
 # instance with an ``"action"`` entry indicating what action is to be taken.
 #
-# To facilitate the reading and writing from that tensordict and to make sure
+# To facilitate the reading and writing from that ``tensordict`` and to make sure
 # that the keys are consistent with what's expected from the library, the
 # simulation part has been delegated to a private abstract method :meth:`_step`
-# which reads input data from a tensordict, and writes a *new*  tensordict
+# which reads input data from a ``tensordict``, and writes a *new*  ``tensordict``
 # with the output data.
 #
 # The :func:`_step` method should do the following:
@@ -204,7 +204,7 @@ DEFAULT_Y = 1.0
 # appearance of a new ``"next"`` entry that contains the new information.
 #
 # In the Pendulum example, our :meth:`_step` method will read the relevant
-# entries from the input tensordict and compute the position and velocity of
+# entries from the input ``tensordict`` and compute the position and velocity of
 # the pendulum after the force encoded by the ``"action"`` key has been applied
 # onto it. We compute the new angular position of the pendulum
 # ``"new_th"`` as the result of the previous position ``"th"`` plus the new
@@ -266,24 +266,24 @@ def angle_normalize(x):
 # The second method we need to care about is the
 # :meth:`~torchrl.envs.EnvBase._reset` method. Like
 # :meth:`~torchrl.envs.EnvBase._step`, it should write the observation entries
-# and possibly a done state in the tensordict it outputs (if the done state is
+# and possibly a done state in the ``tensordict`` it outputs (if the done state is
 # omitted, it will be filled as ``False`` by the parent method
 # :meth:`~torchrl.envs.EnvBase.reset`). In some contexts, it is required that
 # the ``_reset`` method receives a command from the function that called
 # it (for example, in multi-agent settings we may want to indicate which agents need
 # to be reset). This is why the :meth:`~torchrl.envs.EnvBase._reset` method
-# also expects a tensordict as input, albeit it may perfectly be empty or
+# also expects a ``tensordict`` as input, albeit it may perfectly be empty or
 # ``None``.
 #
 # The parent :meth:`EnvBase.reset` does some simple checks like the
 # :meth:`EnvBase.step` does, such as making sure that a ``"done"`` state
-# is returned in the output tensordict and that the shapes match what is
+# is returned in the output ``tensordict`` and that the shapes match what is
 # expected from the specs.
 #
 # For us, the only important thing to consider is whether
 # :meth:`EnvBase._reset` contains all the expected observations. Once more,
 # since we are working with a stateless environment, we pass the configuration
-# of the pendulum in a nested tensordict named ``"params"``.
+# of the pendulum in a nested ``tensordict`` named ``"params"``.
 #
 # In this example, we do not pass a done state as this is not mandatory
 # for :meth:`_reset` and our environment is non-terminating, so we always
@@ -345,12 +345,12 @@ def _reset(self, tensordict):
 #   instance where each key is an observation (a :class:`CompositeSpec` can be
 #   viewed as a dictionary of specs).
 # * :obj:`EnvBase.action_spec`: It can be any type of spec, but it is required
-#   that it corresponds to the ``"action"`` entry in the input tensordict;
+#   that it corresponds to the ``"action"`` entry in the input ``tensordict``;
 # * :obj:`EnvBase.reward_spec`: provides information about the reward space;
 # * :obj:`EnvBase.done_spec`: provides information about the space of the done
 #   flag.
 #
-# TorchRL specs are organised in two general containers: ``input_spec`` which
+# TorchRL specs are organized in two general containers: ``input_spec`` which
 # contains the specs of the information that the step function reads (divided
 # between ``action_spec`` containing the action and ``state_spec`` containing
 # all the rest), and ``output_spec`` which encodes the specs that the
@@ -358,7 +358,7 @@ def _reset(self, tensordict):
 # In general, you should not interact directly with ``output_spec`` and
 # ``input_spec`` but only with their content: ``observation_spec``,
 # ``reward_spec``, ``done_spec``, ``action_spec`` and ``state_spec``.
-# The reason if that the specs are organised in a non-trivial way
+# The reason if that the specs are organized in a non-trivial way
 # within ``output_spec`` and
 # ``input_spec`` and neither of these should be directly modified.
 #
@@ -404,7 +404,7 @@ def _make_spec(self, td_params):
         shape=(),
     )
     # since the environment is stateless, we expect the previous output as input.
-    # For this, EnvBase expects some state_spec to be available
+    # For this, ``EnvBase`` expects some state_spec to be available
     self.state_spec = self.observation_spec.clone()
     # action-spec will be automatically wrapped in input_spec when
     # `self.action_spec = spec` will be called supported
@@ -467,7 +467,7 @@ def _set_seed(self, seed: Optional[int]):
 
 
 def gen_params(g=10.0, batch_size=None) -> TensorDictBase:
-    """Returns a tensordict containing the physical parameters such as gravitational force and torque or speed limits."""
+    """Returns a ``tensordict`` containing the physical parameters such as gravitational force and torque or speed limits."""
     if batch_size is None:
         batch_size = []
     td = TensorDict(
@@ -492,7 +492,7 @@ def gen_params(g=10.0, batch_size=None) -> TensorDictBase:
 
 
 ######################################################################
-# We define the environment as non-``batch_locked`` by turning the homonymous
+# We define the environment as non-``batch_locked`` by turning the ``homonymous``
 # attribute to ``False``. This means that we will **not** enforce the input
 # ``tensordict`` to have a ``batch-size`` that matches the one of the environment.
 #
@@ -645,7 +645,7 @@ env = TransformedEnv(
 #
 # In some cases, a transform will not work on a subset of keys in a unitary
 # manner, but will execute some operation on the parent environment or
-# work with the entire input tensordict.
+# work with the entire input ``tensordict``.
 # In those cases, the :func:`_call` and :func:`forward` methods should be
 # re-written, and the :func:`_apply_transform` method can be skipped.
 #
@@ -732,7 +732,7 @@ check_env_specs(env)
 #   * compute an action given a policy
 #   * execute a step given this action
 #   * collect the data
-#   * make a MDP step
+#   * make a ``MDP`` step
 #
 # * gather the data and return
 #
