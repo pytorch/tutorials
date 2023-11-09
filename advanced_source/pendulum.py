@@ -293,8 +293,8 @@ def angle_normalize(x):
 
 def _reset(self, tensordict):
     if tensordict is None or tensordict.is_empty():
-        # if no tensordict is passed, we generate a single set of hyperparameters
-        # Otherwise, we assume that the input tensordict contains all the relevant
+        # if no ``tensordict`` is passed, we generate a single set of hyperparameters
+        # Otherwise, we assume that the input ``tensordict`` contains all the relevant
         # parameters to get started.
         tensordict = self.gen_params(batch_size=self.batch_size)
 
@@ -303,7 +303,7 @@ def _reset(self, tensordict):
     low_th = -high_th
     low_thdot = -high_thdot
 
-    # for non batch-locked envs, the input ``tensordict`` shape dictates the number
+    # for non batch-locked environments, the input ``tensordict`` shape dictates the number
     # of simulators run simultaneously. In other contexts, the initial
     # random state's shape will depend upon the environment batch-size instead.
     th = (
