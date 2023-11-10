@@ -37,4 +37,4 @@ def convert_ipynb_to_gallery(file_name):
 
 if __name__ == '__main__':
     import sys
-    convert_ipynb_to_gallery(r"C:\Users\meast\tiatoolbox\examples\05-patch-prediction.ipynb")
+    convert_ipynb_to_gallery(r"/home/u2071810/Code/tutorials/intermediate_source/tiatoolbox_tutorial.ipynb")
