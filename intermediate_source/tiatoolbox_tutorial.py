@@ -5,69 +5,26 @@ Patch Prediction Models
 
 """
 
-
 ######################################################################
-# About this notebook
-# -------------------
-# 
-# This jupyter notebook can be run on any computer with a standard browser
-# and no prior installation of any programming language is required. It
-# can run remotely over the Internet, free of charge, thanks to Google
-# Colaboratory. To connect with Colab, click on one of the two blue
-# checkboxes above. Check that �colab� appears in the address bar. You can
-# right-click on �Open in Colab� and select �Open in new tab� if the left
-# click does not work for you. Familiarize yourself with the drop-down
-# menus near the top of the window. You can edit the notebook during the
-# session, for example substituting your own image files for the image
-# files used in this demo. Experiment by changing the parameters of
-# functions. It is not possible for an ordinary user to permanently change
-# this version of the notebook on GitHub or Colab, so you cannot
-# inadvertently mess it up. Use the notebook�s File Menu if you wish to
-# save your own (changed) notebook.
-# 
-# To run the notebook on any platform, except for Colab, set up your
-# Python environment, as explained in the
-# `README <https://github.com/TIA-Lab/tiatoolbox/blob/master/README.md#install-python-package>`__
-# file.
-# 
-
-
-######################################################################
-# About this demo
-# ~~~~~~~~~~~~~~~
-# 
-# In this example, we will show how to use TIAToolbox for patch-level
-# prediction using a range of deep learning models. TIAToolbox can be used
-# to make predictions on pre-extracted image patches or on larger image
-# tiles / whole-slide images (WSIs), where image patches are extracted on
-# the fly. WSI patch-level predictions can subsequently be aggregated to
-# obtain a segmentation map. In particular, we will introduce the use of
-# our module ``patch_predictor``
-# (`details <https://tia-toolbox.readthedocs.io/en/latest/usage.html?highlight=patch_predictor#module-tiatoolbox.models.engine.patch_predictor>`__).
-# A full list of the available models trained and provided in TIAToolbox
-# for patch-level prediction is given below.
-# 
-# -  Models trained on the Kather 100k dataset
-#    (`details <https://zenodo.org/record/1214456#.YJw4UEhKjvU>`__):
-# 
-#    -  ``alexnet-kather100k``
-#    -  ``resnet18-kather100k``
-#    -  ``resnet34-kather100k``
-#    -  ``resnet50-kather100k``
-#    -  ``resnet101-kather100k``
-#    -  ``resnext50_32x4d-kather100k``
-#    -  ``resnext101_32x8d-kather100k``
-#    -  ``wide_resnet50_2-kather100k``
-#    -  ``wide_resnet101_2-kather100k``
-#    -  ``densenet121-kather100k``
-#    -  ``densenet161-kather100k``
-#    -  ``densenet169-kather100k``
-#    -  ``densenet201-kather100k``
-#    -  ``mobilenet_v2-kather100k``
-#    -  ``mobilenet_v3_large-kather100k``
-#    -  ``mobilenet_v3_small-kather100k``
-#    -  ``googlenet-kather100k``
-# 
+# Introduction
+# ------------
+#
+# In this tutorial, we will show you how you can classify Whole Slide Images (WSIs) using PyTorch deep learning models with help from TIAToolbox. In a nutshell, WSIs represent human tissues taken through a biopsy and scanned using specialized scanners. They are used by pathologists and computational pathology researchers to [study cancer at the microscopic level](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7522141/) in order to understand tumor growth and help improve treatment for patients.
+#
+# Now, the trick with WSIs is their enormous size. For example, a typical slide image has in the order of [100,000x100,000 pixels](https://doi.org/10.1117%2F12.912388) where each pixel can correspond to about 0.25 microns (if using 40X magnification). This introduces challenges in loading and processing such images, not to mention hundreds of them in a single study! 
+#
+# So how can you import WSIs that are in the size of gigabytes each and run algorithms on them to analyze their visual features? Conventional image processing pipelines will not be suitable and hence we need more optimized tools of the trade. This where [TIAToolbox](https://github.com/TissueImageAnalytics/tiatoolbox) comes into play, as it brings a set of useful tools to import and process tissue slides in a fast and computationally efficient manner by taking advantage of its pyramid structure to downsample the image at set zoom levels. Here is how the pyramid structure looks like:
+#
+# ![WSI pyramid stack](https://tia-toolbox.readthedocs.io/en/latest/_images/read_bounds_tissue.png)
+# *WSI pyramid stack [source](https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.wsicore.wsireader.WSIReader.html#)*
+#
+# <br/>
+#
+# The toolbox also allows you to automate common downstream analysis tasks such as [tissue classification](https://doi.org/10.1016/j.media.2022.102685). So, in this tutorial we will show you how you can:
+# 1. Load WSI images using TIAToolbox; and
+# 2. Use different PyTorch models to classify slides at the batch-level (i.e., small tiles).
+#
+# So, let's get started!
 
 
 ######################################################################
