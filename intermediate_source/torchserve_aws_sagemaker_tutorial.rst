@@ -67,6 +67,7 @@ One can customise the handler by passing the `<custom_handler.py> <https://githu
             --serialized-file densenet161-8d451a50.pth \
             --extra-files serve/examples/image_classifier/index_to_name.json \
             --handler image_classifier
+            --archive-format tgz
 
 Uploading the model to Amazon S3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,7 +93,9 @@ To upload the model to Amazon S3, complete the following steps:
             bucket_name = sagemaker_session.default_bucket()
             prefix = 'torchserve'
 
-    #. Create a compressed tar.gz file out of the densenet161.mar file, because Amazon SageMaker expects models to be in a tar.gz file.
+    ``[Optional]`` The methods mentioned below are to be used only when we pass the flag `torchserve-model-archive --archive-format no-archive` in the step of creating torchserve archive. For large models we use `uncompressed model artifact feature <https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-uncompressed.html>`_ of sagemaker which as of now is only available for single model endpoint use cases.
+
+    2. Create a compressed tar.gz file out of the densenet161.mar file, because Amazon SageMaker expects models to be in a tar.gz file.
 
         .. code:: shell
 
