@@ -174,7 +174,7 @@ prof.stop()
 #
 
 ######################################################################
-# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser (**Safari is not supported** [#30525](https://github.com/pytorch/pytorch/issues/30525))
+# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser (**Safari is not supported**)
 #
 # .. code-block::
 #
