@@ -104,6 +104,9 @@ To upload the model to Amazon S3, complete the following steps:
 
             aws s3 cp $model_file_name.tar.gz s3://{bucket_name}/{prefix}/model
 
+
+We are doing the following two steps related to Docker Container because we want Amazon SageMaker to interact with our `custom Docker containers <https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-main.html>`_ but we can use `various AWS Sagemaker services <https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html>`_ which also satifies our use case of `bringing our own models <https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html#deploy-model-steps-byom>`_.
+
 Creating an Amazon ECR registry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
