@@ -29,7 +29,7 @@ can be easily adapted/composed.
 
 ######################################################################
 # In this tutorial, we train a ``nn.TransformerEncoder`` model on a
-# language modeling task. Please note that this tutorial does not cover
+# causal language modeling task. Please note that this tutorial does not cover
 # the training of `nn.TransformerDecoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoder.html#torch.nn.TransformerDecoder>`__, as depicted in
 # the right half of the diagram above. The language modeling task is to assign a
 # probability for the likelihood of a given word (or a sequence of words)
