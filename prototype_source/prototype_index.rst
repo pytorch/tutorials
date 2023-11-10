@@ -69,18 +69,35 @@ Prototype features are not available as part of binary distributions like PyPI o
    :tags: Debugging,Quantization
 
 .. customcarditem::
-   :header: How to Write a Quantizer for PyTorch 2.0 Export Quantization
-   :card_description: Learn how to implement a Quantizer for PT2.0 Export Quantization
+   :header: How to Write a Quantizer for PyTorch 2 Export Quantization
+   :card_description: Learn how to implement a Quantizer for PT2 Export Quantization
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/pt2e_quantizer.html
    :tags: Quantization
 
 .. customcarditem::
-   :header: PyTorch 2.0 Export Post Training Static Quantization
-   :card_description: Learn how to use Post Training Static Quantization in PyTorch 2.0 Export.
+   :header: PyTorch 2 Export Post Training Quantization
+   :card_description: Learn how to use Post Training Quantization in PyTorch 2 Export.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quant_ptq_static.html
+   :link: ../prototype/pt2e_quant_ptq.html
    :tags: Quantization          
+   
+.. customcarditem::
+   :header: PyTorch 2 Export Quantization-Aware Training
+   :card_description: Learn how to use Quantization-Aware-Training in PyTorch 2 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_qat.html
+   :tags: Quantization
+
+
+.. Sparsity
+
+.. customcarditem::
+   :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
+   :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: prototype/semi_structured_sparse.html
+   :tags: Model-Optimiziation
 
 .. Mobile
 
@@ -185,6 +202,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/maskedtensor_adagrad.html
    :tags: MaskedTensor
    
+.. Model-Optimization
+
+.. customcarditem::
+   :header: Inductor Cpp Wrapper Tutorial
+   :card_description: Speed up your models with Inductor Cpp Wrapper
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/inductor_cpp_wrapper_tutorial.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -207,7 +233,10 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
-   prototype/quantization_in_pytorch_2_0_export_tutorial.html
+   prototype/inductor_cpp_wrapper_tutorial.html
+   prototype/pt2e_quantizer.html
+   prototype/pt2e_quant_ptq.html
+   prototype/pt2e_quant_qat.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html

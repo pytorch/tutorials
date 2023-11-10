@@ -3,14 +3,15 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Implementing High Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html?utm_source=whats_new_tutorials&utm_medium=scaled_dot_product_attention_tutorial>`__
-* `torch.compile Tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torch_compile>`__
-* `Per Sample Gradients <https://pytorch.org/tutorials/intermediate/per_sample_grads.html?utm_source=whats_new_tutorials&utm_medium=per_sample_grads>`__
-* `Jacobians, Hessians, hvp, vhp, and more: composing function transforms <https://pytorch.org/tutorials/intermediate/jacobians_hessians.html?utm_source=whats_new_tutorials&utm_medium=jacobians_hessians>`__
-* `Model Ensembling <https://pytorch.org/tutorials/intermediate/ensembling.html?utm_source=whats_new_tutorials&utm_medium=ensembling>`__
-* `Neural Tangent Kernels <https://pytorch.org/tutorials/intermediate/neural_tangent_kernels.html?utm_source=whats_new_tutorials&utm_medium=neural_tangent_kernels>`__
-* `Reinforcement Learning (PPO) with TorchRL Tutorial <https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html?utm_source=whats_new_tutorials&utm_medium=reinforcement_ppo>`__
-* `Changing Default Device <https://pytorch.org/tutorials/recipes/recipes/changing_default_device.html?utm_source=whats_new_tutorials&utm_medium=changing_default_device>`__
+* `Getting Started with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html>`__
+* `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+* `Facilitating New Backend Integration by PrivateUse1 <https://pytorch.org/tutorials/advanced/privateuseone.html>`__
+* `(prototype) Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/prototype/semi_structured_sparse.html>`__
+* `(prototype) PyTorch 2 Export Quantization-Aware Training (QAT) <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`__
+* `(prototype) PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`__
+* `(prototype) Inductor C++ Wrapper Tutorial <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`__
+* `How to save memory by fusing the optimizer step into the backward pass <https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html>`__
+* `Tips for Loading an nn.Module from a Checkpoint <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html>`__
 
 
 .. raw:: html
@@ -265,12 +266,28 @@ What's new in PyTorch tutorials?
    :tags: Text
 
 .. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext 
+   :header: Pre-process custom text dataset using Torchtext
    :card_description: Learn how to use torchtext to prepare a custom dataset
    :image: _static/img/thumbnails/cropped/torch_text_logo.png
    :link: beginner/torchtext_custom_dataset_tutorial.html
    :tags: Text
 
+
+.. ONNX
+
+.. customcarditem::
+   :header: (optional) Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
+   :card_description: Build a image classifier model in PyTorch and convert it to ONNX before deploying it with ONNX Runtime.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: beginner/onnx/export_simple_model_to_onnx_tutorial.html
+   :tags: Production,ONNX,Backends
+
+.. customcarditem::
+   :header: Introduction to ONNX Registry
+   :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: advanced/onnx_registry_tutorial.html 
+   :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
 
@@ -296,13 +313,25 @@ What's new in PyTorch tutorials?
    :tags: Reinforcement-Learning
 
 .. customcarditem::
+   :header: Recurrent DQN
+   :card_description: Use TorchRL to train recurrent policies
+   :image: _static/img/rollout_recurrent.png
+   :link: intermediate/dqn_with_rnn_tutorial.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
    :header: Code a DDPG Loss
    :card_description: Use TorchRL to code a DDPG Loss
    :image: _static/img/half_cheetah.gif
    :link: advanced/coding_ddpg.html
    :tags: Reinforcement-Learning
 
-
+.. customcarditem::
+   :header: Writing your environment and transforms
+   :card_description: Use TorchRL to code a Pendulum
+   :image: _static/img/pendulum.gif
+   :link: advanced/pendulum.html
+   :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
 
@@ -329,11 +358,12 @@ What's new in PyTorch tutorials?
    :tags: Production,TorchScript
 
 .. customcarditem::
-   :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+   :header: (optional) Exporting a PyTorch Model to ONNX using TorchScript backend and Running it using ONNX Runtime
    :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
    :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
    :link: advanced/super_resolution_with_onnxruntime.html
-   :tags: Production
+   :tags: Production,ONNX
+
 
 .. Code Transformations with FX
 
@@ -424,6 +454,13 @@ What's new in PyTorch tutorials?
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Facilitating New Backend Integration by PrivateUse1
+   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with the native PyTorch backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/privateuseone.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -504,7 +541,7 @@ What's new in PyTorch tutorials?
 
 .. customcarditem::
    :header: Parametrizations Tutorial
-   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
    :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
@@ -515,6 +552,13 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: intermediate/pruning_tutorial.html
    :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
+   :header: How to save memory by fusing the optimizer step into the backward pass
+   :card_description: Learn a memory-saving technique through fusing the optimizer step into the backward pass using memory snapshots.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/optimizer_step_in_backward_tutorial.html
+   :tags: Model-Optimization,Best-Practice,CUDA,Frontend-APIs
 
 .. customcarditem::
    :header: (beta) Dynamic Quantization on an LSTM Word Language Model
@@ -585,7 +629,7 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/scaled_dot_product_attention_tutorial.html
    :tags: Model-Optimization,Attention,Transformer
-   
+
 .. customcarditem::
    :header: Knowledge Distillation in Convolutional Neural Networks
    :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
@@ -906,11 +950,20 @@ Additional Resources
    :maxdepth: 2
    :includehidden:
    :hidden:
+   :caption: Backends
+
+   beginner/onnx/intro_onnx
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
    intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
+   advanced/pendulum
 
 .. toctree::
    :maxdepth: 2
@@ -918,6 +971,7 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
+   beginner/onnx/intro_onnx
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
@@ -962,6 +1016,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/dispatcher
    advanced/extend_dispatcher
+   advanced/privateuseone
 
 .. toctree::
    :maxdepth: 2

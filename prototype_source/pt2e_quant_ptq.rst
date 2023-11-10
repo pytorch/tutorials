@@ -1,4 +1,4 @@
-(prototype) PyTorch 2.0 Export Post Training Static Quantization
+(prototype) PyTorch 2 Export Post Training Quantization
 ================================================================
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
@@ -10,25 +10,23 @@ this flow is expected to have significantly higher model coverage
 (`88% on 14K models <https://github.com/pytorch/pytorch/issues/93667#issuecomment-1601171596>`_),
 better programmability, and a simplified UX.
 
-Exportable by `torch._export.export` is a prerequisite to use the flow, you can
+Exportable by `torch.export.export` is a prerequisite to use the flow, you can
 find what are the constructs that's supported in `Export DB <https://pytorch.org/docs/main/generated/exportdb/index.html>`_.
 
-The high level architecture of quantization 2.0 with quantizer could look like
+The high level architecture of quantization 2 with quantizer could look like
 this:
 
 ::
 
-    float_model(Python)                               Input
+    float_model(Python)                          Example Input
         \                                              /
          \                                            /
     —-------------------------------------------------------
-    |                        Export                        |
+    |                        export                        |
     —-------------------------------------------------------
                                 |
-                        FX Graph in ATen     XNNPACKQuantizer,
-                                |            or X86InductorQuantizer,
-                                |            or <Other Backend Quantizer>
-                                |                /
+                        FX Graph in ATen     Backend Specific Quantizer
+                                |                       /
     —--------------------------------------------------------
     |                     prepare_pt2e                      |
     —--------------------------------------------------------
@@ -39,16 +37,16 @@ this:
     |                    convert_pt2e                       |
     —--------------------------------------------------------
                                 |
-                    Reference Quantized Model
+                        Quantized Model
                                 |
     —--------------------------------------------------------
     |                       Lowering                        |
     —--------------------------------------------------------
                                 |
-            Executorch, or Inductor, or <Other Backends>
+            Executorch, Inductor or <Other Backends>
 
 
-The PyTorch 2.0 export quantization API looks like this:
+The PyTorch 2 export quantization API looks like this:
 
 .. code:: python
 
@@ -95,10 +93,10 @@ The PyTorch 2.0 export quantization API looks like this:
   # we have a model with aten ops doing integer computations when possible
 
 
-Motivation of PyTorch 2.0 Export Quantization
+Motivation of PyTorch 2 Export Quantization
 ---------------------------------------------
 
-In PyTorch versions prior to 2.0, we have FX Graph Mode Quantization that uses
+In PyTorch versions prior to 2, we have FX Graph Mode Quantization that uses
 `QConfigMapping <https://pytorch.org/docs/main/generated/torch.ao.quantization.qconfig_mapping.QConfigMapping.html>`_
 and `BackendConfig <https://pytorch.org/docs/stable/generated/torch.ao.quantization.backend_config.BackendConfig.html>`_
 for customizations. ``QConfigMapping`` allows modeling users to specify how
@@ -377,7 +375,7 @@ The following code snippets describes how to quantize the model:
     get_symmetric_quantization_config,
   )
   quantizer = XNNPACKQuantizer()
-  quantizer.set_globa(get_symmetric_quantization_config())
+  quantizer.set_global(get_symmetric_quantization_config())
 
 ``Quantizer`` is backend specific, and each ``Quantizer`` will provide their
 own way to allow users to configure their model. Just as an example, here is
@@ -385,7 +383,7 @@ the different configuration APIs supported by ``XNNPackQuantizer``:
 
 .. code-block:: python
 
-  quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional qconfig, either a valid qconfig or None
+  quantizer.set_global(qconfig_opt)  # qconfig_opt is an optional quantization config
       .set_object_type(torch.nn.Conv2d, qconfig_opt) # can be a module type
       .set_object_type(torch.nn.functional.linear, qconfig_opt) # or torch functional op
       .set_module_name("foo.bar", qconfig_opt)
@@ -396,7 +394,7 @@ the different configuration APIs supported by ``XNNPackQuantizer``:
    `tutorial <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`_
    that describes how to write a new ``Quantizer``.
 
-Prepare the Model for Post Training Static Quantization
+Prepare the Model for Post Training Quantization
 ----------------------------------------------------------
 
 ``prepare_pt2e`` folds ``BatchNorm`` operators into preceding ``Conv2d``
@@ -441,8 +439,7 @@ we offer in the long term might change based on feedback from PyTorch users.
 
 * Q/DQ Representation (default)
       
-  Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019- 
- Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
+  Previous documentation for `representations <https://github.com/pytorch/rfcs/blob/master/RFC-0019-Extending-PyTorch-Quantization-to-Custom-Backends.md>`_ all quantized operators are represented as ``dequantize -> fp32_op -> qauntize``.
 
 .. code-block:: python
 
@@ -457,9 +454,10 @@ we offer in the long term might change based on feedback from PyTorch users.
        out_fp32, out_scale, out_zero_point, out_quant_min, out_quant_max, torch.int8)
        return out_i8
      
-* Reference Quantized Model Representation (WIP, expected to be ready at end of August): we have special representation for selected ops (for example, quantized linear), other ops are represented as (``dq -> float32_op -> q``), and ``q/dq`` are decomposed into more primitive operators.
+* Reference Quantized Model Representation (available in the nightly build)
 
-You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
+  We will have a special representation for selected ops, for example, quantized linear. Other ops are represented as ``dq -> float32_op -> q`` and ``q/dq`` are decomposed into more primitive operators.
+  You can get this representation by using ``convert_pt2e(..., use_reference_representation=True)``.
 
 .. code-block:: python
    
@@ -515,7 +513,7 @@ Now we can compare the size and model accuracy with baseline model.
 If you want to get better accuracy or performance,  try configuring
 ``quantizer`` in different ways, and each ``quantizer`` will have its own way
 of configuration, so please consult the documentation for the
-quantization you are using to learn more about how you can have more control
+quantizer you are using to learn more about how you can have more control
 over how to quantize a model.
 
 Save and Load Quantized Model
@@ -574,7 +572,7 @@ Debugging the Quantized Model
 
 You can use `Numeric Suite <https://pytorch.org/docs/stable/quantization-accuracy-debugging.html#numerical-debugging-tooling-prototype>`_
 that can help with debugging in eager mode and FX graph mode. The new version of
-Numeric Suite working with PyTorch 2.0 Export models is still in development.
+Numeric Suite working with PyTorch 2 Export models is still in development.
 
 Lowering and Performance Evaluation
 ------------------------------------
@@ -589,7 +587,7 @@ operators.
 Conclusion
 --------------
 
-In this tutorial, we went through the overall quantization flow in PyTorch 2.0
+In this tutorial, we went through the overall quantization flow in PyTorch 2
 Export Quantization using ``XNNPACKQuantizer`` and got a quantized model that
 could be further lowered to a backend that supports inference with XNNPACK
 backend. To use this for your own backend, please first follow the
