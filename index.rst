@@ -637,6 +637,13 @@ What's new in PyTorch tutorials?
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
 
+.. customcarditem::
+   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
+   :card_description: Learn how to deploy model in Vertex AI with TorchServe
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_vertexai_tutorial.rst
+   :tags: Model-Optimization,Production
+
 .. Parallel-and-Distributed-Training
 
 
@@ -1042,6 +1049,7 @@ Additional Resources
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
+   intermediate/torchserve_vertexai_tutorial.rst
 
 .. toctree::
    :maxdepth: 2
