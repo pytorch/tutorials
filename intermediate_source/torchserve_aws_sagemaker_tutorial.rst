@@ -26,7 +26,7 @@ The following table lists the AWS PyTorch DLCs supported by TorchServe
   * - Graviton
     - `SageMaker PyTorch Graviton containers <https://github.com/aws/deep-learning-containers/blob/master/available_images.md#sagemaker-framework-graviton-containers-sm-support-only>`_
 
-
+Using AWS SageMaker we can host single models and even multiple models on a single endpoint. Their procedure varies slightly, in this tutorial we will be focusing on single model endpoint. The essence remains the same with `some variations in the code. <https://docs.aws.amazon.com/sagemaker/latest/dg/create-multi-model-endpoint.html>`_
 
 You can follow along with this tutorial through an Amazon EC2 instance, or your laptop or desktop. If you're using a local laptop or desktop, make sure you download and install the `AWS CLI <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html>`_ and configure it, `AWS SDK for Python (boto3) <https://aws.amazon.com/sdk-for-python/>`_, and `Amazon SageMaker Python SDK <https://github.com/aws/sagemaker-python-sdk#installing-the-sagemaker-python-sdk>`_. After you deploy, the models are hosted on Amazon SageMaker fully managed deployment instances.
 
