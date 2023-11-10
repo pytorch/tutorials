@@ -217,7 +217,7 @@ Hosting an inference endpoint
 Metrics
 ~~~~~~~~
 
-TorchServe supports both system level and model level metrics. You can enable metrics in either log format mode or Prometheus mode through the environment variable TS_METRICS_MODE. You can use the TorchServe central metrics config file metrics.yaml to specify the types of metrics to be tracked, such as request counts, latency, memory usage, GPU utilization, and more. By referring to this file, you can gain insights into the performance and health of the deployed models and effectively monitor the TorchServe server's behavior in real-time. For more detailed information, see the `TorchServe metrics documentation <https://github.com/pytorch/serve/blob/master/docs/metrics.md#torchserve-metrics>`_. You can access TorchServe metrics logs that are similar to the StatsD format through the Amazon CloudWatch log filter. The following is an example of a TorchServe metrics log:
+TorchServe supports both system level and model level metrics. You can use the TorchServe central metrics config file metrics.yaml to specify the types of metrics to be tracked, such as request counts, latency, memory usage, GPU utilization, and more. By referring to this file, you can gain insights into the performance and health of the deployed models and effectively monitor the TorchServe server's behavior in real-time. For more detailed information, see the `TorchServe metrics documentation <https://github.com/pytorch/serve/blob/master/docs/metrics.md#torchserve-metrics>`_. You can access TorchServe metrics logs that are similar to the StatsD format through the Amazon CloudWatch log filter. The following is an example of a TorchServe metrics log:
 
     .. code:: shell
 
