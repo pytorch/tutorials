@@ -165,11 +165,25 @@ After we get the quantized model, we will further lower it to the inductor backe
 
 ::
 
-    optimized_model = torch.compile(converted_model)
+    with torch.no_grad():
+        optimized_model = torch.compile(converted_model)
 
-    # Running some benchmark
-    optimized_model(*example_inputs)
+        # Running some benchmark
+        optimized_model(*example_inputs)
 
+In a more advanced scenario, int8-mixed-bf16 quantization comes into play. In this instance,
+a Convolution or GEMM operator produces BFloat16 output data type instead of Float32 in the absence
+of a subsequent quantization node. Subsequently, the BFloat16 tensor seamlessly propagates through
+subsequent pointwise operators, effectively minimizing memory usage and potentially enhancing performance.
+
+::
+
+    with torch.autocast(device_type="cpu", dtype=torch.bfloat16, enabled=True), torch.no_grad():
+        # Turn on Autocast to use int8-mixed-bf16 quantization
+        optimized_model = torch.compile(converted_model)
+
+        # Running some benchmark
+        optimized_model(*example_inputs)
 
 Put all these codes together, we will have the toy example code.
 Please note that since the Inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
