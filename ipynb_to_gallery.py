@@ -24,7 +24,7 @@ def convert_ipynb_to_gallery(file_name):
             if cell['cell_type'] == 'markdown':
                 md_source = ''.join(cell['source'])
                 rst_source = pdoc.convert_text(md_source, 'rst', 'md')
-                commented_source = ''.join(['# ' + x for x in
+                commented_source = '\n'.join(['# ' + x for x in
                                               rst_source.split('\n')])
                 python_file = python_file + '\n\n\n' + '#' * 70 + '\n' + \
                     commented_source
