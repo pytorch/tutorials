@@ -179,7 +179,17 @@ subsequent pointwise operators, effectively minimizing memory usage and potentia
 ::
 
     with torch.autocast(device_type="cpu", dtype=torch.bfloat16, enabled=True), torch.no_grad():
-        # Turn on Autocast to use int8-mixed-bf16 quantization
+        # Turn on Autocast to use int8-mixed-bf16 quantization. After lowering into Inductor CPP Backend,
+        # For operators such as QConvolution and QLinear:
+        # * The input data type is consistently defined as int8, attributable to the presence of a pair
+            of quantization and dequantization nodes inserted at the input.
+        # * The computation precision remains at int8.
+        # * The output data type may vary, being either int8 or BFloat16, contingent on the presence
+        #   of a pair of quantization and dequantization nodes at the output.
+        # For non-quantizable pointwise operators, the data type will be inherited from the previous node,
+        # potentially resulting in a data type of BFloat16 in this scenario.
+        # For quantizable pointwise operators such as QMaxpool2D, it continues to operate with the int8
+        # data type for both input and output.
         optimized_model = torch.compile(converted_model)
 
         # Running some benchmark
