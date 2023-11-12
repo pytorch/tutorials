@@ -11,9 +11,9 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # 
 # In this tutorial, we will show how to classify Whole Slide Images (WSIs)
 # using PyTorch deep learning models with help from TIAToolbox. A WSI
-# represents human tissues taken through an operation or a biopsy and
+# is an of a human tissue taken through a surgery or biopsy and
 # scanned using specialized scanners. They are used by pathologists and
-# computational pathology researchers to `study cancer at the microscopic
+# computational pathology researchers to `study diseases such as cancer at the microscopic
 # level <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7522141/>`__ in
 # order to understand for example tumor growth and help improve treatment
 # for patients.
@@ -44,11 +44,11 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # TIAToolbox allows us to automate common downstream analysis tasks such
 # as `tissue
 # classification <https://doi.org/10.1016/j.media.2022.102685>`__. In this
-# tutorial we will show you how you can: 1. Load WSI images using
+# tutorial we show how you can: 1. Load WSI images using
 # TIAToolbox; and 2. Use different PyTorch models to classify slides at
-# the batch-level. In this tutorial, we will provide an example of using
+# the patch-level. In this tutorial, we will provide an example of using
 # TorchVision’s ``ResNet18`` model and custom
-# ```HistoEncoder`` <https://github.com/jopo666/HistoEncoder>`__ model.
+# `HistoEncoder` <https://github.com/jopo666/HistoEncoder>`__ model.
 # 
 # Let’s get started!
 # 
@@ -61,7 +61,7 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # --------------------------
 # 
 # To run the examples provided in this tutorial, the following packages
-# are required as prequisites..
+# are required as prerequisites.
 # 
 # 1. OpenJpeg
 # 2. OpenSlide
@@ -73,6 +73,7 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # packages:
 # 
 
+# ::
 # %%bash
 #`apt-get -y -qq install libopenjp2-7-dev libopenjp2-tools openslide-tools libpixman-1-dev` 
 #`pip install -q 'tiatoolbox<1.5' histoencoder && echo "Installation is done."`
@@ -80,7 +81,7 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 
 ######################################################################
 # Alternatively, you can run ``brew install openjpeg openslide`` to
-# install the prerequistite packages on MacOS instead of ``apt-get``.
+# install the prerequisite packages on MacOS instead of ``apt-get``.
 # Further information on installation can be `found
 # here <https://tia-toolbox.readthedocs.io/en/latest/installation.html>`__.
 # 
@@ -305,7 +306,7 @@ logger.info("Total number of patches: %d", (len(patch_list)))
 # 
 # -  ``model`` can be any trained PyTorch model with the constraint that
 #    it should follow the
-#    ```tiatoolbox.models.abc.ModelABC`` <https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.models.models_abc.ModelABC.html>`__
+#    ``tiatoolbox.models.abc.ModelABC`` `(docs)` <https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.models.models_abc.ModelABC.html>`__
 #    class structure. For more information on this matter, please refer to
 #    `our example notebook on advanced model
 #    techniques <https://github.com/TissueImageAnalytics/tiatoolbox/blob/develop/examples/07-advanced-modeling.ipynb>`__.
@@ -326,6 +327,10 @@ logger.info("Total number of patches: %d", (len(patch_list)))
 #    values for this parameter require a larger (GPU) memory capacity.
 # 
 
+# Importing a pretrained PyTorch model from TIAToolbox 
+predictor = PatchPredictor(pretrained_model='resnet18-kather100k', batch_size=32) 
+
+# Users can load any PyTorch model architecture instead using the following script
 model = vanilla.CNNModel(backbone="resnet18", num_classes=9) # Importing model from torchvision.models.resnet18
 model.load_state_dict(torch.load(weights_path, map_location="cpu"), strict=True)
 def preproc_func(img):
@@ -361,7 +366,7 @@ df_cm
 # Predict patch labels for a whole slide
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
-# We also introduce ``IOPatchPredictorConfig``, a class that specifies the
+# We now introduce ``IOPatchPredictorConfig``, a class that specifies the
 # configuration of image reading and prediction writing for the model
 # prediction engine. This is required to inform the classifier which level
 # of the WSI pyramid the classifier should read, process data and generate
@@ -504,8 +509,8 @@ plt.show()
 # --------------------------------------------------
 # 
 # In this section, we will show how to extract features from a pretrained
-# pytorch model that exists outside TIAToolbox, using the WSI inference
-# engines provided by tiatoolbox. To illustrate this we will use
+# PyTorch model that exists outside TIAToolbox, using the WSI inference
+# engines provided by TIAToolbox. To illustrate this we will use
 # HistoEncoder, a computational-pathology specific model that has been
 # trained in a self-supervised fashion to extract features from histology
 # images. The model has been made available here:
@@ -514,7 +519,7 @@ plt.show()
 # (https://github.com/jopo666/HistoEncoder) by Pohjonen, Joona and team at
 # the University of Helsinki.
 # 
-# We will plot a umap reduction into 3D (rgb) of the feature map to
+# We will plot a umap reduction into 3D (RGB) of the feature map to
 # visualize how the features capture the differences between some of the
 # above mentioned tissue types.
 # 
