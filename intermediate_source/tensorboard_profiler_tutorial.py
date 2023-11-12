@@ -7,7 +7,7 @@ to detect performance bottlenecks of the model.
 Introduction
 ------------
 PyTorch 1.8 includes an updated profiler API capable of
-recording the CPU side operations as well as the CUDA kernel launches on the GPU side.
+recording the CPU side operations as well as the CUDA kernel launches on the GPU side (ROCm AMD GPUs are not supported).
 The profiler can visualize this information
 in TensorBoard Plugin and provide analysis of the performance bottlenecks.
 
