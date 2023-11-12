@@ -90,11 +90,11 @@ class MyModel(nn.Module):
 
 torch_model = MyModel()
 torch_input = torch.randn(1, 1, 32, 32)
-export_output = torch.onnx.dynamo_export(torch_model, torch_input)
+onnx_program = torch.onnx.dynamo_export(torch_model, torch_input)
 
 ######################################################################
 # As we can see, we didn't need any code change to the model.
-# The resulting ONNX model is stored within ``torch.onnx.ExportOutput`` as a binary protobuf file.
+# The resulting ONNX model is stored within ``torch.onnx.ONNXProgram`` as a binary protobuf file.
 #
 # 4. Save the ONNX model in a file
 # --------------------------------
@@ -102,7 +102,7 @@ export_output = torch.onnx.dynamo_export(torch_model, torch_input)
 # Although having the exported model loaded in memory is useful in many applications,
 # we can save it to disk with the following code:
 
-export_output.save("my_image_classifier.onnx")
+onnx_program.save("my_image_classifier.onnx")
 
 ######################################################################
 # You can load the ONNX file back into memory and check if it is well formed with the following code:
@@ -155,7 +155,7 @@ onnx.checker.check_model(onnx_model)
 
 import onnxruntime
 
-onnx_input = export_output.adapt_torch_inputs_to_onnx(torch_input)
+onnx_input = onnx_program.adapt_torch_inputs_to_onnx(torch_input)
 print(f"Input length: {len(onnx_input)}")
 print(f"Sample input: {onnx_input}")
 
@@ -179,7 +179,7 @@ onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 # Before comparing the results, we need to convert the PyTorch's output to match ONNX's format.
 
 torch_outputs = torch_model(torch_input)
-torch_outputs = export_output.adapt_torch_outputs_to_onnx(torch_outputs)
+torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
