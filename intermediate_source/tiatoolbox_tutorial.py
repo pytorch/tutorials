@@ -9,46 +9,48 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # Introduction
 # ------------
 # 
-# In this tutorial, we will show you how you can classify Whole Slide
-# Images (WSIs) using PyTorch deep learning models with help from
-# TIAToolbox. In a nutshell, WSIs represent human tissues taken through a
-# biopsy and scanned using specialized scanners. They are used by
-# pathologists and computational pathology researchers to `study cancer at
-# the microscopic
+# In this tutorial, we will show how to classify Whole Slide Images (WSIs)
+# using PyTorch deep learning models with help from TIAToolbox. A WSI
+# represents human tissues taken through an operation or a biopsy and
+# scanned using specialized scanners. They are used by pathologists and
+# computational pathology researchers to `study cancer at the microscopic
 # level <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7522141/>`__ in
-# order to understand tumor growth and help improve treatment for
-# patients.
+# order to understand for example tumor growth and help improve treatment
+# for patients.
 # 
-# Now, the trick with WSIs is their enormous size. For example, a typical
-# slide image has in the order of `100,000x100,000
+# What makes WSIs challenging to process is their enormous size. For
+# example, a typical slide image has in the order of `100,000x100,000
 # pixels <https://doi.org/10.1117%2F12.912388>`__ where each pixel can
-# correspond to about 0.25 microns (if using 40X magnification). This
-# introduces challenges in loading and processing such images, not to
-# mention hundreds of them in a single study!
+# correspond to about 0.25x0.25 microns on the slide. This introduces
+# challenges in loading and processing such images, not to mention
+# hundreds or even thousands of WSIs in a single study (larger studies
+# produce better results)!
 # 
-# So how can you import WSIs that are in the size of gigabytes each and
-# run algorithms on them to analyze their visual features? Conventional
-# image processing pipelines will not be suitable and hence we need more
-# optimized tools of the trade. This where
-# `TIAToolbox <https://github.com/TissueImageAnalytics/tiatoolbox>`__
-# comes into play, as it brings a set of useful tools to import and
-# process tissue slides in a fast and computationally efficient manner by
-# taking advantage of its pyramid structure to downsample the image at set
-# zoom levels. Here is how the pyramid structure looks like:
+# Conventional image processing pipelines are not be suitable for WSI
+# processing so we need better tools. This where
+# `TIAToolbox <https://github.com/TissueImageAnalytics/tiatoolbox>`__ can
+# help as it brings a set of useful tools to import and process tissue
+# slides in a fast and computationally efficient manner. Typically, WSIs
+# are saved in a pyramid structure with multiple copies of the same image
+# at various magnification levels optimized for visualization. The level 0
+# (or the bottom level) of the pyramid contains the image at the highest
+# magnification or zoom level, whereas the higher levels in the pyramid
+# have a lower resolution copy of the base image. The pyramid structure is
+# sketched below.
 # 
 # |WSI pyramid stack| *WSI pyramid stack
 # (*\ `source <https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.wsicore.wsireader.WSIReader.html#>`__\ *)*
 # 
-# The toolbox also allows you to automate common downstream analysis tasks
-# such as `tissue
-# classification <https://doi.org/10.1016/j.media.2022.102685>`__. So, in
-# this tutorial we will show you how you can: 1. Load WSI images using
+# TIAToolbox allows us to automate common downstream analysis tasks such
+# as `tissue
+# classification <https://doi.org/10.1016/j.media.2022.102685>`__. In this
+# tutorial we will show you how you can: 1. Load WSI images using
 # TIAToolbox; and 2. Use different PyTorch models to classify slides at
-# the batch-level (i.e., small tiles). In this tutorial, we will give an
-# example of using TorchVision’s ``ResNet18`` model and custom
+# the batch-level. In this tutorial, we will provide an example of using
+# TorchVision’s ``ResNet18`` model and custom
 # ```HistoEncoder`` <https://github.com/jopo666/HistoEncoder>`__ model.
 # 
-# So, let’s get started!
+# Let’s get started!
 # 
 # .. |WSI pyramid stack| image:: ../_static/img/read_bounds_tissue.webp
 # 
@@ -58,12 +60,30 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 # Setting up the environment
 # --------------------------
 # 
-# Install needed packages and Python modules.
+# To run the examples provided in this tutorial, the following packages
+# are required as prequisites..
+# 
+# 1. OpenJpeg
+# 2. OpenSlide
+# 3. Pixman
+# 4. TIAToolbox
+# 5. HistoEncoder (for a custom model example)
+# 
+# Please run the following command in your terminal to install these
+# packages:
 # 
 
 # %%bash
 #`apt-get -y -qq install libopenjp2-7-dev libopenjp2-tools openslide-tools libpixman-1-dev` 
-#`pip install -q tiatoolbox histoencoder && echo "Installation is done."`
+#`pip install -q 'tiatoolbox<1.5' histoencoder && echo "Installation is done."`
+
+
+######################################################################
+# Alternatively, you can run ``brew install openjpeg openslide`` to
+# install the prerequistite packages on MacOS instead of ``apt-get``.
+# Further information on installation can be `found
+# here <https://tia-toolbox.readthedocs.io/en/latest/installation.html>`__.
+# 
 
 
 ######################################################################
@@ -93,6 +113,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import cm
 import PIL
+import contextlib
+import io
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 # TIAToolbox for WSI loading and processing
 from tiatoolbox import logger
@@ -104,17 +127,21 @@ from tiatoolbox.models.engine.patch_predictor import (
 from tiatoolbox.utils.misc import download_data, grab_files_from_dir
 from tiatoolbox.utils.visualization import overlay_prediction_mask
 from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.models.dataset.classification import _TorchPreprocCaller
 
 # Torch-related
 import torch
 from torchvision import transforms
 
+# Configure plotting
 mpl.rcParams["figure.dpi"] = 160  # for high resolution figure in notebook
 mpl.rcParams["figure.facecolor"] = "white"  # To make sure text is visible in dark mode
 
 # If you are not using GPU, change ON_GPU to False
 ON_GPU = True
+
+# Function to suppress console output for overly verbose code blocks
+def suppress_console_output():
+    return contextlib.redirect_stderr(io.StringIO())
 
 
 ######################################################################
@@ -173,7 +200,7 @@ download_data(
 with ZipFile(patches_path, "r") as zipfile:
     zipfile.extractall(path=global_save_dir)
 
-# Download model weights
+# Download pretrained model weights for WSI classification using ResNet18 architecture 
 download_data(
     "https://tiatoolbox.dcs.warwick.ac.uk/models/pc/resnet18-kather100k.pth",
     weights_path,
@@ -261,66 +288,41 @@ logger.info("Total number of patches: %d", (len(patch_list)))
 
 
 ######################################################################
-# Classify images patches within a whole slide
-# --------------------------------------------
+# Classify image patches
+# ----------------------
 # 
-# We demonstrate how to obtain predictions for all patches within a
-# whole-slide image. We also introduce ``IOPatchPredictorConfig``, a class
-# that specifies the configuration of image reading and prediction writing
-# for the model prediction engine.
+# We demonstrate how to obtain a prediction for each patch within a
+# digital slide first with the ``patch`` mode and then with a large slide
+# using ``wsi`` mode.
 # 
-
-
-######################################################################
-# Parameters of ``IOPatchPredictorConfig`` are defined as:
-# 
-# -  ``input_resolutions``: a list specifying the resolution of each input
-#    head of model in the form of a dictionary. List elements must be in
-#    the same order as target ``model.forward()``. If your model accepts
-#    only one input, you just need to put one dictionary specifying
-#    ``'units'`` and ``'resolution'``. Note that TIAToolbox supports a
-#    model with more than one input.
-# -  ``patch_input_shape``: shape of the largest input in (height, width)
-#    format.
-# -  ``stride_shape``: the size of stride (steps) between two consecutive
-#    patches, used in the patch extraction process. If the user sets
-#    ``stride_shape`` equal to ``patch_input_shape``, patches will be
-#    extracted and processed without any overlap.
-# 
-# Since we are using a large WSI the patch extraction and prediction
-# processes may take some time (make sure to set the ``ON_GPU=True`` if
-# you have access to Cuda enabled GPU and PyTorch+Cuda).
-# 
-
-wsi_ioconfig = IOPatchPredictorConfig(
-    input_resolutions=[{"units": "mpp", "resolution": 0.5}],
-    patch_input_shape=[224, 224],
-    stride_shape=[224, 224],
-)
 
 
 ######################################################################
-# The PatchPredictor class defines a CNN-based classifier.
+# Define ``PatchPredictor`` model
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# The PatchPredictor class runs a CNN-based classifier written in PyTorch.
 # 
 # -  ``model`` can be any trained PyTorch model with the constraint that
-#    the it should follow the ``tiatoolbox.models.abc.ModelABC`` class
-#    structure. For more information on this matter, please refer to
-#    `example notebook on advanced model
+#    it should follow the
+#    ```tiatoolbox.models.abc.ModelABC`` <https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.models.models_abc.ModelABC.html>`__
+#    class structure. For more information on this matter, please refer to
+#    `our example notebook on advanced model
 #    techniques <https://github.com/TissueImageAnalytics/tiatoolbox/blob/develop/examples/07-advanced-modeling.ipynb>`__.
 #    In order to load a custom model, you need to write a small
 #    preprocessing function, as in ``preproc_func(img)``, which make sures
 #    the input tensors are in the right format for the loaded network.
-# -  alternively, you can pass ``pretrained_model`` as string argument
-#    specifies the CNN model that performs the prediction, and it must be
-#    one of the models listed
+# -  Alternatively, you can pass ``pretrained_model`` as a string
+#    argument. This specifies the CNN model that performs the prediction,
+#    and it must be one of the models listed
 #    `here <https://tia-toolbox.readthedocs.io/en/latest/usage.html?highlight=pretrained%20models#tiatoolbox.models.architecture.get_pretrained_model>`__.
 #    The command will look like this:
 #    ``predictor = PatchPredictor(pretrained_model='resnet18-kather100k', pretrained_weights=weights_path, batch_size=32)``.
-# -  ``pretrained_weights``: when using a ``pretrained_model``, the
+# -  ``pretrained_weights``: When using a ``pretrained_model``, the
 #    corresponding pretrained weights will also be downloaded by default.
 #    You can override the default with your own set of weights via the
 #    ``pretrained_weight`` argument.
-# -  ``batch_size``: number of images fed into the model each time. Higher
+# -  ``batch_size``: Number of images fed into the model each time. Higher
 #    values for this parameter require a larger (GPU) memory capacity.
 # 
 
@@ -331,25 +333,80 @@ def preproc_func(img):
     img = transforms.ToTensor()(img)
     return img.permute(1, 2, 0)
 model.preproc_func = preproc_func
-# model.preproc_func = _TorchPreprocCaller([transforms.ToTensor()])
 predictor = PatchPredictor(model=model, batch_size=32)
+
+
+######################################################################
+# Predict patch labels
+# ~~~~~~~~~~~~~~~~~~~~
+# 
+# We create a predictor object and then call the ``predict`` method using
+# the ``patch`` mode. We then compute the classification accuracy and
+# confusion matrix.
+# 
+
+with suppress_console_output():
+    output = predictor.predict(imgs=patch_list, mode="patch", on_gpu=ON_GPU)
+
+acc = accuracy_score(label_list, output["predictions"])
+logger.info("Classification accuracy: %f", acc)
+
+# Creating and visualizing the confusion matrix for patch classification results
+conf = confusion_matrix(label_list, output["predictions"], normalize="true")
+df_cm = pd.DataFrame(conf, index=class_names, columns=class_names)
+df_cm
+
+
+######################################################################
+# Predict patch labels for a whole slide
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# We also introduce ``IOPatchPredictorConfig``, a class that specifies the
+# configuration of image reading and prediction writing for the model
+# prediction engine. This is required to inform the classifier which level
+# of the WSI pyramid the classifier should read, process data and generate
+# output.
+# 
+# Parameters of ``IOPatchPredictorConfig`` are defined as:
+# 
+# -  ``input_resolutions``: A list, in the form of a dictionary,
+#    specifying the resolution of each input. List elements must be in the
+#    same order as in the target ``model.forward()``. If your model
+#    accepts only one input, you just need to put one dictionary
+#    specifying ``'units'`` and ``'resolution'``. Note that TIAToolbox
+#    supports a model with more than one input. For more information on
+#    units and resolution, please see `TIAToolbox
+#    documentation <https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.wsicore.wsireader.WSIReader.html#tiatoolbox.wsicore.wsireader.WSIReader.read_rect>`__.
+# -  ``patch_input_shape``: Shape of the largest input in (height, width)
+#    format.
+# -  ``stride_shape``: The size of a stride (steps) between two
+#    consecutive patches, used in the patch extraction process. If the
+#    user sets ``stride_shape`` equal to ``patch_input_shape``, patches
+#    will be extracted and processed without any overlap.
+# 
+
+wsi_ioconfig = IOPatchPredictorConfig(
+    input_resolutions=[{"units": "mpp", "resolution": 0.5}],
+    patch_input_shape=[224, 224],
+    stride_shape=[224, 224],
+)
 
 
 ######################################################################
 # The ``predict`` method applies the CNN on the input patches and get the
 # results. Here are the arguments and their descriptions:
 # 
-# -  ``mode``: type of input to be processed. Choose from ``patch``,
+# -  ``mode``: Type of input to be processed. Choose from ``patch``,
 #    ``tile`` or ``wsi`` according to your application.
-# -  ``imgs``: list of inputs, which should be a list of paths to the
+# -  ``imgs``: List of inputs, which should be a list of paths to the
 #    input tiles or WSIs.
-# -  ``return_probabilities``: set to **True** to get per class
+# -  ``return_probabilities``: Set to **True** to get per class
 #    probabilities alongside predicted labels of input patches. If you
 #    wish to merge the predictions to generate prediction maps for
 #    ``tile`` or ``wsi`` modes, you can set ``return_probabilities=True``.
 # -  ``ioconfig``: set the IO configuration information using the
 #    ``IOPatchPredictorConfig`` class.
-# -  ``resolution`` and ``unit`` (not shown above): These arguments
+# -  ``resolution`` and ``unit`` (not shown below): These arguments
 #    specify the level or micron-per-pixel resolution of the WSI levels
 #    from which we plan to extract patches and can be used instead of
 #    ``ioconfig``. Here we specify the WSI’s level as ``'baseline'``,
@@ -357,30 +414,35 @@ predictor = PatchPredictor(model=model, batch_size=32)
 #    greatest resolution. In this particular case, the image has only one
 #    level. More information can be found in the
 #    `documentation <https://tia-toolbox.readthedocs.io/en/latest/usage.html?highlight=WSIReader.read_rect#tiatoolbox.wsicore.wsireader.WSIReader.read_rect>`__.
-# -  ``masks``: a list of paths corresponding to the masks of WSIs in the
+# -  ``masks``: A list of paths corresponding to the masks of WSIs in the
 #    ``imgs`` list. These masks specify the regions in the original WSIs
 #    from which we want to extract patches. If the mask of a particular
 #    WSI is specified as ``None``, then the labels for all patches of that
 #    WSI (even background regions) would be predicted. This could cause
 #    unnecessary computation.
-# -  ``merge_predictions``: Yyu can set this parameter to ``True`` if you
-#    wish to generate a 2D map of patch classification results. However,
-#    for big WSIs you might need a large amount of memory available to do
-#    this on the file. An alternative (default) solution is to set
-#    ``merge_predictions=False``, and then generate the 2D prediction maps
-#    using ``merge_predictions`` function as you will see later on.
+# -  ``merge_predictions``: You can set this parameter to ``True`` if it’s
+#    required to generate a 2D map of patch classification results.
+#    However, for large WSIs this will require large available memeory. An
+#    alternative (default) solution is to set ``merge_predictions=False``,
+#    and then generate the 2D prediction maps using the
+#    ``merge_predictions`` function as you will see later on.
+# 
+# Since we are using a large WSI the patch extraction and prediction
+# processes may take some time (make sure to set the ``ON_GPU=True`` if
+# you have access to Cuda enabled GPU and PyTorch+Cuda).
 # 
 
-wsi_output = predictor.predict(
-    imgs=[wsi_path],
-    masks=None,
-    mode="wsi",
-    merge_predictions=False,
-    ioconfig=wsi_ioconfig,
-    return_probabilities=True,
-    save_dir=global_save_dir / "wsi_predictions",
-    on_gpu=ON_GPU,
-)
+with suppress_console_output():
+    wsi_output = predictor.predict(
+        imgs=[wsi_path],
+        masks=None,
+        mode="wsi",
+        merge_predictions=False,
+        ioconfig=wsi_ioconfig,
+        return_probabilities=True,
+        save_dir=global_save_dir / "wsi_predictions",
+        on_gpu=ON_GPU,
+    )
 
 
 ######################################################################
@@ -394,8 +456,8 @@ wsi_output = predictor.predict(
 # (bigger/smaller) prediction maps, you need to change these parameters
 # accordingly. When the predictions are merged, use the
 # ``overlay_patch_prediction`` function to overlay the prediction map on
-# the WSI thumbnail, which should be extracted at the same resolution used
-# for prediction merging.
+# the WSI thumbnail, which should be extracted at the resolution used for
+# prediction merging.
 # 
 
 overview_resolution = (
@@ -409,13 +471,11 @@ plt.figure(), plt.imshow(wsi_overview)
 plt.axis("off")
 
 
-
 ######################################################################
-# Overlaying the prediction map on this as below gives:
+# Overlaying the prediction map on this image as below gives:
 # 
 
-
-# visualization of whole-slide image patch-level prediction
+# Visualization of whole-slide image patch-level prediction
 # first set up a label to color mapping
 label_color_dict = {}
 label_color_dict[0] = ("empty", (0, 0, 0))
@@ -444,18 +504,17 @@ plt.show()
 # --------------------------------------------------
 # 
 # In this section, we will show how to extract features from a pretrained
-# pytorch model that exists outside tiatoolbox, using the WSI inference
-# engines provided by tiatoolbox. To illustrate this we will be using
+# pytorch model that exists outside TIAToolbox, using the WSI inference
+# engines provided by tiatoolbox. To illustrate this we will use
 # HistoEncoder, a computational-pathology specific model that has been
 # trained in a self-supervised fashion to extract features from histology
 # images. The model has been made available here:
 # 
 # ‘HistoEncoder: Foundation models for digital pathology’
 # (https://github.com/jopo666/HistoEncoder) by Pohjonen, Joona and team at
-# the University of Helsinki. The model can be installed via:
-# ``pip install histoencoder``.
+# the University of Helsinki.
 # 
-# We will plot a umap reduction into 3D (rgb) of the featue map to
+# We will plot a umap reduction into 3D (rgb) of the feature map to
 # visualize how the features capture the differences between some of the
 # above mentioned tissue types.
 # 
@@ -470,11 +529,12 @@ import umap
 
 
 ######################################################################
-# TIAToolbox defines a ModelABC which specifies how a model should look in
-# order to be used in the tiatoolbox inference engines. The histoencoder
-# model doesn’t follow this structure, so we will need to wrap it in a
-# class that does so that it’s output and methods are as the tiatoolbox
-# engine expects.
+# TIAToolbox defines a ModelABC which is a class inheriting PyTorch
+# `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`__
+# and specifies how a model should look in order to be used in the
+# TIAToolbox inference engines. The histoencoder model doesn’t follow this
+# structure, so we need to wrap it in a class whose output and methods are
+# those that the TIAToolbox engine expects.
 # 
 
 class HistoEncWrapper(ModelABC):
@@ -526,10 +586,12 @@ class HistoEncWrapper(ModelABC):
 
 ######################################################################
 # Now that we have our wrapper, we will create our feature extraction
-# model and instantiate a DeepFeatureExtractor to allow us to use this
-# model over a WSI. We will use the same WSI as above, but this time we
-# will extract features from the patches of the WSI using the HistoEncoder
-# model, rather than predicting some label for each patch.
+# model and instantiate a
+# `DeepFeatureExtractor <https://tia-toolbox.readthedocs.io/en/v1.4.1/_autosummary/tiatoolbox.models.engine.semantic_segmentor.DeepFeatureExtractor.html>`__
+# to allow us to use this model over a WSI. We will use the same WSI as
+# above, but this time we will extract features from the patches of the
+# WSI using the HistoEncoder model, rather than predicting some label for
+# each patch.
 # 
 
 # create the model
@@ -552,22 +614,32 @@ wsi_ioconfig = IOSegmentorConfig(
     stride_shape=[224, 224],
 )
 
+
+######################################################################
+# When we create the ``DeepFeatureExtractor``, we will pass the
+# ``auto_generate_mask=True`` argument. This will automatically create a
+# mask of the tissue region using otsu thresholding, so that the extractor
+# processes only those patches containing tissue.
+# 
+
+# create the feature extractor and run it on the WSI
 extractor = DeepFeatureExtractor(model=model, auto_generate_mask=True, batch_size=32, num_loader_workers=4, num_postproc_workers=4)
-out = extractor.predict(imgs=[wsi_path], mode="wsi", ioconfig=wsi_ioconfig, save_dir=global_save_dir / "wsi_features",)
+with suppress_console_output():
+    out = extractor.predict(imgs=[wsi_path], mode="wsi", ioconfig=wsi_ioconfig, save_dir=global_save_dir / "wsi_features",)
 
 
 ######################################################################
 # These features could be used to train a downstream model, but here in
 # order to get some intuition for what the features represent, we will use
-# a UMAP reduction to visualize the features in RGB space. Similarly
-# colored points should have similar features, so we can see if the
-# features naturally separate out into the different tissue regions when
-# we overlay the UMAP reduction on the WSI thumbnail. We will plot it
+# a UMAP reduction to visualize the features in RGB space. The points
+# labeled in a similar color should have similar features, so we can check
+# if the features naturally separate out into the different tissue regions
+# when we overlay the UMAP reduction on the WSI thumbnail. We will plot it
 # along with the patch-level prediction map from above to see how the
 # features compare to the patch-level predictions in the following cells.
 # 
 
-# first we will define a function to calculate the umap reduction
+# First we define a function to calculate the umap reduction
 def umap_reducer(x, dims=3, nns=10):
     """UMAP reduction of the input data."""
     reducer = umap.UMAP(n_neighbors=nns, n_components=dims, metric="manhattan", spread=0.5, random_state=2)
@@ -584,7 +656,7 @@ pos = pos / 8 # as we extracted at 0.5mpp, and we are overlaying on a thumbnail 
 # reduce the features into 3 dimensional (rgb) space
 reduced = umap_reducer(feats)
 
-# plot the prediction map from earlier again
+# plot the prediction map the classifier again
 overlay = overlay_prediction_mask(
     wsi_overview,
     pred_map,
@@ -592,13 +664,6 @@ overlay = overlay_prediction_mask(
     label_info=label_color_dict,
     return_ax=True,
 )
-
-
-
-######################################################################
-# And now plot the UMAP reduction of the features on the WSI thumbnail
-# instead:
-# 
 
 # plot the feature map reduction
 plt.figure()
@@ -610,12 +675,12 @@ plt.show()
 
 
 ######################################################################
-# We can clearly see that the prediction map from our patch-level
-# predictor, and the feature map from our self-supervised feature encoder,
-# capture similar information about the tissue types in the WSI. This is a
-# good sanity check that our models are working as expected. It also shows
-# that the features extracted by the HistoEncoder model are capturing the
-# differences between the tissue types, and thus that they are encoding
+# We see that the prediction map from our patch-level predictor, and the
+# feature map from our self-supervised feature encoder, capture similar
+# information about the tissue types in the WSI. This is a good sanity
+# check that our models are working as expected. It also shows that the
+# features extracted by the HistoEncoder model are capturing the
+# differences between the tissue types, and so that they are encoding
 # histologically relevant information.
 # 
 
@@ -631,12 +696,19 @@ plt.show()
 # functions that merge the patch prediction outputs and visualize the
 # resulting prediction map as an overlay on the input image/WSI.
 # 
-# All the processes take place within TIAToolbox and you can easily put
-# the pieces together, following our example code. Just make sure to set
+# All the processes take place within TIAToolbox and we can easily put the
+# pieces together, following our example code. Please make sure to set
 # inputs and options correctly. We encourage you to further investigate
 # the effect on the prediction output of changing ``predict`` function
-# parameters. Furthermore, we showed how to use your own pretrained model
-# (or one provided by the research community for a specific task) in the
-# TIAToolbox framework to do inference on large WSIs (even if the model
-# structure is not defined in the TIAToolbox model class).
+# parameters. We have demonstrated how to use your own pretrained model or
+# one provided by the research community for a specific task in the
+# TIAToolbox framework to do inference on large WSIs even if the model
+# structure is not defined in the TIAToolbox model class.
+# 
+# You can learn more through the following resources:
+# 
+# -  `Advanced model handling with PyTorch and
+#    TIAToolbox <https://tia-toolbox.readthedocs.io/en/latest/_notebooks/jnb/07-advanced-modeling.html>`__
+# -  `Creating slide graphs for WSI with a custom PyTorch graph neural
+#    network <https://tia-toolbox.readthedocs.io/en/latest/_notebooks/jnb/full-pipelines/slide-graph.html>`__
 # 
