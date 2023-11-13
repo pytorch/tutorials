@@ -463,6 +463,11 @@ It also comes with considerable engineering complexity to handle the training of
 <li><p>Run reduce_scatter to sync gradients</p></li>
 <li><p>Discard parameters.</p></li>
 </ul>
+<p>One way to view FSDP’s sharding is to decompose the DDP gradient all-reduce into reduce-scatter and all-gather. Specifically, during the backward pass, FSDP reduces and scatters gradients, ensuring that each rank possesses a shard of the gradients. Then it updates the corresponding shard of the parameters in the optimizer step. Finally, in the subsequent forward pass, it performs an all-gather operation to collect and combine the updated parameter shards.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/fsdp_sharding.png"><img alt="FSDP allreduce" src="../_images/fsdp_sharding.png" style="width: 100%;"/></a>
+<p class="caption"><span class="caption-text">FSDP Allreduce</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
 </div>
 <div class="section" id="how-to-use-fsdp">
 <h2>How to use FSDP<a class="headerlink" href="#how-to-use-fsdp" title="Permalink to this heading">¶</a></h2>
@@ -711,9 +716,9 @@ Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will di
 </pre></div>
 </div>
 <p>The following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch Profiler.</p>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id3">
 <a class="reference internal image-reference" href="../_images/FSDP_memory.gif"><img alt="FSDP peak memory" src="../_images/FSDP_memory.gif" style="width: 100%;"/></a>
-<p class="caption"><span class="caption-text">FSDP Peak Memory Usage</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">FSDP Peak Memory Usage</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>Applying <em>fsdp_auto_wrap_policy</em> in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency.
 The way it works is that, suppose your model contains 100 Linear layers. If you do FSDP(model), there will only be one FSDP unit which wraps the entire model.
@@ -760,9 +765,9 @@ CUDA<span class="w"> </span>event<span class="w"> </span>elapsed<span class="w">
 </div>
 <p>The following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on a g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch Profiler.
 It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.</p>
-<div class="figure align-center" id="id3">
+<div class="figure align-center" id="id4">
 <a class="reference internal image-reference" href="../_images/FSDP_autowrap.gif"><img alt="FSDP peak memory" src="../_images/FSDP_autowrap.gif" style="width: 100%;"/></a>
-<p class="caption"><span class="caption-text">FSDP Peak Memory Usage using Auto_wrap policy</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">FSDP Peak Memory Usage using Auto_wrap policy</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p><em>CPU Off-loading</em>: In case the model is very large that even with FSDP wouldn’t fit into GPUs, then CPU offload can be helpful here.</p>
 <p>Currently, only parameter and gradient CPU offload is supported. It can be enabled via passing in cpu_offload=CPUOffload(offload_params=True).</p>
@@ -785,9 +790,9 @@ CUDA<span class="w"> </span>event<span class="w"> </span>elapsed<span class="w">
 </pre></div>
 </div>
 <p>The following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 GPUs captured from PyTorch profiler.</p>
-<div class="figure align-center" id="id4">
+<div class="figure align-center" id="id5">
 <a class="reference internal image-reference" href="../_images/DDP_memory.gif"><img alt="FSDP peak memory" src="../_images/DDP_memory.gif" style="width: 100%;"/></a>
-<p class="caption"><span class="caption-text">DDP Peak Memory Usage using Auto_wrap policy</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">DDP Peak Memory Usage using Auto_wrap policy</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Considering the toy example and tiny MNIST model we defined here, we can observe the difference between peak memory usage of DDP and FSDP.
 In DDP each process holds a replica of the model, so the memory footprint is higher compared to FSDP which shards the model parameters, optimizer states and gradients over DDP ranks.
