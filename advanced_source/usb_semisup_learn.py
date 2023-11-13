@@ -16,7 +16,7 @@ The benchmark results across different datasets of computer vision, natural lang
 
 This tutorial will walk you through the basics of using the usb lighting package. 
 Let's get started by training a FreeMatch/SoftMatch model on CIFAR-10 using pre-trained ViT!
-And we will show it is easy to change the semi-supervised algorthm and train on imbalanced datasets.
+And we will show it is easy to change the semi-supervised algorithm and train on imbalanced datasets.
 
  
 .. figure:: /_static/img/usb_semisup_learn/code.png
@@ -29,14 +29,14 @@ And we will show it is easy to change the semi-supervised algorthm and train on 
 # --------------------
 # Here we provide a brief introduction to FreeMatch and SoftMatch.
 # First we introduce a famous baseline for semi-supervised learning called FixMatch.
-# FixMatch is a very simple framework for semi-supervised learning, where it utlizes a strong augmentation to generate pseudo labels for unlabeled data.
+# FixMatch is a very simple framework for semi-supervised learning, where it utilizes a strong augmentation to generate pseudo labels for unlabeled data.
 # It adopts a confidence thresholding strategy to filter out the low-confidence pseudo labels with a fixed threshold set.
 # FreeMatch and SoftMatch are two algorithms that improve upon FixMatch.
 # FreeMatch proposes adaptive thresholding strategy to replace the fixed thresholding strategy in FixMatch. 
 # The adaptive thresholding progressively increases the threshold according to the learning status of the model on each class.
 # SoftMatch absorbs the idea of confidence thresholding as an weighting mechanism.
 # It proposes a Gaussian weighting mechanism to overcome the quantity-quality trade-off in pseudo-labels. 
-# In this toturial, we will use USB to train FreeMatch and SoftMatch.
+# In this tutorial, we will use USB to train FreeMatch and SoftMatch.
 
 
 ######################################################################
@@ -46,7 +46,7 @@ And we will show it is easy to change the semi-supervised algorthm and train on 
 # It is easy-to-use/extend, affordable to small groups, and comprehensive for developing and evaluating SSL algorithms. 
 # USB provides the implementation of 14 SSL algorithms based on Consistency Regularization, and 15 tasks for evaluation from CV, NLP, and Audio domain.
 # It has a modular design that allows users to easily extend the package by adding new algorithms and tasks.
-# It also supprts a python api for easier adaptation to different SSL algorithms on new data.
+# It also supports a python api for easier adaptation to different SSL algorithms on new data.
 # 
 # 
 # Now, let's use USB to train FreeMatch and SoftMatch on CIFAR-10.
@@ -57,7 +57,7 @@ And we will show it is easy to change the semi-supervised algorthm and train on 
 # - ``get_net_builder`` to create a model, here we use pre-trained ViT
 # - ``get_algorithm`` to create the semi-supervised learning algorithm, here we use FreeMatch and SoftMatch
 # - ``get_config``: to get default configuration of the algorithm
-# - ``Trainer``: a Traner class for training and evaluating the algorithm on dataset
+# - ``Trainer``: a Trainer class for training and evaluating the algorithm on dataset
 # 
 import semilearn
 from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
@@ -130,7 +130,7 @@ trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
 
 ######################################################################
 # Finally, let's evaluate the trained model on validation set.
-# After training 4000 itertaions with FreeMatch on only 40 labels of CIFAR-10, we obtain a classifier that achieves above 93 accuracy on validation set.
+# After training 4000 iterations with FreeMatch on only 40 labels of CIFAR-10, we obtain a classifier that achieves above 93 accuracy on validation set.
 trainer.evaluate(eval_loader)
 
 
@@ -140,7 +140,7 @@ trainer.evaluate(eval_loader)
 # --------------------
 # 
 # Now let's say we have imbalanced labeled set and unlabeled set of CIFAR-10, and we want to train a SoftMatch model on it.
-# We create an imbalanced labeld set and imbalanced unlabelde set of CIFAR-10, by setting the ``lb_imb_ratio`` and ``ulb_imb_ratio`` to 10.
+# We create an imbalanced labeled set and imbalanced unlabeled set of CIFAR-10, by setting the ``lb_imb_ratio`` and ``ulb_imb_ratio`` to 10.
 # Also we replace the ``algorithm`` with ``softmatch`` and set the ``imbalanced`` to ``True``.
 # 
 config = {
