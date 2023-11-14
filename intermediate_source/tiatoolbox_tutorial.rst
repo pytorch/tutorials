@@ -11,7 +11,7 @@ Introduction
 
 In this tutorial, we will show how to classify Whole Slide Images (WSIs)
 using PyTorch deep learning models with help from TIAToolbox. A WSI
-is an of a human tissue taken through a surgery or biopsy and
+is an image of a sample of human tissue taken through a surgery or biopsy and
 scanned using specialized scanners. They are used by pathologists and
 computational pathology researchers to `study diseases such as cancer at the microscopic
 level <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7522141/>`__ in
