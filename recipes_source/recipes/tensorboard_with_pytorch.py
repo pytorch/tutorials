@@ -121,44 +121,6 @@ writer.close()
 #
 
 
-######################################################################
-# Share TensorBoard dashboards
-# ----------------------------
-#
-# `TensorBoard.dev <https://tensorboard.dev/>`_ lets you upload and share 
-# your ML experiment results with anyone. Use ``TensorBoard.dev`` to host,
-# track, and share your TensorBoard dashboards.
-#
-# Install the latest version of TensorBoard to use the ``uploader``.
-#
-# .. code-block:: sh
-#
-#    pip install tensorboard --upgrade
-#
-# Use a simple command to upload and share your TensorBoard.
-#
-# .. code-block:: sh
-#
-#    tensorboard dev upload --logdir runs \
-#    --name "My latest experiment" \ # optional
-#    --description "Simple comparison of several hyperparameters" # optional
-#
-# For help, run ``$ tensorboard dev --help``.
-#
-# **Note:** Uploaded TensorBoards are public and visible to everyone.
-# Do not upload sensitive data.
-#
-# View your TensorBoard live at URL provided in your terminal.
-# For example: `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
-#
-#
-# .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
-#    :scale: 40 %
-# 
-# 
-# .. note::
-#    ``TensorBoard.dev`` currently supports scalars, graphs, histograms, distributions, ``hparams``, and text dashboards.
-
 ########################################################################
 # Learn More
 # ----------------------------
