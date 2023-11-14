@@ -175,6 +175,8 @@ In a more advanced scenario, int8-mixed-bf16 quantization comes into play. In th
 a Convolution or GEMM operator produces BFloat16 output data type instead of Float32 in the absence
 of a subsequent quantization node. Subsequently, the BFloat16 tensor seamlessly propagates through
 subsequent pointwise operators, effectively minimizing memory usage and potentially enhancing performance.
+The utilization of this feature mirrors that of regular BFloat16 Autocast, as simple as wrapping the
+script within the BFloat16 Autocast context.
 
 ::
 
