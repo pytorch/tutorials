@@ -919,7 +919,7 @@ Additional Resources
    beginner/dcgan_faces_tutorial
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
-   intermediate/05-patch-prediction
+   intermediate/tiatoolbox_tutorial
 
 .. toctree::
    :maxdepth: 2
