@@ -49,7 +49,8 @@ from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
 from ray import tune
-from ray.air import Checkpoint, session
+from ray.train import Checkpoint
+from ray.air import session
 from ray.tune.schedulers import ASHAScheduler
 
 ######################################################################
