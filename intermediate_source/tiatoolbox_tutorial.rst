@@ -26,8 +26,8 @@ challenges in loading and processing such images, not to mention
 hundreds or even thousands of WSIs in a single study (larger studies
 produce better results)!
 
-Conventional image processing pipelines are not be suitable for WSI
-processing so we need better tools. This where
+Conventional image processing pipelines are not suitable for WSI
+processing so we need better tools. This is where
 `TIAToolbox <https://github.com/TissueImageAnalytics/tiatoolbox>`__ can
 help as it brings a set of useful tools to import and process tissue
 slides in a fast and computationally efficient manner. Typically, WSIs
