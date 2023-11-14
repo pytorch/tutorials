@@ -2,12 +2,16 @@ Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
 ==================================================================
 
 Deploying large models, like Stable Diffusion, can be challenging and time-consuming.
-In this tutorial, we will show how you can streamline the deployment of a PyTorch Stable Diffusion
-model by leveraging Vertex AI. PyTorch is the framework used by Stability AI on Stable
+
+In this recipe, we will show how you can streamline the deployment of a PyTorch Stable Diffusion
+model by leveraging Vertex AI.
+
+PyTorch is the framework used by Stability AI on Stable
 Diffusion v1.5.  Vertex AI is a fully-managed machine learning platform with tools and
 infrastructure designed to help ML practitioners accelerate and scale ML in production with
-the benefit of open-source frameworks like PyTorch. In four steps you can deploy a PyTorch
-Stable Diffusion model (v1.5).
+the benefit of open-source frameworks like PyTorch.
+
+In four steps you can deploy a PyTorch Stable Diffusion model (v1.5).
 
 Deploying your Stable Diffusion model on a Vertex AI Endpoint can be done in four steps:
 
@@ -22,14 +26,14 @@ Deploying your Stable Diffusion model on a Vertex AI Endpoint can be done in fou
 Let’s have a look at each step in more detail. You can follow and implement the steps using the
 `Notebook example <https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/main/notebooks/community/vertex_endpoints/torchserve/dreambooth_stablediffusion.ipynb>`__.
 
-NOTE: please keep in mind that this tutorial requires a billable Vertex AI as explained in more details in the notebook example.
+NOTE: Please keep in mind that this recipe requires a billable Vertex AI as explained in more details in the notebook example.
 
 Create a custom TorchServe handler
 ----------------------------------
 
 TorchServe is an easy and flexible tool for serving PyTorch models. The model deployed to Vertex AI
-uses TorchServe to handle requests and return responses from the model. You must create a custom
-TorchServe handler to include in the model artifacts uploaded to Vertex AI. Include the handler file in the
+uses TorchServe to handle requests and return responses from the model.
+You must create a custom TorchServe handler to include in the model artifacts uploaded to Vertex AI. Include the handler file in the
 directory with the other model artifacts, like this: `model_artifacts/handler.py`.
 
 After creating the handler file, you must package the handler as a model archiver (MAR) file.
@@ -70,7 +74,7 @@ Once you've uploaded the model artifacts into a GCS bucket, you can upload your 
 From the Vertex AI Model Registry, you have an overview of your models
 so you can better organize, track, and train new versions. For this you can use the
 `Vertex AI SDK <https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk>`__
-and this 
+and this
 `pre-built PyTorch container <https://cloud.google.com/blog/products/ai-machine-learning/prebuilt-containers-with-pytorch-and-vertex-ai>`__.
 
 
@@ -97,7 +101,7 @@ Deploy the Vertex AI model onto an endpoint
 
 Once the model has been uploaded to Vertex AI Model Registry you can then take it and deploy
 it to an Vertex AI Endpoint. For this you can use the Console or the Vertex AI SDK. In this
-example you will deploy the model on a NVIDIA Tesla P100 GPU and n1-standard-8 machine. You can 
+example you will deploy the model on a NVIDIA Tesla P100 GPU and n1-standard-8 machine. You can
 specify your machine type.
 
 
@@ -116,7 +120,7 @@ specify your machine type.
         sync=True,
     )
 
-If you follow the
+If you follow this
 `notebook <https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/main/notebooks/community/vertex_endpoints/torchserve/dreambooth_stablediffusion.ipynb>`__
 you can also get online predictions using the Vertex AI SDK as shown in the following snippet.
 
@@ -138,4 +142,3 @@ More resources
 
 This tutorial was created using the vendor documentation. To refer to the original documentation on the vendor site, please see
 `torchserve example <https://cloud.google.com/blog/products/ai-machine-learning/get-your-genai-model-going-in-four-easy-steps>`__.
-

@@ -286,7 +286,7 @@ What's new in PyTorch tutorials?
    :header: Introduction to ONNX Registry
    :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: advanced/onnx_registry_tutorial.html 
+   :link: advanced/onnx_registry_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
@@ -636,13 +636,6 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/knowledge_distillation_pytorch_logo.png
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
-
-.. customcarditem::
-   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
-   :card_description: Learn how to deploy model in Vertex AI with TorchServe
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_vertexai_tutorial.rst
-   :tags: Model-Optimization,Production
 
 .. Parallel-and-Distributed-Training
 
@@ -1049,7 +1042,7 @@ Additional Resources
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
-   intermediate/torchserve_vertexai_tutorial.rst
+
 
 .. toctree::
    :maxdepth: 2
