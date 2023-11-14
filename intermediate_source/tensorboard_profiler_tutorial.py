@@ -7,7 +7,7 @@ to detect performance bottlenecks of the model.
 Introduction
 ------------
 PyTorch 1.8 includes an updated profiler API capable of
-recording the CPU side operations as well as the CUDA kernel launches on the GPU side (ROCm AMD GPUs are not supported).
+recording the CPU side operations as well as the CUDA kernel launches on the GPU side (``AMD ROCm™`` GPUs are not supported).
 The profiler can visualize this information
 in TensorBoard Plugin and provide analysis of the performance bottlenecks.
 
@@ -57,10 +57,11 @@ import torchvision.transforms as T
 # Transform it to the desired format and use ``DataLoader`` to load each batch.
 
 transform = T.Compose(
-    [T.Resize(224),
-     T.ToTensor(),
-     T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-train_set = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+    [T.Resize(224), T.ToTensor(), T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+)
+train_set = torchvision.datasets.CIFAR10(
+    root="./data", train=True, download=True, transform=transform
+)
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True)
 
 ######################################################################
@@ -68,7 +69,7 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=Tru
 # To run on GPU, move model and loss to GPU device.
 
 device = torch.device("cuda:0")
-model = torchvision.models.resnet18(weights='IMAGENET1K_V1').cuda(device)
+model = torchvision.models.resnet18(weights="IMAGENET1K_V1").cuda(device)
 criterion = torch.nn.CrossEntropyLoss().cuda(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 model.train()
@@ -76,6 +77,7 @@ model.train()
 
 ######################################################################
 # Define the training step for each batch of input data.
+
 
 def train(data):
     inputs, labels = data[0].to(device=device), data[1].to(device=device)
@@ -120,11 +122,11 @@ def train(data):
 #   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
-        on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
-        record_shapes=True,
-        profile_memory=True,
-        with_stack=True
+    schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+    on_trace_ready=torch.profiler.tensorboard_trace_handler("./log/resnet18"),
+    record_shapes=True,
+    profile_memory=True,
+    with_stack=True,
 ) as prof:
     for step, batch_data in enumerate(train_loader):
         prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
@@ -135,10 +137,11 @@ with torch.profiler.profile(
 ######################################################################
 # Alternatively, the following non-context manager start/stop is supported as well.
 prof = torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
-        on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
-        record_shapes=True,
-        with_stack=True)
+    schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+    on_trace_ready=torch.profiler.tensorboard_trace_handler("./log/resnet18"),
+    record_shapes=True,
+    with_stack=True,
+)
 prof.start()
 for step, batch_data in enumerate(train_loader):
     prof.step()
@@ -356,7 +359,7 @@ prof.stop()
 # ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
 # ``aten::fill_``. Solely display the operator name as ``aten::empty`` is of little help. It will be shown as
 # ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
-# columns' data might be missing if the event occurs outside of the time range. 
+# columns' data might be missing if the event occurs outside of the time range.
 #
 # In the memory statistics table, the "Size Increase" column sums up all allocation size and minus all the memory
 # release size, that is, the net increase of memory usage after this operator. The "Self Size Increase" column is
