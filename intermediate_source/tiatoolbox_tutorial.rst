@@ -3,7 +3,7 @@ Whole Slide Image Classification Using PyTorch and TIAToolbox
 
 .. tip::
    To get the most of this tutorial, we suggest using this
-   `Colab Version <link>`_. This will allow you to experiment with the information presented below.
+   `Colab Version <https://colab.research.google.com/drive/1qkTBbMrECLjVAWwg9SJHKFgmSUyv3djE?usp=sharing>`_. This will allow you to experiment with the information presented below.
 
 
 Introduction
