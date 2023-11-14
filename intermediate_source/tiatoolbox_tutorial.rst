@@ -343,7 +343,7 @@ The PatchPredictor class runs a CNN-based classifier written in PyTorch.
    `our example notebook on advanced model
    techniques <https://github.com/TissueImageAnalytics/tiatoolbox/blob/develop/examples/07-advanced-modeling.ipynb>`__.
    In order to load a custom model, you need to write a small
-   preprocessing function, as in ``preproc_func(img)``, which make sures
+   preprocessing function, as in ``preproc_func(img)``, which makes sure
    the input tensors are in the right format for the loaded network.
 -  Alternatively, you can pass ``pretrained_model`` as a string
    argument. This specifies the CNN model that performs the prediction,
@@ -630,7 +630,7 @@ results. Here are the arguments and their descriptions:
    unnecessary computation.
 -  ``merge_predictions``: You can set this parameter to ``True`` if it’s
    required to generate a 2D map of patch classification results.
-   However, for large WSIs this will require large available memeory. An
+   However, for large WSIs this will require large available memory. An
    alternative (default) solution is to set ``merge_predictions=False``,
    and then generate the 2D prediction maps using the
    ``merge_predictions`` function as you will see later on.
