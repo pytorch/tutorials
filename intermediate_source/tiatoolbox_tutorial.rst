@@ -47,7 +47,7 @@ classification <https://doi.org/10.1016/j.media.2022.102685>`__. In this
 tutorial we show how you can: 1. Load WSI images using
 TIAToolbox; and 2. Use different PyTorch models to classify slides at
 the patch-level. In this tutorial, we will provide an example of using
-TorchVision’s ``ResNet18`` model and custom
+TorchVision ``ResNet18`` model and custom
 `HistoEncoder` <https://github.com/jopo666/HistoEncoder>`__ model.
 
 Let’s get started!
@@ -558,8 +558,8 @@ confusion matrix.
     </table>
     </div>
     </div>
-    <br />
-    <br />
+    <br/>
+    <br/>
 
 
 Predict patch labels for a whole slide
@@ -617,7 +617,7 @@ results. Here are the arguments and their descriptions:
 -  ``resolution`` and ``unit`` (not shown below): These arguments
    specify the level or micron-per-pixel resolution of the WSI levels
    from which we plan to extract patches and can be used instead of
-   ``ioconfig``. Here we specify the WSI’s level as ``'baseline'``,
+   ``ioconfig``. Here we specify the WSI level as ``'baseline'``,
    which is equivalent to level 0. In general, this is the level of
    greatest resolution. In this particular case, the image has only one
    level. More information can be found in the
