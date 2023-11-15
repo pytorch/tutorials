@@ -321,3 +321,4 @@ optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 #
 # -  `In-place operations & Multithreaded Autograd <https://pytorch.org/docs/stable/notes/autograd.html>`__
 # -  `Example implementation of reverse-mode autodiff <https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC>`__
+# -  `Video: PyTorch Autograd Explained - In-depth Tutorial <https://www.youtube.com/watch?v=MswxJw-8PvE>`__

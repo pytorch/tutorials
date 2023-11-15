@@ -194,14 +194,14 @@ def fused_gelu(x):
 #    numactl --cpunodebind=N --membind=N python <pytorch_script>
 
 ###############################################################################
-# More detailed descriptions can be found `here <https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_.
+# More detailed descriptions can be found `here <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/tutorials/performance_tuning/tuning_guide.html>`_.
 
 ###############################################################################
 # Utilize OpenMP
 # ~~~~~~~~~~~~~~
 # OpenMP is utilized to bring better performance for parallel computation tasks.
 # ``OMP_NUM_THREADS`` is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
-# CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. ``GOMP_CPU_AFFINITY`` or ``KMP_AFFINITY`` determines how to bind OpenMP* threads to physical processing units. Detailed information can be found `here <https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_.
+# CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. ``GOMP_CPU_AFFINITY`` or ``KMP_AFFINITY`` determines how to bind OpenMP* threads to physical processing units. Detailed information can be found `here <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/tutorials/performance_tuning/tuning_guide.html>`_.
 
 ###############################################################################
 # With the following command, PyTorch run the task on N OpenMP threads.
@@ -286,7 +286,7 @@ with torch.no_grad():
     traced_model(*sample_input)
 
 ###############################################################################
-# While the JIT fuser for oneDNN Graph also supports inference with ``BFloat16`` datatype, 
+# While the JIT fuser for oneDNN Graph also supports inference with ``BFloat16`` datatype,
 # performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16
 # instruction set architecture (ISA).
 # The following code snippets serves as an example of using ``BFloat16`` datatype for inference with oneDNN Graph:
@@ -295,6 +295,10 @@ with torch.no_grad():
 torch._C._jit_set_autocast_mode(False)
 
 with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bfloat16):
+    # Conv-BatchNorm folding for CNN-based Vision Models should be done with ``torch.fx.experimental.optimization.fuse`` when AMP is used
+    import torch.fx.experimental.optimization as optimization
+    # Please note that optimization.fuse need not be called when AMP is not used
+    model = optimization.fuse(model)
     model = torch.jit.trace(model, (example_input))
     model = torch.jit.freeze(model)
     # a couple of warm-up runs

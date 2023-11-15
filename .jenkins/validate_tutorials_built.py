@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).parent.parent
 
 NOT_RUN = [
     "beginner_source/basics/intro",  # no code
+    "beginner_source/onnx/intro_onnx",
     "beginner_source/translation_transformer",
     "beginner_source/profiler",
     "beginner_source/saving_loading_models",
@@ -21,10 +22,11 @@ NOT_RUN = [
     "beginner_source/former_torchies/tensor_tutorial_old",
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
-    "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756 
+    "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756
     "intermediate_source/parametrizations",
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",
+    "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/ddp_pipeline",  # requires 4 gpus
     "prototype_source/fx_graph_mode_ptq_dynamic",

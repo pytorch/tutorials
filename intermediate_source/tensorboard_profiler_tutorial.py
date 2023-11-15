@@ -97,12 +97,12 @@ def train(data):
 # - ``schedule`` - callable that takes step (int) as a single parameter
 #   and returns the profiler action to perform at each step.
 #
-#   In this example with ``wait=1, warmup=1, active=3, repeat=2``,
+#   In this example with ``wait=1, warmup=1, active=3, repeat=1``,
 #   profiler will skip the first step/iteration,
 #   start warming up on the second,
 #   record the following three iterations,
 #   after which the trace will become available and on_trace_ready (when set) is called.
-#   In total, the cycle repeats twice. Each cycle is called a "span" in TensorBoard plugin.
+#   In total, the cycle repeats once. Each cycle is called a "span" in TensorBoard plugin.
 #
 #   During ``wait`` steps, the profiler is disabled.
 #   During ``warmup`` steps, the profiler starts tracing but the results are discarded.
@@ -121,31 +121,31 @@ def train(data):
 #   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
         profile_memory=True,
         with_stack=True
 ) as prof:
     for step, batch_data in enumerate(train_loader):
-        if step >= (1 + 1 + 3) * 2:
+        prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
+        if step >= 1 + 1 + 3:
             break
         train(batch_data)
-        prof.step()  # Need to call this at the end of each step to notify profiler of steps' boundary.
 
 ######################################################################
 # Alternatively, the following non-context manager start/stop is supported as well.
 prof = torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
         with_stack=True)
 prof.start()
 for step, batch_data in enumerate(train_loader):
-    if step >= (1 + 1 + 3) * 2:
+    prof.step()
+    if step >= 1 + 1 + 3:
         break
     train(batch_data)
-    prof.step()
 prof.stop()
 
 ######################################################################
@@ -158,6 +158,10 @@ prof.stop()
 ######################################################################
 # 4. Use TensorBoard to view results and analyze model performance
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# .. note::
+#     TensorBoard Plugin support has been deprecated, so some of these functions may not
+#     work as previously. Please take a look at the replacement, `HTA <https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis>`_.
 #
 # Install PyTorch Profiler TensorBoard Plugin.
 #
@@ -175,7 +179,7 @@ prof.stop()
 #
 
 ######################################################################
-# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser.
+# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser (**Safari is not supported**).
 #
 # .. code-block::
 #
@@ -500,5 +504,6 @@ prof.stop()
 # Take a look at the following documents to continue your learning,
 # and feel free to open an issue `here <https://github.com/pytorch/kineto/issues>`_.
 #
-# -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
+# -  `PyTorch TensorBoard Profiler Github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
 # -  `torch.profiler API <https://pytorch.org/docs/master/profiler.html>`_
+# -  `HTA <https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis>`_

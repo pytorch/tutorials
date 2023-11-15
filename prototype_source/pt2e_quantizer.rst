@@ -1,21 +1,21 @@
-How to Write a ``Quantizer`` for PyTorch 2.0 Export Quantization
+How to Write a ``Quantizer`` for PyTorch 2 Export Quantization
 ================================================================
 
 **Author**: `Leslie Fang <https://github.com/leslie-fang-intel>`_, `Weiwen Xia <https://github.com/Xia-Weiwen>`__, `Jiong Gong <https://github.com/jgong5>`__, `Kimish Patel <https://github.com/kimishpatel>`__, `Jerry Zhang <https://github.com/jerryzh168>`__
-
-.. note:: Quantization in PyTorch 2.0 export is still a work in progress.
 
 Prerequisites:
 ^^^^^^^^^^^^^^^^
 
 Required:
+
 -  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
    
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
    
--  `(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__
+-  `(prototype) PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__
 
 Optional:
+
 -  `FX Graph Mode post training static quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`__
    
 -  `BackendConfig in PyTorch Quantization FX Graph Mode <https://pytorch.org/tutorials/prototype/backend_config_tutorial.html?highlight=backend>`__
@@ -25,11 +25,11 @@ Optional:
 Introduction
 ^^^^^^^^^^^^^
 
-`(prototype) PyTorch 2.0 Export Post Training Static Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`__ introduced the overall API for pytorch 2.0 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a ``Quantizer`` class that encodes:
+`(prototype) PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`__ introduced the overall API for pytorch 2 export quantization, main difference from fx graph mode quantization in terms of API is that we made it explicit that quantiation is targeting a specific backend. So to use the new flow, backend need to implement a ``Quantizer`` class that encodes:
 (1). What is supported quantized operator or patterns in the backend
 (2). How can users express the way they want their floating point model to be quantized, for example, quantized the whole model to be int8 symmetric quantization, or quantize only linear layers etc.
 
-Please see `here <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html#motivation-of-pytorch-2-0-export-quantization>`__ For motivations for the new API and ``Quantizer``.
+Please see `here <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html#motivation-of-pytorch-2-export-quantization>`__ For motivations for the new API and ``Quantizer``.
 
 An existing quantizer object defined for ``XNNPACK`` is in
 `QNNPackQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/pt2e/quantizer/xnnpack_quantizer.py>`__
@@ -141,7 +141,42 @@ parameters can be shared among some tensors explicitly. Two typical use cases ar
 
 ``SharedQuantizationSpec`` is designed for this use case to annotate tensors whose quantization
 parameters are shared with other tensors. Input of ``SharedQuantizationSpec`` is an ``EdgeOrNode`` object which 
-can be an input edge or an output value. 
+can be an input edge or an output value.
+
+.. note::
+
+   * Sharing is transitive
+
+     Some tensors might be effectively using shared quantization spec due to:
+     
+     * Two nodes/edges are configured to use ``SharedQuantizationSpec``.
+     * There is existing sharing of some nodes.
+     
+     For example, let's say we have two ``conv`` nodes ``conv1`` and ``conv2``, and both of them are fed into a ``cat``
+     node: ``cat([conv1_out, conv2_out], ...)``. Let's say the output of ``conv1``, ``conv2``, and the first input of ``cat`` are configured
+     with the same configurations of ``QuantizationSpec``. The second input of ``cat`` is configured to use ``SharedQuantizationSpec``
+     with the first input.
+     
+     .. code-block::
+     
+       conv1_out: qspec1(dtype=torch.int8, ...)
+       conv2_out: qspec1(dtype=torch.int8, ...)
+       cat_input0: qspec1(dtype=torch.int8, ...)
+       cat_input1: SharedQuantizationSpec((conv1, cat))  # conv1 node is the first input of cat
+     
+     First of all, the output of ``conv1`` is implicitly sharing quantization parameters (and observer object)
+     with the first input of ``cat``, and the same is true for the output of ``conv2`` and the second input of ``cat``.
+     Therefore, since the user configures the two inputs of ``cat`` to share quantization parameters, by transitivity,
+     ``conv2_out`` and ``conv1_out`` will also be sharing quantization parameters. In the observed graph, you
+     will see the following:
+     
+     .. code-block::
+     
+         conv1 -> obs -> cat
+         conv2 -> obs   /
+
+     and both ``obs`` will be the same observer instance.
+
 
 -  Input edge is the connection between input node and the node consuming the input,
    so it's a ``Tuple[Node, Node]``.
@@ -267,10 +302,80 @@ functions that are used in the example:
    `get_bias_qspec <https://github.com/pytorch/pytorch/blob/47cfcf566ab76573452787335f10c9ca185752dc/torch/ao/quantization/_pt2e/quantizer/utils.py#L53>`__
    can be used to get the ``QuantizationSpec`` from ``QuantizationConfig`` for a specific pattern.
 
+A Note on IR for PT2E Quantization Flow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IR means the intermediate representation of the model, for example, ``torch`` IR (``torch.nn`` modules, ``torch.nn.functional`` ops) or ``aten`` IR (``torch.ops.aten.linear``, ...). PT2E Quantization Flow is using pre autograd aten IR (the output of `torch.export` API) so that we support training. As is shown before, we need to match the operator or operator patterns before we can attach annotations on them, So the question is how do we match the pattern?
+
+Motivation: Problem of Matching ``aten`` IR directly
+--------------------------------------------------------
+
+The most straightforward way might be matching ``aten`` IR directly.
+
+Example::
+
+  for n in gm.graph.nodes:
+        if n.op != "call_function" or n.target not in [
+            torch.ops.aten.relu.default,
+            torch.ops.aten.relu_.default,
+        ]:
+            continue
+        relu_node = n
+        maybe_conv_node = n.args[0]
+        if (
+            not isinstance(maybe_conv_node, Node)
+            or maybe_conv_node.op != "call_function"
+            or maybe_conv_node.target
+            not in [
+                torch.ops.aten.conv1d.default,
+                torch.ops.aten.conv2d.default,
+            ]
+        ):
+            continue
+
+        # annotate conv and relu nodes
+        ...
+
+However one problem for using this IR is that the representation might change if the PyTorch implementation for modules or functional ops changed. But this could be unexpected since modeling users typically assume that when the eager mode model code doesn't change, they should get the same model representation after program capture as well. One concrete effect for this problem is that if a ``Quantizer`` do annotations based on recognizing ``aten`` IR patterns, then it may fail to recognzing the pattern after PyTorch version update, and the same eager mode floating point may be left unquantized.
+
+Recommendation: Use ``SubgraphMatcherWithNameNodeMap`` for pattern matching
+-----------------------------------------------------------------------------
+Because of this, we recommend people to recognize the pattern through ``SubgraphMatcherWithNameNodeMap`` (an improved version of ``SubgraphMatcher`` that makes it easier to query the nodes that people want to annotate), through capturing a ``torch`` IR pattern (with the same program capture used for capturing the floating point model), instead of using the ``aten`` IR pattern directly.
+
+Example::
+
+  def conv_relu_pattern(input, weight, bias):
+      conv = torch.nn.functional.conv2d(input, weight, bias)
+      output = torch.nn.functional.relu(conv)
+      # returns an additional dict that includes a map from name to node that we want to annotate
+      return relu, {"input": input, "weight": weight, "bias": bias, "output": output}
+
+  matcher = SubgraphMatcherWithNameNodeMap(conv_relu_pattern)
+  matches = matcher.match(model)
+  for match in matches:
+      # find input and output of the pattern
+      # annotate the nodes
+      name_node_map = match.name_node_map
+      input_node = name_node_map["input"]
+      weight_node = name_node_map["weight"]
+      bias_node = name_node_map["bias"]
+      output_node = name_node_map["relu"]
+      input_node.users[0].meta["quantization_annotation"] = ...
+      weight_node.users[0].meta["quantization_annotation"] = ...
+      bias_node.users[0].meta["quantization_annotation"] = ...
+      output_node.meta["quantization_annotation"] = ...
+
+With this, the ``Quantizer`` will still be valid even when the implementation for nn modules and functionals changes, the ``aten`` IR for floating point model will change, but since we capture the pattern again instead of hardcoding the ``aten`` IR for the pattern, we'll get the updated ``aten`` IR as well and will still be able to match the pattern.
+
+One caveat is that if inputs of the pattern has multiple users, we don't have a good way to identify which user node we want to annotate except for checking the aten op target.
+
+Another caveat is that we need to make sure we have an exhaustive list of examples (e.g. 2D, 3D, 4D inputs, real v.s. symbolic inputs, training=True v.s. training=False etc.) for the pattern to make sure cover different possible ``aten`` IR outcomes captured from the ``torch`` IR pattern.
+
+Note: We may provide some (pattern, list of example_inputs) or some pre-generated matcher object so people can just use them directly in the future.
+
 Conclusion
 ^^^^^^^^^^^^^^^^^^^
 
-With this tutorial, we introduce the new quantization path in PyTorch 2.0. Users can learn about
-how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the quantization 2.0 flow.
+With this tutorial, we introduce the new quantization path in PyTorch 2. Users can learn about
+how to define a ``BackendQuantizer`` with the ``QuantizationAnnotation API`` and integrate it into the PyTorch 2 Export Quantization flow.
 Examples of ``QuantizationSpec``, ``SharedQuantizationSpec``, ``FixedQParamsQuantizationSpec``, and ``DerivedQuantizationSpec``
-are given for specific annotation use case. This is a prerequisite to be able to quantize a model in PyTorch 2.0 Export Quantization flow. You can use `XNNPACKQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py>`_ as an example to start implementing your own ``Quantizer``. After that please follow `this tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_static.html>`_ to actually quantize your model.
+are given for specific annotation use case. You can use `XNNPACKQuantizer <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/quantizer/xnnpack_quantizer.py>`_ as an example to start implementing your own ``Quantizer``. After that please follow `this tutorial <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_ to actually quantize your model.

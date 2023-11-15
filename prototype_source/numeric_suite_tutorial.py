@@ -28,7 +28,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
-from torchvision import datasets
+from torchvision import models, datasets
 import torchvision.transforms as transforms
 import os
 import torch.quantization
@@ -43,7 +43,7 @@ from torch.quantization import (
 # Then we load the pretrained float ResNet18 model, and quantize it into qmodel. We cannot compare two arbitrary models, only a float model and the quantized model derived from it can be compared.
 
 
-float_model = torchvision.models.quantization.resnet18(pretrained=True, quantize=False)
+float_model = torchvision.models.quantization.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1, quantize=False)
 float_model.to('cpu')
 float_model.eval()
 float_model.fuse_model()
@@ -199,7 +199,7 @@ act_compare_dict = ns.get_matching_activations(float_model, qmodel)
 #
 # Notice before each call of ``compare_model_outputs()`` and ``compare_model_stub()`` we need to have clean float and quantized model. This is because ``compare_model_outputs()`` and ``compare_model_stub()`` modify float and quantized model inplace, and it will cause unexpected results if call one right after another.
 
-float_model = torchvision.models.quantization.resnet18(pretrained=True, quantize=False)
+float_model = torchvision.models.quantization.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1, quantize=False)
 float_model.to('cpu')
 float_model.eval()
 float_model.fuse_model()

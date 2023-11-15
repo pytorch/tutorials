@@ -988,7 +988,7 @@ buffer_scratch_dir = tmpdir.name
 # samples sub-trajectories of 2 time steps each.
 #
 # .. figure:: /_static/img/replaybuffer_traj.png
-#    :alt: Storign trajectories in the replay buffer
+#    :alt: Storing trajectories in the replay buffer
 #
 # Let's start with the number of frames stored in the buffer
 
