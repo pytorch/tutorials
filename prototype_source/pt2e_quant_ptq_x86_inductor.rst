@@ -109,6 +109,10 @@ We will start by performing the necessary imports, capturing the FX Graph from t
 
 Next, we will have the FX Module to be quantized.
 
+.. note::
+
+   Steps below should be run inside the ``torch.no_grad()`` scope.
+
 2. Apply Quantization
 ----------------------------
 
