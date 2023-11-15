@@ -56,7 +56,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 import torchvision.transforms as transforms
-import torchvision.models as models
+from torchvision.models import vgg19, VGG19_Weights
 
 import copy
 
@@ -262,7 +262,7 @@ class StyleLoss(nn.Module):
 # network to evaluation mode using ``.eval()``.
 # 
 
-cnn = models.vgg19(pretrained=True).features.eval()
+cnn = vgg19(weights=VGG19_Weights.DEFAULT).features.eval()
 
 
 
