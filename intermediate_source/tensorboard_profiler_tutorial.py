@@ -36,6 +36,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 4. Use TensorBoard to view results and analyze model performance
 # 5. Improve performance with the help of profiler
 # 6. Analyze performance with other advanced features
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs 
 #
 # 1. Prepare the data and model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,6 +388,110 @@ prof.stop()
 # this worker may be a straggler which may have more computation workload than other workers’.
 #
 # The "Communication Operations Stats" summarizes the detailed statistics of all communication ops in each worker.
+
+######################################################################
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#  
+# The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
+# We can run above steps on AMD GPUs. In this section of the tutorial, we will use docker to install PyTorch on ROCm.
+
+
+######################################################################
+# Suppose we create a directory called ``profiler_tutorial``, and save the code in Step 1 as ``test_cifar10.py`` in this directory. 
+# 
+# .. code-block::
+#
+#      mkdir ~/profiler_tutorial
+#      cd profiler_tutorial
+#      vi test_cifar10.py
+#
+# Then pull the docker image and start the container:
+#
+# .. code-block::
+#
+#     docker pull rocm/pytorch-nightly:latest
+#     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/pytorch-nightly:latest
+#     
+# Inside the container, install the ``torch_tb_profiler`` and then run the python file ``test_cifar10.py``:
+# 
+# .. code-block::
+#
+#     pip install torch_tb_profiler
+#     cd /profiler_tutorial
+#     python test_cifar10.py
+#     
+# Now we have all the data needed to view via tensorboard.
+#
+# .. code-block::
+#
+#      tensorboard --logdir=./log
+
+
+######################################################################
+# Sometimes, we might get problem ``ValueError: Duplicate plugins for name projector`` like below:
+#
+#.. code-block::
+# 
+# I1115 15:23:49.014848 139961617598208 loader.py:57] started all processing
+# Traceback (most recent call last):
+#   File "/opt/conda/envs/py_3.8/bin/tensorboard", line 8, in <module>
+#     sys.exit(run_main())
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/main.py", line 46, in run_main
+#     app.run(tensorboard.main, flags_parser=tensorboard.configure)
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/absl/app.py", line 308, in run
+#     _run_main(main, args)
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/absl/app.py", line 254, in _run_main
+#     sys.exit(main(argv))
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 276, in main
+#     return runner(self.flags) or 0
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 292, in _run_serve_subcommand
+#     server = self._make_server()
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 467, in _make_server
+#     app = application.TensorBoardWSGIApp(
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/backend/application.py", line 139, in TensorBoardWSGIApp
+#     return TensorBoardWSGI(
+#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/backend/application.py", line 252, in __init__
+#     raise ValueError(
+# ValueError: Duplicate plugins for name projector
+
+
+######################################################################
+# To solve this issue, we need to perform uninstall ``tensorboard`` and reinstall it using the below steps:
+# 
+# .. code-block::
+#
+#     pip uninstall tb-nightly tensorboardX tensorboard -y
+#     pip install tensorboard
+#
+#
+# Then run the `tensorboard --logdir=./log` again. Choose different view as described in Step 4. For example, below is the "Operator" View:
+#
+# .. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# If "Trace" View does not work, for example, it might display nothing. We can work around by typing ``chrome://tracing`` in your Chrome Browser.
+# 
+# First copy the trace json file under ~/profiler_tutorial/log/resnet18 directory to the Windows.  
+# You may need ``scp`` if the file is located in a remote node from Windows. 
+# 
+# Then click "Load" button to load the trace json file from the ``chrome://tracing`` page in the browser. 
+#
+# .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# As mentioned previously, you can move the graph and zoom in/out.
+# And keyboard can also be used to zoom and move around inside the timeline.
+# The ‘w’ and ‘s’ keys zoom in centered around the mouse,
+# and the ‘a’ and ‘d’ keys move the timeline left and right.
+# You can hit these keys multiple times until you see a readable representation.
+
+
 
 ######################################################################
 # Learn More
