@@ -399,11 +399,13 @@ prof.stop()
 #
 #  
 # The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
-# We can run above steps on AMD GPUs. In this section of the tutorial, we will use docker to install PyTorch on ROCm.
+# We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base dev image
+# before installing PyTorch.
+
 
 
 ######################################################################
-# Suppose we create a directory called ``profiler_tutorial``, and save the code in Step 1 as ``test_cifar10.py`` in this directory. 
+# For the purpose of example, let's create a directory called ``profiler_tutorial``, and save the code in **Step 1** as ``test_cifar10.py`` in this directory. 
 # 
 # .. code-block::
 #
@@ -411,14 +413,45 @@ prof.stop()
 #      cd profiler_tutorial
 #      vi test_cifar10.py
 #
-# Then pull the docker image and start the container:
+
+
+######################################################################
+# At the time of this writing, the Stable version (``2.1.1``) of PyTorch on ROCm Platform is **ROCm 5.6** (`Get Started <https://pytorch.org/get-started/locally/>`). 
+#
+# 1. Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`.
+# It is ``rocm/dev-ubuntu-20.04:5.6``
+#
+# 2. Start the Docker container:
+# Next, pull the ROCm dev base image and start the container:
 #
 # .. code-block::
 #
-#     docker pull rocm/pytorch-nightly:latest
-#     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/pytorch-nightly:latest
+#     docker pull rocm/dev-ubuntu-20.04:5.6
+#     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
 #     
-# Inside the container, install the ``torch_tb_profiler`` and then run the python file ``test_cifar10.py``:
+# 3. Inside the container, install any dependencies needed for installing the wheels package.
+#
+# .. code-block::
+#
+#     sudo apt update
+#     sudo apt install libjpeg-dev python3-dev -y
+#     pip3 install wheel setuptools 
+#
+#
+# 4. Install the wheels
+#
+# .. code-block::
+# 
+#     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+#
+# 5. Set the ``python`` alias to point to ``python3``.
+# This step is necessary for the tensorboard to work properly.
+#
+# .. code-block::
+#
+#     alias python=/usr/bin/python3.8
+#
+# 6. Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
 # 
 # .. code-block::
 #
@@ -426,15 +459,15 @@ prof.stop()
 #     cd /profiler_tutorial
 #     python test_cifar10.py
 #     
-# Now we have all the data needed to view via tensorboard.
-#
+# Now, we have all the data needed to view in TensorBoard.
+# 
 # .. code-block::
 #
 #      tensorboard --logdir=./log
 
 
 ######################################################################
-# Sometimes, we might get problem ``ValueError: Duplicate plugins for name projector`` like below:
+# If you experience the problem ``ValueError: Duplicate plugins for name projector`` like below:
 #
 #.. code-block::
 # 
@@ -462,7 +495,7 @@ prof.stop()
 
 
 ######################################################################
-# To solve this issue, we need to perform uninstall ``tensorboard`` and reinstall it using the below steps:
+# You can reinstall ``tensorboard`` using the below steps:
 # 
 # .. code-block::
 #
@@ -470,29 +503,30 @@ prof.stop()
 #     pip install tensorboard
 #
 #
-# Then run the `tensorboard --logdir=./log` again. Choose different view as described in Step 4. For example, below is the "Operator" View:
+# Then, run the ``tensorboard --logdir=./log`` again. 
+# Choose different views as described in **Step 4**. For example, below is the **Operator** View:
 #
 # .. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
 #    :scale: 25 %
 
 
 ######################################################################
-# If "Trace" View does not work, for example, it might display nothing. We can work around by typing ``chrome://tracing`` in your Chrome Browser.
+# At the time this section is written, **Trace** View does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
 # 
-# First copy the trace json file under ~/profiler_tutorial/log/resnet18 directory to the Windows.  
-# You may need ``scp`` if the file is located in a remote node from Windows. 
+# 1. Copy the trace json file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+# You may need to copy the file by using ``scp`` if the file is located in a remote location. 
 # 
-# Then click "Load" button to load the trace json file from the ``chrome://tracing`` page in the browser. 
+# 2. Click **Load** button to load the trace json file from the ``chrome://tracing`` page in the browser. 
 #
 # .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
 #    :scale: 25 %
 
 
 ######################################################################
-# As mentioned previously, you can move the graph and zoom in/out.
+# As mentioned previously, you can move the graph and zoom in and out.
 # And keyboard can also be used to zoom and move around inside the timeline.
-# The ‘w’ and ‘s’ keys zoom in centered around the mouse,
-# and the ‘a’ and ‘d’ keys move the timeline left and right.
+# The ``w`` and ``s`` keys zoom in centered around the mouse,
+# and the ``a`` and ``d`` keys move the timeline left and right.
 # You can hit these keys multiple times until you see a readable representation.
 
 
