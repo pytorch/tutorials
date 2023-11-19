@@ -403,7 +403,6 @@ prof.stop()
 # before installing PyTorch.
 
 
-
 ######################################################################
 # For the purpose of example, let's create a directory called ``profiler_tutorial``, and save the code in **Step 1** as ``test_cifar10.py`` in this directory. 
 # 
@@ -412,23 +411,25 @@ prof.stop()
 #      mkdir ~/profiler_tutorial
 #      cd profiler_tutorial
 #      vi test_cifar10.py
-#
 
 
 ######################################################################
-# At the time of this writing, the Stable version (``2.1.1``) of PyTorch on ROCm Platform is **ROCm 5.6** (`Get Started <https://pytorch.org/get-started/locally/>`). 
+# At the time of this writing, the Stable(``2.1.1``) Linux version of PyTorch on ROCm Platform is `ROCm 5.6 <https://pytorch.org/get-started/locally/>`_. 
 #
-# 1. Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`.
-# It is ``rocm/dev-ubuntu-20.04:5.6``
 #
-# 2. Start the ROCm base Docker container:
+# - Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`_.
+#
+# It is ``rocm/dev-ubuntu-20.04:5.6``.
+#
+# - Start the ROCm base Docker container:
+#
 #
 # .. code-block::
 #
 #     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
 #
 #
-# 3. Inside the container, install any dependencies needed for installing the wheels package.
+# - Inside the container, install any dependencies needed for installing the wheels package.
 #
 # .. code-block::
 #
@@ -438,20 +439,21 @@ prof.stop()
 #     sudo apt install python-is-python3 
 #
 #
-# 4. Install the wheels
+# - Install the wheels
 #
 # .. code-block::
 # 
 #     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
 #
 #
-# 5. Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
+# - Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
 # 
 # .. code-block::
 #
 #     pip install torch_tb_profiler
 #     cd /profiler_tutorial
 #     python test_cifar10.py
+#
 #     
 # Now, we have all the data needed to view in TensorBoard.
 # 
@@ -505,12 +507,13 @@ prof.stop()
 
 
 ######################################################################
-# At the time this section is written, **Trace** View does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
+# At the time this section is written, **Trace** view does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
+#
 # 
-# 1. Copy the trace json file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+# - Copy the trace json file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
 # You may need to copy the file by using ``scp`` if the file is located in a remote location. 
 # 
-# 2. Click **Load** button to load the trace json file from the ``chrome://tracing`` page in the browser. 
+# - Click **Load** button to load the trace json file from the ``chrome://tracing`` page in the browser. 
 #
 # .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
 #    :scale: 25 %
