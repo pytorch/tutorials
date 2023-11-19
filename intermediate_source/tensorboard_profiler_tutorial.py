@@ -421,21 +421,21 @@ prof.stop()
 # 1. Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`.
 # It is ``rocm/dev-ubuntu-20.04:5.6``
 #
-# 2. Start the Docker container:
-# Next, pull the ROCm dev base image and start the container:
+# 2. Start the ROCm base Docker container:
 #
 # .. code-block::
 #
-#     docker pull rocm/dev-ubuntu-20.04:5.6
 #     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
-#     
+#
+#
 # 3. Inside the container, install any dependencies needed for installing the wheels package.
 #
 # .. code-block::
 #
 #     sudo apt update
 #     sudo apt install libjpeg-dev python3-dev -y
-#     pip3 install wheel setuptools 
+#     pip3 install wheel setuptools
+#     sudo apt install python-is-python3 
 #
 #
 # 4. Install the wheels
@@ -444,14 +444,8 @@ prof.stop()
 # 
 #     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
 #
-# 5. Set the ``python`` alias to point to ``python3``.
-# This step is necessary for the tensorboard to work properly.
 #
-# .. code-block::
-#
-#     alias python=/usr/bin/python3.8
-#
-# 6. Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
+# 5. Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
 # 
 # .. code-block::
 #
