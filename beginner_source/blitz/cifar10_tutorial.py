@@ -9,7 +9,7 @@ updates to the weights of the network.
 Now you might be thinking,
 
 What about data?
-----------------
+--------
 
 Generally, when you have to deal with image, text, audio or video data,
 you can use standard python packages that load data into a numpy array.
@@ -32,8 +32,7 @@ It has the classes: ‘airplane’, ‘automobile’, ‘bird’, ‘cat’, ‘
 ‘dog’, ‘frog’, ‘horse’, ‘ship’, ‘truck’. The images in CIFAR-10 are of
 size 3x32x32, i.e. 3-channel color images of 32x32 pixels in size.
 
-.. figure:: /_static/img/cifar10.png
-   :alt: cifar10
+<img src="../_static/img/cifar10.png" alt="cifar10.png">
 
    cifar10
 
@@ -50,8 +49,8 @@ We will do the following steps in order:
 4. Train the network on the training data
 5. Test the network on the test data
 
-1. Load and normalize CIFAR10
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 1. Load and normalize CIFAR10
+
 
 Using ``torchvision``, it’s extremely easy to load CIFAR10.
 """
@@ -64,9 +63,10 @@ import torchvision.transforms as transforms
 # We transform them to Tensors of normalized range [-1, 1].
 
 ########################################################################
-# .. note::
-#     If running on Windows and you get a BrokenPipeError, try setting
-#     the num_worker of torch.utils.data.DataLoader() to 0.
+# >**NOTE**
+# >
+# >If running on Windows and you get a BrokenPipeError, try setting
+# the num_worker of torch.utils.data.DataLoader() to 0.
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -114,8 +114,7 @@ print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
 
 
 ########################################################################
-# 2. Define a Convolutional Neural Network
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# # 2. Define a Convolutional Neural Network
 # Copy the neural network from the Neural Networks section before and modify it to
 # take 3-channel images (instead of 1-channel images as it was defined).
 
@@ -146,8 +145,7 @@ class Net(nn.Module):
 net = Net()
 
 ########################################################################
-# 3. Define a Loss function and optimizer
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# # 3. Define a Loss function and optimizer
 # Let's use a Classification Cross-Entropy loss and SGD with momentum.
 
 import torch.optim as optim
@@ -156,11 +154,9 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 ########################################################################
-# 4. Train the network
-# ^^^^^^^^^^^^^^^^^^^^
+# # 4. Train the network
 #
-# This is when things start to get interesting.
-# We simply have to loop over our data iterator, and feed the inputs to the
+# This is when things start to get interesting. We simply have to loop over our data iterator, and feed the inputs to the
 # network and optimize.
 
 for epoch in range(2):  # loop over the dataset multiple times
@@ -194,11 +190,10 @@ PATH = './cifar_net.pth'
 torch.save(net.state_dict(), PATH)
 
 ########################################################################
-# See `here <https://pytorch.org/docs/stable/notes/serialization.html>`_
+# See <a href="https://pytorch.org/docs/stable/notes/serialization.html">here</a> 
 # for more details on saving PyTorch models.
 #
 # 5. Test the network on the test data
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We have trained the network for 2 passes over the training dataset.
 # But we need to check if the network has learnt anything at all.
@@ -308,60 +303,49 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 ########################################################################
-# The rest of this section assumes that ``device`` is a CUDA device.
-#
-# Then these methods will recursively go over all modules and convert their
-# parameters and buffers to CUDA tensors:
-#
-# .. code:: python
-#
-#     net.to(device)
-#
-#
+#  The rest of this section assumes that ``device`` is a CUDA device.
+# 
+#  Then these methods will recursively go over all modules and convert their
+#  parameters and buffers to CUDA tensors:
+# 
+# ```python
+# net.to(device)
+# ```
+# 
 # Remember that you will have to send the inputs and targets at every step
 # to the GPU too:
+# 
+# ```python
+# inputs, labels = data[0].to(device), data[1].to(device)
+# ```
+#  Why don't I notice MASSIVE speedup compared to CPU? Because your network
+#  is really small.
+# 
+#  **Exercise:** Try increasing the width of your network (argument 2 of
+#  the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
+#  they need to be the same number), see what kind of speedup you get.
 #
-# .. code:: python
+#  **Goals achieved**:
+# 
+#  - Understanding PyTorch's Tensor library and neural networks at a high level.
+#  - Train a small neural network to classify images
+# 
+#  Training on multiple GPUs
+#   -------------------
+#  If you want to see even more MASSIVE speedup using all of your GPUs,
+#  please check out <a href="https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html">Optional: Data Parallelism.</a>
 #
-#         inputs, labels = data[0].to(device), data[1].to(device)
+#  Where do I go next?
+#  -------------------
 #
-# Why don't I notice MASSIVE speedup compared to CPU? Because your network
-# is really small.
-#
-# **Exercise:** Try increasing the width of your network (argument 2 of
-# the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
-# they need to be the same number), see what kind of speedup you get.
-#
-# **Goals achieved**:
-#
-# - Understanding PyTorch's Tensor library and neural networks at a high level.
-# - Train a small neural network to classify images
-#
-# Training on multiple GPUs
-# -------------------------
-# If you want to see even more MASSIVE speedup using all of your GPUs,
-# please check out :doc:`data_parallel_tutorial`.
-#
-# Where do I go next?
-# -------------------
-#
-# -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
-# -  `Train a state-of-the-art ResNet network on imagenet`_
-# -  `Train a face generator using Generative Adversarial Networks`_
-# -  `Train a word-level language model using Recurrent LSTM networks`_
-# -  `More examples`_
-# -  `More tutorials`_
-# -  `Discuss PyTorch on the Forums`_
-# -  `Chat with other users on Slack`_
-#
-# .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
-# .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
-# .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
-# .. _More examples: https://github.com/pytorch/examples
-# .. _More tutorials: https://github.com/pytorch/tutorials
-# .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-# .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
-
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
-del dataiter
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
+#  - <a href="https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html">Train neural nets to play video games</a></br>
+#  - <a href="https://github.com/pytorch/examples/tree/master/imagenet">Train a state-of-the-art ResNet network on imagenet</a><br>
+#  - <a href="https://github.com/pytorch/examples/tree/master/dcgan">Train a face generator using Generative Adversarial Networks</a></br>
+#  - <a href="https://github.com/pytorch/examples/tree/master/word_language_model">Train a word-level language model using Recurrent LSTM networks</a></br>
+#  - <a href="https://github.com/pytorch/examples" >More examples</a>ples)<a href="https://github.com/pytorch/tutorials">More tutorials</a></br>
+#  - <a href="https://discuss.pytorch.org/">Discuss PyTorch on the Forums</a></br>
+#  - <a href="https://pytorch.slack.com/messages/beginner/">Chat with other users on Slack</a></br>
+# 
+#  ```python
+#      del dataiter
+#  ```
