@@ -2,6 +2,7 @@ Getting Started with Fully Sharded Data Parallel(FSDP)
 =====================================================
 
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
+`Joe Kohler <https://joekohler.github.io/>`__
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/FSDP_tutorial.rst>`__.
