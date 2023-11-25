@@ -460,7 +460,7 @@ prof.stop()
 # .. code-block::
 #
 #      tensorboard --logdir=./log
-
+#
 
 ######################################################################
 # If you experience the problem ``ValueError: Duplicate plugins for name projector`` like below:
