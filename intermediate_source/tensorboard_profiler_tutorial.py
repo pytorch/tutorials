@@ -399,7 +399,7 @@ prof.stop()
 #
 #  
 # The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
-# We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base dev image
+# We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base development image
 # before installing PyTorch.
 
 
