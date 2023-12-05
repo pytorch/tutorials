@@ -1,5 +1,5 @@
 """
-Semi-Supervised Learning using USB built upon Pytorch
+Semi-Supervised Learning using USB built upon PyTorch
 =============================
 
 
@@ -9,7 +9,8 @@ Semi-Supervised Learning using USB built upon Pytorch
 Introduction
 ------------
 
-USB is a semi-supervised learning framework built upon Pytorch.
+USB is a semi-supervised learning framework built upon PyTorch.
+Based on Datasets and Modules provided by PyTorch, USB becomes a flexible, modular, and easy-to-use framework for semi-supervised learning.
 It supports a variety of semi-supervised learning algorithms, including FixMatch, FreeMatch, DeFixMatch, SoftMatch, etc.
 It also supports a variety of imbalanced semi-supervised learning algorithms.
 The benchmark results across different datasets of computer vision, natural language processing, and speech processing are included in USB.
