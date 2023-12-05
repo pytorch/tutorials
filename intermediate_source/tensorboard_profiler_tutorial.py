@@ -439,7 +439,7 @@ prof.stop()
 #     sudo apt install python-is-python3 
 #
 #
-# - Install the wheels
+# - Install the wheels:
 #
 # .. code-block::
 # 
@@ -455,7 +455,7 @@ prof.stop()
 #     python test_cifar10.py
 #
 #     
-# Now, we have all the data needed to view in TensorBoard.
+# Now, we have all the data needed to view in TensorBoard:
 # 
 # .. code-block::
 #
@@ -465,7 +465,7 @@ prof.stop()
 ######################################################################
 # If you experience the problem ``ValueError: Duplicate plugins for name projector`` like below:
 #
-#.. code-block::
+# .. code-block::
 # 
 # I1115 15:23:49.014848 139961617598208 loader.py:57] started all processing
 # Traceback (most recent call last):
@@ -510,7 +510,7 @@ prof.stop()
 # At the time this section is written, **Trace** view does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
 #
 # 
-# - Copy the trace json file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+# - Copy the ``trace.json`` file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
 # You may need to copy the file by using ``scp`` if the file is located in a remote location. 
 # 
 # - Click **Load** button to load the trace json file from the ``chrome://tracing`` page in the browser. 
@@ -521,7 +521,7 @@ prof.stop()
 
 ######################################################################
 # As mentioned previously, you can move the graph and zoom in and out.
-# And keyboard can also be used to zoom and move around inside the timeline.
+# You can also use keyboard to zoom and move around inside the timeline.
 # The ``w`` and ``s`` keys zoom in centered around the mouse,
 # and the ``a`` and ``d`` keys move the timeline left and right.
 # You can hit these keys multiple times until you see a readable representation.
