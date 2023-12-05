@@ -7,7 +7,7 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v1 task from `Gymnasium <https://www.gymnasium.farama.org>`__.
+on the CartPole-v1 task from `Gymnasium <https://gymnasium.farama.org>`__.
 
 **Task**
 
