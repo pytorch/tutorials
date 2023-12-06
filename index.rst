@@ -293,7 +293,7 @@ What's new in PyTorch tutorials?
    :header: Introduction to ONNX Registry
    :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: advanced/onnx_registry_tutorial.html 
+   :link: advanced/onnx_registry_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
@@ -1049,6 +1049,7 @@ Additional Resources
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
+
 
 .. toctree::
    :maxdepth: 2
