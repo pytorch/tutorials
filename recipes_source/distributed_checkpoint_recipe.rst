@@ -230,6 +230,7 @@ By default, DCP saves and loads a distributed ``state_dict`` in Single Program M
   Distributed checkpoint support for Multi-Program Multi-Data is still under development.
 
 .. code-block:: python
+
     import os
 
     import torch

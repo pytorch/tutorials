@@ -131,7 +131,7 @@ print(z.stride())  # Outputs: (3072, 1, 96, 3)
 # produces output in contiguous memory format. Otherwise, output will
 # be in channels last memory format.
 
-if torch.backends.cudnn.version() >= 7603:
+if torch.backends.cudnn.is_available() and torch.backends.cudnn.version() >= 7603:
     model = torch.nn.Conv2d(8, 4, 3).cuda().half()
     model = model.to(memory_format=torch.channels_last)  # Module parameters need to be channels last
 
