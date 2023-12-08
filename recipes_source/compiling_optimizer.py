@@ -3,13 +3,16 @@
 ==========================================================================================
 
 
-**Author:** `Michale Lazos <https://github.com/mlazos>`_
+**Author:** `Michael Lazos <https://github.com/mlazos>`_
 """
 
 ######################################################################
 #
-# In this recipe, we will apply ``torch.compile`` to the optimizer to observe
-# the GPU performance improvement.
+# The optimizer is a key algorithm for training any deep learning model.
+# Since it is responsible for updating every model parameter, it can often
+# become the bottleneck in training performance for large models. In this recipe, 
+# we will apply ``torch.compile`` to the optimizer to observe the GPU performance 
+# improvement.
 #
 # .. note::
 #
@@ -65,5 +68,14 @@ def benchmark_torch_function_in_microseconds(f, *args, **kwargs):
 for _ in range(5):
     fn()
 
-print(f"eager runtime: {benchmark_torch_function_in_microseconds(opt.step)}us")
-print(f"compiled runtime: {benchmark_torch_function_in_microseconds(fn)}us")
+eager_runtime = benchmark_torch_function_in_microseconds(opt.step)
+compiled_runtime = benchmark_torch_function_in_microseconds(fn)
+
+assert eager_runtime > compiled_runtime
+
+print(f"eager runtime: {eager_runtime}us")
+print(f"compiled runtime: {compiled_runtime}us")
+
+# Sample Results:
+# eager runtime: 747.2437149845064us
+# compiled runtime: 392.07384741178us
