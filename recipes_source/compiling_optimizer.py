@@ -44,6 +44,17 @@ output.sum().backward()
 # In this example, we'll use the Adam optimizer
 # and create a helper function to wrap the step()
 # in torch.compile()
+# 
+# .. note::
+#
+#    torch.compile is only supported on cuda devices with compute capability >= 7.0
+
+# exit cleanly if we are on a device that doesn't support torch.compile
+if torch.cuda.get_device_capability() < (7, 0):
+    print("Exiting because torch.compile is not supported on this device.")
+    import sys
+    sys.exit(0)
+
 
 opt = torch.optim.Adam(model.parameters(), lr=0.01)
 
