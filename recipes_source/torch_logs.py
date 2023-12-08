@@ -87,4 +87,7 @@ separator("")
 # Alternatively, you can view the `torch._logging documentation`_ to see
 # descriptions of all available logging options.
 #
+# For more information on torch.compile, see the `torch.compile tutorial`_.
+#
 # .. _torch._logging documentation: https://pytorch.org/docs/main/logging.html
+# .. _torch.compile tutorial: https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html
