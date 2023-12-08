@@ -32,6 +32,13 @@ import logging
 
 import torch
 
+# exit cleanly if we are on a device that doesn't support torch.compile
+if torch.cuda.get_device_capability() < (7, 0):
+    print("Exiting because torch.compile is not supported on this device.")
+    import sys
+
+    sys.exit(0)
+
 
 @torch.compile()
 def fn(x, y):
