@@ -22,7 +22,7 @@ import logging
 # Setup
 # ~~~~~~~~~~~~~~~~~~~~~
 # In this example, we'll set up a simple Python function which performs an elementwise
-# add and observe the compilation process with TORCH_LOGS python API.
+# add and observe the compilation process with ``TORCH_LOGS`` Python API.
 #
 # .. note::
 #
