@@ -7,11 +7,9 @@
 """
 
 ######################################################################
-# Summary
-# ~~~~~~~~
 #
-# In this tutorial we will apply torch.compile to the optimizer to observe
-# the GPU performance improvement
+# In this recipe, we will apply ``torch.compile`` to the optimizer to observe
+# the GPU performance improvement.
 #
 # .. note::
 #
@@ -22,8 +20,8 @@
 ######################################################################
 # Model Setup
 # ~~~~~~~~~~~~~~~~~~~~~
-# For this example we'll use a simple sequence of linear layers.
-# Since we are only benchmarking the optimizer, choice of model doesn't matter
+# For this example, we'll use a simple sequence of linear layers.
+# Since we are only benchmarking the optimizer, the choice of model doesn't matter
 # because optimizer performance is a function of the number of parameters.
 #
 # Depending on what machine you are using, your exact results may vary.
@@ -39,7 +37,7 @@ output.sum().backward()
 
 #############################################################################
 # Setting up and running the optimizer benchmark
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # In this example, we'll use the Adam optimizer
 # and create a helper function to wrap the step()
 # in torch.compile()
@@ -52,7 +50,7 @@ def fn():
     opt.step()
 
 
-# Lets define a helpful benchmarking function:
+# Let's define a helpful benchmarking function:
 import torch.utils.benchmark as benchmark
 
 
