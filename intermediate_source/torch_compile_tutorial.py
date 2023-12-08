@@ -54,7 +54,7 @@ if not gpu_ok:
 # Basic Usage
 # ------------
 #
-# ``torch.compile`` is included in the latest PyTorch..
+# ``torch.compile`` is included in the latest PyTorch.
 # Running TorchInductor on GPU requires Triton, which is included with the PyTorch 2.0 nightly
 # binary. If Triton is still missing, try installing ``torchtriton`` via pip
 # (``pip install torchtriton --extra-index-url "https://download.pytorch.org/whl/nightly/cu117"``
@@ -195,10 +195,14 @@ print("~" * 10)
 # GPU compute and the observed speedup may be less significant.
 #
 # You may also see different speedup results depending on the chosen ``mode``
-# argument. Since our model and data are small, we want to reduce overhead as
-# much as possible, and so we chose ``"reduce-overhead"``. For your own models,
+# argument. The ``"reduce-overhead"`` mode uses CUDA graphs to further reduce
+# the overhead of Python. For your own models,
 # you may need to experiment with different modes to maximize speedup. You can
 # read more about modes `here <https://pytorch.org/get-started/pytorch-2.0/#user-experience>`__.
+#
+# You may might also notice that the second time we run our model with ``torch.compile`` is significantly
+# slower than the other runs, although it is much faster than the first run. This is because the ``"reduce-overhead"``
+# mode runs a few warm-up iterations for CUDA graphs.
 #
 # For general PyTorch benchmarking, you can try using ``torch.utils.benchmark`` instead of the ``timed``
 # function we defined above. We wrote our own timing function in this tutorial to show
