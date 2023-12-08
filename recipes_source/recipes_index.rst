@@ -324,6 +324,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/DCP_tutorial.html
    :tags: Distributed-Training
 
+   .. customcarditem::
+   :header: Getting Started with DeviceMesh
+   :card_description: Learn how to use DeviceMesh
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_device_mesh.html
+   :tags: Distributed-Training
+
 .. TorchServe
 
 .. customcarditem::
