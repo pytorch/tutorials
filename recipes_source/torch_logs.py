@@ -21,7 +21,7 @@ import logging
 ######################################################################
 # Setup
 # ~~~~~~~~~~~~~~~~~~~~~
-# In this example we'll setup a simple python function which performs an elementwise
+# In this example, we'll set up a simple Python function which performs an elementwise
 # add and observe the compilation process with TORCH_LOGS python API.
 #
 # .. note::
