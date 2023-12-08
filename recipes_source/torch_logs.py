@@ -26,7 +26,7 @@ import logging
 #
 # .. note::
 #
-#   There is also an environment variable TORCH_LOGS, which can be used to
+#   There is also an environment variable ``TORCH_LOGS``, which can be used to
 #   change logging settings at the commandline. The equivalent environment
 #   variable setting is shown for each example.
 
