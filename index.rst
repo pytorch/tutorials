@@ -624,13 +624,6 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization
 
 .. customcarditem::
-   :header: (beta) Compiling the Optimizer with torch.compile
-   :card_description: Speed up the optimizer using torch.compile
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/compiling_optimizer.html
-   :tags: Model-Optimization
-
-.. customcarditem::
    :header: Inductor CPU Backend Debugging and Profiling
    :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -1053,7 +1046,6 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
-   recipes/compiling_optimizer
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
