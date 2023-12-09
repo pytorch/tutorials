@@ -31,7 +31,7 @@ NOT_RUN = [
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/ddp_pipeline",  # requires 4 gpus
     "prototype_source/fx_graph_mode_ptq_dynamic",
-    "prototype_source/maskedtensor_sparsity.py", # Enable when fixed for 2.2
+    "prototype_source/maskedtensor_sparsity", # Enable when fixed for 2.2
     "prototype_source/vmap_recipe",
     "prototype_source/torchscript_freezing",
     "prototype_source/nestedtensor",
