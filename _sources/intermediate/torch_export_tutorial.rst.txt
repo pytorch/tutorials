@@ -95,34 +95,6 @@ We will detail the ``constraints`` argument later in the tutorial.
     print(exported_mod(torch.randn(8, 100), torch.randn(8, 100)))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    <class 'torch.export.ExportedProgram'>
-    tensor([[0.8632, 0.8407, 0.0407, 0.0000, 0.4132, 0.0000, 0.0000, 0.1538, 0.6111,
-             0.0000],
-            [0.0000, 0.0000, 0.0273, 0.8057, 0.0000, 1.0162, 0.8042, 0.0000, 0.2660,
-             0.0000],
-            [0.9481, 0.1396, 1.0225, 0.9563, 0.5832, 0.2546, 0.4095, 0.4591, 0.0000,
-             2.0053],
-            [1.1300, 0.4873, 0.0000, 0.9663, 1.2275, 1.4015, 0.0000, 0.9444, 0.0000,
-             0.0000],
-            [0.0000, 0.8724, 1.1648, 0.6867, 0.0000, 0.2833, 0.3202, 0.5848, 0.0000,
-             0.0833],
-            [1.1311, 0.1324, 0.0000, 1.7842, 0.0000, 0.3474, 0.9916, 0.3571, 0.0000,
-             0.0000],
-            [1.4348, 1.0570, 0.1771, 0.0000, 0.9510, 0.0000, 0.0000, 0.0000, 0.2618,
-             0.0000],
-            [0.8853, 0.0000, 0.0000, 0.4486, 0.0000, 0.0000, 0.5841, 0.7604, 0.0000,
-             0.0000]])
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 76-87
 
 Let's review some attributes of ``ExportedProgram`` that are of interest.
@@ -146,42 +118,6 @@ so that it can be ran as a ``torch.nn.Module``.
     print(exported_mod.graph_module)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    ExportedProgram:
-        class GraphModule(torch.nn.Module):
-            def forward(self, arg0_1: f32[10, 100], arg1_1: f32[10], arg2_1: f32[8, 100], arg3_1: f32[8, 100]):
-                # 
-                add: f32[8, 100] = torch.ops.aten.add.Tensor(arg2_1, arg3_1);  arg2_1 = arg3_1 = None
-                permute: f32[100, 10] = torch.ops.aten.permute.default(arg0_1, [1, 0]);  arg0_1 = None
-                addmm: f32[8, 10] = torch.ops.aten.addmm.default(arg1_1, add, permute);  arg1_1 = add = permute = None
-                relu: f32[8, 10] = torch.ops.aten.relu.default(addmm);  addmm = None
-                return (relu,)
-            
-    Graph Signature: ExportGraphSignature(parameters=['L__self___lin.weight', 'L__self___lin.bias'], buffers=[], user_inputs=['arg2_1', 'arg3_1'], user_outputs=['relu'], inputs_to_parameters={'arg0_1': 'L__self___lin.weight', 'arg1_1': 'L__self___lin.bias'}, inputs_to_buffers={}, buffers_to_mutate={}, backward_signature=None, assertion_dep_token=None)
-    Symbol to range: {}
-
-    GraphModule()
-
-
-
-    def forward(self, arg0_1, arg1_1, arg2_1, arg3_1):
-        add = torch.ops.aten.add.Tensor(arg2_1, arg3_1);  arg2_1 = arg3_1 = None
-        permute = torch.ops.aten.permute.default(arg0_1, [1, 0]);  arg0_1 = None
-        addmm = torch.ops.aten.addmm.default(arg1_1, add, permute);  arg1_1 = add = permute = None
-        relu = torch.ops.aten.relu.default(addmm);  addmm = None
-        return (relu,)
-    
-    # To see more debug info, please use `graph_module.print_readable()`
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 92-102
 
 The printed code shows that FX graph only contains ATen-level ops (such as ``torch.ops.aten``)
@@ -201,18 +137,6 @@ Other attributes of interest in ``ExportedProgram`` include:
 
 
     print(exported_mod.graph_signature)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    ExportGraphSignature(parameters=['L__self___lin.weight', 'L__self___lin.bias'], buffers=[], user_inputs=['arg2_1', 'arg3_1'], user_outputs=['relu'], inputs_to_parameters={'arg0_1': 'L__self___lin.weight', 'arg1_1': 'L__self___lin.bias'}, inputs_to_buffers={}, buffers_to_mutate={}, backward_signature=None, assertion_dep_token=None)
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 106-108
@@ -253,60 +177,6 @@ A graph break is necessary in cases such as:
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 131, in <module>
-        export(bad1, (torch.randn(3, 3),))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 270, in export
-        gm_torch_level, _ = torch._dynamo.export(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1140, in inner
-        result_traced = opt_f(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 328, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 490, in catch_errors
-        return callback(frame, cache_entry, hooks, frame_state)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 133, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 389, in _convert_frame_assert
-        return _compile(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 569, in _compile
-        guarded_code = compile_inner(code, one_graph, hooks, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 491, in compile_inner
-        out_code = transform_code_object(code, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1028, in transform_code_object
-        transformations(instructions, code_options)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 458, in transform
-        tracer.run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2069, in run
-        super().run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 719, in run
-        and self.step()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 683, in step
-        getattr(self, inst.opname)(inst)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 370, in inner
-        raise exc.UserError(
-    torch._dynamo.exc.UserError: Dynamic control flow is not supported at the moment. Please use functorch.experimental.control_flow.cond to explicitly capture the control flow
-
-    from user code:
-       File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 125, in bad1
-        if x.sum() > 0:
-
-    Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 136-137
 
 - accessing tensor data with ``.data``
@@ -326,37 +196,6 @@ A graph break is necessary in cases such as:
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 143, in <module>
-        export(bad2, (torch.randn(3, 3),))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 356, in export
-        gm, graph_signature = aot_export_module(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 4027, in aot_export_module
-        fx_g, metadata, in_spec, out_spec = _aot_export_function(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 4209, in _aot_export_function
-        fx_g, meta = create_aot_dispatcher_function(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_functorch/aot_autograd.py", line 3438, in create_aot_dispatcher_function
-        raise RuntimeError(f"""
-    RuntimeError: 
-    Found following user inputs located at [0] are mutated. This is currently banned in the aot_export workflow.
-    If you need this functionality, please file a github issue.
-
-    fw_metadata=ViewAndMutationMeta(input_info=[InputAliasInfo(is_leaf=True, mutates_data=True, mutates_metadata=False)], output_info=[OutputAliasInfo(output_type=<OutputType.is_input: 3>, raw_type=<class 'torch.Tensor'>, base_idx=0, dynamic_dims=set())], requires_grad_info=[False, False], num_intermediate_bases=0, keep_input_mutations=False, traced_tangents=[FakeTensor(..., size=(3, 3))], num_symints_saved_for_bw=None)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 148-149
 
 - calling unsupported functions (such as many built-in functions)
@@ -374,70 +213,6 @@ A graph break is necessary in cases such as:
         export(bad3, (torch.randn(3, 3),))
     except Exception:
         tb.print_exc()
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 155, in <module>
-        export(bad3, (torch.randn(3, 3),))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 270, in export
-        gm_torch_level, _ = torch._dynamo.export(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1140, in inner
-        result_traced = opt_f(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 328, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 490, in catch_errors
-        return callback(frame, cache_entry, hooks, frame_state)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 133, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 389, in _convert_frame_assert
-        return _compile(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 569, in _compile
-        guarded_code = compile_inner(code, one_graph, hooks, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 491, in compile_inner
-        out_code = transform_code_object(code, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1028, in transform_code_object
-        transformations(instructions, code_options)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 458, in transform
-        tracer.run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2069, in run
-        super().run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 719, in run
-        and self.step()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 683, in step
-        getattr(self, inst.opname)(inst)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 392, in wrapper
-        return inner_fn(self, inst)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 1110, in CALL_FUNCTION
-        self.call_function(fn, args, {})
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 557, in call_function
-        self.push(fn.call_function(self, args, kwargs))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 618, in call_function
-        result = handler(tx, *args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 1297, in call_id
-        unimplemented(f"call_id with args {args}")
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/exc.py", line 172, in unimplemented
-        raise Unsupported(msg)
-    torch._dynamo.exc.Unsupported: call_id with args (TensorVariable(),)
-
-    from user code:
-       File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 152, in bad3
-        return x + id(x)
-
-    Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 160-161
@@ -461,70 +236,6 @@ A graph break is necessary in cases such as:
         export(bad4, (torch.randn(3, 3),))
     except Exception:
         tb.print_exc()
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 171, in <module>
-        export(bad4, (torch.randn(3, 3),))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 270, in export
-        gm_torch_level, _ = torch._dynamo.export(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1140, in inner
-        result_traced = opt_f(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 328, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 490, in catch_errors
-        return callback(frame, cache_entry, hooks, frame_state)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 133, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 389, in _convert_frame_assert
-        return _compile(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 569, in _compile
-        guarded_code = compile_inner(code, one_graph, hooks, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 491, in compile_inner
-        out_code = transform_code_object(code, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1028, in transform_code_object
-        transformations(instructions, code_options)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 458, in transform
-        tracer.run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2069, in run
-        super().run()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 719, in run
-        and self.step()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 683, in step
-        getattr(self, inst.opname)(inst)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 392, in wrapper
-        return inner_fn(self, inst)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 1110, in CALL_FUNCTION
-        self.call_function(fn, args, {})
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 557, in call_function
-        self.push(fn.call_function(self, args, kwargs))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 645, in call_function
-        return super().call_function(tx, args, kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/base.py", line 306, in call_function
-        unimplemented(f"call_function {self} {args} {kwargs}")
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/exc.py", line 172, in unimplemented
-        raise Unsupported(msg)
-    torch._dynamo.exc.Unsupported: call_function BuiltinVariable(RuntimeError) [ConstantVariable(str)] {}
-
-    from user code:
-       File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 165, in bad4
-        raise RuntimeError("bad")
-
-    Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 176-178
@@ -561,23 +272,6 @@ we can fix the control flow example above using the ``cond`` op, like so:
     exported_bad1_fixed = export(bad1_fixed, (torch.randn(3, 3),))
     print(exported_bad1_fixed(torch.ones(3, 3)))
     print(exported_bad1_fixed(-torch.ones(3, 3)))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor([[0.8415, 0.8415, 0.8415],
-            [0.8415, 0.8415, 0.8415],
-            [0.8415, 0.8415, 0.8415]])
-    tensor([[0.5403, 0.5403, 0.5403],
-            [0.5403, 0.5403, 0.5403],
-            [0.5403, 0.5403, 0.5403]])
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 204-213
@@ -647,39 +341,6 @@ with a different shape, we get an error:
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 257, in <module>
-        exported_mod2(torch.randn(10, 100), torch.randn(10, 100))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 337, in __call__
-        self._check_input_constraints(*ordered_params, *ordered_buffers, *args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 559, in _check_input_constraints
-        _assertion_graph(*args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 678, in call_wrapped
-        return self._wrapped_call(self, *args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 284, in __call__
-        raise e
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 274, in __call__
-        return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-        return self._call_impl(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-        return forward_call(*args, **kwargs)
-      File "<eval_with_key>.83", line 17, in forward
-        _assert_async_1 = torch.ops.aten._assert_async.msg(scalar_tensor_1, 'Input arg3_1.shape[0] is specialized at 8');  scalar_tensor_1 = None
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 448, in __call__
-        return self._op(*args, **kwargs or {})
-    RuntimeError: Input arg3_1.shape[0] is specialized at 8
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 262-277
 
 We can modify the ``torch.export`` call to
@@ -732,66 +393,6 @@ dimension must be in the interval (3, 18].
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor([[0.0000, 0.9904, 0.2659],
-            [0.9732, 1.2030, 0.2684],
-            [0.1263, 0.7264, 0.0000],
-            [0.6484, 1.2110, 0.5155],
-            [0.5219, 1.5092, 0.0000]])
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 297, in <module>
-        exported_constraints_example1(torch.randn(8, 1))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 337, in __call__
-        self._check_input_constraints(*ordered_params, *ordered_buffers, *args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 559, in _check_input_constraints
-        _assertion_graph(*args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 678, in call_wrapped
-        return self._wrapped_call(self, *args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 284, in __call__
-        raise e
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 274, in __call__
-        return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-        return self._call_impl(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-        return forward_call(*args, **kwargs)
-      File "<eval_with_key>.107", line 12, in forward
-        _assert_async_1 = torch.ops.aten._assert_async.msg(scalar_tensor_1, 'Input arg0_1.shape[1] is outside of specified dynamic range [4, 18]');  scalar_tensor_1 = None
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 448, in __call__
-        return self._op(*args, **kwargs or {})
-    RuntimeError: Input arg0_1.shape[1] is outside of specified dynamic range [4, 18]
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 302, in <module>
-        exported_constraints_example1(torch.randn(8, 20))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 337, in __call__
-        self._check_input_constraints(*ordered_params, *ordered_buffers, *args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 559, in _check_input_constraints
-        _assertion_graph(*args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 678, in call_wrapped
-        return self._wrapped_call(self, *args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 284, in __call__
-        raise e
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 274, in __call__
-        return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-        return self._call_impl(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-        return forward_call(*args, **kwargs)
-      File "<eval_with_key>.112", line 9, in forward
-        _assert_async = torch.ops.aten._assert_async.msg(scalar_tensor, 'Input arg0_1.shape[1] is outside of specified dynamic range [4, 18]');  scalar_tensor = None
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 448, in __call__
-        return self._op(*args, **kwargs or {})
-    RuntimeError: Input arg0_1.shape[1] is outside of specified dynamic range [4, 18]
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 307-309
 
 Note that if our example inputs to ``torch.export`` do not satisfy the constraints,
@@ -811,102 +412,6 @@ then we get an error.
         export(constraints_example1, (inp1,), constraints=constraints1_bad)
     except Exception:
         tb.print_exc()
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 270, in export
-        gm_torch_level, _ = torch._dynamo.export(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1183, in inner
-        raise constraint_violation_error
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1140, in inner
-        result_traced = opt_f(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 328, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 490, in catch_errors
-        return callback(frame, cache_entry, hooks, frame_state)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 133, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 389, in _convert_frame_assert
-        return _compile(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 569, in _compile
-        guarded_code = compile_inner(code, one_graph, hooks, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 491, in compile_inner
-        out_code = transform_code_object(code, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1028, in transform_code_object
-        transformations(instructions, code_options)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 441, in transform
-        tracer = InstructionTranslator(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2013, in __init__
-        self.symbolic_locals = collections.OrderedDict(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2016, in <genexpr>
-        VariableBuilder(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 225, in __call__
-        vt = self._wrap(value).clone(**self.options())
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 370, in _wrap
-        return type_dispatch(self, value)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 964, in wrap_tensor
-        tensor_variable = wrap_fx_proxy(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1191, in wrap_fx_proxy
-        return wrap_fx_proxy_cls(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1306, in wrap_fx_proxy_cls
-        example_value = wrap_to_fake_tensor_and_record(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1587, in wrap_to_fake_tensor_and_record
-        fake_e = wrap_fake_exception(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 916, in wrap_fake_exception
-        return fn()
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1588, in <lambda>
-        lambda: tx.fake_mode.from_tensor(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 1721, in from_tensor
-        return self.fake_tensor_converter(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 371, in __call__
-        return self.from_real_tensor(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 324, in from_real_tensor
-        out = self.meta_converter(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 591, in __call__
-        r = self.meta_tensor(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 405, in meta_tensor
-        sizes, strides, storage_offset = sym_sizes_strides_storage_offset(t)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 234, in sym_sizes_strides_storage_offset
-        return shape_env.create_symbolic_sizes_strides_storage_offset(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2344, in create_symbolic_sizes_strides_storage_offset
-        size: List[sympy.Expr] = self._produce_dyn_sizes_from_int_tuple(ex_size, source, dynamic_dims, constraint_dims)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2248, in _produce_dyn_sizes_from_int_tuple
-        size.append(self.create_symbol(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2554, in create_symbol
-        raise ConstraintViolationError(f"{val} not in range [{vr.lower}, {vr.upper}]")
-    torch.fx.experimental.symbolic_shapes.ConstraintViolationError: 10 not in range [11, 18]
-
-    from user code:
- 
-    Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
-
-
-    During handling of the above exception, another exception occurred:
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 316, in <module>
-        export(constraints_example1, (inp1,), constraints=constraints1_bad)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 280, in export
-        raise UserError(UserErrorType.CONSTRAIN_VIOLATION, str(e))
-    torch._dynamo.exc.UserError: 10 not in range [11, 18]
-
-    from user code:
- 
-    Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 321-323
@@ -941,41 +446,6 @@ dimensions, for example, in matrix multiplication:
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor([[-1.6614,  8.1254, -4.6447, -8.0367],
-            [-2.8395, -6.2832,  2.3965, -1.5896]])
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 341, in <module>
-        exported_constraints_example2(torch.randn(4, 8), torch.randn(4, 2))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 337, in __call__
-        self._check_input_constraints(*ordered_params, *ordered_buffers, *args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 559, in _check_input_constraints
-        _assertion_graph(*args)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 678, in call_wrapped
-        return self._wrapped_call(self, *args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 284, in __call__
-        raise e
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 274, in __call__
-        return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-        return self._call_impl(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-        return forward_call(*args, **kwargs)
-      File "<eval_with_key>.136", line 11, in forward
-        _assert_async = torch.ops.aten._assert_async.msg(scalar_tensor, 'Input arg0_1.shape[1] is not equal to input arg1_1.shape[0]');  scalar_tensor = None
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 448, in __call__
-        return self._op(*args, **kwargs or {})
-    RuntimeError: Input arg0_1.shape[1] is not equal to input arg1_1.shape[0]
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 346-351
 
 We can actually use ``torch.export`` to guide us as to which constraints
@@ -1008,96 +478,6 @@ error out.
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Traceback (most recent call last):
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 270, in export
-        gm_torch_level, _ = torch._dynamo.export(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1183, in inner
-        raise constraint_violation_error
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1140, in inner
-        result_traced = opt_f(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 328, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 490, in catch_errors
-        return callback(frame, cache_entry, hooks, frame_state)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 133, in _fn
-        return fn(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 389, in _convert_frame_assert
-        return _compile(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 569, in _compile
-        guarded_code = compile_inner(code, one_graph, hooks, transform)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 189, in time_wrapper
-        r = func(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 549, in compile_inner
-        check_fn = CheckFunctionManager(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/guards.py", line 937, in __init__
-        guard.create(local_builder, global_builder)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_guards.py", line 243, in create
-        return self.create_fn(self.source.select(local_builder, global_builder), self)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/guards.py", line 607, in SHAPE_ENV
-        guards = output_graph.shape_env.produce_guards(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2981, in produce_guards
-        raise ConstraintViolationError(f"Constraints violated!\n{err}")
-    torch.fx.experimental.symbolic_shapes.ConstraintViolationError: Constraints violated!
-      1. The specified set of equalities {} is not sufficient; please also specify L['y'].size()[0] == L['x'].size()[1].
-      2. Not all values of L['y'].size()[1] in the specified range satisfy the generated guard Ne(L['y'].size()[1], 16). For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-      3. Not all values of L['x'].size()[0] in the specified range satisfy the generated guard L['x'].size()[0] <= 16. For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-      4. Not all values of L['y'].size()[1] in the specified range satisfy the generated guard L['y'].size()[1] >= 16. For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-
-    The following dimensions CAN be dynamic.
-    Please use the following code to specify the constraints they must satisfy:
-    ```
-    def specify_constraints(x, y):
-        return [
-            # x:
-            dynamic_dim(x, 0) <= 16,
-
-            # y:
-            16 < dynamic_dim(y, 1),
-            dynamic_dim(y, 0) == dynamic_dim(x, 1),
-        ]
-    ```
-
-
-    During handling of the above exception, another exception occurred:
-
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 366, in <module>
-        export(constraints_example3, (inp4, inp5), constraints=constraints3)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 1018, in export
-        return export(f, args, kwargs, constraints)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 280, in export
-        raise UserError(UserErrorType.CONSTRAIN_VIOLATION, str(e))
-    torch._dynamo.exc.UserError: Constraints violated!
-      1. The specified set of equalities {} is not sufficient; please also specify L['y'].size()[0] == L['x'].size()[1].
-      2. Not all values of L['y'].size()[1] in the specified range satisfy the generated guard Ne(L['y'].size()[1], 16). For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-      3. Not all values of L['x'].size()[0] in the specified range satisfy the generated guard L['x'].size()[0] <= 16. For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-      4. Not all values of L['y'].size()[1] in the specified range satisfy the generated guard L['y'].size()[1] >= 16. For more information about why this guard was generated, run with TORCH_LOGS=dynamic.
-
-    The following dimensions CAN be dynamic.
-    Please use the following code to specify the constraints they must satisfy:
-    ```
-    def specify_constraints(x, y):
-        return [
-            # x:
-            dynamic_dim(x, 0) <= 16,
-
-            # y:
-            16 < dynamic_dim(y, 1),
-            dynamic_dim(y, 0) == dynamic_dim(x, 1),
-        ]
-    ```
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 371-373
 
 We can see that the error message suggests to us to use some additional code
@@ -1123,29 +503,6 @@ to specify the necessary constraints. Let us use that code (exact code may diffe
     print(exported_constraints_example3(torch.randn(4, 32), torch.randn(32, 64)))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor([[ -3.2486,  -0.0564,  10.4182,  -0.5107,   6.5052,  -2.8538,   1.4333,
-               5.5788,  -6.1642,   5.2328,   7.8676,  -5.6574,  -5.1638,   4.5801,
-              12.9064,   0.2945],
-            [  1.2501,   0.8377,   0.9198,  -2.6442,   2.9253,  -6.0027,  -2.0633,
-               5.5477,   1.0574,  -0.1237, -15.5657,   0.9839,  -4.6436,  -3.3065,
-              -3.2065,   1.7973],
-            [  2.7279,  -5.7209,  -8.2522,  -7.9277,   5.4594,  -2.9686,   6.2203,
-               0.9756, -13.3661,  -8.4977,   1.0126,  -6.3700,   3.6296,   6.0752,
-               7.3516,  -4.2076],
-            [ -6.0910,   2.7838,   1.7066,   2.6283,   7.2123,   9.0221,   0.2256,
-               4.8568,  -7.1904,  -0.7193,  -2.8492,   3.3305,   5.6469,   6.2556,
-               0.2927,   2.6650]])
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 389-396
 
 Note that in the example above, because we constrained the value of ``x.shape[0]`` in
@@ -1169,44 +526,6 @@ or use ``torch._logging.set_logs``.
     torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [2023-12-08 22:11:19,730] [12/0] torch._dynamo.symbolic_convert: [INFO] Step 1: torchdynamo start tracing constraints_example3 /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:355
-    [2023-12-08 22:11:19,731] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] create_env
-    [2023-12-08 22:11:19,732] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s0 = 8 for L['x'].size()[0]
-    [2023-12-08 22:11:19,732] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s1 = 16 for L['x'].size()[1]
-    [2023-12-08 22:11:19,735] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s2 = 16 for L['y'].size()[0]
-    [2023-12-08 22:11:19,736] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s3 = 32 for L['y'].size()[1]
-    [2023-12-08 22:11:19,749] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] eval Eq(s1, s2) [guard added] at ar/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:357 in constraints_example3 (_meta_registrations.py:1813 in meta_mm)
-    [2023-12-08 22:11:19,750] [12/0] torch._dynamo.symbolic_convert: [INFO] Step 1: torchdynamo done tracing constraints_example3 (RETURN_VALUE)
-    [2023-12-08 22:11:19,752] [12/0] torch._dynamo.output_graph: [INFO] Step 2: calling compiler function dynamo_normalization_capturing_compiler
-    [2023-12-08 22:11:19,752] [12/0] torch._dynamo.output_graph: [INFO] Step 2: done compiler function dynamo_normalization_capturing_compiler
-    [2023-12-08 22:11:19,753] [12/0] torch.fx.experimental.symbolic_shapes: [INFO] produce_guards
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] Summary of dimension constraints:
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] The following dimensions CAN be dynamic.
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] Please use the following code to specify the constraints they must satisfy:
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] ```
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] def specify_constraints(x, y):
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]     return [
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]         # x:
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]         dynamic_dim(x, 0) <= 16,
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] 
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]         # y:
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]         17 <= dynamic_dim(y, 1),
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]         dynamic_dim(y, 0) == dynamic_dim(x, 1),
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO]     ]
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] ```
-    [2023-12-08 22:11:19,775] torch._dynamo.eval_frame: [INFO] 
-    [2023-12-08 22:11:19,778] torch.fx.experimental.symbolic_shapes: [INFO] create_env
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 405-408
 
 We can view an ``ExportedProgram``'s constraints using the ``range_constraints`` and
@@ -1220,19 +539,6 @@ represent.
 
     print(exported_constraints_example3.range_constraints)
     print(exported_constraints_example3.equality_constraints)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    {s0: RangeConstraint(min_val=2, max_val=16), s1: RangeConstraint(min_val=2, max_val=9223372036854775806), s2: RangeConstraint(min_val=2, max_val=9223372036854775806), s3: RangeConstraint(min_val=17, max_val=9223372036854775806)}
-    [(InputDim(input_name='arg1_1', dim=0), InputDim(input_name='arg0_1', dim=1))]
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 413-417
@@ -1264,39 +570,6 @@ If a bound is not provided, then it is assumed to be unbounded.
         tb.print_exc()
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor([[ 0.9048,  0.9745, -0.1208],
-            [-0.3705,  0.5393,  0.8433],
-            [ 0.9743,  0.9976,  0.9998]])
-    Traceback (most recent call last):
-      File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 430, in <module>
-        exported_constraints_example4(torch.randn(3, 3), torch.tensor([2]))
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 342, in __call__
-        res = torch.fx.Interpreter(self.graph_module).run(
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/interpreter.py", line 138, in run
-        self.env[node] = self.run_node(node)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/interpreter.py", line 195, in run_node
-        return getattr(self, n.op)(n.target, args, kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/interpreter.py", line 267, in call_function
-        return target(*args, **kwargs)
-      File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 448, in __call__
-        return self._op(*args, **kwargs or {})
-    RuntimeError: _local_scalar_dense is outside of inline constraint [3, 5].
-
-    While executing %_assert_async : [num_users=0] = call_function[target=torch.ops.aten._assert_async.msg](args = (%scalar_tensor, _local_scalar_dense is outside of inline constraint [3, 5].), kwargs = {})
-    Original traceback:
-    NoneType: None
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 435-438
 
 ``constrain_as_size`` is similar to ``constrain_as_value``, except that it should be used on integer values that
@@ -1320,18 +593,6 @@ many operations have special behavior for tensors with a shape value of 0 or 1.
         exported_constraints_example5(torch.randn(2, 2), torch.tensor([1]))
     except Exception:
         tb.print_exc()
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    tensor(16.5664)
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 453-463
@@ -1364,12 +625,6 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
         return torch.relu(x)
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 476-478
 
 - Define a ``"Meta"`` implementation of the custom op that returns an empty
@@ -1383,12 +638,6 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
     @impl(m, "custom_op", "Meta")
     def custom_op_meta(x):
         return torch.empty_like(x)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 484-485
@@ -1407,12 +656,6 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
         return x
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 493-494
 
 - Export the code as before
@@ -1425,29 +668,6 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
     exported_custom_op_example = export(custom_op_example, (torch.randn(3, 3),))
     exported_custom_op_example.graph_module.print_readable()
     print(exported_custom_op_example(torch.randn(3, 3)))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    class GraphModule(torch.nn.Module):
-        def forward(self, arg0_1: f32[3, 3]):
-            # 
-            sin: f32[3, 3] = torch.ops.aten.sin.default(arg0_1);  arg0_1 = None
-            custom_op: f32[3, 3] = torch.ops.my_custom_library.custom_op.default(sin);  sin = None
-            cos: f32[3, 3] = torch.ops.aten.cos.default(custom_op);  custom_op = None
-            return (cos,)
-        
-    custom_op called!
-    tensor([[1.0000, 1.0000, 1.0000],
-            [1.0000, 1.0000, 0.7589],
-            [1.0000, 1.0000, 0.8630]])
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 500-507
@@ -1494,12 +714,6 @@ We can look at the example called ``cond_predicate``, which has a ``torch.cond``
         return cond(pred, lambda x: x.cos(), lambda y: y.sin(), [x])
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 536-544
 
 More generally, ExportDB can be used as a reference when one of the following occurs:
@@ -1523,7 +737,7 @@ and considerations (control flow ops, constraints, etc.) that need to be made in
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.263 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_torch_export_tutorial.py:
