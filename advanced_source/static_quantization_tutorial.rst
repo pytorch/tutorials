@@ -435,7 +435,7 @@ values to floats - and then back to ints - between every operation, resulting in
 
     # Convert to quantized model  
     torch.ao.quantization.convert(myModel, inplace=True)
-    # may see a userwarning about needing to calibrate the model, this can be ignored.
+    # You may see a user warning about needing to calibrate the model. This warning can be safely ignored.
     # this warning occurs because not all modules are run in each model runs so some
     # modules may not be calibrated.
     print('Post Training Quantization: Convert done') 
