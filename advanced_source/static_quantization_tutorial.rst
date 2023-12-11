@@ -436,7 +436,7 @@ values to floats - and then back to ints - between every operation, resulting in
     # Convert to quantized model  
     torch.ao.quantization.convert(myModel, inplace=True)
     # You may see a user warning about needing to calibrate the model. This warning can be safely ignored.
-    # this warning occurs because not all modules are run in each model runs so some
+    # This warning occurs because not all modules are run in each model runs, so some
     # modules may not be calibrated.
     print('Post Training Quantization: Convert done') 
     print('\n Inverted Residual Block: After fusion and quantization, note fused modules: \n\n',myModel.features[1].conv) 
