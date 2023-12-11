@@ -30,6 +30,7 @@ NOT_RUN = [
     "intermediate_source/torch_export_tutorial", # Enable when fixed for 2.2
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/ddp_pipeline",  # requires 4 gpus
+    "advanced/usb_semisup_learn", # in the current form takes 140+ minutes to build - can be enabled when the build time is reduced
     "prototype_source/fx_graph_mode_ptq_dynamic",
     "prototype_source/maskedtensor_sparsity", # Enable when fixed for 2.2
     "prototype_source/vmap_recipe",
