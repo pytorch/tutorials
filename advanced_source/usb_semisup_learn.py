@@ -72,7 +72,7 @@ on imbalanced datasets.
 # augmentation of unlabeled data
 # - ``get_net_builder`` to create a model, here we use pretrained ViT
 # - ``get_algorithm`` to create the semi-supervised learning algorithm,
-# here we use FreeMatch and SoftMatch
+# here we use ``FreeMatch`` and ``SoftMatch``
 # - ``get_config``: to get default configuration of the algorithm
 # - ``Trainer``: a Trainer class for training and evaluating the
 # algorithm on dataset
