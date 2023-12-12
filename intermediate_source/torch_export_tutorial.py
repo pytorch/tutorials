@@ -276,7 +276,7 @@ except Exception:
 # assumed to be static.
 #
 # The first argument of ``torch.export.Dim`` is the name for the symbolic integer, used for debugging.
-# Then we can specify an optional minimum and maximum bound (inclusive). Below, we show example usage.
+# Then we can specify an optional minimum and maximum bound (inclusive). Below, we show a usage example.
 #
 # In the example below, our input
 # ``inp1`` has an unconstrained first dimension, but the size of the second
