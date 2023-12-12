@@ -430,16 +430,11 @@ to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="torch-export-tutorial">
 <span id="sphx-glr-intermediate-torch-export-tutorial-py"></span><h1>torch.export Tutorial<a class="headerlink" href="#torch-export-tutorial" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author:</strong> William Wen, Zhengxu Chen</p>
+<p><strong>Author:</strong> William Wen, Zhengxu Chen, Angela Yi</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and its related features are in prototype status and are subject to backwards compatibility
-breaking changes. This tutorial provides a snapshot of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> usage as of PyTorch 2.1.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_export_nightly_tutorial.html">torch.export nightly tutorial</a>
-demonstrates some APIs that are present in the nightly binaries, but are not present in the PyTorch 2.1 release.</p>
+breaking changes. This tutorial provides a snapshot of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> usage as of PyTorch 2.2.</p>
 </div>
 <p><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export()</span></code> is the PyTorch 2.X way to export PyTorch models into
 standardized model representations, intended
@@ -454,46 +449,70 @@ to make in order to make your model compatible with <code class="docutils litera
 <li><p><a class="reference internal" href="#basic-usage" id="id1">Basic Usage</a></p></li>
 <li><p><a class="reference internal" href="#graph-breaks" id="id2">Graph Breaks</a></p></li>
 <li><p><a class="reference internal" href="#control-flow-ops" id="id3">Control Flow Ops</a></p></li>
-<li><p><a class="reference internal" href="#constraints" id="id4">Constraints</a></p></li>
+<li><p><a class="reference internal" href="#constraints-dynamic-shapes" id="id4">Constraints/Dynamic Shapes</a></p></li>
 <li><p><a class="reference internal" href="#custom-ops" id="id5">Custom Ops</a></p></li>
-<li><p><a class="reference internal" href="#exportdb" id="id6">ExportDB</a></p></li>
-<li><p><a class="reference internal" href="#conclusion" id="id7">Conclusion</a></p></li>
+<li><p><a class="reference internal" href="#decompositions" id="id6">Decompositions</a></p></li>
+<li><p><a class="reference internal" href="#exportdb" id="id7">ExportDB</a></p></li>
+<li><p><a class="reference internal" href="#conclusion" id="id8">Conclusion</a></p></li>
 </ul>
 </div>
 <div class="section" id="basic-usage">
 <h2><a class="toc-backref" href="#id1">Basic Usage</a><a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> extracts single-graph representations from PyTorch programs
-by tracing the target function, given example inputs.</p>
-<p>The signature of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> is:</p>
+by tracing the target function, given example inputs.
+<code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> is the main entry point for <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>.</p>
+<p>In this tutorial, <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> are practically synonymous,
+though <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> generally refers to the PyTorch 2.X export process, and <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code>
+generally refers to the actual function call.</p>
+<p>The signature of <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> is:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span>
     <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">constraints</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Constraint</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dim</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedProgram</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> traces the tensor computation graph from calling <code class="docutils literal notranslate"><span class="pre">f(*args,</span> <span class="pre">**kwargs)</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> traces the tensor computation graph from calling <code class="docutils literal notranslate"><span class="pre">f(*args,</span> <span class="pre">**kwargs)</span></code>
 and wraps it in an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>, which can be serialized or executed later with
 different inputs. Note that while the output <code class="docutils literal notranslate"><span class="pre">ExportedGraph</span></code> is callable and can be
 called in the same way as the original input callable, it is not a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>.
-We will detail the <code class="docutils literal notranslate"><span class="pre">constraints</span></code> argument later in the tutorial.</p>
+We will detail the <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument later in the tutorial.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a>
 
-<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lin</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lin</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu" title="torch.nn.functional.relu"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lin</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">mod</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">()</span>
-<span class="n">exported_mod</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">exported_mod</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_mod</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
+<span class="n">mod</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">MyModule</span></a><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;class 'torch.export.exported_program.ExportedProgram'&gt;
+tensor([[0.8632, 0.8407, 0.0407, 0.0000, 0.4132, 0.0000, 0.0000, 0.1538, 0.6111,
+         0.0000],
+        [0.0000, 0.0000, 0.0273, 0.8057, 0.0000, 1.0162, 0.8042, 0.0000, 0.2660,
+         0.0000],
+        [0.9481, 0.1396, 1.0225, 0.9563, 0.5832, 0.2546, 0.4095, 0.4591, 0.0000,
+         2.0053],
+        [1.1300, 0.4873, 0.0000, 0.9663, 1.2275, 1.4015, 0.0000, 0.9444, 0.0000,
+         0.0000],
+        [0.0000, 0.8724, 1.1648, 0.6867, 0.0000, 0.2833, 0.3202, 0.5848, 0.0000,
+         0.0833],
+        [1.1311, 0.1324, 0.0000, 1.7842, 0.0000, 0.3474, 0.9916, 0.3571, 0.0000,
+         0.0000],
+        [1.4348, 1.0570, 0.1771, 0.0000, 0.9510, 0.0000, 0.0000, 0.0000, 0.2618,
+         0.0000],
+        [0.8853, 0.0000, 0.0000, 0.4486, 0.0000, 0.0000, 0.5841, 0.7604, 0.0000,
+         0.0000]], grad_fn=&lt;ReluBackward0&gt;)
 </pre></div>
 </div>
 <p>Let’s review some attributes of <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> that are of interest.</p>
@@ -506,8 +525,36 @@ The FX graph has some important properties:</p>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">graph_module</span></code> attribute is the <code class="docutils literal notranslate"><span class="pre">GraphModule</span></code> that wraps the <code class="docutils literal notranslate"><span class="pre">graph</span></code> attribute
 so that it can be ran as a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">exported_mod</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_mod</span><span class="o">.</span><span class="n">graph_module</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a><span class="o">.</span><span class="n">graph_module</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ExportedProgram:
+    class GraphModule(torch.nn.Module):
+        def forward(self, arg0_1: "f32[10, 100]", arg1_1: "f32[10]", l_x_: "f32[8, 100]", l_y_: "f32[8, 100]"):
+            # File: /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:69, code: return torch.nn.functional.relu(self.lin(x + y), inplace=True)
+            add: "f32[8, 100]" = torch.ops.aten.add.Tensor(l_x_, l_y_);  l_x_ = l_y_ = None
+            t: "f32[100, 10]" = torch.ops.aten.t.default(arg0_1);  arg0_1 = None
+            addmm: "f32[8, 10]" = torch.ops.aten.addmm.default(arg1_1, add, t);  arg1_1 = add = t = None
+            relu: "f32[8, 10]" = torch.ops.aten.relu.default(addmm);  addmm = None
+            return (relu,)
+
+Graph signature: ExportGraphSignature(input_specs=[InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='arg0_1'), target='lin.weight'), InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='arg1_1'), target='lin.bias'), InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='l_x_'), target=None), InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='l_y_'), target=None)], output_specs=[OutputSpec(kind=&lt;OutputKind.USER_OUTPUT: 1&gt;, arg=TensorArgument(name='relu'), target=None)])
+Range constraints: {}
+Equality constraints: []
+
+GraphModule()
+
+
+
+def forward(self, arg0_1, arg1_1, l_x_, l_y_):
+    add = torch.ops.aten.add.Tensor(l_x_, l_y_);  l_x_ = l_y_ = None
+    t = torch.ops.aten.t.default(arg0_1);  arg0_1 = None
+    addmm = torch.ops.aten.addmm.default(arg1_1, add, t);  arg1_1 = add = t = None
+    relu = torch.ops.aten.relu.default(addmm);  addmm = None
+    return (relu,)
+
+# To see more debug info, please use `graph_module.print_readable()`
 </pre></div>
 </div>
 <p>The printed code shows that FX graph only contains ATen-level ops (such as <code class="docutils literal notranslate"><span class="pre">torch.ops.aten</span></code>)
@@ -520,7 +567,10 @@ of the replacement non-mutating <code class="docutils literal notranslate"><span
 <li><p><code class="docutils literal notranslate"><span class="pre">graph_signature</span></code> – the inputs, outputs, parameters, buffers, etc. of the exported graph.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">range_constraints</span></code> and <code class="docutils literal notranslate"><span class="pre">equality_constraints</span></code> – constraints, covered later</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">exported_mod</span><span class="o">.</span><span class="n">graph_signature</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod</span></a><span class="o">.</span><span class="n">graph_signature</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ExportGraphSignature(input_specs=[InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='arg0_1'), target='lin.weight'), InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='arg1_1'), target='lin.bias'), InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='l_x_'), target=None), InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='l_y_'), target=None)], output_specs=[OutputSpec(kind=&lt;OutputKind.USER_OUTPUT: 1&gt;, arg=TensorArgument(name='relu'), target=None)])
 </pre></div>
 </div>
 <p>See the <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> <a class="reference external" href="https://pytorch.org/docs/main/export.html#torch.export.export">documentation</a>
@@ -550,6 +600,56 @@ with <code class="docutils literal notranslate"><span class="pre">torch.export</
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 133, in &lt;module&gt;
+    export(bad1, (torch.randn(3, 3),))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 462, in export
+    return export__RC__(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 259, in export__RC__
+    return _export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 77, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 810, in _export
+    gm_torch_level = _export_to_torch_ir(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 516, in _export_to_torch_ir
+    gm_torch_level, _ = torch._dynamo.export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1342, in inner
+    result_traced = opt_f(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 489, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 655, in catch_errors
+    return callback(frame, cache_entry, hooks, frame_state)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 383, in _convert_frame_assert
+    compiled_product = _compile(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 646, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 244, in time_wrapper
+    r = func(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 562, in compile_inner
+    out_code = transform_code_object(code, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1033, in transform_code_object
+    transformations(instructions, code_options)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 151, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 527, in transform
+    tracer.run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2128, in run
+    super().run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 818, in run
+    and self.step()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 781, in step
+    getattr(self, inst.opname)(inst)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 445, in inner
+    raise exc.UserError(
+torch._dynamo.exc.UserError: Dynamic control flow is not supported at the moment. Please use functorch.experimental.control_flow.cond to explicitly capture the control flow. For more information about this error, see: https://pytorch.org/docs/main/generated/exportdb/index.html#cond-operands
+
+from user code:
+   File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 127, in bad1
+    if x.sum() &gt; 0:
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+</pre></div>
+</div>
 <ul class="simple">
 <li><p>accessing tensor data with <code class="docutils literal notranslate"><span class="pre">.data</span></code></p></li>
 </ul>
@@ -576,6 +676,66 @@ with <code class="docutils literal notranslate"><span class="pre">torch.export</
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 157, in &lt;module&gt;
+    export(bad3, (torch.randn(3, 3),))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 462, in export
+    return export__RC__(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 259, in export__RC__
+    return _export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 77, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 810, in _export
+    gm_torch_level = _export_to_torch_ir(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 516, in _export_to_torch_ir
+    gm_torch_level, _ = torch._dynamo.export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1342, in inner
+    result_traced = opt_f(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 489, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 655, in catch_errors
+    return callback(frame, cache_entry, hooks, frame_state)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 383, in _convert_frame_assert
+    compiled_product = _compile(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 646, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 244, in time_wrapper
+    r = func(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 562, in compile_inner
+    out_code = transform_code_object(code, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1033, in transform_code_object
+    transformations(instructions, code_options)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 151, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 527, in transform
+    tracer.run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2128, in run
+    super().run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 818, in run
+    and self.step()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 781, in step
+    getattr(self, inst.opname)(inst)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 470, in wrapper
+    return inner_fn(self, inst)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 1213, in CALL_FUNCTION
+    self.call_function(fn, args, {})
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 652, in call_function
+    self.push(fn.call_function(self, args, kwargs))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 651, in call_function
+    result = handler(tx, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 1471, in call_id
+    unimplemented(f"call_id with args {args}")
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/exc.py", line 193, in unimplemented
+    raise Unsupported(msg)
+torch._dynamo.exc.Unsupported: call_id with args (TensorVariable(),)
+
+from user code:
+   File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 154, in bad3
+    return x + id(x)
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+</pre></div>
+</div>
 <ul class="simple">
 <li><p>unsupported Python language features (e.g. throwing exceptions, match statements)</p></li>
 </ul>
@@ -591,6 +751,66 @@ with <code class="docutils literal notranslate"><span class="pre">torch.export</
     <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">bad4</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 173, in &lt;module&gt;
+    export(bad4, (torch.randn(3, 3),))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 462, in export
+    return export__RC__(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 259, in export__RC__
+    return _export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 77, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 810, in _export
+    gm_torch_level = _export_to_torch_ir(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 516, in _export_to_torch_ir
+    gm_torch_level, _ = torch._dynamo.export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1342, in inner
+    result_traced = opt_f(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 489, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 655, in catch_errors
+    return callback(frame, cache_entry, hooks, frame_state)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 383, in _convert_frame_assert
+    compiled_product = _compile(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 646, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 244, in time_wrapper
+    r = func(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 562, in compile_inner
+    out_code = transform_code_object(code, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1033, in transform_code_object
+    transformations(instructions, code_options)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 151, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 527, in transform
+    tracer.run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2128, in run
+    super().run()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 818, in run
+    and self.step()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 781, in step
+    getattr(self, inst.opname)(inst)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 470, in wrapper
+    return inner_fn(self, inst)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 1213, in CALL_FUNCTION
+    self.call_function(fn, args, {})
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 652, in call_function
+    self.push(fn.call_function(self, args, kwargs))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builtin.py", line 677, in call_function
+    return super().call_function(tx, args, kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/base.py", line 311, in call_function
+    unimplemented(f"call_function {self} {args} {kwargs}")
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/exc.py", line 193, in unimplemented
+    raise Unsupported(msg)
+torch._dynamo.exc.Unsupported: call_function BuiltinVariable(RuntimeError) [ConstantVariable(str)] {}
+
+from user code:
+   File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 167, in bad4
+    raise RuntimeError("bad")
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
 </pre></div>
 </div>
 <p>The sections below demonstrate some ways you can modify your code
@@ -610,9 +830,17 @@ we can fix the control flow example above using the <code class="docutils litera
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cos.html#torch.cos" title="torch.cos"><span class="n">torch</span><span class="o">.</span><span class="n">cos</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cond</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">true_fn</span><span class="p">,</span> <span class="n">false_fn</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">])</span>
 
-<span class="n">exported_bad1_fixed</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">bad1_fixed</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_bad1_fixed</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_bad1_fixed</span><span class="p">(</span><span class="o">-</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_bad1_fixed</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">bad1_fixed</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_bad1_fixed</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_bad1_fixed</span></a><span class="p">(</span><span class="o">-</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.8415, 0.8415, 0.8415],
+        [0.8415, 0.8415, 0.8415],
+        [0.8415, 0.8415, 0.8415]])
+tensor([[0.5403, 0.5403, 0.5403],
+        [0.5403, 0.5403, 0.5403],
+        [0.5403, 0.5403, 0.5403]])
 </pre></div>
 </div>
 <p>There are limitations to <code class="docutils literal notranslate"><span class="pre">cond</span></code> that one should be aware of:</p>
@@ -625,206 +853,542 @@ operands and they must both return a single tensor with the same metadata (for e
 <li><p>Branch functions cannot access closure variables, except for <code class="docutils literal notranslate"><span class="pre">self</span></code> if the function is
 defined in the scope of a method.</p></li>
 </ul>
+<p>For more details about <code class="docutils literal notranslate"><span class="pre">cond</span></code>, check out the <a class="reference external" href="https://pytorch.org/docs/main/cond.html">cond documentation</a>.</p>
 </div>
-<div class="section" id="constraints">
-<h2><a class="toc-backref" href="#id4">Constraints</a><a class="headerlink" href="#constraints" title="Permalink to this heading">¶</a></h2>
+<div class="section" id="constraints-dynamic-shapes">
+<h2><a class="toc-backref" href="#id4">Constraints/Dynamic Shapes</a><a class="headerlink" href="#constraints-dynamic-shapes" title="Permalink to this heading">¶</a></h2>
 <p>Ops can have different specializations/behaviors for different tensor shapes, so by default,
 <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> requires inputs to <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> to have the same shape as the respective
-example inputs given to the initial <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> call.
+example inputs given to the initial <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> call.
 If we try to run the <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> in the example below with a tensor
 with a different shape, we get an error:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lin</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lin</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu" title="torch.nn.functional.relu"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lin</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">mod2</span> <span class="o">=</span> <span class="n">MyModule2</span><span class="p">()</span>
-<span class="n">exported_mod2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
+<span class="n">mod2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">MyModule2</span></a><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_mod2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_mod2</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can modify the <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> call to
-relax some of these constraints. We use <code class="docutils literal notranslate"><span class="pre">torch.export.dynamic_dim</span></code> to
-express shape constraints manually.</p>
-<p>Using <code class="docutils literal notranslate"><span class="pre">dynamic_dim</span></code> on a tensor’s dimension marks it as dynamic (i.e. unconstrained), and
-we can provide additional upper and lower bound shape constraints.
-The first argument of <code class="docutils literal notranslate"><span class="pre">dynamic_dim</span></code> is the tensor variable we wish
-to specify a dimension constraint for. The second argument specifies
-the dimension of the first argument the constraint applies to.
-In the example below, our input
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 258, in &lt;module&gt;
+    exported_mod2(torch.randn(10, 100), torch.randn(10, 100))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 275, in __call__
+    self._check_input_constraints(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 571, in _check_input_constraints
+    _check_input_constraints_for_graph(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/utils.py", line 56, in inner
+    _assertion_graph(*args)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 738, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 317, in __call__
+    raise e
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 304, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "&lt;eval_with_key&gt;.228", line 17, in forward
+    _assert_async_1 = torch.ops.aten._assert_async.msg(scalar_tensor_1, 'Input l_y_.shape[0] is specialized at 8');  scalar_tensor_1 = None
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 513, in __call__
+    return self._op(*args, **(kwargs or {}))
+RuntimeError: Input l_y_.shape[0] is specialized at 8
+</pre></div>
+</div>
+<p>We can relax this constraint using the <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument of
+<code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code>, which allows us to specify, using <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code>
+(<a class="reference external" href="https://pytorch.org/docs/main/export.html#torch.export.Dim">documentation</a>),
+which dimensions of the input tensors are dynamic.</p>
+<p>For each tensor argument of the input callable, we can specify a mapping from the dimension
+to a <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code>.
+A <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> is essentially a named symbolic integer with optional
+minimum and maximum bounds.</p>
+<p>Then, the format of <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code>’s <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument is a mapping
+from the input callable’s tensor argument names, to dimension –&gt; dim mappings as described above.
+If there is no <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> given to a tensor argument’s dimension, then that dimension is
+assumed to be static.</p>
+<p>The first argument of <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> is the name for the symbolic integer, used for debugging.
+Then we can specify an optional minimum and maximum bound (inclusive). Below, we show a usage example.</p>
+<p>In the example below, our input
 <code class="docutils literal notranslate"><span class="pre">inp1</span></code> has an unconstrained first dimension, but the size of the second
-dimension must be in the interval (3, 18].</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a>
+dimension must be in the interval [4, 18].</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <span class="n">Dim</span>
 
-<span class="n">inp1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">constraints_example1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">dynamic_shapes_example1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<span class="n">constraints1</span> <span class="o">=</span> <span class="p">[</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <span class="mi">3</span> <span class="o">&lt;</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">18</span><span class="p">,</span>
-<span class="p">]</span>
+<span class="n">inp1_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim0"</span><span class="p">)</span>
+<span class="n">inp1_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim1"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">dynamic_shapes1</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp1_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp1_dim1</span><span class="p">},</span>
+<span class="p">}</span>
 
-<span class="n">exported_constraints_example1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example1</span><span class="p">,</span> <span class="p">(</span><span class="n">inp1</span><span class="p">,),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints1</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example1</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp1</span></a><span class="p">,),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes1</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example1</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_constraints_example1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example1</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_constraints_example1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example1</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Note that if our example inputs to <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> do not satisfy the constraints,
-then we get an error.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">constraints1_bad</span> <span class="o">=</span> <span class="p">[</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <span class="mi">10</span> <span class="o">&lt;</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">18</span><span class="p">,</span>
-<span class="p">]</span>
+
 <span class="k">try</span><span class="p">:</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example1</span><span class="p">,</span> <span class="p">(</span><span class="n">inp1</span><span class="p">,),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints1_bad</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example1</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can also use <code class="docutils literal notranslate"><span class="pre">dynamic_dim</span></code> to enforce expected equalities between
-dimensions, for example, in matrix multiplication:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">inp3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[6.2663e-04, 1.9683e+00],
+         [0.0000e+00, 0.0000e+00],
+         [2.9154e-01, 0.0000e+00]],
 
-<span class="k">def</span> <span class="nf">constraints_example2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        [[7.9552e-02, 0.0000e+00],
+         [1.5930e+00, 4.1450e-01],
+         [1.3688e+00, 0.0000e+00]],
+
+        [[1.9435e+00, 0.0000e+00],
+         [0.0000e+00, 0.0000e+00],
+         [2.9097e-01, 0.0000e+00]],
+
+        [[0.0000e+00, 0.0000e+00],
+         [7.7336e-01, 0.0000e+00],
+         [1.7838e+00, 1.1242e-01]],
+
+        [[0.0000e+00, 0.0000e+00],
+         [0.0000e+00, 9.6355e-01],
+         [4.4869e-01, 1.9256e-01]]])
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 304, in &lt;module&gt;
+    exported_dynamic_shapes_example1(torch.randn(8, 1, 2))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 275, in __call__
+    self._check_input_constraints(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 571, in _check_input_constraints
+    _check_input_constraints_for_graph(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/utils.py", line 56, in inner
+    _assertion_graph(*args)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 738, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 317, in __call__
+    raise e
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 304, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "&lt;eval_with_key&gt;.252", line 16, in forward
+    _assert_async_2 = torch.ops.aten._assert_async.msg(scalar_tensor_2, 'Input l_x_.shape[1] is outside of specified dynamic range [4, 18]');  scalar_tensor_2 = None
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 513, in __call__
+    return self._op(*args, **(kwargs or {}))
+RuntimeError: Input l_x_.shape[1] is outside of specified dynamic range [4, 18]
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 309, in &lt;module&gt;
+    exported_dynamic_shapes_example1(torch.randn(8, 20, 2))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 275, in __call__
+    self._check_input_constraints(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 571, in _check_input_constraints
+    _check_input_constraints_for_graph(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/utils.py", line 56, in inner
+    _assertion_graph(*args)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 738, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 317, in __call__
+    raise e
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 304, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "&lt;eval_with_key&gt;.257", line 13, in forward
+    _assert_async_1 = torch.ops.aten._assert_async.msg(scalar_tensor_1, 'Input l_x_.shape[1] is outside of specified dynamic range [4, 18]');  scalar_tensor_1 = None
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 513, in __call__
+    return self._op(*args, **(kwargs or {}))
+RuntimeError: Input l_x_.shape[1] is outside of specified dynamic range [4, 18]
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 314, in &lt;module&gt;
+    exported_dynamic_shapes_example1(torch.randn(8, 8, 3))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 275, in __call__
+    self._check_input_constraints(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 571, in _check_input_constraints
+    _check_input_constraints_for_graph(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/utils.py", line 56, in inner
+    _assertion_graph(*args)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 738, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 317, in __call__
+    raise e
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 304, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "&lt;eval_with_key&gt;.262", line 10, in forward
+    _assert_async = torch.ops.aten._assert_async.msg(scalar_tensor, 'Input l_x_.shape[2] is specialized at 2');  scalar_tensor = None
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 513, in __call__
+    return self._op(*args, **(kwargs or {}))
+RuntimeError: Input l_x_.shape[2] is specialized at 2
+</pre></div>
+</div>
+<p>Note that if our example inputs to <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> do not satisfy the constraints
+given by <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code>, then we get an error.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp1_dim1_bad</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim1_bad"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">dynamic_shapes1_bad</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp1_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp1_dim1_bad</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example1</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp1</span></a><span class="p">,),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes1_bad</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 516, in _export_to_torch_ir
+    gm_torch_level, _ = torch._dynamo.export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1382, in inner
+    raise constraint_violation_error
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1342, in inner
+    result_traced = opt_f(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 489, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 655, in catch_errors
+    return callback(frame, cache_entry, hooks, frame_state)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 383, in _convert_frame_assert
+    compiled_product = _compile(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 646, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 244, in time_wrapper
+    r = func(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 562, in compile_inner
+    out_code = transform_code_object(code, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/bytecode_transformation.py", line 1033, in transform_code_object
+    transformations(instructions, code_options)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 151, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 509, in transform
+    tracer = InstructionTranslator(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2111, in __init__
+    self.symbolic_locals = VariableTracker.apply(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/base.py", line 217, in apply
+    result = {
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/base.py", line 218, in &lt;dictcomp&gt;
+    k: cls.apply(fn, v, cache, skip_fn) for k, v in list(value.items())
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/base.py", line 202, in apply
+    result = fn(update_object_dict(value))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/symbolic_convert.py", line 2112, in &lt;lambda&gt;
+    lambda x: x.realize(), self.symbolic_locals
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/lazy.py", line 56, in realize
+    self._cache.realize(self.parents_tracker)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/lazy.py", line 22, in realize
+    self.vt = VariableBuilder(tx, self.source)(self.value)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 245, in __call__
+    vt = self._wrap(value).clone(**self.options())
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 386, in _wrap
+    return type_dispatch(self, value)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1072, in wrap_tensor
+    tensor_variable = wrap_fx_proxy(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1314, in wrap_fx_proxy
+    return wrap_fx_proxy_cls(target_cls=TensorVariable, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1424, in wrap_fx_proxy_cls
+    example_value = wrap_to_fake_tensor_and_record(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1786, in wrap_to_fake_tensor_and_record
+    fake_e = wrap_fake_exception(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 1027, in wrap_fake_exception
+    return fn()
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/variables/builder.py", line 1787, in &lt;lambda&gt;
+    lambda: tx.fake_mode.from_tensor(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 1893, in from_tensor
+    return self.fake_tensor_converter(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 396, in __call__
+    return self.from_real_tensor(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/fake_tensor.py", line 353, in from_real_tensor
+    out = self.meta_converter(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 710, in __call__
+    r = self.meta_tensor(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 453, in meta_tensor
+    ) = sym_sizes_strides_storage_offset(t, source)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_subclasses/meta_utils.py", line 246, in sym_sizes_strides_storage_offset
+    return shape_env.create_symbolic_sizes_strides_storage_offset(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2108, in create_symbolic_sizes_strides_storage_offset
+    return self._create_symbolic_sizes_strides_storage_offset(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/recording.py", line 226, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2164, in _create_symbolic_sizes_strides_storage_offset
+    size: List[sympy.Expr] = self._produce_dyn_sizes_from_int_tuple(ex_size, source, symbolic_context)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2042, in _produce_dyn_sizes_from_int_tuple
+    size.append(self.create_symbol(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/recording.py", line 226, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2426, in create_symbol
+    raise ConstraintViolationError(f"{val} not in range [{vr.lower}, {vr.upper}]")
+torch.fx.experimental.symbolic_shapes.ConstraintViolationError: 10 not in range [11, 18]
+
+from user code:
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 328, in &lt;module&gt;
+    export(dynamic_shapes_example1, (inp1,), dynamic_shapes=dynamic_shapes1_bad)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 462, in export
+    return export__RC__(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 259, in export__RC__
+    return _export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 77, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 810, in _export
+    gm_torch_level = _export_to_torch_ir(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 527, in _export_to_torch_ir
+    raise UserError(UserErrorType.CONSTRAINT_VIOLATION, str(e))  # noqa: TRY200
+torch._dynamo.exc.UserError: 10 not in range [11, 18]
+
+from user code:
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+</pre></div>
+</div>
+<p>We can enforce that equalities between dimensions of different tensors
+by using the same <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> object, for example, in matrix multiplication:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp3</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">dynamic_shapes_example2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">y</span>
 
-<span class="n">constraints2</span> <span class="o">=</span> <span class="p">[</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp3</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-<span class="p">]</span>
+<span class="n">inp2_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp2_dim0"</span><span class="p">)</span>
+<span class="n">inner_dim</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inner_dim"</span><span class="p">)</span>
+<span class="n">inp3_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp3_dim1"</span><span class="p">)</span>
 
-<span class="n">exported_constraints_example2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example2</span><span class="p">,</span> <span class="p">(</span><span class="n">inp2</span><span class="p">,</span> <span class="n">inp3</span><span class="p">),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints2</span><span class="p">)</span>
+<span class="n">dynamic_shapes2</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp2_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inner_dim</span><span class="p">},</span>
+    <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inner_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp3_dim1</span><span class="p">},</span>
+<span class="p">}</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example2</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example2</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp2</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp3</span></a><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example2</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_constraints_example2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example2</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can actually use <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> to guide us as to which constraints
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ -8.2691,   3.5848,  -3.7497,   2.8472],
+        [  9.6758, -15.9149,   4.4825,  -1.7321]])
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 356, in &lt;module&gt;
+    exported_dynamic_shapes_example2(torch.randn(4, 8), torch.randn(4, 2))
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 275, in __call__
+    self._check_input_constraints(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 571, in _check_input_constraints
+    _check_input_constraints_for_graph(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/utils.py", line 56, in inner
+    _assertion_graph(*args)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 738, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 317, in __call__
+    raise e
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/graph_module.py", line 304, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "&lt;eval_with_key&gt;.286", line 11, in forward
+    _assert_async = torch.ops.aten._assert_async.msg(scalar_tensor, 'Input l_x_.shape[1] is not equal to input l_y_.shape[0]');  scalar_tensor = None
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_ops.py", line 513, in __call__
+    return self._op(*args, **(kwargs or {}))
+RuntimeError: Input l_x_.shape[1] is not equal to input l_y_.shape[0]
+</pre></div>
+</div>
+<p>We can actually use <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> to guide us as to which <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> constraints
 are necessary. We can do this by relaxing all constraints (recall that if we
 do not provide constraints for a dimension, the default behavior is to constrain
 to the exact shape value of the example input) and letting <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>
 error out.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp4</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-<span class="n">inp5</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp4</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp5</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">constraints_example3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">dynamic_shapes_example3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">16</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">y</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">16</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">y</span>
 
-<span class="n">constraints3</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">[</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inp4</span><span class="o">.</span><span class="n">dim</span><span class="p">())]</span> <span class="o">+</span>
-    <span class="p">[</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">inp5</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inp5</span><span class="o">.</span><span class="n">dim</span><span class="p">())]</span>
-<span class="p">)</span>
+<span class="n">dynamic_shapes3</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Dim</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inp4_dim</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp4</span></a><span class="o">.</span><span class="n">dim</span><span class="p">())},</span>
+    <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Dim</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inp5_dim</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp5</span></a><span class="o">.</span><span class="n">dim</span><span class="p">())},</span>
+<span class="p">}</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example3</span><span class="p">,</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints3</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example3</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp4</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp5</span></a><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
     <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can see that the error message suggests to us to use some additional code
-to specify the necessary constraints. Let us use that code (exact code may differ slightly):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">specify_constraints</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="c1"># x:</span>
-        <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">16</span><span class="p">,</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 516, in _export_to_torch_ir
+    gm_torch_level, _ = torch._dynamo.export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1382, in inner
+    raise constraint_violation_error
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 1342, in inner
+    result_traced = opt_f(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 489, in _fn
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 655, in catch_errors
+    return callback(frame, cache_entry, hooks, frame_state)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 383, in _convert_frame_assert
+    compiled_product = _compile(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 646, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/utils.py", line 244, in time_wrapper
+    r = func(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 626, in compile_inner
+    check_fn = CheckFunctionManager(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/guards.py", line 1011, in __init__
+    guard.create(builder)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_guards.py", line 246, in create
+    return self.create_fn(builder, self)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_dynamo/guards.py", line 670, in SHAPE_ENV
+    guards = output_graph.shape_env.produce_guards(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/fx/experimental/symbolic_shapes.py", line 2939, in produce_guards
+    raise ConstraintViolationError(
+torch.fx.experimental.symbolic_shapes.ConstraintViolationError: Constraints violated (inp5_dim1, inp4_dim0, inp5_dim0)! For more information, run with TORCH_LOGS=dynamic.
+  - The values of inp5_dim0 = L['y'].size()[0] and inp4_dim1 = L['x'].size()[1] must always be equal.
+  - Not all values of inp5_dim1 = L['y'].size()[1] in the specified range satisfy the generated guard Ne(L['y'].size()[1], 16).
+  - Not all values of inp4_dim0 = L['x'].size()[0] in the specified range satisfy the generated guard L['x'].size()[0] &lt;= 16.
+  - Not all values of inp5_dim1 = L['y'].size()[1] in the specified range satisfy the generated guard L['y'].size()[1] &gt;= 16.
 
-        <span class="c1"># y:</span>
-        <span class="mi">16</span> <span class="o">&lt;</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_dim" title="torch.export.dynamic_dim"><span class="n">dynamic_dim</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="p">]</span>
+Suggested fixes:
+  inp4_dim0 = Dim('inp4_dim0', max=16)
+  inp5_dim1 = Dim('inp5_dim1', min=17)
+  inp5_dim0 = inp4_dim1
 
-<span class="n">constraints3_fixed</span> <span class="o">=</span> <span class="n">specify_constraints</span><span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">)</span>
-<span class="n">exported_constraints_example3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example3</span><span class="p">,</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints3_fixed</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example3</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)))</span>
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py", line 381, in &lt;module&gt;
+    export(dynamic_shapes_example3, (inp4, inp5), dynamic_shapes=dynamic_shapes3)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/__init__.py", line 462, in export
+    return export__RC__(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 259, in export__RC__
+    return _export(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/export/exported_program.py", line 77, in wrapper
+    return fn(*args, **kwargs)
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 810, in _export
+    gm_torch_level = _export_to_torch_ir(
+  File "/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/_export/__init__.py", line 527, in _export_to_torch_ir
+    raise UserError(UserErrorType.CONSTRAINT_VIOLATION, str(e))  # noqa: TRY200
+torch._dynamo.exc.UserError: Constraints violated (inp5_dim1, inp4_dim0, inp5_dim0)! For more information, run with TORCH_LOGS=dynamic.
+  - The values of inp5_dim0 = L['y'].size()[0] and inp4_dim1 = L['x'].size()[1] must always be equal.
+  - Not all values of inp5_dim1 = L['y'].size()[1] in the specified range satisfy the generated guard Ne(L['y'].size()[1], 16).
+  - Not all values of inp4_dim0 = L['x'].size()[0] in the specified range satisfy the generated guard L['x'].size()[0] &lt;= 16.
+  - Not all values of inp5_dim1 = L['y'].size()[1] in the specified range satisfy the generated guard L['y'].size()[1] &gt;= 16.
+
+Suggested fixes:
+  inp4_dim0 = Dim('inp4_dim0', max=16)
+  inp5_dim1 = Dim('inp5_dim1', min=17)
+  inp5_dim0 = inp4_dim1
+</pre></div>
+</div>
+<p>We can see that the error message gives us suggested fixes to our
+dynamic shape constraints. Let us follow those suggestions (exact
+suggestions may differ slightly):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">suggested_fixes</span><span class="p">():</span>
+    <span class="n">inp4_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'shared_dim'</span><span class="p">)</span>
+    <span class="c1"># suggested fixes below</span>
+    <span class="n">inp4_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'inp4_dim0'</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">inp5_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'inp5_dim1'</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
+    <span class="n">inp5_dim0</span> <span class="o">=</span> <span class="n">inp4_dim1</span>
+    <span class="c1"># end of suggested fixes</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp4_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp4_dim1</span><span class="p">},</span>
+        <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp5_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp5_dim1</span><span class="p">},</span>
+    <span class="p">}</span>
+
+<span class="n">dynamic_shapes3_fixed</span> <span class="o">=</span> <span class="n">suggested_fixes</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example3</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example3</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp4</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp5</span></a><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3_fixed</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example3</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[  0.0762,   4.8080,   1.9568,   4.5240,  -8.0411,   2.5623,  11.3762,
+          -1.5036,   8.0459,  -5.5826,   8.6751,  -1.8366,   4.9633,  10.8074,
+          -6.6831,  -4.6049],
+        [ -3.7599,  -9.3854,   4.5085,  11.1909,  -4.7606,  -2.9466,   0.6116,
+          -0.6991,   0.0412,   0.9056,  -2.7420,  -0.4197,  -0.2989,  -3.1403,
+          -6.3512,   2.9757],
+        [-11.9690,  -9.1469,   3.0525,   1.1695,  -3.4760,   6.4200,   2.0676,
+           8.1281,  -3.2467,  -1.0026,   3.4335,   2.6195,  -4.8243,   8.9650,
+          -7.6791,  -3.4516],
+        [  1.1498,   1.6157,  -5.6740,   4.5675,  -1.4414,   6.5395,   1.1312,
+          -7.6021,   2.3840,  -8.0799, -11.0822,  12.4071,   7.7031,   4.9921,
+           1.3468,   5.9964]])
 </pre></div>
 </div>
 <p>Note that in the example above, because we constrained the value of <code class="docutils literal notranslate"><span class="pre">x.shape[0]</span></code> in
-<code class="docutils literal notranslate"><span class="pre">constraints_example3</span></code>, the exported program is sound even though there is a
+<code class="docutils literal notranslate"><span class="pre">dynamic_shapes_example3</span></code>, the exported program is sound even though there is a
 raw <code class="docutils literal notranslate"><span class="pre">if</span></code> statement.</p>
 <p>If you want to see why <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> generated these constraints, you can
 re-run the script with the environment variable <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS=dynamic,dynamo</span></code>,
 or use <code class="docutils literal notranslate"><span class="pre">torch._logging.set_logs</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 <a class="sphx-glr-backref-module-torch-_logging sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch._logging.set_logs.html#torch._logging.set_logs" title="torch._logging.set_logs"><span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span></a><span class="p">(</span><span class="n">dynamic</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">dynamo</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-<span class="n">exported_constraints_example3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example3</span><span class="p">,</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints3_fixed</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example3</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">dynamic_shapes_example3</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp4</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">inp5</span></a><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3_fixed</span><span class="p">)</span>
 
 <span class="c1"># reset to previous values</span>
 <a class="sphx-glr-backref-module-torch-_logging sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch._logging.set_logs.html#torch._logging.set_logs" title="torch._logging.set_logs"><span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span></a><span class="p">(</span><span class="n">dynamic</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">dynamo</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[2023-12-12 22:10:22,169] [44/0] torch._dynamo.symbolic_convert: [INFO] Step 1: torchdynamo start tracing dynamic_shapes_example3 /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:370
+[2023-12-12 22:10:22,169] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] create_env
+[2023-12-12 22:10:22,171] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s0 = 8 for L['x'].size()[0] [2, 16]
+[2023-12-12 22:10:22,171] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s1 = 16 for L['x'].size()[1] [2, 9223372036854775806]
+[2023-12-12 22:10:22,173] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s2 = 16 for L['y'].size()[0] [2, 9223372036854775806]
+[2023-12-12 22:10:22,174] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] create_symbol s3 = 32 for L['y'].size()[1] [17, 9223372036854775806]
+[2023-12-12 22:10:22,181] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] set_replacement s2 = s1
+[2023-12-12 22:10:22,181] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] set_replacement s2 = s1
+[2023-12-12 22:10:22,181] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] eval Eq(s1, s2) [guard added] at ar/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:372 in dynamic_shapes_example3 (_meta_registrations.py:1975 in meta_mm)
+[2023-12-12 22:10:22,182] [44/0] torch._dynamo.symbolic_convert: [INFO] Step 1: torchdynamo done tracing dynamic_shapes_example3 (RETURN_VALUE)
+[2023-12-12 22:10:22,183] [44/0] torch._dynamo.output_graph: [INFO] Step 2: calling compiler function dynamo_normalization_capturing_compiler
+[2023-12-12 22:10:22,183] [44/0] torch._dynamo.output_graph: [INFO] Step 2: done compiler function dynamo_normalization_capturing_compiler
+[2023-12-12 22:10:22,184] [44/0] torch.fx.experimental.symbolic_shapes: [INFO] produce_guards
+[2023-12-12 22:10:22,211] torch._dynamo.eval_frame: [INFO] Summary of dimension constraints:
+[2023-12-12 22:10:22,211] torch._dynamo.eval_frame: [INFO] Suggested fixes:
+[2023-12-12 22:10:22,211] torch._dynamo.eval_frame: [INFO]
+</pre></div>
+</div>
 <p>We can view an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>’s constraints using the <code class="docutils literal notranslate"><span class="pre">range_constraints</span></code> and
 <code class="docutils literal notranslate"><span class="pre">equality_constraints</span></code> attributes. The logging above reveals what the symbols <code class="docutils literal notranslate"><span class="pre">s0,</span> <span class="pre">s1,</span> <span class="pre">...</span></code>
 represent.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example3</span><span class="o">.</span><span class="n">range_constraints</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example3</span><span class="o">.</span><span class="n">equality_constraints</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example3</span></a><span class="o">.</span><span class="n">range_constraints</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_dynamic_shapes_example3</span></a><span class="o">.</span><span class="n">equality_constraints</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can also constrain on individual values in the source code itself using
-<code class="docutils literal notranslate"><span class="pre">constrain_as_value</span></code> and <code class="docutils literal notranslate"><span class="pre">constrain_as_size</span></code>. <code class="docutils literal notranslate"><span class="pre">constrain_as_value</span></code> specifies
-that a given integer value is expected to fall within the provided minimum/maximum bounds (inclusive).
-If a bound is not provided, then it is assumed to be unbounded.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.constrain_as_size" title="torch.export.constrain_as_size"><span class="n">constrain_as_size</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.constrain_as_value" title="torch.export.constrain_as_value"><span class="n">constrain_as_value</span></a>
-
-<span class="k">def</span> <span class="nf">constraints_example4</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.constrain_as_value" title="torch.export.constrain_as_value"><span class="n">constrain_as_value</span></a><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
-       <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">cos</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
-
-<span class="n">exported_constraints_example4</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example4</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">4</span><span class="p">])))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example4</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">5</span><span class="p">])))</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_constraints_example4</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">2</span><span class="p">]))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">constrain_as_size</span></code> is similar to <code class="docutils literal notranslate"><span class="pre">constrain_as_value</span></code>, except that it should be used on integer values that
-will be used to specify tensor shapes – in particular, the value must not be 0 or 1 because
-many operations have special behavior for tensors with a shape value of 0 or 1.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">constraints_example5</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.constrain_as_size" title="torch.export.constrain_as_size"><span class="n">constrain_as_size</span></a><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">z</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">z</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="n">exported_constraints_example5</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">constraints_example5</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">4</span><span class="p">])))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_constraints_example5</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">5</span><span class="p">])))</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_constraints_example5</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">1</span><span class="p">]))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>{s0: ValueRanges(lower=2, upper=16, is_bool=False), s1: ValueRanges(lower=2, upper=oo, is_bool=False), s3: ValueRanges(lower=17, upper=oo, is_bool=False)}
+[(InputDim(input_name='l_x_', dim=1), InputDim(input_name='l_y_', dim=0))]
 </pre></div>
 </div>
 </div>
@@ -836,13 +1400,13 @@ many operations have special behavior for tensors with a shape value of 0 or 1.<
 <li><p>Define the custom op using <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> (<a class="reference external" href="https://pytorch.org/docs/main/library.html">reference</a>)
 as with any other custom op</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.library</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">,</span> <span class="n">impl</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.library</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">,</span> <span class="n">impl</span>
 
-<span class="n">m</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">(</span><span class="s2">"my_custom_library"</span><span class="p">,</span> <span class="s2">"DEF"</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">m</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">(</span><span class="s2">"my_custom_library"</span><span class="p">,</span> <span class="s2">"DEF"</span><span class="p">)</span>
 
-<span class="n">m</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">"custom_op(Tensor input) -&gt; Tensor"</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/library.html#torch.library.Library.define" title="torch.library.Library.define"><span class="n">m</span><span class="o">.</span><span class="n">define</span></a><span class="p">(</span><span class="s2">"custom_op(Tensor input) -&gt; Tensor"</span><span class="p">)</span>
 
-<span class="nd">@impl</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"custom_op"</span><span class="p">,</span> <span class="s2">"CompositeExplicitAutograd"</span><span class="p">)</span>
+<span class="nd">@impl</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">m</span></a><span class="p">,</span> <span class="s2">"custom_op"</span><span class="p">,</span> <span class="s2">"CompositeExplicitAutograd"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">custom_op</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"custom_op called!"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -852,7 +1416,7 @@ as with any other custom op</p></li>
 <li><p>Define a <code class="docutils literal notranslate"><span class="pre">"Meta"</span></code> implementation of the custom op that returns an empty
 tensor with the same shape as the expected output</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@impl</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"custom_op"</span><span class="p">,</span> <span class="s2">"Meta"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@impl</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">m</span></a><span class="p">,</span> <span class="s2">"custom_op"</span><span class="p">,</span> <span class="s2">"Meta"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">custom_op_meta</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
@@ -870,9 +1434,27 @@ tensor with the same shape as the expected output</p></li>
 <ul class="simple">
 <li><p>Export the code as before</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exported_custom_op_example</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">custom_op_example</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
-<span class="n">exported_custom_op_example</span><span class="o">.</span><span class="n">graph_module</span><span class="o">.</span><span class="n">print_readable</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_custom_op_example</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_custom_op_example</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">custom_op_example</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_custom_op_example</span></a><span class="o">.</span><span class="n">graph_module</span><span class="o">.</span><span class="n">print_readable</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_custom_op_example</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>class GraphModule(torch.nn.Module):
+    def forward(self, l_x_: "f32[3, 3]"):
+        # File: /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:464, code: x = torch.sin(x)
+        sin: "f32[3, 3]" = torch.ops.aten.sin.default(l_x_);  l_x_ = None
+
+        # File: /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:465, code: x = torch.ops.my_custom_library.custom_op(x)
+        custom_op: "f32[3, 3]" = torch.ops.my_custom_library.custom_op.default(sin);  sin = None
+
+        # File: /var/lib/jenkins/workspace/intermediate_source/torch_export_tutorial.py:466, code: x = torch.cos(x)
+        cos: "f32[3, 3]" = torch.ops.aten.cos.default(custom_op);  custom_op = None
+        return (cos,)
+
+custom_op called!
+tensor([[0.5988, 0.9852, 0.9434],
+        [0.7422, 0.5422, 0.6795],
+        [0.8440, 0.8569, 0.8106]])
 </pre></div>
 </div>
 <p>Note in the above outputs that the custom op is included in the exported graph.
@@ -882,8 +1464,117 @@ as evidenced by the <code class="docutils literal notranslate"><span class="pre"
 <a class="reference external" href="https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz">this document</a>
 to make it compatible with <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>.</p>
 </div>
+<div class="section" id="decompositions">
+<h2><a class="toc-backref" href="#id6">Decompositions</a><a class="headerlink" href="#decompositions" title="Permalink to this heading">¶</a></h2>
+<p>The graph produced by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> by default returns a graph containing
+only functional ATen operators. This functional ATen operator set (or “opset”) contains around 2000
+operators, all of which are functional, that is, they do not
+mutate or alias inputs.  You can find a list of all ATen operators
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml">here</a>
+and you can inspect if an operator is functional by checking
+<code class="docutils literal notranslate"><span class="pre">op._schema.is_mutable</span></code>, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">Tensor</span><span class="o">.</span><span class="n">_schema</span><span class="o">.</span><span class="n">is_mutable</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">add_</span><span class="o">.</span><span class="n">Tensor</span><span class="o">.</span><span class="n">_schema</span><span class="o">.</span><span class="n">is_mutable</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>False
+True
+</pre></div>
+</div>
+<p>By default, the environment in which you want to run the exported graph
+should support all ~2000 of these operators.
+However, you can use the following API on the exported program
+if your specific environment is only able to support a subset of
+the ~2000 operators.</p>
+<p><code class="docutils literal notranslate"><span class="pre">run_decompositions</span></code> takes in a decomposition table, which is a mapping of
+operators to a function specifying how to reduce, or decompose, that operator
+into an equivalent sequence of other ATen operators.</p>
+<p>The default decomposition table for <code class="docutils literal notranslate"><span class="pre">run_decompositions</span></code> is the
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L252">Core ATen decomposition table</a>
+which will decompose the all ATen operators to the
+<a class="reference external" href="https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir">Core ATen Operator Set</a>
+which consists of only ~180 operators.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">M</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">M</span></a><span class="p">(),</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">core_ir_ep</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a><span class="o">.</span><span class="n">run_decompositions</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">core_ir_ep</span></a><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>graph():
+    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+    %l_x_ : [num_users=1] = placeholder[target=l_x_]
+    %t : [num_users=1] = call_function[target=torch.ops.aten.t.default](args = (%arg0_1,), kwargs = {})
+    %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %l_x_, %t), kwargs = {})
+    return (addmm,)
+graph():
+    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+    %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%arg0_1, [1, 0]), kwargs = {})
+    %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %permute), kwargs = {})
+    return (addmm,)
+</pre></div>
+</div>
+<p>Notice that after running <code class="docutils literal notranslate"><span class="pre">run_decompositions</span></code> the
+<code class="docutils literal notranslate"><span class="pre">torch.ops.aten.t.default</span></code> operator, which is not part of the Core ATen
+Opset, has been replaced with <code class="docutils literal notranslate"><span class="pre">torch.ops.aten.permute.default</span></code> which is part
+of the Core ATen Opset.</p>
+<p>Most ATen operators already have decompositions, which are located
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py">here</a>.
+If you would like to use some of these existing decomposition functions,
+you can pass in a list of operators you would like to decompose to the
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191">get_decompositions</a>
+function, which will return a decomposition table using existing
+decomposition implementations.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">M</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">M</span></a><span class="p">(),</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),))</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">torch._decomp</span> <span class="kn">import</span> <span class="n">get_decompositions</span>
+<span class="n">decomp_table</span> <span class="o">=</span> <span class="n">get_decompositions</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">transpose</span><span class="o">.</span><span class="n">int</span><span class="p">])</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">core_ir_ep</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">ep</span></a><span class="o">.</span><span class="n">run_decompositions</span><span class="p">(</span><span class="n">decomp_table</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">core_ir_ep</span></a><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>graph():
+    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+    %l_x_ : [num_users=1] = placeholder[target=l_x_]
+    %t : [num_users=1] = call_function[target=torch.ops.aten.t.default](args = (%arg0_1,), kwargs = {})
+    %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %l_x_, %t), kwargs = {})
+    return (addmm,)
+graph():
+    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]
+    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]
+    %arg2_1 : [num_users=1] = placeholder[target=arg2_1]
+    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%arg0_1, [1, 0]), kwargs = {})
+    %addmm : [num_users=1] = call_function[target=torch.ops.aten.addmm.default](args = (%arg1_1, %arg2_1, %permute), kwargs = {})
+    return (addmm,)
+</pre></div>
+</div>
+<p>If there is no existing decomposition function for an ATen operator that you would
+like to decompose, feel free to send a pull request into PyTorch
+implementing the decomposition!</p>
+</div>
 <div class="section" id="exportdb">
-<h2><a class="toc-backref" href="#id6">ExportDB</a><a class="headerlink" href="#exportdb" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">ExportDB</a><a class="headerlink" href="#exportdb" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> will only ever export a single computation graph from a PyTorch program. Because of this requirement,
 there will be Python or PyTorch features that are not compatible with <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>, which will require users to
 rewrite parts of their model code. We have seen examples of this earlier in the tutorial – for example, rewriting
@@ -897,8 +1588,8 @@ We can look at the example called <code class="docutils literal notranslate"><sp
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cond_predicate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The conditional statement (aka predicate) passed to ``cond()`` must be one of the following:</span>
-<span class="sd">      - torch.Tensor with a single element</span>
-<span class="sd">      - boolean expression</span>
+<span class="sd">    - ``torch.Tensor`` with a single element</span>
+<span class="sd">    - boolean expression</span>
 <span class="sd">    NOTE: If the `pred` is test on a dim with batch size &lt; 2, it will be specialized.</span>
 <span class="sd">    """</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span>
@@ -915,11 +1606,11 @@ and you want to know if <code class="docutils literal notranslate"><span class="
 out if there is an important Python/PyTorch feature that should be added to ExportDB or supported by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>.</p>
 </div>
 <div class="section" id="conclusion">
-<h2><a class="toc-backref" href="#id7">Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id8">Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>We introduced <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>, the new PyTorch 2.X way to export single computation
 graphs from PyTorch programs. In particular, we demonstrate several code modifications
 and considerations (control flow ops, constraints, etc.) that need to be made in order to export a graph.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.185 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torch-export-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b865be3c401c1b4fbdb03f49916ac8e8/torch_export_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_export_tutorial.py</span></code></a></p>
@@ -973,8 +1664,9 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
 <li><a class="reference internal" href="#graph-breaks">Graph Breaks</a></li>
 <li><a class="reference internal" href="#control-flow-ops">Control Flow Ops</a></li>
-<li><a class="reference internal" href="#constraints">Constraints</a></li>
+<li><a class="reference internal" href="#constraints-dynamic-shapes">Constraints/Dynamic Shapes</a></li>
 <li><a class="reference internal" href="#custom-ops">Custom Ops</a></li>
+<li><a class="reference internal" href="#decompositions">Decompositions</a></li>
 <li><a class="reference internal" href="#exportdb">ExportDB</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
