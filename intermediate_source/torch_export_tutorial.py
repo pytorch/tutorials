@@ -210,7 +210,7 @@ print(exported_bad1_fixed(-torch.ones(3, 3)))
 # - Branch functions cannot access closure variables, except for ``self`` if the function is
 #   defined in the scope of a method.
 #
-# For more details about ``cond``, check out the `documentation <https://pytorch.org/docs/main/cond.html>`__.
+# For more details about ``cond``, check out the `cond documentation <https://pytorch.org/docs/main/cond.html>`__.
 
 ######################################################################
 # ..
