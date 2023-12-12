@@ -589,7 +589,7 @@ print(core_ir_ep.graph)
 def cond_predicate(x):
     """
     The conditional statement (aka predicate) passed to ``cond()`` must be one of the following:
-    - torch.Tensor with a single element
+    - ``torch.Tensor`` with a single element
     - boolean expression
     NOTE: If the `pred` is test on a dim with batch size < 2, it will be specialized.
     """
