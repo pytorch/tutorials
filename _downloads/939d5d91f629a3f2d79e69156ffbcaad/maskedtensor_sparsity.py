@@ -186,19 +186,19 @@ mt_sparse_csr = mt.to_sparse_csr()
 mt_dense = mt_sparse_coo.to_dense()
 
 ######################################################################
-# :meth:`MaskedTensor.is_sparse()` -- this will check if the :class:`MaskedTensor`'s layout
+# :meth:`MaskedTensor.is_sparse` -- this will check if the :class:`MaskedTensor`'s layout
 # matches any of the supported sparse layouts (currently COO and CSR).
 #
 
-print("mt_dense.is_sparse: ", mt_dense.is_sparse())
-print("mt_sparse_coo.is_sparse: ", mt_sparse_coo.is_sparse())
-print("mt_sparse_csr.is_sparse: ", mt_sparse_csr.is_sparse())
+print("mt_dense.is_sparse: ", mt_dense.is_sparse)
+print("mt_sparse_coo.is_sparse: ", mt_sparse_coo.is_sparse)
+print("mt_sparse_csr.is_sparse: ", mt_sparse_csr.is_sparse)
 
 ######################################################################
 # :meth:`MaskedTensor.is_sparse_coo()`
 #
 
-print("mt_dense.is_sparse_coo: ", mt_dense.is_sparse_coo())
+print("mt_dense.is_sparse_coo(): ", mt_dense.is_sparse_coo())
 print("mt_sparse_coo.is_sparse_coo: ", mt_sparse_coo.is_sparse_coo())
 print("mt_sparse_csr.is_sparse_coo: ", mt_sparse_csr.is_sparse_coo())
 
@@ -206,7 +206,7 @@ print("mt_sparse_csr.is_sparse_coo: ", mt_sparse_csr.is_sparse_coo())
 # :meth:`MaskedTensor.is_sparse_csr()`
 #
 
-print("mt_dense.is_sparse_csr: ", mt_dense.is_sparse_csr())
+print("mt_dense.is_sparse_csr(): ", mt_dense.is_sparse_csr())
 print("mt_sparse_coo.is_sparse_csr: ", mt_sparse_coo.is_sparse_csr())
 print("mt_sparse_csr.is_sparse_csr: ", mt_sparse_csr.is_sparse_csr())
 
