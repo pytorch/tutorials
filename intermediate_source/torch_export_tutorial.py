@@ -2,7 +2,7 @@
 
 """
 torch.export Tutorial
-=============================
+===================================================
 **Author:** William Wen, Zhengxu Chen, Angela Yi
 """
 
