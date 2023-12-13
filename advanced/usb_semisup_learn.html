@@ -431,54 +431,73 @@ to download the full example code</p>
 <div class="sphx-glr-example-title section" id="semi-supervised-learning-using-usb-built-upon-pytorch">
 <span id="sphx-glr-advanced-usb-semisup-learn-py"></span><h1>Semi-Supervised Learning using USB built upon PyTorch<a class="headerlink" href="#semi-supervised-learning-using-usb-built-upon-pytorch" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/Hhhhhhao">Hao Chen</a></p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>USB is a semi-supervised learning framework built upon PyTorch.
-Based on Datasets and Modules provided by PyTorch, USB becomes a flexible, modular, and easy-to-use framework for semi-supervised learning.
-It supports a variety of semi-supervised learning algorithms, including FixMatch, FreeMatch, DeFixMatch, SoftMatch, etc.
+<p>Unified Semi-supervised learning Benchmark (USB) is a semi-supervised
+learning framework built upon PyTorch.
+Based on Datasets and Modules provided by PyTorch, USB becomes a flexible,
+modular, and easy-to-use framework for semi-supervised learning.
+It supports a variety of semi-supervised learning algorithms, including
+<code class="docutils literal notranslate"><span class="pre">FixMatch</span></code>, <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code>, <code class="docutils literal notranslate"><span class="pre">DeFixMatch</span></code>, <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code>, and so on.
 It also supports a variety of imbalanced semi-supervised learning algorithms.
-The benchmark results across different datasets of computer vision, natural language processing, and speech processing are included in USB.</p>
-<p>This tutorial will walk you through the basics of using the usb lighting package.
-Let’s get started by training a FreeMatch/SoftMatch model on CIFAR-10 using pre-trained ViT!
-And we will show it is easy to change the semi-supervised algorithm and train on imbalanced datasets.</p>
+The benchmark results across different datasets of computer vision, natural
+language processing, and speech processing are included in USB.</p>
+<p>This tutorial will walk you through the basics of using the USB lighting
+package.
+Let’s get started by training a <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code>/<code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> model on
+CIFAR-10 using pretrained ViT!
+And we will show it is easy to change the semi-supervised algorithm and train
+on imbalanced datasets.</p>
 <div class="figure align-default">
 <img alt="USB framework illustration" src="_static/img/usb_semisup_learn/code.png"/>
 </div>
-</div>
 <div class="section" id="introduction-to-freematch-and-softmatch-in-semi-supervised-learning">
-<h2>Introduction to FreeMatch and SoftMatch in Semi-Supervised Learning<a class="headerlink" href="#introduction-to-freematch-and-softmatch-in-semi-supervised-learning" title="Permalink to this heading">¶</a></h2>
-<p>Here we provide a brief introduction to FreeMatch and SoftMatch.
-First we introduce a famous baseline for semi-supervised learning called FixMatch.
-FixMatch is a very simple framework for semi-supervised learning, where it utilizes a strong augmentation to generate pseudo labels for unlabeled data.
-It adopts a confidence thresholding strategy to filter out the low-confidence pseudo labels with a fixed threshold set.
-FreeMatch and SoftMatch are two algorithms that improve upon FixMatch.
-FreeMatch proposes adaptive thresholding strategy to replace the fixed thresholding strategy in FixMatch.
-The adaptive thresholding progressively increases the threshold according to the learning status of the model on each class.
-SoftMatch absorbs the idea of confidence thresholding as an weighting mechanism.
-It proposes a Gaussian weighting mechanism to overcome the quantity-quality trade-off in pseudo-labels.
-In this tutorial, we will use USB to train FreeMatch and SoftMatch.</p>
+<h2>Introduction to <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> in Semi-Supervised Learning<a class="headerlink" href="#introduction-to-freematch-and-softmatch-in-semi-supervised-learning" title="Permalink to this heading">¶</a></h2>
+<p>Here we provide a brief introduction to <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code>.
+First, we introduce a famous baseline for semi-supervised learning called <code class="docutils literal notranslate"><span class="pre">FixMatch</span></code>.
+<code class="docutils literal notranslate"><span class="pre">FixMatch</span></code> is a very simple framework for semi-supervised learning, where it
+utilizes a strong augmentation to generate pseudo labels for unlabeled data.
+It adopts a confidence thresholding strategy to filter out the low-confidence
+pseudo labels with a fixed threshold set.
+<code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> are two algorithms that improve upon <code class="docutils literal notranslate"><span class="pre">FixMatch</span></code>.
+<code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> proposes adaptive thresholding strategy to replace the fixed
+thresholding strategy in <code class="docutils literal notranslate"><span class="pre">FixMatch</span></code>. The adaptive thresholding progressively
+increases the threshold according to the learning status of the model on each
+class. <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> absorbs the idea of confidence thresholding as an
+weighting mechanism. It proposes a Gaussian weighting mechanism to overcome
+the quantity-quality trade-off in pseudo-labels. In this tutorial, we will
+use USB to train <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code>.</p>
 </div>
 <div class="section" id="use-usb-to-train-freematch-softmatch-on-cifar-10-with-only-40-labels">
-<h2>Use USB to Train FreeMatch/SoftMatch on CIFAR-10 with only 40 labels<a class="headerlink" href="#use-usb-to-train-freematch-softmatch-on-cifar-10-with-only-40-labels" title="Permalink to this heading">¶</a></h2>
-<p>USB is a Pytorch-based Python package for Semi-Supervised Learning (SSL).
-It is easy-to-use/extend, affordable to small groups, and comprehensive for developing and evaluating SSL algorithms.
-USB provides the implementation of 14 SSL algorithms based on Consistency Regularization, and 15 tasks for evaluation from CV, NLP, and Audio domain.
-It has a modular design that allows users to easily extend the package by adding new algorithms and tasks.
-It also supports a python api for easier adaptation to different SSL algorithms on new data.</p>
-<p>Now, let’s use USB to train FreeMatch and SoftMatch on CIFAR-10.
-First, we need to install USB package <code class="docutils literal notranslate"><span class="pre">semilearn</span></code> and import necessary api functions from USB.
-Below is a list of functions we will use from <code class="docutils literal notranslate"><span class="pre">semilearn</span></code>:
-- <code class="docutils literal notranslate"><span class="pre">get_dataset</span></code> to load dataset, here we use CIFAR-10
-- <code class="docutils literal notranslate"><span class="pre">get_data_loader</span></code> to create train (labeled and unlabeled) and test data loaders, the train unlabeled loaders will provide both strong and weak augmentation of unlabeled data
-- <code class="docutils literal notranslate"><span class="pre">get_net_builder</span></code> to create a model, here we use pre-trained ViT
-- <code class="docutils literal notranslate"><span class="pre">get_algorithm</span></code> to create the semi-supervised learning algorithm, here we use FreeMatch and SoftMatch
+<h2>Use USB to Train <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code>/<code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> on CIFAR-10 with only 40 labels<a class="headerlink" href="#use-usb-to-train-freematch-softmatch-on-cifar-10-with-only-40-labels" title="Permalink to this heading">¶</a></h2>
+<p>USB is easy to use and extend, affordable to small groups, and comprehensive
+for developing and evaluating SSL algorithms.
+USB provides the implementation of 14 SSL algorithms based on Consistency
+Regularization, and 15 tasks for evaluation from CV, NLP, and Audio domain.
+It has a modular design that allows users to easily extend the package by
+adding new algorithms and tasks.
+It also supports a Python API for easier adaptation to different SSL
+algorithms on new data.</p>
+<p>Now, let’s use USB to train <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> on CIFAR-10.
+First, we need to install USB package <code class="docutils literal notranslate"><span class="pre">semilearn</span></code> and import necessary API
+functions from USB.
+Below is a list of functions we will use from <code class="docutils literal notranslate"><span class="pre">semilearn</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_dataset</span></code> to load dataset, here we use CIFAR-10</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_data_loader</span></code> to create train (labeled and unlabeled) and test data</p></li>
+</ul>
+<p>loaders, the train unlabeled loaders will provide both strong and weak
+augmentation of unlabeled data
+- <code class="docutils literal notranslate"><span class="pre">get_net_builder</span></code> to create a model, here we use pretrained ViT
+- <code class="docutils literal notranslate"><span class="pre">get_algorithm</span></code> to create the semi-supervised learning algorithm,
+here we use <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code>
 - <code class="docutils literal notranslate"><span class="pre">get_config</span></code>: to get default configuration of the algorithm
-- <code class="docutils literal notranslate"><span class="pre">Trainer</span></code>: a Trainer class for training and evaluating the algorithm on dataset</p>
+- <code class="docutils literal notranslate"><span class="pre">Trainer</span></code>: a Trainer class for training and evaluating the
+algorithm on dataset</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">semilearn</span>
 <span class="kn">from</span> <span class="nn">semilearn</span> <span class="kn">import</span> <span class="n">get_dataset</span><span class="p">,</span> <span class="n">get_data_loader</span><span class="p">,</span> <span class="n">get_net_builder</span><span class="p">,</span> <span class="n">get_algorithm</span><span class="p">,</span> <span class="n">get_config</span><span class="p">,</span> <span class="n">Trainer</span>
 </pre></div>
 </div>
-<p>After importing necessary functions, we first set the hyper-parameters of the algorithm.</p>
+<p>After importing necessary functions, we first set the hyper-parameters of the
+algorithm.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">'algorithm'</span><span class="p">:</span> <span class="s1">'freematch'</span><span class="p">,</span>
     <span class="s1">'net'</span><span class="p">:</span> <span class="s1">'vit_tiny_patch2_32'</span><span class="p">,</span>
@@ -532,23 +551,27 @@ And we specify the model and algorithm to use.</p>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="n">get_algorithm</span><span class="p">(</span><span class="n">config</span><span class="p">,</span>  <span class="n">get_net_builder</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">net</span><span class="p">,</span> <span class="n">from_name</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">tb_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can start Train the algorithms on CIFAR-10 with 40 labels now.
+<p>We can start training the algorithms on CIFAR-10 with 40 labels now.
 We train for 4000 iterations and evaluate every 500 iterations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">)</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_lb_loader</span><span class="p">,</span> <span class="n">train_ulb_loader</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally, let’s evaluate the trained model on validation set.
-After training 4000 iterations with FreeMatch on only 40 labels of CIFAR-10, we obtain a classifier that achieves above 93 accuracy on validation set.</p>
+<p>Finally, let’s evaluate the trained model on the validation set.
+After training 4000 iterations with <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> on only 40 labels of
+CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validation set.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="use-usb-to-train-softmatch-with-specific-imbalanced-algorithm-on-imbalanced-cifar-10">
-<h2>Use USB to Train SoftMatch with specific imbalanced algorithm on imbalanced CIFAR-10<a class="headerlink" href="#use-usb-to-train-softmatch-with-specific-imbalanced-algorithm-on-imbalanced-cifar-10" title="Permalink to this heading">¶</a></h2>
-<p>Now let’s say we have imbalanced labeled set and unlabeled set of CIFAR-10, and we want to train a SoftMatch model on it.
-We create an imbalanced labeled set and imbalanced unlabeled set of CIFAR-10, by setting the <code class="docutils literal notranslate"><span class="pre">lb_imb_ratio</span></code> and <code class="docutils literal notranslate"><span class="pre">ulb_imb_ratio</span></code> to 10.
-Also we replace the <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> with <code class="docutils literal notranslate"><span class="pre">softmatch</span></code> and set the <code class="docutils literal notranslate"><span class="pre">imbalanced</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<h2>Use USB to Train <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> with specific imbalanced algorithm on imbalanced CIFAR-10<a class="headerlink" href="#use-usb-to-train-softmatch-with-specific-imbalanced-algorithm-on-imbalanced-cifar-10" title="Permalink to this heading">¶</a></h2>
+<p>Now let’s say we have imbalanced labeled set and unlabeled set of CIFAR-10,
+and we want to train a <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> model on it.
+We create an imbalanced labeled set and imbalanced unlabeled set of CIFAR-10,
+by setting the <code class="docutils literal notranslate"><span class="pre">lb_imb_ratio</span></code> and <code class="docutils literal notranslate"><span class="pre">ulb_imb_ratio</span></code> to 10.
+Also, we replace the <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> with <code class="docutils literal notranslate"><span class="pre">softmatch</span></code> and set the <code class="docutils literal notranslate"><span class="pre">imbalanced</span></code>
+to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">'algorithm'</span><span class="p">:</span> <span class="s1">'softmatch'</span><span class="p">,</span>
     <span class="s1">'net'</span><span class="p">:</span> <span class="s1">'vit_tiny_patch2_32'</span><span class="p">,</span>
@@ -611,7 +634,7 @@ We train for 4000 iterations and evaluate every 500 iterations.</p>
 <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_lb_loader</span><span class="p">,</span> <span class="n">train_ulb_loader</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally, let’s evaluate the trained model on validation set.</p>
+<p>Finally, let’s evaluate the trained model on the validation set.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -671,10 +694,9 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Semi-Supervised Learning using USB built upon PyTorch</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#introduction-to-freematch-and-softmatch-in-semi-supervised-learning">Introduction to FreeMatch and SoftMatch in Semi-Supervised Learning</a></li>
-<li><a class="reference internal" href="#use-usb-to-train-freematch-softmatch-on-cifar-10-with-only-40-labels">Use USB to Train FreeMatch/SoftMatch on CIFAR-10 with only 40 labels</a></li>
-<li><a class="reference internal" href="#use-usb-to-train-softmatch-with-specific-imbalanced-algorithm-on-imbalanced-cifar-10">Use USB to Train SoftMatch with specific imbalanced algorithm on imbalanced CIFAR-10</a></li>
+<li><a class="reference internal" href="#introduction-to-freematch-and-softmatch-in-semi-supervised-learning">Introduction to <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> in Semi-Supervised Learning</a></li>
+<li><a class="reference internal" href="#use-usb-to-train-freematch-softmatch-on-cifar-10-with-only-40-labels">Use USB to Train <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code>/<code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> on CIFAR-10 with only 40 labels</a></li>
+<li><a class="reference internal" href="#use-usb-to-train-softmatch-with-specific-imbalanced-algorithm-on-imbalanced-cifar-10">Use USB to Train <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> with specific imbalanced algorithm on imbalanced CIFAR-10</a></li>
 </ul>
 </li>
 </ul>
