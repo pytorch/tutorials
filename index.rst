@@ -142,6 +142,13 @@ What's new in PyTorch tutorials?
    :link: intermediate/spatial_transformer_tutorial.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Semi-Supervised Learning Tutorial Based on USB
+   :card_description: Learn how to train semi-supervised learning algorithms (on custom data) using USB and PyTorch.
+   :image: _static/img/usb_semisup_learn/code.png
+   :link: advanced/usb_semisup_learn.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -286,7 +293,7 @@ What's new in PyTorch tutorials?
    :header: Introduction to ONNX Registry
    :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: advanced/onnx_registry_tutorial.html 
+   :link: advanced/onnx_registry_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
@@ -313,13 +320,25 @@ What's new in PyTorch tutorials?
    :tags: Reinforcement-Learning
 
 .. customcarditem::
+   :header: Recurrent DQN
+   :card_description: Use TorchRL to train recurrent policies
+   :image: _static/img/rollout_recurrent.png
+   :link: intermediate/dqn_with_rnn_tutorial.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
    :header: Code a DDPG Loss
    :card_description: Use TorchRL to code a DDPG Loss
    :image: _static/img/half_cheetah.gif
    :link: advanced/coding_ddpg.html
    :tags: Reinforcement-Learning
 
-
+.. customcarditem::
+   :header: Writing your environment and transforms
+   :card_description: Use TorchRL to code a Pendulum
+   :image: _static/img/pendulum.gif
+   :link: advanced/pendulum.html
+   :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
 
@@ -951,6 +970,7 @@ Additional Resources
    intermediate/reinforcement_q_learning
    intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
+   advanced/pendulum
 
 .. toctree::
    :maxdepth: 2
@@ -1029,6 +1049,7 @@ Additional Resources
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
+
 
 .. toctree::
    :maxdepth: 2

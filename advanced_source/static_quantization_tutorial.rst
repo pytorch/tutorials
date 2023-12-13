@@ -206,14 +206,15 @@ Note: this code is taken from
 
         # Fuse Conv+BN and Conv+BN+Relu modules prior to quantization 
         # This operation does not change the numerics 
-        def fuse_model(self): 
+        def fuse_model(self, is_qat=False): 
+            fuse_modules = torch.ao.quantization.fuse_modules_qat if is_qat else torch.ao.quantization.fuse_modules
             for m in self.modules():  
                 if type(m) == ConvBNReLU: 
-                    torch.ao.quantization.fuse_modules(m, ['0', '1', '2'], inplace=True)
+                    fuse_modules(m, ['0', '1', '2'], inplace=True)
                 if type(m) == InvertedResidual: 
                     for idx in range(len(m.conv)):  
                         if type(m.conv[idx]) == nn.Conv2d:  
-                            torch.ao.quantization.fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
+                            fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
 
 2. Helper functions 
 ------------------- 
@@ -533,7 +534,7 @@ We fuse modules as before
 .. code:: python
 
     qat_model = load_model(saved_model_dir + float_model_file)  
-    qat_model.fuse_model()  
+    qat_model.fuse_model(is_qat=True)  
 
     optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001) 
     # The old 'fbgemm' is still available but 'x86' is the recommended default. 

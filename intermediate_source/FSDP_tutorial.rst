@@ -46,6 +46,15 @@ At a high level FSDP works as follow:
 * Run reduce_scatter to sync gradients
 * Discard parameters. 
 
+One way to view FSDP's sharding is to decompose the DDP gradient all-reduce into reduce-scatter and all-gather. Specifically, during the backward pass, FSDP reduces and scatters gradients, ensuring that each rank possesses a shard of the gradients. Then it updates the corresponding shard of the parameters in the optimizer step. Finally, in the subsequent forward pass, it performs an all-gather operation to collect and combine the updated parameter shards.
+
+.. figure:: /_static/img/distributed/fsdp_sharding.png
+   :width: 100%
+   :align: center
+   :alt: FSDP allreduce
+
+   FSDP Allreduce
+
 How to use FSDP
 --------------
 Here we use a toy model to run training on the MNIST dataset for demonstration purposes. The APIs and logic can be applied to training larger models as well. 
