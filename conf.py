@@ -285,7 +285,8 @@ texinfo_documents = [
 
 html_css_files = [
         'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css'
+        'css/custom.css',
+        'css/custom2.css'
     ]
 
 def setup(app):
