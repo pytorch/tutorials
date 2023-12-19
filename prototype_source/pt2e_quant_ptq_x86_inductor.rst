@@ -8,6 +8,7 @@ Prerequisites
 
 -  `PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_
 -  `TorchInductor and torch.compile concepts in PyTorch <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
+-  `Inductor C++ Wrapper concepts <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`_
 
 Introduction
 ^^^^^^^^^^^^^^
@@ -161,7 +162,15 @@ After these steps, we finished running the quantization flow and we will get the
 3. Lower into Inductor
 ------------------------
 
-After we get the quantized model, we will further lower it to the inductor backend.
+After we get the quantized model, we will further lower it to the inductor backend. The default Inductor wrapper
+generates Python code to invoke both generated kernels and external kernels. Additionally, Inductor supports a C++ wrapper
+that generates pure C++ code, seamlessly combining the generated and external kernels.
+
+::
+
+    # Optional: using the C++ wrapper instead of default Python wrapper
+    import torch._inductor.config as config
+    config.cpp_wrapper = True
 
 ::
 
