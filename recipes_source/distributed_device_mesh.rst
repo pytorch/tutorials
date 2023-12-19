@@ -10,7 +10,7 @@ Prerequisites:
 
 - `Distributed Communication Package - torch.distributed <https://pytorch.org/docs/stable/distributed.html>`__
 
-.. Setting up nccl communicators for distributed communication during distributed training could be challenging. For workloads where users need to compose different parallelisms,
+.. Setting up the NVIDIA Collective Communication Library (NCCL) communicators for distributed communication during distributed training can pose a significant challenge. For workloads where users need to compose different parallelisms,
 .. users would need to manually set up and manage nccl communicators(for example, :class:`ProcessGroup`) for each parallelism solutions. This is fairly complicated and error-proned.
 .. :class:`DeviceMesh` can help make this process much easier.
 
