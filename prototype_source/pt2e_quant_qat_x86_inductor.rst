@@ -11,11 +11,10 @@ Prerequisites
 -  `TorchInductor and torch.compile concepts in PyTorch <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
 
 
-This tutorial demonstrates the process of performing PT2 export quantization-aware training (QAT) on X86 CPU
-with X86InductorQuantizer, and subsequently lowering the quantized model into Inductor.
-For more comprehensive details about PyTorch 2 Export Quantization-Aware Training in general, please refer to the
-dedicated tutorial on `PyTorch 2 Export Quantization-Aware Training <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`_.
-For a deeper understanding of X86InductorQuantizer, please consult the tutorial of
+This tutorial demonstrates the process of performing PT2 export Quantization-Aware Training (QAT) on X86 CPU
+using X86InductorQuantizer and subsequently lowering the quantized model into Inductor.
+For a more in-depth understanding of PT2 Export Quantization-Aware Training, we recommend referring to the dedicated `PyTorch 2 Export Quantization-Aware Training <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`_.
+To gain a deeper insight into X86InductorQuantizer, please see the tutorial of
 `PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`_.
 
 The PyTorch 2 Export QAT flow looks like the following—it is similar
