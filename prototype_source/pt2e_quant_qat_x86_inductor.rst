@@ -68,7 +68,7 @@ to the post-training quantization (PTQ) flow for the most part:
     optimized_model = torch.compile(converted_model)
     _ = optimized_model(*example_inputs)
 
-Please note that since the Inductor ``freeze`` feature does not turn on by default yet, need to run example code with ``TORCHINDUCTOR_FREEZING=1``.
+Please note that the Inductor ``freeze`` feature is not enabled by default. To use this feature, you need to run example code with ``TORCHINDUCTOR_FREEZING=1``.
 
 For example:
 
