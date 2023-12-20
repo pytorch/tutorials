@@ -163,8 +163,11 @@ After these steps, we finished running the quantization flow and we will get the
 ------------------------
 
 After we get the quantized model, we will further lower it to the inductor backend. The default Inductor wrapper
-generates Python code to invoke both generated kernels and external kernels. Additionally, Inductor supports a C++ wrapper
-that generates pure C++ code, seamlessly combining the generated and external kernels.
+generates Python code to invoke both generated kernels and external kernels. Additionally, Inductor supports
+C++ wrapper that generates pure C++ code. This allows seamless integration of the generated and external kernels,
+effectively reducing Python overhead. In the future, leveraging the C++ wrapper, we can extend the capability
+to achieve pure C++ deployment. For more comprehensive details about C++ Wrapper in general, please refer to the
+dedicated tutorial on `Inductor C++ Wrapper Tutorial <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`_.
 
 ::
 
