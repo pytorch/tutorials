@@ -18,7 +18,7 @@ To gain a deeper insight into X86InductorQuantizer, please see the tutorial of
 `PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`_.
 
 The PyTorch 2 Export QAT flow is largely similar to the
-to the post training quantization (PTQ) flow for the most part:
+to the post-training quantization (PTQ) flow for the most part:
 
 .. code:: python
 
