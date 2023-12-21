@@ -474,7 +474,7 @@ prof.stop()
 # - Copy the ``trace.json`` file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
 # You may need to copy the file by using ``scp`` if the file is located in a remote location. 
 # 
-# - Click **Load** button to load the trace json file from the ``chrome://tracing`` page in the browser. 
+# - Click **Load** button to load the trace JSON file from the ``chrome://tracing`` page in the browser. 
 #
 # .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
 #    :scale: 25 %
