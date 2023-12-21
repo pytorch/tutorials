@@ -446,7 +446,7 @@ prof.stop()
 #     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
 #
 #
-# - Install the ``torch_tb_profiler`` and then, run the Python file ``test_cifar10.py``:
+# - Install the ``torch_tb_profiler``, and then, run the Python file ``test_cifar10.py``:
 # 
 # .. code-block::
 #
@@ -461,45 +461,6 @@ prof.stop()
 #
 #      tensorboard --logdir=./log
 #
-
-######################################################################
-# If you experience the problem ``ValueError: Duplicate plugins for name projector`` like below:
-#
-# .. code-block::
-# 
-# I1115 15:23:49.014848 139961617598208 loader.py:57] started all processing
-# Traceback (most recent call last):
-#   File "/opt/conda/envs/py_3.8/bin/tensorboard", line 8, in <module>
-#     sys.exit(run_main())
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/main.py", line 46, in run_main
-#     app.run(tensorboard.main, flags_parser=tensorboard.configure)
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/absl/app.py", line 308, in run
-#     _run_main(main, args)
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/absl/app.py", line 254, in _run_main
-#     sys.exit(main(argv))
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 276, in main
-#     return runner(self.flags) or 0
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 292, in _run_serve_subcommand
-#     server = self._make_server()
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/program.py", line 467, in _make_server
-#     app = application.TensorBoardWSGIApp(
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/backend/application.py", line 139, in TensorBoardWSGIApp
-#     return TensorBoardWSGI(
-#   File "/opt/conda/envs/py_3.8/lib/python3.8/site-packages/tensorboard/backend/application.py", line 252, in __init__
-#     raise ValueError(
-# ValueError: Duplicate plugins for name projector
-
-
-######################################################################
-# You can reinstall ``tensorboard`` using the below steps:
-# 
-# .. code-block::
-#
-#     pip uninstall tb-nightly tensorboardX tensorboard -y
-#     pip install tensorboard
-#
-#
-# Then, run the ``tensorboard --logdir=./log`` again. 
 # Choose different views as described in **Step 4**. For example, below is the **Operator** View:
 #
 # .. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
