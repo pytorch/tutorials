@@ -324,11 +324,11 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_optim_torchscript.html
    :tags: Distributed-Training,TorchScript
 
-   .. customcarditem::
+.. customcarditem::
    :header: Getting Started with Distributed Checkpoint (DCP)
    :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
    :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
-   :link: ../recipes/DCP_tutorial.html
+   :link: ../recipes/distributed_checkpoint_recipe.html
    :tags: Distributed-Training
 
 .. TorchServe
