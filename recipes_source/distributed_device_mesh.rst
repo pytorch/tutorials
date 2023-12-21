@@ -13,7 +13,7 @@ Prerequisites:
 - PyTorch 2.2
 
 
-Setting up distributed communicators, i.e. NVIDIA Collective Communication Library (NCCL) communicators for distributed training can pose a significant challenge. For workloads where users need to compose different parallelisms,
+Setting up distributed communicators, i.e. NVIDIA Collective Communication Library (NCCL) communicators, for distributed training can pose a significant challenge. For workloads where users need to compose different parallelisms,
 users would need to manually set up and manage NCCL communicators (for example, :class:`ProcessGroup`) for each parallelism solutions. This process could be complicated and susceptible to errors.
 :class:`DeviceMesh` can simplify this process, making it more manageable and less prone to errors.
 
