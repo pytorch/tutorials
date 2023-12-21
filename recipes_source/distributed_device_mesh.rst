@@ -30,10 +30,10 @@ Users can also easily manage the underlying process_groups/devices for multi-dim
 
 Why DeviceMesh is Useful
 ------------------------
-DeviceMesh is useful, when composability is requried. That is when your parallelism solutions require both communication across hosts and within each host.
+DeviceMesh is useful when working with multi-dimensional parallelism (i.e. 3-D parallel) where parallelism composability is requried. For example, when your parallelism solutions require both communication across hosts and within each host.
 The image above shows that we can create a 2D mesh that connects the devices within each host, and connects each device with its counterpart on the other hosts in a homogenous setup.
 
-Without DeviceMesh, users would need to manually set up NCCL communicators before applying any parallelism.
+Without DeviceMesh, users would need to manually set up NCCL communicators, cuda devices on each process before applying any parallelism, which could be quite complicated.
 The following code snippet illustrates a hybrid sharding 2-D Parallel pattern setup without :class:`DeviceMesh`.
 First, we need to manually calculate the shard group and replicate group. Then, we need to assign the correct shard and
 replicate group to each rank.
@@ -51,6 +51,7 @@ replicate group to each rank.
 
     # Create process groups to manage 2-D like parallel pattern
     dist.init_process_group("nccl")
+    torch.cuda.set_device(rank)
 
     # Create shard groups (e.g. (0, 1, 2, 3), (4, 5, 6, 7))
     # and assign the correct shard group to each rank
@@ -78,11 +79,10 @@ To run the above code snippet, we can leverage PyTorch Elastic. Let's create a f
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
-    torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_endpoint=localhost:29400 2d_setup.py
+    torchrun --nproc_per_node=8 --rdzv_id=100 --rdzv_endpoint=localhost:29400 2d_setup.py
 
-Note
-
-For simplicity of demonstration, we are simulating 2D parallel using only one node. Note that this code snippet can also be used when running on multi hosts setup.
+.. note::
+    For simplicity of demonstration, we are simulating 2D parallel using only one node. Note that this code snippet can also be used when running on multi hosts setup.
 
 With the help of :func:`init_device_mesh`, we can accomplish the above 2D setup in just two lines, and we can still
 access the underlying :class:`ProcessGroup` if needed.
@@ -100,7 +100,7 @@ Let's create a file named ``2d_setup_with_device_mesh.py``.
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
-    torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_endpoint=localhost:29400 2d_setup_with_device_mesh.py
+    torchrun --nproc_per_node=8 2d_setup_with_device_mesh.py
 
 
 How to use DeviceMesh with HSDP
@@ -108,7 +108,7 @@ How to use DeviceMesh with HSDP
 
 Hybrid Sharding Data Parallel(HSDP) is 2D strategy to perform FSDP within a host and DDP across hosts.
 
-Let's see an example of how DeviceMesh can assist with applying HSDP to your model. With DeviceMesh,
+Let's see an example of how DeviceMesh can assist with applying HSDP to your model with a simple setup. With DeviceMesh,
 users would not need to manually create and manage shard group and replicate group.
 
 .. code-block:: python
@@ -140,7 +140,7 @@ Let's create a file named ``hsdp.py``.
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
-    torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_endpoint=localhost:29400  hsdp.py
+    torchrun --nproc_per_node=8 hsdp.py
 
 Conclusion
 ----------

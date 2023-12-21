@@ -297,6 +297,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Distributed Training
 
 .. customcarditem::
+   :header: Getting Started with DeviceMesh
+   :card_description: Learn how to use DeviceMesh
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_device_mesh.html
+   :tags: Distributed-Training
+
+.. customcarditem::
    :header: Shard Optimizer States with ZeroRedundancyOptimizer
    :card_description: How to use ZeroRedundancyOptimizer to reduce memory consumption.
    :image: ../_static/img/thumbnails/cropped/profiler.png
@@ -322,13 +329,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
    :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
    :link: ../recipes/DCP_tutorial.html
-   :tags: Distributed-Training
-
-   .. customcarditem::
-   :header: Getting Started with DeviceMesh
-   :card_description: Learn how to use DeviceMesh
-   :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/distributed_device_mesh.html
    :tags: Distributed-Training
 
 .. TorchServe
