@@ -96,7 +96,7 @@ Learn DeviceMesh
         :link: https://pytorch.org/tutorials/recipes/distributed_device_mesh.html?highlight=devicemesh
         :link-type: url
 
-        In this tutorial you will learn to about `DeviceMesh`
+        In this tutorial you will learn about `DeviceMesh`
         and how it can help with distributed training.
         +++
         :octicon:`code;1em` Code
