@@ -9,7 +9,7 @@ Getting Started with DeviceMesh
 Prerequisites:
 
 - `Distributed Communication Package - torch.distributed <https://pytorch.org/docs/stable/distributed.html>`__
-- Python
+- Python 3.8 - 3.11
 - PyTorch 2.2
 
 
