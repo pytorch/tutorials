@@ -39,6 +39,7 @@ First, we need to manually calculate the shard group and replicate group. Then, 
 replicate group to each rank.
 
 .. code-block:: python
+
     import os
 
     import torch
@@ -79,6 +80,7 @@ To run the above code snippet, we can leverage PyTorch Elastic. Let's create a f
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
+
     torchrun --nproc_per_node=8 --rdzv_id=100 --rdzv_endpoint=localhost:29400 2d_setup.py
 
 .. note::
@@ -89,6 +91,7 @@ access the underlying :class:`ProcessGroup` if needed.
 
 
 .. code-block:: python
+
     from torch.distributed.device_mesh import init_device_mesh
     mesh_2d = init_device_mesh("cuda", (2, 4), mesh_dim_names=("replicate", "shard"))
 
@@ -100,6 +103,7 @@ Let's create a file named ``2d_setup_with_device_mesh.py``.
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
+
     torchrun --nproc_per_node=8 2d_setup_with_device_mesh.py
 
 
@@ -112,6 +116,7 @@ Let's see an example of how DeviceMesh can assist with applying HSDP to your mod
 users would not need to manually create and manage shard group and replicate group.
 
 .. code-block:: python
+
     import torch
     import torch.nn as nn
 
@@ -140,6 +145,7 @@ Let's create a file named ``hsdp.py``.
 Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command.
 
 .. code-block:: python
+
     torchrun --nproc_per_node=8 hsdp.py
 
 Conclusion
