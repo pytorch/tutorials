@@ -41,7 +41,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 
    pip install torch torchvision
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-45
+.. GENERATED FROM PYTHON SOURCE LINES 30-46
 
 Steps
 -----
@@ -52,6 +52,7 @@ Steps
 4. Use TensorBoard to view results and analyze model performance
 5. Improve performance with the help of profiler
 6. Analyze performance with other advanced features
+7. Additional Practices: Profiling PyTorch on AMD GPUs 
 
 1. Prepare the data and model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +60,7 @@ Steps
 First, import all necessary libraries:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-55
+.. GENERATED FROM PYTHON SOURCE LINES 46-56
 
 .. code-block:: default
 
@@ -74,12 +75,12 @@ First, import all necessary libraries:
     import torchvision.transforms as T
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-58
+.. GENERATED FROM PYTHON SOURCE LINES 57-59
 
 Then prepare the input data. For this tutorial, we use the CIFAR10 dataset.
 Transform it to the desired format and use ``DataLoader`` to load each batch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-66
+.. GENERATED FROM PYTHON SOURCE LINES 59-67
 
 .. code-block:: default
 
@@ -92,12 +93,12 @@ Transform it to the desired format and use ``DataLoader`` to load each batch.
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 68-70
 
 Next, create Resnet model, loss function, and optimizer objects.
 To run on GPU, move model and loss to GPU device.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-77
+.. GENERATED FROM PYTHON SOURCE LINES 70-78
 
 .. code-block:: default
 
@@ -110,11 +111,11 @@ To run on GPU, move model and loss to GPU device.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-79
+.. GENERATED FROM PYTHON SOURCE LINES 79-80
 
 Define the training step for each batch of input data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-89
+.. GENERATED FROM PYTHON SOURCE LINES 80-90
 
 .. code-block:: default
 
@@ -129,7 +130,7 @@ Define the training step for each batch of input data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-121
+.. GENERATED FROM PYTHON SOURCE LINES 91-122
 
 2. Use profiler to record execution events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,7 +164,7 @@ some of the most useful are:
   If the TensorBoard is launched in VS Code (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
   clicking a stack frame will navigate to the specific code line.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-135
+.. GENERATED FROM PYTHON SOURCE LINES 122-136
 
 .. code-block:: default
 
@@ -182,11 +183,11 @@ some of the most useful are:
             train(batch_data)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-137
+.. GENERATED FROM PYTHON SOURCE LINES 137-138
 
 Alternatively, the following non-context manager start/stop is supported as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-150
+.. GENERATED FROM PYTHON SOURCE LINES 138-151
 
 .. code-block:: default
 
@@ -204,14 +205,14 @@ Alternatively, the following non-context manager start/stop is supported as well
     prof.stop()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-155
+.. GENERATED FROM PYTHON SOURCE LINES 152-156
 
 3. Run the profiler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the above code. The profiling result will be saved under ``./log/resnet18`` directory.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-171
+.. GENERATED FROM PYTHON SOURCE LINES 159-172
 
 4. Use TensorBoard to view results and analyze model performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -227,7 +228,7 @@ Install PyTorch Profiler TensorBoard Plugin.
     pip install torch_tb_profiler
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-179
+.. GENERATED FROM PYTHON SOURCE LINES 174-180
 
 Launch the TensorBoard.
 
@@ -236,7 +237,7 @@ Launch the TensorBoard.
     tensorboard --logdir=./log
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-187
+.. GENERATED FROM PYTHON SOURCE LINES 182-188
 
 Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser (**Safari is not supported**).
 
@@ -245,7 +246,7 @@ Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge brow
     http://localhost:6006/#pytorch_profiler
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 189-280
+.. GENERATED FROM PYTHON SOURCE LINES 190-281
 
 You could see Profiler plugin page as shown below.
 
@@ -339,7 +340,7 @@ And during most of this period, the GPU is idle.
 Because this function is loading data and transforming data on host side,
 during which the GPU resource is wasted.
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-298
+.. GENERATED FROM PYTHON SOURCE LINES 284-299
 
 5. Improve performance with the help of profiler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -357,7 +358,7 @@ pass a different name such as ``./log/resnet18_4workers`` to ``tensorboard_trace
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-313
+.. GENERATED FROM PYTHON SOURCE LINES 301-314
 
 Then let’s choose the recently profiled run in left "Runs" dropdown list.
 
@@ -373,7 +374,7 @@ and the time reduction of ``DataLoader`` mainly contributes.
 From the above view, we can see that the runtime of ``enumerate(DataLoader)`` is reduced,
 and the GPU utilization is increased.
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-394
+.. GENERATED FROM PYTHON SOURCE LINES 316-395
 
 6. Analyze performance with other advanced features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -455,7 +456,102 @@ this worker may be a straggler which may have more computation workload than oth
 
 The "Communication Operations Stats" summarizes the detailed statistics of all communication ops in each worker.
 
-.. GENERATED FROM PYTHON SOURCE LINES 396-405
+.. GENERATED FROM PYTHON SOURCE LINES 397-404
+
+7. Additional Practices: Profiling PyTorch on AMD GPUs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
+We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base development image
+before installing PyTorch.
+
+.. GENERATED FROM PYTHON SOURCE LINES 407-414
+
+For the purpose of example, let's create a directory called ``profiler_tutorial``, and save the code in **Step 1** as ``test_cifar10.py`` in this directory. 
+
+.. code-block::
+
+     mkdir ~/profiler_tutorial
+     cd profiler_tutorial
+     vi test_cifar10.py
+
+.. GENERATED FROM PYTHON SOURCE LINES 417-468
+
+At the time of this writing, the Stable(``2.1.1``) Linux version of PyTorch on ROCm Platform is `ROCm 5.6 <https://pytorch.org/get-started/locally/>`_. 
+
+
+- Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`_.
+
+It is ``rocm/dev-ubuntu-20.04:5.6``.
+
+- Start the ROCm base Docker container:
+
+
+.. code-block::
+
+    docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
+
+
+- Inside the container, install any dependencies needed for installing the wheels package.
+
+.. code-block::
+
+    sudo apt update
+    sudo apt install libjpeg-dev python3-dev -y
+    pip3 install wheel setuptools
+    sudo apt install python-is-python3 
+
+
+- Install the wheels:
+
+.. code-block::
+
+    pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+
+
+- Install the ``torch_tb_profiler``, and then, run the Python file ``test_cifar10.py``:
+
+.. code-block::
+
+    pip install torch_tb_profiler
+    cd /profiler_tutorial
+    python test_cifar10.py
+
+
+Now, we have all the data needed to view in TensorBoard:
+
+.. code-block::
+
+     tensorboard --logdir=./log
+
+Choose different views as described in **Step 4**. For example, below is the **Operator** View:
+
+.. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
+   :scale: 25 %
+
+.. GENERATED FROM PYTHON SOURCE LINES 471-481
+
+At the time this section is written, **Trace** view does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
+
+
+- Copy the ``trace.json`` file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+You may need to copy the file by using ``scp`` if the file is located in a remote location. 
+
+- Click **Load** button to load the trace JSON file from the ``chrome://tracing`` page in the browser. 
+
+.. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
+   :scale: 25 %
+
+.. GENERATED FROM PYTHON SOURCE LINES 484-489
+
+As mentioned previously, you can move the graph and zoom in and out.
+You can also use keyboard to zoom and move around inside the timeline.
+The ``w`` and ``s`` keys zoom in centered around the mouse,
+and the ``a`` and ``d`` keys move the timeline left and right.
+You can hit these keys multiple times until you see a readable representation.
+
+.. GENERATED FROM PYTHON SOURCE LINES 493-502
 
 Learn More
 ----------

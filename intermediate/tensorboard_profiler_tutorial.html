@@ -461,6 +461,7 @@ use TensorBoard plugin to analyze model performance.</p>
 <li><p>Use TensorBoard to view results and analyze model performance</p></li>
 <li><p>Improve performance with the help of profiler</p></li>
 <li><p>Analyze performance with other advanced features</p></li>
+<li><p>Additional Practices: Profiling PyTorch on AMD GPUs</p></li>
 </ol>
 <div class="section" id="prepare-the-data-and-model">
 <h3>1. Prepare the data and model<a class="headerlink" href="#prepare-the-data-and-model" title="Permalink to this heading">¶</a></h3>
@@ -735,6 +736,72 @@ there may be a problem of load balance or this worker may be a straggler.</p>
 this worker may be a straggler which may have more computation workload than other workers’.</p>
 <p>The “Communication Operations Stats” summarizes the detailed statistics of all communication ops in each worker.</p>
 </div>
+<div class="section" id="additional-practices-profiling-pytorch-on-amd-gpus">
+<h3>7. Additional Practices: Profiling PyTorch on AMD GPUs<a class="headerlink" href="#additional-practices-profiling-pytorch-on-amd-gpus" title="Permalink to this heading">¶</a></h3>
+<p>The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs.
+We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base development image
+before installing PyTorch.</p>
+<p>For the purpose of example, let’s create a directory called <code class="docutils literal notranslate"><span class="pre">profiler_tutorial</span></code>, and save the code in <strong>Step 1</strong> as <code class="docutils literal notranslate"><span class="pre">test_cifar10.py</span></code> in this directory.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">profiler_tutorial</span>
+<span class="n">cd</span> <span class="n">profiler_tutorial</span>
+<span class="n">vi</span> <span class="n">test_cifar10</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>At the time of this writing, the Stable(<code class="docutils literal notranslate"><span class="pre">2.1.1</span></code>) Linux version of PyTorch on ROCm Platform is <a class="reference external" href="https://pytorch.org/get-started/locally/">ROCm 5.6</a>.</p>
+<ul class="simple">
+<li><p>Obtain a base Docker image with the correct user-space ROCm version installed from <a class="reference external" href="https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04">Docker Hub</a>.</p></li>
+</ul>
+<p>It is <code class="docutils literal notranslate"><span class="pre">rocm/dev-ubuntu-20.04:5.6</span></code>.</p>
+<ul class="simple">
+<li><p>Start the ROCm base Docker container:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">network</span><span class="o">=</span><span class="n">host</span> <span class="o">--</span><span class="n">device</span><span class="o">=/</span><span class="n">dev</span><span class="o">/</span><span class="n">kfd</span> <span class="o">--</span><span class="n">device</span><span class="o">=/</span><span class="n">dev</span><span class="o">/</span><span class="n">dri</span> <span class="o">--</span><span class="n">group</span><span class="o">-</span><span class="n">add</span><span class="o">=</span><span class="n">video</span> <span class="o">--</span><span class="n">ipc</span><span class="o">=</span><span class="n">host</span> <span class="o">--</span><span class="n">cap</span><span class="o">-</span><span class="n">add</span><span class="o">=</span><span class="n">SYS_PTRACE</span> <span class="o">--</span><span class="n">security</span><span class="o">-</span><span class="n">opt</span> <span class="n">seccomp</span><span class="o">=</span><span class="n">unconfined</span> <span class="o">--</span><span class="n">shm</span><span class="o">-</span><span class="n">size</span> <span class="mi">8</span><span class="n">G</span> <span class="o">-</span><span class="n">v</span> <span class="o">~/</span><span class="n">profiler_tutorial</span><span class="p">:</span><span class="o">/</span><span class="n">profiler_tutorial</span> <span class="n">rocm</span><span class="o">/</span><span class="n">dev</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="mf">20.04</span><span class="p">:</span><span class="mf">5.6</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Inside the container, install any dependencies needed for installing the wheels package.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">dev</span> <span class="o">-</span><span class="n">y</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">wheel</span> <span class="n">setuptools</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="ow">is</span><span class="o">-</span><span class="n">python3</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Install the wheels:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">rocm5</span><span class="mf">.6</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Install the <code class="docutils literal notranslate"><span class="pre">torch_tb_profiler</span></code>, and then, run the Python file <code class="docutils literal notranslate"><span class="pre">test_cifar10.py</span></code>:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch_tb_profiler</span>
+<span class="n">cd</span> <span class="o">/</span><span class="n">profiler_tutorial</span>
+<span class="n">python</span> <span class="n">test_cifar10</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Now, we have all the data needed to view in TensorBoard:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=./</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>Choose different views as described in <strong>Step 4</strong>. For example, below is the <strong>Operator</strong> View:</p>
+<a class="reference internal image-reference" href="../_static/img/profiler_rocm_tensorboard_operartor_view.png"><img alt="../_static/img/profiler_rocm_tensorboard_operartor_view.png" src="../_static/img/profiler_rocm_tensorboard_operartor_view.png"/></a>
+<p>At the time this section is written, <strong>Trace</strong> view does not work and it displays nothing. You can work around by typing <code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code> in your Chrome Browser.</p>
+<ul class="simple">
+<li><p>Copy the <code class="docutils literal notranslate"><span class="pre">trace.json</span></code> file under <code class="docutils literal notranslate"><span class="pre">~/profiler_tutorial/log/resnet18</span></code> directory to the Windows.</p></li>
+</ul>
+<p>You may need to copy the file by using <code class="docutils literal notranslate"><span class="pre">scp</span></code> if the file is located in a remote location.</p>
+<ul class="simple">
+<li><p>Click <strong>Load</strong> button to load the trace JSON file from the <code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code> page in the browser.</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_static/img/profiler_rocm_chrome_trace_view.png"><img alt="../_static/img/profiler_rocm_chrome_trace_view.png" src="../_static/img/profiler_rocm_chrome_trace_view.png"/></a>
+<p>As mentioned previously, you can move the graph and zoom in and out.
+You can also use keyboard to zoom and move around inside the timeline.
+The <code class="docutils literal notranslate"><span class="pre">w</span></code> and <code class="docutils literal notranslate"><span class="pre">s</span></code> keys zoom in centered around the mouse,
+and the <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">d</span></code> keys move the timeline left and right.
+You can hit these keys multiple times until you see a readable representation.</p>
+</div>
 </div>
 <div class="section" id="learn-more">
 <h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
@@ -809,6 +876,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#use-tensorboard-to-view-results-and-analyze-model-performance">4. Use TensorBoard to view results and analyze model performance</a></li>
 <li><a class="reference internal" href="#improve-performance-with-the-help-of-profiler">5. Improve performance with the help of profiler</a></li>
 <li><a class="reference internal" href="#analyze-performance-with-other-advanced-features">6. Analyze performance with other advanced features</a></li>
+<li><a class="reference internal" href="#additional-practices-profiling-pytorch-on-amd-gpus">7. Additional Practices: Profiling PyTorch on AMD GPUs</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#learn-more">Learn More</a></li>
