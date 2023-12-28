@@ -34,8 +34,8 @@ The `TraceDiff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.h
 #. `visualize_duration_diff
    <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.visualize_duration_diff>`_
 
-The last two methods can be used to visualize various changes in counts and
-durations of CPU operators and GPU kernels using the output of the
+The last two methods can be used to visualize various changes in frequency and
+duration of CPU operators and GPU kernels, using the output of the
 ``compare_traces`` method.
 
 E.g. The top 10 operators with increase in frequency can be computed as
@@ -63,5 +63,5 @@ follows:
 
 For a detailed example of this feature see the `trace_diff_demo notebook
 <https://github.com/facebookresearch/HolisticTraceAnalysis/blob/main/examples/trace_diff_demo.ipynb>`_
-in the examples folder of the repo.
+in the examples folder of the repository.
 
