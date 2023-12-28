@@ -387,7 +387,13 @@ What's new in PyTorch tutorials?
 .. customcarditem::
    :header: Profiling PyTorch
    :card_description: Introduction to Holistic Trace Analysis
-   :link: beginner/hta_intro.html
+   :link: beginner/hta_intro_tutorial.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Trace Diff using Holistic Trace Analysis
+   :link: beginner/hta_trace_diff_tutorial.html
    :tags: Profiling
 
 .. Code Transformations with FX
@@ -1011,7 +1017,8 @@ Additional Resources
    :caption: Profiling PyTorch
 
    beginner/profiler
-   beginner/hta_intro
+   beginner/hta_intro_tutorial
+   beginner/hta_trace_diff_tutorial
 
 .. toctree::
    :maxdepth: 2
