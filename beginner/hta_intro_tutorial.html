@@ -1,0 +1,1132 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Introduction to Holistic Trace Analysis — PyTorch Tutorials 2.2.0+cu121 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="hta_trace_diff_tutorial.html" rel="next" title="Trace Diff using Holistic Trace Analysis"/>
+<link href="profiler.html" rel="prev" title="Profiling your PyTorch Module"/>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Edge
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/edge">
+<span class="dropdown-title">About PyTorch Edge</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch">
+<span class="dropdown-title">ExecuTorch</span>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+<span class="dropdown-title">torchaudio</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+<span class="dropdown-title">torchtext</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+<span class="dropdown-title">torchvision</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torcharrow">
+<span class="dropdown-title">torcharrow</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/data">
+<span class="dropdown-title">TorchData</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchrec">
+<span class="dropdown-title">TorchRec</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+<span class="dropdown-title">TorchServe</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchx/">
+<span class="dropdown-title">TorchX</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+<span class="dropdown-title">PyTorch on XLA Devices</span>
+<p></p>
+</a>
+</div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Resources
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/features">
+<span class="dropdown-title">About</span>
+<p>Learn about PyTorch’s features and capabilities</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+<p>Learn about the PyTorch foundation</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-stories">
+<span class="dropdown-title">Community Stories</span>
+<p>Learn how our community solves real, everyday machine learning problems with PyTorch.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+<p>Find events, webinars, and podcasts</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/hub">
+<span class="dropdown-title">Models (Beta)</span>
+<p>Discover, publish, and reuse pre-trained models</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  2.2.0+cu121
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tiatoolbox_tutorial.html">Whole Slide Image Classification Using PyTorch and TIAToolbox</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="transformer_tutorial.html">Language Modeling with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Backends</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onnx/intro_onnx.html">Introduction to ONNX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_ppo.html">Reinforcement Learning (PPO) with TorchRL Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/pendulum.html">Pendulum: Writing your environment and transforms with TorchRL</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onnx/intro_onnx.html">Introduction to ONNX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to Holistic Trace Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hta_trace_diff_tutorial.html">Trace Diff using Holistic Trace Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flava_finetuning_tutorial.html">TorchMultimodal Tutorial: Finetuning FLAVA</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Introduction to Holistic Trace Analysis</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/beginner/hta_intro_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">beginner/hta_intro_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</img></div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="section" id="introduction-to-holistic-trace-analysis">
+<h1>Introduction to Holistic Trace Analysis<a class="headerlink" href="#introduction-to-holistic-trace-analysis" title="Permalink to this heading">¶</a></h1>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/anupambhatnagar">Anupam Bhatnagar</a></p>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
+<p>In this tutorial we demonstrate how to use Holistic Trace Analysis (HTA) to
+analyze traces from a distributed training job. To get started follow the steps
+below:</p>
+<div class="section" id="installing-hta">
+<h3>Installing HTA<a class="headerlink" href="#installing-hta" title="Permalink to this heading">¶</a></h3>
+<p>We recommend using a Conda environment to install HTA. To install Anaconda, see
+<a class="reference external" href="https://docs.anaconda.com/anaconda/install/index.html">here</a>.</p>
+<ol class="arabic simple">
+<li><p>Install HTA using pip</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">HolisticTraceAnalysis</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>[Optional and recommended] Setup a conda environment</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the environment env_name</span>
+<span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env_name</span>
+
+<span class="c1"># activate the environment</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">env_name</span>
+
+<span class="c1"># deactivate the environment</span>
+<span class="n">conda</span> <span class="n">deactivate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="getting-started">
+<h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h3>
+<p>Launch a jupyter notebook and set the <code class="docutils literal notranslate"><span class="pre">trace_dir</span></code> variable to the location of the traces.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hta.trace_analysis</span> <span class="kn">import</span> <span class="n">TraceAnalysis</span>
+<span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/folder/with/traces"</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span><span class="o">=</span><span class="n">trace_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="temporal-breakdown">
+<h2>Temporal Breakdown<a class="headerlink" href="#temporal-breakdown" title="Permalink to this heading">¶</a></h2>
+<p>To best utilize the GPUs it is vital to understand where the GPU is spending
+time for a given job. Is the GPU spending time on computation, communication,
+memory events, or is it idle? The temporal breakdown feature breaks down the
+time spent in three categories</p>
+<ol class="arabic simple">
+<li><p>Idle time - GPU is idle.</p></li>
+<li><p>Compute time - GPU is being used for matrix multiplications or vector operations.</p></li>
+<li><p>Non-compute time - GPU is being used for communication or memory events.</p></li>
+</ol>
+<p>To achieve high training efficiency the code should maximize compute time and
+minimize idle time and non-compute time. The function below returns
+a dataframe containing the temporal breakdown for each rank.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
+<span class="n">time_spent_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_temporal_breakdown</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/temporal_breakdown_df.png" src="../_images/temporal_breakdown_df.png"/>
+<p>When the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> argument is set to True in the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_temporal_breakdown">get_temporal_breakdown</a>
+function it also generates a bar graph representing the breakdown by rank.</p>
+<img alt="../_images/temporal_breakdown_plot.png" src="../_images/temporal_breakdown_plot.png"/>
+</div>
+<div class="section" id="idle-time-breakdown">
+<h2>Idle Time Breakdown<a class="headerlink" href="#idle-time-breakdown" title="Permalink to this heading">¶</a></h2>
+<p>Understanding how much time the GPU is idle and its causes can help direct
+optimization strategies. A GPU is considered idle when no kernel is running on
+it. We developed an algorithm to categorize the Idle time into 3 categories:</p>
+<ol class="arabic simple">
+<li><p>Host wait: is the idle duration on the GPU due to the CPU not enqueuing
+kernels fast enough to keep the GPU busy. These kinds of inefficiencies can
+be resolved by examining the CPU operators that are contributing to the slow
+down, increasing the batch size and applying operator fusion.</p></li>
+<li><p>Kernel wait: constitutes the short overhead to launch consecutive kernels on
+the GPU. The idle time attributed to this category can be minimized by using
+CUDA Graph optimizations.</p></li>
+<li><p>Other wait: Lastly, this category includes idle we could not currently
+attribute due to insufficient information. The likely causes include
+synchronization among CUDA streams using CUDA events and delays in launching
+kernels.</p></li>
+</ol>
+<p>The host wait time can be interpreted as the time when the GPU is stalling due
+to the CPU. To attribute the idle time as kernel wait we use the following
+heuristic:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><strong>gap between consecutive kernels &lt; threshold</strong></div>
+</div>
+</div></blockquote>
+<p>The default threshold value is 30 nanoseconds and can be configured using the
+<code class="docutils literal notranslate"><span class="pre">consecutive_kernel_delay</span></code> argument. By default, the idle time breakdown is
+computed for rank 0 only. In order to calculate the breakdown for other ranks,
+use the <code class="docutils literal notranslate"><span class="pre">ranks</span></code> argument in the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_idle_time_breakdown">get_idle_time_breakdown</a>
+function. The idle time breakdown can be generated as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
+<span class="n">idle_time_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_idle_time_breakdown</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/idle_time_breakdown_percentage.png" src="../_images/idle_time_breakdown_percentage.png"/>
+<p>The function returns a tuple of dataframes. The first dataframe contains the
+idle time by category on each stream for each rank.</p>
+<a class="reference internal image-reference" href="../_images/idle_time.png"><img alt="../_images/idle_time.png" class="align-center" src="../_images/idle_time.png" style="width: 380.0px; height: 466.0px;"/></a>
+<p>The second dataframe is generated when <code class="docutils literal notranslate"><span class="pre">show_idle_interval_stats</span></code> is set to
+<code class="docutils literal notranslate"><span class="pre">True</span></code>. It contains the summary statistics of the idle time for each stream
+on each rank.</p>
+<a class="reference internal image-reference" href="../_images/idle_time_summary.png"><img alt="../_images/idle_time_summary.png" src="../_images/idle_time_summary.png" style="width: 703.0px; height: 504.0px;"/></a>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>By default, the idle time breakdown presents the percentage of each of the
+idle time categories. Setting the <code class="docutils literal notranslate"><span class="pre">visualize_pctg</span></code> argument to <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+the function renders with absolute time on the y-axis.</p>
+</div>
+</div>
+<div class="section" id="kernel-breakdown">
+<h2>Kernel Breakdown<a class="headerlink" href="#kernel-breakdown" title="Permalink to this heading">¶</a></h2>
+<p>The kernel breakdown feature breaks down the time spent for each kernel type
+i.e. communication (COMM), computation (COMP), and memory (MEM) across all
+ranks and presents the proportion of time spent in each category. The
+percentage of time spent in each category as a pie chart.</p>
+<img alt="../_images/kernel_type_breakdown.png" class="align-center" src="../_images/kernel_type_breakdown.png"/>
+<p>The kernel breakdown can be calculated as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
+<span class="n">kernel_type_metrics_df</span><span class="p">,</span> <span class="n">kernel_metrics_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_gpu_kernel_breakdown</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The first dataframe returned by the function contains the raw values used to
+generate the Pie chart.</p>
+<div class="section" id="kernel-duration-distribution">
+<h3>Kernel Duration Distribution<a class="headerlink" href="#kernel-duration-distribution" title="Permalink to this heading">¶</a></h3>
+<p>The second dataframe returned by <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_gpu_kernel_breakdown">get_gpu_kernel_breakdown</a>
+contains duration summary statistics for each kernel. In particular, this
+includes the count, min, max, average, standard deviation, sum and kernel type
+for each kernel on each rank.</p>
+<img alt="../_images/kernel_metrics_df.png" class="align-center" src="../_images/kernel_metrics_df.png"/>
+<p>Using this data HTA creates many visualizations to identify performance
+bottlenecks.</p>
+<ol class="arabic simple">
+<li><p>Pie charts of the top kernels for each kernel type for each rank.</p></li>
+<li><p>Bar graphs of the average duration across all ranks for each of the top
+kernels and for each kernel type.</p></li>
+</ol>
+<img alt="../_images/pie_charts.png" src="../_images/pie_charts.png"/>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>All images are generated using plotly. Hovering on the graph shows the
+mode bar on the top right which allows the user to zoom, pan, select and
+download the graph.</p>
+</div>
+<p>The pie charts above shows the top 5 computation, communication and memory
+kernels. Similar pie charts are generated for each rank. The pie charts can be
+configured to show the top k kernels using the <code class="docutils literal notranslate"><span class="pre">num_kernels</span></code> argument passed
+to the <cite>get_gpu_kernel_breakdown</cite> function. Additionally, the
+<code class="docutils literal notranslate"><span class="pre">duration_ratio</span></code> argument can be used to tune the percentage of time that
+needs to be analyzed. If both <code class="docutils literal notranslate"><span class="pre">num_kernels</span></code> and <code class="docutils literal notranslate"><span class="pre">duration_ratio</span></code> are
+specified, then <code class="docutils literal notranslate"><span class="pre">num_kernels</span></code> takes precedence.</p>
+<img alt="../_images/comm_across_ranks.png" src="../_images/comm_across_ranks.png"/>
+<p>The bar graph above shows the average duration of the NCCL AllReduce kernel
+across all the ranks. The black lines indicate the minimum and maximum time
+taken on each rank.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When using jupyter-lab set the “image_renderer” argument value to
+“jupyterlab” otherwise the graphs will not render in the notebook.</p>
+</div>
+<p>For a detailed walkthrough of this feature see the <a class="reference external" href="https://github.com/facebookresearch/HolisticTraceAnalysis/blob/main/examples/kernel_breakdown_demo.ipynb">gpu_kernel_breakdown
+notebook</a>
+in the examples folder of the repo.</p>
+</div>
+</div>
+<div class="section" id="communication-computation-overlap">
+<h2>Communication Computation Overlap<a class="headerlink" href="#communication-computation-overlap" title="Permalink to this heading">¶</a></h2>
+<p>In distributed training a significant amount of time is spent in communication
+and synchronization events between GPUs. To achieve high GPU efficiency (i.e.
+TFLOPS/GPU) it is vital to keep the GPU oversubscribed with computation
+kernels. In other words, the GPU should not be blocked due to unresolved data
+dependencies. One way to measure the extent to which computation is blocked by
+data dependencies is to calculate the communication computation overlap. Higher
+GPU efficiency is observed if communication events overlap computation events.
+Lack of communication and computation overlap will lead to the GPU being idle,
+thus the efficiency would be low. To sum up, higher communication computation
+overlap is desirable. To calculate the overlap percentage for each rank we
+measure the following ratio:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><strong>(time spent in computation while communicating) / (time spent in communication)</strong></div>
+</div>
+</div></blockquote>
+<p>Communication computation overlap can be calculated as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
+<span class="n">overlap_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_comm_comp_overlap</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The function returns a dataframe containing the overlap percentage
+for each rank.</p>
+<a class="reference internal image-reference" href="../_images/overlap_df.png"><img alt="../_images/overlap_df.png" class="align-center" src="../_images/overlap_df.png" style="width: 253.0px; height: 309.0px;"/></a>
+<p>When the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> argument is set to True, the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_comm_comp_overlap">get_comm_comp_overlap</a>
+function also generates a bar graph representing the overlap by rank.</p>
+<img alt="../_images/overlap_plot.png" src="../_images/overlap_plot.png"/>
+</div>
+<div class="section" id="augmented-counters">
+<h2>Augmented Counters<a class="headerlink" href="#augmented-counters" title="Permalink to this heading">¶</a></h2>
+<div class="section" id="memory-bandwidth-queue-length-counters">
+<h3>Memory Bandwidth &amp; Queue Length Counters<a class="headerlink" href="#memory-bandwidth-queue-length-counters" title="Permalink to this heading">¶</a></h3>
+<p>Memory bandwidth counters measure the memory copy bandwidth used while copying
+the data from H2D, D2H and D2D by memory copy (memcpy) and memory set (memset)
+events. HTA also computes the number of outstanding operations on each CUDA
+stream. We refer to this as <strong>queue length</strong>. When the queue length on a stream
+is 1024 or larger new events cannot be scheduled on that stream and the CPU
+will stall until the events on the GPU stream have processed.</p>
+<p>The <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.generate_trace_with_counters">generate_trace_with_counters</a>
+API outputs a new trace file with the memory bandwidth and queue length
+counters. The new trace file contains tracks which indicate the memory
+bandwidth used by memcpy/memset operations and tracks for the queue length on
+each stream. By default, these counters are generated using the rank 0
+trace file and the new file contains the suffix <code class="docutils literal notranslate"><span class="pre">_with_counters</span></code> in its name.
+Users have the option to generate the counters for multiple ranks by using the
+<code class="docutils literal notranslate"><span class="pre">ranks</span></code> argument in the <cite>generate_trace_with_counters</cite> API.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">generate_trace_with_counters</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A screenshot of the generated trace file with augmented counters.</p>
+<a class="reference internal image-reference" href="../_images/mem_bandwidth_queue_length.png"><img alt="../_images/mem_bandwidth_queue_length.png" src="../_images/mem_bandwidth_queue_length.png" style="width: 806.0px; height: 877.0px;"/></a>
+<p>HTA also provides a summary of the memory copy bandwidth and queue length
+counters as well as the time series of the counters for the profiled portion of
+the code using the following API:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_summary">get_memory_bw_summary</a></p></li>
+<li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_summary">get_queue_length_summary</a></p></li>
+<li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_time_series">get_memory_bw_time_series</a></p></li>
+<li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_time_series">get_queue_length_time_series</a></p></li>
+</ol>
+<p>To view the summary and time series use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate summary</span>
+<span class="n">mem_bw_summary</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_memory_bw_summary</span><span class="p">()</span>
+<span class="n">queue_len_summary</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_queue_length_summary</span><span class="p">()</span>
+
+<span class="c1"># get time series</span>
+<span class="n">mem_bw_series</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_memory_bw_time_series</span><span class="p">()</span>
+<span class="n">queue_len_series</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_queue_length_series</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The summary contains the count, min, max, mean, standard deviation, 25th, 50th,
+and 75th percentile.</p>
+<a class="reference internal image-reference" href="../_images/queue_length_summary.png"><img alt="../_images/queue_length_summary.png" class="align-center" src="../_images/queue_length_summary.png" style="width: 503.0px; height: 430.0px;"/></a>
+<p>The time series only contains the points when a value changes. Once a value is
+observed the time series stays constant until the next update. The memory
+bandwidth and queue length time series functions return a dictionary whose key
+is the rank and the value is the time series for that rank. By default, the
+time series is computed for rank 0 only.</p>
+</div>
+</div>
+<div class="section" id="cuda-kernel-launch-statistics">
+<h2>CUDA Kernel Launch Statistics<a class="headerlink" href="#cuda-kernel-launch-statistics" title="Permalink to this heading">¶</a></h2>
+<img alt="../_images/cuda_kernel_launch.png" src="../_images/cuda_kernel_launch.png"/>
+<p>For each event launched on the GPU there is a corresponding scheduling event on
+the CPU e.g. CudaLaunchKernel, CudaMemcpyAsync, CudaMemsetAsync. These events
+are linked by a common correlation id in the trace. See figure above. This
+feature computes the duration of the CPU runtime event, its corresponding GPU
+kernel and the launch delay i.e. the difference between GPU kernel starting and
+CPU operator ending. The kernel launch info can be generated as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span><span class="o">=</span><span class="s2">"/path/to/trace/dir"</span><span class="p">)</span>
+<span class="n">kernel_info_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_cuda_kernel_launch_stats</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A screenshot of the generated dataframe is given below.</p>
+<a class="reference internal image-reference" href="../_images/cuda_kernel_launch_stats.png"><img alt="../_images/cuda_kernel_launch_stats.png" class="align-center" src="../_images/cuda_kernel_launch_stats.png" style="width: 394.0px; height: 333.0px;"/></a>
+<p>The duration of the CPU op, GPU kernel and the launch delay allows us to find:</p>
+<ol class="arabic simple">
+<li><p><strong>Short GPU kernels</strong> - GPU kernels with duration less than the
+corresponding CPU runtime event.</p></li>
+<li><p><strong>Runtime event outliers</strong> - CPU runtime events with excessive duration.</p></li>
+<li><p><strong>Launch delay outliers</strong> - GPU kernels which take too long to be scheduled.</p></li>
+</ol>
+<p>HTA generates distribution plots for each of the aforementioned three categories.</p>
+<p><strong>Short GPU kernels</strong></p>
+<p>Usually, the launch time on the CPU side is between 5-20 microseconds. In some
+cases the GPU execution time is lower than the launch time itself. The graph
+below allows us to find how frequently such instances appear in the code.</p>
+<img alt="../_images/short_gpu_kernels.png" src="../_images/short_gpu_kernels.png"/>
+<p><strong>Runtime event outliers</strong></p>
+<p>The runtime outliers depend on the cutoff used to classify the outliers, hence
+the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_cuda_kernel_launch_stats">get_cuda_kernel_launch_stats</a>
+API provides the <code class="docutils literal notranslate"><span class="pre">runtime_cutoff</span></code> argument to configure the value.</p>
+<img alt="../_images/runtime_outliers.png" src="../_images/runtime_outliers.png"/>
+<p><strong>Launch delay outliers</strong></p>
+<p>The launch delay outliers depend on the cutoff used to classify the outliers,
+hence the <cite>get_cuda_kernel_launch_stats</cite> API provides the
+<code class="docutils literal notranslate"><span class="pre">launch_delay_cutoff</span></code> argument to configure the value.</p>
+<img alt="../_images/launch_delay_outliers.png" src="../_images/launch_delay_outliers.png"/>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="hta_trace_diff_tutorial.html" rel="next" title="Trace Diff using Holistic Trace Analysis">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="profiler.html" rel="prev" title="Profiling your PyTorch Module"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom">
+<div role="contentinfo">
+<p>
+        © Copyright 2023, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</hr></footer>
+</div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Introduction to Holistic Trace Analysis</a><ul>
+<li><a class="reference internal" href="#setup">Setup</a><ul>
+<li><a class="reference internal" href="#installing-hta">Installing HTA</a></li>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#temporal-breakdown">Temporal Breakdown</a></li>
+<li><a class="reference internal" href="#idle-time-breakdown">Idle Time Breakdown</a></li>
+<li><a class="reference internal" href="#kernel-breakdown">Kernel Breakdown</a><ul>
+<li><a class="reference internal" href="#kernel-duration-distribution">Kernel Duration Distribution</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#communication-computation-overlap">Communication Computation Overlap</a></li>
+<li><a class="reference internal" href="#augmented-counters">Augmented Counters</a><ul>
+<li><a class="reference internal" href="#memory-bandwidth-queue-length-counters">Memory Bandwidth &amp; Queue Length Counters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cuda-kernel-launch-statistics">CUDA Kernel Launch Statistics</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="../_static/katex.min.js"></script>
+<script src="../_static/auto-render.min.js"></script>
+<script src="../_static/katex_autorenderer.js"></script>
+<script src="../_static/design-tabs.js"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+// Helper function to make it easier to call dataLayer.push() 
+function gtag(){window.dataLayer.push(arguments);}
+
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; display: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1">
+</img></noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Backends', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
+
+//temporarily add a link to survey
+<script>
+    var survey = '<div class="survey-banner"><p><i class="fas fa-poll" aria-hidden="true">&nbsp </i> Take the annual <a href="https://forms.gle/jdNexNU6eZ8mCGDY7">PyTorch Tutorials survey</a>.</p></div>'
+    if ($(".pytorch-call-to-action-links").length) {
+        $(".pytorch-call-to-action-links").before(survey);
+    } else {
+        $("#pytorch-article").prepend(survey);
+    }
+</script>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
+</div>
+</div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="https://www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="https://www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li class="resources-mobile-menu-title">
+            Docs
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+</li>
+<li>
+<a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+</li>
+<li>
+<a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+</li>
+<li>
+<a href="https://pytorch.org/torcharrow">torcharrow</a>
+</li>
+<li>
+<a href="https://pytorch.org/data">TorchData</a>
+</li>
+<li>
+<a href="https://pytorch.org/torchrec">TorchRec</a>
+</li>
+<li>
+<a href="https://pytorch.org/serve/">TorchServe</a>
+</li>
+<li>
+<a href="https://pytorch.org/torchx/">TorchX</a>
+</li>
+<li>
+<a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+            Resources
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/features">About</a>
+</li>
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-stories">Community Stories</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">Models (Beta)</a>
+</li>
+</ul>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</img></body>
+</html>
