@@ -436,86 +436,83 @@
 <div class="section" id="introduction-to-holistic-trace-analysis">
 <h1>Introduction to Holistic Trace Analysis<a class="headerlink" href="#introduction-to-holistic-trace-analysis" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/anupambhatnagar">Anupam Bhatnagar</a></p>
-<div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
-<p>In this tutorial we demonstrate how to use Holistic Trace Analysis (HTA) to
+<p>In this tutorial, we demonstrate how to use Holistic Trace Analysis (HTA) to
 analyze traces from a distributed training job. To get started follow the steps
-below:</p>
+below.</p>
 <div class="section" id="installing-hta">
-<h3>Installing HTA<a class="headerlink" href="#installing-hta" title="Permalink to this heading">¶</a></h3>
+<h2>Installing HTA<a class="headerlink" href="#installing-hta" title="Permalink to this heading">¶</a></h2>
 <p>We recommend using a Conda environment to install HTA. To install Anaconda, see
-<a class="reference external" href="https://docs.anaconda.com/anaconda/install/index.html">here</a>.</p>
-<ol class="arabic simple">
-<li><p>Install HTA using pip</p></li>
-</ol>
+<a class="reference external" href="https://docs.anaconda.com/anaconda/install/index.html">the official Anaconda documentation</a>.</p>
+<ol class="arabic">
+<li><p>Install HTA using pip:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">HolisticTraceAnalysis</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>[Optional and recommended] Setup a conda environment</p></li>
-</ol>
+</li>
+<li><p>(Optional and recommended) Set up a Conda environment:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the environment env_name</span>
 <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env_name</span>
 
 <span class="c1"># activate the environment</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">env_name</span>
 
-<span class="c1"># deactivate the environment</span>
-<span class="n">conda</span> <span class="n">deactivate</span>
+<span class="c1"># When you are done, deactivate the environment by running ``conda deactivate``</span>
 </pre></div>
 </div>
+</li>
+</ol>
 </div>
 <div class="section" id="getting-started">
-<h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h3>
-<p>Launch a jupyter notebook and set the <code class="docutils literal notranslate"><span class="pre">trace_dir</span></code> variable to the location of the traces.</p>
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
+<p>Launch a Jupyter notebook and set the <code class="docutils literal notranslate"><span class="pre">trace_dir</span></code> variable to the location of the traces.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hta.trace_analysis</span> <span class="kn">import</span> <span class="n">TraceAnalysis</span>
 <span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/folder/with/traces"</span>
 <span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span><span class="o">=</span><span class="n">trace_dir</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
 <div class="section" id="temporal-breakdown">
-<h2>Temporal Breakdown<a class="headerlink" href="#temporal-breakdown" title="Permalink to this heading">¶</a></h2>
-<p>To best utilize the GPUs it is vital to understand where the GPU is spending
-time for a given job. Is the GPU spending time on computation, communication,
-memory events, or is it idle? The temporal breakdown feature breaks down the
-time spent in three categories</p>
-<ol class="arabic simple">
+<h3>Temporal Breakdown<a class="headerlink" href="#temporal-breakdown" title="Permalink to this heading">¶</a></h3>
+<p>To effectively utilize the GPUs, it is crucial to understand how they are spending
+time for a specific job. Are they primarily engaged in computation, communication,
+memory events, or are they idle? The temporal breakdown feature provides a detailed
+analysis of the time spent in these three categories.</p>
+<ul class="simple">
 <li><p>Idle time - GPU is idle.</p></li>
 <li><p>Compute time - GPU is being used for matrix multiplications or vector operations.</p></li>
 <li><p>Non-compute time - GPU is being used for communication or memory events.</p></li>
-</ol>
-<p>To achieve high training efficiency the code should maximize compute time and
-minimize idle time and non-compute time. The function below returns
-a dataframe containing the temporal breakdown for each rank.</p>
+</ul>
+<p>To achieve high training efficiency, the code should maximize compute time and
+minimize idle time and non-compute time. The following function generates a
+dataframe that provides a detailed breakdown of the temporal usage for each rank.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
 <span class="n">time_spent_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_temporal_breakdown</span><span class="p">()</span>
 </pre></div>
 </div>
 <img alt="../_images/temporal_breakdown_df.png" src="../_images/temporal_breakdown_df.png"/>
-<p>When the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> argument is set to True in the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_temporal_breakdown">get_temporal_breakdown</a>
+<p>When the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> argument is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_temporal_breakdown">get_temporal_breakdown</a>
 function it also generates a bar graph representing the breakdown by rank.</p>
 <img alt="../_images/temporal_breakdown_plot.png" src="../_images/temporal_breakdown_plot.png"/>
 </div>
 <div class="section" id="idle-time-breakdown">
-<h2>Idle Time Breakdown<a class="headerlink" href="#idle-time-breakdown" title="Permalink to this heading">¶</a></h2>
-<p>Understanding how much time the GPU is idle and its causes can help direct
-optimization strategies. A GPU is considered idle when no kernel is running on
-it. We developed an algorithm to categorize the Idle time into 3 categories:</p>
-<ol class="arabic simple">
-<li><p>Host wait: is the idle duration on the GPU due to the CPU not enqueuing
-kernels fast enough to keep the GPU busy. These kinds of inefficiencies can
-be resolved by examining the CPU operators that are contributing to the slow
-down, increasing the batch size and applying operator fusion.</p></li>
-<li><p>Kernel wait: constitutes the short overhead to launch consecutive kernels on
-the GPU. The idle time attributed to this category can be minimized by using
-CUDA Graph optimizations.</p></li>
-<li><p>Other wait: Lastly, this category includes idle we could not currently
-attribute due to insufficient information. The likely causes include
+<h3>Idle Time Breakdown<a class="headerlink" href="#idle-time-breakdown" title="Permalink to this heading">¶</a></h3>
+<p>Gaining insight into the amount of time the GPU spends idle and the
+reasons behind it can help guide optimization strategies. A GPU is
+considered idle when no kernel is running on it. We have developed an
+algorithm to categorize the <cite>Idle</cite> time into three distinct categories:</p>
+<ul class="simple">
+<li><p><strong>Host wait:</strong> refers to the idle time on the GPU that is caused by
+the CPU not enqueuing kernels quickly enough to keep the GPU fully utilized.
+These types of inefficiencies can be addressed by examining the CPU
+operators that are contributing to the slowdown, increasing the batch
+size and applying operator fusion.</p></li>
+<li><p><strong>Kernel wait:</strong> This refers to brief overhead associated with launching
+consecutive kernels on the GPU. The idle time attributed to this category
+can be minimized by using CUDA Graph optimizations.</p></li>
+<li><p><strong>Other wait:</strong> This category includes idle time that cannot currently
+be attributed due to insufficient information. The likely causes include
 synchronization among CUDA streams using CUDA events and delays in launching
 kernels.</p></li>
-</ol>
+</ul>
 <p>The host wait time can be interpreted as the time when the GPU is stalling due
 to the CPU. To attribute the idle time as kernel wait we use the following
 heuristic:</p>
@@ -549,11 +546,11 @@ the function renders with absolute time on the y-axis.</p>
 </div>
 </div>
 <div class="section" id="kernel-breakdown">
-<h2>Kernel Breakdown<a class="headerlink" href="#kernel-breakdown" title="Permalink to this heading">¶</a></h2>
-<p>The kernel breakdown feature breaks down the time spent for each kernel type
-i.e. communication (COMM), computation (COMP), and memory (MEM) across all
-ranks and presents the proportion of time spent in each category. The
-percentage of time spent in each category as a pie chart.</p>
+<h3>Kernel Breakdown<a class="headerlink" href="#kernel-breakdown" title="Permalink to this heading">¶</a></h3>
+<p>The kernel breakdown feature breaks down the time spent for each kernel type,
+such as communication (COMM), computation (COMP), and memory (MEM), across all
+ranks and presents the proportion of time spent in each category. Here is the
+percentage of time spent in each category as a pie chart:</p>
 <img alt="../_images/kernel_type_breakdown.png" class="align-center" src="../_images/kernel_type_breakdown.png"/>
 <p>The kernel breakdown can be calculated as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
@@ -561,12 +558,12 @@ percentage of time spent in each category as a pie chart.</p>
 </pre></div>
 </div>
 <p>The first dataframe returned by the function contains the raw values used to
-generate the Pie chart.</p>
+generate the pie chart.</p>
 <div class="section" id="kernel-duration-distribution">
-<h3>Kernel Duration Distribution<a class="headerlink" href="#kernel-duration-distribution" title="Permalink to this heading">¶</a></h3>
+<h4>Kernel Duration Distribution<a class="headerlink" href="#kernel-duration-distribution" title="Permalink to this heading">¶</a></h4>
 <p>The second dataframe returned by <a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_gpu_kernel_breakdown">get_gpu_kernel_breakdown</a>
 contains duration summary statistics for each kernel. In particular, this
-includes the count, min, max, average, standard deviation, sum and kernel type
+includes the count, min, max, average, standard deviation, sum, and kernel type
 for each kernel on each rank.</p>
 <img alt="../_images/kernel_metrics_df.png" class="align-center" src="../_images/kernel_metrics_df.png"/>
 <p>Using this data HTA creates many visualizations to identify performance
@@ -580,10 +577,10 @@ kernels and for each kernel type.</p></li>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>All images are generated using plotly. Hovering on the graph shows the
-mode bar on the top right which allows the user to zoom, pan, select and
+mode bar on the top right which allows the user to zoom, pan, select, and
 download the graph.</p>
 </div>
-<p>The pie charts above shows the top 5 computation, communication and memory
+<p>The pie charts above show the top 5 computation, communication, and memory
 kernels. Similar pie charts are generated for each rank. The pie charts can be
 configured to show the top k kernels using the <code class="docutils literal notranslate"><span class="pre">num_kernels</span></code> argument passed
 to the <cite>get_gpu_kernel_breakdown</cite> function. Additionally, the
@@ -605,24 +602,24 @@ in the examples folder of the repo.</p>
 </div>
 </div>
 <div class="section" id="communication-computation-overlap">
-<h2>Communication Computation Overlap<a class="headerlink" href="#communication-computation-overlap" title="Permalink to this heading">¶</a></h2>
-<p>In distributed training a significant amount of time is spent in communication
-and synchronization events between GPUs. To achieve high GPU efficiency (i.e.
-TFLOPS/GPU) it is vital to keep the GPU oversubscribed with computation
+<h3>Communication Computation Overlap<a class="headerlink" href="#communication-computation-overlap" title="Permalink to this heading">¶</a></h3>
+<p>In distributed training, a significant amount of time is spent in communication
+and synchronization events between GPUs. To achieve high GPU efficiency (such as
+TFLOPS/GPU), it is crucial to keep the GPU oversubscribed with computation
 kernels. In other words, the GPU should not be blocked due to unresolved data
 dependencies. One way to measure the extent to which computation is blocked by
 data dependencies is to calculate the communication computation overlap. Higher
 GPU efficiency is observed if communication events overlap computation events.
 Lack of communication and computation overlap will lead to the GPU being idle,
-thus the efficiency would be low. To sum up, higher communication computation
-overlap is desirable. To calculate the overlap percentage for each rank we
-measure the following ratio:</p>
+resulting in low efficiency.
+To sum up, a higher communication computation overlap is desirable. To calculate
+the overlap percentage for each rank, we measure the following ratio:</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><strong>(time spent in computation while communicating) / (time spent in communication)</strong></div>
 </div>
 </div></blockquote>
-<p>Communication computation overlap can be calculated as follows:</p>
+<p>The communication computation overlap can be calculated as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
 <span class="n">overlap_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_comm_comp_overlap</span><span class="p">()</span>
 </pre></div>
@@ -635,9 +632,9 @@ function also generates a bar graph representing the overlap by rank.</p>
 <img alt="../_images/overlap_plot.png" src="../_images/overlap_plot.png"/>
 </div>
 <div class="section" id="augmented-counters">
-<h2>Augmented Counters<a class="headerlink" href="#augmented-counters" title="Permalink to this heading">¶</a></h2>
+<h3>Augmented Counters<a class="headerlink" href="#augmented-counters" title="Permalink to this heading">¶</a></h3>
 <div class="section" id="memory-bandwidth-queue-length-counters">
-<h3>Memory Bandwidth &amp; Queue Length Counters<a class="headerlink" href="#memory-bandwidth-queue-length-counters" title="Permalink to this heading">¶</a></h3>
+<h4>Memory Bandwidth &amp; Queue Length Counters<a class="headerlink" href="#memory-bandwidth-queue-length-counters" title="Permalink to this heading">¶</a></h4>
 <p>Memory bandwidth counters measure the memory copy bandwidth used while copying
 the data from H2D, D2H and D2D by memory copy (memcpy) and memory set (memset)
 events. HTA also computes the number of outstanding operations on each CUDA
@@ -649,9 +646,9 @@ API outputs a new trace file with the memory bandwidth and queue length
 counters. The new trace file contains tracks which indicate the memory
 bandwidth used by memcpy/memset operations and tracks for the queue length on
 each stream. By default, these counters are generated using the rank 0
-trace file and the new file contains the suffix <code class="docutils literal notranslate"><span class="pre">_with_counters</span></code> in its name.
+trace file, and the new file contains the suffix <code class="docutils literal notranslate"><span class="pre">_with_counters</span></code> in its name.
 Users have the option to generate the counters for multiple ranks by using the
-<code class="docutils literal notranslate"><span class="pre">ranks</span></code> argument in the <cite>generate_trace_with_counters</cite> API.</p>
+<code class="docutils literal notranslate"><span class="pre">ranks</span></code> argument in the <code class="docutils literal notranslate"><span class="pre">generate_trace_with_counters</span></code> API.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span> <span class="o">=</span> <span class="s2">"/path/to/trace/folder"</span><span class="p">)</span>
 <span class="n">analyzer</span><span class="o">.</span><span class="n">generate_trace_with_counters</span><span class="p">()</span>
 </pre></div>
@@ -661,13 +658,13 @@ Users have the option to generate the counters for multiple ranks by using the
 <p>HTA also provides a summary of the memory copy bandwidth and queue length
 counters as well as the time series of the counters for the profiled portion of
 the code using the following API:</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_summary">get_memory_bw_summary</a></p></li>
 <li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_summary">get_queue_length_summary</a></p></li>
 <li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_time_series">get_memory_bw_time_series</a></p></li>
 <li><p><a class="reference external" href="https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_time_series">get_queue_length_time_series</a></p></li>
-</ol>
-<p>To view the summary and time series use:</p>
+</ul>
+<p>To view the summary and time series, use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate summary</span>
 <span class="n">mem_bw_summary</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_memory_bw_summary</span><span class="p">()</span>
 <span class="n">queue_len_summary</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_queue_length_summary</span><span class="p">()</span>
@@ -688,13 +685,13 @@ time series is computed for rank 0 only.</p>
 </div>
 </div>
 <div class="section" id="cuda-kernel-launch-statistics">
-<h2>CUDA Kernel Launch Statistics<a class="headerlink" href="#cuda-kernel-launch-statistics" title="Permalink to this heading">¶</a></h2>
+<h3>CUDA Kernel Launch Statistics<a class="headerlink" href="#cuda-kernel-launch-statistics" title="Permalink to this heading">¶</a></h3>
 <img alt="../_images/cuda_kernel_launch.png" src="../_images/cuda_kernel_launch.png"/>
-<p>For each event launched on the GPU there is a corresponding scheduling event on
-the CPU e.g. CudaLaunchKernel, CudaMemcpyAsync, CudaMemsetAsync. These events
-are linked by a common correlation id in the trace. See figure above. This
-feature computes the duration of the CPU runtime event, its corresponding GPU
-kernel and the launch delay i.e. the difference between GPU kernel starting and
+<p>For each event launched on the GPU, there is a corresponding scheduling event on
+the CPU, such as <code class="docutils literal notranslate"><span class="pre">CudaLaunchKernel</span></code>, <code class="docutils literal notranslate"><span class="pre">CudaMemcpyAsync</span></code>, <code class="docutils literal notranslate"><span class="pre">CudaMemsetAsync</span></code>.
+These events are linked by a common correlation ID in the trace - see the figure
+above. This feature computes the duration of the CPU runtime event, its corresponding GPU
+kernel and the launch delay, for example, the difference between GPU kernel starting and
 CPU operator ending. The kernel launch info can be generated as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TraceAnalysis</span><span class="p">(</span><span class="n">trace_dir</span><span class="o">=</span><span class="s2">"/path/to/trace/dir"</span><span class="p">)</span>
 <span class="n">kernel_info_df</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_cuda_kernel_launch_stats</span><span class="p">()</span>
@@ -702,18 +699,19 @@ CPU operator ending. The kernel launch info can be generated as follows:</p>
 </div>
 <p>A screenshot of the generated dataframe is given below.</p>
 <a class="reference internal image-reference" href="../_images/cuda_kernel_launch_stats.png"><img alt="../_images/cuda_kernel_launch_stats.png" class="align-center" src="../_images/cuda_kernel_launch_stats.png" style="width: 394.0px; height: 333.0px;"/></a>
-<p>The duration of the CPU op, GPU kernel and the launch delay allows us to find:</p>
-<ol class="arabic simple">
-<li><p><strong>Short GPU kernels</strong> - GPU kernels with duration less than the
-corresponding CPU runtime event.</p></li>
+<p>The duration of the CPU op, GPU kernel, and the launch delay allow us to find
+the following:</p>
+<ul class="simple">
+<li><p><strong>Short GPU kernels</strong> - GPU kernels with duration less than the corresponding
+CPU runtime event.</p></li>
 <li><p><strong>Runtime event outliers</strong> - CPU runtime events with excessive duration.</p></li>
 <li><p><strong>Launch delay outliers</strong> - GPU kernels which take too long to be scheduled.</p></li>
-</ol>
+</ul>
 <p>HTA generates distribution plots for each of the aforementioned three categories.</p>
 <p><strong>Short GPU kernels</strong></p>
-<p>Usually, the launch time on the CPU side is between 5-20 microseconds. In some
-cases the GPU execution time is lower than the launch time itself. The graph
-below allows us to find how frequently such instances appear in the code.</p>
+<p>Typically, the launch time on the CPU side ranges from 5-20 microseconds. In some
+cases, the GPU execution time is lower than the launch time itself. The graph
+below helps us to find how frequently such instances occur in the code.</p>
 <img alt="../_images/short_gpu_kernels.png" src="../_images/short_gpu_kernels.png"/>
 <p><strong>Runtime event outliers</strong></p>
 <p>The runtime outliers depend on the cutoff used to classify the outliers, hence
@@ -725,6 +723,14 @@ API provides the <code class="docutils literal notranslate"><span class="pre">ru
 hence the <cite>get_cuda_kernel_launch_stats</cite> API provides the
 <code class="docutils literal notranslate"><span class="pre">launch_delay_cutoff</span></code> argument to configure the value.</p>
 <img alt="../_images/launch_delay_outliers.png" src="../_images/launch_delay_outliers.png"/>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>In this tutorial, you have learned how to install and use HTA,
+a performance tool that enables you analyze bottlenecks in your distributed
+training workflows. To learn how you can use the HTA tool to perform trace
+diff analysis, see <a class="reference external" href="https://pytorch.org/tutorials/beginner/hta_trace_diff_tutorial.html">Trace Diff using Holistic Trace Analysis</a>.</p>
 </div>
 </div>
 </article>
@@ -770,11 +776,8 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Introduction to Holistic Trace Analysis</a><ul>
-<li><a class="reference internal" href="#setup">Setup</a><ul>
 <li><a class="reference internal" href="#installing-hta">Installing HTA</a></li>
-<li><a class="reference internal" href="#getting-started">Getting started</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
 <li><a class="reference internal" href="#temporal-breakdown">Temporal Breakdown</a></li>
 <li><a class="reference internal" href="#idle-time-breakdown">Idle Time Breakdown</a></li>
 <li><a class="reference internal" href="#kernel-breakdown">Kernel Breakdown</a><ul>
@@ -787,6 +790,9 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </ul>
 </li>
 <li><a class="reference internal" href="#cuda-kernel-launch-statistics">CUDA Kernel Launch Statistics</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
 </ul>
