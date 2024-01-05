@@ -51,9 +51,9 @@ time for a specific job. Are they primarily engaged in computation, communicatio
 memory events, or are they idle? The temporal breakdown feature provides a detailed
 analysis of the time spent in these three categories.
 
-1) Idle time - GPU is idle.
-2) Compute time - GPU is being used for matrix multiplications or vector operations.
-3) Non-compute time - GPU is being used for communication or memory events.
+* Idle time - GPU is idle.
+* Compute time - GPU is being used for matrix multiplications or vector operations.
+* Non-compute time - GPU is being used for communication or memory events.
 
 To achieve high training efficiency, the code should maximize compute time and
 minimize idle time and non-compute time. The following function generates a
@@ -82,20 +82,20 @@ reasons behind it can help guide optimization strategies. A GPU is
 considered idle when no kernel is running on it. We have developed an
 algorithm to categorize the `Idle` time into three distinct categories:
 
-#. **Host wait:** refers to the idle time on the GPU that is caused by
-   the CPU not enqueuing kernels quickly enough to keep the GPU fully utilized.
-   These types of inefficiencies can be addressed by examining the CPU
-   operators that are contributing to the slowdown, increasing the batch
-   size and applying operator fusion.
+* **Host wait:** refers to the idle time on the GPU that is caused by
+  the CPU not enqueuing kernels quickly enough to keep the GPU fully utilized.
+  These types of inefficiencies can be addressed by examining the CPU
+  operators that are contributing to the slowdown, increasing the batch
+  size and applying operator fusion.
 
-#. **Kernel wait:** This refers to brief overhead associated with launching
-   consecutive kernels on the GPU. The idle time attributed to this category
-   can be minimized by using CUDA Graph optimizations.
+* **Kernel wait:** This refers to brief overhead associated with launching
+  consecutive kernels on the GPU. The idle time attributed to this category
+  can be minimized by using CUDA Graph optimizations.
 
-#. **Other wait:** This category includes idle time that cannot currently
-   be attributed due to insufficient information. The likely causes include
-   synchronization among CUDA streams using CUDA events and delays in launching
-   kernels.
+* **Other wait:** This category includes idle time that cannot currently
+  be attributed due to insufficient information. The likely causes include
+  synchronization among CUDA streams using CUDA events and delays in launching
+  kernels.
 
 The host wait time can be interpreted as the time when the GPU is stalling due
 to the CPU. To attribute the idle time as kernel wait we use the following
@@ -286,17 +286,13 @@ HTA also provides a summary of the memory copy bandwidth and queue length
 counters as well as the time series of the counters for the profiled portion of
 the code using the following API:
 
-* `get_memory_bw_summary
-   <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_summary>`_
+* `get_memory_bw_summary <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_summary>`_
 
-* `get_queue_length_summary
-   <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_summary>`_
+* `get_queue_length_summary <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_summary>`_
 
-* `get_memory_bw_time_series
-   <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_time_series>`_
+* `get_memory_bw_time_series <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_memory_bw_time_series>`_
 
-* `get_queue_length_time_series
-   <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_time_series>`_
+* `get_queue_length_time_series <https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_queue_length_time_series>`_
 
 To view the summary and time series, use:
 
@@ -349,8 +345,8 @@ A screenshot of the generated dataframe is given below.
 The duration of the CPU op, GPU kernel, and the launch delay allow us to find
 the following:
 
-* **Short GPU kernels** - GPU kernels with duration less than the
-   corresponding CPU runtime event.
+* **Short GPU kernels** - GPU kernels with duration less than the corresponding
+  CPU runtime event.
 
 * **Runtime event outliers** - CPU runtime events with excessive duration.
 

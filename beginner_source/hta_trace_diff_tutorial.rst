@@ -16,13 +16,12 @@ of each operator/kernel and the cumulative time taken by the operator/kernel.
 The `TraceDiff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html>`_ class 
 has the following methods:
 
-* `compare_traces
-   <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.compare_traces>`_ -
-   Compare the frequency and total duration of CPU operators and GPU kernels from
-   two sets of traces.
+* `compare_traces <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.compare_traces>`_:
+  Compare the frequency and total duration of CPU operators and GPU kernels from
+  two sets of traces.
 
-* `ops_diff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.ops_diff>`_ -
-   Get the operators and kernels which have been:
+* `ops_diff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.ops_diff>`_:
+  Get the operators and kernels which have been:
 
     #. **added** to the test trace and are absent in the control trace
     #. **deleted** from the test trace and are present in the control trace
@@ -30,11 +29,9 @@ has the following methods:
     #. **decreased** in frequency in the test trace and exist in the control trace
     #. **unchanged** between the two sets of traces
 
-* `visualize_counts_diff
-   <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.visualize_counts_diff>`_
+* `visualize_counts_diff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.visualize_counts_diff>`_
 
-* `visualize_duration_diff
-   <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.visualize_duration_diff>`_
+* `visualize_duration_diff <https://hta.readthedocs.io/en/latest/source/api/trace_diff_api.html#hta.trace_diff.TraceDiff.visualize_duration_diff>`_
 
 The last two methods can be used to visualize various changes in frequency and
 duration of CPU operators and GPU kernels, using the output of the
