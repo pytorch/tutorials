@@ -493,7 +493,7 @@ current recurrent states in the TensorDict of the next state:</p>
 <p>As this figure shows, our environment populates the TensorDict with zeroed recurrent
 states which are read by the policy together with the observation to produce an
 action, and recurrent states that will be used for the next step.
-When the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.utils.step_mdp.html#torchrl.envs.utils.step_mdp" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">step_mdp()</span></code></a> function is called, the recurrent states
+When the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.utils.step_mdp.html#torchrl.envs.utils.step_mdp" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">step_mdp()</span></code></a> function is called, the recurrent states
 from the next state are brought to the current TensorDict. Let’s see how this
 is implemented in practice.</p>
 <p>If you are running this in Google Colab, make sure you install the following dependencies:</p>
@@ -541,17 +541,17 @@ environment with some custom transforms: turning to grayscale, resizing to
 84x84, scaling down the rewards and normalizing the observations.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.StepCounter.html#torchrl.envs.transforms.StepCounter" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepCounter</span></code></a> transform is accessory. Since the CartPole
+<p>The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.StepCounter.html#torchrl.envs.transforms.StepCounter" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepCounter</span></code></a> transform is accessory. Since the CartPole
 task goal is to make trajectories as long as possible, counting the steps
 can help us track the performance of our policy.</p>
 </div>
 <p>Two transforms are important for the purpose of this tutorial:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.InitTracker.html#torchrl.envs.transforms.InitTracker" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">InitTracker</span></code></a> will stamp the
-calls to <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.EnvBase.html#id1" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> by adding a <code class="docutils literal notranslate"><span class="pre">"is_init"</span></code>
+<li><p><a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.InitTracker.html#torchrl.envs.transforms.InitTracker" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">InitTracker</span></code></a> will stamp the
+calls to <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.EnvBase.html#id1" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> by adding a <code class="docutils literal notranslate"><span class="pre">"is_init"</span></code>
 boolean mask in the TensorDict that will track which steps require a reset
 of the RNN hidden states.</p></li>
-<li><p>The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.TensorDictPrimer.html#torchrl.envs.transforms.TensorDictPrimer" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorDictPrimer</span></code></a> transform is a bit more
+<li><p>The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.TensorDictPrimer.html#torchrl.envs.transforms.TensorDictPrimer" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorDictPrimer</span></code></a> transform is a bit more
 technical. It is not required to use RNN policies. However, it
 instructs the environment (and subsequently the collector) that some extra
 keys are to be expected. Once added, a call to <cite>env.reset()</cite> will populate
@@ -564,7 +564,7 @@ with 0s). In summary: not including this transform will not impact hugely
 the training of our policy, but it will make the recurrent keys disappear
 from the collected data and the replay buffer, which will in turn lead to
 a slightly less optimal training.
-Fortunately, the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> we propose is
+Fortunately, the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> we propose is
 equipped with a helper method to build just that transform for us, so
 we can wait until we build it!</p></li>
 </ul>
@@ -590,14 +590,14 @@ we can wait until we build it!</p></li>
 </div>
 <div class="section" id="policy">
 <h2>Policy<a class="headerlink" href="#policy" title="Permalink to this heading">¶</a></h2>
-<p>Our policy will have 3 components: a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvNet</span></code></a>
-backbone, an <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> memory layer and a shallow
-<a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.MLP.html#torchrl.modules.MLP" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MLP</span></code></a> block that will map the LSTM output onto the
+<p>Our policy will have 3 components: a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvNet</span></code></a>
+backbone, an <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> memory layer and a shallow
+<a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.MLP.html#torchrl.modules.MLP" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MLP</span></code></a> block that will map the LSTM output onto the
 action values.</p>
 <div class="section" id="convolutional-network">
 <h3>Convolutional network<a class="headerlink" href="#convolutional-network" title="Permalink to this heading">¶</a></h3>
 <p>We build a convolutional network flanked with a <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a>
-that will squash the output in a vector of size 64. The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvNet</span></code></a>
+that will squash the output in a vector of size 64. The <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvNet</span></code></a>
 can assist us with this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feature</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Mod</span></a><span class="p">(</span>
     <a class="sphx-glr-backref-module-torchrl-modules sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet" title="torchrl.modules.ConvNet"><span class="n">ConvNet</span></a><span class="p">(</span>
@@ -625,7 +625,7 @@ output vector:</p>
 </div>
 <div class="section" id="lstm-module">
 <h3>LSTM Module<a class="headerlink" href="#lstm-module" title="Permalink to this heading">¶</a></h3>
-<p>TorchRL provides a specialized <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> class
+<p>TorchRL provides a specialized <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> class
 to incorporate LSTMs in your code-base. It is a <code class="xref py py-class docutils literal notranslate"><span class="pre">TensorDictModuleBase</span></code>
 subclass: as such, it has a set of <code class="docutils literal notranslate"><span class="pre">in_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">out_keys</span></code> that indicate
 what values should be expected to be read and written/updated during the
@@ -637,7 +637,7 @@ values for these attributes to facilitate its construction.</p>
 dropout or multi-layered LSTMs.
 However, to respect TorchRL’s conventions, this LSTM must have the <code class="docutils literal notranslate"><span class="pre">batch_first</span></code>
 attribute set to <code class="docutils literal notranslate"><span class="pre">True</span></code> which is <strong>not</strong> the default in PyTorch. However,
-our <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> changes this default
+our <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#torchrl.modules.LSTMModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSTMModule</span></code></a> changes this default
 behavior, so we’re good with a native call.</p>
 <p>Also, the LSTM cannot have a <code class="docutils literal notranslate"><span class="pre">bidirectional</span></code> attribute set to <code class="docutils literal notranslate"><span class="pre">True</span></code> as
 this wouldn’t be usable in online settings. In this case, the default value
@@ -665,7 +665,7 @@ out_keys ['embed', ('next', 'recurrent_state_h'), ('next', 'recurrent_state_c')]
 as well as recurrent key names. The out_keys are preceded by a “next” prefix
 that indicates that they will need to be written in the “next” TensorDict.
 We use this convention (which can be overridden by passing the in_keys/out_keys
-arguments) to make sure that a call to <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.utils.step_mdp.html#torchrl.envs.utils.step_mdp" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">step_mdp()</span></code></a> will
+arguments) to make sure that a call to <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.utils.step_mdp.html#torchrl.envs.utils.step_mdp" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">step_mdp()</span></code></a> will
 move the recurrent state to the root TensorDict, making it available to the
 RNN during the following call (see figure in the intro).</p>
 <p>As mentioned earlier, we have one more optional transform to add to our
@@ -733,7 +733,7 @@ Lazy modules are a new feature under heavy development so changes to the API or 
 <div class="section" id="using-the-q-values-to-select-an-action">
 <h3>Using the Q-Values to select an action<a class="headerlink" href="#using-the-q-values-to-select-an-action" title="Permalink to this heading">¶</a></h3>
 <p>The last part of our policy is the Q-Value Module.
-The Q-Value module <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
+The Q-Value module <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
 will read the <code class="docutils literal notranslate"><span class="pre">"action_values"</span></code> key that is produced by our MLP and
 from it, gather the action that has the maximum value.
 The only thing we need to do is to specify the action space, which can be done
@@ -745,7 +745,7 @@ Categorical (sometimes called “sparse”) encoding or the one-hot version of i
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>TorchRL also provides a wrapper class <code class="xref py py-class docutils literal notranslate"><span class="pre">torchrl.modules.QValueActor</span></code> that
-wraps a module in a Sequential together with a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
+wraps a module in a Sequential together with a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
 like we are doing explicitly here. There is little advantage to do this
 and the process is less transparent, but the end results will be similar to
 what we do here.</p>
@@ -774,7 +774,7 @@ such an opportunity to speed up our training loop!
 To use it, we just need to tell the LSTM module to run on “recurrent-mode”
 when used by the loss.
 As we’ll usually want to have two copies of the LSTM module, we do this by
-calling a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#id0" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_recurrent_mode()</span></code></a> method that
+calling a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#id0" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_recurrent_mode()</span></code></a> method that
 will return a new instance of the LSTM (with shared weights) that will
 assume that the input data is sequential in nature.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">policy</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Seq</span></a><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <a class="sphx-glr-backref-module-torchrl-modules sphx-glr-backref-type-py-method" href="https://pytorch.org/rl/reference/generated/torchrl.modules.LSTMModule.html#id0" title="torchrl.modules.LSTMModule.set_recurrent_mode"><span class="n">lstm</span><span class="o">.</span><span class="n">set_recurrent_mode</span></a><span class="p">(</span><span class="kc">True</span><span class="p">),</span> <span class="n">mlp</span><span class="p">,</span> <a class="sphx-glr-backref-module-torchrl-modules-tensordict_module-actors sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="torchrl.modules.tensordict_module.actors.QValueModule"><span class="n">qval</span></a><span class="p">)</span>
@@ -817,7 +817,7 @@ initialize them before creating an optimizer and such.</p>
 <h2>DQN Loss<a class="headerlink" href="#dqn-loss" title="Permalink to this heading">¶</a></h2>
 <p>Out DQN loss requires us to pass the policy and, again, the action-space.
 While this may seem redundant, it is important as we want to make sure that
-the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.DQNLoss.html#torchrl.objectives.DQNLoss" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNLoss</span></code></a> and the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
+the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.DQNLoss.html#torchrl.objectives.DQNLoss" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNLoss</span></code></a> and the <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.modules.tensordict_module.QValueModule.html#torchrl.modules.tensordict_module.QValueModule" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">QValueModule</span></code></a>
 classes are compatible, but aren’t strongly dependent on each other.</p>
 <p>To use the Double-DQN, we ask for a <code class="docutils literal notranslate"><span class="pre">delay_value</span></code> argument that will
 create a non-differentiable copy of the network parameters to be used
@@ -826,7 +826,7 @@ as a target network.</p>
 </pre></div>
 </div>
 <p>Since we are using a double DQN, we need to update the target parameters.
-We’ll use a  <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.SoftUpdate.html#torchrl.objectives.SoftUpdate" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftUpdate</span></code></a> instance to carry out
+We’ll use a  <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.SoftUpdate.html#torchrl.objectives.SoftUpdate" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftUpdate</span></code></a> instance to carry out
 this work.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.SoftUpdate.html#torchrl.objectives.SoftUpdate" title="torchrl.objectives.SoftUpdate"><span class="n">updater</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.SoftUpdate.html#torchrl.objectives.SoftUpdate" title="torchrl.objectives.SoftUpdate"><span class="n">SoftUpdate</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.DQNLoss.html#torchrl.objectives.DQNLoss" title="torchrl.objectives.DQNLoss"><span class="n">loss_fn</span></a><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
 
@@ -841,7 +841,7 @@ with a million frames, extending the buffer with 50 frames at a time. The buffer
 will be designed to store 20 thousands trajectories of 50 steps each.
 At each optimization step (16 per data collection), we’ll collect 4 items
 from our buffer, for a total of 200 transitions.
-We’ll use a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.LazyMemmapStorage.html#torchrl.data.replay_buffers.LazyMemmapStorage" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LazyMemmapStorage</span></code></a> storage to keep the data
+We’ll use a <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.LazyMemmapStorage.html#torchrl.data.replay_buffers.LazyMemmapStorage" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LazyMemmapStorage</span></code></a> storage to keep the data
 on disk.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -932,7 +932,7 @@ Pay attention to the key names which will reflect what can be found in this data
     device=cuda:0,
     is_shared=True)
 
-  0%|          | 50/1000000 [00:00&lt;2:37:34, 105.77it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
+  0%|          | 50/1000000 [00:00&lt;2:36:26, 106.53it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
 
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
@@ -997,12 +997,12 @@ RNN module weights are not part of single contiguous chunk of memory. This means
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
 
-steps: 9, loss_val:  0.0006, action_spread: tensor([49,  1], device='cuda:0'):   0%|          | 50/1000000 [00:04&lt;2:37:34, 105.77it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
+steps: 11, loss_val:  0.0006, action_spread: tensor([48,  2], device='cuda:0'):   0%|          | 50/1000000 [00:04&lt;2:36:26, 106.53it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
 
 WARN: You are calling 'step()' even though this environment has already returned terminated = True. You should always call 'reset()' once you receive 'terminated = True' -- any further steps are undefined behavior.
 
 
-steps: 9, loss_val:  0.0006, action_spread: tensor([49,  1], device='cuda:0'):   0%|          | 100/1000000 [00:04&lt;15:20:53, 18.10it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
+steps: 11, loss_val:  0.0006, action_spread: tensor([48,  2], device='cuda:0'):   0%|          | 100/1000000 [00:04&lt;15:35:38, 17.81it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
 
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
@@ -1067,12 +1067,12 @@ RNN module weights are not part of single contiguous chunk of memory. This means
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
 
-steps: 11, loss_val:  0.0005, action_spread: tensor([45,  5], device='cuda:0'):   0%|          | 100/1000000 [00:08&lt;15:20:53, 18.10it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
+steps: 11, loss_val:  0.0005, action_spread: tensor([45,  5], device='cuda:0'):   0%|          | 100/1000000 [00:08&lt;15:35:38, 17.81it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
 
 WARN: You are calling 'step()' even though this environment has already returned terminated = True. You should always call 'reset()' once you receive 'terminated = True' -- any further steps are undefined behavior.
 
 
-steps: 11, loss_val:  0.0005, action_spread: tensor([45,  5], device='cuda:0'):   0%|          | 150/1000000 [00:08&lt;18:28:11, 15.04it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
+steps: 11, loss_val:  0.0005, action_spread: tensor([45,  5], device='cuda:0'):   0%|          | 150/1000000 [00:08&lt;18:39:34, 14.88it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
 
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
@@ -1137,12 +1137,12 @@ RNN module weights are not part of single contiguous chunk of memory. This means
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
 
-steps: 12, loss_val:  0.0006, action_spread: tensor([43,  7], device='cuda:0'):   0%|          | 150/1000000 [00:12&lt;18:28:11, 15.04it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
+steps: 12, loss_val:  0.0005, action_spread: tensor([44,  6], device='cuda:0'):   0%|          | 150/1000000 [00:12&lt;18:39:34, 14.88it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/gymnasium/envs/classic_control/cartpole.py:177: UserWarning:
 
 WARN: You are calling 'step()' even though this environment has already returned terminated = True. You should always call 'reset()' once you receive 'terminated = True' -- any further steps are undefined behavior.
 
 
-steps: 12, loss_val:  0.0006, action_spread: tensor([43,  7], device='cuda:0'):   0%|          | 200/1000000 [00:12&lt;20:01:00, 13.87it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
+steps: 12, loss_val:  0.0005, action_spread: tensor([44,  6], device='cuda:0'):   0%|          | 200/1000000 [00:13&lt;20:13:43, 13.73it/s]/opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/nn/modules/rnn.py:878: UserWarning:
 
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
@@ -1207,7 +1207,7 @@ RNN module weights are not part of single contiguous chunk of memory. This means
 RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at ../aten/src/ATen/native/cudnn/RNN.cpp:982.)
 
 
-steps: 18, loss_val:  0.0005, action_spread: tensor([11, 39], device='cuda:0'):   0%|          | 200/1000000 [00:16&lt;20:01:00, 13.87it/s]
+steps: 23, loss_val:  0.0004, action_spread: tensor([13, 37], device='cuda:0'):   0%|          | 200/1000000 [00:16&lt;20:13:43, 13.73it/s]
 </pre></div>
 </div>
 <p>Let’s plot our results:</p>
@@ -1226,7 +1226,7 @@ steps: 18, loss_val:  0.0005, action_spread: tensor([11, 39], device='cuda:0'): 
 You should now be able:</p>
 <ul class="simple">
 <li><p>Create an LSTM module that acts as a <code class="xref py py-class docutils literal notranslate"><span class="pre">TensorDictModule</span></code></p></li>
-<li><p>Indicate to the LSTM module that a reset is needed via an <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.InitTracker.html#torchrl.envs.transforms.InitTracker" title="(in torchrl vmain (0.2.1 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">InitTracker</span></code></a>
+<li><p>Indicate to the LSTM module that a reset is needed via an <a class="reference external" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.InitTracker.html#torchrl.envs.transforms.InitTracker" title="(in torchrl vmain (0.3.0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">InitTracker</span></code></a>
 transform</p></li>
 <li><p>Incorporate this module in a policy and in a loss module</p></li>
 <li><p>Make sure that the collector is made aware of the recurrent state entries
@@ -1239,7 +1239,7 @@ the data</p></li>
 <ul class="simple">
 <li><p>The TorchRL documentation can be found <a class="reference external" href="https://pytorch.org/rl/">here</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  22.663 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  22.779 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-dqn-with-rnn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/14b68b9764c79afe8ef88b11fc27bff7/dqn_with_rnn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dqn_with_rnn_tutorial.py</span></code></a></p>
