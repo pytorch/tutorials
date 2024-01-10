@@ -378,6 +378,23 @@ What's new in PyTorch tutorials?
    :link: advanced/super_resolution_with_onnxruntime.html
    :tags: Production,ONNX
 
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Learn how to profile a PyTorch application
+   :link: beginner/profiler.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Introduction to Holistic Trace Analysis
+   :link: beginner/hta_intro_tutorial.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Trace Diff using Holistic Trace Analysis
+   :link: beginner/hta_trace_diff_tutorial.html
+   :tags: Profiling
 
 .. Code Transformations with FX
 
@@ -992,6 +1009,16 @@ Additional Resources
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
    intermediate/realtime_rpi
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Profiling PyTorch
+
+   beginner/profiler
+   beginner/hta_intro_tutorial
+   beginner/hta_trace_diff_tutorial
 
 .. toctree::
    :maxdepth: 2
