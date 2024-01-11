@@ -550,6 +550,7 @@
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html">PyTorch 2 Export Post Training Quantization</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">TorchInductor and torch.compile concepts in PyTorch</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html">Inductor C++ Wrapper concepts</a></p></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -684,7 +685,17 @@ numeric saturation and accuracy issue may happen when running on CPU without Vec
 </div>
 <div class="section" id="lower-into-inductor">
 <h3>3. Lower into Inductor<a class="headerlink" href="#lower-into-inductor" title="Permalink to this heading">¶</a></h3>
-<p>After we get the quantized model, we will further lower it to the inductor backend.</p>
+<p>After we get the quantized model, we will further lower it to the inductor backend. The default Inductor wrapper
+generates Python code to invoke both generated kernels and external kernels. Additionally, Inductor supports
+C++ wrapper that generates pure C++ code. This allows seamless integration of the generated and external kernels,
+effectively reducing Python overhead. In the future, leveraging the C++ wrapper, we can extend the capability
+to achieve pure C++ deployment. For more comprehensive details about C++ Wrapper in general, please refer to the
+dedicated tutorial on <a class="reference external" href="https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html">Inductor C++ Wrapper Tutorial</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional: using the C++ wrapper instead of default Python wrapper</span>
+<span class="kn">import</span> <span class="nn">torch._inductor.config</span> <span class="k">as</span> <span class="nn">config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">cpp_wrapper</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
     <span class="n">optimized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">converted_model</span><span class="p">)</span>
 
