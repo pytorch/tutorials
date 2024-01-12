@@ -4,7 +4,7 @@
 
 **Author**: `HDCharles <https://github.com/HDCharles>`_
 
-In this tutorial we will walk through the quantization and optimization
+In this tutorial, we will walk you through the quantization and optimization
 of the popular `segment anything model <https://github.com/facebookresearch/segment-anything>`_. These
 steps will mimic some of those taken to develop the
 `segment-anything-fast <https://github.com/pytorch-labs/segment-anything-fast/blob/main/segment_anything_fast/modeling/image_encoder.py#L15>`_
