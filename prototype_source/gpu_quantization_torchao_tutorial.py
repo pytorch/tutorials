@@ -115,11 +115,11 @@ print(f"bf16 runtime of the block is {bf16_res['time']:0.2f}ms and peak memory {
 
 
 ######################################################################
-# Just this quick change improves runtime by a factor of ~7x in my
-# experience (186.16ms to 25.43ms).
+# Just this quick change improves runtime by a factor of ~7x in the tests we have
+# conducted (186.16ms to 25.43ms).
 #
-# Next we torch.compile the model and see how much the performance
-# improves
+# Next, let's use ``torch.compile`` with our model to see how much the performance
+# improves.
 #
 
 model_c = torch.compile(model, mode='max-autotune')
@@ -129,50 +129,54 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 
 
 ######################################################################
-# The first time this is run, you should see a sequence of AUTOTUNE
+# The first time this is run, you should see a sequence of ``AUTOTUNE``
 # outputs which occurs when inductor compares the performance between
 # various kernel parameters for a kernel. This only happens once (unless
 # you delete your cache) so if you run the cell again you should just get
 # the benchmark output.
 #
-# torch.compile yields about another 27% improvement. This brings the
+# ``torch.compile`` yields about another 27% improvement. This brings the
 # model to a reasonable baseline where we now have to work a bit harder
 # for improvements.
 #
-# Now lets apply quantization. Quantization for GPUs comes in 3 main forms
+# Next, let's apply quantization. Quantization for GPUs comes in three main forms
 # in `torchao <https://github.com/pytorch-labs/ao>`_ which is just native
-# pytorch+python code. We have int8 dynamic quantization, int8 weight-only
-# quantization and int4 weight-only quantization. Different models, or
-# sometimes different layers in a model can require different techniques.
+# pytorch+python code. This includes: 
+# 
+# * int8 dynamic quantization
+# * int8 weight-only quantization
+# * int4 weight-only quantization
+# 
+# Different models, or sometimes different layers in a model can require different techniques.
 # For models which are heavily compute bound, dynamic quantization tends
 # to work the best since it swaps the normal expensive floating point
 # matmul ops with integer versions. Weight-only quantization works better
 # in memory bound situations where the benefit comes from loading less
-# weight data, rather than doing less computation. The torchao api’s:
+# weight data, rather than doing less computation. The torchao APIs:
 #
 # ``change_linear_weights_to_int8_dqtensors``,
 # ``change_linear_weights_to_int8_woqtensors`` or
 # ``change_linear_weights_to_int4_woqtensors``
 #
 # can be used to easily apply the desired quantization technique and then
-# once the model is torch.compile-d with max-autotune, quantization is
+# once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
 # complete and we can see our speedup.
 #
-# Note: These api’s may be buggy on older versions of pytorch, if you run
-# into that issue, you can instead use
+# .. note::  
+#    You might experience issues with these on older versions of PyTorch. If you run
+#    into an issue, you can use ``apply_dynamic_quant`` and
+#    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
+#    above (no replacement for int4).
 #
-# ``apply_dynamic_quant`` and ``apply_weight_only_int8_quant``
-#
-# As drop in replacement for the 2 above (no replacement for int4). The
-# difference between the two apis is that ‘change_linear_weights’ api’s
-# alter the weight tensor of the linear module so instead of doing a
-# normal linear, it does a quantized operation. This is helpful when users
-# have non-standard linear ops that do more than 1 thing. The ‘apply’
-# api’s directly swap the linear modules for a quantized module which
+#  The difference between the two APIs is that ``change_linear_weights`` API
+# alters the weight tensor of the linear module so instead of doing a
+# normal linear, it does a quantized operation. This is helpful when you
+# have non-standard linear ops that do more than one thing. The ``apply``
+# APIs directly swap the linear modules for a quantized module which
 # works on older versions but doesn’t work with non-standard linear
 # modules.
 #
-# In this case SAM is compute bound so we’ll use dynamic quantization
+# In this case SAM is compute-bound so we’ll use dynamic quantization:
 #
 
 del model_c, model, image
@@ -187,25 +191,25 @@ print(f"bf16 compiled runtime of the quantized block is {quant_res['time']:0.2f}
 
 
 ######################################################################
-# With quantization we improve perf a bit more but memory usage shot way
-# up.
+# With quantization, we have improved performance a bit more but memory usage increased
+# significantly.
 #
 # This is for two reasons:
 #
 # 1) Quantization adds overhead to the model
 #    since we need to quantize and dequantize the input and output. For small
-#    batchsizes this overhead can actually make the model go slower.
-# 2) Even though we are doing a quantized matmul, i.e. int8 x int8,
+#    batch sizes this overhead can actually make the model go slower.
+# 2) Even though we are doing a quantized matmul, such as ``int8 x int8``,
 #    the result of the multiplication gets stored in an int32 tensor
 #    which is twice the size of the result from the non-quantized model.
-#    If we can avoid creating this int32 tensor our memory usage will improve a lot.
+#    If we can avoid creating this int32 tensor, our memory usage will improve a lot.
 #
 # We can fix #2 by fusing the integer matmul with the subsequent rescale
 # operation since the final output will be bf16, if we immediately convert
-# the int32 tensor to bf16 and instead store that we’ll get getter
+# the int32 tensor to bf16 and instead store that we’ll get better
 # performance in terms of both runtime and memory.
 #
-# The way to do this is to enable the option
+# The way to do this, is to enable the option
 # ``force_fuse_int_mm_with_mul`` in the inductor config.
 #
 
@@ -230,7 +234,7 @@ print(f"bf16 compiled runtime of the fused quantized block is {quant_res['time']
 # We’re still not done though, we can apply a few general purpose
 # optimizations to get our final best-case performance.
 #
-# 1) We can sometimes improve performance be disabling epilogue fusion
+# 1) We can sometimes improve performance by disabling epilogue fusion
 #    since the autotuning process can be confused by fusions and choose
 #    bad kernel parameters.
 # 2) We can apply coordinate descent tuning in all directions to enlarge
