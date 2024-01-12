@@ -81,7 +81,7 @@ def get_sam_model(only_one_block=False, batchsize=1):
 ######################################################################
 # In this tutorial we focus on quantizing the image_encoder because the
 # inputs to it are statically sized while the prompt encoder and mask
-# decoder have variable sizes which makes them harder to quantize
+# decoder have variable sizes which makes them harder to quantize.
 #
 # We’ll focus on just a single block at first to make the analysis easier.
 #
