@@ -267,25 +267,27 @@ print(f"bf16 compiled runtime of the final quantized block is {quant_res['time']
 # differ block by block depending on the shapes involved.
 #
 
+try:
+    del model_c, model, image
+    model, image = get_sam_model(False, batchsize)
+    model = model.to(torch.bfloat16)
+    image = image.to(torch.bfloat16)
+    model_c = torch.compile(model, mode='max-autotune')
+    quant_res = benchmark(model_c, image)
+    print(f"bf16 compiled runtime of the compiled full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
+    # bf16 compiled runtime of the compiled full model is 729.65ms and peak memory  23.96GB
 
-del model_c, model, image
-model, image = get_sam_model(False, batchsize)
-model = model.to(torch.bfloat16)
-image = image.to(torch.bfloat16)
-model_c = torch.compile(model, mode='max-autotune')
-quant_res = benchmark(model_c, image)
-print(f"bf16 compiled runtime of the compiled full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
-# bf16 compiled runtime of the compiled full model is 729.65ms and peak memory  23.96GB
-
-del model_c, model, image
-model, image = get_sam_model(False, batchsize)
-model = model.to(torch.bfloat16)
-image = image.to(torch.bfloat16)
-change_linear_weights_to_int8_dqtensors(model)
-model_c = torch.compile(model, mode='max-autotune')
-quant_res = benchmark(model_c, image)
-print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
-# bf16 compiled runtime of the quantized full model is 677.28ms and peak memory  24.93GB
+    del model_c, model, image
+    model, image = get_sam_model(False, batchsize)
+    model = model.to(torch.bfloat16)
+    image = image.to(torch.bfloat16)
+    change_linear_weights_to_int8_dqtensors(model)
+    model_c = torch.compile(model, mode='max-autotune')
+    quant_res = benchmark(model_c, image)
+    print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
+    # bf16 compiled runtime of the quantized full model is 677.28ms and peak memory  24.93GB
+except Exception as e:
+    print("unable to run full model: ", e)
 
 
 
