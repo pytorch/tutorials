@@ -25,17 +25,22 @@ quantization and measure their impact.
 # We have run this tutorial on an A100-PG509-200 power limited to 330.00 W. If you
 # are using a different hardware, you might see different performance numbers.
 #
-# ::
+# 
+# .. code-block:: bash
 #
 #    > conda create -n myenv python=3.10
 #    > pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
 #    > pip install git+https://github.com/facebookresearch/segment-anything.git
 #    > pip install git+https://github.com/pytorch-labs/ao.git
 #
-#    SAM checkpoint setup:
-#    1. go here and download the vit_h checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints
-#    or just `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
-#    2. pass in that directory via {sam_checkpoint_base_path}=<path>
+# SAM checkpoint setup:
+# 
+# 1. Go to the `segment-anything repo <checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can just use ``wget``: `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
+# 2. Pass in that directory by using:
+# 
+# .. code-block::
+#
+# {sam_checkpoint_base_path}=<path>
 #
 # This was run on an A100-PG509-200 power limited to 330.00 W
 #
