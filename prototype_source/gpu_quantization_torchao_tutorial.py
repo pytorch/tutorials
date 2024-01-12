@@ -277,7 +277,7 @@ print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:
 # In the end we achieve a full-model apples to apples quantization speedup
 # of about 7.7% on batchsize 16 (677.28ms to 729.65ms). We can push this a
 # bit further by increasing the batchsize and optimizing other parts of
-# the model, for example with some form of flash attention but we’ll stop
+# the model. For example, this can be done with some form of flash attention. 
 #
 # For more information visit
 # `torchao <https://github.com/pytorch-labs/ao>`_ and try it on your own
