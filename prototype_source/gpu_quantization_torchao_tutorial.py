@@ -21,7 +21,7 @@ quantization and measure their impact.
 # Set up Your Environment
 # --------------------------------
 #
-# First, let's configure your environment. This guide requires you to use CUDA 12.1.
+# First, let's configure your environment. This guide was written for CUDA 12.1.
 # We have run this tutorial on an A100-PG509-200 power limited to 330.00 W. If you
 # are using a different hardware, you might see different performance numbers.
 #
@@ -36,7 +36,7 @@ quantization and measure their impact.
 # Segment Anything Model checkpoint setup:
 #
 # 1. Go to the `segment-anything repo <checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can just use ``wget``: `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
-# 2. Pass in that directory by using:
+# 2. Pass in that directory by editing the code below to say:
 #
 # .. code-block::
 #
@@ -110,6 +110,7 @@ except Exception as e:
 # when scaling and rescaling tensors due to quantization.
 #
 
+model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
 bf16_res = benchmark(model, image)
