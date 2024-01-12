@@ -18,7 +18,12 @@ quantization and measure their impact.
 
 
 ######################################################################
-# env setup (assumes cuda 12.1)
+# Set up Your Environment
+# --------------------------------
+#
+# First, let's configure your environment. This guide requires you to use CUDA 12.1.
+# We have run this tutorial on an A100-PG509-200 power limited to 330.00 W. If you
+# are using a different hardware, you might see different performance numbers.
 #
 # ::
 #
