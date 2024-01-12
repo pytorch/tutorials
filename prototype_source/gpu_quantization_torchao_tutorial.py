@@ -100,12 +100,11 @@ print(f"base fp32 runtime of the model is {fp32_res['time']:0.2f}ms and peak mem
 
 
 ######################################################################
-# We can obtain an immediate speedup simply by converting the model to
-# bfloat16. We use bfloat16 rather than fp16 because bfloat16 has a
-# dynamic range similar to fp32 because they both have 8 exponential bits
-# while fp16 only has 4 which tends to insulate us from overflow errors
-# and other problems that occur when scaling and rescaling tensors due to
-# quantization.
+# We can achieve an instant performance boost by converting the model to bfloat16. 
+# The reason we opt for bfloat16 over fp16 is due to its dynamic range, which is comparable to
+# that of fp32. Both bfloat16 and fp32 possess 8 exponential bits, whereas fp16 only has 4. This
+# larger dynamic range helps protect us from overflow errors and other issues that can arise
+# when scaling and rescaling tensors due to quantization.
 #
 
 model = model.to(torch.bfloat16)
