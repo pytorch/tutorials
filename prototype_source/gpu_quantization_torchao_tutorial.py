@@ -90,7 +90,7 @@ def get_sam_model(only_one_block=False, batchsize=1):
 #
 # We’ll focus on just a single block at first to make the analysis easier.
 #
-# Lets start by measuring the baseline runtime.
+# Let's start by measuring the baseline runtime.
 #
 
 model, image = get_sam_model(only_one_block, batchsize)
