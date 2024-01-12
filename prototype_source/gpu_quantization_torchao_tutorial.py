@@ -11,7 +11,7 @@ steps will mimic some of those taken to develop the
 repo. This step-by-step guide demonstrates how you can
 apply these techniques to speed up your own models, especially those
 that use transformers. To that end we will focus on widely applicable
-techniques like optimizing performance with torch.compile and
+techniques, such as optimizing performance with ``torch.compile`` and
 quantization and measure their impact.
 
 """
