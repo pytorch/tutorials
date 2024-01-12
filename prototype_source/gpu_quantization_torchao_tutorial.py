@@ -279,6 +279,11 @@ print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:
 
 
 ######################################################################
+# Conclusion
+# -----------------
+# In this tutorial, we have learned about the quantization and optimization techniques
+# on the example of the segment anything model. 
+
 # In the end, we achieved a full-model apples to apples quantization speedup
 # of about 7.7% on batch size 16 (677.28ms to 729.65ms). We can push this a
 # bit further by increasing the batch size and optimizing other parts of
