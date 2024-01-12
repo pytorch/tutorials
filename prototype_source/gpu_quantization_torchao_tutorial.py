@@ -91,12 +91,15 @@ def get_sam_model(only_one_block=False, batchsize=1):
 # We’ll focus on just a single block at first to make the analysis easier.
 #
 # Let's start by measuring the baseline runtime.
-#
 
-model, image = get_sam_model(only_one_block, batchsize)
-fp32_res = benchmark(model, image)
-print(f"base fp32 runtime of the model is {fp32_res['time']:0.2f}ms and peak memory {fp32_res['memory']:0.2f}GB")
-# base fp32 runtime of the model is 186.16ms and peak memory 6.33GB
+try:
+    model, image = get_sam_model(only_one_block, batchsize)
+    fp32_res = benchmark(model, image)
+    print(f"base fp32 runtime of the model is {fp32_res['time']:0.2f}ms and peak memory {fp32_res['memory']:0.2f}GB")
+    # base fp32 runtime of the model is 186.16ms and peak memory 6.33GB
+except Exception as e:
+    print("unable to run fp32 model: ", e)
+
 
 
 ######################################################################
