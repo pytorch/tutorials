@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-torch.compile Tutorial
-================
+Introduction to ``torch.compile``
+=================================
 **Author:** William Wen
 """
 

@@ -1,5 +1,5 @@
 Getting Started with Fully Sharded Data Parallel(FSDP)
-=====================================================
+======================================================
 
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
 
@@ -56,7 +56,7 @@ One way to view FSDP's sharding is to decompose the DDP gradient all-reduce into
    FSDP Allreduce
 
 How to use FSDP
---------------
+---------------
 Here we use a toy model to run training on the MNIST dataset for demonstration purposes. The APIs and logic can be applied to training larger models as well. 
 
 *Setup*
@@ -267,7 +267,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 
 
-2.5 Finally parse the arguments and set the main function
+2.5 Finally, parse the arguments and set the main function
 
 .. code-block:: python
 

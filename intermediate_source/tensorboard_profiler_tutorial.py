@@ -157,7 +157,7 @@ prof.stop()
 
 ######################################################################
 # 4. Use TensorBoard to view results and analyze model performance
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # .. note::
 #     TensorBoard Plugin support has been deprecated, so some of these functions may not

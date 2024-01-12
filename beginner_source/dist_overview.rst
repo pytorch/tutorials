@@ -150,7 +150,7 @@ throws an exception, it is likely to lead to desynchronization (mismatched
 adds fault tolerance and the ability to make use of a dynamic pool of machines (elasticity).
 
 RPC-Based Distributed Training
-----------------------------
+------------------------------
 
 Many training paradigms do not fit into data parallelism, e.g.,
 parameter server paradigm, distributed pipeline parallelism, reinforcement

@@ -320,7 +320,7 @@ scaler.load_state_dict(checkpoint["scaler"])
 #    shows forcing a subregion to run in ``float32`` (by locally disabling ``autocast`` and casting the subregion's inputs).
 #
 # Type mismatch error (may manifest as ``CUDNN_STATUS_BAD_PARAM``)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ``Autocast`` tries to cover all ops that benefit from or require casting.
 # `Ops that receive explicit coverage <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
 # are chosen based on numerical properties, but also on experience.
