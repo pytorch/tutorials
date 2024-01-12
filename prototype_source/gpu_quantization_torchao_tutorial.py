@@ -25,7 +25,7 @@ quantization and measure their impact.
 # We have run this tutorial on an A100-PG509-200 power limited to 330.00 W. If you
 # are using a different hardware, you might see different performance numbers.
 #
-# 
+#
 # .. code-block:: bash
 #
 #    > conda create -n myenv python=3.10
@@ -33,11 +33,11 @@ quantization and measure their impact.
 #    > pip install git+https://github.com/facebookresearch/segment-anything.git
 #    > pip install git+https://github.com/pytorch-labs/ao.git
 #
-# SAM checkpoint setup:
-# 
+# Segment Anything Model checkpoint setup:
+#
 # 1. Go to the `segment-anything repo <checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can just use ``wget``: `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
 # 2. Pass in that directory by using:
-# 
+#
 # .. code-block::
 #
 # {sam_checkpoint_base_path}=<path>
@@ -100,7 +100,7 @@ print(f"base fp32 runtime of the model is {fp32_res['time']:0.2f}ms and peak mem
 
 
 ######################################################################
-# We can achieve an instant performance boost by converting the model to bfloat16. 
+# We can achieve an instant performance boost by converting the model to bfloat16.
 # The reason we opt for bfloat16 over fp16 is due to its dynamic range, which is comparable to
 # that of fp32. Both bfloat16 and fp32 possess 8 exponential bits, whereas fp16 only has 4. This
 # larger dynamic range helps protect us from overflow errors and other issues that can arise
@@ -141,12 +141,12 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 #
 # Next, let's apply quantization. Quantization for GPUs comes in three main forms
 # in `torchao <https://github.com/pytorch-labs/ao>`_ which is just native
-# pytorch+python code. This includes: 
-# 
+# pytorch+python code. This includes:
+#
 # * int8 dynamic quantization
 # * int8 weight-only quantization
 # * int4 weight-only quantization
-# 
+#
 # Different models, or sometimes different layers in a model can require different techniques.
 # For models which are heavily compute bound, dynamic quantization tends
 # to work the best since it swaps the normal expensive floating point
@@ -162,7 +162,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
 # complete and we can see our speedup.
 #
-# .. note::  
+# .. note::
 #    You might experience issues with these on older versions of PyTorch. If you run
 #    into an issue, you can use ``apply_dynamic_quant`` and
 #    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
@@ -176,7 +176,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # works on older versions but doesn’t work with non-standard linear
 # modules.
 #
-# In this case SAM is compute-bound so we’ll use dynamic quantization:
+# In this case Segment Anything is compute-bound so we’ll use dynamic quantization:
 #
 
 del model_c, model, image
@@ -290,12 +290,12 @@ print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:
 # Conclusion
 # -----------------
 # In this tutorial, we have learned about the quantization and optimization techniques
-# on the example of the segment anything model. 
+# on the example of the segment anything model.
 
 # In the end, we achieved a full-model apples to apples quantization speedup
 # of about 7.7% on batch size 16 (677.28ms to 729.65ms). We can push this a
 # bit further by increasing the batch size and optimizing other parts of
-# the model. For example, this can be done with some form of flash attention. 
+# the model. For example, this can be done with some form of flash attention.
 #
 # For more information visit
 # `torchao <https://github.com/pytorch-labs/ao>`_ and try it on your own
