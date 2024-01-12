@@ -48,6 +48,7 @@ quantization and measure their impact.
 import torch
 from torchao.quantization import change_linear_weights_to_int8_dqtensors
 from segment_anything import sam_model_registry
+from torch.utils.benchmark import Timer
 
 sam_checkpoint_base_path = "data"
 model_type = 'vit_h'
@@ -56,7 +57,6 @@ checkpoint_path = f"{sam_checkpoint_base_path}/{model_name}"
 batchsize = 16
 only_one_block = True
 
-from torch.utils.benchmark import Timer
 
 @torch.no_grad()
 def benchmark(f, *args, **kwargs):
