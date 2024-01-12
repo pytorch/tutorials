@@ -49,7 +49,7 @@ import torch
 from torchao.quantization import change_linear_weights_to_int8_dqtensors
 from segment_anything import sam_model_registry
 
-sam_checkpoint_base_path = "~/local/models"
+sam_checkpoint_base_path = "data"
 model_type = 'vit_h'
 model_name = 'sam_vit_h_4b8939.pth'
 checkpoint_path = f"{sam_checkpoint_base_path}/{model_name}"

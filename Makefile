@@ -90,6 +90,10 @@ download:
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
+	# Download SAM model checkpoint for prototype_source/gpu_quantization_torchao_tutorial.py
+	wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth -P $(DATADIR)
+	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
+
 docs:
 	make download
 	make html
