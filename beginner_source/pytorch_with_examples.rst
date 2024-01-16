@@ -262,7 +262,7 @@ Autograd
     <div style='clear:both'></div>
 
 ``nn`` module
------------
+--------------
 
 .. toctree::
    :maxdepth: 2
