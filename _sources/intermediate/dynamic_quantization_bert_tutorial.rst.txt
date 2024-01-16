@@ -414,7 +414,7 @@ We reuse the tokenize and evaluation function from `Huggingface <https://github.
 
 
 3. Apply the dynamic quantization
--------------------------------
+---------------------------------
 
 We call ``torch.quantization.quantize_dynamic`` on the model to apply
 the dynamic quantization on the HuggingFace BERT model. Specifically,

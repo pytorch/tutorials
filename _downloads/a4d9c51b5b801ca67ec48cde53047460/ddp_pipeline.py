@@ -439,7 +439,7 @@ def run_worker(rank, world_size):
 
 ######################################################################
 # Evaluate the model with the test dataset
-# -------------------------------------
+# ----------------------------------------
 #
 # Apply the best model to check the result with the test dataset.
 

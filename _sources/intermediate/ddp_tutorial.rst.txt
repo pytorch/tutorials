@@ -236,7 +236,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         cleanup()
 
 Combining DDP with Model Parallelism
-----------------------------------
+------------------------------------
 
 DDP also works with multi-GPU models. DDP wrapping multi-GPU models is especially
 helpful when training large models with a huge amount of data.
@@ -297,7 +297,7 @@ either the application or the model ``forward()`` method.
         run_demo(demo_model_parallel, world_size)
 
 Initialize DDP with torch.distributed.run/torchrun
-----------------------------------
+---------------------------------------------------
 
 We can leverage PyTorch Elastic to simplify the DDP code and initialize the job more easily.
 Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.

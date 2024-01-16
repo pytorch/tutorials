@@ -338,7 +338,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">torch.compile Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
@@ -490,11 +490,10 @@ layers across replicas.</p>
 <p>Use the helper function
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.SyncBatchNorm.html#torch.nn.SyncBatchNorm.convert_sync_batchnorm">torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)</a> to convert all <code class="docutils literal notranslate"><span class="pre">BatchNorm</span></code> layers in the model to <code class="docutils literal notranslate"><span class="pre">SyncBatchNorm</span></code>.</p>
 </div>
-<div class="section" id="diff-for-single-gpu-py-v-s-multigpu-py">
-<h2>Diff for <a class="reference external" href="https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py">single_gpu.py</a> v/s <a class="reference external" href="https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py">multigpu.py</a><a class="headerlink" href="#diff-for-single-gpu-py-v-s-multigpu-py" title="Permalink to this heading">¶</a></h2>
+<p>Diff for <a class="reference external" href="https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py">single_gpu.py</a> v/s <a class="reference external" href="https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py">multigpu.py</a></p>
 <p>These are the changes you typically make to a single-GPU training script to enable DDP.</p>
 <div class="section" id="imports">
-<h3>Imports<a class="headerlink" href="#imports" title="Permalink to this heading">¶</a></h3>
+<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">torch.multiprocessing</span></code> is a PyTorch wrapper around Python’s native
 multiprocessing</p></li>
@@ -514,7 +513,7 @@ from utils import MyTrainDataset
 </div>
 </div>
 <div class="section" id="constructing-the-process-group">
-<h3>Constructing the process group<a class="headerlink" href="#constructing-the-process-group" title="Permalink to this heading">¶</a></h3>
+<h2>Constructing the process group<a class="headerlink" href="#constructing-the-process-group" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>The process group can be initialized by TCP (default) or from a
 shared file-system. Read more on <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#tcp-initialization">process group
@@ -540,14 +539,14 @@ sets the default GPU for each process. This is important to prevent hangs or exc
 </div>
 </div>
 <div class="section" id="constructing-the-ddp-model">
-<h3>Constructing the DDP model<a class="headerlink" href="#constructing-the-ddp-model" title="Permalink to this heading">¶</a></h3>
+<h2>Constructing the DDP model<a class="headerlink" href="#constructing-the-ddp-model" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.model = model.to(gpu_id)</span>
 <span class="gi">+ self.model = DDP(model, device_ids=[gpu_id])</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="distributing-input-data">
-<h3>Distributing input data<a class="headerlink" href="#distributing-input-data" title="Permalink to this heading">¶</a></h3>
+<h2>Distributing input data<a class="headerlink" href="#distributing-input-data" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler">DistributedSampler</a>
 chunks the input data across all distributed processes.</p></li>
@@ -577,7 +576,7 @@ properly across multiple epochs. Otherwise, the same ordering will be used in ea
 </div>
 </div>
 <div class="section" id="saving-model-checkpoints">
-<h3>Saving model checkpoints<a class="headerlink" href="#saving-model-checkpoints" title="Permalink to this heading">¶</a></h3>
+<h2>Saving model checkpoints<a class="headerlink" href="#saving-model-checkpoints" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>We only need to save model checkpoints from one process. Without this
 condition, each process would save its copy of the identical mode. Read
@@ -602,7 +601,7 @@ If you need to make any collective calls, it should be before the <code class="d
 </div>
 </div>
 <div class="section" id="running-the-distributed-training-job">
-<h3>Running the distributed training job<a class="headerlink" href="#running-the-distributed-training-job" title="Permalink to this heading">¶</a></h3>
+<h2>Running the distributed training job<a class="headerlink" href="#running-the-distributed-training-job" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Include new arguments <code class="docutils literal notranslate"><span class="pre">rank</span></code> (replacing <code class="docutils literal notranslate"><span class="pre">device</span></code>) and
 <code class="docutils literal notranslate"><span class="pre">world_size</span></code>.</p></li>
@@ -631,10 +630,8 @@ if __name__ == "__main__":
 <span class="gi">+  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span>
 </pre></div>
 </div>
-</div>
-</div>
 <div class="section" id="further-reading">
-<h2>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h2>
+<h3>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="ddp_series_fault_tolerance.html">Fault Tolerant distributed training</a>  (next tutorial in this series)</p></li>
 <li><p><a class="reference external" href="ddp_series_theory.html">Intro to DDP</a> (previous tutorial in this series)</p></li>
@@ -642,6 +639,7 @@ if __name__ == "__main__":
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#tcp-initialization">Process Group
 initialization</a></p></li>
 </ul>
+</div>
 </div>
 </div>
 </article>
@@ -683,16 +681,15 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Multi GPU training with DDP</a><ul>
-<li><a class="reference internal" href="#diff-for-single-gpu-py-v-s-multigpu-py">Diff for single_gpu.py v/s multigpu.py</a><ul>
 <li><a class="reference internal" href="#imports">Imports</a></li>
 <li><a class="reference internal" href="#constructing-the-process-group">Constructing the process group</a></li>
 <li><a class="reference internal" href="#constructing-the-ddp-model">Constructing the DDP model</a></li>
 <li><a class="reference internal" href="#distributing-input-data">Distributing input data</a></li>
 <li><a class="reference internal" href="#saving-model-checkpoints">Saving model checkpoints</a></li>
-<li><a class="reference internal" href="#running-the-distributed-training-job">Running the distributed training job</a></li>
+<li><a class="reference internal" href="#running-the-distributed-training-job">Running the distributed training job</a><ul>
+<li><a class="reference internal" href="#further-reading">Further Reading</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#further-reading">Further Reading</a></li>
 </ul>
 </li>
 </ul>

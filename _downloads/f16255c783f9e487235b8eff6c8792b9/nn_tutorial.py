@@ -98,7 +98,7 @@ print(y_train.min(), y_train.max())
 
 ###############################################################################
 # Neural net from scratch (without ``torch.nn``)
-# ---------------------------------------------
+# -----------------------------------------------
 #
 # Let's first create a model using nothing but PyTorch tensor operations. We're assuming
 # you're already familiar with the basics of neural networks. (If you're not, you can

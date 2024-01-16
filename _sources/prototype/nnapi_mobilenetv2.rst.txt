@@ -166,7 +166,7 @@ by passing ``--use_caching_allocator=true``.
 
 
 Running model on host
---------------------
+---------------------
 
 We can now run models on your linux machine using the reference implementation
 of NNAPI. You need to build the NNAPI library from Android source code:

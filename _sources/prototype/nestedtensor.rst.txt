@@ -38,33 +38,30 @@ for operating on sequential data of varying lengths with a real-world example.
 
 NestedTensor are currently a prototype feature and are subject to change.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-33
+.. GENERATED FROM PYTHON SOURCE LINES 30-35
 
 NestedTensor Initialization
-----------------
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 35-37
+----------------------------
 
 From the Python frontend, a nestedtensor can be created from a list of tensors.
 We denote nt[i] as the ith tensor component of a nestedtensor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-44
+.. GENERATED FROM PYTHON SOURCE LINES 40-42
 
 By padding every underlying tensor to the same shape,
 a nestedtensor can be converted to a regular tensor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-49
+.. GENERATED FROM PYTHON SOURCE LINES 46-47
 
 All tensors posses an attribute for determining if they are nested;
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-56
+.. GENERATED FROM PYTHON SOURCE LINES 51-54
 
 It is common to construct nestedtensors from batches of irregularly shaped tensors.
 i.e. dimension 0 is assumed to be the batch dimension.
 Indexing dimension 0 gives back the first underlying tensor component.
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-62
+.. GENERATED FROM PYTHON SOURCE LINES 54-60
 
 .. code-block:: default
 
@@ -75,19 +72,16 @@ Indexing dimension 0 gives back the first underlying tensor component.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-66
+.. GENERATED FROM PYTHON SOURCE LINES 61-64
 
 An important note is that slicing in dimension 0 has not been supported yet.
 Which means it not currently possible to construct a view that combines the underlying
 tensor components.
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-71
+.. GENERATED FROM PYTHON SOURCE LINES 66-88
 
 Nested Tensor Operations
-----------------
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 73-92
+------------------------
 
 As each operation must be explicitly implemented for nestedtensors,
 operation coverage for nestedtensors is currently narrower than that of regular tensors.
@@ -109,7 +103,7 @@ The semantics for nestedtensors are similar, except that -1 no longer infers.
 Instead, it inherits the old size (here 2 for ``nt[0]`` and 3 for ``nt[1]``).
 -1 is the only legal size to specify for a jagged dimension.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-104
+.. GENERATED FROM PYTHON SOURCE LINES 92-100
 
 **transpose**
 
@@ -120,7 +114,7 @@ Note that for nestedtensors dimension 0 is special;
 it is assumed to be the batch dimension,
 so transposes involving nestedtensor dimension 0 are not supported.
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-114
+.. GENERATED FROM PYTHON SOURCE LINES 104-110
 
 **others**
 
@@ -129,13 +123,13 @@ Applying the operation on a nestedtensor is equivalent to
 applying the operation to the underlying tensor components,
 with the result being a nestedtensor as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-128
+.. GENERATED FROM PYTHON SOURCE LINES 121-124
 
 Why Nested Tensor
-----------------
+-----------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-136
+.. GENERATED FROM PYTHON SOURCE LINES 126-132
 
 When data is sequential, it is often the case that each sample has a different length.
 For example, in a batch of sentences, each sentence has a different number of words.
@@ -144,7 +138,7 @@ to the same shape in order to form a batch.
 For example, we have 2 sentences with different lengths and a vocabulary
 In order to represent his as single tensor we pad with 0 to the max length in the batch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-154
+.. GENERATED FROM PYTHON SOURCE LINES 144-150
 
 This techinque of padding a batch of data to its max length is not optimal.
 The padded data is not needed for computation and wastes memory by allocating
@@ -153,34 +147,34 @@ Further, not all operations have the same semnatics when applied to padded data.
 For matrix multiplications in order to ignore the padded entries, one needs to pad
 with 0 while for softmax one has to pad with -inf to ignore specific entries.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-163
+.. GENERATED FROM PYTHON SOURCE LINES 156-159
 
 Let us take a look at a practical example: the multi-head attention component
 utilized in `Transformers <https://arxiv.org/pdf/1706.03762.pdf>`__.
 The nestedtensor version is straightforward.
 
-.. GENERATED FROM PYTHON SOURCE LINES 249-251
+.. GENERATED FROM PYTHON SOURCE LINES 245-247
 
 The 0-padded tensor version additionally requires masks
 for more complicated treatments at padded entries.
 
-.. GENERATED FROM PYTHON SOURCE LINES 352-353
+.. GENERATED FROM PYTHON SOURCE LINES 348-349
 
 set hyperparameters following `the Transformer paper <https://arxiv.org/pdf/1706.03762.pdf>`__
 
-.. GENERATED FROM PYTHON SOURCE LINES 358-359
+.. GENERATED FROM PYTHON SOURCE LINES 354-355
 
 except for dropout probability: set to 0 for correctness check
 
-.. GENERATED FROM PYTHON SOURCE LINES 362-363
+.. GENERATED FROM PYTHON SOURCE LINES 358-359
 
 Let us generate some realistic fake data from Zipf's law.
 
-.. GENERATED FROM PYTHON SOURCE LINES 384-385
+.. GENERATED FROM PYTHON SOURCE LINES 380-381
 
 create inputs
 
-.. GENERATED FROM PYTHON SOURCE LINES 385-420
+.. GENERATED FROM PYTHON SOURCE LINES 381-416
 
 .. code-block:: default
 
@@ -220,11 +214,11 @@ create inputs
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 421-422
+.. GENERATED FROM PYTHON SOURCE LINES 417-418
 
 check correctness and performance
 
-.. GENERATED FROM PYTHON SOURCE LINES 446-453
+.. GENERATED FROM PYTHON SOURCE LINES 442-449
 
 Although the nestedtensor version avoids wasted computation on padding, it is not faster
 then the equivalent padded tensor version. This is because the nestedtensor version
@@ -234,7 +228,7 @@ There are plans to implement performance critical operations using the new Pytor
 For now, some performant kernels are provided for specific use cases, e.g.
 self-attention evaluation by multi-head attention formula.
 
-.. GENERATED FROM PYTHON SOURCE LINES 453-459
+.. GENERATED FROM PYTHON SOURCE LINES 449-455
 
 .. code-block:: default
 
@@ -245,11 +239,11 @@ self-attention evaluation by multi-head attention formula.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 460-461
+.. GENERATED FROM PYTHON SOURCE LINES 456-457
 
 extract parameters for correctness check
 
-.. GENERATED FROM PYTHON SOURCE LINES 471-476
+.. GENERATED FROM PYTHON SOURCE LINES 467-472
 
 If we set need_weights to False this will enable the fast path in the library.
 Under the hood this will call _scaled_dot_product_attention. If your tensors
@@ -257,7 +251,7 @@ are on CUDA, than a fused, efficient attention kernel will be used. For
 more detailed performance characteristics look at the benchmark in
 pytorch/benchmarks/transformer/sdp.py
 
-.. GENERATED FROM PYTHON SOURCE LINES 476-497
+.. GENERATED FROM PYTHON SOURCE LINES 472-493
 
 .. code-block:: default
 

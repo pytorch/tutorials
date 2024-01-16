@@ -228,7 +228,7 @@ For post training quantization, we'll need to set model to eval mode.
 
 
 4. Specify how to quantize the model with ``QConfigMapping``
-----------------------------------------------------------
+------------------------------------------------------------
 
 .. code:: python
 

@@ -71,7 +71,7 @@ Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now
 
 
 Use PyTorch iOS library with Metal
----------------------
+----------------------------------
 The PyTorch iOS library with Metal support ``LibTorch-Lite-Nightly`` is available in Cocoapods. You can read the `Using the Nightly PyTorch iOS Libraries in CocoaPods <https://pytorch.org/mobile/ios/#using-the-nightly-pytorch-ios-libraries-in-cocoapods>`_ section from the iOS tutorial for more detail about its usage. 
 
 We also have the `HelloWorld-Metal example <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-Metal>`_ that shows how to conect all pieces together.  
@@ -88,7 +88,7 @@ This is because by default Metal uses fp16 rather than fp32 to compute. The prec
 
 
 Use LibTorch-Lite Built from Source
----------------------
+-----------------------------------
 
 You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ to demonstrate this process. 
 
