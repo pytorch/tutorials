@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Creating Extensions Using numpy and scipy
+Creating Extensions Using NumPy and SciPy
 =========================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
@@ -27,7 +27,7 @@ from torch.autograd import Function
 # This layer doesn’t particularly do anything useful or mathematically
 # correct.
 #
-# It is aptly named BadFFTFunction
+# It is aptly named ``BadFFTFunction``
 #
 # **Layer Implementation**
 
@@ -48,7 +48,7 @@ class BadFFTFunction(Function):
         return grad_output.new(result)
 
 # since this layer does not have any parameters, we can
-# simply declare this as a function, rather than as an nn.Module class
+# simply declare this as a function, rather than as an ``nn.Module`` class
 
 
 def incorrect_fft(input):
@@ -75,7 +75,7 @@ print(input)
 # Implementation of a layer with learnable weights, where cross-correlation
 # has a filter (kernel) that represents weights.
 #
-# The backward pass computes the gradient wrt the input and the gradient wrt the filter.
+# The backward pass computes the gradient ``wrt`` the input and the gradient ``wrt`` the filter.
 
 from numpy import flip
 import numpy as np

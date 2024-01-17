@@ -40,7 +40,7 @@ import torch
 
 N, C, H, W = 10, 3, 32, 32
 x = torch.empty(N, C, H, W)
-print(x.stride())  # Ouputs: (3072, 1024, 32, 1)
+print(x.stride())  # Outputs: (3072, 1024, 32, 1)
 
 ######################################################################
 # Conversion operator
@@ -56,11 +56,11 @@ print(x.stride())  # Outputs: (3072, 1024, 32, 1)
 ######################################################################
 # Alternative option
 x = x.contiguous(memory_format=torch.channels_last)
-print(x.stride())  # Ouputs: (3072, 1, 96, 3)
+print(x.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
 # Format checks
-print(x.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
+print(x.is_contiguous(memory_format=torch.channels_last))  # Outputs: True
 
 ######################################################################
 # There are minor difference between the two APIs ``to`` and
@@ -82,8 +82,8 @@ print(x.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
 # sizes are 1 in order to properly represent the intended memory
 # format
 special_x = torch.empty(4, 1, 4, 4)
-print(special_x.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
-print(special_x.is_contiguous(memory_format=torch.contiguous_format))  # Ouputs: True
+print(special_x.is_contiguous(memory_format=torch.channels_last))  # Outputs: True
+print(special_x.is_contiguous(memory_format=torch.contiguous_format))  # Outputs: True
 
 ######################################################################
 # Same thing applies to explicit permutation API ``permute``. In
@@ -100,38 +100,38 @@ print(special_x.is_contiguous(memory_format=torch.contiguous_format))  # Ouputs:
 ######################################################################
 # Create as channels last
 x = torch.empty(N, C, H, W, memory_format=torch.channels_last)
-print(x.stride())  # Ouputs: (3072, 1, 96, 3)
+print(x.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
 # ``clone`` preserves memory format
 y = x.clone()
-print(y.stride())  # Ouputs: (3072, 1, 96, 3)
+print(y.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
 # ``to``, ``cuda``, ``float`` ... preserves memory format
 if torch.cuda.is_available():
     y = x.cuda()
-    print(y.stride())  # Ouputs: (3072, 1, 96, 3)
+    print(y.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
 # ``empty_like``, ``*_like`` operators preserves memory format
 y = torch.empty_like(x)
-print(y.stride())  # Ouputs: (3072, 1, 96, 3)
+print(y.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
 # Pointwise operators preserves memory format
 z = x + y
-print(z.stride())  # Ouputs: (3072, 1, 96, 3)
+print(z.stride())  # Outputs: (3072, 1, 96, 3)
 
 ######################################################################
-# Conv, Batchnorm modules using cudnn backends support channels last
-# (only works for CudNN >= 7.6). Convolution modules, unlike binary
+# ``Conv``, ``Batchnorm`` modules using ``cudnn`` backends support channels last
+# (only works for cuDNN >= 7.6). Convolution modules, unlike binary
 # p-wise operator, have channels last as the dominating memory format.
-# IFF all inputs are in contiguous memory format, the operator
-# produces output in contiguous memory format. Otherwise, output wil
-# be in channels last memroy format.
+# If all inputs are in contiguous memory format, the operator
+# produces output in contiguous memory format. Otherwise, output will
+# be in channels last memory format.
 
-if torch.backends.cudnn.version() >= 7603:
+if torch.backends.cudnn.is_available() and torch.backends.cudnn.version() >= 7603:
     model = torch.nn.Conv2d(8, 4, 3).cuda().half()
     model = model.to(memory_format=torch.channels_last)  # Module parameters need to be channels last
 
@@ -139,7 +139,7 @@ if torch.backends.cudnn.version() >= 7603:
     input = input.to(device="cuda", memory_format=torch.channels_last, dtype=torch.float16)
 
     out = model(input)
-    print(out.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
+    print(out.is_contiguous(memory_format=torch.channels_last))  # Outputs: True
 
 ######################################################################
 # When input tensor reaches a operator without channels last support,
@@ -152,13 +152,13 @@ if torch.backends.cudnn.version() >= 7603:
 # Performance Gains
 # --------------------------------------------------------------------
 # Channels last memory format optimizations are available on both GPU and CPU.
-# On GPU, the most significant performance gains are observed on NVidia's
+# On GPU, the most significant performance gains are observed on NVIDIA's
 # hardware with Tensor Cores support running on reduced precision
 # (``torch.float16``).
-# We were able to archive over 22% perf gains with channels last
+# We were able to archive over 22% performance gains with channels last
 # comparing to contiguous format, both while utilizing
 # 'AMP (Automated Mixed Precision)' training scripts.
-# Our scripts uses AMP supplied by NVidia
+# Our scripts uses AMP supplied by NVIDIA
 # https://github.com/NVIDIA/apex.
 #
 # ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2  ./data``
@@ -196,7 +196,7 @@ if torch.backends.cudnn.version() >= 7603:
 # Epoch: [0][80/125] Time 0.260 (0.335) Speed 770.324 (597.659) Loss 2.2505953312 (1.0879) Prec@1 50.500 (52.938) Prec@5 100.000 (100.000)
 
 ######################################################################
-# Passing ``--channels-last true`` allows running a model in Channels last format with observed 22% perf gain.
+# Passing ``--channels-last true`` allows running a model in Channels last format with observed 22% performance gain.
 #
 # ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2 --channels-last true ./data``
 
@@ -237,12 +237,12 @@ if torch.backends.cudnn.version() >= 7603:
 # Epoch: [0][80/125] Time 0.198 (0.269) Speed 1011.827 (743.883) Loss 2.8196096420 (2.4011) Prec@1 47.500 (50.938) Prec@5 100.000 (100.000)
 
 ######################################################################
-# The following list of models has the full support of Channels last and showing 8%-35% perf gains on Volta devices:
+# The following list of models has the full support of Channels last and showing 8%-35% performance gains on Volta devices:
 # ``alexnet``, ``mnasnet0_5``, ``mnasnet0_75``, ``mnasnet1_0``, ``mnasnet1_3``, ``mobilenet_v2``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``shufflenet_v2_x1_5``, ``shufflenet_v2_x2_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 #
 
 ######################################################################
-# The following list of models has the full support of Channels last and showing 26%-76% perf gains on Intel(R) Xeon(R) Ice Lake (or newer) CPUs:
+# The following list of models has the full support of Channels last and showing 26%-76% performance gains on Intel(R) Xeon(R) Ice Lake (or newer) CPUs:
 # ``alexnet``, ``densenet121``, ``densenet161``, ``densenet169``, ``googlenet``, ``inception_v3``, ``mnasnet0_5``, ``mnasnet1_0``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext101_32x8d``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 #
 
@@ -381,7 +381,7 @@ for (m, attrs) in old_attrs.items():
 # ----------
 # There are still many things to do, such as:
 #
-# - Resolving ambiguity of N1HW and NC11 Tensors;
+# - Resolving ambiguity of ``N1HW`` and ``NC11`` Tensors;
 # - Testing of Distributed Training support;
 # - Improving operators coverage.
 #

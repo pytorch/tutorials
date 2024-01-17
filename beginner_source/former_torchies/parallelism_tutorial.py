@@ -53,7 +53,10 @@ class DataParallelModel(nn.Module):
 
 class MyDataParallel(nn.DataParallel):
     def __getattr__(self, name):
-        return getattr(self.module, name)
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
     
 ########################################################################
 # **Primitives on which DataParallel is implemented upon:**
@@ -132,7 +135,7 @@ class DistributedModel(nn.Module):
 # -  `Discuss PyTorch on the Forums`_
 # -  `Chat with other users on Slack`_
 #
-# .. _`Deep Learning with PyTorch: a 60-minute blitz`: https://github.com/pytorch/tutorials/blob/master/Deep%20Learning%20with%20PyTorch.ipynb
+# .. _`Deep Learning with PyTorch: a 60-minute blitz`: https://github.com/pytorch/tutorials/blob/main/Deep%20Learning%20with%20PyTorch.ipynb
 # .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
 # .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
 # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model

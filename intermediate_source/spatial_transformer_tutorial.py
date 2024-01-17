@@ -27,7 +27,6 @@ any existing CNN with very little modification.
 # License: BSD
 # Author: Ghassen Hamrouni
 
-from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

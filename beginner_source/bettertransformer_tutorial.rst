@@ -8,17 +8,17 @@ In this tutorial, we show how to use Better Transformer for production
 inference with torchtext.  Better Transformer is a production ready fastpath to
 accelerate deployment of Transformer models with high performance on CPU and GPU.
 The fastpath feature works transparently for models based either directly on 
-PyTorch core nn.module or with torchtext.  
+PyTorch core ``nn.module`` or with torchtext.  
 
 Models which can be accelerated by Better Transformer fastpath execution are those
-using the following PyTorch core `torch.nn.module` classes `TransformerEncoder`, 
-`TransformerEncoderLayer`, and `MultiHeadAttention`.  In addition, torchtext has 
+using the following PyTorch core ``torch.nn.module`` classes ``TransformerEncoder``, 
+``TransformerEncoderLayer``, and ``MultiHeadAttention``.  In addition, torchtext has 
 been updated to use the core library modules to benefit from fastpath acceleration.
 (Additional modules may be enabled with fastpath execution in the future.)
 
 Better Transformer offers two types of acceleration:
 
-* Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.  
+* Native multihead attention (MHA) implementation for CPU and GPU to improve overall execution efficiency.  
 * Exploiting sparsity in NLP inference.  Because of variable input lengths, input
   tokens may contain a large number of padding tokens for which processing may be
   skipped, delivering significant speedups.
@@ -32,7 +32,8 @@ To follow this example in Google Colab, `click here
 
 Better Transformer Features in This Tutorial
 --------------------------------------------
-* Load pre-trained models (pre-1.12 created without Better Transformer)
+
+* Load pretrained models (created before PyTorch version 1.12 without Better Transformer)
 * Run and benchmark inference on CPU with and without BT fastpath (native MHA only)
 * Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA only)
 * Enable sparsity support
@@ -48,9 +49,9 @@ Additional information about Better Transformer may be found in the PyTorch.Org 
 
 1. Setup
 
-1.1 Load pre-trained models
+1.1 Load pretrained models
 
-We download the XLM-R model from the pre-defined torchtext models by following the instructions in
+We download the XLM-R model from the predefined torchtext models by following the instructions in
 `torchtext.models <https://pytorch.org/text/main/models.html>`__.  We also set the DEVICE to execute 
 on-accelerator tests.  (Enable GPU execution for your environment as appropriate.)
 
@@ -124,6 +125,7 @@ Finally, we set the benchmark iteration count:
 2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)
 
 We run the model on CPU, and collect profile information:  
+
 * The first run uses traditional ("slow path") execution.
 * The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()` and disables gradient collection with `torch.no_grad()`.
 
@@ -167,6 +169,7 @@ We disable the BT sparsity:
     
  
 We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:  
+
 * The first run uses traditional ("slow path") execution.
 * The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()`
   and disables gradient collection with `torch.no_grad()`.

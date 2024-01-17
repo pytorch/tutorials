@@ -33,12 +33,15 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
+import numpy
+import gc
 import glob
+import random
 import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
 import re
-from validate_tutorials_built import NOT_RUN
+from get_sphinx_filenames import SPHINX_SHOULD_RUN
 
 import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
@@ -76,6 +79,8 @@ extensions = [
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
+    "tensordict": ("https://pytorch-labs.github.io/tensordict/", None),
+    "torchrl": ("https://pytorch.org/rl/", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
     "torchtext": ("https://pytorch.org/text/stable/", None),
     "torchvision": ("https://pytorch.org/vision/stable/", None),
@@ -83,14 +88,26 @@ intersphinx_mapping = {
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
+def reset_seeds(gallery_conf, fname):
+    torch.cuda.empty_cache()
+    torch.manual_seed(42)
+    torch.set_default_device(None)
+    random.seed(10)
+    numpy.random.seed(10)
+    gc.collect()
+
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': '.py',
-    'ignore_pattern': re.compile(f"({'|'.join(NOT_RUN)}).py$"),
+    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
     'promote_jupyter_magic': True,
-    'backreferences_dir': None
+    'backreferences_dir': None,
+    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
+                            "# https://pytorch.org/tutorials/beginner/colab\n"
+                            "%matplotlib inline"),
+    'reset_modules': (reset_seeds),
+    'ignore_pattern': r'_torch_export_nightly_tutorial.py'
 }
 
 if os.getenv('GALLERY_PATTERN'):
@@ -133,7 +150,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'PyTorch Tutorials'
-copyright = '2022, PyTorch'
+copyright = '2023, PyTorch'
 author = 'PyTorch contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -204,8 +221,9 @@ html_theme_options = {
     'pytorch_project': 'tutorials',
     'collapse_navigation': False,
     'display_version': True,
+    'navigation_with_keys': True,
     'logo_only': False,
-    'analytics_id': 'UA-117752657-2',
+    'analytics_id': 'GTM-T8XT4PS',
 }
 
 
@@ -267,7 +285,8 @@ texinfo_documents = [
 
 html_css_files = [
         'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css'
+        'css/custom.css',
+        'css/custom2.css'
     ]
 
 def setup(app):

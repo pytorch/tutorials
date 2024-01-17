@@ -3,7 +3,7 @@ PyTorch Distributed Overview
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 .. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/beginner_source/dist_overview.rst>`__.
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst>`__.
 
 This is the overview page for the ``torch.distributed`` package. The goal of
 this page is to categorize documents into different topics and briefly
@@ -126,12 +126,12 @@ DDP materials are listed below:
    described in the
    `Single-Machine Model Parallel Best Practices <../intermediate/model_parallel_tutorial.html>`__
    tutorial.
-3. The `Launching and configuring distributed data parallel applications <https://github.com/pytorch/examples/blob/stable/distributed/ddp/README.md>`__
+3. The `Launching and configuring distributed data parallel applications <https://github.com/pytorch/examples/blob/main/distributed/ddp/README.md>`__
    document shows how to use the DDP launching script.
 4. The `Shard Optimizer States With ZeroRedundancyOptimizer <../recipes/zero_redundancy_optimizer.html>`__
    recipe demonstrates how `ZeroRedundancyOptimizer <https://pytorch.org/docs/stable/distributed.optim.html>`__
    helps to reduce optimizer memory footprint.
-5. The `Distributed Training with Uneven Inputs Using the Join Context Manager <../advanced/generic_oin.html>`__
+5. The `Distributed Training with Uneven Inputs Using the Join Context Manager <../advanced/generic_join.html>`__
    tutorial walks through using the generic join context for distributed training with uneven inputs.
 
 torch.distributed.elastic
@@ -150,7 +150,7 @@ throws an exception, it is likely to lead to desynchronization (mismatched
 adds fault tolerance and the ability to make use of a dynamic pool of machines (elasticity).
 
 RPC-Based Distributed Training
-----------------------------
+------------------------------
 
 Many training paradigms do not fit into data parallelism, e.g.,
 parameter server paradigm, distributed pipeline parallelism, reinforcement

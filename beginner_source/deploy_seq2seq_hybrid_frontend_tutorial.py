@@ -39,7 +39,7 @@ Deploying a Seq2Seq Model with TorchScript
 # the Python runtime.
 #
 # The API for converting eager-mode PyTorch programs into TorchScript is
-# found in the torch.jit module. This module has two core modalities for
+# found in the ``torch.jit`` module. This module has two core modalities for
 # converting an eager-mode model to a TorchScript graph representation:
 # **tracing** and **scripting**. The ``torch.jit.trace`` function takes a
 # module or function and a set of example inputs. It then runs the example
@@ -74,18 +74,18 @@ Deploying a Seq2Seq Model with TorchScript
 
 
 ######################################################################
-# Acknowledgements
+# Acknowledgments
 # ----------------
 #
 # This tutorial was inspired by the following sources:
 #
-# 1) Yuan-Kuei Wu’s pytorch-chatbot implementation:
+# 1) Yuan-Kuei Wu's pytorch-chatbot implementation:
 #    https://github.com/ywk991112/pytorch-chatbot
 #
-# 2) Sean Robertson’s practical-pytorch seq2seq-translation example:
+# 2) Sean Robertson's practical-pytorch seq2seq-translation example:
 #    https://github.com/spro/practical-pytorch/tree/master/seq2seq-translation
 #
-# 3) FloydHub’s Cornell Movie Corpus preprocessing code:
+# 3) FloydHub's Cornell Movie Corpus preprocessing code:
 #    https://github.com/floydhub/textutil-preprocess-cornell-movie-corpus
 #
 
@@ -100,11 +100,6 @@ Deploying a Seq2Seq Model with TorchScript
 # defines the maximum allowed sentence length during training and the
 # maximum length output that the model is capable of producing.
 #
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import torch
 import torch.nn as nn
@@ -290,7 +285,7 @@ class EncoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = embedding
 
-        # Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'
+        # Initialize GRU; the ``input_size`` and ``hidden_size`` parameters are both set to 'hidden_size'
         #   because our input size is a word embedding with number of features == hidden_size
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers,
                           dropout=(0 if n_layers == 1 else dropout), bidirectional=True)
@@ -525,7 +520,7 @@ class LuongAttnDecoderRNN(nn.Module):
 #       we can use function type annotations as introduced in `PEP
 #       3107 <https://www.python.org/dev/peps/pep-3107/>`__. In addition,
 #       it is possible to declare arguments of different types using
-#       MyPy-style type annotations (see
+#       Mypy-style type annotations (see
 #       `doc <https://pytorch.org/docs/master/jit.html#types>`__).
 #
 #
@@ -618,7 +613,7 @@ def evaluate(searcher, voc, sentence, max_length=MAX_LENGTH):
     return decoded_words
 
 
-# Evaluate inputs from user input (stdin)
+# Evaluate inputs from user input (``stdin``)
 def evaluateInput(searcher, voc):
     input_sentence = ''
     while(1):
@@ -638,7 +633,7 @@ def evaluateInput(searcher, voc):
         except KeyError:
             print("Error: Encountered unknown word.")
 
-# Normalize input sentence and call evaluate()
+# Normalize input sentence and call ``evaluate()``
 def evaluateExample(sentence, searcher, voc):
     print("> " + sentence)
     # Normalize sentence
@@ -653,7 +648,7 @@ def evaluateExample(sentence, searcher, voc):
 # Load Pretrained Parameters
 # --------------------------
 #
-# Ok, its time to load our model!
+# No, let's load our model!
 #
 # Use hosted model
 # ~~~~~~~~~~~~~~~~
@@ -671,7 +666,7 @@ def evaluateExample(sentence, searcher, voc):
 # Use your own model
 # ~~~~~~~~~~~~~~~~~~
 #
-# To load your own pre-trained model:
+# To load your own pretrained model:
 #
 # 1) Set the ``loadFilename`` variable to the path to the checkpoint file
 #    that you wish to load. Note that if you followed the convention for
@@ -691,9 +686,9 @@ def evaluateExample(sentence, searcher, voc):
 # ~~~~~~~~~~~~~~~~~~~~~~
 #
 # Notice that we initialize and load parameters into our encoder and
-# decoder models as usual. If you are using tracing mode(`torch.jit.trace`)
-# for some part of your models, you must call .to(device) to set the device
-# options of the models and .eval() to set the dropout layers to test mode
+# decoder models as usual. If you are using tracing mode(``torch.jit.trace``)
+# for some part of your models, you must call ``.to(device)`` to set the device
+# options of the models and ``.eval()`` to set the dropout layers to test mode
 # **before** tracing the models. `TracedModule` objects do not inherit the
 # ``to`` or ``eval`` methods. Since in this tutorial we are only using
 # scripting instead of tracing, we only need to do this before we do
@@ -706,7 +701,7 @@ corpus_name = "cornell movie-dialogs corpus"
 # Configure models
 model_name = 'cb_model'
 attn_model = 'dot'
-#attn_model = 'general'
+#attn_model = 'general'``
 #attn_model = 'concat'
 hidden_size = 500
 encoder_n_layers = 2
@@ -717,7 +712,13 @@ batch_size = 64
 # If you're loading your own model
 # Set checkpoint to load from
 checkpoint_iter = 4000
-# loadFilename = os.path.join(save_dir, model_name, corpus_name,
+
+#############################################################
+# Sample code to load from a checkpoint:
+#
+# .. code-block:: python
+#
+#    loadFilename = os.path.join(save_dir, model_name, corpus_name,
 #                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
 #                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
@@ -743,13 +744,13 @@ embedding.load_state_dict(embedding_sd)
 # Initialize encoder & decoder models
 encoder = EncoderRNN(hidden_size, embedding, encoder_n_layers, dropout)
 decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.num_words, decoder_n_layers, dropout)
-# Load trained model params
+# Load trained model parameters
 encoder.load_state_dict(encoder_sd)
 decoder.load_state_dict(decoder_sd)
 # Use appropriate device
 encoder = encoder.to(device)
 decoder = decoder.to(device)
-# Set dropout layers to eval mode
+# Set dropout layers to ``eval`` mode
 encoder.eval()
 decoder.eval()
 print('Models built and ready to go!')
@@ -794,7 +795,7 @@ print('Models built and ready to go!')
 # data-dependent control flow. In the case of scripting, we do necessary
 # language changes to make sure the implementation complies with
 # TorchScript. We initialize the scripted searcher the same way that we
-# would initialize an un-scripted variant.
+# would initialize an unscripted variant.
 #
 
 ### Compile the whole greedy search model to TorchScript model
@@ -847,7 +848,7 @@ print('scripted_searcher graph:\n', scripted_searcher.graph)
 
 # Use appropriate device
 scripted_searcher.to(device)
-# Set dropout layers to eval mode
+# Set dropout layers to ``eval`` mode
 scripted_searcher.eval()
 
 # Evaluate examples
@@ -855,8 +856,8 @@ sentences = ["hello", "what's up?", "who are you?", "where am I?", "where are yo
 for s in sentences:
     evaluateExample(s, scripted_searcher, voc)
 
-# Evaluate your input
-#evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)
+# Evaluate your input by running
+# ``evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)``
 
 
 ######################################################################

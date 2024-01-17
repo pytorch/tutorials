@@ -102,7 +102,7 @@ Python script to save pretrained mobilenet_v2 to a file:
     script_model = torch.jit.script(model)
     torch.jit.save(script_model, "mobilenet2.pt")
 
-PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default model needs additional step that will optimize operators fusing 
+PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default model needs additional step that will optimize operators fusing
 
 ::
 
@@ -111,6 +111,10 @@ PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default mode
     torch.jit.save(script_model_vulkan, "mobilenet2-vulkan.pt")
 
 The result model can be used only on Vulkan backend as it contains specific to the Vulkan backend operators.
+
+By default, ``optimize_for_mobile`` with ``backend='vulkan'`` rewrites the graph so  that inputs are transferred to the Vulkan backend, and outputs are transferred to the CPU backend, therefore, the model can be run on CPU inputs and produce CPU outputs. To disable this, add the argument ``optimization_blocklist={MobileOptimizerType.VULKAN_AUTOMATIC_GPU_TRANSFER}`` to ``optimize_for_mobile``. (``MobileOptimizerType`` can be imported from ``torch.utils.mobile_optimizer``)
+
+For more information, see the `torch.utils.mobile_optimizer` `API documentation <https://pytorch.org/docs/stable/mobile_optimizer.html>`_.
 
 Using Vulkan backend in code
 ----------------------------
@@ -178,7 +182,7 @@ Python API
 ``.vulkan()`` at the moment of writing of this tutorial is not exposed to Python API, but it is planned to be there.
 
 Android Java API
----------------
+----------------
 
 For Android API to run model on Vulkan backend we have to specify this during model loading:
 
@@ -219,11 +223,11 @@ Or if you need only specific abi you can set it as an argument:
 Add prepared model ``mobilenet2-vulkan.pt`` to test applocation assets:
 
 ::
-  
+
   cp mobilenet2-vulkan.pt $PYTORCH_ROOT/android/test_app/app/src/main/assets/
 
 
-3. Build and Install test applocation to connected android device 
+3. Build and Install test applocation to connected android device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
@@ -231,7 +235,7 @@ Add prepared model ``mobilenet2-vulkan.pt`` to test applocation assets:
     cd $PYTORCH_ROOT
     gradle -p android test_app:installMbvulkanLocalBaseDebug
 
-After successful installation, the application with the name 'MBQ' can be launched on the device. 
+After successful installation, the application with the name 'MBQ' can be launched on the device.
 
 
 

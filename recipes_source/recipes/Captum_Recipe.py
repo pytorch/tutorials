@@ -42,12 +42,12 @@ Model Interpretability using Captum
 # 
 
 import torchvision
-from torchvision import transforms
+from torchvision import models, transforms
 from PIL import Image
 import requests
 from io import BytesIO
 
-model = torchvision.models.resnet18(pretrained=True).eval()
+model = torchvision.models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1).eval()
 
 response = requests.get("https://image.freepik.com/free-photo/two-beautiful-puppies-cat-dog_58409-6024.jpg")
 img = Image.open(BytesIO(response.content))
@@ -59,7 +59,7 @@ center_crop = transforms.Compose([
 
 normalize = transforms.Compose([
     transforms.ToTensor(),               # converts the image to a tensor with values between 0 and 1
-    transforms.Normalize(                # normalize to follow 0-centered imagenet pixel rgb distribution
+    transforms.Normalize(                # normalize to follow 0-centered imagenet pixel RGB distribution
      mean=[0.485, 0.456, 0.406],
      std=[0.229, 0.224, 0.225]
     )

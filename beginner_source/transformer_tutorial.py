@@ -1,8 +1,8 @@
 """
-Language Modeling with nn.Transformer and TorchText
+Language Modeling with ``nn.Transformer`` and torchtext
 ===============================================================
 
-This is a tutorial on training a sequence-to-sequence model that uses the
+This is a tutorial on training a model to predict the next word in a sequence using the
 `nn.Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ module.
 
 The PyTorch 1.2 release includes a standard transformer module based on the
@@ -29,7 +29,9 @@ can be easily adapted/composed.
 
 ######################################################################
 # In this tutorial, we train a ``nn.TransformerEncoder`` model on a
-# language modeling task. The language modeling task is to assign a
+# causal language modeling task. Please note that this tutorial does not cover
+# the training of `nn.TransformerDecoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoder.html#torch.nn.TransformerDecoder>`__, as depicted in
+# the right half of the diagram above. The language modeling task is to assign a
 # probability for the likelihood of a given word (or a sequence of words)
 # to follow a sequence of words. A sequence of tokens are passed to the embedding
 # layer first, followed by a positional encoding layer to account for the order
@@ -37,19 +39,25 @@ can be easily adapted/composed.
 # ``nn.TransformerEncoder`` consists of multiple layers of
 # `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
 # Along with the input sequence, a square attention mask is required because the
-# self-attention layers in ``nn.TransformerEncoder`` are only allowed to attend
+# self-attention layers in ``nn.TransformerDecoder`` are only allowed to attend
 # the earlier positions in the sequence. For the language modeling task, any
-# tokens on the future positions should be masked. To produce a probability
-# distribution over output words, the output of the ``nn.TransformerEncoder``
-# model is passed through a linear layer followed by a log-softmax function.
+# tokens on the future positions should be masked.  This masking, combined with fact that 
+# the output embeddings are offset with later positions ensures that the
+# predictions for position i can depend only on the known outputs at positions less than i.
+# To produce a probability  distribution over output words, the output of the ``nn.TransformerEncoder``
+# model is passed through a linear layer to output unnormalized logits.
+# The log-softmax function isn't applied here due to the later use of
+# `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html>`__,
+# which requires the inputs to be unnormalized logits.
 #
 
 import math
+import os
+from tempfile import TemporaryDirectory
 from typing import Tuple
 
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.utils.data import dataset
 
@@ -62,37 +70,37 @@ class TransformerModel(nn.Module):
         self.pos_encoder = PositionalEncoding(d_model, dropout)
         encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-        self.encoder = nn.Embedding(ntoken, d_model)
+        self.embedding = nn.Embedding(ntoken, d_model)
         self.d_model = d_model
-        self.decoder = nn.Linear(d_model, ntoken)
+        self.linear = nn.Linear(d_model, ntoken)
 
         self.init_weights()
 
     def init_weights(self) -> None:
         initrange = 0.1
-        self.encoder.weight.data.uniform_(-initrange, initrange)
-        self.decoder.bias.data.zero_()
-        self.decoder.weight.data.uniform_(-initrange, initrange)
+        self.embedding.weight.data.uniform_(-initrange, initrange)
+        self.linear.bias.data.zero_()
+        self.linear.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src: Tensor, src_mask: Tensor) -> Tensor:
+    def forward(self, src: Tensor, src_mask: Tensor = None) -> Tensor:
         """
-        Args:
-            src: Tensor, shape [seq_len, batch_size]
-            src_mask: Tensor, shape [seq_len, seq_len]
+        Arguments:
+            src: Tensor, shape ``[seq_len, batch_size]``
+            src_mask: Tensor, shape ``[seq_len, seq_len]``
 
         Returns:
-            output Tensor of shape [seq_len, batch_size, ntoken]
+            output Tensor of shape ``[seq_len, batch_size, ntoken]``
         """
-        src = self.encoder(src) * math.sqrt(self.d_model)
+        src = self.embedding(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
+        if src_mask is None:
+            """Generate a square causal mask for the sequence. The masked positions are filled with float('-inf').
+            Unmasked positions are filled with float(0.0).
+            """
+            src_mask = nn.Transformer.generate_square_subsequent_mask(len(src)).to(device)
         output = self.transformer_encoder(src, src_mask)
-        output = self.decoder(output)
+        output = self.linear(output)
         return output
-
-
-def generate_square_subsequent_mask(sz: int) -> Tensor:
-    """Generates an upper-triangular matrix of -inf, with zeros on diag."""
-    return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
 
 
 ######################################################################
@@ -118,8 +126,8 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """
-        Args:
-            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
         """
         x = x + self.pe[:x.size(0)]
         return self.dropout(x)
@@ -133,11 +141,12 @@ class PositionalEncoding(nn.Module):
 
 ######################################################################
 # This tutorial uses ``torchtext`` to generate Wikitext-2 dataset.
-# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 # %%
 #  .. code-block:: bash
 #
 #      %%bash
+#      pip install portalocker
 #      pip install torchdata
 #
 # The vocab object is built based on the train dataset and is used to numericalize
@@ -147,7 +156,7 @@ class PositionalEncoding(nn.Module):
 # into ``batch_size`` columns. If the data does not divide evenly into
 # ``batch_size`` columns, then the data is trimmed to fit. For instance, with
 # the alphabet as the data (total length of 26) and ``batch_size=4``, we would
-# divide the alphabet into 4 sequences of length 6:
+# divide the alphabet into sequences of length 6, resulting in 4 of such sequences.
 #
 # .. math::
 #   \begin{bmatrix}
@@ -173,14 +182,14 @@ from torchtext.vocab import build_vocab_from_iterator
 train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
 vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=['<unk>'])
-vocab.set_default_index(vocab['<unk>']) 
+vocab.set_default_index(vocab['<unk>'])
 
 def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
     """Converts raw text into a flat Tensor."""
     data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-# train_iter was "consumed" by the process of building the vocab,
+# ``train_iter`` was "consumed" by the process of building the vocab,
 # so we have to create it again
 train_iter, val_iter, test_iter = WikiText2()
 train_data = data_process(train_iter)
@@ -190,15 +199,15 @@ test_data = data_process(test_iter)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def batchify(data: Tensor, bsz: int) -> Tensor:
-    """Divides the data into bsz separate sequences, removing extra elements
+    """Divides the data into ``bsz`` separate sequences, removing extra elements
     that wouldn't cleanly fit.
 
-    Args:
-        data: Tensor, shape [N]
+    Arguments:
+        data: Tensor, shape ``[N]``
         bsz: int, batch size
 
     Returns:
-        Tensor of shape [N // bsz, bsz]
+        Tensor of shape ``[N // bsz, bsz]``
     """
     seq_len = data.size(0) // bsz
     data = data[:seq_len * bsz]
@@ -207,7 +216,7 @@ def batchify(data: Tensor, bsz: int) -> Tensor:
 
 batch_size = 20
 eval_batch_size = 10
-train_data = batchify(train_data, batch_size)  # shape [seq_len, batch_size]
+train_data = batchify(train_data, batch_size)  # shape ``[seq_len, batch_size]``
 val_data = batchify(val_data, eval_batch_size)
 test_data = batchify(test_data, eval_batch_size)
 
@@ -236,12 +245,12 @@ bptt = 35
 def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
     """
     Args:
-        source: Tensor, shape [full_seq_len, batch_size]
+        source: Tensor, shape ``[full_seq_len, batch_size]``
         i: int
 
     Returns:
-        tuple (data, target), where data has shape [seq_len, batch_size] and
-        target has shape [seq_len * batch_size]
+        tuple (data, target), where data has shape ``[seq_len, batch_size]`` and
+        target has shape ``[seq_len * batch_size]``
     """
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]
@@ -256,15 +265,15 @@ def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
 
 
 ######################################################################
-# The model hyperparameters are defined below. The vocab size is
+# The model hyperparameters are defined below. The ``vocab`` size is
 # equal to the length of the vocab object.
 #
 
 ntokens = len(vocab)  # size of vocabulary
 emsize = 200  # embedding dimension
-d_hid = 200  # dimension of the feedforward network model in nn.TransformerEncoder
-nlayers = 2  # number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-nhead = 2  # number of heads in nn.MultiheadAttention
+d_hid = 200  # dimension of the feedforward network model in ``nn.TransformerEncoder``
+nlayers = 2  # number of ``nn.TransformerEncoderLayer`` in ``nn.TransformerEncoder``
+nhead = 2  # number of heads in ``nn.MultiheadAttention``
 dropout = 0.2  # dropout probability
 model = TransformerModel(ntokens, emsize, nhead, d_hid, nlayers, dropout).to(device)
 
@@ -284,7 +293,6 @@ model = TransformerModel(ntokens, emsize, nhead, d_hid, nlayers, dropout).to(dev
 # to prevent gradients from exploding.
 #
 
-import copy
 import time
 
 criterion = nn.CrossEntropyLoss()
@@ -297,16 +305,13 @@ def train(model: nn.Module) -> None:
     total_loss = 0.
     log_interval = 200
     start_time = time.time()
-    src_mask = generate_square_subsequent_mask(bptt).to(device)
 
     num_batches = len(train_data) // bptt
     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
         data, targets = get_batch(train_data, i)
-        seq_len = data.size(0)
-        if seq_len != bptt:  # only on last batch
-            src_mask = src_mask[:seq_len, :seq_len]
-        output = model(data, src_mask)
-        loss = criterion(output.view(-1, ntokens), targets)
+        output = model(data)
+        output_flat = output.view(-1, ntokens)
+        loss = criterion(output_flat, targets)
 
         optimizer.zero_grad()
         loss.backward()
@@ -328,14 +333,11 @@ def train(model: nn.Module) -> None:
 def evaluate(model: nn.Module, eval_data: Tensor) -> float:
     model.eval()  # turn on evaluation mode
     total_loss = 0.
-    src_mask = generate_square_subsequent_mask(bptt).to(device)
     with torch.no_grad():
         for i in range(0, eval_data.size(0) - 1, bptt):
             data, targets = get_batch(eval_data, i)
             seq_len = data.size(0)
-            if seq_len != bptt:
-                src_mask = src_mask[:seq_len, :seq_len]
-            output = model(data, src_mask)
+            output = model(data)
             output_flat = output.view(-1, ntokens)
             total_loss += seq_len * criterion(output_flat, targets).item()
     return total_loss / (len(eval_data) - 1)
@@ -346,24 +348,27 @@ def evaluate(model: nn.Module, eval_data: Tensor) -> float:
 
 best_val_loss = float('inf')
 epochs = 3
-best_model = None
 
-for epoch in range(1, epochs + 1):
-    epoch_start_time = time.time()
-    train(model)
-    val_loss = evaluate(model, val_data)
-    val_ppl = math.exp(val_loss)
-    elapsed = time.time() - epoch_start_time
-    print('-' * 89)
-    print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
-          f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
-    print('-' * 89)
+with TemporaryDirectory() as tempdir:
+    best_model_params_path = os.path.join(tempdir, "best_model_params.pt")
 
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        best_model = copy.deepcopy(model)
+    for epoch in range(1, epochs + 1):
+        epoch_start_time = time.time()
+        train(model)
+        val_loss = evaluate(model, val_data)
+        val_ppl = math.exp(val_loss)
+        elapsed = time.time() - epoch_start_time
+        print('-' * 89)
+        print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
+            f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
+        print('-' * 89)
 
-    scheduler.step()
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            torch.save(model.state_dict(), best_model_params_path)
+
+        scheduler.step()
+    model.load_state_dict(torch.load(best_model_params_path)) # load best model states
 
 
 ######################################################################
@@ -371,7 +376,7 @@ for epoch in range(1, epochs + 1):
 # -------------------------------------------
 #
 
-test_loss = evaluate(best_model, test_data)
+test_loss = evaluate(model, test_data)
 test_ppl = math.exp(test_loss)
 print('=' * 89)
 print(f'| End of training | test loss {test_loss:5.2f} | '

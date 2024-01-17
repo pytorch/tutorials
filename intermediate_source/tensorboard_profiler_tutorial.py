@@ -18,7 +18,7 @@ Setup
 -----
 To install ``torch`` and ``torchvision`` use the following command:
 
-::
+.. code-block::
 
    pip install torch torchvision
 
@@ -36,6 +36,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 4. Use TensorBoard to view results and analyze model performance
 # 5. Improve performance with the help of profiler
 # 6. Analyze performance with other advanced features
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs 
 #
 # 1. Prepare the data and model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,7 +55,7 @@ import torchvision.transforms as T
 
 ######################################################################
 # Then prepare the input data. For this tutorial, we use the CIFAR10 dataset.
-# Transform it to the desired format and use DataLoader to load each batch.
+# Transform it to the desired format and use ``DataLoader`` to load each batch.
 
 transform = T.Compose(
     [T.Resize(224),
@@ -68,7 +69,7 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=Tru
 # To run on GPU, move model and loss to GPU device.
 
 device = torch.device("cuda:0")
-model = torchvision.models.resnet18(pretrained=True).cuda(device)
+model = torchvision.models.resnet18(weights='IMAGENET1K_V1').cuda(device)
 criterion = torch.nn.CrossEntropyLoss().cuda(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 model.train()
@@ -96,12 +97,12 @@ def train(data):
 # - ``schedule`` - callable that takes step (int) as a single parameter
 #   and returns the profiler action to perform at each step.
 #
-#   In this example with ``wait=1, warmup=1, active=3, repeat=2``,
+#   In this example with ``wait=1, warmup=1, active=3, repeat=1``,
 #   profiler will skip the first step/iteration,
 #   start warming up on the second,
 #   record the following three iterations,
 #   after which the trace will become available and on_trace_ready (when set) is called.
-#   In total, the cycle repeats twice. Each cycle is called a "span" in TensorBoard plugin.
+#   In total, the cycle repeats once. Each cycle is called a "span" in TensorBoard plugin.
 #
 #   During ``wait`` steps, the profiler is disabled.
 #   During ``warmup`` steps, the profiler starts tracing but the results are discarded.
@@ -116,35 +117,35 @@ def train(data):
 # - ``profile_memory`` - Track tensor memory allocation/deallocation. Note, for old version of pytorch with version
 #   before 1.10, if you suffer long profiling time, please disable it or upgrade to new version.
 # - ``with_stack`` - Record source information (file and line number) for the ops.
-#   If the TensorBoard is launched in VSCode (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
+#   If the TensorBoard is launched in VS Code (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
 #   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
         profile_memory=True,
         with_stack=True
 ) as prof:
     for step, batch_data in enumerate(train_loader):
-        if step >= (1 + 1 + 3) * 2:
+        prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
+        if step >= 1 + 1 + 3:
             break
         train(batch_data)
-        prof.step()  # Need to call this at the end of each step to notify profiler of steps' boundary.
 
 ######################################################################
 # Alternatively, the following non-context manager start/stop is supported as well.
 prof = torch.profiler.profile(
-        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
         with_stack=True)
 prof.start()
 for step, batch_data in enumerate(train_loader):
-    if step >= (1 + 1 + 3) * 2:
+    prof.step()
+    if step >= 1 + 1 + 3:
         break
     train(batch_data)
-    prof.step()
 prof.stop()
 
 ######################################################################
@@ -156,11 +157,15 @@ prof.stop()
 
 ######################################################################
 # 4. Use TensorBoard to view results and analyze model performance
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# .. note::
+#     TensorBoard Plugin support has been deprecated, so some of these functions may not
+#     work as previously. Please take a look at the replacement, `HTA <https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis>`_.
 #
 # Install PyTorch Profiler TensorBoard Plugin.
 #
-# ::
+# .. code-block::
 #
 #     pip install torch_tb_profiler
 #
@@ -168,15 +173,15 @@ prof.stop()
 ######################################################################
 # Launch the TensorBoard.
 #
-# ::
+# .. code-block::
 #
 #     tensorboard --logdir=./log
 #
 
 ######################################################################
-# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser.
+# Open the TensorBoard profile URL in Google Chrome browser or Microsoft Edge browser (**Safari is not supported**).
 #
-# ::
+# .. code-block::
 #
 #     http://localhost:6006/#pytorch_profiler
 #
@@ -217,13 +222,13 @@ prof.stop()
 # The "Total" duration includes its child operators’ time.
 #
 # - View call stack
-# Click the "View Callstack" of an operator, the operators with same name but different call stacks will be shown.
-# Then click a "View Callstack" in this sub-table, the call stack frames will be shown.
+# Click the ``View Callstack`` of an operator, the operators with same name but different call stacks will be shown.
+# Then click a ``View Callstack`` in this sub-table, the call stack frames will be shown.
 #
 # .. image:: ../../_static/img/profiler_callstack.png
 #    :scale: 25 %
 #
-# If the TensorBoard is launched inside VSCode
+# If the TensorBoard is launched inside VS Code
 # (`Launch Guide <https://devblogs.microsoft.com/python/python-in-visual-studio-code-february-2021-release/#tensorboard-integration>`_),
 # clicking a call stack frame will navigate to the specific code line.
 #
@@ -279,15 +284,15 @@ prof.stop()
 # 5. Improve performance with the help of profiler
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is DataLoader.
-# The PyTorch DataLoader uses single process by default.
+# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is ``DataLoader``.
+# The PyTorch ``DataLoader`` uses single process by default.
 # User could enable multi-process data loading by setting the parameter ``num_workers``.
 # `Here <https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading>`_ is more details.
 #
 # In this example, we follow the "Performance Recommendation" and set ``num_workers`` as below,
 # pass a different name such as ``./log/resnet18_4workers`` to ``tensorboard_trace_handler``, and run it again.
 #
-# ::
+# .. code-block::
 #
 #     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 #
@@ -316,7 +321,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/memory_demo_1_10
@@ -350,7 +355,7 @@ prof.stop()
 # In the memory events table, the allocation and release events are paired into one entry. The "operator" column shows
 # the immediate ATen operator that is causing the allocation. Notice that in PyTorch, ATen operators commonly use
 # ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
-# ``aten::fill_``. Solely display the opeartor name as ``aten::empty`` is of little help. It will be shown as
+# ``aten::fill_``. Solely display the operator name as ``aten::empty`` is of little help. It will be shown as
 # ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
 # columns' data might be missing if the event occurs outside of the time range. 
 #
@@ -366,7 +371,7 @@ prof.stop()
 #
 # You can try it by using existing example on Azure:
 #
-# ::
+# .. code-block::
 #
 #     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/distributed_bert
@@ -389,11 +394,108 @@ prof.stop()
 # The "Communication Operations Stats" summarizes the detailed statistics of all communication ops in each worker.
 
 ######################################################################
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#  
+# The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
+# We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base development image
+# before installing PyTorch.
+
+
+######################################################################
+# For the purpose of example, let's create a directory called ``profiler_tutorial``, and save the code in **Step 1** as ``test_cifar10.py`` in this directory. 
+# 
+# .. code-block::
+#
+#      mkdir ~/profiler_tutorial
+#      cd profiler_tutorial
+#      vi test_cifar10.py
+
+
+######################################################################
+# At the time of this writing, the Stable(``2.1.1``) Linux version of PyTorch on ROCm Platform is `ROCm 5.6 <https://pytorch.org/get-started/locally/>`_. 
+#
+#
+# - Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`_.
+#
+# It is ``rocm/dev-ubuntu-20.04:5.6``.
+#
+# - Start the ROCm base Docker container:
+#
+#
+# .. code-block::
+#
+#     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
+#
+#
+# - Inside the container, install any dependencies needed for installing the wheels package.
+#
+# .. code-block::
+#
+#     sudo apt update
+#     sudo apt install libjpeg-dev python3-dev -y
+#     pip3 install wheel setuptools
+#     sudo apt install python-is-python3 
+#
+#
+# - Install the wheels:
+#
+# .. code-block::
+# 
+#     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+#
+#
+# - Install the ``torch_tb_profiler``, and then, run the Python file ``test_cifar10.py``:
+# 
+# .. code-block::
+#
+#     pip install torch_tb_profiler
+#     cd /profiler_tutorial
+#     python test_cifar10.py
+#
+#     
+# Now, we have all the data needed to view in TensorBoard:
+# 
+# .. code-block::
+#
+#      tensorboard --logdir=./log
+#
+# Choose different views as described in **Step 4**. For example, below is the **Operator** View:
+#
+# .. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# At the time this section is written, **Trace** view does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
+#
+# 
+# - Copy the ``trace.json`` file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+# You may need to copy the file by using ``scp`` if the file is located in a remote location. 
+# 
+# - Click **Load** button to load the trace JSON file from the ``chrome://tracing`` page in the browser. 
+#
+# .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# As mentioned previously, you can move the graph and zoom in and out.
+# You can also use keyboard to zoom and move around inside the timeline.
+# The ``w`` and ``s`` keys zoom in centered around the mouse,
+# and the ``a`` and ``d`` keys move the timeline left and right.
+# You can hit these keys multiple times until you see a readable representation.
+
+
+
+######################################################################
 # Learn More
 # ----------
 #
 # Take a look at the following documents to continue your learning,
 # and feel free to open an issue `here <https://github.com/pytorch/kineto/issues>`_.
 #
-# -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
+# -  `PyTorch TensorBoard Profiler Github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
 # -  `torch.profiler API <https://pytorch.org/docs/master/profiler.html>`_
+# -  `HTA <https://github.com/pytorch/kineto/tree/main#holistic-trace-analysis>`_

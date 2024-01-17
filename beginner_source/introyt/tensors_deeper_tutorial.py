@@ -378,7 +378,7 @@ print(d)
 #
 # -  The multiplication operation that created ``b`` was 
 #    broadcast over every “layer” of ``a``.
-# -  For ``c``, the operation was broadcast over ever layer and row of
+# -  For ``c``, the operation was broadcast over every layer and row of
 #    ``a`` - every 3-element column is identical. 
 # -  For ``d``, we switched it around - now every *row* is identical,
 #    across layers and columns.
@@ -544,11 +544,11 @@ d = torch.matmul(a, b, out=c)
 print(c)                # contents of c have changed
 
 assert c is d           # test c & d are same object, not just containing equal values
-assert id(c), old_id    # make sure that our new c is the same object as the old one
+assert id(c) == old_id  # make sure that our new c is the same object as the old one
 
 torch.rand(2, 2, out=c) # works for creation too!
 print(c)                # c has changed again
-assert id(c), old_id    # still the same object!
+assert id(c) == old_id  # still the same object!
 
 
 ##########################################################################

@@ -123,6 +123,27 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/profile_with_itt.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Torch Compile IPEX Backend
+   :card_description: Learn how to use torch.compile IPEX backend
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_backend_ipex.html
+   :tags: Basics
+
+.. customcarditem::
+   :header: Reasoning about Shapes in PyTorch
+   :card_description: Learn how to use the meta device to reason about shapes in your model.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/reasoning_about_shapes.html
+   :tags: Basics
+
+.. customcarditem::
+   :header: Tips for Loading an nn.Module from a Checkpoint
+   :card_description: Learn tips for loading an nn.Module from a checkpoint.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/module_load_state_dict_tips.html
+   :tags: Basics
+
 .. Interpretability
 
 .. customcarditem::
@@ -246,6 +267,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Leverage Advanced Matrix Extensions
+
+.. customcarditem::
+   :header: Leverage Intel® Advanced Matrix Extensions
+   :card_description: Learn to leverage Intel® Advanced Matrix Extensions.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/amx.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
@@ -287,6 +317,22 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_optim_torchscript.html
    :tags: Distributed-Training,TorchScript
 
+.. customcarditem::
+   :header: Getting Started with Distributed Checkpoint (DCP)
+   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
+   :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
+   :link: ../recipes/distributed_checkpoint_recipe.html
+   :tags: Distributed-Training
+
+.. TorchServe
+
+.. customcarditem::
+   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
+   :card_description: Learn how to deploy model in Vertex AI with TorchServe
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torchserve_vertexai_tutorial.html
+   :tags: Production
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -322,6 +368,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/intel_extension_for_pytorch
+   /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling

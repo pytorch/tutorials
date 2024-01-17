@@ -1,5 +1,5 @@
 """
-Example training code for ax_multiobjective_nas_tutorial.py
+Example training code for ``ax_multiobjective_nas_tutorial.py``
 """
 
 import argparse
@@ -16,7 +16,7 @@ from pytorch_lightning import loggers as pl_loggers
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from torchmetrics.functional.classification.accuracy import accuracy
+from torchmetrics.functional.classification.accuracy import multiclass_accuracy
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
@@ -44,7 +44,6 @@ def parse_args():
 args = parse_args()
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
-AVAIL_GPUS = min(1, torch.cuda.device_count())
 
 
 class MnistModel(LightningModule):
@@ -106,7 +105,7 @@ class MnistModel(LightningModule):
         logits = self(x)
         loss = F.nll_loss(logits, y)
         preds = torch.argmax(logits, dim=1)
-        acc = accuracy(preds, y)
+        acc = multiclass_accuracy(preds, y, num_classes=self.num_classes)
         self.log("val_acc", acc, prog_bar=False)
         return loss
 
@@ -136,7 +135,6 @@ def run_training_job():
     # Initialize a trainer (don't log anything since things get so slow...)
     trainer = Trainer(
         logger=False,
-        gpus=AVAIL_GPUS,
         max_epochs=args.epochs,
         enable_progress_bar=False,
         deterministic=True,  # Do we want a bit of noise?
