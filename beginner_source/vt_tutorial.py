@@ -1,6 +1,6 @@
 """
 Optimizing Vision Transformer Model for Deployment
-===========================
+==================================================
 
 `Jeff Tang <https://github.com/jeffxtang>`_,
 `Geeta Chauhan <https://github.com/gchauhan/>`_

@@ -52,7 +52,6 @@ Along the way, we will talk through important concepts in distributed training w
 
 
 Diff for `single_gpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
-----------------------------------------------------
 
 These are the changes you typically make to a single-GPU training script to enable DDP.
 

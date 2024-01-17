@@ -10,7 +10,7 @@
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Automatic Differentiation with ``torch.autograd``
-=======================================
+=================================================
 
 When training neural networks, the most frequently used algorithm is
 **back propagation**. In this algorithm, parameters (model weights) are
@@ -170,7 +170,7 @@ print(z_det.requires_grad)
 
 ######################################################################
 # Optional Reading: Tensor Gradients and Jacobian Products
-# --------------------------------------
+# --------------------------------------------------------
 #
 # In many cases, we have a scalar loss function, and we need to compute
 # the gradient with respect to some parameters. However, there are cases

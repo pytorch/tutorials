@@ -1,5 +1,5 @@
 (prototype) Accelerating BERT with semi-structured (2:4) sparsity
-================================================================
+=================================================================
 **Author**: `Jesse Cai <https://github.com/jcaip>`_
 
 Like other forms of sparsity, **semi-structured sparsity** is a model optimization technique that seeks to reduce the memory overhead and latency of a neural network at the expense of some model accuracy.
@@ -477,7 +477,7 @@ Once we've reached a satisfied state, we can call ``squash_mask`` to fuse the ma
     #        [ 0.0000,  0.0225, -0.0395, -0.0000,  ..., -0.0000,  0.0684, -0.0344, -0.0000]], device='cuda:0', requires_grad=True)
 
 Accelerating 2:4 sparse models for inference
--------------------------------------------
+--------i------------------------------------
 Now that we have a model in this format, we can accelerate it for inference just like in the QuickStart Guide.
 
 .. code:: python
