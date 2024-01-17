@@ -59,7 +59,7 @@ if torch.cuda.get_device_capability() < (7, 0):
 opt = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
-@torch.compile()
+@torch.compile(fullgraph=False)
 def fn():
     opt.step()
 
