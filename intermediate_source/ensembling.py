@@ -78,7 +78,7 @@ predictions2 = [model(minibatch) for model in models]
 
 ######################################################################
 # Using ``vmap`` to vectorize the ensemble
-# ------------------------------------
+# ----------------------------------------
 #
 # Let's use ``vmap`` to speed up the for-loop. We must first prepare the models
 # for use with ``vmap``.

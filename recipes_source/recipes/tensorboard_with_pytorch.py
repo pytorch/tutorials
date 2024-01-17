@@ -28,7 +28,7 @@ or pip
 
 ######################################################################
 # Using TensorBoard in PyTorch
-# -----
+# -----------------------------
 # 
 # Let’s now try using TensorBoard with PyTorch! Before logging anything, 
 # we need to create a ``SummaryWriter`` instance.
@@ -45,7 +45,7 @@ writer = SummaryWriter()
 
 ######################################################################
 # Log scalars
-# -----
+# -----------
 # 
 # In machine learning, it’s important to understand key metrics such as 
 # loss and how they change during training. Scalar helps to save 
@@ -91,7 +91,7 @@ writer.close()
 
 ######################################################################
 # Run TensorBoard
-# -----
+# ----------------
 # 
 # Install TensorBoard through the command line to visualize data you logged
 #

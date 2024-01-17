@@ -157,7 +157,7 @@ trainer.evaluate(eval_loader)
 
 ######################################################################
 # Use USB to Train ``SoftMatch`` with specific imbalanced algorithm on imbalanced CIFAR-10
-# ------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # 
 # Now let's say we have imbalanced labeled set and unlabeled set of CIFAR-10,
 # and we want to train a ``SoftMatch`` model on it.
