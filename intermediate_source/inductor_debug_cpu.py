@@ -162,7 +162,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 #
 # As we know, the evolved chain of graph-level optimization is like:
 #
-# ::
+# .. code-block:: sh
 #
 # 	torch.neg (Python) -> torch.ops.aten.neg.default (within FX graph) -> ops.neg (within IR node) -> tmp2 = -tmp1 (within C++ kernel)
 #
@@ -228,7 +228,7 @@ def neg2(x):
 ######################################################################
 # IR node:
 #
-# ::
+# .. code-block:: sh
 #
 #     buf0: SchedulerNode(ComputedBuffer)
 #     buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
@@ -304,7 +304,7 @@ def neg3(x):
 ######################################################################
 # An accuracy problem would be raised as follows:
 #
-# ::
+# .. code-block:: sh
 #
 # 	torch._dynamo.utils: [ERROR] Accuracy failed: allclose not within tol=0.0001
 # 	Traceback (most recent call last):
@@ -314,13 +314,13 @@ def neg3(x):
 #
 # To debug an accuracy problem with Minifier, two environment variables are needed:
 #
-# ::
+# .. code-block:: sh
 #
 #    TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 #
 # Which gives us logging information that demonstrates the steps of minifying:
 #
-# ::
+# .. code-block:: sh
 #
 #     Started off with 6 nodes
 #

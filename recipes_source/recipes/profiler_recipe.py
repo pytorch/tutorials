@@ -16,7 +16,7 @@ Setup
 -----
 To install ``torch`` and ``torchvision`` use the following command:
 
-::
+.. code-block:: sh
 
    pip install torch torchvision
 
@@ -138,7 +138,7 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 ########################################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    ---------------------------------  ------------  -------------------------------------------
 #                                 Name     CPU total                                 Input Shapes
@@ -178,7 +178,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 ######################################################################
 # The resulting table output (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    -------------------------------------------------------  ------------  ------------
 #                                                       Name     Self CUDA    CUDA total
@@ -241,7 +241,7 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 #############################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    ---------------------------------  ------------  ------------  ------------
 #                                 Name       CPU Mem  Self CPU Mem    # of Calls
@@ -298,7 +298,7 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total"
 #################################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    -------------------------  -----------------------------------------------------------
 #                         Name  Source Location

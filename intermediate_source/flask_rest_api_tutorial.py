@@ -32,7 +32,7 @@ with high performance requirements. For that:
 # ``file`` parameter which contains the image. The response will be of JSON
 # response containing the prediction:
 #
-# ::
+# .. code-block:: sh
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
@@ -44,7 +44,7 @@ with high performance requirements. For that:
 #
 # Install the required dependencies by running the following command:
 #
-# ::
+# .. code-block:: sh
 #
 #     $ pip install Flask==2.0.1 torchvision==0.10.0
 
@@ -68,7 +68,7 @@ def hello():
 # Save the above snippet in a file called ``app.py`` and you can now run a
 # Flask development server by typing:
 #
-# ::
+# .. code-block:: sh
 #
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
@@ -217,7 +217,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # The first item in array is ImageNet class id and second item is the human
 # readable name.
 #
-# .. Note ::
+# .. note::
 #    Did you notice that ``model`` variable is not part of ``get_prediction``
 #    method? Or why is model a global variable? Loading a model can be an
 #    expensive operation in terms of memory and compute. If we loaded the model in the
@@ -307,7 +307,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 ######################################################################
 # Let's test our web server! Run:
 #
-# ::
+# .. code-block:: sh
 #
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
@@ -326,7 +326,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #######################################################################
 # Printing `resp.json()` will now show the following:
 #
-# ::
+# .. code-block:: sh
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
