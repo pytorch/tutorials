@@ -46,9 +46,7 @@ timer = Timer(
     """,
 
     # Alternatively, ``globals`` can be used to pass variables from the outer scope.
-    # -------------------------------------------------------------------------
-    # .. code-block:: python
-    #
+    # 
     #    globals={
     #        "x": torch.ones((128,)),
     #        "y": torch.ones((128,)),

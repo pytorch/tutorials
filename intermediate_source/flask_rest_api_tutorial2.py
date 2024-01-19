@@ -65,6 +65,30 @@ def hello():
     return 'Hello World!'
 
 ###############################################################################
+# Save the above snippet in a file called ``app.py`` and you can now run a
+# Flask development server by typing:
+#
+# .. code-block:: sh
+#
+#    FLASK_ENV=development FLASK_APP=app.py flask run
+
+###############################################################################
+# When you visit ``http://localhost:5000/`` in your web browser, you will be
+# greeted with ``Hello World!`` text
+
+###############################################################################
+# We will make slight changes to the above snippet, so that it suits our API
+# definition. First, we will rename the method to ``predict``. We will update
+# the endpoint path to ``/predict``. Since the image files will be sent via
+# HTTP POST requests, we will update it so that it also accepts only POST
+# requests:
+
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    return 'Hello World!'
+
+###############################################################################
 # We will also change the response type, so that it returns a JSON response
 # containing ImageNet class id and name. The updated ``app.py`` file will
 # be now:
@@ -113,6 +137,7 @@ def transform_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes))
     return my_transforms(image).unsqueeze(0)
 
+
 ######################################################################
 # The above method takes image data in bytes, applies the series of transforms
 # and returns a tensor. To test the above method, read an image file in
@@ -147,6 +172,7 @@ def get_prediction(image_bytes):
     outputs = model.forward(tensor)
     _, y_hat = outputs.max(1)
     return y_hat
+
 
 ######################################################################
 # The tensor ``y_hat`` will contain the index of the predicted class id.
@@ -213,8 +239,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #            img_bytes = file.read()
 #            class_id, class_name = get_prediction(image_bytes=img_bytes)
 #            return jsonify({'class_id': class_id, 'class_name': class_name})
-#
-#
+
 ######################################################################
 # The ``app.py`` file is now complete. Following is the full version; replace
 # the paths with the paths where you saved your files and it should run:
@@ -266,15 +291,14 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 #    if __name__ == '__main__':
 #        app.run()
-#
-#
+
 ######################################################################
 # Let's test our web server! Run:
 #
 # .. code-block:: sh
 #
 #    FLASK_ENV=development FLASK_APP=app.py flask run
-#
+
 #######################################################################
 # We can use the
 # `requests <https://pypi.org/project/requests/>`_
@@ -286,7 +310,6 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 #    resp = requests.post("http://localhost:5000/predict",
 #                         files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
-#
 
 #######################################################################
 # Printing `resp.json()` will now show the following:
@@ -294,7 +317,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # .. code-block:: sh
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
-#
+
 ######################################################################
 # Next steps
 # --------------
@@ -332,4 +355,3 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # - Finally, we encourage you to check out our other tutorials on deploying PyTorch models
 #   linked-to at the top of the page.
-#

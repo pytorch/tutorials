@@ -98,6 +98,7 @@ def neg1(x):
 # Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
 #
 # ``fx_graph_runnable``:
+#
 
 def forward1(self, arg0_1, arg1_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
@@ -107,6 +108,7 @@ def forward1(self, arg0_1, arg1_1):
 
 ######################################################################
 # C++ kernel in ``output_code``:
+#
 
 from torch._inductor.codecache import AsyncCompile
 async_compile = AsyncCompile()
@@ -254,6 +256,7 @@ def neg2(x):
 #             get_index_2 = self.get_index('index0')
 #             store = ops.store('buf0', get_index_2, maximum, None)
 #             return store
+#
 
 ######################################################################
 # According to the traceback logging, the compilation error is caused by the data type inconsistency of ``max_propagate_nan``'s inputs. 
