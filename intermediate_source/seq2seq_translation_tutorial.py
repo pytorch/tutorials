@@ -13,7 +13,7 @@ three tutorials immediately following this one.
 In this project we will be teaching a neural network to translate from
 French to English.
 
-::
+.. code-block:: sh
 
     [KEY: > input, = target, < output]
 
@@ -112,11 +112,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # download to ``data/eng-fra.txt`` before continuing. The file is a tab
 # separated list of translation pairs:
 #
-# ::
+# .. code-block:: sh
 #
 #     I am cold.    J'ai froid.
 #
-# .. Note::
+# .. note::
 #    Download the data from
 #    `here <https://download.pytorch.org/tutorial/data.zip>`_
 #    and extract it to the current directory.
@@ -775,7 +775,7 @@ def evaluateRandomly(encoder, decoder, n=10):
 # single GRU layer. After about 40 minutes on a MacBook CPU we'll get some
 # reasonable results.
 #
-# .. Note::
+# .. note::
 #    If you run this notebook you can train, interrupt the kernel,
 #    evaluate, and continue training later. Comment out the lines where the
 #    encoder and decoder are initialized and run ``trainIters`` again.

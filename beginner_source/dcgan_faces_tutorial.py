@@ -226,7 +226,7 @@ ngpu = 1
 # the ``celeba`` directory you just created. The resulting directory
 # structure should be:
 # 
-# ::
+# .. code-block:: sh
 # 
 #    /path/to/celeba
 #        -> img_align_celeba  

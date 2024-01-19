@@ -16,7 +16,7 @@ Setup
 -----
 To install ``torch`` and ``torchvision`` use the following command:
 
-::
+.. code-block:: sh
 
    pip install torch torchvision
 
@@ -121,7 +121,8 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 #                        aten::mean     332.000us       2.631ms     125.286us            21
 #                      aten::select       1.668ms       2.292ms       8.988us           255
 # ---------------------------------  ------------  ------------  ------------  ------------
-# Self CPU time total: 57.549ms
+# Self CPU time total: 57.549m
+# 
 
 ######################################################################
 # Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
@@ -138,7 +139,7 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 ########################################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    ---------------------------------  ------------  -------------------------------------------
 #                                 Name     CPU total                                 Input Shapes
@@ -155,6 +156,7 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 #                         aten::conv2d       4.751ms  [[5,256,14,14], [256,256,3,3], [], ..., []]
 #    ---------------------------------  ------------  -------------------------------------------
 #    Self CPU time total: 57.549ms
+#
 
 ######################################################################
 # Note the occurrence of ``aten::convolution`` twice with different input shapes.
@@ -178,7 +180,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 ######################################################################
 # The resulting table output (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    -------------------------------------------------------  ------------  ------------
 #                                                       Name     Self CUDA    CUDA total
@@ -196,6 +198,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 #    -------------------------------------------------------  ------------  ------------
 #    Self CPU time total: 23.015ms
 #    Self CUDA time total: 11.666ms
+#
 
 ######################################################################
 # Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
@@ -241,7 +244,7 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 #############################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    ---------------------------------  ------------  ------------  ------------
 #                                 Name       CPU Mem  Self CPU Mem    # of Calls
@@ -258,6 +261,7 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 #        aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1
 #    ---------------------------------  ------------  ------------  ------------
 #    Self CPU time total: 53.064ms
+#
 
 ######################################################################
 # 5. Using tracing functionality
@@ -298,7 +302,7 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total"
 #################################################################################
 # The output might look like this (omitting some columns):
 #
-# ::
+# .. code-block:: sh
 #
 #    -------------------------  -----------------------------------------------------------
 #                         Name  Source Location
@@ -316,6 +320,7 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total"
 #    -------------------------  -----------------------------------------------------------
 #    Self CPU time total: 34.016ms
 #    Self CUDA time total: 11.659ms
+#
 
 ######################################################################
 # Note the two convolutions and the two call sites in ``torchvision/models/resnet.py`` script.
@@ -341,6 +346,7 @@ prof.export_stacks("/tmp/profiler_stacks.txt", "self_cuda_time_total")
 #    git clone https://github.com/brendangregg/FlameGraph
 #    cd FlameGraph
 #    ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
+#
 
 ######################################################################
 #

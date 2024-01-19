@@ -462,7 +462,7 @@ if __name__ == "__main__":
 ######################################################################
 # If you run the code, an example output could look like this:
 #
-# ::
+# .. code-block:: sh
 #
 #     Number of trials: 10/10 (10 TERMINATED)
 #     +-----+--------------+------+------+-------------+--------+---------+------------+
