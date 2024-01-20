@@ -101,7 +101,7 @@ The correct implementation of ``neg`` in the ``cpp`` codegen is as follows:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-101
+.. GENERATED FROM PYTHON SOURCE LINES 63-102
 
 In order to demonstrate the debugging, we will modify the function to a wrong one later.
 
@@ -142,7 +142,8 @@ Here are the main parts of code extracted from the files and we correlate the C+
 
 ``fx_graph_runnable``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-108
+
+.. GENERATED FROM PYTHON SOURCE LINES 102-109
 
 .. code-block:: default
 
@@ -160,11 +161,12 @@ Here are the main parts of code extracted from the files and we correlate the C+
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-110
+.. GENERATED FROM PYTHON SOURCE LINES 110-112
 
 C++ kernel in ``output_code``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-141
+
+.. GENERATED FROM PYTHON SOURCE LINES 112-143
 
 .. code-block:: default
 
@@ -206,7 +208,7 @@ C++ kernel in ``output_code``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-174
+.. GENERATED FROM PYTHON SOURCE LINES 144-176
 
 Determine component of error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -231,7 +233,7 @@ Compilation error
 
 As we know, the evolved chain of graph-level optimization is like:
 
-::
+.. code-block:: sh
 
 	torch.neg (Python) -> torch.ops.aten.neg.default (within FX graph) -> ops.neg (within IR node) -> tmp2 = -tmp1 (within C++ kernel)
 
@@ -241,7 +243,7 @@ The root cause of compilation error is usually shown in the traceback log.
 
 For example, the ``neg`` function is modified like this:
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-178
+.. GENERATED FROM PYTHON SOURCE LINES 176-180
 
 .. code-block:: default
 
@@ -256,7 +258,7 @@ For example, the ``neg`` function is modified like this:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-227
+.. GENERATED FROM PYTHON SOURCE LINES 181-229
 
 The logging gives the following compile error with a rather clear reason.
 
@@ -307,11 +309,11 @@ C++ kernel:
     }
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-257
+.. GENERATED FROM PYTHON SOURCE LINES 231-260
 
 IR node:
 
-::
+.. code-block:: sh
 
     buf0: SchedulerNode(ComputedBuffer)
     buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
@@ -338,7 +340,8 @@ IR node:
             store = ops.store('buf0', get_index_2, maximum, None)
             return store
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-279
+
+.. GENERATED FROM PYTHON SOURCE LINES 262-282
 
 According to the traceback logging, the compilation error is caused by the data type inconsistency of ``max_propagate_nan``'s inputs. 
 By checking the C++ kernel, we know that ``tmp2`` is no longer ``long`` after doing ``-`` as ``tmp0`` is ``long``.
@@ -361,7 +364,7 @@ The accuracy problem refers to the case where the outputs of backends eager and 
 
 For instance, we modify the example like this:
 
-.. GENERATED FROM PYTHON SOURCE LINES 279-298
+.. GENERATED FROM PYTHON SOURCE LINES 282-301
 
 .. code-block:: default
 
@@ -391,11 +394,11 @@ For instance, we modify the example like this:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 299-300
+.. GENERATED FROM PYTHON SOURCE LINES 302-303
 
 And also modify the ``neg`` function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-304
+.. GENERATED FROM PYTHON SOURCE LINES 303-307
 
 .. code-block:: default
 
@@ -410,11 +413,11 @@ And also modify the ``neg`` function:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 305-336
+.. GENERATED FROM PYTHON SOURCE LINES 308-339
 
 An accuracy problem would be raised as follows:
 
-::
+.. code-block:: sh
 
 	torch._dynamo.utils: [ERROR] Accuracy failed: allclose not within tol=0.0001
 	Traceback (most recent call last):
@@ -424,13 +427,13 @@ An accuracy problem would be raised as follows:
 
 To debug an accuracy problem with Minifier, two environment variables are needed:
 
-::
+.. code-block:: sh
 
    TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 
 Which gives us logging information that demonstrates the steps of minifying:
 
-::
+.. code-block:: sh
 
     Started off with 6 nodes
 
@@ -444,7 +447,7 @@ Which gives us logging information that demonstrates the steps of minifying:
 
 After running, we get the final minified graph with the target node ``neg``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 336-341
+.. GENERATED FROM PYTHON SOURCE LINES 339-344
 
 .. code-block:: default
 
@@ -460,11 +463,11 @@ After running, we get the final minified graph with the target node ``neg``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-343
+.. GENERATED FROM PYTHON SOURCE LINES 345-346
 
 For more usage details about Minifier, please refer to `Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-354
+.. GENERATED FROM PYTHON SOURCE LINES 349-357
 
 Performance profiling
 ---------------------
@@ -475,7 +478,7 @@ The execution time and the speedup ratio of Inductor are printed after the bench
 We use Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and run benchmark on the first socket to demonstrate the optimization within this section.
 We set following environment variable as a best practice to benchmark on Intel(R) CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 356-365
+.. GENERATED FROM PYTHON SOURCE LINES 359-368
 
 .. code-block:: shell
 
@@ -487,7 +490,7 @@ We set following environment variable as a best practice to benchmark on Intel(R
     numactl -C 0-31 -m 0 python bench.py
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 365-399
+.. GENERATED FROM PYTHON SOURCE LINES 368-402
 
 .. code-block:: default
 
@@ -539,17 +542,21 @@ We set following environment variable as a best practice to benchmark on Intel(R
 
 
     Downloading config.json:   0%|          | 0.00/765 [00:00<?, ?B/s]
-    Downloading config.json: 100%|##########| 765/765 [00:00<00:00, 4.19MB/s]
+    Downloading config.json: 100%|##########| 765/765 [00:00<00:00, 5.54MB/s]
 
     Downloading model.safetensors:   0%|          | 0.00/98.5M [00:00<?, ?B/s]
-    Downloading model.safetensors:  32%|###1      | 31.5M/98.5M [00:00<00:00, 279MB/s]
-    Downloading model.safetensors:  75%|#######4  | 73.4M/98.5M [00:00<00:00, 330MB/s]
-    Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:00<00:00, 303MB/s]
+    Downloading model.safetensors:  21%|##1       | 21.0M/98.5M [00:00<00:01, 71.5MB/s]
+    Downloading model.safetensors:  43%|####2     | 41.9M/98.5M [00:00<00:00, 79.6MB/s]
+    Downloading model.safetensors:  53%|#####3    | 52.4M/98.5M [00:00<00:00, 74.7MB/s]
+    Downloading model.safetensors:  75%|#######4  | 73.4M/98.5M [00:01<00:00, 70.7MB/s]
+    Downloading model.safetensors:  85%|########5 | 83.9M/98.5M [00:01<00:00, 55.5MB/s]
+    Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:01<00:00, 42.7MB/s]
+    Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:01<00:00, 53.8MB/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 400-414
+.. GENERATED FROM PYTHON SOURCE LINES 403-417
 
 Output:
 
@@ -566,7 +573,7 @@ Next, let's dive deep into the performance at the operation level to understand 
 `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_ is a good tool to help us. 
 Inductor CPU backend has the support to report the time of the fusion kernels to the profiler with the ``enable_kernel_profile`` configuration option:
 
-.. GENERATED FROM PYTHON SOURCE LINES 414-418
+.. GENERATED FROM PYTHON SOURCE LINES 417-421
 
 .. code-block:: default
 
@@ -581,12 +588,12 @@ Inductor CPU backend has the support to report the time of the fusion kernels to
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 419-421
+.. GENERATED FROM PYTHON SOURCE LINES 422-424
 
 Following the steps in `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 We are able to get the profiling table and trace files.
 
-.. GENERATED FROM PYTHON SOURCE LINES 421-450
+.. GENERATED FROM PYTHON SOURCE LINES 424-453
 
 .. code-block:: default
 
@@ -626,7 +633,7 @@ We are able to get the profiling table and trace files.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-481
+.. GENERATED FROM PYTHON SOURCE LINES 454-484
 
 We get the following performance profiling table for the eager-mode model (omitting some columns):
 
@@ -659,7 +666,7 @@ We get the following performance profiling table for the eager-mode model (omitt
     Self CPU time total: 810.920ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 483-527
+.. GENERATED FROM PYTHON SOURCE LINES 486-530
 
 Similarly, we also get the table for the compiled model with Inductor (omitting some columns):
 
@@ -706,7 +713,7 @@ Let's read the generated code to understand how the inductor achieves this impre
 searching ``cpp_fused__mkl_linear_add_mul_relu_151`` in ``output_code.py``
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 528-564
+.. GENERATED FROM PYTHON SOURCE LINES 531-567
 
 .. code-block:: default
 
@@ -753,13 +760,13 @@ searching ``cpp_fused__mkl_linear_add_mul_relu_151`` in ``output_code.py``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 565-568
+.. GENERATED FROM PYTHON SOURCE LINES 568-571
 
 From the generated code above, we can see this kernel has done a typical `Loop Fusion <https://en.wikipedia.org/wiki/Loop_fission_and_fusion>`_ on ``[add, add, mul, add]``.
 This is a memory-bound bottle neck preventing good performance. To get a more intuitive feeling about this optimization, 
 we can infer the sizes and stride of the inputs and further benchmark this ``[add, add, mul, add]`` pattern.
 
-.. GENERATED FROM PYTHON SOURCE LINES 568-606
+.. GENERATED FROM PYTHON SOURCE LINES 571-609
 
 .. code-block:: default
 
@@ -808,7 +815,7 @@ we can infer the sizes and stride of the inputs and further benchmark this ``[ad
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 607-618
+.. GENERATED FROM PYTHON SOURCE LINES 610-621
 
 Output:
 
@@ -822,7 +829,7 @@ Output:
 This is just an example. The profiling table shows all element-wise op are fused within the inductor automatically in this model. You can read more kernels in
 `output_code.py`
 
-.. GENERATED FROM PYTHON SOURCE LINES 621-634
+.. GENERATED FROM PYTHON SOURCE LINES 624-637
 
 Conclusion
 ----------
@@ -841,7 +848,7 @@ We show how to find the time-consuming hotspot with PyTorch Profiler and figure 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 9 minutes  30.932 seconds)
+   **Total running time of the script:** ( 9 minutes  32.149 seconds)
 
 
 .. _sphx_glr_download_intermediate_inductor_debug_cpu.py:

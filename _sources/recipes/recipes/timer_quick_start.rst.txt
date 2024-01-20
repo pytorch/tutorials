@@ -50,7 +50,7 @@ For a more comprehensive performance tuning tutorial, see
 A `Timer` serves as a task definition.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-61
+.. GENERATED FROM PYTHON SOURCE LINES 34-59
 
 .. code-block:: default
 
@@ -69,9 +69,7 @@ A `Timer` serves as a task definition.
         """,
 
         # Alternatively, ``globals`` can be used to pass variables from the outer scope.
-        # -------------------------------------------------------------------------
-        # ::
-        #
+        # 
         #    globals={
         #        "x": torch.ones((128,)),
         #        "y": torch.ones((128,)),
@@ -82,7 +80,7 @@ A `Timer` serves as a task definition.
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-69
+.. GENERATED FROM PYTHON SOURCE LINES 60-67
 
 2. Wall time: ``Timer.blocked_autorange(...)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,7 +90,7 @@ fixing the number of threads, and providing a convenient representation of
 the results.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-77
+.. GENERATED FROM PYTHON SOURCE LINES 67-75
 
 .. code-block:: default
 
@@ -105,7 +103,7 @@ the results.
     print(m)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-91
+.. GENERATED FROM PYTHON SOURCE LINES 76-89
 
 .. code-block:: none
    :caption: **Snippet wall time.**
@@ -121,13 +119,13 @@ the results.
           424 measurements, 1000 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-96
+.. GENERATED FROM PYTHON SOURCE LINES 91-94
 
 3. C++ snippets
 ~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-110
+.. GENERATED FROM PYTHON SOURCE LINES 94-108
 
 .. code-block:: default
 
@@ -146,7 +144,7 @@ the results.
     print(cpp_timer.blocked_autorange(min_run_time=1))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-124
+.. GENERATED FROM PYTHON SOURCE LINES 109-122
 
 .. code-block:: none
    :caption: **C++ snippet wall time.**
@@ -162,12 +160,12 @@ the results.
           83 measurements, 10000 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-128
+.. GENERATED FROM PYTHON SOURCE LINES 124-126
 
 Unsurprisingly, the C++ snippet is both faster and has lower variation.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-139
+.. GENERATED FROM PYTHON SOURCE LINES 128-137
 
 4. Instruction counts: ``Timer.collect_callgrind(...)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,7 +177,7 @@ deterministic (or very low noise in the case of Python) insights into how a
 snippet is run.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-145
+.. GENERATED FROM PYTHON SOURCE LINES 137-143
 
 .. code-block:: default
 
@@ -190,7 +188,7 @@ snippet is run.
     print(stats)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-160
+.. GENERATED FROM PYTHON SOURCE LINES 144-158
 
 .. code-block:: none
    :caption: **C++ Callgrind stats (summary)**
@@ -207,7 +205,7 @@ snippet is run.
         100 runs per measurement, 1 thread
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-194
+.. GENERATED FROM PYTHON SOURCE LINES 160-192
 
 5. Instruction counts: Delving deeper
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,14 +224,14 @@ A note on paths:
   One generally doesn't care about absolute path. For instance, the full path
   and function name for a multiply call is something like:
 
-::
+.. code-block:: sh
 
    /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
 
   when in reality, all of the information that we're interested in can be
   represented in:
 
-::
+.. code-block:: sh
 
    build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
 
@@ -242,7 +240,7 @@ A note on paths:
   recommended.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-198
+.. GENERATED FROM PYTHON SOURCE LINES 192-196
 
 .. code-block:: default
 
@@ -251,7 +249,7 @@ A note on paths:
     print(inclusive_stats[:10])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-216
+.. GENERATED FROM PYTHON SOURCE LINES 197-214
 
 .. code-block:: none
    :caption: **C++ Callgrind stats (detailed)**
@@ -271,7 +269,7 @@ A note on paths:
         Total: 173472
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-223
+.. GENERATED FROM PYTHON SOURCE LINES 216-221
 
 That's still quite a lot to digest. Let's use the `FunctionCounts.transform`
 method to trim some of the function path, and discard the function called.
@@ -279,7 +277,7 @@ When we do, the counts of any collisions (e.g. `foo.h:a()` and `foo.h:b()`
 will both map to `foo.h`) will be added together.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 223-239
+.. GENERATED FROM PYTHON SOURCE LINES 221-237
 
 .. code-block:: default
 
@@ -300,7 +298,7 @@ will both map to `foo.h`) will be added together.
     print(inclusive_stats.transform(group_by_file)[:10])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-257
+.. GENERATED FROM PYTHON SOURCE LINES 238-255
 
 .. code-block:: none
    :caption: **Callgrind stats (condensed)**
@@ -320,7 +318,7 @@ will both map to `foo.h`) will be added together.
         Total: 352327
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-271
+.. GENERATED FROM PYTHON SOURCE LINES 257-269
 
 6. A/B testing with ``Callgrind``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -335,7 +333,7 @@ Tensor:
   result = {a0 * b0, a1 * b0, ..., a127 * b0}
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-281
+.. GENERATED FROM PYTHON SOURCE LINES 269-279
 
 .. code-block:: default
 
@@ -350,7 +348,7 @@ Tensor:
     ).collect_callgrind().as_standardized().stats(inclusive=False)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-287
+.. GENERATED FROM PYTHON SOURCE LINES 280-285
 
 Often we want to A/B test two different environments. (e.g. testing a PR, or
 experimenting with compile flags.) This is quite simple, as ``CallgrindStats``,
@@ -358,7 +356,7 @@ experimenting with compile flags.) This is quite simple, as ``CallgrindStats``,
 from each environment, and load them in a single process for analysis.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 287-306
+.. GENERATED FROM PYTHON SOURCE LINES 285-304
 
 .. code-block:: default
 
@@ -382,7 +380,7 @@ from each environment, and load them in a single process for analysis.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-333
+.. GENERATED FROM PYTHON SOURCE LINES 305-331
 
 .. code-block:: none
    :caption: **Instruction count delta**
@@ -411,7 +409,7 @@ from each environment, and load them in a single process for analysis.
         Total: 58091
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-340
+.. GENERATED FROM PYTHON SOURCE LINES 333-338
 
 So the broadcasting version takes an extra 580 instructions per call (recall
 that we're collecting 100 runs per sample), or about 10%. There are quite a
@@ -419,7 +417,7 @@ few ``TensorIterator`` calls, so lets drill down to those. ``FunctionCounts.filt
 makes this easy.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 340-343
+.. GENERATED FROM PYTHON SOURCE LINES 338-341
 
 .. code-block:: default
 
@@ -427,7 +425,7 @@ makes this easy.
     print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 344-362
+.. GENERATED FROM PYTHON SOURCE LINES 342-360
 
 .. code-block:: none
    :caption: **Instruction count delta (filter)**
@@ -448,7 +446,7 @@ makes this easy.
         Total: 24000
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 364-370
+.. GENERATED FROM PYTHON SOURCE LINES 362-368
 
 This makes plain what is going on: there is a fast path in ``TensorIterator``
 setup, but in the {128} x {1} case we miss it and have to do a more general
@@ -457,7 +455,7 @@ filter is `c10::SmallVectorImpl<long>::operator=(...)`, which is also part
 of the more general setup.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-383
+.. GENERATED FROM PYTHON SOURCE LINES 370-381
 
 7. Wrapping up
 ~~~~~~~~~~~~~~
@@ -471,7 +469,7 @@ instruction counts and `FunctionCounts.(__add__ / __sub__ / transform / filter)`
 to slice-and-dice them.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 385-400
+.. GENERATED FROM PYTHON SOURCE LINES 383-398
 
 8. Footnotes
 ~~~~~~~~~~~~

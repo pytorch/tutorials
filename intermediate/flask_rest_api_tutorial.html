@@ -466,14 +466,14 @@ with high performance requirements. For that:</p>
 API endpoint will be at <code class="docutils literal notranslate"><span class="pre">/predict</span></code> which takes HTTP POST requests with a
 <code class="docutils literal notranslate"><span class="pre">file</span></code> parameter which contains the image. The response will be of JSON
 response containing the prediction:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">"class_id"</span><span class="p">:</span> <span class="s2">"n02124075"</span><span class="p">,</span> <span class="s2">"class_name"</span><span class="p">:</span> <span class="s2">"Egyptian_cat"</span><span class="p">}</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="o">{</span><span class="s2">"class_id"</span>:<span class="w"> </span><span class="s2">"n02124075"</span>,<span class="w"> </span><span class="s2">"class_name"</span>:<span class="w"> </span><span class="s2">"Egyptian_cat"</span><span class="o">}</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
 <p>Install the required dependencies by running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install Flask==2.0.1 torchvision==0.10.0
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">Flask</span><span class="o">==</span><span class="m">2</span>.0.1<span class="w"> </span><span class="nv">torchvision</span><span class="o">==</span><span class="m">0</span>.10.0
 </pre></div>
 </div>
 </div>
@@ -486,23 +486,6 @@ response containing the prediction:</p>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
-    <span class="k">return</span> <span class="s1">'Hello World!'</span>
-</pre></div>
-</div>
-<p>Save the above snippet in a file called <code class="docutils literal notranslate"><span class="pre">app.py</span></code> and you can now run a
-Flask development server by typing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ FLASK_ENV=development FLASK_APP=app.py flask run
-</pre></div>
-</div>
-<p>When you visit <code class="docutils literal notranslate"><span class="pre">http://localhost:5000/</span></code> in your web browser, you will be
-greeted with <code class="docutils literal notranslate"><span class="pre">Hello</span> <span class="pre">World!</span></code> text</p>
-<p>We will make slight changes to the above snippet, so that it suits our API
-definition. First, we will rename the method to <code class="docutils literal notranslate"><span class="pre">predict</span></code>. We will update
-the endpoint path to <code class="docutils literal notranslate"><span class="pre">/predict</span></code>. Since the image files will be sent via
-HTTP POST requests, we will update it so that it also accepts only POST
-requests:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/predict'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">predict</span><span class="p">():</span>
     <span class="k">return</span> <span class="s1">'Hello World!'</span>
 </pre></div>
 </div>
@@ -618,25 +601,8 @@ We will test our above method:</p>
 </div>
 <p>The first item in array is ImageNet class id and second item is the human
 readable name.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Did you notice that <code class="docutils literal notranslate"><span class="pre">model</span></code> variable is not part of <code class="docutils literal notranslate"><span class="pre">get_prediction</span></code>
-method? Or why is model a global variable? Loading a model can be an
-expensive operation in terms of memory and compute. If we loaded the model in the
-<code class="docutils literal notranslate"><span class="pre">get_prediction</span></code> method, then it would get unnecessarily loaded every
-time the method is called. Since, we are building a web server, there
-could be thousands of requests per second, we should not waste time
-redundantly loading the model for every inference. So, we keep the model
-loaded in memory just once. In
-production systems, it’s necessary to be efficient about your use of
-compute to be able to serve requests at scale, so you should generally
-load your model before serving requests.</p>
-</div>
-</div>
-</div>
-<div class="section" id="integrating-the-model-in-our-api-server">
-<h2>Integrating the model in our API Server<a class="headerlink" href="#integrating-the-model-in-our-api-server" title="Permalink to this heading">¶</a></h2>
-<p>In this final part we will add our model to our Flask API server. Since
+<dl>
+<dt>Integrating the model in our API Server</dt><dd><p>In this final part we will add our model to our Flask API server. Since
 our API server is supposed to take an image file, we will update our <code class="docutils literal notranslate"><span class="pre">predict</span></code>
 method to read files from the requests:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
@@ -652,9 +618,10 @@ method to read files from the requests:</p>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'class_id'</span><span class="p">:</span> <span class="n">class_id</span><span class="p">,</span> <span class="s1">'class_name'</span><span class="p">:</span> <span class="n">class_name</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">app.py</span></code> file is now complete. Following is the full version; replace
-the paths with the paths where you saved your files and it should run:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
+</dd>
+</dl>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">models</span>
@@ -701,27 +668,29 @@ the paths with the paths where you saved your files and it should run:</p>
     <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Let’s test our web server! Run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ FLASK_ENV=development FLASK_APP=app.py flask run
+</div></blockquote>
+<blockquote>
+<div><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">FLASK_ENV</span><span class="o">=</span>development<span class="w"> </span><span class="nv">FLASK_APP</span><span class="o">=</span>app.py<span class="w"> </span>flask<span class="w"> </span>run
 </pre></div>
 </div>
-<p>We can use the
-<a class="reference external" href="https://pypi.org/project/requests/">requests</a>
-library to send a POST request to our app:</p>
+</div></blockquote>
+<blockquote>
+<div><p>library to send a POST request to our app:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"http://localhost:5000/predict"</span><span class="p">,</span>
                      <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">"file"</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'&lt;PATH/TO/.jpg/FILE&gt;/cat.jpg'</span><span class="p">,</span><span class="s1">'rb'</span><span class="p">)})</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>Printing <cite>resp.json()</cite> will now show the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">"class_id"</span><span class="p">:</span> <span class="s2">"n02124075"</span><span class="p">,</span> <span class="s2">"class_name"</span><span class="p">:</span> <span class="s2">"Egyptian_cat"</span><span class="p">}</span>
+<blockquote>
+<div><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="o">{</span><span class="s2">"class_id"</span>:<span class="w"> </span><span class="s2">"n02124075"</span>,<span class="w"> </span><span class="s2">"class_name"</span>:<span class="w"> </span><span class="s2">"Egyptian_cat"</span><span class="o">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="next-steps">
-<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">¶</a></h2>
-<p>The server we wrote is quite trivial and may not do everything
+</div></blockquote>
+<blockquote>
+<div><p>The server we wrote is quite trivial and may not do everything
 you need for your production application. So, here are some things you
 can do to make it better:</p>
 <ul class="simple">
@@ -749,6 +718,7 @@ that can be fed into your model. You can check out <a class="reference external"
 <li><p>Finally, we encourage you to check out our other tutorials on deploying PyTorch models
 linked-to at the top of the page.</p></li>
 </ul>
+</div></blockquote>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-flask-rest-api-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
@@ -759,6 +729,7 @@ linked-to at the top of the page.</p></li>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
 </div>
 </div>
 </article>
@@ -812,8 +783,6 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#prediction">Prediction</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#integrating-the-model-in-our-api-server">Integrating the model in our API Server</a></li>
-<li><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 </ul>

@@ -594,7 +594,7 @@ Here are the main parts of code extracted from the files and we correlate the C+
 <div class="section" id="compilation-error">
 <h3>Compilation error<a class="headerlink" href="#compilation-error" title="Permalink to this heading">¶</a></h3>
 <p>As we know, the evolved chain of graph-level optimization is like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.neg.html#torch.neg" title="torch.neg"><span class="n">torch</span><span class="o">.</span><span class="n">neg</span></a> <span class="p">(</span><span class="n">Python</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">neg</span><span class="o">.</span><span class="n">default</span> <span class="p">(</span><span class="n">within</span> <span class="n">FX</span> <span class="n">graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">neg</span> <span class="p">(</span><span class="n">within</span> <span class="n">IR</span> <span class="n">node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="o">-</span><span class="n">tmp1</span> <span class="p">(</span><span class="n">within</span> <span class="n">C</span><span class="o">++</span> <span class="n">kernel</span><span class="p">)</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>torch.neg<span class="w"> </span><span class="o">(</span>Python<span class="o">)</span><span class="w"> </span>-&gt;<span class="w"> </span>torch.ops.aten.neg.default<span class="w"> </span><span class="o">(</span>within<span class="w"> </span>FX<span class="w"> </span>graph<span class="o">)</span><span class="w"> </span>-&gt;<span class="w"> </span>ops.neg<span class="w"> </span><span class="o">(</span>within<span class="w"> </span>IR<span class="w"> </span>node<span class="o">)</span><span class="w"> </span>-&gt;<span class="w"> </span><span class="nv">tmp2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-tmp1<span class="w"> </span><span class="o">(</span>within<span class="w"> </span>C++<span class="w"> </span>kernel<span class="o">)</span>
 </pre></div>
 </div>
 <p>If you encounter a compilation error, there is something wrong when compiling C++ kernels in the output code.
@@ -648,30 +648,30 @@ The root cause of compilation error is usually shown in the traceback log.</p>
 </pre></div>
 </div>
 <p>IR node:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">buf0</span><span class="p">:</span> <span class="n">SchedulerNode</span><span class="p">(</span><span class="n">ComputedBuffer</span><span class="p">)</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">writes</span> <span class="o">=</span> <span class="p">[</span><span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'buf0'</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">67120</span><span class="p">})]</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">unmet_dependencies</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">met_dependencies</span> <span class="o">=</span>
-    <span class="p">[</span>   <span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'arg0_1'</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">8390</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span> <span class="mi">8</span><span class="p">}),</span>
-        <span class="n">MemoryDep</span><span class="p">(</span><span class="s1">'arg1_1'</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="p">{</span><span class="n">c0</span><span class="p">:</span> <span class="mi">67120</span><span class="p">})]</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">users</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodeUser</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">OUTPUT</span><span class="p">,</span> <span class="n">can_inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">cpu</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="p">((</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">())</span>
-<span class="n">buf0</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">([</span><span class="mi">8390</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[])</span>
-<span class="k">class</span> <span class="nc">buf0_loop_body</span><span class="p">:</span>
-    <span class="n">var_ranges</span> <span class="o">=</span> <span class="p">{</span><span class="n">z0</span><span class="p">:</span> <span class="mi">8390</span><span class="p">,</span> <span class="n">z1</span><span class="p">:</span> <span class="mi">8</span><span class="p">}</span>
-    <span class="n">index0</span> <span class="o">=</span> <span class="mi">8</span><span class="o">*</span><span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span>
-    <span class="n">index1</span> <span class="o">=</span> <span class="n">z1</span>
-    <span class="k">def</span> <span class="nf">body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
-        <span class="n">get_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index0'</span><span class="p">)</span>
-        <span class="n">load</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'arg1_1'</span><span class="p">,</span> <span class="n">get_index</span><span class="p">)</span>
-        <span class="n">get_index_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index1'</span><span class="p">)</span>
-        <span class="n">load_1</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'arg0_1'</span><span class="p">,</span> <span class="n">get_index_1</span><span class="p">)</span>
-        <span class="n">neg</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">load_1</span><span class="p">)</span>
-        <span class="n">maximum</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">neg</span><span class="p">)</span>
-        <span class="n">get_index_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="s1">'index0'</span><span class="p">)</span>
-        <span class="n">store</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s1">'buf0'</span><span class="p">,</span> <span class="n">get_index_2</span><span class="p">,</span> <span class="n">maximum</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">store</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>buf0:<span class="w"> </span>SchedulerNode<span class="o">(</span>ComputedBuffer<span class="o">)</span>
+buf0.writes<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span>MemoryDep<span class="o">(</span><span class="s1">'buf0'</span>,<span class="w"> </span>c0,<span class="w"> </span><span class="o">{</span>c0:<span class="w"> </span><span class="m">67120</span><span class="o">})]</span>
+buf0.unmet_dependencies<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[]</span>
+buf0.met_dependencies<span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="o">[</span><span class="w">   </span>MemoryDep<span class="o">(</span><span class="s1">'arg0_1'</span>,<span class="w"> </span>c1,<span class="w"> </span><span class="o">{</span>c0:<span class="w"> </span><span class="m">8390</span>,<span class="w"> </span>c1:<span class="w"> </span><span class="m">8</span><span class="o">})</span>,
+<span class="w">        </span>MemoryDep<span class="o">(</span><span class="s1">'arg1_1'</span>,<span class="w"> </span>c0,<span class="w"> </span><span class="o">{</span>c0:<span class="w"> </span><span class="m">67120</span><span class="o">})]</span>
+buf0.users<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span>NodeUser<span class="o">(</span><span class="nv">node</span><span class="o">=</span>OUTPUT,<span class="w"> </span><span class="nv">can_inplace</span><span class="o">=</span>False<span class="o">)]</span>
+buf0.group.device<span class="w"> </span><span class="o">=</span><span class="w"> </span>cpu
+buf0.group.iteration<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">((</span><span class="m">8390</span>,<span class="w"> </span><span class="m">8</span><span class="o">)</span>,<span class="w"> </span><span class="o">())</span>
+buf0.sizes<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">([</span><span class="m">8390</span>,<span class="w"> </span><span class="m">8</span><span class="o">]</span>,<span class="w"> </span><span class="o">[])</span>
+class<span class="w"> </span>buf0_loop_body:
+<span class="w">    </span><span class="nv">var_ranges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>z0:<span class="w"> </span><span class="m">8390</span>,<span class="w"> </span>z1:<span class="w"> </span><span class="m">8</span><span class="o">}</span>
+<span class="w">    </span><span class="nv">index0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span>*z0<span class="w"> </span>+<span class="w"> </span>z1
+<span class="w">    </span><span class="nv">index1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>z1
+<span class="w">    </span>def<span class="w"> </span>body<span class="o">(</span>self,<span class="w"> </span>ops<span class="o">)</span>:
+<span class="w">        </span><span class="nv">get_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self.get_index<span class="o">(</span><span class="s1">'index0'</span><span class="o">)</span>
+<span class="w">        </span><span class="nv">load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ops.load<span class="o">(</span><span class="s1">'arg1_1'</span>,<span class="w"> </span>get_index<span class="o">)</span>
+<span class="w">        </span><span class="nv">get_index_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self.get_index<span class="o">(</span><span class="s1">'index1'</span><span class="o">)</span>
+<span class="w">        </span><span class="nv">load_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ops.load<span class="o">(</span><span class="s1">'arg0_1'</span>,<span class="w"> </span>get_index_1<span class="o">)</span>
+<span class="w">        </span><span class="nv">neg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ops.neg<span class="o">(</span>load_1<span class="o">)</span>
+<span class="w">        </span><span class="nv">maximum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ops.maximum<span class="o">(</span>load,<span class="w"> </span>neg<span class="o">)</span>
+<span class="w">        </span><span class="nv">get_index_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self.get_index<span class="o">(</span><span class="s1">'index0'</span><span class="o">)</span>
+<span class="w">        </span><span class="nv">store</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>ops.store<span class="o">(</span><span class="s1">'buf0'</span>,<span class="w"> </span>get_index_2,<span class="w"> </span>maximum,<span class="w"> </span>None<span class="o">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span>store
 </pre></div>
 </div>
 <p>According to the traceback logging, the compilation error is caused by the data type inconsistency of <code class="docutils literal notranslate"><span class="pre">max_propagate_nan</span></code>’s inputs.
@@ -712,27 +712,27 @@ The accuracy problem refers to the case where the outputs of backends eager and 
 </pre></div>
 </div>
 <p>An accuracy problem would be raised as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">utils</span><span class="p">:</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">Accuracy</span> <span class="n">failed</span><span class="p">:</span> <span class="n">allclose</span> <span class="ow">not</span> <span class="n">within</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span>
-<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">"test_script.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">18</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="k">assert</span> <span class="n">same</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">expected_result</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">actual_result</span></a><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
-<span class="ne">AssertionError</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>torch._dynamo.utils:<span class="w"> </span><span class="o">[</span>ERROR<span class="o">]</span><span class="w"> </span>Accuracy<span class="w"> </span>failed:<span class="w"> </span>allclose<span class="w"> </span>not<span class="w"> </span>within<span class="w"> </span><span class="nv">tol</span><span class="o">=</span><span class="m">0</span>.0001
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"test_script.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">18</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">    </span>assert<span class="w"> </span>same<span class="o">(</span>expected_result,<span class="w"> </span>actual_result<span class="o">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>True
+AssertionError
 </pre></div>
 </div>
 <p>To debug an accuracy problem with Minifier, two environment variables are needed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TORCHDYNAMO_REPRO_AFTER</span><span class="o">=</span><span class="s2">"aot"</span> <span class="n">TORCHDYNAMO_REPRO_LEVEL</span><span class="o">=</span><span class="mi">4</span> <span class="n">python</span> <span class="n">xx</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">TORCHDYNAMO_REPRO_AFTER</span><span class="o">=</span><span class="s2">"aot"</span><span class="w"> </span><span class="nv">TORCHDYNAMO_REPRO_LEVEL</span><span class="o">=</span><span class="m">4</span><span class="w"> </span>python<span class="w"> </span>xx.py
 </pre></div>
 </div>
 <p>Which gives us logging information that demonstrates the steps of minifying:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Started</span> <span class="n">off</span> <span class="k">with</span> <span class="mi">6</span> <span class="n">nodes</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Started<span class="w"> </span>off<span class="w"> </span>with<span class="w"> </span><span class="m">6</span><span class="w"> </span>nodes
 
-<span class="n">Trying</span> <span class="n">granularity</span> <span class="mi">2</span>
-<span class="n">Strategy</span><span class="p">:</span> <span class="n">Truncate</span> <span class="n">suffix</span> <span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="mi">6</span> <span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span> <span class="n">inputs</span><span class="p">)</span>
-<span class="n">SUCCESS</span><span class="p">:</span> <span class="n">Went</span> <span class="kn">from</span> <span class="mi">6</span> <span class="n">to</span> <span class="mi">4</span> <span class="n">nodes</span>
+Trying<span class="w"> </span>granularity<span class="w"> </span><span class="m">2</span>
+Strategy:<span class="w"> </span>Truncate<span class="w"> </span>suffix<span class="w"> </span><span class="o">(</span>G:<span class="w"> </span><span class="m">2</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="m">6</span><span class="w"> </span>nodes,<span class="w"> </span><span class="m">2</span><span class="w"> </span>inputs<span class="o">)</span>
+SUCCESS:<span class="w"> </span>Went<span class="w"> </span>from<span class="w"> </span><span class="m">6</span><span class="w"> </span>to<span class="w"> </span><span class="m">4</span><span class="w"> </span>nodes
 
-<span class="n">Trying</span> <span class="n">granularity</span> <span class="mi">4</span>
-<span class="n">Strategy</span><span class="p">:</span> <span class="n">Remove</span> <span class="n">unused</span> <span class="n">inputs</span> <span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span> <span class="p">(</span><span class="mi">4</span> <span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span> <span class="n">inputs</span><span class="p">)</span>
-<span class="n">SUCCESS</span><span class="p">:</span> <span class="n">Went</span> <span class="kn">from</span> <span class="mi">4</span> <span class="n">to</span> <span class="mi">3</span> <span class="n">nodes</span>
+Trying<span class="w"> </span>granularity<span class="w"> </span><span class="m">4</span>
+Strategy:<span class="w"> </span>Remove<span class="w"> </span>unused<span class="w"> </span>inputs<span class="w"> </span><span class="o">(</span>G:<span class="w"> </span><span class="m">4</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="m">4</span><span class="w"> </span>nodes,<span class="w"> </span><span class="m">2</span><span class="w"> </span>inputs<span class="o">)</span>
+SUCCESS:<span class="w"> </span>Went<span class="w"> </span>from<span class="w"> </span><span class="m">4</span><span class="w"> </span>to<span class="w"> </span><span class="m">3</span><span class="w"> </span>nodes
 </pre></div>
 </div>
 <p>After running, we get the final minified graph with the target node <code class="docutils literal notranslate"><span class="pre">neg</span></code>:</p>
@@ -798,12 +798,16 @@ torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils.
 
 
 Downloading config.json:   0%|          | 0.00/765 [00:00&lt;?, ?B/s]
-Downloading config.json: 100%|##########| 765/765 [00:00&lt;00:00, 4.19MB/s]
+Downloading config.json: 100%|##########| 765/765 [00:00&lt;00:00, 5.54MB/s]
 
 Downloading model.safetensors:   0%|          | 0.00/98.5M [00:00&lt;?, ?B/s]
-Downloading model.safetensors:  32%|###1      | 31.5M/98.5M [00:00&lt;00:00, 279MB/s]
-Downloading model.safetensors:  75%|#######4  | 73.4M/98.5M [00:00&lt;00:00, 330MB/s]
-Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:00&lt;00:00, 303MB/s]
+Downloading model.safetensors:  21%|##1       | 21.0M/98.5M [00:00&lt;00:01, 71.5MB/s]
+Downloading model.safetensors:  43%|####2     | 41.9M/98.5M [00:00&lt;00:00, 79.6MB/s]
+Downloading model.safetensors:  53%|#####3    | 52.4M/98.5M [00:00&lt;00:00, 74.7MB/s]
+Downloading model.safetensors:  75%|#######4  | 73.4M/98.5M [00:01&lt;00:00, 70.7MB/s]
+Downloading model.safetensors:  85%|########5 | 83.9M/98.5M [00:01&lt;00:00, 55.5MB/s]
+Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:01&lt;00:00, 42.7MB/s]
+Downloading model.safetensors: 100%|##########| 98.5M/98.5M [00:01&lt;00:00, 53.8MB/s]
 </pre></div>
 </div>
 <p>Output:</p>
@@ -1012,7 +1016,7 @@ The main idea is to narrow down the problem.</p>
 Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.</p>
 <p>When the performance with Inductor is better than that of eager mode, we provide a solid analytical method for performance profiling.
 We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  30.932 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  32.149 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-inductor-debug-cpu-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/864b90f09a798ba06b420b737cd463b1/inductor_debug_cpu.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">inductor_debug_cpu.py</span></code></a></p>

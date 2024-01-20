@@ -49,7 +49,7 @@ API endpoint will be at ``/predict`` which takes HTTP POST requests with a
 ``file`` parameter which contains the image. The response will be of JSON
 response containing the prediction:
 
-::
+.. code-block:: sh
 
     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 
@@ -62,9 +62,9 @@ Dependencies
 
 Install the required dependencies by running the following command:
 
-::
+.. code-block:: sh
 
-    $ pip install Flask==2.0.1 torchvision==0.10.0
+   pip install Flask==2.0.1 torchvision==0.10.0
 
 .. GENERATED FROM PYTHON SOURCE LINES 53-57
 
@@ -88,46 +88,13 @@ Following is a simple web server, taken from Flask's documentation
         return 'Hello World!'
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-74
-
-Save the above snippet in a file called ``app.py`` and you can now run a
-Flask development server by typing:
-
-::
-
-    $ FLASK_ENV=development FLASK_APP=app.py flask run
-
-.. GENERATED FROM PYTHON SOURCE LINES 76-78
-
-When you visit ``http://localhost:5000/`` in your web browser, you will be
-greeted with ``Hello World!`` text
-
-.. GENERATED FROM PYTHON SOURCE LINES 80-85
-
-We will make slight changes to the above snippet, so that it suits our API
-definition. First, we will rename the method to ``predict``. We will update
-the endpoint path to ``/predict``. Since the image files will be sent via
-HTTP POST requests, we will update it so that it also accepts only POST
-requests:
-
-.. GENERATED FROM PYTHON SOURCE LINES 85-91
-
-.. code-block:: default
-
-
-
-    @app.route('/predict', methods=['POST'])
-    def predict():
-        return 'Hello World!'
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 92-95
+.. GENERATED FROM PYTHON SOURCE LINES 68-71
 
 We will also change the response type, so that it returns a JSON response
 containing ImageNet class id and name. The updated ``app.py`` file will
 be now:
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-104
+.. GENERATED FROM PYTHON SOURCE LINES 71-80
 
 .. code-block:: default
 
@@ -141,7 +108,7 @@ be now:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-124
+.. GENERATED FROM PYTHON SOURCE LINES 81-100
 
 Inference
 -----------------
@@ -163,7 +130,7 @@ We will use ``transforms`` from ``torchvision`` library and build a
 transform pipeline, which transforms our images as required. You
 can read more about transforms `here <https://pytorch.org/vision/stable/transforms.html>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-141
+.. GENERATED FROM PYTHON SOURCE LINES 100-116
 
 .. code-block:: default
 
@@ -184,15 +151,14 @@ can read more about transforms `here <https://pytorch.org/vision/stable/transfor
         return my_transforms(image).unsqueeze(0)
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 142-146
+.. GENERATED FROM PYTHON SOURCE LINES 117-121
 
 The above method takes image data in bytes, applies the series of transforms
 and returns a tensor. To test the above method, read an image file in
 bytes mode (first replacing `../_static/img/sample_file.jpeg` with the actual
 path to the file on your computer) and see if you get a tensor back:
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-152
+.. GENERATED FROM PYTHON SOURCE LINES 121-127
 
 .. code-block:: default
 
@@ -203,7 +169,7 @@ path to the file on your computer) and see if you get a tensor back:
         print(tensor)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-161
+.. GENERATED FROM PYTHON SOURCE LINES 128-136
 
 Prediction
 ~~~~~~~~~~~~~~~~~~~
@@ -214,7 +180,7 @@ inference. While we'll be using a pretrained model in this example, you can
 use this same approach for your own models. See more about loading your
 models in this :doc:`tutorial </beginner/saving_loading_models>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-177
+.. GENERATED FROM PYTHON SOURCE LINES 136-151
 
 .. code-block:: default
 
@@ -234,8 +200,7 @@ models in this :doc:`tutorial </beginner/saving_loading_models>`.
         return y_hat
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 178-187
+.. GENERATED FROM PYTHON SOURCE LINES 152-161
 
 The tensor ``y_hat`` will contain the index of the predicted class id.
 However, we need a human readable class name. For that we need a class id
@@ -247,7 +212,7 @@ are following the exact steps in this tutorial, save it in
 ImageNet class name. We will load this JSON file and get the class name of
 the predicted index.
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-200
+.. GENERATED FROM PYTHON SOURCE LINES 161-174
 
 .. code-block:: default
 
@@ -265,14 +230,14 @@ the predicted index.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 201-205
+.. GENERATED FROM PYTHON SOURCE LINES 175-179
 
 Before using ``imagenet_class_index`` dictionary, first we will convert
 tensor value to a string value, since the keys in the
 ``imagenet_class_index`` dictionary are strings.
 We will test our above method:
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-211
+.. GENERATED FROM PYTHON SOURCE LINES 179-185
 
 .. code-block:: default
 
@@ -283,11 +248,11 @@ We will test our above method:
         print(get_prediction(image_bytes=image_bytes))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-213
+.. GENERATED FROM PYTHON SOURCE LINES 186-187
 
 You should get a response like this:
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-216
+.. GENERATED FROM PYTHON SOURCE LINES 187-190
 
 .. code-block:: default
 
@@ -295,168 +260,155 @@ You should get a response like this:
     ['n02124075', 'Egyptian_cat']
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-232
+.. GENERATED FROM PYTHON SOURCE LINES 191-194
 
 The first item in array is ImageNet class id and second item is the human
 readable name.
 
-.. Note ::
-   Did you notice that ``model`` variable is not part of ``get_prediction``
-   method? Or why is model a global variable? Loading a model can be an
-   expensive operation in terms of memory and compute. If we loaded the model in the
-   ``get_prediction`` method, then it would get unnecessarily loaded every
-   time the method is called. Since, we are building a web server, there
-   could be thousands of requests per second, we should not waste time
-   redundantly loading the model for every inference. So, we keep the model
-   loaded in memory just once. In
-   production systems, it's necessary to be efficient about your use of
-   compute to be able to serve requests at scale, so you should generally
-   load your model before serving requests.
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-254
+.. GENERATED FROM PYTHON SOURCE LINES 196-290
 
 Integrating the model in our API Server
----------------------------------------
+ ---------------------------------------
 
-In this final part we will add our model to our Flask API server. Since
-our API server is supposed to take an image file, we will update our ``predict``
-method to read files from the requests:
+ In this final part we will add our model to our Flask API server. Since
+ our API server is supposed to take an image file, we will update our ``predict``
+ method to read files from the requests:
 
-.. code-block:: python
+ .. code-block:: python
 
-   from flask import request
+    from flask import request
 
-   @app.route('/predict', methods=['POST'])
-   def predict():
-       if request.method == 'POST':
-           # we will get the file from the request
-           file = request.files['file']
-           # convert that to bytes
-           img_bytes = file.read()
-           class_id, class_name = get_prediction(image_bytes=img_bytes)
-           return jsonify({'class_id': class_id, 'class_name': class_name})
-
-.. GENERATED FROM PYTHON SOURCE LINES 256-306
-
-The ``app.py`` file is now complete. Following is the full version; replace
-the paths with the paths where you saved your files and it should run:
-
-.. code-block:: python
-
-  import io
-  import json
-
-  from torchvision import models
-  import torchvision.transforms as transforms
-  from PIL import Image
-  from flask import Flask, jsonify, request
+    @app.route('/predict', methods=['POST'])
+    def predict():
+        if request.method == 'POST':
+            # we will get the file from the request
+            file = request.files['file']
+            # convert that to bytes
+            img_bytes = file.read()
+            class_id, class_name = get_prediction(image_bytes=img_bytes)
+            return jsonify({'class_id': class_id, 'class_name': class_name})
 
 
-  app = Flask(__name__)
-  imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
-  model = models.densenet121(weights='IMAGENET1K_V1')
-  model.eval()
+#####################################################################
+ The ``app.py`` file is now complete. Following is the full version; replace
+ the paths with the paths where you saved your files and it should run:
+
+ .. code-block:: python
+
+    import io
+    import json
+
+    from torchvision import models
+    import torchvision.transforms as transforms
+    from PIL import Image
+    from flask import Flask, jsonify, request
 
 
-  def transform_image(image_bytes):
-      my_transforms = transforms.Compose([transforms.Resize(255),
-                                          transforms.CenterCrop(224),
-                                          transforms.ToTensor(),
-                                          transforms.Normalize(
-                                              [0.485, 0.456, 0.406],
-                                              [0.229, 0.224, 0.225])])
-      image = Image.open(io.BytesIO(image_bytes))
-      return my_transforms(image).unsqueeze(0)
+    app = Flask(__name__)
+    imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
+    model = models.densenet121(weights='IMAGENET1K_V1')
+    model.eval()
 
 
-  def get_prediction(image_bytes):
-      tensor = transform_image(image_bytes=image_bytes)
-      outputs = model.forward(tensor)
-      _, y_hat = outputs.max(1)
-      predicted_idx = str(y_hat.item())
-      return imagenet_class_index[predicted_idx]
+    def transform_image(image_bytes):
+        my_transforms = transforms.Compose([transforms.Resize(255),
+                                            transforms.CenterCrop(224),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(
+                                                [0.485, 0.456, 0.406],
+                                                [0.229, 0.224, 0.225])])
+        image = Image.open(io.BytesIO(image_bytes))
+        return my_transforms(image).unsqueeze(0)
 
 
-  @app.route('/predict', methods=['POST'])
-  def predict():
-      if request.method == 'POST':
-          file = request.files['file']
-          img_bytes = file.read()
-          class_id, class_name = get_prediction(image_bytes=img_bytes)
-          return jsonify({'class_id': class_id, 'class_name': class_name})
+    def get_prediction(image_bytes):
+        tensor = transform_image(image_bytes=image_bytes)
+        outputs = model.forward(tensor)
+        _, y_hat = outputs.max(1)
+        predicted_idx = str(y_hat.item())
+        return imagenet_class_index[predicted_idx]
 
 
-  if __name__ == '__main__':
-      app.run()
+    @app.route('/predict', methods=['POST'])
+    def predict():
+        if request.method == 'POST':
+            file = request.files['file']
+            img_bytes = file.read()
+            class_id, class_name = get_prediction(image_bytes=img_bytes)
+            return jsonify({'class_id': class_id, 'class_name': class_name})
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-313
 
-Let's test our web server! Run:
+    if __name__ == '__main__':
+        app.run()
 
-::
 
-    $ FLASK_ENV=development FLASK_APP=app.py flask run
+#####################################################################
+ Let's test our web server! Run:
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-325
+ .. code-block:: sh
 
-We can use the
-`requests <https://pypi.org/project/requests/>`_
-library to send a POST request to our app:
+    FLASK_ENV=development FLASK_APP=app.py flask run
 
-.. code-block:: python
+######################################################################
+ We can use the
+ `requests <https://pypi.org/project/requests/>`_
+ library to send a POST request to our app:
 
-   import requests
+ .. code-block:: python
 
-   resp = requests.post("http://localhost:5000/predict",
-                        files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+    import requests
 
-.. GENERATED FROM PYTHON SOURCE LINES 327-333
+    resp = requests.post("http://localhost:5000/predict",
+                         files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 292-336
 
 Printing `resp.json()` will now show the following:
 
-::
+ .. code-block:: sh
 
-    {"class_id": "n02124075", "class_name": "Egyptian_cat"}
+     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 
+#####################################################################
+ Next steps
+ --------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-371
+ The server we wrote is quite trivial and may not do everything
+ you need for your production application. So, here are some things you
+ can do to make it better:
 
-Next steps
---------------
+ - The endpoint ``/predict`` assumes that always there will be a image file
+   in the request. This may not hold true for all requests. Our user may
+   send image with a different parameter or send no images at all.
 
-The server we wrote is quite trivial and may not do everything
-you need for your production application. So, here are some things you
-can do to make it better:
+ - The user may send non-image type files too. Since we are not handling
+   errors, this will break our server. Adding an explicit error handing
+   path that will throw an exception would allow us to better handle
+   the bad inputs
 
-- The endpoint ``/predict`` assumes that always there will be a image file
-  in the request. This may not hold true for all requests. Our user may
-  send image with a different parameter or send no images at all.
+ - Even though the model can recognize a large number of classes of images,
+   it may not be able to recognize all images. Enhance the implementation
+   to handle cases when the model does not recognize anything in the image.
 
-- The user may send non-image type files too. Since we are not handling
-  errors, this will break our server. Adding an explicit error handing
-  path that will throw an exception would allow us to better handle
-  the bad inputs
+ - We run the Flask server in the development mode, which is not suitable for
+   deploying in production. You can check out `this tutorial <https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/>`_
+   for deploying a Flask server in production.
 
-- Even though the model can recognize a large number of classes of images,
-  it may not be able to recognize all images. Enhance the implementation
-  to handle cases when the model does not recognize anything in the image.
+ - You can also add a UI by creating a page with a form which takes the image and
+   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
+   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
 
-- We run the Flask server in the development mode, which is not suitable for
-  deploying in production. You can check out `this tutorial <https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/>`_
-  for deploying a Flask server in production.
+ - In this tutorial, we only showed how to build a service that could return predictions for
+   a single image at a time. We could modify our service to be able to return predictions for
+   multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
+   library automatically queues requests to your service and samples them into mini-batches
+   that can be fed into your model. You can check out `this tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_.
 
-- You can also add a UI by creating a page with a form which takes the image and
-  displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-  of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
+ - Finally, we encourage you to check out our other tutorials on deploying PyTorch models
+   linked-to at the top of the page.
 
-- In this tutorial, we only showed how to build a service that could return predictions for
-  a single image at a time. We could modify our service to be able to return predictions for
-  multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
-  library automatically queues requests to your service and samples them into mini-batches
-  that can be fed into your model. You can check out `this tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_.
-
-- Finally, we encourage you to check out our other tutorials on deploying PyTorch models
-  linked-to at the top of the page.
 
 
 .. rst-class:: sphx-glr-timing

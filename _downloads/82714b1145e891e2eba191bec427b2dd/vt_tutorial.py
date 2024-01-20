@@ -241,7 +241,7 @@ print("lite model: {:.2f}ms".format(prof5.self_cpu_time_total/1000))
 ######################################################################
 # The results running on a Google Colab are:
 #
-# ::
+# .. code-block:: sh
 #
 #    original model: 1236.69ms
 #    scripted model: 1226.72ms
