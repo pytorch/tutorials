@@ -580,7 +580,7 @@ print('Finished Training')
 # 
 # **When you run the cell above,** you should see something like this:
 # 
-# ::
+# .. code-block:: sh
 # 
 #    [1,  2000] loss: 2.235
 #    [1,  4000] loss: 1.940

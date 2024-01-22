@@ -24,12 +24,16 @@ Before You Start
 To run this tutorial, you’ll need to install PyTorch, TorchVision,
 Matplotlib, and TensorBoard.
 
-With ``conda``::
+With ``conda``:
+
+.. code-block:: sh
 
     conda install pytorch torchvision -c pytorch
     conda install matplotlib tensorboard
 
-With ``pip``::
+With ``pip``:
+
+.. code-block:: sh
 
     pip install torch torchvision matplotlib tensorboard
 

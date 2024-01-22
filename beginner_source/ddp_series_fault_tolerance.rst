@@ -93,11 +93,7 @@ In elastic training, whenever there are any membership changes (adding or removi
 on available devices. Having this structure ensures your training job can continue without manual intervention.
 
 
-
-
-
 Diff for `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__ v/s `multigpu_torchrun.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
------------------------------------------------------------
 
 Process group initialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
