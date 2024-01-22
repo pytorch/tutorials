@@ -3,6 +3,14 @@
 A Gentle Introduction to ``torch.autograd``
 ===========================================
 
+**Video By**: `Elliot Waite`_
+
+.. raw:: html
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/MswxJw-8PvE" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
+
 ``torch.autograd`` is PyTorch’s automatic differentiation engine that powers
 neural network training. In this section, you will get a conceptual
 understanding of how autograd helps a neural network train.
