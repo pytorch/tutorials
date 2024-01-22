@@ -107,7 +107,10 @@ sphinx_gallery_conf = {
                             "# https://pytorch.org/tutorials/beginner/colab\n"
                             "%matplotlib inline"),
     'reset_modules': (reset_seeds),
-    'ignore_pattern': r'_torch_export_nightly_tutorial.py'
+    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
+        'pypandoc': {'extra_args': ['--mathjax'],
+                     'filters': ['./custom_pandoc_filter.py'],
+        },
 }
 
 if os.getenv('GALLERY_PATTERN'):
