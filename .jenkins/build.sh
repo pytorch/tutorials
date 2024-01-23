@@ -63,6 +63,9 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
 
+  # Step 3.1: Run the post-processing script:
+  python3 ../post_process_notebooks.py
+
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
   set +x
