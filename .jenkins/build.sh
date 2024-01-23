@@ -64,7 +64,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   make docs
 
   # Step 3.1: Run the post-processing script:
-  python3 ../post_process_notebooks.py
+  python .jenkins/post_process_notebooks.py
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
