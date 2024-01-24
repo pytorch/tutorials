@@ -22,7 +22,7 @@ Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
 spelling:
 
-::
+.. code-block:: sh
 
     $ python predict.py Hinton
     (-0.47) Scottish
@@ -60,7 +60,7 @@ It would also be useful to know about RNNs and how they work:
 Preparing the Data
 ==================
 
-.. Note::
+.. note::
    Download the data from
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
@@ -501,7 +501,7 @@ predict('Satoshi')
 #
 # Run ``predict.py`` with a name to view predictions:
 #
-# ::
+# .. code-block:: sh
 #
 #     $ python predict.py Hazaki
 #     (-0.42) Japanese
