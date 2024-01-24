@@ -314,6 +314,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Distributed Training
 
 .. customcarditem::
+   :header: Getting Started with DeviceMesh
+   :card_description: Learn how to use DeviceMesh
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_device_mesh.html
+   :tags: Distributed-Training
+
+.. customcarditem::
    :header: Shard Optimizer States with ZeroRedundancyOptimizer
    :card_description: How to use ZeroRedundancyOptimizer to reduce memory consumption.
    :image: ../_static/img/thumbnails/cropped/profiler.png

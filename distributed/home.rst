@@ -13,6 +13,7 @@ PyTorch with each method having their advantages in certain use cases:
 
 * `DistributedDataParallel (DDP) <#learn-ddp>`__
 * `Fully Sharded Data Parallel (FSDP) <#learn-fsdp>`__
+* `Device Mesh <#device-mesh>`__
 * `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
 * `Custom Extensions <#custom-extensions>`__
 
@@ -51,7 +52,7 @@ Learn DDP
         :link: https://pytorch.org/tutorials/advanced/generic_join.html?utm_source=distr_landing&utm_medium=generic_join
         :link-type: url
 
-        This tutorial describes the Join context manager and 
+        This tutorial describes the Join context manager and
         demonstrates it's use with DistributedData Parallel.
         +++
         :octicon:`code;1em` Code
@@ -80,6 +81,23 @@ Learn FSDP
 
         In this tutorial, you will learn how to fine-tune a HuggingFace (HF) T5
         model with FSDP for text summarization.
+        +++
+        :octicon:`code;1em` Code
+
+.. _device-mesh:
+
+Learn DeviceMesh
+----------------
+
+.. grid:: 3
+
+     .. grid-item-card:: :octicon:`file-code;1em`
+        Getting Started with DeviceMesh
+        :link: https://pytorch.org/tutorials/recipes/distributed_device_mesh.html?highlight=devicemesh
+        :link-type: url
+
+        In this tutorial you will learn about `DeviceMesh`
+        and how it can help with distributed training.
         +++
         :octicon:`code;1em` Code
 
