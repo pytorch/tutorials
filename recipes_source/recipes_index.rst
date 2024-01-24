@@ -144,6 +144,14 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/module_load_state_dict_tips.html
    :tags: Basics
 
+.. customcarditem::
+   :header: (beta) Using TORCH_LOGS to observe torch.compile
+   :card_description: Learn how to use the torch logging APIs to observe the compilation process.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_logs.html
+   :tags: Basics
+
+
 .. Interpretability
 
 .. customcarditem::
@@ -276,6 +284,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/amx.html
    :tags: Model-Optimization
 
+.. (beta) Compiling the Optimizer with torch.compile
+
+.. customcarditem::
+   :header: (beta) Compiling the Optimizer with torch.compile
+   :card_description: Speed up the optimizer using torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/compiling_optimizer.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
@@ -360,6 +377,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
    /recipes/recipes/loading_data_recipe
    /recipes/recipes/defining_a_neural_network
+   /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
    /recipes/recipes/saving_and_loading_models_for_inference
    /recipes/recipes/saving_and_loading_a_general_checkpoint
@@ -375,6 +393,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/intel_extension_for_pytorch
+   /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
