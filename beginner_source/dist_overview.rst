@@ -74,7 +74,10 @@ common development trajectory would be:
 4. Use multi-machine `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
    and the `launching script <https://github.com/pytorch/examples/blob/master/distributed/ddp/README.md>`__,
    if the application needs to scale across machine boundaries.
-5. Use `torch.distributed.elastic <https://pytorch.org/docs/stable/distributed.elastic.html>`__
+5. Use multi-GPU `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
+   training on a single-machine or multi-machine when the data and model cannot
+   fit on one GPU.
+6. Use `torch.distributed.elastic <https://pytorch.org/docs/stable/distributed.elastic.html>`__
    to launch distributed training if errors (e.g., out-of-memory) are expected or if
    resources can join and leave dynamically during training.
 
@@ -133,6 +136,18 @@ DDP materials are listed below:
    helps to reduce optimizer memory footprint.
 5. The `Distributed Training with Uneven Inputs Using the Join Context Manager <../advanced/generic_join.html>`__
    tutorial walks through using the generic join context for distributed training with uneven inputs.
+
+
+``torch.distributed.FullyShardedDataParallel``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
+(FSDP) is a type of data parallelism paradigm which maintains a per-GPU copy of a model’s
+parameters, gradients and optimizer states, it shards all of these states across
+data-parallel workers. The support for FSDP was added starting PyTorch v1.11. The tutorial
+`Getting Started with FSDP <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
+provides in depth explanation and example of how FSDP works.
+
 
 torch.distributed.elastic
 ~~~~~~~~~~~~~~~~~~~~~~~~~

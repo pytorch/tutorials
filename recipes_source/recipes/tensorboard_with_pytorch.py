@@ -13,14 +13,14 @@ PyTorch should be installed to log models and metrics into TensorBoard log
 directory. The following command will install PyTorch 1.4+ via 
 Anaconda (recommended):
 
-::
+.. code-block:: sh
 
    $ conda install pytorch torchvision -c pytorch 
    
 
 or pip
 
-::
+.. code-block:: sh
 
    $ pip install torch torchvision
 

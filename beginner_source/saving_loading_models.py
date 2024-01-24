@@ -115,7 +115,7 @@ functions to be familiar with:
 #
 # **Output:**
 #
-# ::
+# .. code-block:: sh
 #
 #    Model's state_dict:
 #    conv1.weight     torch.Size([6, 3, 5, 5])
@@ -175,7 +175,7 @@ functions to be familiar with:
 # normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 #
-# .. Note ::
+# .. note::
 #
 #    Notice that the ``load_state_dict()`` function takes a dictionary
 #    object, NOT a path to a saved object. This means that you must
@@ -183,7 +183,7 @@ functions to be familiar with:
 #    ``load_state_dict()`` function. For example, you CANNOT load using
 #    ``model.load_state_dict(PATH)``.
 #
-# .. Note ::
+# .. note::
 #    
 #    If you only plan to keep the best performing model (according to the 
 #    acquired validation loss), don't forget that ``best_model_state = model.state_dict()``

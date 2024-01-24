@@ -50,9 +50,9 @@ plt.ion()   # interactive mode
 #     estimation <https://blog.dlib.net/2014/08/real-time-face-pose-estimation.html>`__
 #     on a few images from imagenet tagged as 'face'.
 #
-# Dataset comes with a csv file with annotations which looks like this:
+# Dataset comes with a ``.csv`` file with annotations which looks like this:
 #
-# ::
+# .. code-block:: sh
 #
 #     image_name,part_0_x,part_0_y,part_1_x,part_1_y,part_2_x, ... ,part_67_x,part_67_y
 #     0805personali01.jpg,27,83,27,98, ... 84,134
@@ -196,7 +196,7 @@ for i, sample in enumerate(face_dataset):
 # called. For this, we just need to implement ``__call__`` method and
 # if required, ``__init__`` method. We can then use a transform like this:
 #
-# ::
+# .. code-block:: python
 #
 #     tsfm = Transform(params)
 #     transformed_sample = tsfm(sample)
@@ -421,7 +421,9 @@ for i_batch, sample_batched in enumerate(dataloader):
 # and dataloader. ``torchvision`` package provides some common datasets and
 # transforms. You might not even have to write custom classes. One of the
 # more generic datasets available in torchvision is ``ImageFolder``.
-# It assumes that images are organized in the following way: ::
+# It assumes that images are organized in the following way:
+#
+# .. code-block:: sh
 #
 #     root/ants/xxx.png
 #     root/ants/xxy.jpeg
@@ -435,7 +437,9 @@ for i_batch, sample_batched in enumerate(dataloader):
 #
 # where 'ants', 'bees' etc. are class labels. Similarly generic transforms
 # which operate on ``PIL.Image`` like  ``RandomHorizontalFlip``, ``Scale``,
-# are also available. You can use these to write a dataloader like this: ::
+# are also available. You can use these to write a dataloader like this:
+#
+# .. code-block:: pytorch
 #
 #    import torch
 #    from torchvision import transforms, datasets
