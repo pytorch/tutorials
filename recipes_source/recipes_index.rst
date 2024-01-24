@@ -275,6 +275,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. customcarditem::
+   :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
+   :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/inference_tuning_on_aws_graviton.html
+   :tags: Model-Optimization
+
 .. Leverage Advanced Matrix Extensions
 
 .. customcarditem::
