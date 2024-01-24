@@ -37,7 +37,7 @@ from torchtext.datasets import AG_NEWS
 train_iter = iter(AG_NEWS(split="train"))
 
 ######################################################################
-# ::
+# .. code-block:: sh
 #
 #     next(train_iter)
 #     >>> (3, "Fears for T N pension after talks Unions representing workers at Turner
@@ -88,7 +88,7 @@ vocab.set_default_index(vocab["<unk>"])
 ######################################################################
 # The vocabulary block converts a list of tokens into integers.
 #
-# ::
+# .. code-block:: sh
 #
 #     vocab(['here', 'is', 'an', 'example'])
 #     >>> [475, 21, 30, 5297]
@@ -102,7 +102,7 @@ label_pipeline = lambda x: int(x) - 1
 ######################################################################
 # The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,
 #
-# ::
+# .. code-block:: sh
 #
 #     text_pipeline('here is the an example')
 #     >>> [475, 21, 2, 30, 5297]
@@ -188,7 +188,7 @@ class TextClassificationModel(nn.Module):
 #
 # The ``AG_NEWS`` dataset has four labels and therefore the number of classes is four.
 #
-# ::
+# .. code-block:: sh
 #
 #    1 : World
 #    2 : Sports
