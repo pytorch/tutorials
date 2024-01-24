@@ -64,7 +64,7 @@ respectively.
 
 
 Define Helper Functions and Prepare the Dataset
--------------------------------------------
+-----------------------------------------------
 
 To run the code in this tutorial using the entire ImageNet dataset, first
 download ImageNet by following the instructions in

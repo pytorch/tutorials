@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 (beta) Building a Simple CPU Performance Profiler with FX
-*******************************************************
+*********************************************************
 **Author**: `James Reed <https://github.com/jamesr66a>`_
 
 In this tutorial, we are going to use FX to do the following:

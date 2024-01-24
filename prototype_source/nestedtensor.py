@@ -28,10 +28,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ######################################################################
 # NestedTensor Initialization
-# ----------------
+# ----------------------------
 #
-
-######################################################################
 # From the Python frontend, a nestedtensor can be created from a list of tensors.
 # We denote nt[i] as the ith tensor component of a nestedtensor.
 nt = torch.nested.nested_tensor([torch.arange(12).reshape(
@@ -66,10 +64,8 @@ print(f"First underlying tensor component is nested: {nt[0].is_nested}")
 
 ######################################################################
 # Nested Tensor Operations
-# ----------------
+# ------------------------
 #
-
-######################################################################
 # As each operation must be explicitly implemented for nestedtensors,
 # operation coverage for nestedtensors is currently narrower than that of regular tensors.
 # For now, only basic operations such as index, dropout, softmax, transpose, reshape, linear, bmm are covered.
@@ -123,7 +119,7 @@ print(f"Result of Softmax:\n {nt5}")
 
 ######################################################################
 # Why Nested Tensor
-# ----------------
+# -----------------
 #
 
 ######################################################################

@@ -98,7 +98,7 @@ print(y_train.min(), y_train.max())
 
 ###############################################################################
 # Neural net from scratch (without ``torch.nn``)
-# ---------------------------------------------
+# -----------------------------------------------
 #
 # Let's first create a model using nothing but PyTorch tensor operations. We're assuming
 # you're already familiar with the basics of neural networks. (If you're not, you can
@@ -328,7 +328,7 @@ print(loss_func(model(xb), yb))
 # Previously for our training loop we had to update the values for each parameter
 # by name, and manually zero out the grads for each parameter separately, like this:
 #
-# ::
+# .. code-block:: python
 #
 #    with torch.no_grad():
 #        weights -= weights.grad * lr
@@ -342,7 +342,7 @@ print(loss_func(model(xb), yb))
 # and less prone to the error of forgetting some of our parameters, particularly
 # if we had a more complicated model:
 #
-# ::
+# .. code-block:: python
 #
 #    with torch.no_grad():
 #        for p in model.parameters(): p -= p.grad * lr
@@ -418,7 +418,7 @@ print(loss_func(model(xb), yb))
 #
 # This will let us replace our previous manually coded optimization step:
 #
-# ::
+# .. code-block:: python
 #
 #    with torch.no_grad():
 #        for p in model.parameters(): p -= p.grad * lr
@@ -426,7 +426,7 @@ print(loss_func(model(xb), yb))
 #
 # and instead use just:
 #
-# ::
+# .. code-block:: python
 #
 #    opt.step()
 #    opt.zero_grad()
@@ -490,7 +490,7 @@ train_ds = TensorDataset(x_train, y_train)
 ###############################################################################
 # Previously, we had to iterate through minibatches of ``x`` and ``y`` values separately:
 #
-# ::
+# .. code-block:: python
 #
 #    xb = x_train[start_i:end_i]
 #    yb = y_train[start_i:end_i]
@@ -498,7 +498,7 @@ train_ds = TensorDataset(x_train, y_train)
 #
 # Now, we can do these two steps together:
 #
-# ::
+# .. code-block:: python
 #
 #    xb,yb = train_ds[i*bs : i*bs+bs]
 #
@@ -534,7 +534,7 @@ train_dl = DataLoader(train_ds, batch_size=bs)
 ###############################################################################
 # Previously, our loop iterated over batches ``(xb, yb)`` like this:
 #
-# ::
+# .. code-block:: python
 #
 #    for i in range((n-1)//bs + 1):
 #        xb,yb = train_ds[i*bs : i*bs+bs]
@@ -542,7 +542,7 @@ train_dl = DataLoader(train_ds, batch_size=bs)
 #
 # Now, our loop is much cleaner, as ``(xb, yb)`` are loaded automatically from the data loader:
 #
-# ::
+# .. code-block:: python
 #
 #    for xb,yb in train_dl:
 #        pred = model(xb)
