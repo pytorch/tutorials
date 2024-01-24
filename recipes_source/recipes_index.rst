@@ -284,6 +284,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/amx.html
    :tags: Model-Optimization
 
+.. (beta) Compiling the Optimizer with torch.compile
+
+.. customcarditem::
+   :header: (beta) Compiling the Optimizer with torch.compile
+   :card_description: Speed up the optimizer using torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/compiling_optimizer.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
@@ -377,6 +386,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/intel_extension_for_pytorch
+   /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
