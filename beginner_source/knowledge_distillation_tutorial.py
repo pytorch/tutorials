@@ -25,7 +25,7 @@ Knowledge Distillation Tutorial
 # - How to improve the performance of lightweight models by using more complex models as teachers
 #
 # Prerequisites
-# ~~~~~~~~~~~
+# ~~~~~~~~~~~~~
 #
 # * 1 GPU, 4GB of memory
 # * PyTorch v2.0 or later 
