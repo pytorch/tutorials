@@ -111,7 +111,7 @@ def download_gpu_quantization_torchao() -> None:
                          prefix=DATA_DIR,)
                          sha256="a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e",
                          )
-    unzip = (z, PROTOTYPE_DATA_DIR)
+    unzip(z, PROTOTYPE_DATA_DIR)
 
 
 def main() -> None:
