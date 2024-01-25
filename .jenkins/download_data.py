@@ -105,6 +105,14 @@ def download_lenet_mnist() -> None:
                          sha256="cb5f8e578aef96d5c1a2cc5695e1aa9bbf4d0fe00d25760eeebaaac6ebc2edcb",
                          )
 
+def download_gpu_quantization_torchao() -> None:
+    # Download SAM model checkpoint for prototype_source/gpu_quantization_torchao_tutorial.py
+    z = downloaad_url_to_file("https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+                         prefix=DATA_DIR,)
+                         sha256="a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e",
+                         )
+    unzip = (z, PROTOTYPE_DATA_DIR)
+
 
 def main() -> None:
     DATA_DIR.mkdir(exist_ok=True)
