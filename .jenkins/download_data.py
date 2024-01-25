@@ -130,7 +130,8 @@ def main() -> None:
         download_dcgan_data()
     if FILES_TO_RUN is None or "fgsm_tutorial" in FILES_TO_RUN:
         download_lenet_mnist()
-
+    if FILES_TO_RUN is None or "gpu_quantization_torchao_tutorial" in FILES_TO_RUN:
+        download_gpu_quantization_torchao()
 
 if __name__ == "__main__":
     main()
