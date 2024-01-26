@@ -88,7 +88,7 @@ commonly-used storage service, such as Amazon S3, and instructing your
 users to download the data at the beginning of your tutorial. 
 
 To download your data add a function to the [download.py](https://github.com/pytorch/tutorials/blob/main/.jenkins/download_data.py)
-script. Follow the same patern as other download functions.
+script. Follow the same pattern as other download functions.
 Please do not add download logic to Makefile since they will be 
 downloaded on all workers. 
 
