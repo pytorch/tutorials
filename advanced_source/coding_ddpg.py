@@ -58,7 +58,6 @@ TorchRL objectives: Coding a DDPG loss
 # Imports and setup
 # -----------------
 #
-# %%
 #  .. code-block:: bash
 #
 #      %%bash
