@@ -2,5 +2,5 @@
 import torch
 import time
 
-a = torch.randn(10,10)
-time.sleep(3)
+for i in range(100):
+    a = torch.randn(100,100)
