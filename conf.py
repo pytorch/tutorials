@@ -109,7 +109,7 @@ sphinx_gallery_conf = {
     'reset_modules': (reset_seeds),
     'ignore_pattern': r'_torch_export_nightly_tutorial.py',
     'pypandoc': {'extra_args': ['--mathjax'],
-                 'filters': ['./custom_pandoc_filter.py'],
+                 'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
 }
 
