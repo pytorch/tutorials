@@ -58,26 +58,24 @@ TorchRL objectives: Coding a DDPG loss
 # Imports and setup
 # -----------------
 #
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip3 install torchrl mujoco glfw
 
 import torchrl
+import torch
+import tqdm
+from typing import Tuple
 
 # sphinx_gallery_start_ignore
 import warnings
-from typing import Tuple
-
 warnings.filterwarnings("ignore")
 # sphinx_gallery_end_ignore
 
-import torch.cuda
-import tqdm
-
-import torch.multiprocessing
-
 ###############################################################################
 # We will execute the policy on CUDA if available
-device = (
-    torch.device("cpu") if torch.cuda.device_count() == 0 else torch.device("cuda:0")
-)
+device =  torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 collector_device = torch.device("cpu")  # Change the device to ``cuda`` to use CUDA
 
 ###############################################################################
