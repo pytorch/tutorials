@@ -63,15 +63,24 @@ TorchRL objectives: Coding a DDPG loss
 #      %%bash
 #      pip3 install torchrl mujoco glfw
 
+# sphinx_gallery_start_ignore
+import warnings
+warnings.filterwarnings("ignore")
+import multiprocessing
+# TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
+# `__main__` method call, but for the easy of reading the code switch to fork
+# which is also a default spawn method in Google's Colaboratory
+try:
+    multiprocessing.set_start_method("fork")
+except RuntimeError:
+    assert multiprocessing.get_start_method() == "fork"
+# sphinx_gallery_end_ignore
+
+
 import torchrl
 import torch
 import tqdm
 from typing import Tuple
-
-# sphinx_gallery_start_ignore
-import warnings
-warnings.filterwarnings("ignore")
-# sphinx_gallery_end_ignore
 
 ###############################################################################
 # We will execute the policy on CUDA if available
@@ -1219,6 +1228,6 @@ plt.tight_layout()
 # 
 # To iterate further on this loss module we might consider:
 # 
-# - Using `@dispatch` (see `[Feature] Distpatch IQL loss module <https://github.com/pytorch/rl/pull/1230>`_.
+# - Using `@dispatch` (see `[Feature] Distpatch IQL loss module <https://github.com/pytorch/rl/pull/1230>`_.)
 # - Allowing flexible TensorDict keys.
 # 
