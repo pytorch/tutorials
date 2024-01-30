@@ -3,15 +3,11 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Getting Started with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html>`__
-* `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
-* `Facilitating New Backend Integration by PrivateUse1 <https://pytorch.org/tutorials/advanced/privateuseone.html>`__
-* `(prototype) Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/prototype/semi_structured_sparse.html>`__
-* `(prototype) PyTorch 2 Export Quantization-Aware Training (QAT) <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`__
-* `(prototype) PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`__
-* `(prototype) Inductor C++ Wrapper Tutorial <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`__
-* `How to save memory by fusing the optimizer step into the backward pass <https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html>`__
-* `Tips for Loading an nn.Module from a Checkpoint <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html>`__
+* `PyTorch Inference Performance Tuning on AWS Graviton Processors <https://pytorch.org/tutorials/recipes/inference_tuning_on_aws_graviton.html>`__
+* `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
+* `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
+* `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
+* `Compiling the optimizer with torch.compile <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
 
 
 .. raw:: html
