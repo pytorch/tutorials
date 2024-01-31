@@ -8,7 +8,7 @@ import logging
 
 ######################################################################
 #
-# This tutorial introduces the ``TORCH_LOGS`` environment variable, as well ass the Python API, and
+# This tutorial introduces the ``TORCH_LOGS`` environment variable, as well as the Python API, and
 # demonstrates how to apply it to observe the phases  of ``torch.compile``.
 #
 # .. note::
