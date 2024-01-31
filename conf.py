@@ -95,7 +95,7 @@ def reset_seeds(gallery_conf, fname):
     random.seed(10)
     numpy.random.seed(10)
     gc.collect()
-    torch.utils.benchmark()
+    torch.utils()
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
