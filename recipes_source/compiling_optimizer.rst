@@ -86,3 +86,9 @@ Sample Results:
 
 * Eager runtime: 747.2437149845064us
 * Compiled runtime: 392.07384741178us
+
+See Also
+~~~~~~~~~
+
+* For an in-depth technical overview, see
+`Compiling the optimizer with PT2 <https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669>`__
