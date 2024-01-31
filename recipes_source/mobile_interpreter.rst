@@ -148,7 +148,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 4. Build and test the app in Xcode.
 
 How to use mobile interpreter + custom build
-------------------------------------------
+---------------------------------------------
 A custom PyTorch interpreter library can be created to reduce binary size, by only containing the operators needed by the model. In order to do that follow these steps:
 
 1. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:

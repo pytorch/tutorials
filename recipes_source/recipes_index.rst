@@ -144,6 +144,14 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/module_load_state_dict_tips.html
    :tags: Basics
 
+.. customcarditem::
+   :header: (beta) Using TORCH_LOGS to observe torch.compile
+   :card_description: Learn how to use the torch logging APIs to observe the compilation process.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_logs.html
+   :tags: Basics
+
+
 .. Interpretability
 
 .. customcarditem::
@@ -267,6 +275,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. customcarditem::
+   :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
+   :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/inference_tuning_on_aws_graviton.html
+   :tags: Model-Optimization
+
 .. Leverage Advanced Matrix Extensions
 
 .. customcarditem::
@@ -274,6 +289,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :card_description: Learn to leverage Intel® Advanced Matrix Extensions.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/amx.html
+   :tags: Model-Optimization
+
+.. (beta) Compiling the Optimizer with torch.compile
+
+.. customcarditem::
+   :header: (beta) Compiling the Optimizer with torch.compile
+   :card_description: Speed up the optimizer using torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/compiling_optimizer.html
    :tags: Model-Optimization
 
 .. Intel(R) Extension for PyTorch*
@@ -297,6 +321,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Distributed Training
 
 .. customcarditem::
+   :header: Getting Started with DeviceMesh
+   :card_description: Learn how to use DeviceMesh
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_device_mesh.html
+   :tags: Distributed-Training
+
+.. customcarditem::
    :header: Shard Optimizer States with ZeroRedundancyOptimizer
    :card_description: How to use ZeroRedundancyOptimizer to reduce memory consumption.
    :image: ../_static/img/thumbnails/cropped/profiler.png
@@ -317,12 +348,21 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_optim_torchscript.html
    :tags: Distributed-Training,TorchScript
 
-   .. customcarditem::
+.. customcarditem::
    :header: Getting Started with Distributed Checkpoint (DCP)
    :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
    :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
-   :link: ../recipes/DCP_tutorial.html
+   :link: ../recipes/distributed_checkpoint_recipe.html
    :tags: Distributed-Training
+
+.. TorchServe
+
+.. customcarditem::
+   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
+   :card_description: Learn how to deploy model in Vertex AI with TorchServe
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torchserve_vertexai_tutorial.html
+   :tags: Production
 
 .. End of tutorial card section
 
@@ -344,6 +384,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
    /recipes/recipes/loading_data_recipe
    /recipes/recipes/defining_a_neural_network
+   /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
    /recipes/recipes/saving_and_loading_models_for_inference
    /recipes/recipes/saving_and_loading_a_general_checkpoint
@@ -359,6 +400,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/intel_extension_for_pytorch
+   /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
    /recipes/deployment_with_flask

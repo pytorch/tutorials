@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Single-Machine Model Parallel Best Practices
-================================
+============================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 Model parallel is widely-used in distributed training

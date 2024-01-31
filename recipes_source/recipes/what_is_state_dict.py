@@ -26,7 +26,7 @@ Setup
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-::
+.. code-block:: sh
 
    pip install torch
 

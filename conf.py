@@ -79,7 +79,7 @@ extensions = [
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
-    "tensordict": ("https://pytorch-labs.github.io/tensordict/", None),
+    "tensordict": ("https://pytorch.github.io/tensordict/", None),
     "torchrl": ("https://pytorch.org/rl/", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
     "torchtext": ("https://pytorch.org/text/stable/", None),
@@ -285,7 +285,8 @@ texinfo_documents = [
 
 html_css_files = [
         'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css'
+        'css/custom.css',
+        'css/custom2.css'
     ]
 
 def setup(app):

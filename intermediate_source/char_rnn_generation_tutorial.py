@@ -9,7 +9,7 @@ In the `first tutorial </intermediate/char_rnn_classification_tutorial>`_
 we used a RNN to classify names into their language of origin. This time
 we'll turn around and generate names from languages.
 
-::
+.. code-block:: sh
 
     > python sample.py Russian RUS
     Rovakov
@@ -64,7 +64,7 @@ I also suggest the previous tutorial, :doc:`/intermediate/char_rnn_classificatio
 Preparing the Data
 ==================
 
-.. Note::
+.. note::
    Download the data from
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
@@ -370,7 +370,7 @@ plt.plot(all_losses)
 #
 # -  Return the final name
 #
-# .. Note::
+# .. note::
 #    Rather than having to give it a starting letter, another
 #    strategy would have been to include a "start of string" token in
 #    training and have the network choose its own starting letter.

@@ -1,6 +1,6 @@
 """
 (prototype) FX Graph Mode Post Training Dynamic Quantization
-===========================================================
+============================================================
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 

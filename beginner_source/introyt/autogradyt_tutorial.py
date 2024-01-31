@@ -213,7 +213,7 @@ plt.plot(a.detach(), a.grad.detach())
 #########################################################################
 # Recall the computation steps we took to get here:
 # 
-# ::
+# .. code-block:: python
 # 
 #    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
 #    b = torch.sin(a)
@@ -456,10 +456,10 @@ print(y)
 # .. note::
 #     The following code cell throws a runtime error. This is expected.
 # 
-# ::
+#    .. code-block:: python
 #
-#    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
-#    torch.sin_(a)
+#       a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
+#       torch.sin_(a)
 #
 
 #########################################################################
