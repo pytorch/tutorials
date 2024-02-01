@@ -72,10 +72,11 @@ from torch import multiprocessing
 # TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
 # `__main__` method call, but for the easy of reading the code switch to fork
 # which is also a default spawn method in Google's Colaboratory
+is_sphinx = 'sphinx_gallery_conf' in globals()
 try:
     multiprocessing.set_start_method("fork")
 except RuntimeError:
-    assert multiprocessing.get_start_method() == "fork"
+    assert is_sphinx or (multiprocessing.get_start_method() == "fork")
 
 # sphinx_gallery_end_ignore
 
@@ -247,11 +248,11 @@ def make_value_estimator(self, value_type: ValueEstimators, **hyperparams):
     value_key = "state_action_value"
     if value_type == ValueEstimators.TD1:
         self._value_estimator = TD1Estimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
+            value_network=self.actor_critic, **hp
         )
     elif value_type == ValueEstimators.TD0:
         self._value_estimator = TD0Estimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
+            value_network=self.actor_critic, **hp
         )
     elif value_type == ValueEstimators.GAE:
         raise NotImplementedError(
@@ -259,14 +260,14 @@ def make_value_estimator(self, value_type: ValueEstimators, **hyperparams):
         )
     elif value_type == ValueEstimators.TDLambda:
         self._value_estimator = TDLambdaEstimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
+            value_network=self.actor_critic, **hp
         )
     else:
         raise NotImplementedError(f"Unknown value type {value_type}")
-
+    self._value_estimator.set_keys(value=value_key)
 
 ###############################################################################
-# The ``make_value_estimator`` method can but does not need to be called: if
+# The ``make_value_estimator`` method can but does not need to be called: ifgg
 # not, the :class:`~torchrl.objectives.LossModule` will query this method with
 # its default estimator.
 #

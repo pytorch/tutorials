@@ -113,10 +113,11 @@ from torch import multiprocessing
 # TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
 # `__main__` method call, but for the easy of reading the code switch to fork
 # which is also a default spawn method in Google's Colaboratory
+is_sphinx = 'sphinx_gallery_conf' in globals()
 try:
     multiprocessing.set_start_method("fork")
 except RuntimeError:
-    assert multiprocessing.get_start_method() == "fork"
+    assert is_sphinx or (multiprocessing.get_start_method() == "fork")
 
 # sphinx_gallery_end_ignore
 
