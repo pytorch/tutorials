@@ -65,8 +65,10 @@ TorchRL objectives: Coding a DDPG loss
 
 # sphinx_gallery_start_ignore
 import warnings
+
 warnings.filterwarnings("ignore")
-import multiprocessing
+from torch import multiprocessing
+
 # TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
 # `__main__` method call, but for the easy of reading the code switch to fork
 # which is also a default spawn method in Google's Colaboratory
@@ -74,13 +76,13 @@ try:
     multiprocessing.set_start_method("fork")
 except RuntimeError:
     assert multiprocessing.get_start_method() == "fork"
+
 # sphinx_gallery_end_ignore
 
 
-import torchrl
 import torch
 import tqdm
-from typing import Tuple
+
 
 ###############################################################################
 # We will execute the policy on CUDA if available
@@ -311,7 +313,7 @@ from torchrl.objectives.utils import distance_loss
 def _loss_value(
     self,
     tensordict,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+):
     td_copy = tensordict.clone()
 
     # V(s, a)
@@ -349,7 +351,7 @@ def _loss_value(
 # value and actor loss, collect the cost values and write them in a ``TensorDict``
 # delivered to the user.
 
-from tensordict.tensordict import TensorDict, TensorDictBase
+from tensordict import TensorDict, TensorDictBase
 
 
 def _forward(self, input_tensordict: TensorDictBase) -> TensorDict:
@@ -457,6 +459,7 @@ def make_env(from_pixels=False):
         raise NotImplementedError
 
     env_kwargs = {
+        "device": device,
         "from_pixels": from_pixels,
         "pixels_only": from_pixels,
         "frame_skip": 2,
@@ -519,16 +522,6 @@ def make_transformed_env(
     # syntax.
     env.append_transform(RewardScaling(loc=0.0, scale=reward_scaling))
 
-    double_to_float_list = []
-    double_to_float_inv_list = []
-    if env_library is DMControlEnv:
-        # ``DMControl`` requires double-precision
-        double_to_float_list += [
-            "reward",
-            "action",
-        ]
-        double_to_float_inv_list += ["action"]
-
     # We concatenate all states into a single "observation_vector"
     # even if there is a single tensor, it'll be renamed in "observation_vector".
     # This facilitates the downstream operations as we know the name of the
@@ -544,11 +537,8 @@ def make_transformed_env(
     # version of the transform
     env.append_transform(ObservationNorm(in_keys=[out_key], standard_normal=True))
 
-    double_to_float_list.append(out_key)
     env.append_transform(
-        DoubleToFloat(
-            in_keys=double_to_float_list, in_keys_inv=double_to_float_inv_list
-        )
+        DoubleToFloat()
     )
 
     env.append_transform(StepCounter(max_frames_per_traj))
@@ -874,9 +864,6 @@ collector = SyncDataCollector(
     reset_at_each_iter=False,
     split_trajs=False,
     device=collector_device,
-    # device for execution
-    storing_device=collector_device,
-    # device where data will be stored and passed
     exploration_type=ExplorationType.RANDOM,
 )
 

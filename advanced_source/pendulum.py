@@ -10,7 +10,7 @@ Creating an environment (a simulator or an interface to a physical control syste
 is an integrative part of reinforcement learning and control engineering.
 
 TorchRL provides a set of tools to do this in multiple contexts.
-This tutorial demonstrates how to use PyTorch and TorchRL code a pendulum 
+This tutorial demonstrates how to use PyTorch and TorchRL code a pendulum
 simulator from the ground up.
 It is freely inspired by the Pendulum-v1 implementation from `OpenAI-Gym/Farama-Gymnasium
 control library <https://github.com/Farama-Foundation/Gymnasium>`__.
@@ -49,9 +49,9 @@ Key learnings:
 # cover a broader range of features of the environment API in TorchRL.
 #
 # Modeling stateless environments gives users full control over the input and
-# outputs of the simulator: one can reset an experiment at any stage or actively 
-# modify the dynamics from the outside. However, it assumes that we have some control 
-# over a task, which may not always be the case: solving a problem where we cannot 
+# outputs of the simulator: one can reset an experiment at any stage or actively
+# modify the dynamics from the outside. However, it assumes that we have some control
+# over a task, which may not always be the case: solving a problem where we cannot
 # control the current state is more challenging but has a much wider set of applications.
 #
 # Another advantage of stateless environments is that they can enable
@@ -73,14 +73,31 @@ Key learnings:
 #   simulation graph.
 # * Finally, we will train a simple policy to solve the system we implemented.
 #
+
+# sphinx_gallery_start_ignore
+import warnings
+
+warnings.filterwarnings("ignore")
+from torch import multiprocessing
+
+# TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
+# `__main__` method call, but for the easy of reading the code switch to fork
+# which is also a default spawn method in Google's Colaboratory
+try:
+    multiprocessing.set_start_method("fork")
+except RuntimeError:
+    assert multiprocessing.get_start_method() == "fork"
+
+# sphinx_gallery_end_ignore
+
 from collections import defaultdict
 from typing import Optional
 
 import numpy as np
 import torch
 import tqdm
+from tensordict import TensorDict, TensorDictBase
 from tensordict.nn import TensorDictModule
-from tensordict.tensordict import TensorDict, TensorDictBase
 from torch import nn
 
 from torchrl.data import BoundedTensorSpec, CompositeSpec, UnboundedContinuousTensorSpec
@@ -167,7 +184,7 @@ DEFAULT_Y = 1.0
 # of :meth:`~torchrl.envs.EnvBase.step` in the input ``tensordict`` to enforce
 # input/output consistency.
 #
-# Typically, for stateful environments, this will look like this: 
+# Typically, for stateful environments, this will look like this:
 #
 # .. code-block::
 #
@@ -220,6 +237,7 @@ DEFAULT_Y = 1.0
 # environment is stateless. In stateful settings, the ``self`` argument is
 # needed as the state needs to be read from the environment.
 #
+
 
 def _step(tensordict):
     th, thdot = tensordict["th"], tensordict["thdot"]  # th := theta
@@ -896,7 +914,7 @@ plot()
 ######################################################################
 # Conclusion
 # ----------
-# 
+#
 # In this tutorial, we have learned how to code a stateless environment from
 # scratch. We touched the subjects of:
 #

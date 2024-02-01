@@ -32,8 +32,8 @@ as your companion. The full code is available
 #
 #      %%bash
 #      pip install gym-super-mario-bros==7.4.0
-#      pip install tensordict==0.2.0
-#      pip install torchrl==0.2.0
+#      pip install tensordict==0.3.0
+#      pip install torchrl==0.3.0
 #
 
 import torch
