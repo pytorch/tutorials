@@ -266,7 +266,7 @@ def make_value_estimator(self, value_type: ValueEstimators, **hyperparams):
     self._value_estimator.set_keys(value=value_key)
 
 ###############################################################################
-# The ``make_value_estimator`` method can but does not need to be called: ifgg
+# The ``make_value_estimator`` method can but does not need to be called: if
 # not, the :class:`~torchrl.objectives.LossModule` will query this method with
 # its default estimator.
 #
