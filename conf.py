@@ -41,7 +41,6 @@ import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
 import re
-import pypandoc
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
 
 import plotly.io as pio
