@@ -15,6 +15,10 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
+# Install pandoc (does not install from pypi)
+sudo apt-get update
+sudo apt-get install -y pandoc
+
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
