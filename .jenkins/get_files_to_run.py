@@ -77,6 +77,29 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
             0
         ]
         add_to_shard(min_shard_index, filename)
+    s = [
+        [
+            "advanced_source/coding_ddp_tutorial.py",
+        ],
+        [
+            "beginner_source/knowledge_distillation_tutorial.py",
+            "beginner_source/introyt/introyt1_tutorial.py",
+            "beginner_source/nlp/pytorch_tutorial.py",
+            "advanced_source/coding_ddp_tutorial.py",
+        ],
+        [
+            "intermediate_source/ensembling.py",
+            "intermediate_source/pruning_tutorial.py",
+            "intermediate_source/torch_export_tutorial.py",
+            "advanced_source/coding_ddp_tutorial.py",
+        ],
+        [
+            "intermediate_source/memory_format_tutorial.py",
+            "advanced_source/numpy_extensions_tutorial.py",
+            "recipes_source/recipes/changing_default_device.py",
+            "advanced_source/coding_ddp_tutorial.py",
+        ],
+    ]
     return [x[1] for x in sharded_files]
 
 
