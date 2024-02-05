@@ -100,7 +100,7 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
             "advanced_source/coding_ddp_tutorial.py",
         ],
     ]
-    return [x[1] for x in sharded_files]
+    return s
 
 
 def compute_files_to_keep(files_to_run: List[str]) -> List[str]:
