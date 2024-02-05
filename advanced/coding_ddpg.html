@@ -492,14 +492,17 @@ pip3<span class="w"> </span>install<span class="w"> </span>torchrl<span class="w
 </pre></div>
 </div>
 </div></blockquote>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchrl</span>
-<span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">tqdm</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 </pre></div>
 </div>
 <p>We will execute the policy on CUDA if available</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span>  <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">is_fork</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">get_start_method</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"fork"</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_fork</span>
+    <span class="k">else</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+<span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">collector_device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>  <span class="c1"># Change the device to ``cuda`` to use CUDA</span>
 </pre></div>
 </div>
@@ -651,23 +654,18 @@ we will build the corresponding module to be used at train time:</p>
     <span class="n">hp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hyperparams</span><span class="p">)</span>
     <span class="n">value_key</span> <span class="o">=</span> <span class="s2">"state_action_value"</span>
     <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.ValueEstimators.html#torchrl.objectives.ValueEstimators" title="torchrl.objectives.ValueEstimators"><span class="n">ValueEstimators</span><span class="o">.</span><span class="n">TD1</span></a><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TD1Estimator.html#torchrl.objectives.value.TD1Estimator" title="torchrl.objectives.value.TD1Estimator"><span class="n">TD1Estimator</span></a><span class="p">(</span>
-            <span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="n">value_key</span><span class="o">=</span><span class="n">value_key</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TD1Estimator.html#torchrl.objectives.value.TD1Estimator" title="torchrl.objectives.value.TD1Estimator"><span class="n">TD1Estimator</span></a><span class="p">(</span><span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.ValueEstimators.html#torchrl.objectives.ValueEstimators" title="torchrl.objectives.ValueEstimators"><span class="n">ValueEstimators</span><span class="o">.</span><span class="n">TD0</span></a><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TD0Estimator.html#torchrl.objectives.value.TD0Estimator" title="torchrl.objectives.value.TD0Estimator"><span class="n">TD0Estimator</span></a><span class="p">(</span>
-            <span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="n">value_key</span><span class="o">=</span><span class="n">value_key</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TD0Estimator.html#torchrl.objectives.value.TD0Estimator" title="torchrl.objectives.value.TD0Estimator"><span class="n">TD0Estimator</span></a><span class="p">(</span><span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.ValueEstimators.html#torchrl.objectives.ValueEstimators" title="torchrl.objectives.ValueEstimators"><span class="n">ValueEstimators</span><span class="o">.</span><span class="n">GAE</span></a><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"Value type </span><span class="si">{</span><span class="n">value_type</span><span class="si">}</span><span class="s2"> it not implemented for loss </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <a class="sphx-glr-backref-module-torchrl-objectives sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.ValueEstimators.html#torchrl.objectives.ValueEstimators" title="torchrl.objectives.ValueEstimators"><span class="n">ValueEstimators</span><span class="o">.</span><span class="n">TDLambda</span></a><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TDLambdaEstimator.html#torchrl.objectives.value.TDLambdaEstimator" title="torchrl.objectives.value.TDLambdaEstimator"><span class="n">TDLambdaEstimator</span></a><span class="p">(</span>
-            <span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="n">value_key</span><span class="o">=</span><span class="n">value_key</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-objectives-value sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.objectives.value.TDLambdaEstimator.html#torchrl.objectives.value.TDLambdaEstimator" title="torchrl.objectives.value.TDLambdaEstimator"><span class="n">TDLambdaEstimator</span></a><span class="p">(</span><span class="n">value_network</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_critic</span><span class="p">,</span> <span class="o">**</span><span class="n">hp</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown value type </span><span class="si">{</span><span class="n">value_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_value_estimator</span><span class="o">.</span><span class="n">set_keys</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value_key</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">make_value_estimator</span></code> method can but does not need to be called: if
@@ -710,7 +708,7 @@ To do this, we will rely on the value estimator of our class:</p>
 <span class="k">def</span> <span class="nf">_loss_value</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict" title="tensordict.TensorDict"><span class="n">tensordict</span></a><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">]:</span>
+<span class="p">):</span>
     <span class="n">td_copy</span> <span class="o">=</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-method" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict.clone" title="tensordict.TensorDict.clone"><span class="n">tensordict</span><span class="o">.</span><span class="n">clone</span></a><span class="p">()</span>
 
     <span class="c1"># V(s, a)</span>
@@ -746,7 +744,7 @@ To do this, we will rely on the value estimator of our class:</p>
 <p>The only missing piece is the forward method, which will glue together the
 value and actor loss, collect the cost values and write them in a <code class="docutils literal notranslate"><span class="pre">TensorDict</span></code>
 delivered to the user.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tensordict.tensordict</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict" title="tensordict.TensorDict"><span class="n">TensorDict</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDictBase.html#tensordict.TensorDictBase" title="tensordict.TensorDictBase"><span class="n">TensorDictBase</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tensordict</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict" title="tensordict.TensorDict"><span class="n">TensorDict</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDictBase.html#tensordict.TensorDictBase" title="tensordict.TensorDictBase"><span class="n">TensorDictBase</span></a>
 
 
 <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_tensordict</span><span class="p">:</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDictBase.html#tensordict.TensorDictBase" title="tensordict.TensorDictBase"><span class="n">TensorDictBase</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-tensordict sphx-glr-backref-type-py-class" href="https://pytorch.org/tensordict/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict" title="tensordict.TensorDict"><span class="n">TensorDict</span></a><span class="p">:</span>
@@ -843,6 +841,7 @@ with either one of the two backends considered above (<code class="docutils lite
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"device"</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span>
         <span class="s2">"from_pixels"</span><span class="p">:</span> <span class="n">from_pixels</span><span class="p">,</span>
         <span class="s2">"pixels_only"</span><span class="p">:</span> <span class="n">from_pixels</span><span class="p">,</span>
         <span class="s2">"frame_skip"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
@@ -899,16 +898,6 @@ take care of computing the normalizing constants later on.</p></li>
     <span class="c1"># syntax.</span>
     <span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><a class="sphx-glr-backref-module-torchrl-envs-transforms-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.RewardScaling.html#torchrl.envs.transforms.RewardScaling" title="torchrl.envs.transforms.transforms.RewardScaling"><span class="n">RewardScaling</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">reward_scaling</span><span class="p">))</span>
 
-    <span class="n">double_to_float_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">double_to_float_inv_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <a class="sphx-glr-backref-module-torchrl-envs sphx-glr-backref-type-py-function" href="https://pytorch.org/rl/reference/generated/torchrl.envs.GymEnv.html#torchrl.envs.GymEnv" title="torchrl.envs.GymEnv"><span class="n">env_library</span></a> <span class="ow">is</span> <a class="sphx-glr-backref-module-torchrl-envs sphx-glr-backref-type-py-function" href="https://pytorch.org/rl/reference/generated/torchrl.envs.DMControlEnv.html#torchrl.envs.DMControlEnv" title="torchrl.envs.DMControlEnv"><span class="n">DMControlEnv</span></a><span class="p">:</span>
-        <span class="c1"># ``DMControl`` requires double-precision</span>
-        <span class="n">double_to_float_list</span> <span class="o">+=</span> <span class="p">[</span>
-            <span class="s2">"reward"</span><span class="p">,</span>
-            <span class="s2">"action"</span><span class="p">,</span>
-        <span class="p">]</span>
-        <span class="n">double_to_float_inv_list</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"action"</span><span class="p">]</span>
-
     <span class="c1"># We concatenate all states into a single "observation_vector"</span>
     <span class="c1"># even if there is a single tensor, it'll be renamed in "observation_vector".</span>
     <span class="c1"># This facilitates the downstream operations as we know the name of the</span>
@@ -924,12 +913,7 @@ take care of computing the normalizing constants later on.</p></li>
     <span class="c1"># version of the transform</span>
     <span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><a class="sphx-glr-backref-module-torchrl-envs-transforms-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.ObservationNorm.html#torchrl.envs.transforms.ObservationNorm" title="torchrl.envs.transforms.transforms.ObservationNorm"><span class="n">ObservationNorm</span></a><span class="p">(</span><span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="n">out_key</span><span class="p">],</span> <span class="n">standard_normal</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-    <span class="n">double_to_float_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_key</span><span class="p">)</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span>
-        <a class="sphx-glr-backref-module-torchrl-envs-transforms-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.DoubleToFloat.html#torchrl.envs.transforms.DoubleToFloat" title="torchrl.envs.transforms.transforms.DoubleToFloat"><span class="n">DoubleToFloat</span></a><span class="p">(</span>
-            <span class="n">in_keys</span><span class="o">=</span><span class="n">double_to_float_list</span><span class="p">,</span> <span class="n">in_keys_inv</span><span class="o">=</span><span class="n">double_to_float_inv_list</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><a class="sphx-glr-backref-module-torchrl-envs-transforms-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.DoubleToFloat.html#torchrl.envs.transforms.DoubleToFloat" title="torchrl.envs.transforms.transforms.DoubleToFloat"><span class="n">DoubleToFloat</span></a><span class="p">())</span>
 
     <span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><a class="sphx-glr-backref-module-torchrl-envs-transforms-transforms sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.envs.transforms.StepCounter.html#torchrl.envs.transforms.StepCounter" title="torchrl.envs.transforms.transforms.StepCounter"><span class="n">StepCounter</span></a><span class="p">(</span><span class="n">max_frames_per_traj</span><span class="p">))</span>
 
@@ -1232,9 +1216,6 @@ environments run in parallel in each collector.</p>
     <span class="n">reset_at_each_iter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">split_trajs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">collector_device</span></a><span class="p">,</span>
-    <span class="c1"># device for execution</span>
-    <span class="n">storing_device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">collector_device</span></a><span class="p">,</span>
-    <span class="c1"># device where data will be stored and passed</span>
     <span class="n">exploration_type</span><span class="o">=</span><span class="n">ExplorationType</span><span class="o">.</span><span class="n">RANDOM</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -1278,8 +1259,8 @@ from these simulations.</p>
 
 <span class="kn">from</span> <span class="nn">torchrl.data.replay_buffers</span> <span class="kn">import</span> <span class="p">(</span>
     <a class="sphx-glr-backref-module-torchrl-data-replay_buffers-storages sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.LazyMemmapStorage.html#torchrl.data.replay_buffers.LazyMemmapStorage" title="torchrl.data.replay_buffers.storages.LazyMemmapStorage"><span class="n">LazyMemmapStorage</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torchrl-data-replay_buffers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.PrioritizedSampler.html#torchrl.data.replay_buffers.PrioritizedSampler" title="torchrl.data.replay_buffers.PrioritizedSampler"><span class="n">PrioritizedSampler</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torchrl-data-replay_buffers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.RandomSampler.html#torchrl.data.replay_buffers.RandomSampler" title="torchrl.data.replay_buffers.RandomSampler"><span class="n">RandomSampler</span></a><span class="p">,</span>
+    <a class="sphx-glr-backref-module-torchrl-data-replay_buffers-samplers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.PrioritizedSampler.html#torchrl.data.replay_buffers.PrioritizedSampler" title="torchrl.data.replay_buffers.samplers.PrioritizedSampler"><span class="n">PrioritizedSampler</span></a><span class="p">,</span>
+    <a class="sphx-glr-backref-module-torchrl-data-replay_buffers-samplers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.RandomSampler.html#torchrl.data.replay_buffers.RandomSampler" title="torchrl.data.replay_buffers.samplers.RandomSampler"><span class="n">RandomSampler</span></a><span class="p">,</span>
     <a class="sphx-glr-backref-module-torchrl-data sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.TensorDictReplayBuffer.html#torchrl.data.TensorDictReplayBuffer" title="torchrl.data.TensorDictReplayBuffer"><span class="n">TensorDictReplayBuffer</span></a><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -1300,13 +1281,13 @@ hyperparameters:</p>
 
 <span class="k">def</span> <span class="nf">make_replay_buffer</span><span class="p">(</span><span class="n">buffer_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">random_crop_len</span><span class="p">,</span> <span class="n">prefetch</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">prb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">prb</span><span class="p">:</span>
-        <span class="n">sampler</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-data-replay_buffers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.PrioritizedSampler.html#torchrl.data.replay_buffers.PrioritizedSampler" title="torchrl.data.replay_buffers.PrioritizedSampler"><span class="n">PrioritizedSampler</span></a><span class="p">(</span>
+        <span class="n">sampler</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-data-replay_buffers-samplers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.PrioritizedSampler.html#torchrl.data.replay_buffers.PrioritizedSampler" title="torchrl.data.replay_buffers.samplers.PrioritizedSampler"><span class="n">PrioritizedSampler</span></a><span class="p">(</span>
             <span class="n">max_capacity</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">,</span>
             <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
             <span class="n">beta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">sampler</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-data-replay_buffers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.RandomSampler.html#torchrl.data.replay_buffers.RandomSampler" title="torchrl.data.replay_buffers.RandomSampler"><span class="n">RandomSampler</span></a><span class="p">()</span>
+        <span class="n">sampler</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-data-replay_buffers-samplers sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.RandomSampler.html#torchrl.data.replay_buffers.RandomSampler" title="torchrl.data.replay_buffers.samplers.RandomSampler"><span class="n">RandomSampler</span></a><span class="p">()</span>
     <a class="sphx-glr-backref-module-torchrl-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/rl/reference/generated/torchrl.data.TensorDictReplayBuffer.html#torchrl.data.TensorDictReplayBuffer" title="torchrl.data.TensorDictReplayBuffer"><span class="n">replay_buffer</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torchrl-data sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.TensorDictReplayBuffer.html#torchrl.data.TensorDictReplayBuffer" title="torchrl.data.TensorDictReplayBuffer"><span class="n">TensorDictReplayBuffer</span></a><span class="p">(</span>
         <span class="n">storage</span><span class="o">=</span><a class="sphx-glr-backref-module-torchrl-data-replay_buffers-storages sphx-glr-backref-type-py-class" href="https://pytorch.org/rl/reference/generated/torchrl.data.replay_buffers.LazyMemmapStorage.html#torchrl.data.replay_buffers.LazyMemmapStorage" title="torchrl.data.replay_buffers.storages.LazyMemmapStorage"><span class="n">LazyMemmapStorage</span></a><span class="p">(</span>
             <span class="n">buffer_size</span><span class="p">,</span>
@@ -1532,26 +1513,26 @@ modules we need.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/10000 [00:00&lt;?, ?it/s]
-  8%|8         | 800/10000 [00:00&lt;00:04, 1982.09it/s]
- 16%|#6        | 1600/10000 [00:03&lt;00:22, 370.35it/s]
- 24%|##4       | 2400/10000 [00:04&lt;00:13, 563.13it/s]
- 32%|###2      | 3200/10000 [00:04&lt;00:09, 747.82it/s]
- 40%|####      | 4000/10000 [00:05&lt;00:06, 909.92it/s]
- 48%|####8     | 4800/10000 [00:05&lt;00:04, 1049.69it/s]
- 56%|#####6    | 5600/10000 [00:06&lt;00:03, 1164.81it/s]
-reward: -2.16 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.16/6.39, grad norm= 42.93, loss_value= 338.48, loss_actor= 12.81, target value: -13.05:  56%|#####6    | 5600/10000 [00:07&lt;00:03, 1164.81it/s]
-reward: -2.16 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.16/6.39, grad norm= 42.93, loss_value= 338.48, loss_actor= 12.81, target value: -13.05:  64%|######4   | 6400/10000 [00:08&lt;00:05, 707.01it/s]
-reward: -0.09 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.23/5.54, grad norm= 174.34, loss_value= 211.21, loss_actor= 14.81, target value: -13.81:  64%|######4   | 6400/10000 [00:09&lt;00:05, 707.01it/s]
-reward: -0.09 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.23/5.54, grad norm= 174.34, loss_value= 211.21, loss_actor= 14.81, target value: -13.81:  72%|#######2  | 7200/10000 [00:11&lt;00:05, 513.65it/s]
-reward: -2.92 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-1.98/5.25, grad norm= 51.16, loss_value= 235.35, loss_actor= 13.38, target value: -12.59:  72%|#######2  | 7200/10000 [00:12&lt;00:05, 513.65it/s]
-reward: -2.92 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-1.98/5.25, grad norm= 51.16, loss_value= 235.35, loss_actor= 13.38, target value: -12.59:  80%|########  | 8000/10000 [00:13&lt;00:04, 433.02it/s]
-reward: -3.80 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.19/4.49, grad norm= 138.93, loss_value= 147.27, loss_actor= 14.31, target value: -14.25:  80%|########  | 8000/10000 [00:14&lt;00:04, 433.02it/s]
-reward: -3.80 (r0 = -1.10), reward eval: reward:  0.00, reward normalized=-2.19/4.49, grad norm= 138.93, loss_value= 147.27, loss_actor= 14.31, target value: -14.25:  88%|########8 | 8800/10000 [00:16&lt;00:03, 391.22it/s]
-reward: -5.14 (r0 = -1.10), reward eval: reward: -5.88, reward normalized=-2.47/5.11, grad norm= 143.77, loss_value= 189.69, loss_actor= 20.09, target value: -16.85:  88%|########8 | 8800/10000 [00:20&lt;00:03, 391.22it/s]
-reward: -5.14 (r0 = -1.10), reward eval: reward: -5.88, reward normalized=-2.47/5.11, grad norm= 143.77, loss_value= 189.69, loss_actor= 20.09, target value: -16.85:  96%|#########6| 9600/10000 [00:21&lt;00:01, 260.44it/s]
-reward: -4.78 (r0 = -1.10), reward eval: reward: -5.88, reward normalized=-2.91/4.86, grad norm= 97.26, loss_value= 188.34, loss_actor= 17.72, target value: -19.12:  96%|#########6| 9600/10000 [00:22&lt;00:01, 260.44it/s]
-reward: -4.78 (r0 = -1.10), reward eval: reward: -5.88, reward normalized=-2.91/4.86, grad norm= 97.26, loss_value= 188.34, loss_actor= 17.72, target value: -19.12: : 10400it [00:24, 274.55it/s]
-reward: -5.10 (r0 = -1.10), reward eval: reward: -5.88, reward normalized=-2.84/5.07, grad norm= 93.47, loss_value= 222.61, loss_actor= 16.25, target value: -19.91: : 10400it [00:25, 274.55it/s]
+  8%|8         | 800/10000 [00:00&lt;00:04, 2055.89it/s]
+ 16%|#6        | 1600/10000 [00:02&lt;00:16, 501.74it/s]
+ 24%|##4       | 2400/10000 [00:03&lt;00:10, 751.61it/s]
+ 32%|###2      | 3200/10000 [00:03&lt;00:06, 983.79it/s]
+ 40%|####      | 4000/10000 [00:04&lt;00:05, 1183.78it/s]
+ 48%|####8     | 4800/10000 [00:04&lt;00:03, 1354.08it/s]
+ 56%|#####6    | 5600/10000 [00:04&lt;00:02, 1488.00it/s]
+reward: -2.30 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.09/5.70, grad norm= 74.55, loss_value= 206.58, loss_actor= 13.56, target value: -12.83:  56%|#####6    | 5600/10000 [00:06&lt;00:02, 1488.00it/s]
+reward: -2.30 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.09/5.70, grad norm= 74.55, loss_value= 206.58, loss_actor= 13.56, target value: -12.83:  64%|######4   | 6400/10000 [00:07&lt;00:05, 637.90it/s]
+reward: -2.63 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.49/5.61, grad norm= 143.87, loss_value= 338.01, loss_actor= 14.24, target value: -16.54:  64%|######4   | 6400/10000 [00:09&lt;00:05, 637.90it/s]
+reward: -2.63 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.49/5.61, grad norm= 143.87, loss_value= 338.01, loss_actor= 14.24, target value: -16.54:  72%|#######2  | 7200/10000 [00:10&lt;00:06, 440.69it/s]
+reward: -5.12 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.43/5.23, grad norm= 151.84, loss_value= 276.36, loss_actor= 17.28, target value: -15.36:  72%|#######2  | 7200/10000 [00:12&lt;00:06, 440.69it/s]
+reward: -5.12 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.43/5.23, grad norm= 151.84, loss_value= 276.36, loss_actor= 17.28, target value: -15.36:  80%|########  | 8000/10000 [00:13&lt;00:05, 374.27it/s]
+reward: -2.40 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.52/5.16, grad norm= 35.86, loss_value= 229.77, loss_actor= 13.34, target value: -15.88:  80%|########  | 8000/10000 [00:15&lt;00:05, 374.27it/s]
+reward: -2.40 (r0 = -2.36), reward eval: reward: -0.00, reward normalized=-2.52/5.16, grad norm= 35.86, loss_value= 229.77, loss_actor= 13.34, target value: -15.88:  88%|########8 | 8800/10000 [00:16&lt;00:03, 330.80it/s]
+reward: -4.72 (r0 = -2.36), reward eval: reward: -5.93, reward normalized=-2.00/5.66, grad norm= 175.99, loss_value= 327.40, loss_actor= 17.17, target value: -13.41:  88%|########8 | 8800/10000 [00:20&lt;00:03, 330.80it/s]
+reward: -4.72 (r0 = -2.36), reward eval: reward: -5.93, reward normalized=-2.00/5.66, grad norm= 175.99, loss_value= 327.40, loss_actor= 17.17, target value: -13.41:  96%|#########6| 9600/10000 [00:21&lt;00:01, 251.62it/s]
+reward: -4.61 (r0 = -2.36), reward eval: reward: -5.93, reward normalized=-2.64/5.14, grad norm= 184.20, loss_value= 268.18, loss_actor= 20.44, target value: -19.83:  96%|#########6| 9600/10000 [00:23&lt;00:01, 251.62it/s]
+reward: -4.61 (r0 = -2.36), reward eval: reward: -5.93, reward normalized=-2.64/5.14, grad norm= 184.20, loss_value= 268.18, loss_actor= 20.44, target value: -19.83: : 10400it [00:25, 245.69it/s]
+reward: -4.32 (r0 = -2.36), reward eval: reward: -5.93, reward normalized=-3.02/3.95, grad norm= 78.36, loss_value= 162.14, loss_actor= 20.38, target value: -20.59: : 10400it [00:27, 245.69it/s]
 </pre></div>
 </div>
 </div>
@@ -1595,7 +1576,7 @@ loss component;</p></li>
 <li><p>Using <cite>@dispatch</cite> (see <a class="reference external" href="https://github.com/pytorch/rl/pull/1230">[Feature] Distpatch IQL loss module</a>.)</p></li>
 <li><p>Allowing flexible TensorDict keys.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  31.710 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  33.666 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-coding-ddpg-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/592c87306513ba042d759e142b59fea4/coding_ddpg.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">coding_ddpg.py</span></code></a></p>
