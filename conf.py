@@ -108,7 +108,7 @@ sphinx_gallery_conf = {
                             "%matplotlib inline"),
     'reset_modules': (reset_seeds),
     'ignore_pattern': r'_torch_export_nightly_tutorial.py',
-    'pypandoc': {'extra_args': ['--mathjax'],
+    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
 }
