@@ -68,6 +68,22 @@ Recurrent DQN: Training recurrent policies
 # -----
 #
 
+# sphinx_gallery_start_ignore
+import warnings
+
+warnings.filterwarnings("ignore")
+from torch import multiprocessing
+
+# TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
+# `__main__` method call, but for the easy of reading the code switch to fork
+# which is also a default spawn method in Google's Colaboratory
+try:
+    multiprocessing.set_start_method("fork")
+except RuntimeError:
+    pass
+
+# sphinx_gallery_end_ignore
+
 import torch
 import tqdm
 from tensordict.nn import TensorDictModule as Mod, TensorDictSequential as Seq
@@ -88,10 +104,15 @@ from torchrl.envs import (
     TransformedEnv,
 )
 from torchrl.envs.libs.gym import GymEnv
-from torchrl.modules import ConvNet, EGreedyWrapper, LSTMModule, MLP, QValueModule
+from torchrl.modules import ConvNet, EGreedyModule, LSTMModule, MLP, QValueModule
 from torchrl.objectives import DQNLoss, SoftUpdate
 
-device = torch.device(0) if torch.cuda.device_count() else torch.device("cpu")
+is_fork = multiprocessing.get_start_method() == "fork"
+device = (
+    torch.device(0)
+    if torch.cuda.is_available() and not is_fork
+    else torch.device("cpu")
+)
 
 ######################################################################
 # Environment
@@ -293,11 +314,15 @@ stoch_policy = Seq(feature, lstm, mlp, qval)
 # DQN being a deterministic algorithm, exploration is a crucial part of it.
 # We'll be using an :math:`\epsilon`-greedy policy with an epsilon of 0.2 decaying
 # progressively to 0.
-# This decay is achieved via a call to :meth:`~torchrl.modules.EGreedyWrapper.step`
+# This decay is achieved via a call to :meth:`~torchrl.modules.EGreedyModule.step`
 # (see training loop below).
 #
-stoch_policy = EGreedyWrapper(
-    stoch_policy, annealing_num_steps=1_000_000, spec=env.action_spec, eps_init=0.2
+exploration_module = EGreedyModule(
+    annealing_num_steps=1_000_000, spec=env.action_spec, eps_init=0.2
+)
+stoch_policy = Seq(
+    stoch_policy,
+    exploration_module,
 )
 
 ######################################################################
@@ -362,7 +387,7 @@ optim = torch.optim.Adam(policy.parameters(), lr=3e-4)
 #   For the sake of efficiency, we're only running a few thousands iterations
 #   here. In a real setting, the total number of frames should be set to 1M.
 #
-collector = SyncDataCollector(env, stoch_policy, frames_per_batch=50, total_frames=200)
+collector = SyncDataCollector(env, stoch_policy, frames_per_batch=50, total_frames=200, device=device)
 rb = TensorDictReplayBuffer(
     storage=LazyMemmapStorage(20_000), batch_size=4, prefetch=10
 )
@@ -403,7 +428,7 @@ for i, data in enumerate(collector):
     pbar.set_description(
         f"steps: {longest}, loss_val: {loss_vals['loss'].item(): 4.4f}, action_spread: {data['action'].sum(0)}"
     )
-    stoch_policy.step(data.numel())
+    exploration_module.step(data.numel())
     updater.step()
 
     with set_exploration_type(ExplorationType.MODE), torch.no_grad():

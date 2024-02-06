@@ -57,6 +57,8 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
   echo "FILES_TO_RUN: " ${FILES_TO_RUN}
+  # Files to run must be accessible to subprocessed (at least to `download_data.py`)
+  export FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
