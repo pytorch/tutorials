@@ -345,7 +345,6 @@ old_attrs = []
 
 
 def attribute(m):
-    old_attrs[m] = dict()
     for i in dir(m):
         e = getattr(m, i)
         exclude_functions = ["is_cuda", "has_names", "numel", "stride", "Tensor", "is_contiguous", "__class__"]
