@@ -341,7 +341,7 @@ def check_wrapper(fn):
     return check_cl
 
 
-old_attrs = dict()
+old_attrs = []
 
 
 def attribute(m):
@@ -351,7 +351,7 @@ def attribute(m):
         exclude_functions = ["is_cuda", "has_names", "numel", "stride", "Tensor", "is_contiguous", "__class__"]
         if i not in exclude_functions and not i.startswith("_") and "__call__" in dir(e):
             try:
-                old_attrs[m][i] = e
+                old_attrs.append((m, i, e))
                 setattr(m, i, check_wrapper(e))
             except Exception as e:
                 print(i)
@@ -359,11 +359,8 @@ def attribute(m):
 
 
 attribute(torch.Tensor)
-print(old_attrs)
 attribute(torch.nn.functional)
-print(old_attrs)
 attribute(torch)
-print(old_attrs)
 
 
 ######################################################################
@@ -375,9 +372,8 @@ print(old_attrs)
 ######################################################################
 # Code below is to recover the attributes of torch.
 
-for (m, attrs) in old_attrs.items():
-    for (k, v) in attrs.items():
-        setattr(m, k, v)
+for (m, i, e) in reversed(old_attrs):
+    setattr(m, i, e)
 
 ######################################################################
 # Work to do

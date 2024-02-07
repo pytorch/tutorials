@@ -82,12 +82,8 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
             "intermediate_source/memory_format_tutorial.py",
             "advanced_source/coding_ddpg.py",
         ],
-        [
-            "advanced_source/numpy_extensions_tutorial.py",
-            "advanced_source/coding_ddpg.py",
-        ],
-        [
-            "recipes_source/recipes/changing_default_device.py",
+           [
+            "intermediate_source/memory_format_tutorial1.py",
             "advanced_source/coding_ddpg.py",
         ],
     ]
