@@ -46,6 +46,17 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
     needs_a10g = list(
         filter(lambda x: get_needs_machine(x) == "linux.g5.4xlarge.nvidia.gpu", all_files,)
     )
+
+    # Magic code for torchvision: for some reason, it needs to run after
+    # beginner_source/basics/data_tutorial.py.  Very specifically:
+    # https://github.com/pytorch/tutorials/blob/edff1330ca6c198e8e29a3d574bfb4afbe191bfd/beginner_source/basics/data_tutorial.py#L49-L60
+    # So manually add them to the last shard.  I think some other files also
+    # work but I'm too lazy to figure out which ones.
+    add_to_shard(num_shards - 1, "beginner_source/basics/data_tutorial.py")
+    add_to_shard(num_shards - 1, "intermediate_source/torchvision_tutorial.py")
+    all_other_files.remove("beginner_source/basics/data_tutorial.py")
+    all_other_files.remove("intermediate_source/torchvision_tutorial.py")
+
     for filename in needs_multigpu:
         # currently, the only job that has multigpu is the 0th worker,
         # so we'll add all the jobs that need this machine to the 0th worker
@@ -61,12 +72,11 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
     sorted_files = sorted(all_other_files, key=get_duration, reverse=True,)
 
     for filename in sorted_files:
-        # If you do not specify a machine, you get the default
+        # If you don't specify a machine, you get the default
         min_shard_index = sorted(range(6, num_shards), key=lambda i: sharded_files[i][0])[
             0
         ]
         add_to_shard(min_shard_index, filename)
-
     return [x[1] for x in sharded_files]
 
 
