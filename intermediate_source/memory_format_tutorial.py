@@ -359,11 +359,8 @@ def attribute(m):
 
 
 attribute(torch.Tensor)
-print(old_attrs)
 attribute(torch.nn.functional)
-print(old_attrs)
 attribute(torch)
-print(old_attrs)
 
 
 ######################################################################
