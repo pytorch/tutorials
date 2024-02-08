@@ -17,7 +17,7 @@ returns the ``output``.
 
 In this recipe, we will use ``torch.nn`` to define a neural network
 intended for the `MNIST
-dataset <https://pytorch.org/docs/stable/torchvision/datasets.html#mnist>`__.
+dataset <hhttps://pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html#torchvision.datasets.MNIST>`__.
 
 Setup
 -----
