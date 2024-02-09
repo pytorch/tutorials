@@ -69,12 +69,10 @@ train_iter = iter(AG_NEWS(split="train"))
 # factory function `build_vocab_from_iterator` which accepts iterator that yield list or iterator of tokens. Users can also pass any special symbols to be added to the
 # vocabulary.
 
-
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 
 tokenizer = get_tokenizer("basic_english")
-train_iter = AG_NEWS(split="train")
 
 
 def yield_tokens(data_iter):
@@ -141,12 +139,9 @@ def collate_batch(batch):
     text_list = torch.cat(text_list)
     return label_list.to(device), text_list.to(device), offsets.to(device)
 
-
-train_iter = AG_NEWS(split="train")
 dataloader = DataLoader(
     train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch
 )
-
 
 ######################################################################
 # Define the model
@@ -287,7 +282,6 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.1)
 total_accu = None
-train_iter, test_iter = AG_NEWS()
 train_dataset = to_map_style_dataset(train_iter)
 test_dataset = to_map_style_dataset(test_iter)
 num_train = int(len(train_dataset) * 0.95)
@@ -344,7 +338,6 @@ print("test accuracy {:8.3f}".format(accu_test))
 # Use the best model so far and test a golf news.
 #
 
-
 ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
 
 
@@ -363,7 +356,7 @@ ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
     was another story. With temperatures in the mid-80s and hardly any \
     wind, the Spaniard was 13 strokes better in a flawless round. \
     Thanks to his best putting performance on the PGA Tour, Rahm \
-    finished with an 8-under 62 for a three-stroke lead, which \
+    finished with an 8-under 62 for a three-stroke lead, which Greetings, I hope you are doing well.
     was even more impressive considering he’d never played the \
     front nine at TPC Southwind."
 
