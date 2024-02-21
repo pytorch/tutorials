@@ -78,6 +78,8 @@ on imbalanced datasets.
 # algorithm on dataset
 # 
 # Note that a CUDA-enabled backend is required for training with the ``semilearn`` package.
+# See [Using CUDA](https://pytorch.org/tutorials/beginner/colab#using-cuda) for instructions
+# on enabling CUDA in Google Colab.
 #
 import semilearn
 from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
