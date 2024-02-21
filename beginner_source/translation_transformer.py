@@ -21,6 +21,8 @@ This tutorial shows:
 #
 # To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 #
+# Make sure to install portalock (dependency) by before importing dataset from torchtext.datasets.
+# !pip install portalock
 
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
