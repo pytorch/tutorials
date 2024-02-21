@@ -92,7 +92,7 @@ config = {
 
     # optimization configs
     'epoch': 1,  
-    'num_train_iter': 4000,  
+    'num_train_iter': 500,
     'num_eval_iter': 500,  
     'num_log_iter': 50,  
     'optim': 'AdamW',
@@ -141,7 +141,7 @@ algorithm = get_algorithm(config,  get_net_builder(config.net, from_name=False),
 
 ######################################################################
 # We can start training the algorithms on CIFAR-10 with 40 labels now.
-# We train for 4000 iterations and evaluate every 500 iterations.
+# We train for 500 iterations and evaluate every 500 iterations.
 # 
 trainer = Trainer(config, algorithm)
 trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
@@ -149,8 +149,8 @@ trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
 
 ######################################################################
 # Finally, let's evaluate the trained model on the validation set.
-# After training 4000 iterations with ``FreeMatch`` on only 40 labels of
-# CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validation set.
+# After training 500 iterations with ``FreeMatch`` on only 40 labels of
+# CIFAR-10, we obtain a classifier that achieves around 87% accuracy on the validation set.
 trainer.evaluate(eval_loader)
 
 
@@ -174,7 +174,7 @@ config = {
 
     # optimization configs
     'epoch': 1,  
-    'num_train_iter': 4000,  
+    'num_train_iter': 500,
     'num_eval_iter': 500,  
     'num_log_iter': 50,  
     'optim': 'AdamW',
@@ -225,7 +225,7 @@ algorithm = get_algorithm(config,  get_net_builder(config.net, from_name=False),
 
 ######################################################################
 # We can start Train the algorithms on CIFAR-10 with 40 labels now.
-# We train for 4000 iterations and evaluate every 500 iterations.
+# We train for 500 iterations and evaluate every 500 iterations.
 # 
 trainer = Trainer(config, algorithm)
 trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
