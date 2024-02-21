@@ -64,6 +64,9 @@ on imbalanced datasets.
 # Now, let's use USB to train ``FreeMatch`` and ``SoftMatch`` on CIFAR-10.
 # First, we need to install USB package ``semilearn`` and import necessary API
 # functions from USB.
+# If you are running this in Google Colab, install ``semilearn`` by running:
+# ``!pip install semilearn``.
+#
 # Below is a list of functions we will use from ``semilearn``:
 #
 # - ``get_dataset`` to load dataset, here we use CIFAR-10
