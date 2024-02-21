@@ -5,7 +5,7 @@ Semi-Supervised Learning using USB built upon PyTorch
 **Author**: `Hao Chen <https://github.com/Hhhhhhao>`_
 
 Unified Semi-supervised learning Benchmark (USB) is a semi-supervised
-learning framework built upon PyTorch.
+learning (SSL) framework built upon PyTorch.
 Based on Datasets and Modules provided by PyTorch, USB becomes a flexible,
 modular, and easy-to-use framework for semi-supervised learning.
 It supports a variety of semi-supervised learning algorithms, including
@@ -17,7 +17,7 @@ language processing, and speech processing are included in USB.
 This tutorial will walk you through the basics of using the USB lighting
 package.
 Let's get started by training a ``FreeMatch``/``SoftMatch`` model on
-CIFAR-10 using pretrained ViT!
+CIFAR-10 using pretrained Vision Transformers (ViT)!
 And we will show it is easy to change the semi-supervised algorithm and train
 on imbalanced datasets.
 
