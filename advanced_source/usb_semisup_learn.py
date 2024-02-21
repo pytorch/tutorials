@@ -77,6 +77,8 @@ on imbalanced datasets.
 # - ``Trainer``: a Trainer class for training and evaluating the
 # algorithm on dataset
 # 
+# Note that a CUDA-enabled backend is required for training with the ``semilearn`` package.
+#
 import semilearn
 from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
 
