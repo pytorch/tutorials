@@ -234,13 +234,6 @@ What's new in PyTorch tutorials?
    :tags: Production,Text
 
 .. customcarditem::
-   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
-   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
-   :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
-   :link: beginner/transformer_tutorial.html
-   :tags: Text
-
-.. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
    :card_description: Build and train a basic character-level RNN to classify word from scratch without the use of torchtext. First in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Classifying-Names-with-a-Character-Level-RNN.png
@@ -746,13 +739,6 @@ What's new in PyTorch tutorials?
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Training Transformer models using Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using pipeline parallelism.
-   :image: _static/img/thumbnails/cropped/Training-Transformer-models-using-Pipeline-Parallelism.png
-   :link: intermediate/pipeline_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
    :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
    :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
@@ -964,7 +950,6 @@ Additional Resources
    :hidden:
    :caption: Text
 
-   beginner/transformer_tutorial
    beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
@@ -1102,7 +1087,6 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   intermediate/pipeline_tutorial
    advanced/ddp_pipeline
    advanced/generic_join
 
