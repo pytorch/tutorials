@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Fusing Convolution and Batch Norm using Custom Function — PyTorch Tutorials 2.2.0+cu121 documentation</title>
+<title>Fusing Convolution and Batch Norm using Custom Function — PyTorch Tutorials 2.2.1+cu121 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -193,7 +193,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.2.0+cu121
+                  2.2.1+cu121
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -262,7 +262,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
@@ -363,7 +362,6 @@
 <li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
 </ul>
@@ -792,28 +790,28 @@ The code below is after some light modifications to the example here:
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/9912422 [00:00&lt;?, ?it/s]
-100%|##########| 9912422/9912422 [00:00&lt;00:00, 325665115.02it/s]
+100%|##########| 9912422/9912422 [00:00&lt;00:00, 258561850.07it/s]
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/28881 [00:00&lt;?, ?it/s]
-100%|##########| 28881/28881 [00:00&lt;00:00, 48648873.02it/s]
+100%|##########| 28881/28881 [00:00&lt;00:00, 60902812.38it/s]
 Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/1648877 [00:00&lt;?, ?it/s]
-100%|##########| 1648877/1648877 [00:00&lt;00:00, 130203543.12it/s]
+100%|##########| 1648877/1648877 [00:00&lt;00:00, 151193463.26it/s]
 Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/4542 [00:00&lt;?, ?it/s]
-100%|##########| 4542/4542 [00:00&lt;00:00, 31592916.70it/s]
+100%|##########| 4542/4542 [00:00&lt;00:00, 33598816.17it/s]
 Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 </pre></div>
 </div>
@@ -880,21 +878,21 @@ Test set: Average loss: 0.4197, Accuracy: 8681/10000 (87%)
 
 Train Epoch: 0 [0/60000 (0%)]   Loss: 2.349030
 Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.435157
-Train Epoch: 0 [8192/60000 (13%)]       Loss: 5.443540
-Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.457867
-Train Epoch: 0 [16384/60000 (27%)]      Loss: 1.739215
-Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.448284
+Train Epoch: 0 [8192/60000 (13%)]       Loss: 5.443536
+Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.457853
+Train Epoch: 0 [16384/60000 (27%)]      Loss: 1.739217
+Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.448300
 Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.312144
-Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.145346
-Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.495051
-Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.251129
-Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.066716
-Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.883477
-Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.831020
-Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.726435
-Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.771890
+Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.145340
+Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.495908
+Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.251115
+Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.077370
+Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.890604
+Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.836795
+Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.733022
+Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.786939
 
-Test set: Average loss: 0.4426, Accuracy: 8712/10000 (87%)
+Test set: Average loss: 0.4177, Accuracy: 8885/10000 (89%)
 
 cuDNN version: 8902
 
@@ -904,7 +902,7 @@ Memory allocated at end of forward pass:
 fused: 0.59GB, unfused: 0.96GB
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  35.050 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  54.026 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/187aea79daf1552dd05cdde1f4b4e34d/custom_function_conv_bn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">custom_function_conv_bn_tutorial.py</span></code></a></p>

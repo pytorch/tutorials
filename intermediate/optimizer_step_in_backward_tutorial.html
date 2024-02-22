@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>How to save memory by fusing the optimizer step into the backward pass — PyTorch Tutorials 2.2.0+cu121 documentation</title>
+<title>How to save memory by fusing the optimizer step into the backward pass — PyTorch Tutorials 2.2.1+cu121 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -191,7 +191,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.2.0+cu121
+                  2.2.1+cu121
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -260,7 +260,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
@@ -361,7 +360,6 @@
 <li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
 </ul>
@@ -472,87 +470,88 @@ but, again, feel free to substitute with your own optimizer.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vit_l_16-852ce7e3.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth
 
   0%|          | 0.00/1.13G [00:00&lt;?, ?B/s]
-  1%|1         | 13.8M/1.13G [00:00&lt;00:08, 144MB/s]
-  2%|2         | 28.2M/1.13G [00:00&lt;00:08, 148MB/s]
-  4%|3         | 42.6M/1.13G [00:00&lt;00:07, 150MB/s]
-  5%|4         | 57.0M/1.13G [00:00&lt;00:07, 150MB/s]
-  6%|6         | 71.5M/1.13G [00:00&lt;00:07, 151MB/s]
-  7%|7         | 86.0M/1.13G [00:00&lt;00:07, 151MB/s]
-  9%|8         | 100M/1.13G [00:00&lt;00:07, 151MB/s]
- 10%|9         | 115M/1.13G [00:00&lt;00:07, 151MB/s]
- 11%|#1        | 129M/1.13G [00:00&lt;00:07, 151MB/s]
- 12%|#2        | 144M/1.13G [00:01&lt;00:07, 152MB/s]
- 14%|#3        | 158M/1.13G [00:01&lt;00:06, 152MB/s]
- 15%|#4        | 173M/1.13G [00:01&lt;00:06, 152MB/s]
- 16%|#6        | 187M/1.13G [00:01&lt;00:06, 152MB/s]
- 17%|#7        | 202M/1.13G [00:01&lt;00:06, 152MB/s]
- 19%|#8        | 216M/1.13G [00:01&lt;00:06, 152MB/s]
- 20%|#9        | 231M/1.13G [00:01&lt;00:06, 152MB/s]
- 21%|##1       | 245M/1.13G [00:01&lt;00:06, 152MB/s]
- 22%|##2       | 260M/1.13G [00:01&lt;00:06, 152MB/s]
- 24%|##3       | 274M/1.13G [00:01&lt;00:06, 152MB/s]
- 25%|##4       | 289M/1.13G [00:02&lt;00:06, 152MB/s]
- 26%|##6       | 303M/1.13G [00:02&lt;00:05, 152MB/s]
- 27%|##7       | 318M/1.13G [00:02&lt;00:05, 152MB/s]
- 29%|##8       | 332M/1.13G [00:02&lt;00:05, 152MB/s]
- 30%|##9       | 347M/1.13G [00:02&lt;00:05, 152MB/s]
- 31%|###1      | 361M/1.13G [00:02&lt;00:05, 152MB/s]
- 32%|###2      | 376M/1.13G [00:02&lt;00:05, 152MB/s]
- 34%|###3      | 390M/1.13G [00:02&lt;00:05, 152MB/s]
- 35%|###4      | 405M/1.13G [00:02&lt;00:05, 152MB/s]
- 36%|###6      | 420M/1.13G [00:02&lt;00:05, 152MB/s]
- 37%|###7      | 434M/1.13G [00:03&lt;00:05, 152MB/s]
- 39%|###8      | 449M/1.13G [00:03&lt;00:04, 152MB/s]
- 40%|###9      | 463M/1.13G [00:03&lt;00:04, 152MB/s]
- 41%|####1     | 478M/1.13G [00:03&lt;00:04, 152MB/s]
- 42%|####2     | 492M/1.13G [00:03&lt;00:04, 152MB/s]
- 44%|####3     | 507M/1.13G [00:03&lt;00:04, 152MB/s]
- 45%|####4     | 521M/1.13G [00:03&lt;00:04, 152MB/s]
- 46%|####6     | 536M/1.13G [00:03&lt;00:04, 152MB/s]
- 47%|####7     | 550M/1.13G [00:03&lt;00:04, 152MB/s]
- 49%|####8     | 565M/1.13G [00:03&lt;00:04, 152MB/s]
- 50%|####9     | 579M/1.13G [00:04&lt;00:04, 152MB/s]
- 51%|#####1    | 594M/1.13G [00:04&lt;00:03, 152MB/s]
- 52%|#####2    | 608M/1.13G [00:04&lt;00:03, 152MB/s]
- 54%|#####3    | 623M/1.13G [00:04&lt;00:03, 152MB/s]
- 55%|#####4    | 637M/1.13G [00:04&lt;00:03, 152MB/s]
- 56%|#####6    | 652M/1.13G [00:04&lt;00:03, 152MB/s]
- 57%|#####7    | 666M/1.13G [00:04&lt;00:03, 152MB/s]
- 59%|#####8    | 681M/1.13G [00:04&lt;00:03, 152MB/s]
- 60%|#####9    | 695M/1.13G [00:04&lt;00:03, 152MB/s]
- 61%|######1   | 710M/1.13G [00:04&lt;00:03, 152MB/s]
- 62%|######2   | 724M/1.13G [00:05&lt;00:03, 152MB/s]
- 64%|######3   | 739M/1.13G [00:05&lt;00:02, 152MB/s]
- 65%|######4   | 753M/1.13G [00:05&lt;00:02, 152MB/s]
- 66%|######6   | 768M/1.13G [00:05&lt;00:02, 152MB/s]
- 67%|######7   | 782M/1.13G [00:05&lt;00:02, 152MB/s]
- 69%|######8   | 797M/1.13G [00:05&lt;00:02, 152MB/s]
- 70%|######9   | 811M/1.13G [00:05&lt;00:02, 152MB/s]
- 71%|#######1  | 826M/1.13G [00:05&lt;00:02, 152MB/s]
- 72%|#######2  | 840M/1.13G [00:05&lt;00:02, 152MB/s]
- 74%|#######3  | 855M/1.13G [00:05&lt;00:02, 152MB/s]
- 75%|#######4  | 869M/1.13G [00:06&lt;00:02, 152MB/s]
- 76%|#######6  | 884M/1.13G [00:06&lt;00:01, 152MB/s]
- 77%|#######7  | 898M/1.13G [00:06&lt;00:01, 152MB/s]
- 79%|#######8  | 913M/1.13G [00:06&lt;00:01, 152MB/s]
- 80%|#######9  | 927M/1.13G [00:06&lt;00:01, 152MB/s]
- 81%|########1 | 942M/1.13G [00:06&lt;00:01, 152MB/s]
- 82%|########2 | 956M/1.13G [00:06&lt;00:01, 152MB/s]
- 84%|########3 | 971M/1.13G [00:06&lt;00:01, 152MB/s]
- 85%|########4 | 986M/1.13G [00:06&lt;00:01, 152MB/s]
- 86%|########6 | 0.98G/1.13G [00:06&lt;00:01, 152MB/s]
- 87%|########7 | 0.99G/1.13G [00:07&lt;00:01, 152MB/s]
- 89%|########8 | 1.01G/1.13G [00:07&lt;00:00, 152MB/s]
- 90%|########9 | 1.02G/1.13G [00:07&lt;00:00, 152MB/s]
- 91%|#########1| 1.03G/1.13G [00:07&lt;00:00, 152MB/s]
- 92%|#########2| 1.05G/1.13G [00:07&lt;00:00, 152MB/s]
- 94%|#########3| 1.06G/1.13G [00:07&lt;00:00, 152MB/s]
- 95%|#########4| 1.08G/1.13G [00:07&lt;00:00, 152MB/s]
- 96%|#########6| 1.09G/1.13G [00:07&lt;00:00, 152MB/s]
- 97%|#########7| 1.10G/1.13G [00:07&lt;00:00, 152MB/s]
- 99%|#########8| 1.12G/1.13G [00:07&lt;00:00, 152MB/s]
-100%|#########9| 1.13G/1.13G [00:08&lt;00:00, 152MB/s]
-100%|##########| 1.13G/1.13G [00:08&lt;00:00, 152MB/s]
+  1%|1         | 13.0M/1.13G [00:00&lt;00:08, 136MB/s]
+  2%|2         | 26.3M/1.13G [00:00&lt;00:08, 138MB/s]
+  3%|3         | 39.5M/1.13G [00:00&lt;00:08, 138MB/s]
+  5%|4         | 53.4M/1.13G [00:00&lt;00:08, 141MB/s]
+  6%|5         | 67.4M/1.13G [00:00&lt;00:08, 143MB/s]
+  7%|6         | 81.2M/1.13G [00:00&lt;00:07, 144MB/s]
+  8%|8         | 95.0M/1.13G [00:00&lt;00:07, 144MB/s]
+  9%|9         | 109M/1.13G [00:00&lt;00:07, 144MB/s]
+ 11%|#         | 123M/1.13G [00:00&lt;00:07, 145MB/s]
+ 12%|#1        | 137M/1.13G [00:01&lt;00:07, 144MB/s]
+ 13%|#3        | 151M/1.13G [00:01&lt;00:07, 146MB/s]
+ 14%|#4        | 166M/1.13G [00:01&lt;00:07, 149MB/s]
+ 16%|#5        | 181M/1.13G [00:01&lt;00:06, 151MB/s]
+ 17%|#6        | 195M/1.13G [00:01&lt;00:06, 152MB/s]
+ 18%|#8        | 210M/1.13G [00:01&lt;00:06, 153MB/s]
+ 19%|#9        | 225M/1.13G [00:01&lt;00:06, 154MB/s]
+ 21%|##        | 240M/1.13G [00:01&lt;00:06, 154MB/s]
+ 22%|##1       | 255M/1.13G [00:01&lt;00:06, 155MB/s]
+ 23%|##3       | 270M/1.13G [00:01&lt;00:06, 155MB/s]
+ 24%|##4       | 284M/1.13G [00:02&lt;00:05, 155MB/s]
+ 26%|##5       | 299M/1.13G [00:02&lt;00:05, 155MB/s]
+ 27%|##7       | 314M/1.13G [00:02&lt;00:05, 155MB/s]
+ 28%|##8       | 329M/1.13G [00:02&lt;00:05, 155MB/s]
+ 30%|##9       | 343M/1.13G [00:02&lt;00:05, 155MB/s]
+ 31%|###       | 358M/1.13G [00:02&lt;00:05, 155MB/s]
+ 32%|###2      | 373M/1.13G [00:02&lt;00:05, 155MB/s]
+ 33%|###3      | 388M/1.13G [00:02&lt;00:05, 155MB/s]
+ 35%|###4      | 403M/1.13G [00:02&lt;00:05, 155MB/s]
+ 36%|###5      | 417M/1.13G [00:02&lt;00:05, 155MB/s]
+ 37%|###7      | 432M/1.13G [00:03&lt;00:04, 155MB/s]
+ 39%|###8      | 447M/1.13G [00:03&lt;00:04, 155MB/s]
+ 40%|###9      | 462M/1.13G [00:03&lt;00:04, 155MB/s]
+ 41%|####1     | 477M/1.13G [00:03&lt;00:04, 155MB/s]
+ 42%|####2     | 491M/1.13G [00:03&lt;00:04, 155MB/s]
+ 44%|####3     | 506M/1.13G [00:03&lt;00:04, 155MB/s]
+ 45%|####4     | 521M/1.13G [00:03&lt;00:04, 155MB/s]
+ 46%|####6     | 536M/1.13G [00:03&lt;00:04, 155MB/s]
+ 47%|####7     | 551M/1.13G [00:03&lt;00:04, 155MB/s]
+ 49%|####8     | 565M/1.13G [00:03&lt;00:04, 155MB/s]
+ 50%|####9     | 580M/1.13G [00:04&lt;00:03, 155MB/s]
+ 51%|#####1    | 595M/1.13G [00:04&lt;00:03, 155MB/s]
+ 53%|#####2    | 610M/1.13G [00:04&lt;00:03, 155MB/s]
+ 54%|#####3    | 624M/1.13G [00:04&lt;00:03, 155MB/s]
+ 55%|#####5    | 639M/1.13G [00:04&lt;00:03, 155MB/s]
+ 56%|#####6    | 654M/1.13G [00:04&lt;00:03, 155MB/s]
+ 58%|#####7    | 669M/1.13G [00:04&lt;00:03, 155MB/s]
+ 59%|#####8    | 684M/1.13G [00:04&lt;00:03, 155MB/s]
+ 60%|######    | 698M/1.13G [00:04&lt;00:03, 155MB/s]
+ 61%|######1   | 713M/1.13G [00:04&lt;00:03, 152MB/s]
+ 63%|######2   | 728M/1.13G [00:05&lt;00:03, 143MB/s]
+ 64%|######3   | 742M/1.13G [00:05&lt;00:03, 144MB/s]
+ 65%|######5   | 756M/1.13G [00:05&lt;00:02, 145MB/s]
+ 66%|######6   | 769M/1.13G [00:05&lt;00:02, 145MB/s]
+ 67%|######7   | 783M/1.13G [00:05&lt;00:02, 145MB/s]
+ 69%|######8   | 797M/1.13G [00:05&lt;00:02, 146MB/s]
+ 70%|######9   | 811M/1.13G [00:05&lt;00:02, 146MB/s]
+ 71%|#######1  | 825M/1.13G [00:05&lt;00:02, 146MB/s]
+ 72%|#######2  | 839M/1.13G [00:05&lt;00:02, 146MB/s]
+ 73%|#######3  | 853M/1.13G [00:05&lt;00:02, 145MB/s]
+ 75%|#######4  | 867M/1.13G [00:06&lt;00:02, 145MB/s]
+ 76%|#######5  | 881M/1.13G [00:06&lt;00:02, 146MB/s]
+ 77%|#######7  | 895M/1.13G [00:06&lt;00:01, 145MB/s]
+ 78%|#######8  | 909M/1.13G [00:06&lt;00:01, 145MB/s]
+ 79%|#######9  | 923M/1.13G [00:06&lt;00:01, 145MB/s]
+ 81%|########  | 937M/1.13G [00:06&lt;00:01, 145MB/s]
+ 82%|########1 | 951M/1.13G [00:06&lt;00:01, 146MB/s]
+ 83%|########3 | 965M/1.13G [00:06&lt;00:01, 146MB/s]
+ 84%|########4 | 978M/1.13G [00:06&lt;00:01, 146MB/s]
+ 85%|########5 | 992M/1.13G [00:06&lt;00:01, 146MB/s]
+ 87%|########6 | 0.98G/1.13G [00:07&lt;00:01, 146MB/s]
+ 88%|########7 | 1.00G/1.13G [00:07&lt;00:01, 146MB/s]
+ 89%|########9 | 1.01G/1.13G [00:07&lt;00:00, 146MB/s]
+ 90%|######### | 1.02G/1.13G [00:07&lt;00:00, 146MB/s]
+ 91%|#########1| 1.04G/1.13G [00:07&lt;00:00, 145MB/s]
+ 93%|#########2| 1.05G/1.13G [00:07&lt;00:00, 146MB/s]
+ 94%|#########3| 1.06G/1.13G [00:07&lt;00:00, 146MB/s]
+ 95%|#########5| 1.08G/1.13G [00:07&lt;00:00, 146MB/s]
+ 96%|#########6| 1.09G/1.13G [00:07&lt;00:00, 145MB/s]
+ 97%|#########7| 1.11G/1.13G [00:07&lt;00:00, 146MB/s]
+ 99%|#########8| 1.12G/1.13G [00:08&lt;00:00, 146MB/s]
+100%|#########9| 1.13G/1.13G [00:08&lt;00:00, 146MB/s]
+100%|##########| 1.13G/1.13G [00:08&lt;00:00, 149MB/s]
 </pre></div>
 </div>
 <p>Now let’s define our typical training loop. You should use real images when
@@ -775,7 +774,7 @@ fusing the optimizer into the backward step through the new
 <code class="docutils literal notranslate"><span class="pre">Tensor.register_post_accumulate_grad_hook()</span></code> API and <em>when</em> to apply this
 technique (when gradients memory is significant). Along the way, we also learned
 about memory snapshots, which are generally useful in memory optimization.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  17.094 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  17.154 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/678a3ee2efc3fad76b565fdd254b297d/optimizer_step_in_backward_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">optimizer_step_in_backward_tutorial.py</span></code></a></p>

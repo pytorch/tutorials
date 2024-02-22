@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Training with PyTorch — PyTorch Tutorials 2.2.0+cu121 documentation</title>
+<title>Training with PyTorch — PyTorch Tutorials 2.2.1+cu121 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -193,7 +193,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  2.2.0+cu121
+                  2.2.1+cu121
                 </div>
 <div role="search">
 <form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -262,7 +262,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../transformer_tutorial.html">Language Modeling with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
@@ -363,7 +362,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
 </ul>
@@ -520,41 +518,39 @@ and download both training and validation data splits.</p>
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to ./data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:13, 360934.42it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 679295.78it/s]
-  3%|3         | 819200/26421880 [00:00&lt;00:11, 2322143.35it/s]
-  6%|6         | 1638400/26421880 [00:00&lt;00:07, 3387386.98it/s]
- 18%|#8        | 4816896/26421880 [00:00&lt;00:01, 10916787.48it/s]
- 33%|###3      | 8781824/26421880 [00:00&lt;00:01, 15717831.90it/s]
- 53%|#####2    | 13926400/26421880 [00:01&lt;00:00, 24477923.03it/s]
- 68%|######7   | 17924096/26421880 [00:01&lt;00:00, 24012078.73it/s]
- 87%|########7 | 23068672/26421880 [00:01&lt;00:00, 30475473.02it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 19179374.21it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:09, 379674.53it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:36, 711908.50it/s]
+  4%|3         | 950272/26421880 [00:00&lt;00:11, 2282969.54it/s]
+ 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 7934205.15it/s]
+ 38%|###8      | 10059776/26421880 [00:00&lt;00:00, 17987460.69it/s]
+ 61%|######    | 16023552/26421880 [00:01&lt;00:00, 23527268.98it/s]
+ 84%|########3 | 22151168/26421880 [00:01&lt;00:00, 27357339.11it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 20171008.57it/s]
 Extracting ./data/FashionMNIST/raw/train-images-idx3-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 325513.03it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 326356.58it/s]
 Extracting ./data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to ./data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:12, 361595.34it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 680780.17it/s]
- 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2186876.52it/s]
- 85%|########5 | 3768320/4422102 [00:00&lt;00:00, 8208523.12it/s]
-100%|##########| 4422102/4422102 [00:00&lt;00:00, 6093736.59it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:11, 366886.91it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 693198.02it/s]
+ 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2224198.45it/s]
+ 86%|########5 | 3801088/4422102 [00:00&lt;00:00, 8386971.56it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6191148.27it/s]
 Extracting ./data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 61167923.49it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 51532880.65it/s]
 Extracting ./data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw
 
 Training set has 60000 instances
@@ -915,7 +911,7 @@ a broad variety of training tasks, including classification in
 different domains, generative adversarial networks, reinforcement
 learning, and more</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 3 minutes  2.326 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 3 minutes  5.131 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-trainingyt-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/9f7a57e14d8a2ebf975344f34d6ef247/trainingyt.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">trainingyt.py</span></code></a></p>
