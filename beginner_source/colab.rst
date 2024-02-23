@@ -96,7 +96,7 @@ easier for users.
 
 Using CUDA
 ~~~~~~~~~~
-Some tutorials require a CUDA-enabled device (Nvidia GPU), which involves
+Some tutorials require a CUDA-enabled device (NVIDIA GPU), which involves
 changing the Runtime type prior to executing the tutorial.
 To change the Runtime in Google Colab, on the top drop-down menu select **Runtime**,
 then select **Change runtime type**. Under **Hardware accelerator**, select ``T4 GPU``,
