@@ -94,7 +94,7 @@ some of the more complex tutorials in Colab. As we evolve our use of
 Colab on the PyTorch tutorials site, we'll look at ways to make this
 easier for users.
 
-Using CUDA
+Enabling CUDA
 ~~~~~~~~~~
 Some tutorials require a CUDA-enabled device (NVIDIA GPU), which involves
 changing the Runtime type prior to executing the tutorial.
