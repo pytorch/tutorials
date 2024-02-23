@@ -246,8 +246,8 @@ trainer.evaluate(eval_loader)
 
 
 ######################################################################
-# References
-# [1] USB: https://github.com/microsoft/Semi-supervised-learning
-# [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
-# [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
-# [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
+# References:
+# - [1] USB: https://github.com/microsoft/Semi-supervised-learning
+# - [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
+# - [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
+# - [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
