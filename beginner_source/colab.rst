@@ -95,7 +95,7 @@ Colab on the PyTorch tutorials site, we'll look at ways to make this
 easier for users.
 
 Enabling CUDA
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 Some tutorials require a CUDA-enabled device (NVIDIA GPU), which involves
 changing the Runtime type prior to executing the tutorial.
 To change the Runtime in Google Colab, on the top drop-down menu select **Runtime**,
