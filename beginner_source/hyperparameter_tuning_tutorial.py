@@ -134,9 +134,9 @@ class Net(nn.Module):
 #             data_path = Path(checkpoint_dir) / "data.pkl"
 #             with open(data_path, "rb") as fp:
 #                 checkpoint_state = pickle.load(fp)
-#                 start_epoch = checkpoint_state["epoch"]
-#                 net.load_state_dict(checkpoint_state["net_state_dict"])
-#                 optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#             start_epoch = checkpoint_state["epoch"]
+#             net.load_state_dict(checkpoint_state["net_state_dict"])
+#             optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
 #     else:
 #         start_epoch = 0
 #
@@ -241,9 +241,9 @@ def train_cifar(config, data_dir=None):
             data_path = Path(checkpoint_dir) / "data.pkl"
             with open(data_path, "rb") as fp:
                 checkpoint_state = pickle.load(fp)
-                start_epoch = checkpoint_state["epoch"]
-                net.load_state_dict(checkpoint_state["net_state_dict"])
-                optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+            start_epoch = checkpoint_state["epoch"]
+            net.load_state_dict(checkpoint_state["net_state_dict"])
+            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
     else:
         start_epoch = 0
 
