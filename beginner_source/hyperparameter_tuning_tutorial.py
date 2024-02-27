@@ -461,9 +461,10 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         data_path = Path(checkpoint_dir) / "data.pkl"
         with open(data_path, "rb") as fp:
             best_checkpoint_data = pickle.load(fp)
-            best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
-            test_acc = test_accuracy(best_trained_model, device)
-            print("Best trial test set accuracy: {}".format(test_acc))
+
+        best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
+        test_acc = test_accuracy(best_trained_model, device)
+        print("Best trial test set accuracy: {}".format(test_acc))
 
 
 if __name__ == "__main__":
