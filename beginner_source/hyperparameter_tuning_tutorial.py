@@ -198,11 +198,11 @@ class Net(nn.Module):
 #         with open(data_path, "wb") as fp:
 #             pickle.dump(checkpoint_data, fp)
 #
-#             checkpoint = Checkpoint.from_directory(checkpoint_dir)
-#             train.report(
-#                 {"loss": val_loss / val_steps, "accuracy": correct / total},
-#                 checkpoint=checkpoint,
-#             )
+#         checkpoint = Checkpoint.from_directory(checkpoint_dir)
+#         train.report(
+#             {"loss": val_loss / val_steps, "accuracy": correct / total},
+#             checkpoint=checkpoint,
+#         )
 #
 # Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
 # we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
