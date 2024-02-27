@@ -129,13 +129,15 @@ class Net(nn.Module):
 #
 #     net = Net(config["l1"], config["l2"])
 #
-#     checkpoint = session.get_checkpoint()
-#
+#     checkpoint = get_checkpoint()
 #     if checkpoint:
-#         checkpoint_state = checkpoint.to_dict()
-#         start_epoch = checkpoint_state["epoch"]
-#         net.load_state_dict(checkpoint_state["net_state_dict"])
-#         optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#         with train.get_checkpoint().as_directory() as checkpoint_dir:
+#             data_path = Path(checkpoint_dir) / "data.pkl"
+#             with open(data_path, "rb") as fp:
+#                 checkpoint_state = pickle.load(fp)
+#                 start_epoch = checkpoint_state["epoch"]
+#                 net.load_state_dict(checkpoint_state["net_state_dict"])
+#                 optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
 #     else:
 #         start_epoch = 0
 #
@@ -191,12 +193,16 @@ class Net(nn.Module):
 #         "net_state_dict": net.state_dict(),
 #         "optimizer_state_dict": optimizer.state_dict(),
 #     }
-#     checkpoint = Checkpoint.from_dict(checkpoint_data)
+#     with tempfile.TemporaryDirectory() as checkpoint_dir:
+#         data_path = Path(checkpoint_dir) / "data.pkl"
+#         with open(data_path, "wb") as fp:
+#             pickle.dump(checkpoint_data, fp)
 #
-#     session.report(
-#         {"loss": val_loss / val_steps, "accuracy": correct / total},
-#         checkpoint=checkpoint,
-#     )
+#             checkpoint = Checkpoint.from_directory(checkpoint_dir)
+#             train.report(
+#                 {"loss": val_loss / val_steps, "accuracy": correct / total},
+#                 checkpoint=checkpoint,
+#             )
 #
 # Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
 # we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
