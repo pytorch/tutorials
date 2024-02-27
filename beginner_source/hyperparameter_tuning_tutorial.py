@@ -238,7 +238,7 @@ def train_cifar(config, data_dir=None):
 
     checkpoint = get_checkpoint()
     if checkpoint:
-        with train.get_checkpoint().as_directory() as checkpoint_dir:
+        with checkpoint.as_directory() as checkpoint_dir:
             data_path = Path(checkpoint_dir) / "data.pkl"
             with open(data_path, "rb") as fp:
                 checkpoint_state = pickle.load(fp)
