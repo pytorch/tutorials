@@ -7,7 +7,7 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v1 task from `Gymnasium <https://www.gymnasium.farama.org>`__.
+on the CartPole-v1 task from `Gymnasium <https://gymnasium.farama.org>`__.
 
 **Task**
 
@@ -403,7 +403,7 @@ else:
     num_episodes = 50
 
 for i_episode in range(num_episodes):
-    # Initialize the environment and get it's state
+    # Initialize the environment and get its state
     state, info = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():

@@ -19,12 +19,11 @@ In order for every code block to run properly in this recipe, you must
 first change the runtime to “GPU” or higher. Once you do, we need to
 install ``torch`` if it isn’t already available.
 
-::
+.. code-block:: sh
 
    pip install torch
 
 """
-
 
 ######################################################################
 # Steps

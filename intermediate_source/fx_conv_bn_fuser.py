@@ -217,7 +217,7 @@ torch.testing.assert_allclose(fused_model(inp), model(inp))
 
 ######################################################################
 # Benchmarking our Fusion on ResNet18
-# ----------
+# -----------------------------------
 # We can test our fusion pass on a larger model like ResNet18 and see how much
 # this pass improves inference performance.
 import torchvision.models as models

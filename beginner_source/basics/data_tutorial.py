@@ -10,7 +10,7 @@
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Datasets & DataLoaders
-===================
+======================
 
 """
 
@@ -69,7 +69,7 @@ test_data = datasets.FashionMNIST(
 
 #################################################################
 # Iterating and Visualizing the Dataset
-# -----------------
+# -------------------------------------
 #
 # We can index ``Datasets`` manually like a list: ``training_data[index]``.
 # We use ``matplotlib`` to visualize some samples in our training data.
@@ -144,7 +144,7 @@ class CustomImageDataset(Dataset):
 
 
 #################################################################
-# __init__
+# ``__init__``
 # ^^^^^^^^^^^^^^^^^^^^
 #
 # The __init__ function is run once when instantiating the Dataset object. We initialize
@@ -167,7 +167,7 @@ def __init__(self, annotations_file, img_dir, transform=None, target_transform=N
 
 
 #################################################################
-# __len__
+# ``__len__``
 # ^^^^^^^^^^^^^^^^^^^^
 #
 # The __len__ function returns the number of samples in our dataset.
@@ -180,7 +180,7 @@ def __len__(self):
 
 
 #################################################################
-# __getitem__
+# ``__getitem__``
 # ^^^^^^^^^^^^^^^^^^^^
 #
 # The __getitem__ function loads and returns a sample from the dataset at the given index ``idx``.
@@ -220,7 +220,7 @@ test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 
 ###########################
 # Iterate through the DataLoader
-# --------------------------
+# -------------------------------
 #
 # We have loaded that dataset into the ``DataLoader`` and can iterate through the dataset as needed.
 # Each iteration below returns a batch of ``train_features`` and ``train_labels`` (containing ``batch_size=64`` features and labels respectively).
@@ -243,5 +243,5 @@ print(f"Label: {label}")
 
 #################################################################
 # Further Reading
-# --------------
+# ----------------
 # - `torch.utils.data API <https://pytorch.org/docs/stable/data.html>`_

@@ -366,7 +366,7 @@ Above is oneDNN verbose from channels first. We can verify that there are reorde
 Above is oneDNN verbose from channels last. We can verify that channels last memory format avoids unnecessary reorders.
 
 Performance Boost with Intel® Extension for PyTorch* 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Below summarizes performance boost of TorchServe with Intel® Extension for PyTorch* for ResNet50 and BERT-base-uncased. 
 
 .. figure:: /_static/img/torchserve-ipex-images-2/19.png

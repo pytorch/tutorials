@@ -86,6 +86,9 @@ download:
 	wget -nv -N https://www.manythings.org/anki/deu-eng.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/deu-eng.zip -d beginner_source/data/
 
+	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
+	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
 docs:
 	make download
@@ -103,3 +106,5 @@ html-noplot:
 clean-cache:
 	make clean
 	rm -rf advanced beginner intermediate recipes
+	# remove additional python files downloaded for torchvision_tutorial.py
+	rm -rf intermediate_source/engine.py intermediate_source/utils.py intermediate_source/transforms.py intermediate_source/coco_eval.py intermediate_source/coco_utils.py

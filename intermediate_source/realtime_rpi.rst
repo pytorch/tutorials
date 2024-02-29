@@ -312,7 +312,7 @@ Detecting a mug:
 
 
 Troubleshooting: Performance
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyTorch by default will use all of the cores available. If you have anything
 running in the background on the Raspberry Pi it may cause contention with the

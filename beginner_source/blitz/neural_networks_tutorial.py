@@ -161,7 +161,7 @@ print(loss)
 # ``.grad_fn`` attribute, you will see a graph of computations that looks
 # like this:
 #
-# ::
+# .. code-block:: sh
 #
 #     input -> conv2d -> relu -> maxpool2d -> conv2d -> relu -> maxpool2d
 #           -> flatten -> linear -> relu -> linear -> relu -> linear
@@ -253,7 +253,7 @@ print(net.conv1.bias.grad)
 
 
 ###############################################################
-# .. Note::
+# .. note::
 #
 #       Observe how gradient buffers had to be manually set to zero using
 #       ``optimizer.zero_grad()``. This is because gradients are accumulated
