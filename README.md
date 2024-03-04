@@ -57,7 +57,13 @@ GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 
 The `GALLERY_PATTERN` variable respects regular expressions.
 
+
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
 PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file. 
 * Additional information can be found in [PyTorch CONTRIBUTING.md](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md).
+
+
+## License
+
+PyTorch Tutorials is BSD licensed, as found in the LICENSE file.
