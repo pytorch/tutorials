@@ -16,8 +16,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - { shard: 1, num_shards: 15, runner: "linux.16xlarge.nvidia.gpu" }
-          - { shard: 2, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
           - { shard: 15, num_shards: 15, runner: "linux.4xlarge.nvidia.gpu" }
       fail-fast: false
     runs-on: ${{ matrix.runner }}
@@ -57,12 +55,12 @@ jobs:
       - name: Pull docker image
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
-          docker-image: pytorch/pytorch
+          docker-image: pytorch/2.2.1-cuda12.1-cudnn8-runtime
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: pytorch/pytorch
+          DOCKER_IMAGE: pytorch/2.2.1-cuda12.1-cudnn8-runtime
           NUM_WORKERS: ${{ matrix.num_shards }}
           WORKER_ID: ${{ matrix.shard }}
           COMMIT_ID: ${{ github.sha }}
