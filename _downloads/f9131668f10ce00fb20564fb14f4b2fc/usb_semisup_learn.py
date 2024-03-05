@@ -5,7 +5,7 @@ Semi-Supervised Learning using USB built upon PyTorch
 **Author**: `Hao Chen <https://github.com/Hhhhhhao>`_
 
 Unified Semi-supervised learning Benchmark (USB) is a semi-supervised
-learning framework built upon PyTorch.
+learning (SSL) framework built upon PyTorch.
 Based on Datasets and Modules provided by PyTorch, USB becomes a flexible,
 modular, and easy-to-use framework for semi-supervised learning.
 It supports a variety of semi-supervised learning algorithms, including
@@ -17,7 +17,7 @@ language processing, and speech processing are included in USB.
 This tutorial will walk you through the basics of using the USB lighting
 package.
 Let's get started by training a ``FreeMatch``/``SoftMatch`` model on
-CIFAR-10 using pretrained ViT!
+CIFAR-10 using pretrained Vision Transformers (ViT)!
 And we will show it is easy to change the semi-supervised algorithm and train
 on imbalanced datasets.
 
@@ -64,6 +64,9 @@ on imbalanced datasets.
 # Now, let's use USB to train ``FreeMatch`` and ``SoftMatch`` on CIFAR-10.
 # First, we need to install USB package ``semilearn`` and import necessary API
 # functions from USB.
+# If you are running this in Google Colab, install ``semilearn`` by running:
+# ``!pip install semilearn``.
+#
 # Below is a list of functions we will use from ``semilearn``:
 #
 # - ``get_dataset`` to load dataset, here we use CIFAR-10
@@ -77,6 +80,10 @@ on imbalanced datasets.
 # - ``Trainer``: a Trainer class for training and evaluating the
 # algorithm on dataset
 # 
+# Note that a CUDA-enabled backend is required for training with the ``semilearn`` package.
+# See `Enabling CUDA in Google Colab <https://pytorch.org/tutorials/beginner/colab#using-cuda>`__ for instructions
+# on enabling CUDA in Google Colab.
+#
 import semilearn
 from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
 
@@ -92,7 +99,7 @@ config = {
 
     # optimization configs
     'epoch': 1,  
-    'num_train_iter': 4000,  
+    'num_train_iter': 500,
     'num_eval_iter': 500,  
     'num_log_iter': 50,  
     'optim': 'AdamW',
@@ -141,7 +148,7 @@ algorithm = get_algorithm(config,  get_net_builder(config.net, from_name=False),
 
 ######################################################################
 # We can start training the algorithms on CIFAR-10 with 40 labels now.
-# We train for 4000 iterations and evaluate every 500 iterations.
+# We train for 500 iterations and evaluate every 500 iterations.
 # 
 trainer = Trainer(config, algorithm)
 trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
@@ -149,8 +156,8 @@ trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
 
 ######################################################################
 # Finally, let's evaluate the trained model on the validation set.
-# After training 4000 iterations with ``FreeMatch`` on only 40 labels of
-# CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validation set.
+# After training 500 iterations with ``FreeMatch`` on only 40 labels of
+# CIFAR-10, we obtain a classifier that achieves around 87% accuracy on the validation set.
 trainer.evaluate(eval_loader)
 
 
@@ -174,7 +181,7 @@ config = {
 
     # optimization configs
     'epoch': 1,  
-    'num_train_iter': 4000,  
+    'num_train_iter': 500,
     'num_eval_iter': 500,  
     'num_log_iter': 50,  
     'optim': 'AdamW',
@@ -225,7 +232,7 @@ algorithm = get_algorithm(config,  get_net_builder(config.net, from_name=False),
 
 ######################################################################
 # We can start Train the algorithms on CIFAR-10 with 40 labels now.
-# We train for 4000 iterations and evaluate every 500 iterations.
+# We train for 500 iterations and evaluate every 500 iterations.
 # 
 trainer = Trainer(config, algorithm)
 trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
@@ -239,8 +246,8 @@ trainer.evaluate(eval_loader)
 
 
 ######################################################################
-# References
-# [1] USB: https://github.com/microsoft/Semi-supervised-learning
-# [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
-# [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
-# [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
+# References:
+# - [1] USB: https://github.com/microsoft/Semi-supervised-learning
+# - [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
+# - [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
+# - [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning

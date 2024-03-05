@@ -438,7 +438,7 @@ to download the full example code</p>
 <span id="sphx-glr-advanced-usb-semisup-learn-py"></span><h1>Semi-Supervised Learning using USB built upon PyTorch<a class="headerlink" href="#semi-supervised-learning-using-usb-built-upon-pytorch" title="Permalink to this heading">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/Hhhhhhao">Hao Chen</a></p>
 <p>Unified Semi-supervised learning Benchmark (USB) is a semi-supervised
-learning framework built upon PyTorch.
+learning (SSL) framework built upon PyTorch.
 Based on Datasets and Modules provided by PyTorch, USB becomes a flexible,
 modular, and easy-to-use framework for semi-supervised learning.
 It supports a variety of semi-supervised learning algorithms, including
@@ -449,11 +449,11 @@ language processing, and speech processing are included in USB.</p>
 <p>This tutorial will walk you through the basics of using the USB lighting
 package.
 Let’s get started by training a <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code>/<code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> model on
-CIFAR-10 using pretrained ViT!
+CIFAR-10 using pretrained Vision Transformers (ViT)!
 And we will show it is easy to change the semi-supervised algorithm and train
 on imbalanced datasets.</p>
 <div class="figure align-default">
-<img alt="USB framework illustration" src="_static/img/usb_semisup_learn/code.png"/>
+<img alt="USB framework illustration" src="../_images/code.png"/>
 </div>
 <div class="section" id="introduction-to-freematch-and-softmatch-in-semi-supervised-learning">
 <h2>Introduction to <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> in Semi-Supervised Learning<a class="headerlink" href="#introduction-to-freematch-and-softmatch-in-semi-supervised-learning" title="Permalink to this heading">¶</a></h2>
@@ -485,7 +485,9 @@ algorithms on new data.</p>
 <p>Now, let’s use USB to train <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> and <code class="docutils literal notranslate"><span class="pre">SoftMatch</span></code> on CIFAR-10.
 First, we need to install USB package <code class="docutils literal notranslate"><span class="pre">semilearn</span></code> and import necessary API
 functions from USB.
-Below is a list of functions we will use from <code class="docutils literal notranslate"><span class="pre">semilearn</span></code>:</p>
+If you are running this in Google Colab, install <code class="docutils literal notranslate"><span class="pre">semilearn</span></code> by running:
+<code class="docutils literal notranslate"><span class="pre">!pip</span> <span class="pre">install</span> <span class="pre">semilearn</span></code>.</p>
+<p>Below is a list of functions we will use from <code class="docutils literal notranslate"><span class="pre">semilearn</span></code>:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">get_dataset</span></code> to load dataset, here we use CIFAR-10</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">get_data_loader</span></code> to create train (labeled and unlabeled) and test data</p></li>
@@ -498,8 +500,16 @@ here we use <code class="docutils literal notranslate"><span class="pre">FreeMat
 - <code class="docutils literal notranslate"><span class="pre">get_config</span></code>: to get default configuration of the algorithm
 - <code class="docutils literal notranslate"><span class="pre">Trainer</span></code>: a Trainer class for training and evaluating the
 algorithm on dataset</p>
+<p>Note that a CUDA-enabled backend is required for training with the <code class="docutils literal notranslate"><span class="pre">semilearn</span></code> package.
+See <a class="reference external" href="https://pytorch.org/tutorials/beginner/colab#using-cuda">Enabling CUDA in Google Colab</a> for instructions
+on enabling CUDA in Google Colab.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">semilearn</span>
 <span class="kn">from</span> <span class="nn">semilearn</span> <span class="kn">import</span> <span class="n">get_dataset</span><span class="p">,</span> <span class="n">get_data_loader</span><span class="p">,</span> <span class="n">get_net_builder</span><span class="p">,</span> <span class="n">get_algorithm</span><span class="p">,</span> <span class="n">get_config</span><span class="p">,</span> <span class="n">Trainer</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/conda/envs/py_3.10/lib/python3.10/site-packages/transformers/utils/generic.py:309: UserWarning:
+
+torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils._pytree.register_pytree_node instead.
 </pre></div>
 </div>
 <p>After importing necessary functions, we first set the hyper-parameters of the
@@ -512,7 +522,7 @@ algorithm.</p>
 
     <span class="c1"># optimization configs</span>
     <span class="s1">'epoch'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s1">'num_train_iter'</span><span class="p">:</span> <span class="mi">4000</span><span class="p">,</span>
+    <span class="s1">'num_train_iter'</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
     <span class="s1">'num_eval_iter'</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
     <span class="s1">'num_log_iter'</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
     <span class="s1">'optim'</span><span class="p">:</span> <span class="s1">'AdamW'</span><span class="p">,</span>
@@ -551,22 +561,159 @@ algorithm.</p>
 <p>Then, we load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset_dict</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_labels</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">include_lb_to_ulb</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">include_lb_to_ulb</span><span class="p">)</span>
-<span class="n">train_lb_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_lb'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
-<span class="n">train_ulb_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_ulb'</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">uratio</span><span class="p">))</span>
-<span class="n">eval_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'eval'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">eval_batch_size</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_lb_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_lb'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_ulb_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_ulb'</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">uratio</span><span class="p">))</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'eval'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">eval_batch_size</span><span class="p">)</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="n">get_algorithm</span><span class="p">(</span><span class="n">config</span><span class="p">,</span>  <span class="n">get_net_builder</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">net</span><span class="p">,</span> <span class="n">from_name</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">tb_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar10/cifar-10-python.tar.gz
+
+  0%|          | 0/170498071 [00:00&lt;?, ?it/s]
+  0%|          | 688128/170498071 [00:00&lt;00:24, 6866830.25it/s]
+  5%|4         | 8126464/170498071 [00:00&lt;00:03, 46519984.32it/s]
+ 10%|#         | 17465344/170498071 [00:00&lt;00:02, 67883168.92it/s]
+ 16%|#5        | 26902528/170498071 [00:00&lt;00:01, 78275155.97it/s]
+ 21%|##1       | 36470784/170498071 [00:00&lt;00:01, 84538529.36it/s]
+ 28%|##8       | 48201728/170498071 [00:00&lt;00:01, 95611202.16it/s]
+ 34%|###3      | 57769984/170498071 [00:00&lt;00:01, 92610006.75it/s]
+ 40%|####      | 68878336/170498071 [00:00&lt;00:01, 98353570.79it/s]
+ 47%|####7     | 80379904/170498071 [00:00&lt;00:00, 103380736.59it/s]
+ 53%|#####3    | 90767360/170498071 [00:01&lt;00:00, 97891877.00it/s]
+ 59%|#####9    | 100630528/170498071 [00:01&lt;00:00, 93243905.14it/s]
+ 65%|######4   | 110690304/170498071 [00:01&lt;00:00, 95278854.88it/s]
+ 71%|#######   | 120291328/170498071 [00:01&lt;00:00, 93420042.61it/s]
+ 76%|#######6  | 129957888/170498071 [00:01&lt;00:00, 94265638.07it/s]
+ 82%|########1 | 139427840/170498071 [00:01&lt;00:00, 87203061.22it/s]
+ 87%|########6 | 148275200/170498071 [00:01&lt;00:00, 71378525.26it/s]
+ 91%|#########1| 155942912/170498071 [00:01&lt;00:00, 62525797.66it/s]
+ 95%|#########5| 162693120/170498071 [00:02&lt;00:00, 58750748.87it/s]
+ 99%|#########9| 168919040/170498071 [00:02&lt;00:00, 54996437.31it/s]
+100%|##########| 170498071/170498071 [00:02&lt;00:00, 76285819.47it/s]
+Extracting ./data/cifar10/cifar-10-python.tar.gz to ./data/cifar10
+lb count: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+ulb count: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+Files already downloaded and verified
+Files already downloaded and verified
+lb count: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+ulb count: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+Files already downloaded and verified
+unlabeled data number: 50000, labeled data number 40
+Create train and test data loaders
+[!] data loader keys: dict_keys(['train_lb', 'train_ulb', 'eval'])
+Downloading: "https://github.com/microsoft/Semi-supervised-learning/releases/download/v.0.0.0/vit_tiny_patch2_32_mlp_im_1k_32.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/vit_tiny_patch2_32_mlp_im_1k_32.pth
+
+  0%|          | 0.00/115M [00:00&lt;?, ?B/s]
+ 21%|##1       | 24.5M/115M [00:00&lt;00:00, 256MB/s]
+ 44%|####4     | 51.0M/115M [00:00&lt;00:00, 269MB/s]
+ 67%|######6   | 76.6M/115M [00:00&lt;00:00, 263MB/s]
+ 89%|########8 | 102M/115M [00:00&lt;00:00, 238MB/s]
+100%|##########| 115M/115M [00:00&lt;00:00, 252MB/s]
+_IncompatibleKeys(missing_keys=['head.weight', 'head.bias'], unexpected_keys=[])
+Create optimizer and scheduler
+</pre></div>
+</div>
 <p>We can start training the algorithms on CIFAR-10 with 40 labels now.
-We train for 4000 iterations and evaluate every 500 iterations.</p>
+We train for 500 iterations and evaluate every 500 iterations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">)</span>
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_lb_loader</span><span class="p">,</span> <span class="n">train_ulb_loader</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_lb_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_ulb_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch: 0
+50 iteration USE_EMA: True, train/sup_loss: 2.3529, train/unsup_loss: 0.5777, train/total_loss: 2.9054, train/util_ratio: 1.0000, train/run_time: 0.5803, lr: 0.0005, train/prefetch_time: 0.0039
+100 iteration USE_EMA: True, train/sup_loss: 1.7521, train/unsup_loss: 0.4623, train/total_loss: 2.1889, train/util_ratio: 1.0000, train/run_time: 0.5825, lr: 0.0005, train/prefetch_time: 0.0046
+150 iteration USE_EMA: True, train/sup_loss: 0.9473, train/unsup_loss: 1.0113, train/total_loss: 1.9409, train/util_ratio: 1.0000, train/run_time: 0.5804, lr: 0.0005, train/prefetch_time: 0.0039
+200 iteration USE_EMA: True, train/sup_loss: 0.3124, train/unsup_loss: 0.6291, train/total_loss: 0.9217, train/util_ratio: 1.0000, train/run_time: 0.5835, lr: 0.0004, train/prefetch_time: 0.0045
+250 iteration USE_EMA: True, train/sup_loss: 0.1295, train/unsup_loss: 0.8346, train/total_loss: 0.9567, train/util_ratio: 1.0000, train/run_time: 0.5839, lr: 0.0004, train/prefetch_time: 0.0039
+300 iteration USE_EMA: True, train/sup_loss: 0.0960, train/unsup_loss: 0.7705, train/total_loss: 0.8565, train/util_ratio: 1.0000, train/run_time: 0.5802, lr: 0.0003, train/prefetch_time: 0.0046
+350 iteration USE_EMA: True, train/sup_loss: 0.1819, train/unsup_loss: 0.8313, train/total_loss: 1.0031, train/util_ratio: 1.0000, train/run_time: 0.5825, lr: 0.0003, train/prefetch_time: 0.0039
+400 iteration USE_EMA: True, train/sup_loss: 0.0499, train/unsup_loss: 0.5025, train/total_loss: 0.5422, train/util_ratio: 1.0000, train/run_time: 0.5832, lr: 0.0002, train/prefetch_time: 0.0040
+450 iteration USE_EMA: True, train/sup_loss: 0.0783, train/unsup_loss: 0.7793, train/total_loss: 0.8474, train/util_ratio: 1.0000, train/run_time: 0.5840, lr: 0.0002, train/prefetch_time: 0.0040
+validating...
+/opt/conda/envs/py_3.10/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning:
+
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+
+confusion matrix:
+[[1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]
+model saved: ./saved_models/fixmatch/latest_model.pth
+model saved: ./saved_models/fixmatch/model_best.pth
+500 iteration, USE_EMA: True, train/sup_loss: 0.0213, train/unsup_loss: 0.9055, train/total_loss: 0.9165, train/util_ratio: 0.9688, train/run_time: 0.5820, eval/loss: 5.0303, eval/top-1-acc: 0.1005, eval/balanced_acc: 0.1000, eval/precision: 0.0100, eval/recall: 0.1000, eval/F1: 0.0183, lr: 0.0001, train/prefetch_time: 0.0038 BEST_EVAL_ACC: 0.1005, at 500 iters
+[2024-03-05 22:00:07,923 INFO] confusion matrix
+[2024-03-05 22:00:07,923 INFO] [[0.95149254 0.00621891 0.         0.         0.00124378 0.
+  0.00248756 0.         0.01243781 0.0261194 ]
+ [0.00123916 0.98141264 0.         0.         0.         0.
+  0.         0.         0.         0.0173482 ]
+ [0.05099502 0.         0.14054726 0.00124378 0.14179104 0.01616915
+  0.05348259 0.5920398  0.00248756 0.00124378]
+ [0.00501882 0.00250941 0.00125471 0.17691343 0.02007528 0.0476788
+  0.05018821 0.68005019 0.00752823 0.00878294]
+ [0.         0.         0.         0.         0.82089552 0.
+  0.00497512 0.17288557 0.00124378 0.        ]
+ [0.         0.         0.         0.00127226 0.00890585 0.6043257
+  0.00127226 0.38295165 0.         0.00127226]
+ [0.00361882 0.         0.00120627 0.         0.00120627 0.
+  0.98190591 0.01085645 0.         0.00120627]
+ [0.00512164 0.         0.         0.         0.03072983 0.00256082
+  0.         0.95902689 0.         0.00256082]
+ [0.11581569 0.05728518 0.00124533 0.         0.         0.00249066
+  0.00124533 0.00124533 0.78455791 0.03611457]
+ [0.00127389 0.03694268 0.         0.         0.         0.
+  0.         0.         0.00127389 0.96050955]]
+[2024-03-05 22:00:07,927 INFO] evaluation metric
+[2024-03-05 22:00:07,927 INFO] acc: 0.7366
+[2024-03-05 22:00:07,927 INFO] precision: 0.8518
+[2024-03-05 22:00:07,927 INFO] recall: 0.7362
+[2024-03-05 22:00:07,927 INFO] f1: 0.7152
+model saved: ./saved_models/fixmatch/latest_model.pth
+model saved: ./saved_models/fixmatch/model_best.pth
+[2024-03-05 22:00:08,709 INFO] Best acc 0.7366 at epoch 0
+[2024-03-05 22:00:08,710 INFO] Training finished.
 </pre></div>
 </div>
 <p>Finally, let’s evaluate the trained model on the validation set.
-After training 4000 iterations with <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> on only 40 labels of
-CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validation set.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
+After training 500 iterations with <code class="docutils literal notranslate"><span class="pre">FreeMatch</span></code> on only 40 labels of
+CIFAR-10, we obtain a classifier that achieves around 87% accuracy on the validation set.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[2024-03-05 22:00:31,008 INFO] confusion matrix
+[2024-03-05 22:00:31,008 INFO] [[0.95149254 0.00621891 0.         0.         0.00124378 0.
+  0.00248756 0.         0.01243781 0.0261194 ]
+ [0.00123916 0.98141264 0.         0.         0.         0.
+  0.         0.         0.         0.0173482 ]
+ [0.05099502 0.         0.14054726 0.00124378 0.14179104 0.01616915
+  0.05348259 0.5920398  0.00248756 0.00124378]
+ [0.00501882 0.00250941 0.00125471 0.17691343 0.02007528 0.0476788
+  0.05018821 0.68005019 0.00752823 0.00878294]
+ [0.         0.         0.         0.         0.82089552 0.
+  0.00497512 0.17288557 0.00124378 0.        ]
+ [0.         0.         0.         0.00127226 0.00890585 0.6043257
+  0.00127226 0.38295165 0.         0.00127226]
+ [0.00361882 0.         0.00120627 0.         0.00120627 0.
+  0.98190591 0.01085645 0.         0.00120627]
+ [0.00512164 0.         0.         0.         0.03072983 0.00256082
+  0.         0.95902689 0.         0.00256082]
+ [0.11581569 0.05728518 0.00124533 0.         0.         0.00249066
+  0.00124533 0.00124533 0.78455791 0.03611457]
+ [0.00127389 0.03694268 0.         0.         0.         0.
+  0.         0.         0.00127389 0.96050955]]
+[2024-03-05 22:00:31,011 INFO] evaluation metric
+[2024-03-05 22:00:31,012 INFO] acc: 0.7366
+[2024-03-05 22:00:31,012 INFO] precision: 0.8518
+[2024-03-05 22:00:31,012 INFO] recall: 0.7362
+[2024-03-05 22:00:31,012 INFO] f1: 0.7152
+
+{'acc': 0.736625, 'precision': 0.8518272669470696, 'recall': 0.7361587349204767, 'f1': 0.7152204083612528}
 </pre></div>
 </div>
 </div>
@@ -586,7 +733,7 @@ to <code class="docutils literal notranslate"><span class="pre">True</span></cod
 
     <span class="c1"># optimization configs</span>
     <span class="s1">'epoch'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s1">'num_train_iter'</span><span class="p">:</span> <span class="mi">4000</span><span class="p">,</span>
+    <span class="s1">'num_train_iter'</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
     <span class="s1">'num_eval_iter'</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
     <span class="s1">'num_log_iter'</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
     <span class="s1">'optim'</span><span class="p">:</span> <span class="s1">'AdamW'</span><span class="p">,</span>
@@ -628,28 +775,136 @@ to <code class="docutils literal notranslate"><span class="pre">True</span></cod
 <p>Then, we re-load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset_dict</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_labels</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">include_lb_to_ulb</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">include_lb_to_ulb</span><span class="p">)</span>
-<span class="n">train_lb_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_lb'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
-<span class="n">train_ulb_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_ulb'</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">uratio</span><span class="p">))</span>
-<span class="n">eval_loader</span> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'eval'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">eval_batch_size</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_lb_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_lb'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_ulb_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'train_ulb'</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">uratio</span><span class="p">))</span>
+<a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a> <span class="o">=</span> <span class="n">get_data_loader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s1">'eval'</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">eval_batch_size</span><span class="p">)</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="n">get_algorithm</span><span class="p">(</span><span class="n">config</span><span class="p">,</span>  <span class="n">get_net_builder</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">net</span><span class="p">,</span> <span class="n">from_name</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">tb_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Files already downloaded and verified
+lb count: [1500, 1161, 899, 696, 539, 417, 323, 250, 193, 150]
+ulb count: [4500, 3483, 2697, 2088, 1617, 1251, 969, 750, 580, 450]
+Files already downloaded and verified
+Files already downloaded and verified
+lb count: [1500, 1161, 899, 696, 539, 417, 323, 250, 193, 150]
+ulb count: [4500, 3483, 2697, 2088, 1617, 1251, 969, 750, 580, 450]
+Files already downloaded and verified
+unlabeled data number: 18385, labeled data number 6128
+Create train and test data loaders
+[!] data loader keys: dict_keys(['train_lb', 'train_ulb', 'eval'])
+_IncompatibleKeys(missing_keys=['head.weight', 'head.bias'], unexpected_keys=[])
+Create optimizer and scheduler
+distribution alignment p_target: tensor([0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000,
+        0.1000])
+</pre></div>
+</div>
 <p>We can start Train the algorithms on CIFAR-10 with 40 labels now.
-We train for 4000 iterations and evaluate every 500 iterations.</p>
+We train for 500 iterations and evaluate every 500 iterations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">)</span>
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_lb_loader</span><span class="p">,</span> <span class="n">train_ulb_loader</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_lb_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_ulb_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch: 0
+50 iteration USE_EMA: True, train/sup_loss: 2.5469, train/unsup_loss: 0.7099, train/total_loss: 3.2567, train/util_ratio: 1.0000, train/run_time: 0.5816, lr: 0.0005, train/prefetch_time: 0.0040
+100 iteration USE_EMA: True, train/sup_loss: 1.7985, train/unsup_loss: 0.5797, train/total_loss: 2.3782, train/util_ratio: 1.0000, train/run_time: 0.5821, lr: 0.0005, train/prefetch_time: 0.0047
+150 iteration USE_EMA: True, train/sup_loss: 1.1758, train/unsup_loss: 0.6415, train/total_loss: 1.8173, train/util_ratio: 1.0000, train/run_time: 0.5833, lr: 0.0005, train/prefetch_time: 0.0041
+200 iteration USE_EMA: True, train/sup_loss: 0.8190, train/unsup_loss: 0.7390, train/total_loss: 1.5580, train/util_ratio: 1.0000, train/run_time: 0.5823, lr: 0.0004, train/prefetch_time: 0.0040
+250 iteration USE_EMA: True, train/sup_loss: 0.7668, train/unsup_loss: 0.8981, train/total_loss: 1.6649, train/util_ratio: 1.0000, train/run_time: 0.5800, lr: 0.0004, train/prefetch_time: 0.0040
+300 iteration USE_EMA: True, train/sup_loss: 0.5546, train/unsup_loss: 0.6713, train/total_loss: 1.2259, train/util_ratio: 1.0000, train/run_time: 0.5829, lr: 0.0003, train/prefetch_time: 0.0041
+350 iteration USE_EMA: True, train/sup_loss: 0.4318, train/unsup_loss: 0.5933, train/total_loss: 1.0252, train/util_ratio: 1.0000, train/run_time: 0.5818, lr: 0.0003, train/prefetch_time: 0.0041
+400 iteration USE_EMA: True, train/sup_loss: 0.2138, train/unsup_loss: 0.7006, train/total_loss: 0.9143, train/util_ratio: 1.0000, train/run_time: 0.5814, lr: 0.0002, train/prefetch_time: 0.0040
+450 iteration USE_EMA: True, train/sup_loss: 0.2172, train/unsup_loss: 0.8016, train/total_loss: 1.0188, train/util_ratio: 0.9996, train/run_time: 0.5837, lr: 0.0002, train/prefetch_time: 0.0040
+validating...
+/opt/conda/envs/py_3.10/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning:
+
+Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+
+confusion matrix:
+[[0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]]
+model saved: ./saved_models/fixmatch/latest_model.pth
+model saved: ./saved_models/fixmatch/model_best.pth
+500 iteration, USE_EMA: True, train/sup_loss: 0.3218, train/unsup_loss: 0.5166, train/total_loss: 0.8384, train/util_ratio: 0.9990, train/run_time: 0.5812, eval/loss: 4.8757, eval/top-1-acc: 0.1036, eval/balanced_acc: 0.1000, eval/precision: 0.0104, eval/recall: 0.1000, eval/F1: 0.0188, lr: 0.0001, train/prefetch_time: 0.0037 BEST_EVAL_ACC: 0.1036, at 500 iters
+[2024-03-05 22:06:30,886 INFO] confusion matrix
+[2024-03-05 22:06:30,887 INFO] [[0.99502488 0.00373134 0.         0.         0.         0.
+  0.         0.         0.         0.00124378]
+ [0.00123916 0.99876084 0.         0.         0.         0.
+  0.         0.         0.         0.        ]
+ [0.02985075 0.         0.9340796  0.01492537 0.01492537 0.00124378
+  0.00497512 0.         0.         0.        ]
+ [0.00627353 0.00250941 0.00250941 0.9272271  0.01631117 0.03262233
+  0.00878294 0.00250941 0.         0.00125471]
+ [0.         0.         0.00870647 0.00995025 0.97014925 0.
+  0.00621891 0.00497512 0.         0.        ]
+ [0.         0.         0.00254453 0.06743003 0.01017812 0.90966921
+  0.         0.01017812 0.         0.        ]
+ [0.00603136 0.         0.00603136 0.00723764 0.00120627 0.
+  0.97949337 0.         0.         0.        ]
+ [0.00768246 0.         0.00896287 0.02816901 0.2496799  0.0524968
+  0.         0.65300896 0.         0.        ]
+ [0.25155666 0.09464508 0.00249066 0.         0.         0.
+  0.         0.         0.64757161 0.00373599]
+ [0.02547771 0.50191083 0.         0.         0.         0.
+  0.         0.         0.         0.47261146]]
+[2024-03-05 22:06:30,891 INFO] evaluation metric
+[2024-03-05 22:06:30,891 INFO] acc: 0.8505
+[2024-03-05 22:06:30,891 INFO] precision: 0.8856
+[2024-03-05 22:06:30,891 INFO] recall: 0.8488
+[2024-03-05 22:06:30,891 INFO] f1: 0.8441
+model saved: ./saved_models/fixmatch/latest_model.pth
+model saved: ./saved_models/fixmatch/model_best.pth
+[2024-03-05 22:06:31,598 INFO] Best acc 0.8505 at epoch 0
+[2024-03-05 22:06:31,598 INFO] Training finished.
 </pre></div>
 </div>
 <p>Finally, let’s evaluate the trained model on the validation set.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">eval_loader</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<p>References
-[1] USB: <a class="reference external" href="https://github.com/microsoft/Semi-supervised-learning">https://github.com/microsoft/Semi-supervised-learning</a>
-[2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
-[3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
-[4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[2024-03-05 22:06:53,770 INFO] confusion matrix
+[2024-03-05 22:06:53,771 INFO] [[0.99502488 0.00373134 0.         0.         0.         0.
+  0.         0.         0.         0.00124378]
+ [0.00123916 0.99876084 0.         0.         0.         0.
+  0.         0.         0.         0.        ]
+ [0.02985075 0.         0.9340796  0.01492537 0.01492537 0.00124378
+  0.00497512 0.         0.         0.        ]
+ [0.00627353 0.00250941 0.00250941 0.9272271  0.01631117 0.03262233
+  0.00878294 0.00250941 0.         0.00125471]
+ [0.         0.         0.00870647 0.00995025 0.97014925 0.
+  0.00621891 0.00497512 0.         0.        ]
+ [0.         0.         0.00254453 0.06743003 0.01017812 0.90966921
+  0.         0.01017812 0.         0.        ]
+ [0.00603136 0.         0.00603136 0.00723764 0.00120627 0.
+  0.97949337 0.         0.         0.        ]
+ [0.00768246 0.         0.00896287 0.02816901 0.2496799  0.0524968
+  0.         0.65300896 0.         0.        ]
+ [0.25155666 0.09464508 0.00249066 0.         0.         0.
+  0.         0.         0.64757161 0.00373599]
+ [0.02547771 0.50191083 0.         0.         0.         0.
+  0.         0.         0.         0.47261146]]
+[2024-03-05 22:06:53,775 INFO] evaluation metric
+[2024-03-05 22:06:53,775 INFO] acc: 0.8505
+[2024-03-05 22:06:53,775 INFO] precision: 0.8856
+[2024-03-05 22:06:53,775 INFO] recall: 0.8488
+[2024-03-05 22:06:53,776 INFO] f1: 0.8441
+
+{'acc': 0.8505, 'precision': 0.8856186417668039, 'recall': 0.8487596286609934, 'f1': 0.8441275441763487}
+</pre></div>
+</div>
+<p>References:
+- [1] USB: <a class="reference external" href="https://github.com/microsoft/Semi-supervised-learning">https://github.com/microsoft/Semi-supervised-learning</a>
+- [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
+- [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
+- [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 12 minutes  52.674 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-usb-semisup-learn-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/f9131668f10ce00fb20564fb14f4b2fc/usb_semisup_learn.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">usb_semisup_learn.py</span></code></a></p>

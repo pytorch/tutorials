@@ -24,7 +24,7 @@ Semi-Supervised Learning using USB built upon PyTorch
 **Author**: `Hao Chen <https://github.com/Hhhhhhao>`_
 
 Unified Semi-supervised learning Benchmark (USB) is a semi-supervised
-learning framework built upon PyTorch.
+learning (SSL) framework built upon PyTorch.
 Based on Datasets and Modules provided by PyTorch, USB becomes a flexible,
 modular, and easy-to-use framework for semi-supervised learning.
 It supports a variety of semi-supervised learning algorithms, including
@@ -36,7 +36,7 @@ language processing, and speech processing are included in USB.
 This tutorial will walk you through the basics of using the USB lighting
 package.
 Let's get started by training a ``FreeMatch``/``SoftMatch`` model on
-CIFAR-10 using pretrained ViT!
+CIFAR-10 using pretrained Vision Transformers (ViT)!
 And we will show it is easy to change the semi-supervised algorithm and train
 on imbalanced datasets.
 
@@ -64,7 +64,7 @@ weighting mechanism. It proposes a Gaussian weighting mechanism to overcome
 the quantity-quality trade-off in pseudo-labels. In this tutorial, we will
 use USB to train ``FreeMatch`` and ``SoftMatch``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-80
+.. GENERATED FROM PYTHON SOURCE LINES 51-87
 
 Use USB to Train ``FreeMatch``/``SoftMatch`` on CIFAR-10 with only 40 labels
 ----------------------------------------------------------------------------
@@ -82,6 +82,9 @@ algorithms on new data.
 Now, let's use USB to train ``FreeMatch`` and ``SoftMatch`` on CIFAR-10.
 First, we need to install USB package ``semilearn`` and import necessary API
 functions from USB.
+If you are running this in Google Colab, install ``semilearn`` by running:
+``!pip install semilearn``.
+
 Below is a list of functions we will use from ``semilearn``:
 
 - ``get_dataset`` to load dataset, here we use CIFAR-10
@@ -95,8 +98,12 @@ here we use ``FreeMatch`` and ``SoftMatch``
 - ``Trainer``: a Trainer class for training and evaluating the
 algorithm on dataset
 
+Note that a CUDA-enabled backend is required for training with the ``semilearn`` package.
+See `Enabling CUDA in Google Colab <https://pytorch.org/tutorials/beginner/colab#using-cuda>`__ for instructions
+on enabling CUDA in Google Colab.
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-83
+
+.. GENERATED FROM PYTHON SOURCE LINES 87-90
 
 .. code-block:: default
 
@@ -104,13 +111,28 @@ algorithm on dataset
     from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-87
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/transformers/utils/generic.py:309: UserWarning:
+
+    torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils._pytree.register_pytree_node instead.
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 91-94
 
 After importing necessary functions, we first set the hyper-parameters of the
 algorithm.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-131
+.. GENERATED FROM PYTHON SOURCE LINES 94-138
 
 .. code-block:: default
 
@@ -122,7 +144,7 @@ algorithm.
 
         # optimization configs
         'epoch': 1,  
-        'num_train_iter': 4000,  
+        'num_train_iter': 500,
         'num_eval_iter': 500,  
         'num_log_iter': 50,  
         'optim': 'AdamW',
@@ -159,13 +181,19 @@ algorithm.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-135
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 139-142
 
 Then, we load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-142
+.. GENERATED FROM PYTHON SOURCE LINES 142-149
 
 .. code-block:: default
 
@@ -177,13 +205,68 @@ And we specify the model and algorithm to use.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-146
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar10/cifar-10-python.tar.gz
+
+      0%|          | 0/170498071 [00:00<?, ?it/s]
+      0%|          | 688128/170498071 [00:00<00:24, 6866830.25it/s]
+      5%|4         | 8126464/170498071 [00:00<00:03, 46519984.32it/s]
+     10%|#         | 17465344/170498071 [00:00<00:02, 67883168.92it/s]
+     16%|#5        | 26902528/170498071 [00:00<00:01, 78275155.97it/s]
+     21%|##1       | 36470784/170498071 [00:00<00:01, 84538529.36it/s]
+     28%|##8       | 48201728/170498071 [00:00<00:01, 95611202.16it/s]
+     34%|###3      | 57769984/170498071 [00:00<00:01, 92610006.75it/s]
+     40%|####      | 68878336/170498071 [00:00<00:01, 98353570.79it/s]
+     47%|####7     | 80379904/170498071 [00:00<00:00, 103380736.59it/s]
+     53%|#####3    | 90767360/170498071 [00:01<00:00, 97891877.00it/s] 
+     59%|#####9    | 100630528/170498071 [00:01<00:00, 93243905.14it/s]
+     65%|######4   | 110690304/170498071 [00:01<00:00, 95278854.88it/s]
+     71%|#######   | 120291328/170498071 [00:01<00:00, 93420042.61it/s]
+     76%|#######6  | 129957888/170498071 [00:01<00:00, 94265638.07it/s]
+     82%|########1 | 139427840/170498071 [00:01<00:00, 87203061.22it/s]
+     87%|########6 | 148275200/170498071 [00:01<00:00, 71378525.26it/s]
+     91%|#########1| 155942912/170498071 [00:01<00:00, 62525797.66it/s]
+     95%|#########5| 162693120/170498071 [00:02<00:00, 58750748.87it/s]
+     99%|#########9| 168919040/170498071 [00:02<00:00, 54996437.31it/s]
+    100%|##########| 170498071/170498071 [00:02<00:00, 76285819.47it/s]
+    Extracting ./data/cifar10/cifar-10-python.tar.gz to ./data/cifar10
+    lb count: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    ulb count: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    Files already downloaded and verified
+    Files already downloaded and verified
+    lb count: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+    ulb count: [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+    Files already downloaded and verified
+    unlabeled data number: 50000, labeled data number 40
+    Create train and test data loaders
+    [!] data loader keys: dict_keys(['train_lb', 'train_ulb', 'eval'])
+    Downloading: "https://github.com/microsoft/Semi-supervised-learning/releases/download/v.0.0.0/vit_tiny_patch2_32_mlp_im_1k_32.pth" to /var/lib/jenkins/.cache/torch/hub/checkpoints/vit_tiny_patch2_32_mlp_im_1k_32.pth
+
+      0%|          | 0.00/115M [00:00<?, ?B/s]
+     21%|##1       | 24.5M/115M [00:00<00:00, 256MB/s]
+     44%|####4     | 51.0M/115M [00:00<00:00, 269MB/s]
+     67%|######6   | 76.6M/115M [00:00<00:00, 263MB/s]
+     89%|########8 | 102M/115M [00:00<00:00, 238MB/s] 
+    100%|##########| 115M/115M [00:00<00:00, 252MB/s]
+    _IncompatibleKeys(missing_keys=['head.weight', 'head.bias'], unexpected_keys=[])
+    Create optimizer and scheduler
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 150-153
 
 We can start training the algorithms on CIFAR-10 with 40 labels now.
-We train for 4000 iterations and evaluate every 500 iterations.
+We train for 500 iterations and evaluate every 500 iterations.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-150
+.. GENERATED FROM PYTHON SOURCE LINES 153-157
 
 .. code-block:: default
 
@@ -192,13 +275,83 @@ We train for 4000 iterations and evaluate every 500 iterations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-154
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Epoch: 0
+    50 iteration USE_EMA: True, train/sup_loss: 2.3529, train/unsup_loss: 0.5777, train/total_loss: 2.9054, train/util_ratio: 1.0000, train/run_time: 0.5803, lr: 0.0005, train/prefetch_time: 0.0039 
+    100 iteration USE_EMA: True, train/sup_loss: 1.7521, train/unsup_loss: 0.4623, train/total_loss: 2.1889, train/util_ratio: 1.0000, train/run_time: 0.5825, lr: 0.0005, train/prefetch_time: 0.0046 
+    150 iteration USE_EMA: True, train/sup_loss: 0.9473, train/unsup_loss: 1.0113, train/total_loss: 1.9409, train/util_ratio: 1.0000, train/run_time: 0.5804, lr: 0.0005, train/prefetch_time: 0.0039 
+    200 iteration USE_EMA: True, train/sup_loss: 0.3124, train/unsup_loss: 0.6291, train/total_loss: 0.9217, train/util_ratio: 1.0000, train/run_time: 0.5835, lr: 0.0004, train/prefetch_time: 0.0045 
+    250 iteration USE_EMA: True, train/sup_loss: 0.1295, train/unsup_loss: 0.8346, train/total_loss: 0.9567, train/util_ratio: 1.0000, train/run_time: 0.5839, lr: 0.0004, train/prefetch_time: 0.0039 
+    300 iteration USE_EMA: True, train/sup_loss: 0.0960, train/unsup_loss: 0.7705, train/total_loss: 0.8565, train/util_ratio: 1.0000, train/run_time: 0.5802, lr: 0.0003, train/prefetch_time: 0.0046 
+    350 iteration USE_EMA: True, train/sup_loss: 0.1819, train/unsup_loss: 0.8313, train/total_loss: 1.0031, train/util_ratio: 1.0000, train/run_time: 0.5825, lr: 0.0003, train/prefetch_time: 0.0039 
+    400 iteration USE_EMA: True, train/sup_loss: 0.0499, train/unsup_loss: 0.5025, train/total_loss: 0.5422, train/util_ratio: 1.0000, train/run_time: 0.5832, lr: 0.0002, train/prefetch_time: 0.0040 
+    450 iteration USE_EMA: True, train/sup_loss: 0.0783, train/unsup_loss: 0.7793, train/total_loss: 0.8474, train/util_ratio: 1.0000, train/run_time: 0.5840, lr: 0.0002, train/prefetch_time: 0.0040 
+    validating...
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning:
+
+    Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+
+    confusion matrix:
+    [[1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+     [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]
+    model saved: ./saved_models/fixmatch/latest_model.pth
+    model saved: ./saved_models/fixmatch/model_best.pth
+    500 iteration, USE_EMA: True, train/sup_loss: 0.0213, train/unsup_loss: 0.9055, train/total_loss: 0.9165, train/util_ratio: 0.9688, train/run_time: 0.5820, eval/loss: 5.0303, eval/top-1-acc: 0.1005, eval/balanced_acc: 0.1000, eval/precision: 0.0100, eval/recall: 0.1000, eval/F1: 0.0183, lr: 0.0001, train/prefetch_time: 0.0038 BEST_EVAL_ACC: 0.1005, at 500 iters
+    [2024-03-05 22:00:07,923 INFO] confusion matrix
+    [2024-03-05 22:00:07,923 INFO] [[0.95149254 0.00621891 0.         0.         0.00124378 0.
+      0.00248756 0.         0.01243781 0.0261194 ]
+     [0.00123916 0.98141264 0.         0.         0.         0.
+      0.         0.         0.         0.0173482 ]
+     [0.05099502 0.         0.14054726 0.00124378 0.14179104 0.01616915
+      0.05348259 0.5920398  0.00248756 0.00124378]
+     [0.00501882 0.00250941 0.00125471 0.17691343 0.02007528 0.0476788
+      0.05018821 0.68005019 0.00752823 0.00878294]
+     [0.         0.         0.         0.         0.82089552 0.
+      0.00497512 0.17288557 0.00124378 0.        ]
+     [0.         0.         0.         0.00127226 0.00890585 0.6043257
+      0.00127226 0.38295165 0.         0.00127226]
+     [0.00361882 0.         0.00120627 0.         0.00120627 0.
+      0.98190591 0.01085645 0.         0.00120627]
+     [0.00512164 0.         0.         0.         0.03072983 0.00256082
+      0.         0.95902689 0.         0.00256082]
+     [0.11581569 0.05728518 0.00124533 0.         0.         0.00249066
+      0.00124533 0.00124533 0.78455791 0.03611457]
+     [0.00127389 0.03694268 0.         0.         0.         0.
+      0.         0.         0.00127389 0.96050955]]
+    [2024-03-05 22:00:07,927 INFO] evaluation metric
+    [2024-03-05 22:00:07,927 INFO] acc: 0.7366
+    [2024-03-05 22:00:07,927 INFO] precision: 0.8518
+    [2024-03-05 22:00:07,927 INFO] recall: 0.7362
+    [2024-03-05 22:00:07,927 INFO] f1: 0.7152
+    model saved: ./saved_models/fixmatch/latest_model.pth
+    model saved: ./saved_models/fixmatch/model_best.pth
+    [2024-03-05 22:00:08,709 INFO] Best acc 0.7366 at epoch 0
+    [2024-03-05 22:00:08,710 INFO] Training finished.
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 158-161
 
 Finally, let's evaluate the trained model on the validation set.
-After training 4000 iterations with ``FreeMatch`` on only 40 labels of
-CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validation set.
+After training 500 iterations with ``FreeMatch`` on only 40 labels of
+CIFAR-10, we obtain a classifier that achieves around 87% accuracy on the validation set.
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-158
+.. GENERATED FROM PYTHON SOURCE LINES 161-165
 
 .. code-block:: default
 
@@ -207,7 +360,45 @@ CIFAR-10, we obtain a classifier that achieves above 93 accuracy on the validati
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-169
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [2024-03-05 22:00:31,008 INFO] confusion matrix
+    [2024-03-05 22:00:31,008 INFO] [[0.95149254 0.00621891 0.         0.         0.00124378 0.
+      0.00248756 0.         0.01243781 0.0261194 ]
+     [0.00123916 0.98141264 0.         0.         0.         0.
+      0.         0.         0.         0.0173482 ]
+     [0.05099502 0.         0.14054726 0.00124378 0.14179104 0.01616915
+      0.05348259 0.5920398  0.00248756 0.00124378]
+     [0.00501882 0.00250941 0.00125471 0.17691343 0.02007528 0.0476788
+      0.05018821 0.68005019 0.00752823 0.00878294]
+     [0.         0.         0.         0.         0.82089552 0.
+      0.00497512 0.17288557 0.00124378 0.        ]
+     [0.         0.         0.         0.00127226 0.00890585 0.6043257
+      0.00127226 0.38295165 0.         0.00127226]
+     [0.00361882 0.         0.00120627 0.         0.00120627 0.
+      0.98190591 0.01085645 0.         0.00120627]
+     [0.00512164 0.         0.         0.         0.03072983 0.00256082
+      0.         0.95902689 0.         0.00256082]
+     [0.11581569 0.05728518 0.00124533 0.         0.         0.00249066
+      0.00124533 0.00124533 0.78455791 0.03611457]
+     [0.00127389 0.03694268 0.         0.         0.         0.
+      0.         0.         0.00127389 0.96050955]]
+    [2024-03-05 22:00:31,011 INFO] evaluation metric
+    [2024-03-05 22:00:31,012 INFO] acc: 0.7366
+    [2024-03-05 22:00:31,012 INFO] precision: 0.8518
+    [2024-03-05 22:00:31,012 INFO] recall: 0.7362
+    [2024-03-05 22:00:31,012 INFO] f1: 0.7152
+
+    {'acc': 0.736625, 'precision': 0.8518272669470696, 'recall': 0.7361587349204767, 'f1': 0.7152204083612528}
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 166-176
 
 Use USB to Train ``SoftMatch`` with specific imbalanced algorithm on imbalanced CIFAR-10
 ----------------------------------------------------------------------------------------
@@ -220,7 +411,7 @@ Also, we replace the ``algorithm`` with ``softmatch`` and set the ``imbalanced``
 to ``True``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-215
+.. GENERATED FROM PYTHON SOURCE LINES 176-222
 
 .. code-block:: default
 
@@ -232,7 +423,7 @@ to ``True``.
 
         # optimization configs
         'epoch': 1,  
-        'num_train_iter': 4000,  
+        'num_train_iter': 500,
         'num_eval_iter': 500,  
         'num_log_iter': 50,  
         'optim': 'AdamW',
@@ -271,13 +462,19 @@ to ``True``.
     config = get_config(config)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-219
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 223-226
 
 Then, we re-load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-226
+.. GENERATED FROM PYTHON SOURCE LINES 226-233
 
 .. code-block:: default
 
@@ -289,13 +486,39 @@ And we specify the model and algorithm to use.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-230
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Files already downloaded and verified
+    lb count: [1500, 1161, 899, 696, 539, 417, 323, 250, 193, 150]
+    ulb count: [4500, 3483, 2697, 2088, 1617, 1251, 969, 750, 580, 450]
+    Files already downloaded and verified
+    Files already downloaded and verified
+    lb count: [1500, 1161, 899, 696, 539, 417, 323, 250, 193, 150]
+    ulb count: [4500, 3483, 2697, 2088, 1617, 1251, 969, 750, 580, 450]
+    Files already downloaded and verified
+    unlabeled data number: 18385, labeled data number 6128
+    Create train and test data loaders
+    [!] data loader keys: dict_keys(['train_lb', 'train_ulb', 'eval'])
+    _IncompatibleKeys(missing_keys=['head.weight', 'head.bias'], unexpected_keys=[])
+    Create optimizer and scheduler
+    distribution alignment p_target: tensor([0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000,
+            0.1000])
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 234-237
 
 We can start Train the algorithms on CIFAR-10 with 40 labels now.
-We train for 4000 iterations and evaluate every 500 iterations.
+We train for 500 iterations and evaluate every 500 iterations.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 230-234
+.. GENERATED FROM PYTHON SOURCE LINES 237-241
 
 .. code-block:: default
 
@@ -304,12 +527,82 @@ We train for 4000 iterations and evaluate every 500 iterations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-237
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Epoch: 0
+    50 iteration USE_EMA: True, train/sup_loss: 2.5469, train/unsup_loss: 0.7099, train/total_loss: 3.2567, train/util_ratio: 1.0000, train/run_time: 0.5816, lr: 0.0005, train/prefetch_time: 0.0040 
+    100 iteration USE_EMA: True, train/sup_loss: 1.7985, train/unsup_loss: 0.5797, train/total_loss: 2.3782, train/util_ratio: 1.0000, train/run_time: 0.5821, lr: 0.0005, train/prefetch_time: 0.0047 
+    150 iteration USE_EMA: True, train/sup_loss: 1.1758, train/unsup_loss: 0.6415, train/total_loss: 1.8173, train/util_ratio: 1.0000, train/run_time: 0.5833, lr: 0.0005, train/prefetch_time: 0.0041 
+    200 iteration USE_EMA: True, train/sup_loss: 0.8190, train/unsup_loss: 0.7390, train/total_loss: 1.5580, train/util_ratio: 1.0000, train/run_time: 0.5823, lr: 0.0004, train/prefetch_time: 0.0040 
+    250 iteration USE_EMA: True, train/sup_loss: 0.7668, train/unsup_loss: 0.8981, train/total_loss: 1.6649, train/util_ratio: 1.0000, train/run_time: 0.5800, lr: 0.0004, train/prefetch_time: 0.0040 
+    300 iteration USE_EMA: True, train/sup_loss: 0.5546, train/unsup_loss: 0.6713, train/total_loss: 1.2259, train/util_ratio: 1.0000, train/run_time: 0.5829, lr: 0.0003, train/prefetch_time: 0.0041 
+    350 iteration USE_EMA: True, train/sup_loss: 0.4318, train/unsup_loss: 0.5933, train/total_loss: 1.0252, train/util_ratio: 1.0000, train/run_time: 0.5818, lr: 0.0003, train/prefetch_time: 0.0041 
+    400 iteration USE_EMA: True, train/sup_loss: 0.2138, train/unsup_loss: 0.7006, train/total_loss: 0.9143, train/util_ratio: 1.0000, train/run_time: 0.5814, lr: 0.0002, train/prefetch_time: 0.0040 
+    450 iteration USE_EMA: True, train/sup_loss: 0.2172, train/unsup_loss: 0.8016, train/total_loss: 1.0188, train/util_ratio: 0.9996, train/run_time: 0.5837, lr: 0.0002, train/prefetch_time: 0.0040 
+    validating...
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning:
+
+    Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+
+    confusion matrix:
+    [[0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+     [0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]]
+    model saved: ./saved_models/fixmatch/latest_model.pth
+    model saved: ./saved_models/fixmatch/model_best.pth
+    500 iteration, USE_EMA: True, train/sup_loss: 0.3218, train/unsup_loss: 0.5166, train/total_loss: 0.8384, train/util_ratio: 0.9990, train/run_time: 0.5812, eval/loss: 4.8757, eval/top-1-acc: 0.1036, eval/balanced_acc: 0.1000, eval/precision: 0.0104, eval/recall: 0.1000, eval/F1: 0.0188, lr: 0.0001, train/prefetch_time: 0.0037 BEST_EVAL_ACC: 0.1036, at 500 iters
+    [2024-03-05 22:06:30,886 INFO] confusion matrix
+    [2024-03-05 22:06:30,887 INFO] [[0.99502488 0.00373134 0.         0.         0.         0.
+      0.         0.         0.         0.00124378]
+     [0.00123916 0.99876084 0.         0.         0.         0.
+      0.         0.         0.         0.        ]
+     [0.02985075 0.         0.9340796  0.01492537 0.01492537 0.00124378
+      0.00497512 0.         0.         0.        ]
+     [0.00627353 0.00250941 0.00250941 0.9272271  0.01631117 0.03262233
+      0.00878294 0.00250941 0.         0.00125471]
+     [0.         0.         0.00870647 0.00995025 0.97014925 0.
+      0.00621891 0.00497512 0.         0.        ]
+     [0.         0.         0.00254453 0.06743003 0.01017812 0.90966921
+      0.         0.01017812 0.         0.        ]
+     [0.00603136 0.         0.00603136 0.00723764 0.00120627 0.
+      0.97949337 0.         0.         0.        ]
+     [0.00768246 0.         0.00896287 0.02816901 0.2496799  0.0524968
+      0.         0.65300896 0.         0.        ]
+     [0.25155666 0.09464508 0.00249066 0.         0.         0.
+      0.         0.         0.64757161 0.00373599]
+     [0.02547771 0.50191083 0.         0.         0.         0.
+      0.         0.         0.         0.47261146]]
+    [2024-03-05 22:06:30,891 INFO] evaluation metric
+    [2024-03-05 22:06:30,891 INFO] acc: 0.8505
+    [2024-03-05 22:06:30,891 INFO] precision: 0.8856
+    [2024-03-05 22:06:30,891 INFO] recall: 0.8488
+    [2024-03-05 22:06:30,891 INFO] f1: 0.8441
+    model saved: ./saved_models/fixmatch/latest_model.pth
+    model saved: ./saved_models/fixmatch/model_best.pth
+    [2024-03-05 22:06:31,598 INFO] Best acc 0.8505 at epoch 0
+    [2024-03-05 22:06:31,598 INFO] Training finished.
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 242-244
 
 Finally, let's evaluate the trained model on the validation set.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 237-241
+.. GENERATED FROM PYTHON SOURCE LINES 244-248
 
 .. code-block:: default
 
@@ -318,18 +611,56 @@ Finally, let's evaluate the trained model on the validation set.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-247
 
-References
-[1] USB: https://github.com/microsoft/Semi-supervised-learning
-[2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
-[3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
-[4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [2024-03-05 22:06:53,770 INFO] confusion matrix
+    [2024-03-05 22:06:53,771 INFO] [[0.99502488 0.00373134 0.         0.         0.         0.
+      0.         0.         0.         0.00124378]
+     [0.00123916 0.99876084 0.         0.         0.         0.
+      0.         0.         0.         0.        ]
+     [0.02985075 0.         0.9340796  0.01492537 0.01492537 0.00124378
+      0.00497512 0.         0.         0.        ]
+     [0.00627353 0.00250941 0.00250941 0.9272271  0.01631117 0.03262233
+      0.00878294 0.00250941 0.         0.00125471]
+     [0.         0.         0.00870647 0.00995025 0.97014925 0.
+      0.00621891 0.00497512 0.         0.        ]
+     [0.         0.         0.00254453 0.06743003 0.01017812 0.90966921
+      0.         0.01017812 0.         0.        ]
+     [0.00603136 0.         0.00603136 0.00723764 0.00120627 0.
+      0.97949337 0.         0.         0.        ]
+     [0.00768246 0.         0.00896287 0.02816901 0.2496799  0.0524968
+      0.         0.65300896 0.         0.        ]
+     [0.25155666 0.09464508 0.00249066 0.         0.         0.
+      0.         0.         0.64757161 0.00373599]
+     [0.02547771 0.50191083 0.         0.         0.         0.
+      0.         0.         0.         0.47261146]]
+    [2024-03-05 22:06:53,775 INFO] evaluation metric
+    [2024-03-05 22:06:53,775 INFO] acc: 0.8505
+    [2024-03-05 22:06:53,775 INFO] precision: 0.8856
+    [2024-03-05 22:06:53,775 INFO] recall: 0.8488
+    [2024-03-05 22:06:53,776 INFO] f1: 0.8441
+
+    {'acc': 0.8505, 'precision': 0.8856186417668039, 'recall': 0.8487596286609934, 'f1': 0.8441275441763487}
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 249-254
+
+References:
+- [1] USB: https://github.com/microsoft/Semi-supervised-learning
+- [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
+- [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
+- [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 12 minutes  52.674 seconds)
 
 
 .. _sphx_glr_download_advanced_usb_semisup_learn.py:
