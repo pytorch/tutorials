@@ -48,6 +48,14 @@ import torch.optim as optim
 from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
+# sphinx_gallery_start_ignore
+# Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
+# This is only needed to run with sphinx-build.
+import sys
+if not hasattr(sys.stdout, "encoding"):
+    sys.stdout.encoding = "latin1"
+    sys.stdout.fileno = lambda: 0
+# sphinx_gallery_end_ignore
 from ray import tune
 from ray.air import Checkpoint, session
 from ray.tune.schedulers import ASHAScheduler
@@ -451,13 +459,6 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
 
 if __name__ == "__main__":
-    # sphinx_gallery_start_ignore
-    # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
-    # This is only needed to run with sphinx-build.
-    import sys
-    if not hasattr(sys.stdout, "encoding"):
-        sys.stdout.encoding = "latin1"
-    # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
     main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
 
