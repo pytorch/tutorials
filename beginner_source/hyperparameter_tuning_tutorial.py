@@ -455,7 +455,7 @@ if __name__ == "__main__":
     # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
     # This is only needed to run with sphinx-build.
     import sys
-    if not not hasattr(sys.stdout, "encoding"):
+    if not hasattr(sys.stdout, "encoding"):
         sys.stdout.encoding = "latin1"
     # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
