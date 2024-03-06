@@ -81,7 +81,7 @@ The full documentation of the `quantize_dynamic` API call is `here <https://pyto
 3. Post Training Static Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This method converts both the weights and the activations to 8-bit integers beforehand so there won’t be on-the-fly conversion on the activations during the inference, as the dynamic quantization does. While post-training static quantization can significantly enhance inference speed and reduce model size, this method may degrade the original model's accuracy. Converting weights and activation functions to 8-bit integers can slightly alter the network's behavior and activation responses, leading to a reduction in the model's original effectiveness.
+This method converts both the weights and the activations to 8-bit integers beforehand so there won’t be on-the-fly conversion on the activations during the inference, as the dynamic quantization does. While post-training static quantization can significantly enhance inference speed and reduce model size, this method may degrade the original model's accuracy more compared to post training dynamic quantization.
 
 To apply static quantization on a model, run the following code:
 
