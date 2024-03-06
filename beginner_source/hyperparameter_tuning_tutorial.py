@@ -52,6 +52,9 @@ from ray import tune
 from ray.air import Checkpoint, session
 from ray.tune.schedulers import ASHAScheduler
 
+# FIXME: migrate to ray.train.Checkpoint and remove following line
+os.environ["RAY_AIR_NEW_PERSISTENCE_MODE"]="0"
+
 ######################################################################
 # Most of the imports are needed for building the PyTorch model. Only the last three
 # imports are for Ray Tune.
