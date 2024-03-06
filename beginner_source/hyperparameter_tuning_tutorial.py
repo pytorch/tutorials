@@ -52,6 +52,9 @@ from ray import tune
 from ray.air import Checkpoint, session
 from ray.tune.schedulers import ASHAScheduler
 
+# TODO: Migrate to ray.train.Checkpoint and remove following line
+os.environ["RAY_AIR_NEW_PERSISTENCE_MODE"]="0"
+
 ######################################################################
 # Most of the imports are needed for building the PyTorch model. Only the last three
 # imports are for Ray Tune.
@@ -452,8 +455,8 @@ if __name__ == "__main__":
     # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
     # This is only needed to run with sphinx-build.
     import sys
-
-    sys.stdout.fileno = lambda: False
+    if not not hasattr(sys.stdout, "encoding"):
+        sys.stdout.encoding = "latin1"
     # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
     main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
