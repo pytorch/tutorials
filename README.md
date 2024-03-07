@@ -14,7 +14,7 @@ If you have a question about a tutorial, post in https://dev-discuss.pytorch.org
 You can submit the following types of issues:
 
 * Feature request - request a new tutorial to be added. Please explain why this tutorial is needed and how it demonstrates PyTorch value.
-* Bug report - report a failiure or outdated information in an existing tutorial. When submitting a bug report, please run: `python3 -m torch.utils.collect_env` to get information about your environment and add the output to the bug report.
+* Bug report - report a failure or outdated information in an existing tutorial. When submitting a bug report, please run: `python3 -m torch.utils.collect_env` to get information about your environment and add the output to the bug report.
 
 # Contributing
 
@@ -24,8 +24,8 @@ Here is how you can create a new tutorial (for a detailed description, see [CONT
 
 1. Create a Python file. If you want it executed while inserted into documentation, save the file with the suffix `tutorial` so that the file name is `your_tutorial.py`.
 2. Put it in one of the `beginner_source`, `intermediate_source`, `advanced_source` directory based on the level of difficulty. If it is a recipe, add it to `recipes_source`. For tutorials demonstrating unstable prototype features, add to the `prototype_source`.
-2. For Tutorials (except if it is a prototype feature), include it in the `toctree` directive and create a `customcarditem` in [index.rst](./index.rst).
-3. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/main/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
+3. For Tutorials (except if it is a prototype feature), include it in the `toctree` directive and create a `customcarditem` in [index.rst](./index.rst).
+4. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/main/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
 
 If you are starting off with a Jupyter notebook, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to Python file. After conversion and addition to the project, please make sure that section headings and other things are in logical order.
 
@@ -57,7 +57,13 @@ GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 
 The `GALLERY_PATTERN` variable respects regular expressions.
 
+
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
 PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file. 
 * Additional information can be found in [PyTorch CONTRIBUTING.md](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md).
+
+
+## License
+
+PyTorch Tutorials is BSD licensed, as found in the LICENSE file.

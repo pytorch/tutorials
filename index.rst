@@ -3,15 +3,11 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-* `Getting Started with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html>`__
-* `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
-* `Facilitating New Backend Integration by PrivateUse1 <https://pytorch.org/tutorials/advanced/privateuseone.html>`__
-* `(prototype) Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/prototype/semi_structured_sparse.html>`__
-* `(prototype) PyTorch 2 Export Quantization-Aware Training (QAT) <https://pytorch.org/tutorials/prototype/pt2e_quant_qat.html>`__
-* `(prototype) PyTorch 2 Export Post Training Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq_x86_inductor.html>`__
-* `(prototype) Inductor C++ Wrapper Tutorial <https://pytorch.org/tutorials/prototype/inductor_cpp_wrapper_tutorial.html>`__
-* `How to save memory by fusing the optimizer step into the backward pass <https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html>`__
-* `Tips for Loading an nn.Module from a Checkpoint <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html>`__
+* `PyTorch Inference Performance Tuning on AWS Graviton Processors <https://pytorch.org/tutorials/recipes/inference_tuning_on_aws_graviton.html>`__
+* `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
+* `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
+* `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
+* `Compiling the optimizer with torch.compile <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
 
 
 .. raw:: html
@@ -142,6 +138,20 @@ What's new in PyTorch tutorials?
    :link: intermediate/spatial_transformer_tutorial.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Inference on Whole Slide Images with TIAToolbox
+   :card_description: Learn how to use the TIAToolbox to perform inference on whole slide images.
+   :image: _static/img/thumbnails/cropped/TIAToolbox-Tutorial.png
+   :link: intermediate/tiatoolbox_tutorial.html
+   :tags: Image/Video
+
+.. customcarditem::
+   :header: Semi-Supervised Learning Tutorial Based on USB
+   :card_description: Learn how to train semi-supervised learning algorithms (on custom data) using USB and PyTorch.
+   :image: _static/img/usb_semisup_learn/code.png
+   :link: advanced/usb_semisup_learn.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -222,13 +232,6 @@ What's new in PyTorch tutorials?
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: beginner/bettertransformer_tutorial.html
    :tags: Production,Text
-
-.. customcarditem::
-   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
-   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
-   :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
-   :link: beginner/transformer_tutorial.html
-   :tags: Text
 
 .. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
@@ -364,6 +367,23 @@ What's new in PyTorch tutorials?
    :link: advanced/super_resolution_with_onnxruntime.html
    :tags: Production,ONNX
 
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Learn how to profile a PyTorch application
+   :link: beginner/profiler.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Introduction to Holistic Trace Analysis
+   :link: beginner/hta_intro_tutorial.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Trace Diff using Holistic Trace Analysis
+   :link: beginner/hta_trace_diff_tutorial.html
+   :tags: Profiling
 
 .. Code Transformations with FX
 
@@ -719,13 +739,6 @@ What's new in PyTorch tutorials?
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Training Transformer models using Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using pipeline parallelism.
-   :image: _static/img/thumbnails/cropped/Training-Transformer-models-using-Pipeline-Parallelism.png
-   :link: intermediate/pipeline_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
    :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
    :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
@@ -912,6 +925,7 @@ Additional Resources
    beginner/dcgan_faces_tutorial
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
+   intermediate/tiatoolbox_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -936,7 +950,6 @@ Additional Resources
    :hidden:
    :caption: Text
 
-   beginner/transformer_tutorial
    beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
@@ -977,6 +990,16 @@ Additional Resources
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
    intermediate/realtime_rpi
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Profiling PyTorch
+
+   beginner/profiler
+   beginner/hta_intro_tutorial
+   beginner/hta_trace_diff_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -1064,7 +1087,6 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   intermediate/pipeline_tutorial
    advanced/ddp_pipeline
    advanced/generic_join
 

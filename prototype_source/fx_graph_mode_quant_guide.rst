@@ -142,7 +142,7 @@ Refactor your code to make it symbolically traceable
 If it is easy to refactor the code and make the code symbolically traceable,
 we can refactor the code and remove the use of non-traceable constructs in python.
 
-More information about symbolic tracing support can be found in: (TODO: link)
+More information about symbolic tracing support can be found `here <https://pytorch.org/docs/stable/fx.html#limitations-of-symbolic-tracing>`_.
 
 before:
 

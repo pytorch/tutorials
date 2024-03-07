@@ -24,7 +24,7 @@ your model size significantly and may get a significant latency
 reduction without losing a lot of accuracy.
 
 What is dynamic quantization?
--------------
+-----------------------------
 
 Quantizing a network means converting it to use a reduced precision
 integer representation for the weights and/or activations. This saves on
@@ -163,15 +163,8 @@ hidden = (torch.randn(lstm_depth,batch_size,model_dimension), torch.randn(lstm_d
 #
 # Now we get to the fun part. First we create an instance of the model
 # called ``float\_lstm`` then we are going to quantize it. We're going to use
-# the
-#
-# ::
-#
-#     torch.quantization.quantize_dynamic()
-#
-# function here (`see
-# documentation <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`__)
-# which takes the model, then a list of the submodules which we want to
+# the `torch.quantization.quantize_dynamic <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`__ function, which takes the model, then a list of the submodules
+# which we want to
 # have quantized if they appear, then the datatype we are targeting. This
 # function returns a quantized version of the original model as a new
 # module.
@@ -281,7 +274,7 @@ print('mean absolute value of the difference between the output tensors is {0:.5
 
 
 ######################################################################
-#  Learn More
+# Learn More
 # ------------
 # We've explained what dynamic quantization is, what benefits it brings,
 # and you have used the ``torch.quantization.quantize_dynamic()`` function
@@ -292,20 +285,10 @@ print('mean absolute value of the difference between the output tensors is {0:.5
 #
 #
 # Additional Resources
-# =========
-# Documentation
-# ~~~~~~~~~~~~~~
+# --------------------
 #
-# `Quantization API Documentaion <https://pytorch.org/docs/stable/quantization.html>`_
-#
-# Tutorials
-# ~~~~~~~~~~~~~~
-#
-# `(beta) Dynamic Quantization on BERT <https://pytorch.org/tutorials/intermediate/dynamic\_quantization\_bert\_tutorial.html>`_
-#
-# `(beta) Dynamic Quantization on an LSTM Word Language Model <https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html>`_
-#
-# Blogs
-# ~~~~~~~~~~~~~~
-# `Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
+# * `Quantization API Documentaion <https://pytorch.org/docs/stable/quantization.html>`_
+# * `(beta) Dynamic Quantization on BERT <https://pytorch.org/tutorials/intermediate/dynamic\_quantization\_bert\_tutorial.html>`_
+# * `(beta) Dynamic Quantization on an LSTM Word Language Model <https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html>`_
+# * `Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
 #

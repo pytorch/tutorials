@@ -342,7 +342,7 @@ print(maxpool_layer(my_tensor))
 # the 6x6 input.
 # 
 # **Normalization layers** re-center and normalize the output of one layer
-# before feeding it to another. Centering the and scaling the intermediate
+# before feeding it to another. Centering and scaling the intermediate
 # tensors has a number of beneficial effects, such as letting you use
 # higher learning rates without exploding/vanishing gradients.
 # 

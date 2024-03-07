@@ -226,7 +226,7 @@ ngpu = 1
 # the ``celeba`` directory you just created. The resulting directory
 # structure should be:
 # 
-# ::
+# .. code-block:: sh
 # 
 #    /path/to/celeba
 #        -> img_align_celeba  
@@ -265,7 +265,7 @@ plt.figure(figsize=(8,8))
 plt.axis("off")
 plt.title("Training Images")
 plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
-
+plt.show()
 
 
 ######################################################################

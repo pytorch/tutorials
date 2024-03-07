@@ -58,25 +58,39 @@ TorchRL objectives: Coding a DDPG loss
 # Imports and setup
 # -----------------
 #
-
-import torchrl
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip3 install torchrl mujoco glfw
 
 # sphinx_gallery_start_ignore
 import warnings
-from typing import Tuple
 
 warnings.filterwarnings("ignore")
+from torch import multiprocessing
+
+# TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
+# `__main__` method call, but for the easy of reading the code switch to fork
+# which is also a default spawn method in Google's Colaboratory
+try:
+    multiprocessing.set_start_method("fork")
+except RuntimeError:
+    pass
+
 # sphinx_gallery_end_ignore
 
-import torch.cuda
+
+import torch
 import tqdm
 
-import torch.multiprocessing
 
 ###############################################################################
 # We will execute the policy on CUDA if available
+is_fork = multiprocessing.get_start_method() == "fork"
 device = (
-    torch.device("cpu") if torch.cuda.device_count() == 0 else torch.device("cuda:0")
+    torch.device(0)
+    if torch.cuda.is_available() and not is_fork
+    else torch.device("cpu")
 )
 collector_device = torch.device("cpu")  # Change the device to ``cuda`` to use CUDA
 
@@ -237,23 +251,18 @@ def make_value_estimator(self, value_type: ValueEstimators, **hyperparams):
     hp.update(hyperparams)
     value_key = "state_action_value"
     if value_type == ValueEstimators.TD1:
-        self._value_estimator = TD1Estimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
-        )
+        self._value_estimator = TD1Estimator(value_network=self.actor_critic, **hp)
     elif value_type == ValueEstimators.TD0:
-        self._value_estimator = TD0Estimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
-        )
+        self._value_estimator = TD0Estimator(value_network=self.actor_critic, **hp)
     elif value_type == ValueEstimators.GAE:
         raise NotImplementedError(
             f"Value type {value_type} it not implemented for loss {type(self)}."
         )
     elif value_type == ValueEstimators.TDLambda:
-        self._value_estimator = TDLambdaEstimator(
-            value_network=self.actor_critic, value_key=value_key, **hp
-        )
+        self._value_estimator = TDLambdaEstimator(value_network=self.actor_critic, **hp)
     else:
         raise NotImplementedError(f"Unknown value type {value_type}")
+    self._value_estimator.set_keys(value=value_key)
 
 
 ###############################################################################
@@ -304,7 +313,7 @@ from torchrl.objectives.utils import distance_loss
 def _loss_value(
     self,
     tensordict,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+):
     td_copy = tensordict.clone()
 
     # V(s, a)
@@ -342,7 +351,7 @@ def _loss_value(
 # value and actor loss, collect the cost values and write them in a ``TensorDict``
 # delivered to the user.
 
-from tensordict.tensordict import TensorDict, TensorDictBase
+from tensordict import TensorDict, TensorDictBase
 
 
 def _forward(self, input_tensordict: TensorDictBase) -> TensorDict:
@@ -450,6 +459,7 @@ def make_env(from_pixels=False):
         raise NotImplementedError
 
     env_kwargs = {
+        "device": device,
         "from_pixels": from_pixels,
         "pixels_only": from_pixels,
         "frame_skip": 2,
@@ -512,16 +522,6 @@ def make_transformed_env(
     # syntax.
     env.append_transform(RewardScaling(loc=0.0, scale=reward_scaling))
 
-    double_to_float_list = []
-    double_to_float_inv_list = []
-    if env_library is DMControlEnv:
-        # ``DMControl`` requires double-precision
-        double_to_float_list += [
-            "reward",
-            "action",
-        ]
-        double_to_float_inv_list += ["action"]
-
     # We concatenate all states into a single "observation_vector"
     # even if there is a single tensor, it'll be renamed in "observation_vector".
     # This facilitates the downstream operations as we know the name of the
@@ -537,12 +537,7 @@ def make_transformed_env(
     # version of the transform
     env.append_transform(ObservationNorm(in_keys=[out_key], standard_normal=True))
 
-    double_to_float_list.append(out_key)
-    env.append_transform(
-        DoubleToFloat(
-            in_keys=double_to_float_list, in_keys_inv=double_to_float_inv_list
-        )
-    )
+    env.append_transform(DoubleToFloat())
 
     env.append_transform(StepCounter(max_frames_per_traj))
 
@@ -867,9 +862,6 @@ collector = SyncDataCollector(
     reset_at_each_iter=False,
     split_trajs=False,
     device=collector_device,
-    # device for execution
-    storing_device=collector_device,
-    # device where data will be stored and passed
     exploration_type=ExplorationType.RANDOM,
 )
 
@@ -1221,6 +1213,6 @@ plt.tight_layout()
 # 
 # To iterate further on this loss module we might consider:
 # 
-# - Using `@dispatch` (see `[Feature] Distpatch IQL loss module <https://github.com/pytorch/rl/pull/1230>`_.
+# - Using `@dispatch` (see `[Feature] Distpatch IQL loss module <https://github.com/pytorch/rl/pull/1230>`_.)
 # - Allowing flexible TensorDict keys.
 # 

@@ -182,7 +182,7 @@ Python API
 ``.vulkan()`` at the moment of writing of this tutorial is not exposed to Python API, but it is planned to be there.
 
 Android Java API
----------------
+----------------
 
 For Android API to run model on Vulkan backend we have to specify this during model loading:
 

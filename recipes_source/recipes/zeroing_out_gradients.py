@@ -33,7 +33,7 @@ notebook, it is best to switch the runtime to GPU or TPU.
 Before we begin, we need to install ``torch`` and ``torchvision`` if
 they aren’t already available.
 
-::
+.. code-block:: sh
 
    pip install torchvision
 

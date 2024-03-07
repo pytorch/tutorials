@@ -271,7 +271,7 @@ ob_dict = ns.get_logger_dict(qmodel)
 
 ###############################################################################
 # Numeric Suite for Dynamic Quantization
-# -------------------------------------
+# --------------------------------------
 #
 # Numeric Suite APIs are designed in such as way that they work for both dynamic quantized model and static quantized model. We will use a model with both LSTM and Linear modules to demonstrate the usage of Numeric Suite on dynamic quantized model. This model is the same one used in the tutorial of dynamic quantization on LSTM word language model [1].
 #
