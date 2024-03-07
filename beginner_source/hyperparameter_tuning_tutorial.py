@@ -64,9 +64,6 @@ from ray.train import Checkpoint, get_checkpoint
 from ray.tune.schedulers import ASHAScheduler
 import ray.cloudpickle as pickle
 
-# TODO: Migrate to ray.train.Checkpoint and remove following line
-os.environ["RAY_AIR_NEW_PERSISTENCE_MODE"]="0"
-
 ######################################################################
 # Most of the imports are needed for building the PyTorch model. Only the last 
 # imports are for Ray Tune.
