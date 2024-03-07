@@ -5,7 +5,7 @@
 .. note::
     As of PyTorch 2.1, there are two versions of ONNX Exporter.
 
-    * ``torch.onnx.dynamo_export`is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0.
+    * ``torch.onnx.dynamo_export`` is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0.
     * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0.
 
 In this tutorial, we describe how to convert a model defined
