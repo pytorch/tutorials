@@ -463,7 +463,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
             best_trained_model = nn.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint = best_trial.checkpoint
+    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="accuracy", mode="max")
     with best_checkpoint.as_directory() as checkpoint_dir:
         data_path = Path(checkpoint_dir) / "data.pkl"
         with open(data_path, "rb") as fp:
