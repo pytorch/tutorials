@@ -1,10 +1,6 @@
 from pandocfilters import toJSONFilter, Div, RawBlock, Para, Str, Space, Link, Code, CodeBlock
 import markdown
-import re
 import html
-import markdown.inlinepatterns
-import os
-import nbformat as nbf
 
 def to_markdown(item, skip_octicon=False):
     # A handler function to process strings, links, code, and code
