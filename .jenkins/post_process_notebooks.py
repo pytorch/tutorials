@@ -33,6 +33,7 @@ def process_video_cell(notebook_path):
         if cell.cell_type == 'markdown':
             match = pattern.search(cell.source)
             if match:
+                print(f'Match found in cell {i}: {match.group(0)[:100]}...')
                 # Extract the parts before and after the video code block
                 before_html_block = match.group(1)
                 code_block = match.group(2)
