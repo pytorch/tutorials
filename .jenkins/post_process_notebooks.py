@@ -86,7 +86,7 @@ def walk_dir(notebook_dir):
                 process_video_cell(os.path.join(root, filename))
 
 def main():
-    conf_path = '../conf.py'
+    conf_path = './conf.py'
     for notebook_dir in get_gallery_dirs(conf_path):
         walk_dir(notebook_dir)
 
