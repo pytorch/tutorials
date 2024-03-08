@@ -10,8 +10,6 @@ What is `torch.nn` *really*?
 # We recommend running this tutorial as a notebook, not a script. To download the notebook (``.ipynb``) file,
 # click the link at the top of the page.
 #
-# Testing...
-#  
 # PyTorch provides the elegantly designed modules and classes `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ ,
 # `torch.optim <https://pytorch.org/docs/stable/optim.html>`_ ,
 # `Dataset <https://pytorch.org/docs/stable/data.html?highlight=dataset#torch.utils.data.Dataset>`_ ,

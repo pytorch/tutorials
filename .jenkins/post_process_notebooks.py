@@ -3,7 +3,7 @@ import os
 import re
 
 # Pattern to search ``` {.python .jupyter-code-cell}
-pattern = re.compile(r'(.*?)``` {.python .jupyter-code-cell}\n\n(from IPython.display import display, HTML\npython_code = """\n.*?\n"""\ndisplay\(HTML\(python_code\)\))\n```(.*)', re.DOTALL)
+pattern = re.compile(r'(.*?)``` {.python .jupyter-code-cell}\n\n(from IPython.display import display, HTML\nhtml_code = """\n.*?\n"""\ndisplay\(HTML\(html_code\)\))\n```(.*)', re.DOTALL)
 
 def get_gallery_dirs(conf_path):
     """
