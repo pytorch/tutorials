@@ -42,7 +42,9 @@ from custom_directives import IncludeDirective, GalleryItemDirective, CustomGall
 import distutils.file_util
 import re
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
-
+import pandocfilters
+import pandoc
+import pypandoc
 import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
 
