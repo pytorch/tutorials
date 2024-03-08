@@ -26,6 +26,8 @@ def to_markdown(item, skip_octicon=False):
     elif item['t'] == 'CodeBlock':
         # Escape the code block and wrap it in <pre><code> tags
         return f'<pre><code>{html.escape(item["c"][1])}</code></pre>'
+    else:
+        return ''
 
 def process_admonitions(key, value, format, meta):
     # Replace admonitions with proper HTML.
