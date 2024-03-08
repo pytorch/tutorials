@@ -57,7 +57,7 @@ def process_video_cell(notebook_path):
 
             else:
                 # Remove ```{=html} from the code block
-                cell.source = remove_html_tagk(cell.source)
+                cell.source = remove_html_tag(cell.source)
 
     nbf.write(notebook, notebook_path)
 
