@@ -147,6 +147,9 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   bash $DIR/remove_invisible_code_block_batch.sh docs
   python .jenkins/validate_tutorials_built.py
 
+  # Step 5.1: Run post-processing script on .ipynb files:
+  python .jenkins/post_process_notebooks.py
+
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
   awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z
