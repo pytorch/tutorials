@@ -33,9 +33,6 @@ jobs:
           - { shard: 15, num_shards: 15, runner: "linux.4xlarge.nvidia.gpu" }
       fail-fast: false
     runs-on: ${{ matrix.runner }}
-    env:
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-focal-cuda12.1-cudnn8-py3-gcc9"
-      CUDA_VERSION: "9"
     steps:
       - name: Setup SSH (Click me for login details)
         uses: pytorch/test-infra/.github/actions/setup-ssh@main
@@ -54,7 +51,7 @@ jobs:
       - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
         uses: pytorch/test-infra/.github/actions/setup-nvidia@main
 
-      - name: Build docker image
+      - name: Calculate/build docker image
         id: calculate-docker-image
         uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
         with:
@@ -104,14 +101,10 @@ jobs:
         if: always()
 
   manager:
-    if: false
     name: pytorch_tutorial_build_manager
     needs: worker
     runs-on: [self-hosted, linux.2xlarge]
     environment: ${{ github.ref == 'refs/heads/main' && 'pytorchbot-env' || '' }}
-    env:
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-focal-cuda12.1-cudnn8-py3-gcc9"
-      CUDA_VERSION: "9"
     steps:
       - name: Setup SSH (Click me for login details)
         uses: pytorch/test-infra/.github/actions/setup-ssh@main
@@ -127,7 +120,7 @@ jobs:
       - name: Setup Linux
         uses: pytorch/pytorch/.github/actions/setup-linux@main
 
-      - name: Build docker image
+      - name: Calculate/build docker image
         id: calculate-docker-image
         uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
         with:
