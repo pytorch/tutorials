@@ -324,7 +324,7 @@ def train_knowledge_distillation(teacher, student, train_loader, epochs, learnin
             soft_prob = nn.functional.log_softmax(student_logits / T, dim=-1)
 
             # Calculate the soft targets loss. Scaled by T**2 as suggested by the authors of the paper "Distilling the knowledge in a neural network"
-            soft_targets_loss = -torch.sum(soft_targets * soft_prob) / soft_prob.size()[0] * (T**2)
+            soft_targets_loss = torch.sum(soft_targets * (soft_targets.log() - soft_prob)) / soft_prob.size()[0] * (T**2)
 
             # Calculate the true label loss
             label_loss = ce_loss(student_logits, labels)
