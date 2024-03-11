@@ -120,6 +120,9 @@ if os.getenv('GALLERY_PATTERN'):
     # for a more detailed description of the issue.
     sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
 
+if os.getenv("RUN_ONLY"):
+    sphinx_gallery_conf['filename_pattern'] = os.getenv("RUN_ONLY")
+
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
     gallery_dir = sphinx_gallery_conf['gallery_dirs'][i]
     source_dir = sphinx_gallery_conf['examples_dirs'][i]

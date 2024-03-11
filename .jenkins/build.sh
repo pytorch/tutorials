@@ -18,7 +18,7 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
+# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X
 pip uninstall -y ghstack
 pip install --progress-bar off -r $DIR/../requirements.txt
 
@@ -56,12 +56,13 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
-  echo "FILES_TO_RUN: " ${FILES_TO_RUN}
-  # Files to run must be accessible to subprocessed (at least to `download_data.py`)
   export FILES_TO_RUN
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
-  make docs
+  make download
+  python .jenkins/sphinx_files.py
+  rm -rf docs
+	cp -r _build/html docs
+	touch docs/.nojekyll
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
