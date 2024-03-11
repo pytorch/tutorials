@@ -15,10 +15,12 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
+# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X
 pip uninstall -y ghstack
 pip install --progress-bar off -r $DIR/../requirements.txt
 
