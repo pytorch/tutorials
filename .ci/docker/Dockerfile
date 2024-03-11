@@ -26,11 +26,6 @@ COPY ./common/install_conda.sh install_conda.sh
 COPY ./common/common_utils.sh common_utils.sh
 RUN bash ./install_conda.sh && rm install_conda.sh common_utils.sh /opt/conda/requirements.txt
 
-# Install gcc
-# ENV GCC_VERSION 9
-# COPY ./install_gcc.sh install_gcc.sh
-# RUN bash ./install_gcc.sh && rm install_gcc.sh
-
 # Install CUDNN
 ENV CUDNN_VERSION=8
 COPY ./common/install_cudnn.sh install_cudnn.sh
