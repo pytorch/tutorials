@@ -513,6 +513,8 @@ from utils import MyTrainDataset
 <div class="section" id="constructing-the-process-group">
 <h2>Constructing the process group<a class="headerlink" href="#constructing-the-process-group" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
+<li><p>First, before initializing the group process, call <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.cuda.set_device.html?highlight=set_device#torch.cuda.set_device">set_device</a>,
+which sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on <cite>GPU:0</cite></p></li>
 <li><p>The process group can be initialized by TCP (default) or from a
 shared file-system. Read more on <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#tcp-initialization">process group
 initialization</a></p></li>
@@ -520,8 +522,6 @@ initialization</a></p></li>
 initializes the distributed process group.</p></li>
 <li><p>Read more about <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#which-backend-to-use">choosing a DDP
 backend</a></p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.cuda.set_device.html?highlight=set_device#torch.cuda.set_device">set_device</a>
-sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on <cite>GPU:0</cite></p></li>
 </ul>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def ddp_setup(rank: int, world_size: int):</span>
 <span class="gi">+   """</span>
@@ -531,8 +531,8 @@ sets the default GPU for each process. This is important to prevent hangs or exc
 <span class="gi">+   """</span>
 <span class="gi">+   os.environ["MASTER_ADDR"] = "localhost"</span>
 <span class="gi">+   os.environ["MASTER_PORT"] = "12355"</span>
-<span class="gi">+   init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
 <span class="gi">+   torch.cuda.set_device(rank)</span>
+<span class="gi">+   init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
 </pre></div>
 </div>
 </div>
