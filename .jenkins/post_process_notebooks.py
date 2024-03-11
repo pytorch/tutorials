@@ -2,20 +2,17 @@ import nbformat as nbf
 import os
 import re
 
+"""
+This post-processing script needs to run after the .ipynb files are
+generated. The script removes extraneous ```{=html} syntax from the
+admonitions and splits the cells that have video iframe into a 
+separate code cell that can be run to load the video directly
+in the notebook. This script is included in build.sh.
+"""
+
+
 # Pattern to search ``` {.python .jupyter-code-cell}
 pattern = re.compile(r'(.*?)``` {.python .jupyter-code-cell}\n\n(from IPython.display import display, HTML\nhtml_code = """\n.*?\n"""\ndisplay\(HTML\(html_code\)\))\n```(.*)', re.DOTALL)
-
-def get_gallery_dirs(conf_path):
-    """
-    Execute the conf.py file and return the gallery directories.
-    This is needed to make sure the script runs through all
-    dirs.
-    """
-    namespace = {}
-    exec(open(conf_path).read(), namespace)
-    sphinx_gallery_conf = namespace['sphinx_gallery_conf']
-    print(f"Processing directories: {', '.join(sphinx_gallery_conf['gallery_dirs'])}")
-    return sphinx_gallery_conf['gallery_dirs']
 
 def process_video_cell(notebook_path):
     """
@@ -48,6 +45,7 @@ def process_video_cell(notebook_path):
 
                 # Insert the new code cell after the current one
                 notebook.cells.insert(i+1, new_code_cell)
+                print(f'New code cell created with source: {new_code_cell.source}')
 
                 # If there is content after the HTML code block, create a new markdown cell
                 if len(match.group(3).strip()) > 0:
@@ -76,20 +74,18 @@ def remove_html_tag(content):
     content = re.sub(r'</p>\n```', '</p>', content)
     return content
 
-def walk_dir(notebook_dir):
+def walk_dir(downloads_dir):
     """
     Walk the dir and process all notebook files in
-    the gallery directory and its subdirectories.
+    the _downloads directory and its subdirectories.
     """
-    for root, dirs, files in os.walk(notebook_dir):
+    for root, dirs, files in os.walk(downloads_dir):
         for filename in files:
             if filename.endswith('.ipynb'):
                 process_video_cell(os.path.join(root, filename))
-
 def main():
-    conf_path = './conf.py'
-    for notebook_dir in get_gallery_dirs(conf_path):
-        walk_dir(notebook_dir)
+    downloads_dir = './docs/_downloads'
+    walk_dir(downloads_dir)
 
 if __name__ == "__main__":
     main()
