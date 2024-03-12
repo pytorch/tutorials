@@ -48,7 +48,7 @@ DCGAN Tutorial
 # discriminator is left to always guess at 50% confidence that the
 # generator output is real or fake.
 # 
-# Now, lets define some notation to be used throughout tutorial starting
+# Now, lets define some notation to be used throughout this tutorial, starting
 # with the discriminator. Let :math:`x` be data representing an image.
 # :math:`D(x)` is the discriminator network which outputs the (scalar)
 # probability that :math:`x` came from training data rather than the
@@ -74,7 +74,7 @@ DCGAN Tutorial
 # :math:`D` will predict its outputs are fake (:math:`log(1-D(G(z)))`).
 # From the paper, the GAN loss function is
 # 
-# .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
+# .. math:: \underset{G}{\min} \underset{D}{\max}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
 # 
 # In theory, the solution to this minimax game is where
 # :math:`p_g = p_{data}`, and the discriminator guesses randomly if the
@@ -304,7 +304,7 @@ def weights_init(m):
 # 
 # The generator, :math:`G`, is designed to map the latent space vector
 # (:math:`z`) to data-space. Since our data are images, converting
-# :math:`z` to data-space means ultimately creating a RGB image with the
+# :math:`z` to data-space means ultimately creating an RGB image with the
 # same size as the training images (i.e. 3x64x64). In practice, this is
 # accomplished through a series of strided two dimensional convolutional
 # transpose layers, each paired with a 2d batch norm layer and a relu
@@ -334,7 +334,7 @@ class Generator(nn.Module):
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(ngf * 8),
             nn.ReLU(True),
             # state size. ``(ngf*8) x 4 x 4``
@@ -342,15 +342,15 @@ class Generator(nn.Module):
             nn.BatchNorm2d(ngf * 4),
             nn.ReLU(True),
             # state size. ``(ngf*4) x 8 x 8``
-            nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 2),
             nn.ReLU(True),
             # state size. ``(ngf*2) x 16 x 16``
-            nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(True),
             # state size. ``(ngf) x 32 x 32``
-            nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. ``(nc) x 64 x 64``
         )
@@ -394,7 +394,7 @@ print(netG)
 # to the use of the strided convolution, BatchNorm, and LeakyReLUs. The
 # DCGAN paper mentions it is a good practice to use strided convolution
 # rather than pooling to downsample because it lets the network learn its
-# own pooling function. Also batch norm and leaky relu functions promote
+# own pooling function. Also batch norm and leaky ReLU functions promote
 # healthy gradient flow which is critical for the learning process of both
 # :math:`G` and :math:`D`.
 # 
@@ -555,13 +555,13 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # reported are:
 # 
 # -  **Loss_D** - discriminator loss calculated as the sum of losses for
-#    the all real and all fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
+#    the all-real and all-fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
 # -  **Loss_G** - generator loss calculated as :math:`log(D(G(z)))`
 # -  **D(x)** - the average output (across the batch) of the discriminator
-#    for the all real batch. This should start close to 1 then
+#    for the all-real batch. This should start close to 1 then
 #    theoretically converge to 0.5 when G gets better. Think about why
 #    this is.
-# -  **D(G(z))** - average discriminator outputs for the all fake batch.
+# -  **D(G(z))** - average discriminator outputs for the all-fake batch.
 #    The first number is before D is updated and the second number is
 #    after D is updated. These numbers should start near 0 and converge to
 #    0.5 as G gets better. Think about why this is.
