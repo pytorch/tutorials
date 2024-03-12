@@ -327,7 +327,7 @@ the following few lines:
                                      transforms.Normalize((0.1307,), (0.3081,))
                                  ]))
         size = dist.get_world_size()
-        bsz = 128 / float(size)
+        bsz = 128 // size
         partition_sizes = [1.0 / size for _ in range(size)]
         partition = DataPartitioner(dataset, partition_sizes)
         partition = partition.use(dist.get_rank())
