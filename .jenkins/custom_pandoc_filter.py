@@ -43,7 +43,7 @@ def process_admonitions(key, value, format, meta):
 
         note_content = []
         for block in contents:
-            if 't' in block and block['t'] == 'Para':
+            if block.get('t') == 'Para':
                 for item in block['c']:
                     if item['t'] == 'Str':
                         note_content.append(Str(item['c']))
@@ -53,7 +53,7 @@ def process_admonitions(key, value, format, meta):
                         note_content.append(Link(*item['c']))
                     elif item['t'] == 'Code':
                         note_content.append(Code(*item['c']))
-            elif 't' in block and block['t'] == 'CodeBlock':
+            elif block.get('t') == 'CodeBlock':
                 note_content.append(CodeBlock(*block['c']))
 
         note_content_md = ''.join(to_markdown(item) for item in note_content)
@@ -84,15 +84,17 @@ display(HTML(html_code))
 def process_images(key, value, format, meta):
     # Add https://pytorch.org/tutorials/ to images so that they
     # load correctly in the notebook.
-    if key == 'Image':
-        [ident, classes, keyvals], caption, [src, title] = value
-        if not src.startswith('http'):
-            while src.startswith('../'):
-                src = src[3:]
-            if src.startswith('/_static'):
-                src = src[1:]
-            src = 'https://pytorch.org/tutorials/' + src
-        return {'t': 'Image', 'c': [[ident, classes, keyvals], caption, [src, title]]}
+    if key != 'Image':
+        return None
+    [ident, classes, keyvals], caption, [src, title] = value
+    if not src.startswith('http'):
+        while src.startswith('../'):
+            src = src[3:]
+        if src.startswith('/_static'):
+            src = src[1:]
+        src = 'https://pytorch.org/tutorials/' + src
+        
+    return {'t': 'Image', 'c': [[ident, classes, keyvals], caption, [src, title]]}
 
 def process_grids(key, value, format, meta):
     # Generate side by side grid cards. Only for the two-cards layout
@@ -121,12 +123,15 @@ def process_grids(key, value, format, meta):
 
 def is_code_block(item):
     return item['t'] == 'Code' and 'octicon' in item['c'][1]
+
+
 def process_all(key, value, format, meta):
-    new_value = process_admonitions(key, value, format, meta)
-    if new_value is None:
-        new_value = process_images(key, value, format, meta)
-    if new_value is None:
-        new_value = process_grids(key, value, format, meta)
+    for transform in [process_admonitions, process_images, process_grids]:
+        new_value = transform(key, value, format, meta)
+        if new_value is not None:
+            break
     return new_value
+
+
 if __name__ == "__main__":
     toJSONFilter(process_all)
