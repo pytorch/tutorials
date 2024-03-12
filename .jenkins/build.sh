@@ -17,8 +17,9 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
 rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
+# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X
 pip uninstall -y ghstack
 pip install --progress-bar off -r $DIR/../requirements.txt
 
