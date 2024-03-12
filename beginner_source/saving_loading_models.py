@@ -153,7 +153,7 @@ functions to be familiar with:
 # .. code:: python
 #
 #    model = TheModelClass(*args, **kwargs)
-#    model.load_state_dict(torch.load(PATH))
+#    model.load_state_dict(torch.load(PATH)())
 #    model.eval()
 #
 # .. note::
