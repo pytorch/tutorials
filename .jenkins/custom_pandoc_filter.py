@@ -25,6 +25,7 @@ def to_markdown(item, skip_octicon=False):
     else:
         return ''
 
+
 def process_admonitions(key, value, format, meta):
     # Replace admonitions with proper HTML.
     if key == 'Div':
@@ -59,7 +60,7 @@ def process_admonitions(key, value, format, meta):
         note_content_md = ''.join(to_markdown(item) for item in note_content)
         html_content = markdown.markdown(note_content_md)
 
-        return [{'t': 'RawBlock', 'c': ['html', f'<div style="background-color: {color}; color: #fff; font-weight: 700; padding-left: 10px; padding-top: 5px; padding-bottom: 5px">{label}</div>']}, {'t': 'RawBlock', 'c': ['html', '<div style="background-color: #f3f4f7; padding-left: 10px; padding-top: 10px; padding-bottom: 10px; padding-right: 10px">']}, {'t': 'RawBlock', 'c': ['html', html_content]}, {'t': 'RawBlock', 'c': ['html', '</div>']}]
+        return [{'t': 'RawBlock', 'c': ['html', f'<div style="background-color: {color}; color: #fff; font-weight: 700; padding-left: 10px; padding-top: 5px; padding-bottom: 5px"><strong>{label}</strong></div>']}, {'t': 'RawBlock', 'c': ['html', '<div style="background-color: #f3f4f7; padding-left: 10px; padding-top: 10px; padding-bottom: 10px; padding-right: 10px">']}, {'t': 'RawBlock', 'c': ['html', html_content]}, {'t': 'RawBlock', 'c': ['html', '</div>']}]
     elif key == 'RawBlock':
     # this is needed for the cells that have embedded video.
     # We add a special tag to those: ``` {python, .jupyter-code-cell}
@@ -93,8 +94,9 @@ def process_images(key, value, format, meta):
         if src.startswith('/_static'):
             src = src[1:]
         src = 'https://pytorch.org/tutorials/' + src
-        
+
     return {'t': 'Image', 'c': [[ident, classes, keyvals], caption, [src, title]]}
+
 
 def process_grids(key, value, format, meta):
     # Generate side by side grid cards. Only for the two-cards layout

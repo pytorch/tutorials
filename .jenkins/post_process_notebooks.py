@@ -14,6 +14,7 @@ in the notebook. This script is included in build.sh.
 # Pattern to search ``` {.python .jupyter-code-cell}
 pattern = re.compile(r'(.*?)``` {.python .jupyter-code-cell}\n\n(from IPython.display import display, HTML\nhtml_code = """\n.*?\n"""\ndisplay\(HTML\(html_code\)\))\n```(.*)', re.DOTALL)
 
+
 def process_video_cell(notebook_path):
     """
     This function finds the code blocks with the
@@ -60,6 +61,7 @@ def process_video_cell(notebook_path):
 
     nbf.write(notebook, notebook_path)
 
+
 def remove_html_tag(content):
     """
     Pandoc adds an extraneous ```{=html} ``` to raw HTML blocks which
@@ -74,6 +76,7 @@ def remove_html_tag(content):
     content = re.sub(r'</p>\n```', '</p>', content)
     return content
 
+
 def walk_dir(downloads_dir):
     """
     Walk the dir and process all notebook files in
@@ -83,9 +86,12 @@ def walk_dir(downloads_dir):
         for filename in files:
             if filename.endswith('.ipynb'):
                 process_video_cell(os.path.join(root, filename))
+
+
 def main():
     downloads_dir = './docs/_downloads'
     walk_dir(downloads_dir)
+
 
 if __name__ == "__main__":
     main()
