@@ -15,6 +15,10 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
+# Install pandoc (does not install from pypi)
+sudo apt-get update
+sudo apt-get install -y pandoc
+
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 rm -rf src
@@ -62,6 +66,9 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
+
+  # Step 3.1: Run the post-processing script:
+  python .jenkins/post_process_notebooks.py
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
@@ -139,6 +146,9 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
   python .jenkins/validate_tutorials_built.py
+
+  # Step 5.1: Run post-processing script on .ipynb files:
+  python .jenkins/post_process_notebooks.py
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
