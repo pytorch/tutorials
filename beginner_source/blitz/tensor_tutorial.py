@@ -140,9 +140,9 @@ print(f"tensor * tensor \n {tensor * tensor}")
 ######################################################################
 #
 # This computes the matrix multiplication between two tensors
-print(f"tensor.matmul(tensor.T) \n {tensor.matmul(tensor.T)} \n")
+print(f"tensor.matmul(tensor) \n {tensor.matmul(tensor)} \n")
 # Alternative syntax:
-print(f"tensor @ tensor.T \n {tensor @ tensor.T}")
+print(f"tensor @ tensor \n {tensor @ tensor}")
 
 
 ######################################################################
