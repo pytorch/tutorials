@@ -20,7 +20,7 @@ from torch.utils._triton import has_triton
 # Basic Usage
 # ------------
 #
-# In this example, we will use a simple vector addition kernel from the triton documentation
+# In this example, we will use a simple vector addition kernel from the Triton documentation
 # with ``torch.compile``.
 # Reference: https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html
 #
