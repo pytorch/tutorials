@@ -23,7 +23,7 @@ NOT_RUN = [
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
     "beginner_source/torchtext_custom_dataset_tutorial", # not building with 2.3 RC, might be able to turn on with GA
-    "beginner_source/beginner_source/text_sentiment_ngrams_tutorial", # not building with 2.3 RC, might be able to turn on with GA
+    "beginner_source/text_sentiment_ngrams_tutorial", # not building with 2.3 RC, might be able to turn on with GA
     "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",
