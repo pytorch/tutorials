@@ -263,24 +263,10 @@ Welcome to PyTorch Tutorials
    :tags: Text
 
 .. customcarditem::
-   :header: Text Classification with Torchtext
-   :card_description: Learn how to build the dataset and classify text using torchtext library.
-   :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
-   :link: beginner/text_sentiment_ngrams_tutorial.html
-   :tags: Text
-
-.. customcarditem::
    :header: Language Translation with Transformer
    :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
    :link: beginner/translation_transformer.html
-   :tags: Text
-
-.. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext
-   :card_description: Learn how to use torchtext to prepare a custom dataset
-   :image: _static/img/thumbnails/cropped/torch_text_logo.png
-   :link: beginner/torchtext_custom_dataset_tutorial.html
    :tags: Text
 
 
@@ -1028,9 +1014,7 @@ Additional Resources
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
-   beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
-   beginner/torchtext_custom_dataset_tutorial
 
 
 .. toctree::
