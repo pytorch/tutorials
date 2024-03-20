@@ -647,7 +647,7 @@ print(res)
 
 # Compile the exported program to a .so using AOTInductor
 so_path = torch._export.aot_compile(ep.module(), (inp,))
-# Load and run the .so in python.
+# Load and run the .so in Python.
 # To load and run it in a C++ environment, please take a look at
 # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
 res = torch._export.aot_load(so_path, device="cuda")(inp)
