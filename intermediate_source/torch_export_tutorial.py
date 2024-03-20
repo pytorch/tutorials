@@ -634,8 +634,9 @@ class M(torch.nn.Module):
         x = self.linear(x)
         return x
 
-ep = torch.export.export(M().to(device="cuda"), (torch.ones(2, 3, device="cuda"),))
 inp = torch.randn(2, 3, device="cuda")
+m = M().to(device="cuda")
+ep = torch.export.export(m, (inp,))
 
 # Run it eagerly
 res = ep.module()(inp)
@@ -645,8 +646,13 @@ print(res)
 res = torch.compile(ep.module(), backend="inductor")(inp)
 print(res)
 
+import torch._export
+import torch._inductor
+
+# Note: these APIs are subject to change
 # Compile the exported program to a .so using AOTInductor
-so_path = torch._export.aot_compile(ep.module(), (inp,))
+with torch.no_grad():
+    so_path = torch._inductor.aot_compile(ep.module(), [inp])
 # Load and run the .so in Python.
 # To load and run it in a C++ environment, please take a look at
 # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
