@@ -31,7 +31,6 @@ pip install --progress-bar off -r $DIR/../requirements.txt
 # Install 2.2 for testing - uncomment to install nightly binaries (update the version as needed).
 pip uninstall -y torch torchvision torchaudio torchtext torchdata
 pip3 install torch==2.3.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121 
-pip3 install torchtext --index-url https://download.pytorch.org/whl/test/cpu 
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
