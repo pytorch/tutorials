@@ -621,7 +621,7 @@ def cond_predicate(x):
 # As ``torch.export`` is only a graph capturing mechanism, calling the artifact
 # produced by ``torch.export`` eagerly will be equivalent to running the eager
 # module. To optimize the execution of the Exported Program, we can pass this
-# exported artifact to backends such Inductor through ``torch.compile``,
+# exported artifact to backends such as Inductor through ``torch.compile``,
 # `AOTInductor <https://pytorch.org/docs/main/torch.compiler_aot_inductor.html>`__,
 # or `TensorRT <https://pytorch.org/TensorRT/dynamo/dynamo_export.html>`__.
 
