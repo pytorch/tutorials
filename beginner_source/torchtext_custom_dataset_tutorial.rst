@@ -1,6 +1,6 @@
 :orphan:
 
-Preprocess custom text dataset using TorchText
+Preprocess custom text dataset using torchtext
 ==============================================
 
 This tutorial has been deprecated.
