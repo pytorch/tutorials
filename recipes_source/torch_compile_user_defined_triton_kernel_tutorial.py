@@ -25,7 +25,7 @@ from torch.utils._triton import has_triton
 # Reference: https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html
 #
 
-if not has_triton:
+if not has_triton():
     print("Skipping because triton is not supported on this device.")
 else:
     import triton
@@ -71,7 +71,7 @@ else:
 #
 #   ``torch.compile`` only supports configs and key arguments to ``triton.autotune``.
 
-if not has_triton:
+if not has_triton():
     print("Skipping because triton is not supported on this device.")
 else:
     import triton
