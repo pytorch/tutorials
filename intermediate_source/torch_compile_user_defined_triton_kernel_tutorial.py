@@ -126,5 +126,6 @@ else:
 #
 # The support for tensor subclasses and other advanced features currently do
 # not exist.
-# Support for ``triton.heuristics`` exists when it is used by itself but not
-# when it is used in combination with ``triton.autotune``.
+# Support for ``triton.heuristics`` exists when it is used by itself or before
+# ``triton.autotune``; however, support for using ``triton.heuristic`` after
+# ``triton.autotune`` is not yet supported.
