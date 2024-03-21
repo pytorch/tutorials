@@ -7,7 +7,7 @@ Using User Defined Triton Kernels with ``torch.compile``
 """
 
 ######################################################################
-# This tutorial explains how to use user defined triton kernels with ``torch.compile``.
+# This tutorial explains how to use user defined Triton kernels with ``torch.compile``.
 #
 # .. note::
 #   This tutorial requires PyTorch 2.3 or later and a GPU that supports Triton.
