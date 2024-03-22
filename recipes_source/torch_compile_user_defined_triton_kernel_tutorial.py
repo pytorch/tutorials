@@ -34,7 +34,7 @@ from torch.utils._triton import has_triton
 
 ######################################################################
 # Basic Usage
-# ------------
+# --------------------
 #
 # In this example, we will use a simple vector addition kernel from the Triton documentation
 # with ``torch.compile``.
@@ -162,3 +162,9 @@ else:
 # vector addition kernel and advanced usage involving Triton's autotune
 # feature. We also discussed the composability of user-defined Triton
 # kernels with other PyTorch features and highlighted some current limitations.
+#
+# See Also
+# -------------------------------------------------------------------
+#
+# * `Compiling the Optimizers: <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__.
+# * `Implementing High-Performance Transformers with Scaled Dot Product Attention: <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`__.
