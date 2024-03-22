@@ -2,12 +2,11 @@
 
 """
 Using User-Defined Triton Kernels with ``torch.compile``
-=================================
+=========================================================
 **Author:** `Oguz Ulgen <https://github.com/oulgen>`_
 """
 
 ######################################################################
-# This tutorial explains how to use user-defined Triton kernels with ``torch.compile``.
 # User-defined Triton kernels can be used to optimize specific parts of your
 # model's computation. These kernels are written in Triton's language, which is designed
 # to make it easier to achieve peak hardware performance. By using user-defined Triton
@@ -22,9 +21,11 @@ Using User-Defined Triton Kernels with ``torch.compile``
 # Before starting this recipe, make sure that you have the following:
 #
 # * Basic understanding of ``torch.compile`` and Triton. See:
-# * `torch.compiler API documentation <https://pytorch.org/docs/stable/torch.compiler.html#torch-compiler>`__
-# * `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
-# * `Triton language documentation <https://triton-lang.org/main/index.html>`__
+#
+#   * `torch.compiler API documentation <https://pytorch.org/docs/stable/torch.compiler.html#torch-compiler>`__
+#   * `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
+#   * `Triton language documentation <https://triton-lang.org/main/index.html>`__
+#
 # * PyTorch 2.3 or later
 # * A GPU that supports Triton
 #
@@ -156,7 +157,7 @@ else:
 # together, ``triton.heuristics`` must be used first.
 #
 # Conclusion
-# -------------------------------------------------------------------
+# -----------
 # In this recipe, we explored how to utilize user-defined Triton kernels
 # with ``torch.compile``. We delved into the basic usage of a simple
 # vector addition kernel and advanced usage involving Triton's autotune
@@ -164,7 +165,7 @@ else:
 # kernels with other PyTorch features and highlighted some current limitations.
 #
 # See Also
-# -------------------------------------------------------------------
+# ---------
 #
 # * `Compiling the Optimizers: <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__.
 # * `Implementing High-Performance Transformers with Scaled Dot Product Attention: <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`__.
