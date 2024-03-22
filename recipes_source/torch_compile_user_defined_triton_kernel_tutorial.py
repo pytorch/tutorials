@@ -150,11 +150,11 @@ else:
 # However, there are certain limitations to be aware of:
 #
 # * **Tensor Subclasses:** Currently, there is no support for
-# tensor subclasses and other advanced features.
+#   tensor subclasses and other advanced features.
 # * **Triton Features:** While ``triton.heuristics`` can be used either standalone or
-# before ``triton.autotune``, it cannot be used after ```triton.autotune``. This
-# implies that if ``triton.heuristics`` and ``triton.autotune`` are to be used
-# together, ``triton.heuristics`` must be used first.
+#   before ``triton.autotune``, it cannot be used after ```triton.autotune``. This
+#   implies that if ``triton.heuristics`` and ``triton.autotune`` are to be used
+#   together, ``triton.heuristics`` must be used first.
 #
 # Conclusion
 # -----------
