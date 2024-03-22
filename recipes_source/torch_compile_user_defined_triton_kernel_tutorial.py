@@ -1,16 +1,32 @@
 # -*- coding: utf-8 -*-
 
 """
-Using User Defined Triton Kernels with ``torch.compile``
+Using User-Defined Triton Kernels with ``torch.compile``
 =================================
 **Author:** `Oguz Ulgen <https://github.com/oulgen>`_
 """
 
 ######################################################################
-# This tutorial explains how to use user defined Triton kernels with ``torch.compile``.
+# This tutorial explains how to use user-defined Triton kernels with ``torch.compile``.
+# User-defined Triton kernels can be used to optimize specific parts of your
+# model's computation. These kernels are written in Triton's language, which is designed
+# to make it easier to achieve peak hardware performance. By using user-defined Triton
+# kernels with ``torch.compile``, you can integrate these optimized computations into
+# your PyTorch model, potentially achieving significant performance improvements.
 #
-# .. note::
-#   This tutorial requires PyTorch 2.3 or later and a GPU that supports Triton.
+# This recipes demonstrates how you can use user-defined Triton kernels with ``torch.compile``.
+#
+# Prerequisites
+# -------------------
+#
+# Before starting this recipe, make sure that you have the following:
+#
+# * Basic understanding of ``torch.compile`` and Triton. See:
+# * `torch.compiler API documentation <https://pytorch.org/docs/stable/torch.compiler.html#torch-compiler>`__
+# * `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
+# * `Triton language documentation <https://triton-lang.org/main/index.html>`__
+# * PyTorch 2.3 or later
+# * A GPU that supports Triton
 #
 
 import torch
@@ -22,7 +38,7 @@ from torch.utils._triton import has_triton
 #
 # In this example, we will use a simple vector addition kernel from the Triton documentation
 # with ``torch.compile``.
-# Reference: https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html
+# For reference, see `Triton documentation <https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html>`__.
 #
 
 if not has_triton():
@@ -63,9 +79,15 @@ else:
 
 ######################################################################
 # Advanced Usage
-# ------------
+# -------------------------------------------------------------------
 #
-# It is also possible to triton.autotune with ``torch.compile``.
+# Triton's autotune feature is a powerful tool that automatically optimizes the configuration
+# parameters of your Triton kernels. It explores a range of possible configurations and
+# selects the one that delivers the best performance for your specific use case.
+#
+# When used with ``torch.compile``, ``triton.autotune`` can help ensure that your PyTorch
+# model is running as efficiently as possible. Here is an example of using ``torch.compile``
+# and ``triton.autotune``.
 #
 # .. note::
 #
@@ -118,14 +140,25 @@ else:
 
 ######################################################################
 # Composibility and Limitations
-# ------------
+# --------------------------------------------------------------------
 #
-# As for PyTorch 2.3, the user defined triton kernel support in ``torch.compile``
-# composes with dynamic shapes, ``torch.autograd.Function``, JIT inductor and
-# AOT inductor.
+# As of PyTorch 2.3, the support for user-defined Triton kernels in ``torch.compile``
+# includes dynamic shapes, ``torch.autograd.Function``, JIT inductor, and AOT inductor.
+# You can use these features together to build complex, high-performance models.
 #
-# The support for tensor subclasses and other advanced features currently do
-# not exist.
-# Support for ``triton.heuristics`` exists when it is used by itself or before
-# ``triton.autotune``; however, support for using ``triton.heuristic`` after
-# ``triton.autotune`` is not yet supported.
+# However, there are certain limitations to be aware of:
+#
+# * **Tensor Subclasses:** Currently, there is no support for
+# tensor subclasses and other advanced features.
+# * **Triton Features:** While ``triton.heuristics`` can be used either standalone or
+# before ``triton.autotune``, it cannot be used after ```triton.autotune``. This
+# implies that if ``triton.heuristics`` and ``triton.autotune`` are to be used
+# together, ``triton.heuristics`` must be used first.
+#
+# Conclusion
+# -------------------------------------------------------------------
+# In this recipe, we explored how to utilize user-defined Triton kernels
+# with ``torch.compile``. We delved into the basic usage of a simple
+# vector addition kernel and advanced usage involving Triton's autotune
+# feature. We also discussed the composability of user-defined Triton
+# kernels with other PyTorch features and highlighted some current limitations.
