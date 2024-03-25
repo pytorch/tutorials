@@ -54,27 +54,21 @@ jobs:
       - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
         uses: pytorch/test-infra/.github/actions/setup-nvidia@main
 
-      - name: Calculate docker image
-        shell: bash
-        id: docker-image
-        run: |
-          set -ex
-
-          # for some reason, pip installs it in a different place than what is looked at in the py file
-          pip3 install requests==2.26
-          pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
-
-          echo "docker-image=${DOCKER_IMAGE}:${pyTorchDockerImageTag}" >> "${GITHUB_OUTPUT}"
+      - name: Build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
 
       - name: Pull docker image
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
-          docker-image: ${{ steps.docker-image.outputs.docker-image }}
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
           NUM_WORKERS: ${{ matrix.num_shards }}
           WORKER_ID: ${{ matrix.shard }}
           COMMIT_ID: ${{ github.sha }}
@@ -103,8 +97,6 @@ jobs:
             "${DOCKER_IMAGE}"
           )
 
-          echo "rm /opt/cache/bin/*" | docker exec -u root -i "${container_name}" bash
-
           docker exec -t "${container_name}" sh -c ".jenkins/build.sh"
 
       - name: Teardown Linux
@@ -112,6 +104,7 @@ jobs:
         if: always()
 
   manager:
+    if: false
     name: pytorch_tutorial_build_manager
     needs: worker
     runs-on: [self-hosted, linux.2xlarge]
@@ -134,27 +127,21 @@ jobs:
       - name: Setup Linux
         uses: pytorch/pytorch/.github/actions/setup-linux@main
 
-      - name: Calculate docker image
-        shell: bash
-        id: docker-image
-        run: |
-          set -ex
-
-          # for some reason, pip installs it in a different place than what is looked at in the py file
-          pip3 install requests==2.26
-          pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
-
-          echo "docker-image=${DOCKER_IMAGE}:${pyTorchDockerImageTag}" >> "${GITHUB_OUTPUT}"
+      - name: Build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
 
       - name: Pull docker image
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
-          docker-image: ${{ steps.docker-image.outputs.docker-image }}
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
           NUM_WORKERS: 15
           WORKER_ID: ${{ matrix.shard }}
           COMMIT_ID: ${{ github.sha }}
