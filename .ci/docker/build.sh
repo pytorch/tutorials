@@ -13,7 +13,7 @@ shift
 export CUDA_VERSION="12.1.1"
 export UBUNTU_VERSION="20.04"
 
-export BASE_IMAGE="nvidia/cuda:${CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}"
+export BASE_IMAGE="ubuntu:${UBUNTU_VERSION}"
 echo "Building ${IMAGE_NAME} Docker image"
 
 docker build \

@@ -9,10 +9,6 @@ ENV DEBIAN_FRONTEND noninteractive
 COPY ./common/install_base.sh install_base.sh
 RUN bash ./install_base.sh && rm install_base.sh
 
-# Install user
-COPY ./common/install_user.sh install_user.sh
-RUN bash ./install_user.sh && rm install_user.sh
-
 COPY ./common/install_docs_reqs.sh install_docs_reqs.sh
 RUN bash ./install_docs_reqs.sh && rm install_docs_reqs.sh
 
@@ -26,10 +22,4 @@ COPY ./common/install_conda.sh install_conda.sh
 COPY ./common/common_utils.sh common_utils.sh
 RUN bash ./install_conda.sh && rm install_conda.sh common_utils.sh /opt/conda/requirements.txt
 
-# Install CUDNN
-ENV CUDNN_VERSION=8
-COPY ./common/install_cudnn.sh install_cudnn.sh
-RUN bash ./install_cudnn.sh && rm install_cudnn.sh
-
-USER jenkins
 CMD ["bash"]
