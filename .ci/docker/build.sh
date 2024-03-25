@@ -10,7 +10,6 @@ set -exu
 IMAGE_NAME="$1"
 shift
 
-export CUDA_VERSION="12.1.1"
 export UBUNTU_VERSION="20.04"
 
 export BASE_IMAGE="ubuntu:${UBUNTU_VERSION}"
@@ -21,7 +20,5 @@ docker build \
   --progress=plain \
   -f Dockerfile \
   --build-arg BASE_IMAGE="${BASE_IMAGE}" \
-  --build-arg CUDA_VERSION="${CUDA_VERSION}" \
-  --build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
   "$@" \
   .
