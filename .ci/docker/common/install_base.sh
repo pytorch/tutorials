@@ -8,6 +8,7 @@ install_ubuntu() {
   apt-get update
   # TODO: Some of these may not be necessary
   apt-get install -y --no-install-recommends \
+    build-essential \
     ca-certificates \
     cmake=3.16* \
     curl \
