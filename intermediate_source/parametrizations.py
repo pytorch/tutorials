@@ -306,8 +306,8 @@ class CayleyMap(nn.Module):
     def right_inverse(self, A):
         # Assume A orthogonal
         # See https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map
-        # (X - I)(X + I)^{-1}
-        return torch.linalg.solve(X + self.Id, self.Id - X)
+        # (A - I)(A + I)^{-1}
+        return torch.linalg.solve(A + self.Id, self.Id - A)
 
 layer_orthogonal = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
