@@ -1,0 +1,59 @@
+name: Docker Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .ci/docker/**
+      - .github/workflows/docker-builds.yml
+  push:
+    branches:
+      - main
+    paths:
+      - .ci/docker/**
+      - .github/workflows/docker-builds.yml
+
+jobs:
+  docker-build:
+    runs-on: [self-hosted, linux.2xlarge]
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - docker-image-name: tutorials
+    env:
+      DOCKER_IMAGE: 308535385114.dkr.ecr.us-east-1.amazonaws.com/tutorials/${{ matrix.docker-image-name }}
+    steps:
+      - name: Clean workspace
+        shell: bash
+        run: |
+          echo "${GITHUB_WORKSPACE}"
+          sudo rm -rf "${GITHUB_WORKSPACE}"
+          mkdir "${GITHUB_WORKSPACE}"
+
+      - name: Setup SSH (Click me for login details)
+        uses: pytorch/test-infra/.github/actions/setup-ssh@main
+        with:
+          github-secret: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Linux
+        uses: pytorch/test-infra/.github/actions/setup-linux@main
+
+      - name: Build docker image
+        id: build-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: ${{ matrix.docker-image-name }}
+          push: true
+
+      - name: Teardown Linux
+        uses: pytorch/test-infra/.github/actions/teardown-linux@main
+        if: always()
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}
+  cancel-in-progress: true
