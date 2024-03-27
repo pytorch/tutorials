@@ -33,9 +33,6 @@ jobs:
           - { shard: 15, num_shards: 15, runner: "linux.4xlarge.nvidia.gpu" }
       fail-fast: false
     runs-on: ${{ matrix.runner }}
-    env:
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-focal-cuda12.1-cudnn8-py3-gcc9"
-      CUDA_VERSION: "9"
     steps:
       - name: Setup SSH (Click me for login details)
         uses: pytorch/test-infra/.github/actions/setup-ssh@main
@@ -54,27 +51,21 @@ jobs:
       - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
         uses: pytorch/test-infra/.github/actions/setup-nvidia@main
 
-      - name: Calculate docker image
-        shell: bash
-        id: docker-image
-        run: |
-          set -ex
-
-          # for some reason, pip installs it in a different place than what is looked at in the py file
-          pip3 install requests==2.26
-          pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
-
-          echo "docker-image=${DOCKER_IMAGE}:${pyTorchDockerImageTag}" >> "${GITHUB_OUTPUT}"
+      - name: Calculate/build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
 
       - name: Pull docker image
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
-          docker-image: ${{ steps.docker-image.outputs.docker-image }}
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
           NUM_WORKERS: ${{ matrix.num_shards }}
           WORKER_ID: ${{ matrix.shard }}
           COMMIT_ID: ${{ github.sha }}
@@ -95,15 +86,12 @@ jobs:
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
-            --user jenkins \
             --shm-size=2gb \
             --name="${container_name}" \
-            -v "${GITHUB_WORKSPACE}:/var/lib/jenkins/workspace" \
-            -w /var/lib/jenkins/workspace \
+            -v "${GITHUB_WORKSPACE}:/var/lib/workspace" \
+            -w /var/lib/workspace \
             "${DOCKER_IMAGE}"
           )
-
-          echo "rm /opt/cache/bin/*" | docker exec -u root -i "${container_name}" bash
 
           docker exec -t "${container_name}" sh -c ".jenkins/build.sh"
 
@@ -116,9 +104,6 @@ jobs:
     needs: worker
     runs-on: [self-hosted, linux.2xlarge]
     environment: ${{ github.ref == 'refs/heads/main' && 'pytorchbot-env' || '' }}
-    env:
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-focal-cuda12.1-cudnn8-py3-gcc9"
-      CUDA_VERSION: "9"
     steps:
       - name: Setup SSH (Click me for login details)
         uses: pytorch/test-infra/.github/actions/setup-ssh@main
@@ -134,27 +119,21 @@ jobs:
       - name: Setup Linux
         uses: pytorch/pytorch/.github/actions/setup-linux@main
 
-      - name: Calculate docker image
-        shell: bash
-        id: docker-image
-        run: |
-          set -ex
-
-          # for some reason, pip installs it in a different place than what is looked at in the py file
-          pip3 install requests==2.26
-          pyTorchDockerImageTag=$(python3 .jenkins/get_docker_tag.py)
-
-          echo "docker-image=${DOCKER_IMAGE}:${pyTorchDockerImageTag}" >> "${GITHUB_OUTPUT}"
+      - name: Calculate/build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
 
       - name: Pull docker image
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
-          docker-image: ${{ steps.docker-image.outputs.docker-image }}
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
 
       - name: Build
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ steps.docker-image.outputs.docker-image }}
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
           NUM_WORKERS: 15
           WORKER_ID: ${{ matrix.shard }}
           COMMIT_ID: ${{ github.sha }}
@@ -177,14 +156,13 @@ jobs:
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
-            --user jenkins \
             --name="${container_name}" \
-            -v "${GITHUB_WORKSPACE}:/var/lib/jenkins/workspace" \
-            -w /var/lib/jenkins/workspace \
+            -v "${GITHUB_WORKSPACE}:/var/lib/workspace" \
+            -w /var/lib/workspace \
             "${DOCKER_IMAGE}"
           )
 
-          echo "rm /opt/cache/bin/*" | docker exec -u root -i "${container_name}" bash
+          docker exec -u root -i "${container_name}" bash
 
           docker exec -t "${container_name}" sh -c ".jenkins/build.sh"
 

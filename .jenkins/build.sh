@@ -11,9 +11,6 @@ export LANG=C.UTF-8
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # Update root certificates by installing new libgnutls30
-sudo apt-get update || sudo apt-get install libgnutls30
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
 # Install pandoc (does not install from pypi)
 sudo apt-get update
@@ -21,10 +18,6 @@ sudo apt-get install -y pandoc
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
-rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
-pip uninstall -y ghstack
-pip install --progress-bar off -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
