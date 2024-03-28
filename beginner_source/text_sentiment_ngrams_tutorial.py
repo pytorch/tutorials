@@ -17,7 +17,7 @@ For example, in the Colab environment, this can be done by adding the following 
 
 .. code-block:: bash 
      
-    !pip install -U portalocker>=2.0.0`
+    !pip install -U portalocker>=2.0.0
 
 """
 
