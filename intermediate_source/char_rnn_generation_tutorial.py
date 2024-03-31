@@ -5,7 +5,7 @@ NLP From Scratch: Generating Names with a Character-Level RNN
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is our second of three tutorials on "NLP From Scratch".
-In the `first tutorial </intermediate/char_rnn_classification_tutorial>`_
+In the `first tutorial </tutorials/intermediate/char_rnn_classification_tutorial>`_
 we used a RNN to classify names into their language of origin. This time
 we'll turn around and generate names from languages.
 
