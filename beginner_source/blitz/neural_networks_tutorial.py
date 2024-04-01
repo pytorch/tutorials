@@ -55,16 +55,30 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
-    def forward(self, x):
-        # Max pooling over a (2, 2) window
-        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        # If the size is a square, you can specify with a single number
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+    def forward(self, input):
+        # Convolution layer C1: 1 input image channel, 6 output channels,
+        # 5x5 square convolution, it uses RELU activation function => 6x28x28 tensor
+        c1 = F.relu(self.conv1(input))
+        # Subsampling layer S2: 2x2 grid, purely functional,
+        # it does not keep any parameter => 6x14x14 tensor
+        s2 = F.max_pool2d(c1, (2, 2))
+        # Convolution layer C3: 6 input channels, 16 output channels,
+        # 5x5 square convolution, it uses RELU activation function => 16x10x10 tensor
+        c3 = F.relu(self.conv2(s2))
+        # Subsampling layer S4: 2x2 grid, purely functional,
+        # it does not keep any parameter => 16x5x5 tensor
+        s4 = F.max_pool2d(c3, 2)
+        # Flatten operation: purely functional, 2D tensor => 1D tensor
+        s4 = torch.flatten(s4, 1)
+        # Fully connected layer F5: 400 inputs, 120 outputs,
+        # it uses RELU activation function
+        f5 = F.relu(self.fc1(s4))
+        # Fully connected layer F6: 120 inputs, 84 outputs,
+        # it uses RELU activation function
+        f6 = F.relu(self.fc2(f5))
+        # Gaussian layer OUTPUT: 84 inputs, 10 outputs
+        output = self.fc3(f6)
+        return output
 
 
 net = Net()
