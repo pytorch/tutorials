@@ -139,7 +139,7 @@ quantize the model.
 
 The quantization config is for static quantization by default. To apply dynamic quantization, add an argument ``is_dynamic=True`` when getting the config.
 
-::
+.. code-block:: python
 
     quantizer = X86InductorQuantizer()
     quantizer.set_global(xiq.get_default_x86_inductor_quantization_config(is_dynamic=True))
