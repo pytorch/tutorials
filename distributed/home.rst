@@ -13,6 +13,7 @@ PyTorch with each method having their advantages in certain use cases:
 
 * `DistributedDataParallel (DDP) <#learn-ddp>`__
 * `Fully Sharded Data Parallel (FSDP) <#learn-fsdp>`__
+* `Tensor Parallel (TP) <#learn-tp>`__
 * `Device Mesh <#device-mesh>`__
 * `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
 * `Custom Extensions <#custom-extensions>`__
@@ -83,6 +84,24 @@ Learn FSDP
         model with FSDP for text summarization.
         +++
         :octicon:`code;1em` Code
+
+
+.. _learn-tp:
+
+Learn Tensor Parallel (TP)
+---------------
+
+.. grid:: 3
+
+     .. grid-item-card:: :octicon:`file-code;1em`
+        Large Scale Transformer Model training with Tensor Parallel (TP)
+        :link: https://pytorch.org/tutorials/intermediate/TP_tutorial.html
+        :link-type: url
+
+        This tutorial demonstrates how to train a large Transformer-like model across hundreds to thousands of GPUs using Tensor Parallel and Fully Sharded Data Parallel.
+        +++
+        :octicon:`code;1em` Code
+
 
 .. _device-mesh:
 
