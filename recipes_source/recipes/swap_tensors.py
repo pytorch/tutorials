@@ -2,12 +2,12 @@
 Extension points in ``nn.Module`` for ``load_state_dict`` and tensor subclasses
 ===============================================================================
 
-This tutorial introduces a new utility function ``torch.utils.swap_tensors``
+This recipe introduces a new utility function ``torch.utils.swap_tensors``
 as well as two new extension points where it has been integrated in
-``nn.Module``.
+``nn.Module``:
 
-1. ``nn.Module.to()`` and related methods
-2. ``nn.Module.load_state_dict()``
+* ``nn.Module.to()`` and related methods
+* ``nn.Module.load_state_dict()``
 
 .. note::
     This recipe requires PyTorch 2.3.0 or later.
@@ -17,7 +17,7 @@ as well as two new extension points where it has been integrated in
 # ``torch.utils.swap_tensors``
 # ----------------------------
 # ``torch.utils.swap_tensors`` (hereafter referred to as ``swap_tensors``) is a
-# utility function that takes in two python tensors and swaps them.
+# utility function that takes in two Python tensors and swaps them.
 
 import torch
 import torch.nn as nn
@@ -28,13 +28,13 @@ torch.utils.swap_tensors(t1, t2)
 print(f"After swapping, t1: {t1}, t2: {t2}")
 
 ################################################################################
-# More specifically, ``swap_tensors`` swaps the python ``__class__``, ``__dict__``
+# More specifically, ``swap_tensors`` swaps the Python ``__class__``, ``__dict__``
 # and ``__slots__`` of the two tensors, as well as their associated ``at::Tensor``.
 #
 #
 # Application to ``nn.Module``
 # ----------------------------
-# This utility is pertinent to ``nn.Module`` when a python object outside
+# This utility is pertinent to ``nn.Module`` when a Python object outside
 # of the module holds a reference to parameters of the module. If an ``nn.Module``
 # modifies any of its parameters out of place, the object holding references to
 # the parameters will not see the change. A classic example of this is the
@@ -49,21 +49,12 @@ print(f"weight in mod: {mod.weight}")
 print(f"weight in optimizer: {optimizer.param_groups[0]['params']}")
 
 ################################################################################
-# Presently, the two broad classes of ``nn.Module`` methods that modify the
-# parameters are
-#
-# * ``nn.Module.to()`` and related methods
-# * ``nn.Module.load_state_dict()``
-#
-# We discuss these in detail below.
-#
-#
 # ``nn.Module.to()`` and related methods
 # --------------------------------------
-# This includes methods that change the device of the module (e.g. ``nn.Module.cpu()``),
-# methods that change the ``dtype`` of the module (e.g. ``nn.Module.float()``)
+# This includes methods that change the device of the module (such as ``nn.Module.cpu()``),
+# methods that change the ``dtype`` of the module (such as ``nn.Module.float()``)
 # as well as methods that allow the module to be materialized
-# (i.e. ``nn.Module.to_empty()``).
+# (such as ``nn.Module.to_empty()``).
 #
 # At first glance, it might be non-intuitive that these methods are able to
 # modify the parameters of the module in-place. The existing approach has been
@@ -74,7 +65,7 @@ print(f"weight in optimizer: {optimizer.param_groups[0]['params']}")
 # * when using ``__torch_dispatch__`` subclasses
 # * when ``param`` and ``new_param`` do not have the same type
 #
-# In the following part of this tutorial, we will define a toy ``__torch_dispatch__``
+# In the following part of this recipe, we will define a toy ``__torch_dispatch__``
 # subclass ``MyQuantizedLinearWeight`` that represents quantized linear weights.
 # This subclass will be used for illustration purposes throughout the rest of
 # the tutorial. For brevity, we omit most of the ``__torch_dispatch__``
@@ -114,10 +105,10 @@ class MyQuantizedLinearWeight(torch.Tensor):
         raise NotImplementedError(f"Unsupported function {func}")
 
 #################################################################################
-# Let us create a Linear layer of ``dtype`` ``torch.float32`` where the weight is
+# Let us create an ``nn.Linear`` layer of ``dtype`` ``torch.float32`` where the weight is
 # a ``MyQuantizedLinearWeight`` and try to convert it to ``torch.bfloat16``.
 # Observe that the weight's ``dtype`` changes as expected. However, the ``dtype``
-# of the subclass' payload (i.e.``elem``) does not change.
+# of the subclass' payload (``elem``) does not change.
 
 m = nn.Linear(3, 5, dtype=torch.float32)
 m.weight = torch.nn.Parameter(MyQuantizedLinearWeight(m.weight, 0.5))
@@ -150,15 +141,15 @@ torch.__future__.set_swap_module_params_on_conversion(False)
 ################################################################################
 # ``nn.Module.load_state_dict()``
 # --------------------------------
-# At present, depending on the value of the ``assign`` keyword argument passed
+# Depending on the value of the ``assign`` keyword argument passed
 # to ``load_state_dict()``, there are two ways to load the ``state_dict``:
 #
-# 1. ``assign=False``: in-place copy (i.e. ``param.copy_(state_dict['param'])``)
-# 2. ``assign=True``: ``__setattr__`` (i.e. ``module.param = state_dict['param']``)
+# * ``assign=False``: in-place copy (i.e. ``param.copy_(state_dict['param'])``)
+# * ``assign=True``: ``__setattr__`` (i.e. ``module.param = state_dict['param']``)
 #
 #
-# Each has its own limitations -- ``assign=False`` imposes the constraint that
-# the type of the parameter in the state_dict must be the same as the type of
+# Each approach has its own limitations -- ``assign=False`` imposes the constraint that
+# the type of the parameter in the ``state_dict`` must be the same as the type of
 # the parameter in the module while ``assign=True`` imposes the constraint that
 # anything that holds references to the module's parameters must be initialized
 # after ``nn.Module.load_state_dict()``.
@@ -219,7 +210,7 @@ with torch.device("meta"):
 #################################################################################
 # We can then load the ``state_dict``. Observe that we use ``assign=True`` because
 # for biases, we want to preserve the properties of the tensor in the ``state_dict``
-# (i.e. we do not want the bias to be on the ``meta`` device after loading).
+# (for example, we do not want the bias to be on the ``meta`` device after loading).
 
 torch.__future__.set_swap_module_params_on_conversion(True)
 print(f"Before: id(weight)={id(m.weight)}, id(bias)={id(m.bias)}")
@@ -233,14 +224,14 @@ print(f"m.state_dict() after load_state_dict():\n {m.state_dict()}")
 #################################################################################
 # The above is a toy example of how we can use the new extension point in
 # ``nn.Module.load_state_dict()``. One can also imagine alternate scenarios such
-# as when we have tensor subclasses in the state_dict and plain ``nn.Parameters``/
+# as when we have tensor subclasses in the ``state_dict`` and plain ``nn.Parameters``/
 # tensors in the module or when both are tensor subclasses. Based on the use
 # case, we can define the ``__torch_function__`` handler for ``module_load``
 # to apply the transforms as needed.
 #
 # Conclusion
 # ----------
-# In this tutorial, we learned about ``swap_tensors``, the importance
+# In this recipe, we learned about ``swap_tensors``, the importance
 # of preserving references for parameters in ``nn.Module`` as well as how to
 # use the two new extension points that are gated by
 # ``torch.__future__.set_swap_module_params_on_conversion``.

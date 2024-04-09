@@ -155,7 +155,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: Extension points in nn.Module for loading state_dict and tensor subclasses
    :card_description: New extension points in nn.Module.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/recipes/module_load_state_dict_tips.html
+   :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
 
