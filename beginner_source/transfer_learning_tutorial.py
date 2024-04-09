@@ -172,7 +172,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                     labels = labels.to(device)
 
                     # zero the parameter gradients
-                    optimizer.zero_grad()
+                    optimizer.zero_grad(set_to_none=True)
 
                     # forward
                     # track history if only in train
