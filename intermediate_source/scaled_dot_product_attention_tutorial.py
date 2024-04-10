@@ -374,7 +374,7 @@ print(lower_right_bias)
 # This only has an impact when the attention scores matrix is not square, which is common for decoding use cases.
 # Another way of thinking about this concept is that when you use upper left bias,
 # The 0th token in the query is aligned to the 0th token in the key, while for lower right bias,
-# Assuming the attention score matrix is two dimensional, attn_score[0][0] is the attention score
+# Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score
 # between the 0th token in the query and the 0th token in the key.
 # For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k
 # e.g. attn_score[-1][-1] is all True since the last token in q is at the same position as the last token in k
