@@ -94,7 +94,7 @@ Learn Tensor Parallel (TP)
 .. grid:: 3
 
      .. grid-item-card:: :octicon:`file-code;1em`
-        Large Scale Transformer Model training with Tensor Parallel (TP)
+        Large Scale Transformer model training with Tensor Parallel (TP)
         :link: https://pytorch.org/tutorials/intermediate/TP_tutorial.html
         :link-type: url
 

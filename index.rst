@@ -7,6 +7,7 @@ What's new in PyTorch tutorials?
 * `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
 * `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
 * `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
+* `Large Scale Transformer model training with Tensor Parallel <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
 * `Compiling the optimizer with torch.compile <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
 
 
@@ -694,6 +695,13 @@ What's new in PyTorch tutorials?
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
    :link: intermediate/dist_tuto.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Large Scale Transformer model training with Tensor Parallel
+   :card_description: Learn how to train large models with Tensor Parallel package.
+   :image: _static/img/thumbnails/cropped/Large-Scale-Transformer-model-training-with-Tensor-Parallel.png
+   :link: intermediate/TP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
