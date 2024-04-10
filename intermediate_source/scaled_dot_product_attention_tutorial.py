@@ -377,7 +377,7 @@ print(lower_right_bias)
 # Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score
 # between the 0th token in the query and the 0th token in the key.
 # For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k
-# e.g. attn_score[-1][-1] is all True since the last token in q is at the same position as the last token in k
+# (for example, ``attn_score[-1][-1])`` is all True since the last token in q is at the same position as the last token in k
 # even if the sequence length of q and k are different.
 
 # These objects are intended to be used with sdpa
