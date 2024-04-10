@@ -328,7 +328,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # ==========================================
 #
 # As of PyTorch 2.3, we have added a new submodule that contains tensor subclasses.
-# Designed to be used with torch.nn.functional.scaled_dot_product_attention.
+# Designed to be used with ``torch.nn.functional.scaled_dot_product_attention``.
 # The module is named torch.nn.attention.bias and contains the following two
 # utilities for generating causal attention variants.
 # - torch.nn.attention.bias.causal_upper_left
