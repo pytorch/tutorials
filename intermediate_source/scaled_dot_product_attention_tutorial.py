@@ -363,7 +363,7 @@ print(type(lower_right_bias))
 assert type(upper_left_bias) == type(lower_right_bias)
 assert issubclass(type(upper_left_bias), torch.Tensor)
 
-# As you can see from the previous output, are the same type torch.nn.attention.bias.CausalBias
+# As you can see from the previous output, are the same type ``torch.nn.attention.bias.CausalBias``
 # and subclass torch.Tensor
 
 # Lets see what these tensors look like
