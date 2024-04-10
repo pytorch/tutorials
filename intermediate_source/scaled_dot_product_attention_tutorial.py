@@ -370,7 +370,7 @@ assert issubclass(type(upper_left_bias), torch.Tensor)
 print(upper_left_bias)
 print(lower_right_bias)
 
-# Upper Left Bias aligns the causal attention mask to the upper left corner of of the attention scores matrix
+# Upper Left Bias aligns the causal attention mask to the upper left corner of the attention scores matrix.
 # While Lower Right Bias aligns the causal attention mask to the lower right corner of the attention scores matrix.
 # This only has an impact when the attention scores matrix is not square, which is common for decoding use cases.
 # Another way of thinking about this concept is that when you use upper left bias,
