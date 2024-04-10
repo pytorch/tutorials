@@ -22,10 +22,11 @@ In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model.
 How DCP works
 --------------
 
-:func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel. Users can use this module to save on any number of ranks in parallel,
+:func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel. You can use this module to save on any number of ranks in parallel,
 and then re-shard across differing cluster topologies at load time.
 
-Addditionally through the use of modules in :func:`torch.distributed.checkpoint.state_dict`, DCP offers support for gracefully handling state dict generation and loading in distributed settings.
+Addditionally, through the use of modules in :func:`torch.distributed.checkpoint.state_dict`,
+DCP offers support for gracefully handling ``state_dict`` generation and loading in distributed settings.
 This includes managing fully-qualified-name (FQN) mappings across models and optimizers, and setting default parameters for PyTorch provided parallelisms.
 
 DCP is different from :func:`torch.save` and :func:`torch.load` in a few significant ways:
