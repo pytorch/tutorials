@@ -332,7 +332,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # The module is named ``torch.nn.attention.bias`` and contains the following two
 # utilities for generating causal attention variants:
 #
-# - torch.nn.attention.bias.causal_upper_left
+# - ``torch.nn.attention.bias.causal_upper_left``
 # - ``torch.nn.attention.bias.causal_lower_right``
 #
 # .. note:: 
