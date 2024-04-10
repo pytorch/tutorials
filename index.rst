@@ -1089,6 +1089,7 @@ Additional Resources
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
    intermediate/FSDP_adavnced_tutorial
+   intermediate/TP_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial

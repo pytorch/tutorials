@@ -1,7 +1,7 @@
 Large Scale Transformer model training with Tensor Parallel (TP)
 ======================================================
 
-**Author**: `Wanchao Liang <https://github.com/wanchaol>`__, `Tianyu Liu <https://github.com/tianyu-l>`__,
+**Author**: `Wanchao Liang <https://github.com/wanchaol>`__, `Tianyu Liu <https://github.com/tianyu-l>`__
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/TP_tutorial.rst>`__.
@@ -23,7 +23,7 @@ and it is an efficient model parallelism technique to train large scale Transfor
 `Sequence Parallel <https://arxiv.org/abs/2205.05198>`__ we mention in this tutorial is a variant of Tensor
 Parallelism that shards on the sequence dimension for LayerNorm/Dropout to further save activation memory
 during training. As the model becomes larger, the activation memory becomes the bottleneck, so in Tensor
-Parallelism training it usually applies Sequence Parallelism to LayerNorm/RMSNorm layers.
+Parallelism training it usually applies Sequence Parallelism to ``LayerNorm`` or ``RMSNorm`` layers.
 
 .. figure:: /_static/img/distributed/megatron_lm.png
    :width: 100%
@@ -74,7 +74,7 @@ PyTorch Tensor Parallel APIs offers a set of module level primitives to configur
 * ``SequenceParallel`` for ``nn.LayerNorm``, ``nn.Dropout``, ``RMSNormPython``, etc.
 * ``PrepareModuleInput`` and ``PrepareModuleOutput`` for module inputs/outputs configuration.
 
-To demonstrate how to use the PyTorch native Tensor Parallel APIs, let us look at a common Transformer model. In this tutorial, we use the most recent `Llama2 model <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/>`__ as a reference Transformer model implementation, as it is also widely used in the community.
+To demonstrate how to use the PyTorch native Tensor Parallel APIs, let us look at a common Transformer model. In this tutorial, we use the most recent `Llama2 model <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/llama2_model.py>`__ as a reference Transformer model implementation, as it is also widely used in the community.
 
 Since Tensor Parallel shards individual tensors over a set of devices, we would need to set up the distributed environment (such as NCCL communicators) first.
 Tensor Parallelism is a Single-Program Multiple-Data (SPMD) sharding algorithm similar to PyTorch DDP/FSDP, and it under the hood leverages the PyTorch DTensor
@@ -149,7 +149,7 @@ Finally, we need to call ``parallelize_module`` API to make the plan for each ``
 .. code-block:: python
 
     for layer_id, transformer_block in enumerate(model.layers):
-        layer_plan = {...}
+        layer_tp_plan = {...}
 
         # Adjust attention module to use the local number of heads
         attn_layer = transformer_block.attention
@@ -159,7 +159,7 @@ Finally, we need to call ``parallelize_module`` API to make the plan for each ``
         parallelize_module(
             module=transformer_block,
             device_mesh=tp_mesh,
-            parallelize_plan=layer_plan,
+            parallelize_plan=layer_tp_plan,
         )
 
 Now that we have elaborated the sharding plan for each ``TransformerBlock``, there is usually a ``nn.Embedding`` in the first layer and a final ``nn.Linear`` projection layer, where user could choose row-wise or column-wise sharding to the first ``nn.Embedding`` and column-wise sharding to the last project layer with proper input and output layouts specified.
@@ -167,7 +167,7 @@ Now that we have elaborated the sharding plan for each ``TransformerBlock``, the
 .. note::
 	If the model to be partitioned is too large to fit into CPU memory, one could either use ``meta`` device initialization (for example, initialize the model on meta device first, shard the layers, and the materialize the model), or parallelize the ``TransformerBlock`` layer by layer during the Transformer model initialization.
 
-Apply Sequence Parallel on ``LayerNorm/RMSNorm`` layers
+Apply Sequence Parallel to ``LayerNorm/RMSNorm`` layers
 -------------------------------------------------------
 
 Sequence Parallel works on top of the Tensor Parallel illustrated above. Compared with basic Tensor Parallel, which only shards tensors within the ``Attention`` modules and ``FeedForward`` modules and keep their module inputs and outputs (namely activations in the forward pass and gradients in the backward pass) replicated, Sequence Parallel keeps them sharded on the sequence dimension.
@@ -284,11 +284,11 @@ In the code above, we also apply Sequence Parallel to the norm layer before outp
 
 
 Combine Tensor Parallel with Fully Sharded Data Parallel together
-------------------------------------------------------------------------
+-----------------------------------------------------------------
 
 
 Now that we have shown how to apply Tensor/Sequence Parallel to the model, let us also take a look at how Tensor Parallel and Fully Sharded Data Parallel could work together.
-Since Tensor Parallelism incurs communications that’s blocking the computation, we want to make sure it runs within a fast communication channel, such as NVLink.
+Since Tensor Parallelism incurs communications that is blocking the computation, we want to make sure it runs within a fast communication channel, such as NVLink.
 In practice, we usually apply Tensor Parallel within each host, and apply Fully Sharded Data Parallel across the hosts.
 
 .. figure:: /_static/img/distributed/fsdp_tp.png
@@ -296,6 +296,7 @@ In practice, we usually apply Tensor Parallel within each host, and apply Fully 
    :align: center
    :alt: fsdp + tp
    Figure 3. FSDP and TP work on separate device dimensions, FSDP communication happens inter-host and TP communication happens intra-host.
+
 
 This 2-D parallelism pattern can be easily expressed via a 2-D DeviceMesh, and we just need pass each “sub” DeviceMesh to each individual parallelism APIs:
 
