@@ -98,6 +98,7 @@ For the ``FeedForward`` Layer it consists of three Linear layers, where it perfo
 
 .. code-block:: python
 
+    # forward in the FeedForward layer
     def forward(self, x):
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
 
@@ -110,7 +111,7 @@ there is only one ``allreduce`` communication happening at the end of all the th
 
     from torch.distributed.tensor.parallel import ColwiseParallel, RowwiseParallel, parallelize_module
 
-    tp_plan = {
+    layer_tp_plan = {
         # by default ColwiseParallel input layouts is replicated
         # and RowwiseParallel output layouts is replicated
         "feed_foward.w1": ColwiseParallel(),
@@ -121,12 +122,12 @@ there is only one ``allreduce`` communication happening at the end of all the th
 
 That's simply how we configure the shardings for the ``FeedForward`` layer using the PyTorch Tensor Parallel APIs. Note that users would only need to specify how to shard the individual layers and the communications (for example, ``allreduce``) will happen under the hood.
 
-Moving on to the ``Attention`` Layer. It consists of ``wq``, ``wk``, ``wv`` Linear layers to project input to q/k/v, and then it performs attention and output projection with the ``wo`` Linear layer. Tensor Parallelism here intends to perform column-wise sharding for the
+Moving on to the ``Attention`` Layer. It consists of ``wq``, ``wk``, ``wv`` Linear layers to project input to ``q``/ ``k`` / ``v``, and then it performs attention and output projection with the ``wo`` Linear layer. Tensor Parallelism here intends to perform column-wise sharding for the
 q/k/v projection and row-wise sharding for the ``wo`` linear projection. So we can add the Attention plan to the ``tp_plan`` that we just drafted up:
 
 .. code-block:: python
 
-    tp_plan = {
+    layer_tp_plan = {
         # by default ColwiseParallel input layouts is replicated
         # and RowwiseParallel output layouts is replicated
         "attention.wq": ColwiseParallel(),
@@ -139,7 +140,7 @@ q/k/v projection and row-wise sharding for the ``wo`` linear projection. So we c
     }
 
 
-This is almost the ``tp_plan`` we need to apply Tensor Parallelism to the Llama model. However, one thing we should be aware is that when sharding the linear layer column-wise, the output of the linear layers would become sharded on the last tensor dimension, and the row-wise sharding linear layer directly accepts an input that shards on the last dimension.
+This is almost the ``layer_tp_plan`` we need to apply Tensor Parallelism to the ``TransformerBlock``. However, one thing we should be aware is that when sharding the linear layer column-wise, the output of the linear layers would become sharded on the last tensor dimension, and the row-wise sharding linear layer directly accepts an input that shards on the last dimension.
 If there are any more tensor operations (such as view operations) between the column-wise linear and the row-wise linear, we would need to adjust the relevant shape related ops to sharded shape.
 
 For the Llama model, in the attention layer there are couple of view operations that are shape related. In particular, column-wise parallel for ``wq``/ ``wk``/ ``wv`` linear layers, the activation tensor is sharded on the ``num_heads`` dimension, so we would need to adjust the ``num_heads`` to local ``num_heads``.
@@ -185,6 +186,8 @@ In a typical TransformerBlock, the forward function combines norm layers (``Laye
 In most use cases, the activations (and gradients) are of the shape ``[batch size, sequence length, hidden dimension]`` outside the ``Attention`` and ``FeedForward`` modules. In the DTensor’s language, Sequence Parallelism maintains a ``Shard(1)`` layout for the activations, and does conversions as needed when entering or exiting those modules.
 Following the code example earlier, the code below demonstrates how we apply Sequence Parallel to the norm layers within a ``TransformerBlock``:
 
+First let's import the required dependencies for Sequence Parallel:
+
 .. code-block:: python
 
     from torch.distributed.tensor.parallel import (
@@ -195,7 +198,12 @@ Following the code example earlier, the code below demonstrates how we apply Seq
         parallelize_module
     )
 
-    tp_plan = {
+
+Next let's adjust the ``layer_tp_plan`` to enable sequence parallel on the ``RMSNorm`` layers:
+
+.. code-block:: python
+
+    layer_tp_plan = {
         # by default the input and output of SequenceParallel
         # has Shard(1) layouts
         "attention": PrepareModuleInput(
@@ -216,6 +224,7 @@ Following the code example earlier, the code below demonstrates how we apply Seq
         "feed_forward.w3": ColwiseParallel(),
         "ffn_norm": SequenceParallel(),
     }
+
 
 One can see we now use ``PrepareModuleInput`` to modify the module input layouts to the Attention and FeedForward layers from ``Shard(1)`` to ``Replicate()``, and mark their output layouts as ``Shard(1)``.
 Just like what happens to Tensor Parallelism, one only needs to specify the tensor sharding layouts of the inputs and outputs, and the communication between layers will happen automatically.
@@ -295,6 +304,7 @@ In practice, we usually apply Tensor Parallel within each host, and apply Fully 
    :width: 100%
    :align: center
    :alt: fsdp + tp
+
    Figure 3. FSDP and TP work on separate device dimensions, FSDP communication happens inter-host and TP communication happens intra-host.
 
 
@@ -315,8 +325,9 @@ This 2-D parallelism pattern can be easily expressed via a 2-D DeviceMesh, and w
 
     tp_plan = {...}
 
-    # apply tensor parallel
+    # apply tensor parallel intra-host on tp_mesh
     model_tp = parallelize_module(model, tp_mesh, tp_plan)
+    # apply FSDP inter-host on dp_mesh
     model_2d = FSDP(model_tp, device_mesh=dp_mesh, use_orig_params=True, ...)
 
 
@@ -326,6 +337,6 @@ The Tensor(Model) Parallel and Data Parallel techniques combined together provid
 Conclusion
 ----------
 This tutorial demonstrates how to train a large Transformer-like model across hundreds to thousands of GPUs using Tensor Parallel in combination with Fully Sharded Data Parallel.
-It explains how to apply Tensor Parallel to different parts of the model, with no code changes to the model itself. Tensor Parallel is a efficient model parallelism technique for large scale training.
+It explains how to apply Tensor Parallel to different parts of the model, with **no code changes** to the model itself. Tensor Parallel is a efficient model parallelism technique for large scale training.
 
-To see the complete end to end code example explained in this tutorial, please refer to the `tensor parallel examples <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__ in the pytorch/examples repository.
+To see the complete end to end code example explained in this tutorial, please refer to the `Tensor Parallel examples <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__ in the pytorch/examples repository.
