@@ -10,7 +10,7 @@ Training AI models at a large scale is a challenging task that requires a lot of
 It also comes with considerable engineering complexity to handle the training of these very large models.
 `PyTorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
 
-In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
+In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/stable/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
 `GPT 3 models up to 1T parameters <https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
 
 
@@ -63,9 +63,7 @@ Here we use a toy model to run training on the MNIST dataset for demonstration p
 
 1.1 Install PyTorch along with Torchvision
 
-.. code-block:: bash 
-
-    pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
+See the `Get Started guide<https://pytorch.org/get-started/locally/>`__ for information on installation.
 
 We add the following code snippets to a python script “FSDP_mnist.py”.
 
