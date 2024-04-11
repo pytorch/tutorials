@@ -650,18 +650,18 @@ print(res)
 ######################################################################
 # .. code-block:: python
 #
-#     import torch._export
-#     import torch._inductor
+#    import torch._export
+#    import torch._inductor
 
-#     # Note: these APIs are subject to change
-#     # Compile the exported program to a .so using AOTInductor
-#     with torch.no_grad():
-#     so_path = torch._inductor.aot_compile(ep.module(), [inp])
+#    # Note: these APIs are subject to change
+#    # Compile the exported program to a .so using ``AOTInductor``
+#    with torch.no_grad():
+#    so_path = torch._inductor.aot_compile(ep.module(), [inp])
 #
-#     # Load and run the .so file in Python.
-#     # To load and run it in a C++ environment, see:
-#     # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
-#     res = torch._export.aot_load(so_path, device="cuda")(inp)
+#    # Load and run the .so file in Python.
+#    # To load and run it in a C++ environment, see:
+#    # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
+#    res = torch._export.aot_load(so_path, device="cuda")(inp)
 
 ######################################################################
 # Conclusion
