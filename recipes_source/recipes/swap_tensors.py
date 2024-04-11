@@ -66,7 +66,7 @@ print(f"weight in optimizer: {optimizer.param_groups[0]['params']}")
 #
 # * when using ``__torch_dispatch__`` subclasses
 # * when ``param`` and ``new_param`` do not have the same Python ``type()``
-# * For tensors with special C++ representations (such as sparse tensors and XLA tensors)
+# * For tensors with special C++ representations (such as sparse tensors and ``XLA`` tensors)
 #
 # In the following part of this recipe, we will define a toy ``__torch_dispatch__``
 # subclass ``MyQuantizedLinearWeight`` that represents quantized linear weights.
