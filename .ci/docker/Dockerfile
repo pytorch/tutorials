@@ -20,6 +20,10 @@ COPY ./common/install_conda.sh install_conda.sh
 COPY ./common/common_utils.sh common_utils.sh
 RUN bash ./install_conda.sh && rm install_conda.sh common_utils.sh /opt/conda/requirements.txt
 
-USER ec2-user
+# Setup user
+# TODO: figure out how to remove this part
+COPY ./common/install_user.sh install_user.sh
+RUN bash ./install_user.sh && rm install_user.sh
 
+USER ci-user
 CMD ["bash"]
