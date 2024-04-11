@@ -2,6 +2,7 @@
 
 Tips for Loading an ``nn.Module`` from a Checkpoint
 ===================================================
+**Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
 If you're loading a checkpoint and want to reduce compute and memory as much as possible,
 this tutorial shares some recommended practices. In particular, we will discuss

@@ -1,6 +1,7 @@
 """
 Extension points in ``nn.Module`` for ``load_state_dict`` and tensor subclasses
 ===============================================================================
+**Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
 This recipe introduces a new utility function ``torch.utils.swap_tensors``
 as well as two new extension points where it has been integrated in
