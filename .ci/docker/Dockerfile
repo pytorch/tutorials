@@ -3,14 +3,14 @@ FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Install common dependencies (so that this step can be cached separately)
+COPY ./common/install_base.sh install_base.sh
+RUN bash ./install_base.sh && rm install_base.sh
+
 # Setup user
 # TODO: figure out how to remove this part
 COPY ./common/install_user.sh install_user.sh
 RUN bash ./install_user.sh && rm install_user.sh
-
-# Install common dependencies (so that this step can be cached separately)
-COPY ./common/install_base.sh install_base.sh
-RUN bash ./install_base.sh && rm install_base.sh
 
 COPY ./common/install_docs_reqs.sh install_docs_reqs.sh
 RUN bash ./install_docs_reqs.sh && rm install_docs_reqs.sh
