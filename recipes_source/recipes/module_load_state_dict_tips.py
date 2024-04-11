@@ -157,7 +157,7 @@ m.load_state_dict(state_dict)
 # provides more details.
 
 new_m.load_state_dict(state_dict, assign=True)
-# Before 2.3.0 This MUST be done AFTER the load_state_dict with assign.
+# Before 2.3.0, this MUST be done AFTER the load_state_dict with assign.
 # In versions >= 2.3.0, one can consider setting torch.__future__.set_swap_module_params_on_conversion
 opt = torch.optim.SGD(new_m.parameters(), lr=1e-3)
 
