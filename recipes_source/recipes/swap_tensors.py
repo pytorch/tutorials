@@ -39,6 +39,8 @@ print(f"After swapping, t1: {t1}, t2: {t2}")
 # modifies any of its parameters out of place, the object holding references to
 # the parameters will not see the change. A classic example of this is the
 # optimizer, which holds a reference to the parameters of the ``nn.Module``.
+# This leads to a silent correctness issue where the ``optimizer.step()`` will
+# run without error but the weights of the ``nn.Module`` will not be updated.
 
 mod = torch.nn.Linear(1, 2, bias=False)
 optimizer = torch.optim.SGD(mod.parameters())
@@ -58,12 +60,13 @@ print(f"weight in optimizer: {optimizer.param_groups[0]['params']}")
 #
 # At first glance, it might be non-intuitive that these methods are able to
 # modify the parameters of the module in-place. The existing approach has been
-# to set the ``.data`` of the module under the hood (``param.data = new_param``).
+# to use a nasty hack dating back from the first days of PyTorch.
 #
 # Notably, the existing approach does not work in these cases:
 #
 # * when using ``__torch_dispatch__`` subclasses
-# * when ``param`` and ``new_param`` do not have the same type
+# * when ``param`` and ``new_param`` do not have the same Python ``type()``
+# * For tensors with special C++ representations (such as sparse tensors and XLA tensors)
 #
 # In the following part of this recipe, we will define a toy ``__torch_dispatch__``
 # subclass ``MyQuantizedLinearWeight`` that represents quantized linear weights.
@@ -74,18 +77,17 @@ aten = torch.ops.aten
 
 class MyQuantizedLinearWeight(torch.Tensor):
     @staticmethod
-    def __new__(cls, elem, scale, **kwargs):
+    def __new__(cls, elem, scale):
         return torch.Tensor._make_wrapper_subclass(
             cls,
             elem.shape,
             dtype=elem.dtype,
             layout=elem.layout,
             device=elem.device,
-            requires_grad=elem.requires_grad,
             strides=elem.stride(),
             storage_offset=elem.storage_offset())
 
-    def __init__(self, elem: torch.Tensor, scale: float, **kwargs):
+    def __init__(self, elem: torch.Tensor, scale: float):
         self.elem = elem
         self.scale = scale
 
@@ -144,17 +146,19 @@ torch.__future__.set_swap_module_params_on_conversion(False)
 # Depending on the value of the ``assign`` keyword argument passed
 # to ``load_state_dict()``, there are two ways to load the ``state_dict``:
 #
-# * ``assign=False``: in-place copy (i.e. ``param.copy_(state_dict['param'])``)
-# * ``assign=True``: ``__setattr__`` (i.e. ``module.param = state_dict['param']``)
+# * ``assign=False``: preserves the properties of ``module.param`` and only takes the values
+#   from ``state_dict['param_name']``
+# * ``assign=True``: preserves the properties and values of ``state_dict['param_name']``.
 #
 #
-# Each approach has its own limitations -- ``assign=False`` imposes the constraint that
-# the type of the parameter in the ``state_dict`` must be the same as the type of
-# the parameter in the module while ``assign=True`` imposes the constraint that
-# anything that holds references to the module's parameters must be initialized
-# after ``nn.Module.load_state_dict()``.
+# Previously, these were implemented with in-place ``copy_`` and ``__setattr__`` respectively.
+# With the existing implementation, each approach had its own limitations -- ``assign=False``
+# imposes the constraint that the type of the parameter in the ``state_dict`` must
+# be the same as the type of the parameter in the module while ``assign=True`` imposes
+# the constraint that anything that holds references to the module's parameters must
+# be initialized after ``nn.Module.load_state_dict()``.
 #
-# We address both constraints by adding a ``swap_tensors`` path to ``load_state_dict()``
+# Now, we address both constraints by adding a ``swap_tensors`` path to ``load_state_dict()``
 # and introducing a new extension point ``torch.Tensor.module_load(self, other, assign=False)``.
 # When the ``swap_tensors`` path is enabled via the ``__future__`` mentioned above,
 # we can use a ``__torch_function__`` handler for ``module_load`` to apply a
@@ -179,12 +183,11 @@ torch.__future__.set_swap_module_params_on_conversion(False)
 @classmethod
 def custom_torch_function(cls, func, types, args=(), kwargs=None):
     kwargs = {} if kwargs is None else kwargs
-    def module_load(dest, src, assign=False):
-        assert type(dest) == cls and type(src) == torch.Tensor
-        return MyQuantizedLinearWeight(src, dest.scale)
 
     if func is torch.Tensor.module_load:
-        return module_load(*args, **kwargs)
+        dest, src = args[0], args[1]
+        assert type(dest) == cls and type(src) == torch.Tensor
+        return MyQuantizedLinearWeight(src, dest.scale)
     else:
         with torch._C.DisableTorchFunctionSubclass():
                 return func(*args, **kwargs)
