@@ -63,7 +63,7 @@ Here we use a toy model to run training on the MNIST dataset for demonstration p
 
 1.1 Install PyTorch along with Torchvision
 
-See the `Get Started guide<https://pytorch.org/get-started/locally/>`__ for information on installation.
+See the `Get Started guide <https://pytorch.org/get-started/locally/>`__ for information on installation.
 
 We add the following code snippets to a python script “FSDP_mnist.py”.
 
