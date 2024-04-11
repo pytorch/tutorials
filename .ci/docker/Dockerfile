@@ -3,6 +3,11 @@ FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Setup user
+# TODO: figure out how to remove this part
+COPY ./common/install_user.sh install_user.sh
+RUN bash ./install_user.sh && rm install_user.sh
+
 # Install common dependencies (so that this step can be cached separately)
 COPY ./common/install_base.sh install_base.sh
 RUN bash ./install_base.sh && rm install_base.sh
@@ -19,11 +24,6 @@ COPY ./requirements.txt /opt/conda/
 COPY ./common/install_conda.sh install_conda.sh
 COPY ./common/common_utils.sh common_utils.sh
 RUN bash ./install_conda.sh && rm install_conda.sh common_utils.sh /opt/conda/requirements.txt
-
-# Setup user
-# TODO: figure out how to remove this part
-COPY ./common/install_user.sh install_user.sh
-RUN bash ./install_user.sh && rm install_user.sh
 
 USER ci-user
 CMD ["bash"]
