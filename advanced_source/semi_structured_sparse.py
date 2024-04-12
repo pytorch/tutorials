@@ -3,7 +3,7 @@
 (prototype) Accelerating BERT with semi-structured (2:4) sparsity
 =================================================================
 
-**Author**: ``Jesse Cai <https://github.com/jcaip>``\ \_
+**Author**: `Jesse Cai <https://github.com/jcaip>`_
 
 Like other forms of sparsity, **semi-structured sparsity** is a model
 optimization technique that seeks to reduce the memory overhead and
