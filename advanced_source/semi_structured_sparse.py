@@ -154,11 +154,14 @@ with torch.inference_mode():
 # decompose the problem of sparsifying a model into two distinct
 # subproblems:
 # 
-# -  Accuracy - How can we find a set of 2:4 sparse weights that minimize
-#    the accuracy degradation of our model?
-# -  Performance - How can we accelerate our 2:4 sparse weights for
-#    inference and reduced memory overhead?
-# 
+# - Accuracy - How can we find a set of 2:4 sparse weights that minimize
+#   the accuracy degradation of our model?
+#
+# - Performance - How can we accelerate our 2:4 sparse weights for
+#   inference and reduced memory overhead?
+#
+
+##################################################################### 
 # .. math::
 # 
 #    \begin{bmatrix}
@@ -204,7 +207,7 @@ torch.manual_seed(100)
 ######################################################################
 # We’ll also need to define some helper functions that are specific to the
 # dataset / task at hand. These were adapted from
-# ``this <https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt>``\ \_
+# `this <https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt>`__
 # Hugging Face course as a reference.
 # 
 
@@ -374,7 +377,7 @@ def measure_execution_time(model, batch_sizes, dataset):
             p50 = timer.blocked_autorange().median * 1000
             batch_size_to_time_sec[f"{batch_size}_compile"] = p50
             new_predictions = model_c(**batch)
-            
+
     return batch_size_to_time_sec
 
 
@@ -482,7 +485,7 @@ df.plot.line(x='step', y='loss', title="Loss vs. # steps", ylabel="loss")
 # We’ll also have to decide what layers of the model to apply sparsity to,
 # which in this case is all of the ``nn.Linear`` layers, except for the
 # task-specific head outputs. That’s because semi-structured sparsity has
-# ``shape constraints <https://pytorch.org/docs/2.1/sparse.html#constructing-sparse-semi-structured-tensors>``\ \_,
+# `shape constraints <https://pytorch.org/docs/2.1/sparse.html#constructing-sparse-semi-structured-tensors>`_,
 # and the task-specific ``nn.Linear`` layers do not satisfy them.
 # 
 
@@ -599,16 +602,32 @@ print("sparse perf metrics: ", sparse_perf)
 # is compatible with ``torch.compile``. When composed with
 # ``to_sparse_semi_structured``, we are able to achieve a total 2x speedup
 # on BERT.
-# 
-# | =============== ====== ========== =============== ======== Metrics
-#   fp16 2:4 sparse delta / speedup compiled =============== ======
-#   ========== =============== ======== Exact Match (%) 78.53 78.44 -0.09
-# | F1 (%) 86.93 86.49 -0.44
-# | Time (bs=4) 11.10 15.54 0.71x no Time (bs=16) 19.35 15.74 1.23x no
-#   Time (bs=64) 72.71 59.41 1.22x no Time (bs=256) 286.65 247.63 1.14x no
-#   Time (bs=4) 7.59 7.46 1.02x yes Time (bs=16) 11.47 9.68 1.18x yes Time
-#   (bs=64) 41.57 36.92 1.13x yes Time (bs=256) 159.22 142.23 1.12x yes
-#   =============== ====== ========== =============== ========
+#
+# .. table::
+#
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Metrics            | fp16   | 2:4 sparse   | delta / speedup | compiled  |
+#     +====================+========+==============+=================+===========+
+#     | Exact Match (%)    | 78.53  | 78.44        | -0.09           |           |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | F1 (%)             | 86.93  | 86.49        | -0.44           |           |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=4)        | 11.10  | 15.54        | 0.71x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=16)       | 19.35  | 15.74        | 1.23x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=64)       | 72.71  | 59.41        | 1.22x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=256)      | 286.65 | 247.63       | 1.14x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=4)        | 7.59   | 7.46         | 1.02x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=16)       | 11.47  | 9.68         | 1.18x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=64)       | 41.57  | 36.92        | 1.13x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=256)      | 159.22 | 142.23       | 1.12x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
 # 
 # Conclusion
 # ==========
