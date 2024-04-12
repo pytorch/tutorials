@@ -154,7 +154,7 @@ m.load_state_dict(state_dict)
 # is loaded from state dict if ``assign=True`` is passed.
 
 # As of PyTorch 2.3.0, one can use ``torch.__future__.set_swap_module_params_on_conversion`` to
-# avoid this caveat. This `recipe <https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html>`_
+# avoid this caveat. This `recipe <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`_
 # provides more details.
 
 new_m.load_state_dict(state_dict, assign=True)
