@@ -21,7 +21,7 @@ thereby reducing the Python overhead within the graph.
 
 
 Enabling the API
-------------
+----------------
 This feature is still in prototype stage. To activate this feature, add the following to your code:
 
 .. code:: python

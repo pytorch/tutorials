@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 A Gentle Introduction to ``torch.autograd``
----------------------------------
+===========================================
 
 ``torch.autograd`` is PyTorch’s automatic differentiation engine that powers
 neural network training. In this section, you will get a conceptual
@@ -149,7 +149,7 @@ print(-2*b == b.grad)
 
 ######################################################################
 # Optional Reading - Vector Calculus using ``autograd``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Mathematically, if you have a vector valued function
 # :math:`\vec{y}=f(\vec{x})`, then the gradient of :math:`\vec{y}` with

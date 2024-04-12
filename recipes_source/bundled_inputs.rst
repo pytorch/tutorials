@@ -10,8 +10,11 @@ This tutorial introduces the steps to use PyTorch's utility to bundle example or
 
 The interface of the model remains unchanged (other than adding a few methods), so it can still be safely deployed to production. The advantage of this standardized interface is that tools that run models can use it instead of having some sort of external file (or worse, document) that tells you how to run the model properly.
 
-Common case, bundling an input to a model that only uses 'forward' for inference
+Common case
 -------------------
+
+One of the common cases—bundling an input to a model that only uses 'forward' for inference.
+
 1. **Prepare model**: Convert your model to TorchScript through either tracing or scripting
 
 .. code:: python
@@ -52,8 +55,11 @@ Common case, bundling an input to a model that only uses 'forward' for inference
     print(bundled_model(*sample_inputs[0]))
 
 
-Uncommon case, bundling and retrieving inputs for functions beyond 'forward'
--------------------
+Uncommon case
+--------------
+
+An uncommon case would be bundling and retrieving inputs for functions beyond 'forward'.
+
 1. **Prepare model**: Convert your model to TorchScript through either tracing or scripting
 
 .. code:: python

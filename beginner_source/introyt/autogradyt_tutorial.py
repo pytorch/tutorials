@@ -213,7 +213,7 @@ plt.plot(a.detach(), a.grad.detach())
 #########################################################################
 # Recall the computation steps we took to get here:
 # 
-# ::
+# .. code-block:: python
 # 
 #    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
 #    b = torch.sin(a)
@@ -250,9 +250,9 @@ class TinyModel(torch.nn.Module):
     def __init__(self):
         super(TinyModel, self).__init__()
         
-        self.layer1 = torch.nn.Linear(1000, 100)
+        self.layer1 = torch.nn.Linear(DIM_IN, HIDDEN_SIZE)
         self.relu = torch.nn.ReLU()
-        self.layer2 = torch.nn.Linear(100, 10)
+        self.layer2 = torch.nn.Linear(HIDDEN_SIZE, DIM_OUT)
     
     def forward(self, x):
         x = self.layer1(x)
@@ -456,10 +456,10 @@ print(y)
 # .. note::
 #     The following code cell throws a runtime error. This is expected.
 # 
-# ::
+#    .. code-block:: python
 #
-#    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
-#    torch.sin_(a)
+#       a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
+#       torch.sin_(a)
 #
 
 #########################################################################

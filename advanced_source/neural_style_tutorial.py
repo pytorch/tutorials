@@ -87,7 +87,7 @@ torch.set_default_device(device)
 # to 255 tensor images. 
 #
 #
-# .. Note::
+# .. note::
 #     Here are links to download the images required to run the tutorial:
 #     `picasso.jpg <https://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
 #     `dancing.jpg <https://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
@@ -183,7 +183,7 @@ class ContentLoss(nn.Module):
         return input
 
 ######################################################################
-# .. Note::
+# .. note::
 #    **Important detail**: although this module is named ``ContentLoss``, it
 #    is not a true PyTorch Loss function. If you want to define your content
 #    loss as a PyTorch Loss function, you have to create a PyTorch autograd function 
@@ -372,7 +372,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 input_img = content_img.clone()
 # if you want to use white noise by using the following code:
 #
-# ::
+# .. code-block:: python
 #
 #    input_img = torch.randn(content_img.data.size())
 

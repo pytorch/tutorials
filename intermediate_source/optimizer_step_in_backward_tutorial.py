@@ -147,7 +147,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 # API on Tensor.
 #
 # ``Tensor.register_post_accumulate_grad_hook(hook)`` API and our technique
-# """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+# """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # Our technique relies on not having to save the gradients during ``backward()``. Instead,
 # once a gradient has been accumulated, we will immediately apply the optimizer to
 # the corresponding parameter and drop that gradient entirely! This removes the need

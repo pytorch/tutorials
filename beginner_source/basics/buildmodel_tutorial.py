@@ -10,7 +10,7 @@
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Build the Neural Network
-===================
+========================
 
 Neural networks comprise of layers/modules that perform operations on data.
 The `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides all the building blocks you need to
@@ -197,5 +197,5 @@ for name, param in model.named_parameters():
 
 #################################################################
 # Further Reading
-# --------------
+# -----------------
 # - `torch.nn API <https://pytorch.org/docs/stable/nn.html>`_

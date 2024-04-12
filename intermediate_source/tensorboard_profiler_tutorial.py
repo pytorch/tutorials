@@ -36,6 +36,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 4. Use TensorBoard to view results and analyze model performance
 # 5. Improve performance with the help of profiler
 # 6. Analyze performance with other advanced features
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs 
 #
 # 1. Prepare the data and model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,7 +157,7 @@ prof.stop()
 
 ######################################################################
 # 4. Use TensorBoard to view results and analyze model performance
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # .. note::
 #     TensorBoard Plugin support has been deprecated, so some of these functions may not
@@ -391,6 +392,102 @@ prof.stop()
 # this worker may be a straggler which may have more computation workload than other workers’.
 #
 # The "Communication Operations Stats" summarizes the detailed statistics of all communication ops in each worker.
+
+######################################################################
+# 7. Additional Practices: Profiling PyTorch on AMD GPUs
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#  
+# The AMD ROCm Platform is an open-source software stack designed for GPU computation, consisting of drivers, development tools, and APIs. 
+# We can run the above mentioned steps on AMD GPUs. In this section, we will use Docker to install the ROCm base development image
+# before installing PyTorch.
+
+
+######################################################################
+# For the purpose of example, let's create a directory called ``profiler_tutorial``, and save the code in **Step 1** as ``test_cifar10.py`` in this directory. 
+# 
+# .. code-block::
+#
+#      mkdir ~/profiler_tutorial
+#      cd profiler_tutorial
+#      vi test_cifar10.py
+
+
+######################################################################
+# At the time of this writing, the Stable(``2.1.1``) Linux version of PyTorch on ROCm Platform is `ROCm 5.6 <https://pytorch.org/get-started/locally/>`_. 
+#
+#
+# - Obtain a base Docker image with the correct user-space ROCm version installed from `Docker Hub <https://hub.docker.com/repository/docker/rocm/dev-ubuntu-20.04>`_.
+#
+# It is ``rocm/dev-ubuntu-20.04:5.6``.
+#
+# - Start the ROCm base Docker container:
+#
+#
+# .. code-block::
+#
+#     docker run -it --network=host --device=/dev/kfd --device=/dev/dri --group-add=video --ipc=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --shm-size 8G -v ~/profiler_tutorial:/profiler_tutorial rocm/dev-ubuntu-20.04:5.6
+#
+#
+# - Inside the container, install any dependencies needed for installing the wheels package.
+#
+# .. code-block::
+#
+#     sudo apt update
+#     sudo apt install libjpeg-dev python3-dev -y
+#     pip3 install wheel setuptools
+#     sudo apt install python-is-python3 
+#
+#
+# - Install the wheels:
+#
+# .. code-block::
+# 
+#     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+#
+#
+# - Install the ``torch_tb_profiler``, and then, run the Python file ``test_cifar10.py``:
+# 
+# .. code-block::
+#
+#     pip install torch_tb_profiler
+#     cd /profiler_tutorial
+#     python test_cifar10.py
+#
+#     
+# Now, we have all the data needed to view in TensorBoard:
+# 
+# .. code-block::
+#
+#      tensorboard --logdir=./log
+#
+# Choose different views as described in **Step 4**. For example, below is the **Operator** View:
+#
+# .. image:: ../../_static/img/profiler_rocm_tensorboard_operartor_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# At the time this section is written, **Trace** view does not work and it displays nothing. You can work around by typing ``chrome://tracing`` in your Chrome Browser.
+#
+# 
+# - Copy the ``trace.json`` file under ``~/profiler_tutorial/log/resnet18`` directory to the Windows.  
+# You may need to copy the file by using ``scp`` if the file is located in a remote location. 
+# 
+# - Click **Load** button to load the trace JSON file from the ``chrome://tracing`` page in the browser. 
+#
+# .. image:: ../../_static/img/profiler_rocm_chrome_trace_view.png
+#    :scale: 25 %
+
+
+######################################################################
+# As mentioned previously, you can move the graph and zoom in and out.
+# You can also use keyboard to zoom and move around inside the timeline.
+# The ``w`` and ``s`` keys zoom in centered around the mouse,
+# and the ``a`` and ``d`` keys move the timeline left and right.
+# You can hit these keys multiple times until you see a readable representation.
+
+
 
 ######################################################################
 # Learn More
