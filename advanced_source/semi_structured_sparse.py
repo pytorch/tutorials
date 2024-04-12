@@ -18,7 +18,7 @@ interesting because it can be efficiently accelerated on GPUs and
 doesn’t degrade model accuracy as much as other sparsity patterns.
 
 With the introduction of
-``semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>``\ \_,
+`semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_,
 it is possible to prune and accelerate a semi-structured sparse model
 without leaving PyTorch. We will explain this process in this tutorial.
 
@@ -36,10 +36,10 @@ Requirements
 -  A NVIDIA GPU with semi-structured sparsity support (Compute
    Capability 8.0+).
 
-This tutorial is designed for beginners to semi-structured sparsity /
+This tutorial is designed for beginners to semi-structured sparsity and
 sparsity in general. For users with existing 2:4 sparse models,
 accelerating ``nn.Linear`` layers for inference with
-``to_sparse_semi_structured`` is as easy as:
+``to_sparse_semi_structured`` is quite straightforward. Here is an example: 
 
 """
 
@@ -80,7 +80,7 @@ with torch.inference_mode():
 # -------------------------------------------------
 # 
 # The general motivation behind sparsity is simple: if there are zeros in
-# your network, you can avoid storing / doing compute with those
+# your network, you can optimize efficiency by not storing or computing those
 # parameters. However, the specifics of sparsity are tricky. Zeroing out
 # parameters doesn’t affect the latency / memory overhead of our model out
 # of the box.
@@ -99,26 +99,25 @@ with torch.inference_mode():
 # parameters along with some compressed metadata about how the elements
 # were arranged.
 # 
-# .. image::
-# https://developer-blogs.nvidia.com/wp-content/uploads/2023/06/2-4-structured-sparsity-pattern.png
-# :align: center :width: 80%
-# 
-# ::
+# .. image:: https://developer-blogs.nvidia.com/wp-content/uploads/2023/06/2-4-structured-sparsity-pattern.png
+#    :align: center :width: 80%
 # 
 #    Image sourced from `NVIDIA blog post <https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/>`_ on semi-structured sparsity.
 # 
 # There are many different sparse layouts, each with their own benefits
 # and drawbacks. The 2:4 semi-structured sparse layout is particularly
-# interesting for two reasons: 1. Unlike previous sparse formats,
+# interesting for two reasons:
+# 
+# * Unlike previous sparse formats,
 # semi-structured sparsity was designed to be efficiently accelerated on
 # GPUs. In 2020, NVIDIA introduced hardware support for semi-structured
 # sparsity with their Ampere architecture, and have also released fast
 # sparse kernels via
-# CUTLASS/``cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>``\ *.
-# 2. At the same time, semi-structured sparsity tends to have a milder
+# CUTLASS `cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`__.
+# * At the same time, semi-structured sparsity tends to have a milder
 # impact on model accuracy compared to other sparse formats, especially
 # when accounting for more advanced pruning / fine-tuning methods. NVIDIA
-# has shown in their ``white paper <https://arxiv.org/abs/2104.08378>``*
+# has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_
 # that a simple paradigm of magnitude pruning once to be 2:4 sparse and
 # then retraining the model yields nearly identical model accuracies.
 # 
@@ -155,8 +154,6 @@ with torch.inference_mode():
 #    inference and reduced memory overhead?
 # 
 # .. math::
-# 
-# .. raw:: latex
 # 
 #    \begin{bmatrix}
 #       1 & 1 & 0 & 0 \\
