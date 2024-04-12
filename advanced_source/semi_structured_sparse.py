@@ -1,48 +1,53 @@
 # -*- coding: utf-8 -*-
-
 """
-(prototype) Accelerating BERT with semi-structured (2:4) sparsity
-=================================================================
-
+Accelerating BERT with semi-structured (2:4) sparsity
+=====================================================
 **Author**: `Jesse Cai <https://github.com/jcaip>`_
 
-Like other forms of sparsity, **semi-structured sparsity** is a model
-optimization technique that seeks to reduce the memory overhead and
-latency of a neural network at the expense of some model accuracy. It is
-also known as **fine-grained structured sparsity** or **2:4 structured
-sparsity**.
-
-Semi-structured sparsity derives its name from its unique sparsity
-pattern, where n out of every 2n elements are pruned. We most often see
-n=2, hence 2:4 sparsity Semi-structured sparsity is particularly
-interesting because it can be efficiently accelerated on GPUs and
-doesn’t degrade model accuracy as much as other sparsity patterns.
-
-With the introduction of
-`semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_,
-it is possible to prune and accelerate a semi-structured sparse model
-without leaving PyTorch. We will explain this process in this tutorial.
-
-.. image:: ../../_static/img/pruning_flow.jpg
-
-By the end of this tutorial, we will have sparsified a BERT
-question-answering model to be 2:4 sparse, fine-tuning it to recover
-nearly all F1 loss (86.92 dense vs 86.48 sparse). Finally, we will
-accelerate this 2:4 sparse model for inference, yielding a 1.3x speedup.
-
-Requirements
-------------
-
--  PyTorch >= 2.1.
--  A NVIDIA GPU with semi-structured sparsity support (Compute
-   Capability 8.0+).
-
-This tutorial is designed for beginners to semi-structured sparsity and
-sparsity in general. For users with existing 2:4 sparse models,
-accelerating ``nn.Linear`` layers for inference with
-``to_sparse_semi_structured`` is quite straightforward. Here is an example: 
-
 """
+
+####################################################################
+# Overview
+# --------
+#
+# Like other forms of sparsity, **semi-structured sparsity** is a model
+# optimization technique that seeks to reduce the memory overhead and
+# latency of a neural network at the expense of some model accuracy. It is
+# also known as **fine-grained structured sparsity** or **2:4 structured
+# sparsity**.
+#
+# Semi-structured sparsity derives its name from its unique sparsity
+# pattern, where n out of every 2n elements are pruned. We most often see
+# n=2, hence 2:4 sparsity Semi-structured sparsity is particularly
+# interesting because it can be efficiently accelerated on GPUs and
+# doesn’t degrade model accuracy as much as other sparsity patterns.
+# 
+# With the introduction of
+# `semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_,
+# it is possible to prune and accelerate a semi-structured sparse model
+# without leaving PyTorch. We will explain this process in this tutorial.
+#
+# .. image:: ../../_static/img/pruning_flow.jpg
+# 
+# By the end of this tutorial, we will have sparsified a BERT
+# question-answering model to be 2:4 sparse, fine-tuning it to recover
+# nearly all F1 loss (86.92 dense vs 86.48 sparse). Finally, we will
+# accelerate this 2:4 sparse model for inference, yielding a 1.3x speedup.
+# 
+
+#####################################################
+# Requirements
+# ------------
+#
+# -  PyTorch >= 2.1.
+# -  A NVIDIA GPU with semi-structured sparsity support (Compute
+#    Capability 8.0+).
+#
+# This tutorial is designed for beginners to semi-structured sparsity and
+# sparsity in general. For users with existing 2:4 sparse models,
+# accelerating ``nn.Linear`` layers for inference with
+# ``to_sparse_semi_structured`` is quite straightforward. Here is an example: 
+# 
 
 import torch
 from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor
