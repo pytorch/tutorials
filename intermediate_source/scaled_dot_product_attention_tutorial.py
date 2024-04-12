@@ -337,7 +337,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 #
 # .. note::
 #    The current argument ``is_causal`` in ``torch.nn.functional.scaled_dot_product_attention``
-# is the same as using ``torch.nn.attention.bias.causal_upper_left``.
+#    is the same as using ``torch.nn.attention.bias.causal_upper_left``.
 #
 
 from torch.nn.attention.bias import causal_lower_right, causal_upper_left
