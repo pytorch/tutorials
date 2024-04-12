@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 (prototype) Accelerating BERT with semi-structured (2:4) sparsity
 =================================================================
