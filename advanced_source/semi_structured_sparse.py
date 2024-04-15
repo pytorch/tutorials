@@ -186,7 +186,11 @@ with torch.inference_mode():
 # Let’s start by importing all the packages we need.
 # 
 
-!pip install datasets transformers evaluate accelerate pandas
+# If you are running this in Google Colab, run:
+# .. code-block: python
+# 
+#    !pip install datasets transformers evaluate accelerate pandas
+#
 
 import collections
 import datasets
