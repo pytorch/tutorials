@@ -427,27 +427,45 @@ except Exception:
     tb.print_exc()
 
 ######################################################################
-# We can also describe one dimension in terms of other.
+# We can also describe one dimension in terms of other. There are some
+# restrictions to how detailed we can specify one dimension in terms of another,
+# but generally, those in the form of ``A * Dim + B`` should work.
 
-class DerivedDimExample(torch.nn.Module):
+class DerivedDimExample1(torch.nn.Module):
     def forward(self, x, y):
         return x + y[1:]
 
-foo = DerivedDimExample()
+foo = DerivedDimExample1()
 
 x, y = torch.randn(5), torch.randn(6)
 dimx = torch.export.Dim("dimx", min=3, max=6)
 dimy = dimx + 1
-derived_dynamic_shapes = ({0: dimx}, {0: dimy})
+derived_dynamic_shapes1 = ({0: dimx}, {0: dimy})
 
-derived_dim_example = export(foo, (x, y), dynamic_shapes=derived_dynamic_shapes)
+derived_dim_example1 = export(foo, (x, y), dynamic_shapes=derived_dynamic_shapes1)
 
-print(derived_dim_example.module()(torch.randn(4), torch.randn(5)))
+print(derived_dim_example1.module()(torch.randn(4), torch.randn(5)))
 
 try:
-    derived_dim_example.module()(torch.randn(4), torch.randn(6))
+    derived_dim_example1.module()(torch.randn(4), torch.randn(6))
 except Exception:
     tb.print_exc()
+
+
+class DerivedDimExample2(torch.nn.Module):
+    def forward(self, z, y):
+        return z[1:] + y[1::3]
+
+foo = DerivedDimExample2()
+
+z, y = torch.randn(4), torch.randn(10)
+dx = torch.export.Dim("dx", min=3, max=6)
+dz = dx + 1
+dy = dx * 3 + 1
+derived_dynamic_shapes2 = ({0: dz}, {0: dy})
+
+derived_dim_example2 = export(foo, (z, y), dynamic_shapes=derived_dynamic_shapes2)
+print(derived_dim_example2.module()(torch.randn(7), torch.randn(19)))
 
 ######################################################################
 # We can actually use ``torch.export`` to guide us as to which ``dynamic_shapes`` constraints
