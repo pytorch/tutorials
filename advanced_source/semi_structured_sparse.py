@@ -431,6 +431,7 @@ training_args = transformers.TrainingArguments(
     per_device_train_batch_size=64,
     per_device_eval_batch_size=512,
     logging_steps=50, 
+    report_to=None,
 )
 
 trainer = transformers.Trainer(
