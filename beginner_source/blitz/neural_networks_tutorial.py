@@ -57,26 +57,29 @@ class Net(nn.Module):
 
     def forward(self, input):
         # Convolution layer C1: 1 input image channel, 6 output channels,
-        # 5x5 square convolution, it uses RELU activation function => 6x28x28 tensor
+        # 5x5 square convolution, it uses RELU activation function, and
+        # outputs a Tensor with size (N, 6, 28, 28), where N is the size of the batch
         c1 = F.relu(self.conv1(input))
         # Subsampling layer S2: 2x2 grid, purely functional,
-        # it does not keep any parameter => 6x14x14 tensor
+        # this layer does not have any parameter, and outputs a (N, 16, 14, 14) Tensor
         s2 = F.max_pool2d(c1, (2, 2))
         # Convolution layer C3: 6 input channels, 16 output channels,
-        # 5x5 square convolution, it uses RELU activation function => 16x10x10 tensor
+        # 5x5 square convolution, it uses RELU activation function, and
+        # outputs a (N, 16, 10, 10) Tensor
         c3 = F.relu(self.conv2(s2))
         # Subsampling layer S4: 2x2 grid, purely functional,
-        # it does not keep any parameter => 16x5x5 tensor
+        # this layer does not have any parameter, and outputs a (N, 16, 5, 5) Tensor
         s4 = F.max_pool2d(c3, 2)
-        # Flatten operation: purely functional, 2D tensor => 1D tensor
+        # Flatten operation: purely functional, outputs a (N, 400) Tensor
         s4 = torch.flatten(s4, 1)
-        # Fully connected layer F5: 400 inputs, 120 outputs,
-        # it uses RELU activation function
+        # Fully connected layer F5: (N, 400) Tensor input,
+        # and outputs a (N, 120) Tensor, it uses RELU activation function
         f5 = F.relu(self.fc1(s4))
-        # Fully connected layer F6: 120 inputs, 84 outputs,
-        # it uses RELU activation function
+        # Fully connected layer F6: (N, 120) Tensor input,
+        # and outputs a (N, 84) Tensor, it uses RELU activation function
         f6 = F.relu(self.fc2(f5))
-        # Gaussian layer OUTPUT: 84 inputs, 10 outputs
+        # Gaussian layer OUTPUT: (N, 84) Tensor input, and
+        # outputs a (N, 10) Tensor
         output = self.fc3(f6)
         return output
 
