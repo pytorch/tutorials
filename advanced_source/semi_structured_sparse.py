@@ -41,6 +41,8 @@ accelerating ``nn.Linear`` layers for inference with
 ``to_sparse_semi_structured`` is as easy as:
 
 """
+import os
+os.environ[“WANDB_DISABLED”] = “true”
 
 import torch
 from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor
