@@ -1,6 +1,6 @@
 """
 
-Nested Tensors
+Getting Started with Nested Tensors
 ===============================================================
 
 Nested tensors generalize the shape of regular dense tensors, allowing for representation
@@ -20,7 +20,7 @@ In this tutorial, we will demonstrate basic usage of nested tensors and motivate
 for operating on sequential data of varying lengths with a real-world example. In particular,
 they are invaluable for building transformers that can efficiently operate on ragged sequential
 inputs. Below, we present an implementation of multi-head attention using nested tensors that,
-combined usage of torch.compile, out-performs operating naively on tensors with padding.
+combined usage of ``torch.compile``, out-performs operating naively on tensors with padding.
 
 Nested tensors are currently a prototype feature and are subject to change.
 """
@@ -158,9 +158,9 @@ print(f"{nested_sentences=}")
 # Further, not all operations have the same semnatics when applied to padded data.
 # For matrix multiplications in order to ignore the padded entries, one needs to pad
 # with 0 while for softmax one has to pad with -inf to ignore specific entries.
-# The ideal that nested tensor seeks to achieve is the ability to operate on ragged data
-# using the standard PyTorch tensor UX, avoiding inefficient and complicated
-# padding + masking.
+# The primary objective of nested tensor is to facilitate operations on ragged
+# data using the standard PyTorch tensor UX, thereby eliminating the need
+# for inefficient and complex padding and masking.
 padded_sentences_for_softmax = torch.tensor([[1.0, 2.0, float("-inf")],
                                              [3.0, 4.0, 5.0]])
 print(F.softmax(padded_sentences_for_softmax, -1))
@@ -355,9 +355,17 @@ print("nested tensor multi-head attention takes", compiled_time_nested, "seconds
 print("padded tensor multi-head attention takes", compiled_time_padded, "seconds")
 
 ######################################################################
-# Note that without torch.compile, the overhead of the python subclass nested tensor
+# Note that without ``torch.compile``, the overhead of the python subclass nested tensor
 # can make it slower than the equivalent computation on padded tensors. However, once
-# torch.compile is enabled, operating on nested tensors gives a multiple x speedup.
+# ``torch.compile`` is enabled, operating on nested tensors gives a multiple x speedup.
 # Avoiding wasted computation on padding becomes only more valuable as the percentage
 # of padding in the batch increases.
 print(f"Nested speedup: {compiled_time_padded / compiled_time_nested:.3f}")
+
+######################################################################
+# Conclusion
+# ----------
+# In this tutorial, we have learned how to perform basic operations with nested tensors and
+# how implement multi-head attention for transformers in a way that avoids computation on padding.
+# For more information, check out the docs for the
+# `torch.nested <https://pytorch.org/docs/stable/nested.html>`__ namespace.
