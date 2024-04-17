@@ -5,8 +5,6 @@ Accelerating BERT with semi-structured (2:4) sparsity
 **Author**: `Jesse Cai <https://github.com/jcaip>`_
 
 """
-import os
-os.environ[“WANDB_DISABLED”] = “true”
 
 ####################################################################
 # Overview
@@ -193,6 +191,8 @@ with torch.inference_mode():
 # 
 #    !pip install datasets transformers evaluate accelerate pandas
 #
+import os
+os.environ["WANDB_DISABLED"] = "true"
 
 import collections
 import datasets
