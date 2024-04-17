@@ -1,48 +1,55 @@
+# -*- coding: utf-8 -*-
 """
-(prototype) Accelerating BERT with semi-structured (2:4) sparsity
-=================================================================
-
-**Author**: ``Jesse Cai <https://github.com/jcaip>``\ \_
-
-Like other forms of sparsity, **semi-structured sparsity** is a model
-optimization technique that seeks to reduce the memory overhead and
-latency of a neural network at the expense of some model accuracy. It is
-also known as **fine-grained structured sparsity** or **2:4 structured
-sparsity**.
-
-Semi-structured sparsity derives its name from its unique sparsity
-pattern, where n out of every 2n elements are pruned. We most often see
-n=2, hence 2:4 sparsity Semi-structured sparsity is particularly
-interesting because it can be efficiently accelerated on GPUs and
-doesn’t degrade model accuracy as much as other sparsity patterns.
-
-With the introduction of
-``semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>``\ \_,
-it is possible to prune and accelerate a semi-structured sparse model
-without leaving PyTorch. We will explain this process in this tutorial.
-
-.. image:: ../../_static/img/pruning_flow.jpg
-
-By the end of this tutorial, we will have sparsified a BERT
-question-answering model to be 2:4 sparse, fine-tuning it to recover
-nearly all F1 loss (86.92 dense vs 86.48 sparse). Finally, we will
-accelerate this 2:4 sparse model for inference, yielding a 1.3x speedup.
-
-Requirements
-------------
-
--  PyTorch >= 2.1.
--  A NVIDIA GPU with semi-structured sparsity support (Compute
-   Capability 8.0+).
-
-This tutorial is designed for beginners to semi-structured sparsity /
-sparsity in general. For users with existing 2:4 sparse models,
-accelerating ``nn.Linear`` layers for inference with
-``to_sparse_semi_structured`` is as easy as:
+Accelerating BERT with semi-structured (2:4) sparsity
+=====================================================
+**Author**: `Jesse Cai <https://github.com/jcaip>`_
 
 """
 import os
 os.environ[“WANDB_DISABLED”] = “true”
+
+####################################################################
+# Overview
+# --------
+#
+# Like other forms of sparsity, **semi-structured sparsity** is a model
+# optimization technique that seeks to reduce the memory overhead and
+# latency of a neural network at the expense of some model accuracy. It is
+# also known as **fine-grained structured sparsity** or **2:4 structured
+# sparsity**.
+#
+# Semi-structured sparsity derives its name from its unique sparsity
+# pattern, where n out of every 2n elements are pruned. We most often see
+# n=2, hence 2:4 sparsity Semi-structured sparsity is particularly
+# interesting because it can be efficiently accelerated on GPUs and
+# doesn’t degrade model accuracy as much as other sparsity patterns.
+# 
+# With the introduction of
+# `semi-structured sparsity support <https://pytorch.org/docs/2.1/sparse.html#sparse-semi-structured-tensors>`_,
+# it is possible to prune and accelerate a semi-structured sparse model
+# without leaving PyTorch. We will explain this process in this tutorial.
+#
+# .. image:: ../../_static/img/pruning_flow.jpg
+# 
+# By the end of this tutorial, we will have sparsified a BERT
+# question-answering model to be 2:4 sparse, fine-tuning it to recover
+# nearly all F1 loss (86.92 dense vs 86.48 sparse). Finally, we will
+# accelerate this 2:4 sparse model for inference, yielding a 1.3x speedup.
+# 
+
+#####################################################
+# Requirements
+# ------------
+#
+# -  PyTorch >= 2.1.
+# -  A NVIDIA GPU with semi-structured sparsity support (Compute
+#    Capability 8.0+).
+#
+# This tutorial is designed for beginners to semi-structured sparsity and
+# sparsity in general. For users with existing 2:4 sparse models,
+# accelerating ``nn.Linear`` layers for inference with
+# ``to_sparse_semi_structured`` is quite straightforward. Here is an example: 
+# 
 
 import torch
 from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor
@@ -81,7 +88,7 @@ with torch.inference_mode():
 # -------------------------------------------------
 # 
 # The general motivation behind sparsity is simple: if there are zeros in
-# your network, you can avoid storing / doing compute with those
+# your network, you can optimize efficiency by not storing or computing those
 # parameters. However, the specifics of sparsity are tricky. Zeroing out
 # parameters doesn’t affect the latency / memory overhead of our model out
 # of the box.
@@ -100,26 +107,25 @@ with torch.inference_mode():
 # parameters along with some compressed metadata about how the elements
 # were arranged.
 # 
-# .. image::
-# https://developer-blogs.nvidia.com/wp-content/uploads/2023/06/2-4-structured-sparsity-pattern.png
-# :align: center :width: 80%
-# 
-# ::
+# .. image:: https://developer-blogs.nvidia.com/wp-content/uploads/2023/06/2-4-structured-sparsity-pattern.png
+#    :align: center :width: 80%
 # 
 #    Image sourced from `NVIDIA blog post <https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/>`_ on semi-structured sparsity.
 # 
 # There are many different sparse layouts, each with their own benefits
 # and drawbacks. The 2:4 semi-structured sparse layout is particularly
-# interesting for two reasons: 1. Unlike previous sparse formats,
+# interesting for two reasons:
+# 
+# * Unlike previous sparse formats,
 # semi-structured sparsity was designed to be efficiently accelerated on
 # GPUs. In 2020, NVIDIA introduced hardware support for semi-structured
 # sparsity with their Ampere architecture, and have also released fast
 # sparse kernels via
-# CUTLASS/``cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>``\ *.
-# 2. At the same time, semi-structured sparsity tends to have a milder
+# CUTLASS `cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`__.
+# * At the same time, semi-structured sparsity tends to have a milder
 # impact on model accuracy compared to other sparse formats, especially
 # when accounting for more advanced pruning / fine-tuning methods. NVIDIA
-# has shown in their ``white paper <https://arxiv.org/abs/2104.08378>``*
+# has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_
 # that a simple paradigm of magnitude pruning once to be 2:4 sparse and
 # then retraining the model yields nearly identical model accuracies.
 # 
@@ -150,14 +156,15 @@ with torch.inference_mode():
 # decompose the problem of sparsifying a model into two distinct
 # subproblems:
 # 
-# -  Accuracy - How can we find a set of 2:4 sparse weights that minimize
-#    the accuracy degradation of our model?
-# -  Performance - How can we accelerate our 2:4 sparse weights for
-#    inference and reduced memory overhead?
-# 
+# - Accuracy - How can we find a set of 2:4 sparse weights that minimize
+#   the accuracy degradation of our model?
+#
+# - Performance - How can we accelerate our 2:4 sparse weights for
+#   inference and reduced memory overhead?
+#
+
+##################################################################### 
 # .. math::
-# 
-# .. raw:: latex
 # 
 #    \begin{bmatrix}
 #       1 & 1 & 0 & 0 \\
@@ -181,7 +188,11 @@ with torch.inference_mode():
 # Let’s start by importing all the packages we need.
 # 
 
-!pip install datasets transformers evaluate accelerate pandas
+# If you are running this in Google Colab, run:
+# .. code-block: python
+# 
+#    !pip install datasets transformers evaluate accelerate pandas
+#
 
 import collections
 import datasets
@@ -194,7 +205,7 @@ from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor
 from torch.ao.pruning import WeightNormSparsifier
 import transformers
 
-# force CUTLASS use if cuSPARSELt is not available
+# force CUTLASS use if ``cuSPARSELt`` is not available
 SparseSemiStructuredTensor._FORCE_CUTLASS = True
 torch.manual_seed(100)
 
@@ -202,8 +213,8 @@ torch.manual_seed(100)
 ######################################################################
 # We’ll also need to define some helper functions that are specific to the
 # dataset / task at hand. These were adapted from
-# ``this <https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt>``\ \_
-# huggingface course as a reference.
+# `this <https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt>`__
+# Hugging Face course as a reference.
 # 
 
 def preprocess_validation_function(examples, tokenizer):
@@ -292,7 +303,7 @@ def compute_metrics(start_logits, end_logits, features, examples):
         example_to_features[feature["example_id"]].append(idx)
 
     predicted_answers = []
-    # for example in tqdm(examples):
+    # for example in ``tqdm`` (examples):
     for example in examples:
         example_id = example["id"]
         context = example["context"]
@@ -372,7 +383,7 @@ def measure_execution_time(model, batch_sizes, dataset):
             p50 = timer.blocked_autorange().median * 1000
             batch_size_to_time_sec[f"{batch_size}_compile"] = p50
             new_predictions = model_c(**batch)
-            
+
     return batch_size_to_time_sec
 
 
@@ -412,7 +423,7 @@ data_collator = transformers.DataCollatorWithPadding(tokenizer=tokenizer)
 # (Wikipedia articles) that answer a given question. Running the following
 # code gives me an F1 score of 86.9. This is quite close to the reported
 # NVIDIA score and the difference is likely due to BERT-base
-# vs. BERT-large or fine-tuning hyperparams.
+# vs. BERT-large or fine-tuning hyperparameters.
 # 
 
 training_args = transformers.TrainingArguments(
@@ -422,6 +433,7 @@ training_args = transformers.TrainingArguments(
     per_device_train_batch_size=64,
     per_device_eval_batch_size=512,
     logging_steps=50, 
+    report_to=None,
 )
 
 trainer = transformers.Trainer(
@@ -474,26 +486,26 @@ df.plot.line(x='step', y='loss', title="Loss vs. # steps", ylabel="loss")
 # 
 # To do this, we will use the ``torch.ao.pruning`` package, which contains
 # a weight-norm (magnitude) sparsifier. These sparsifiers work by applying
-# mask parameterizations to the weight tensors in a model. This lets them
+# mask parametrizations to the weight tensors in a model. This lets them
 # simulate sparsity by masking out the pruned weights.
 # 
 # We’ll also have to decide what layers of the model to apply sparsity to,
 # which in this case is all of the ``nn.Linear`` layers, except for the
 # task-specific head outputs. That’s because semi-structured sparsity has
-# ``shape constraints <https://pytorch.org/docs/2.1/sparse.html#constructing-sparse-semi-structured-tensors>``\ \_,
-# and the task-specific nn.Linear layers do not satisfy them.
+# `shape constraints <https://pytorch.org/docs/2.1/sparse.html#constructing-sparse-semi-structured-tensors>`_,
+# and the task-specific ``nn.Linear`` layers do not satisfy them.
 # 
 
 sparsifier = WeightNormSparsifier(
     # apply sparsity to all blocks
     sparsity_level=1.0,
-    # shape of 4 elemens is a block
+    # shape of 4 elements is a block
     sparse_block_shape=(1, 4),
     # two zeros for every block of 4
     zeros_per_block=2
 )
 
-# add to config if nn.Linear and in the BERT model.
+# add to config if ``nn.Linear`` and in the BERT model.
 sparse_config = [
     {"tensor_fqn": f"{fqn}.weight"}
     for fqn, module in model.named_modules()
@@ -502,13 +514,13 @@ sparse_config = [
 
 
 ######################################################################
-# The first step for pruning the model is to insert paramterizations for
+# The first step for pruning the model is to insert parametrizations for
 # masking the weights of the model. This is done by the prepare step.
 # Anytime we try to access the ``.weight`` we will get ``mask * weight``
 # instead.
 # 
 
-# Prepare the model, insert fake-sparsity parameterizations for training
+# Prepare the model, insert fake-sparsity parametrizations for training
 sparsifier.prepare(model, sparse_config)
 print(model.bert.encoder.layer[0].output)
 
@@ -540,7 +552,7 @@ print("pruned eval metrics:", pruned)
 # In this state, we can start fine-tuning the model, updating the elements
 # that wouldn’t be pruned to better account for the accuracy loss. Once
 # we’ve reached a satisfied state, we can call ``squash_mask`` to fuse the
-# mask and the weight together. This will remove the parameterizations and
+# mask and the weight together. This will remove the parametrizations and
 # we are left with a zeroed-out 2:4 dense model.
 # 
 
@@ -588,7 +600,7 @@ print("sparse perf metrics: ", sparse_perf)
 ######################################################################
 # Retraining our model after magnitude pruning has recovered nearly all of
 # the F1 that has been lost when the model was pruned. At the same time we
-# have achieved a 1.28x speedup for bs=16. Note that not all shapes are
+# have achieved a 1.28x speedup for ``bs=16``. Note that not all shapes are
 # amenable to performance improvements. When batch sizes are small and
 # limited time is spent in compute sparse kernels may be slower than their
 # dense counterparts.
@@ -597,23 +609,39 @@ print("sparse perf metrics: ", sparse_perf)
 # is compatible with ``torch.compile``. When composed with
 # ``to_sparse_semi_structured``, we are able to achieve a total 2x speedup
 # on BERT.
-# 
-# | =============== ====== ========== =============== ======== Metrics
-#   fp16 2:4 sparse delta / speedup compiled =============== ======
-#   ========== =============== ======== Exact Match (%) 78.53 78.44 -0.09
-# | F1 (%) 86.93 86.49 -0.44
-# | Time (bs=4) 11.10 15.54 0.71x no Time (bs=16) 19.35 15.74 1.23x no
-#   Time (bs=64) 72.71 59.41 1.22x no Time (bs=256) 286.65 247.63 1.14x no
-#   Time (bs=4) 7.59 7.46 1.02x yes Time (bs=16) 11.47 9.68 1.18x yes Time
-#   (bs=64) 41.57 36.92 1.13x yes Time (bs=256) 159.22 142.23 1.12x yes
-#   =============== ====== ========== =============== ========
+#
+# .. table::
+#
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Metrics            | fp16   | 2:4 sparse   | delta / speedup | compiled  |
+#     +====================+========+==============+=================+===========+
+#     | Exact Match (%)    | 78.53  | 78.44        | -0.09           |           |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | F1 (%)             | 86.93  | 86.49        | -0.44           |           |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=4)        | 11.10  | 15.54        | 0.71x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=16)       | 19.35  | 15.74        | 1.23x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=64)       | 72.71  | 59.41        | 1.22x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=256)      | 286.65 | 247.63       | 1.14x           | no        |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=4)        | 7.59   | 7.46         | 1.02x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=16)       | 11.47  | 9.68         | 1.18x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=64)       | 41.57  | 36.92        | 1.13x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
+#     | Time (bs=256)      | 159.22 | 142.23       | 1.12x           | yes       |
+#     +--------------------+--------+--------------+-----------------+-----------+
 # 
 # Conclusion
 # ==========
 # 
 # In this tutorial, we have shown how to prune BERT to be 2:4 sparse and
 # how to accelerate a 2:4 sparse model for inference. By taking advantage
-# of our SparseSemiStructuredTensor subclass, we were able to achieve a
+# of our ``SparseSemiStructuredTensor`` subclass, we were able to achieve a
 # 1.3x speedup over the fp16 baseline, and up to 2x with
 # ``torch.compile``. We also demonstrated the benefits of 2:4 sparsity by
 # fine-tuning BERT to recover any lost F1 (86.92 dense vs 86.48 sparse).

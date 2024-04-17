@@ -223,8 +223,10 @@ for i in range(cnndm_batch_size):
 
 
 #######################################################################
-# Summarization Output (Might vary since we shuffle the dataloader)
+# Summarization Output
 # --------------------
+# 
+# Summarization output might vary since we shuffle the dataloader.
 #
 # .. code-block::
 #
@@ -315,7 +317,7 @@ for i in range(imdb_batch_size):
 # Sentiment Output
 # ----------------
 #
-# ::
+# .. code-block:: bash
 #
 #    Example 1:
 #
@@ -408,7 +410,7 @@ for i in range(multi_batch_size):
 # Translation Output
 # ------------------
 #
-# ::
+# .. code-block:: bash
 #
 #    Example 1:
 #

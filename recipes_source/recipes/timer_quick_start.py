@@ -46,9 +46,7 @@ timer = Timer(
     """,
 
     # Alternatively, ``globals`` can be used to pass variables from the outer scope.
-    # -------------------------------------------------------------------------
-    # ::
-    #
+    # 
     #    globals={
     #        "x": torch.ones((128,)),
     #        "y": torch.ones((128,)),
@@ -176,14 +174,14 @@ print(stats)
 #   One generally doesn't care about absolute path. For instance, the full path
 #   and function name for a multiply call is something like:
 #
-# ::
+# .. code-block:: sh
 #
 #    /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
 #
 #   when in reality, all of the information that we're interested in can be
 #   represented in:
 #
-# ::
+# .. code-block:: sh
 #
 #    build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
 #

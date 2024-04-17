@@ -1,5 +1,6 @@
 Learning PyTorch with Examples
-******************************
+==============================
+
 **Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_
 
 .. note::
@@ -29,7 +30,7 @@ between the network output and the true output.
    :local:
 
 Tensors
-=======
+~~~~~~~
 
 Warm-up: numpy
 --------------
@@ -74,7 +75,7 @@ and backward passes through the network:
 
 
 Autograd
-========
+~~~~~~~~
 
 PyTorch: Tensors and autograd
 -------------------------------
@@ -133,7 +134,7 @@ our model:
 .. includenodoc:: /beginner/examples_autograd/polynomial_custom_function.py
 
 ``nn`` module
-===========
+~~~~~~~~~~~~~
 
 PyTorch: ``nn``
 ---------------
@@ -219,7 +220,7 @@ We can easily implement this model as a Module subclass:
 .. _examples-download:
 
 Examples
-========
+~~~~~~~~
 
 You can browse the above examples here.
 
@@ -261,7 +262,7 @@ Autograd
     <div style='clear:both'></div>
 
 ``nn`` module
------------
+--------------
 
 .. toctree::
    :maxdepth: 2

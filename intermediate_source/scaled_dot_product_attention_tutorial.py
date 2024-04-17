@@ -303,7 +303,8 @@ with profile(activities=activities, record_shapes=False) as prof:
 print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 # For even more insights, you can export the trace and use ``chrome://tracing`` to view the results
-# ::
+#
+# .. code-block:: python
 #
 #    prof.export_chrome_trace("compiled_causal_attention_trace.json").
 

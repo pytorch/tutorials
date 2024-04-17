@@ -64,7 +64,7 @@ def neg1(x):
 #
 #
 # Get more logging information
-# ^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a ``TORCH_COMPILE_DEBUG`` environment variable like below:
 #
@@ -98,6 +98,7 @@ def neg1(x):
 # Here are the main parts of code extracted from the files and we correlate the C++ generated line with the FX code line.
 #
 # ``fx_graph_runnable``:
+#
 
 def forward1(self, arg0_1, arg1_1):
     neg = torch.ops.aten.neg.default(arg0_1);  arg0_1 = None
@@ -107,6 +108,7 @@ def forward1(self, arg0_1, arg1_1):
 
 ######################################################################
 # C++ kernel in ``output_code``:
+#
 
 from torch._inductor.codecache import AsyncCompile
 async_compile = AsyncCompile()
@@ -162,7 +164,7 @@ extern "C" void kernel(const unsigned char* in_ptr0,
 #
 # As we know, the evolved chain of graph-level optimization is like:
 #
-# ::
+# .. code-block:: sh
 #
 # 	torch.neg (Python) -> torch.ops.aten.neg.default (within FX graph) -> ops.neg (within IR node) -> tmp2 = -tmp1 (within C++ kernel)
 #
@@ -228,7 +230,7 @@ def neg2(x):
 ######################################################################
 # IR node:
 #
-# ::
+# .. code-block:: sh
 #
 #     buf0: SchedulerNode(ComputedBuffer)
 #     buf0.writes = [MemoryDep('buf0', c0, {c0: 67120})]
@@ -254,6 +256,7 @@ def neg2(x):
 #             get_index_2 = self.get_index('index0')
 #             store = ops.store('buf0', get_index_2, maximum, None)
 #             return store
+#
 
 ######################################################################
 # According to the traceback logging, the compilation error is caused by the data type inconsistency of ``max_propagate_nan``'s inputs. 
@@ -304,7 +307,7 @@ def neg3(x):
 ######################################################################
 # An accuracy problem would be raised as follows:
 #
-# ::
+# .. code-block:: sh
 #
 # 	torch._dynamo.utils: [ERROR] Accuracy failed: allclose not within tol=0.0001
 # 	Traceback (most recent call last):
@@ -314,13 +317,13 @@ def neg3(x):
 #
 # To debug an accuracy problem with Minifier, two environment variables are needed:
 #
-# ::
+# .. code-block:: sh
 #
 #    TORCHDYNAMO_REPRO_AFTER="aot" TORCHDYNAMO_REPRO_LEVEL=4 python xx.py
 #
 # Which gives us logging information that demonstrates the steps of minifying:
 #
-# ::
+# .. code-block:: sh
 #
 #     Started off with 6 nodes
 #

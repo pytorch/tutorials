@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Train a Mario-playing RL Agent
-================
+===============================
 
 **Authors:** `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj Subramanian <https://github.com/suraj813>`__, `Howard Wang <https://github.com/hw26>`__, `Steven Guo <https://github.com/GuoYuzhang>`__.
 
@@ -32,8 +32,8 @@ as your companion. The full code is available
 #
 #      %%bash
 #      pip install gym-super-mario-bros==7.4.0
-#      pip install tensordict==0.2.0
-#      pip install torchrl==0.2.0
+#      pip install tensordict==0.3.0
+#      pip install torchrl==0.3.0
 #
 
 import torch

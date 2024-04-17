@@ -32,7 +32,7 @@ with high performance requirements. For that:
 # ``file`` parameter which contains the image. The response will be of JSON
 # response containing the prediction:
 #
-# ::
+# .. code-block:: sh
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
@@ -44,9 +44,9 @@ with high performance requirements. For that:
 #
 # Install the required dependencies by running the following command:
 #
-# ::
+# .. code-block:: sh
 #
-#     $ pip install Flask==2.0.1 torchvision==0.10.0
+#    pip install Flask==2.0.1 torchvision==0.10.0
 
 
 ######################################################################
@@ -62,30 +62,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'Hello World!'
-
-###############################################################################
-# Save the above snippet in a file called ``app.py`` and you can now run a
-# Flask development server by typing:
-#
-# ::
-#
-#     $ FLASK_ENV=development FLASK_APP=app.py flask run
-
-###############################################################################
-# When you visit ``http://localhost:5000/`` in your web browser, you will be
-# greeted with ``Hello World!`` text
-
-###############################################################################
-# We will make slight changes to the above snippet, so that it suits our API
-# definition. First, we will rename the method to ``predict``. We will update
-# the endpoint path to ``/predict``. Since the image files will be sent via
-# HTTP POST requests, we will update it so that it also accepts only POST
-# requests:
-
-
-@app.route('/predict', methods=['POST'])
-def predict():
     return 'Hello World!'
 
 ###############################################################################
@@ -137,7 +113,6 @@ def transform_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes))
     return my_transforms(image).unsqueeze(0)
 
-
 ######################################################################
 # The above method takes image data in bytes, applies the series of transforms
 # and returns a tensor. To test the above method, read an image file in
@@ -172,7 +147,6 @@ def get_prediction(image_bytes):
     outputs = model.forward(tensor)
     _, y_hat = outputs.max(1)
     return y_hat
-
 
 ######################################################################
 # The tensor ``y_hat`` will contain the index of the predicted class id.
@@ -217,18 +191,6 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # The first item in array is ImageNet class id and second item is the human
 # readable name.
 #
-# .. Note ::
-#    Did you notice that ``model`` variable is not part of ``get_prediction``
-#    method? Or why is model a global variable? Loading a model can be an
-#    expensive operation in terms of memory and compute. If we loaded the model in the
-#    ``get_prediction`` method, then it would get unnecessarily loaded every
-#    time the method is called. Since, we are building a web server, there
-#    could be thousands of requests per second, we should not waste time
-#    redundantly loading the model for every inference. So, we keep the model
-#    loaded in memory just once. In
-#    production systems, it's necessary to be efficient about your use of
-#    compute to be able to serve requests at scale, so you should generally
-#    load your model before serving requests.
 
 ######################################################################
 # Integrating the model in our API Server
@@ -251,66 +213,68 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #            img_bytes = file.read()
 #            class_id, class_name = get_prediction(image_bytes=img_bytes)
 #            return jsonify({'class_id': class_id, 'class_name': class_name})
-
+#
+#
 ######################################################################
 # The ``app.py`` file is now complete. Following is the full version; replace
 # the paths with the paths where you saved your files and it should run:
 #
 # .. code-block:: python
 #
-#   import io
-#   import json
+#    import io
+#    import json
 #
-#   from torchvision import models
-#   import torchvision.transforms as transforms
-#   from PIL import Image
-#   from flask import Flask, jsonify, request
-#
-#
-#   app = Flask(__name__)
-#   imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
-#   model = models.densenet121(weights='IMAGENET1K_V1')
-#   model.eval()
+#    from torchvision import models
+#    import torchvision.transforms as transforms
+#    from PIL import Image
+#    from flask import Flask, jsonify, request
 #
 #
-#   def transform_image(image_bytes):
-#       my_transforms = transforms.Compose([transforms.Resize(255),
-#                                           transforms.CenterCrop(224),
-#                                           transforms.ToTensor(),
-#                                           transforms.Normalize(
-#                                               [0.485, 0.456, 0.406],
-#                                               [0.229, 0.224, 0.225])])
-#       image = Image.open(io.BytesIO(image_bytes))
-#       return my_transforms(image).unsqueeze(0)
+#    app = Flask(__name__)
+#    imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
+#    model = models.densenet121(weights='IMAGENET1K_V1')
+#    model.eval()
 #
 #
-#   def get_prediction(image_bytes):
-#       tensor = transform_image(image_bytes=image_bytes)
-#       outputs = model.forward(tensor)
-#       _, y_hat = outputs.max(1)
-#       predicted_idx = str(y_hat.item())
-#       return imagenet_class_index[predicted_idx]
+#    def transform_image(image_bytes):
+#        my_transforms = transforms.Compose([transforms.Resize(255),
+#                                            transforms.CenterCrop(224),
+#                                            transforms.ToTensor(),
+#                                            transforms.Normalize(
+#                                                [0.485, 0.456, 0.406],
+#                                                [0.229, 0.224, 0.225])])
+#        image = Image.open(io.BytesIO(image_bytes))
+#        return my_transforms(image).unsqueeze(0)
 #
 #
-#   @app.route('/predict', methods=['POST'])
-#   def predict():
-#       if request.method == 'POST':
-#           file = request.files['file']
-#           img_bytes = file.read()
-#           class_id, class_name = get_prediction(image_bytes=img_bytes)
-#           return jsonify({'class_id': class_id, 'class_name': class_name})
+#    def get_prediction(image_bytes):
+#        tensor = transform_image(image_bytes=image_bytes)
+#        outputs = model.forward(tensor)
+#        _, y_hat = outputs.max(1)
+#        predicted_idx = str(y_hat.item())
+#        return imagenet_class_index[predicted_idx]
 #
 #
-#   if __name__ == '__main__':
-#       app.run()
-
+#    @app.route('/predict', methods=['POST'])
+#    def predict():
+#        if request.method == 'POST':
+#            file = request.files['file']
+#            img_bytes = file.read()
+#            class_id, class_name = get_prediction(image_bytes=img_bytes)
+#            return jsonify({'class_id': class_id, 'class_name': class_name})
+#
+#
+#    if __name__ == '__main__':
+#        app.run()
+#
+#
 ######################################################################
 # Let's test our web server! Run:
 #
-# ::
+# .. code-block:: sh
 #
-#     $ FLASK_ENV=development FLASK_APP=app.py flask run
-
+#    FLASK_ENV=development FLASK_APP=app.py flask run
+#
 #######################################################################
 # We can use the
 # `requests <https://pypi.org/project/requests/>`_
@@ -322,15 +286,15 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 #    resp = requests.post("http://localhost:5000/predict",
 #                         files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+#
 
 #######################################################################
 # Printing `resp.json()` will now show the following:
 #
-# ::
+# .. code-block:: sh
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
-
 ######################################################################
 # Next steps
 # --------------
@@ -368,3 +332,4 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # - Finally, we encourage you to check out our other tutorials on deploying PyTorch models
 #   linked-to at the top of the page.
+#
