@@ -583,7 +583,7 @@ What's new in PyTorch tutorials?
 .. customcarditem::
    :header: (beta) Accelerating BERT with semi-structured sparsity
    :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile. 
-   :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-an-LSTM-Word-Language-Model.png
+   :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: advanced/semi_structured_sparse.html
    :tags: Text,Model-Optimization
 

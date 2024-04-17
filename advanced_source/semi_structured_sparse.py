@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Accelerating BERT with semi-structured (2:4) sparsity
+(beta) Accelerating BERT with semi-structured (2:4) sparsity
 =====================================================
 **Author**: `Jesse Cai <https://github.com/jcaip>`_
 
