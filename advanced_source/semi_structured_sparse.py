@@ -430,8 +430,8 @@ training_args = transformers.TrainingArguments(
     "trainer",
     num_train_epochs=1,
     lr_scheduler_type="constant",
-    per_device_train_batch_size=64,
-    per_device_eval_batch_size=512,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=256,
     logging_steps=50, 
     report_to=None,
 )
