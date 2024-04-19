@@ -114,11 +114,12 @@ print(exported_mod.graph_signature)
 # ------------
 #
 # Although ``torch.export`` shares components with ``torch.compile``,
-# the key limitation of ``torch.export``, especially when compared to ``torch.compile``, is that it does not
-# support graph breaks. This is because handling graph breaks involves interpreting
-# the unsupported operation with default Python evaluation, which is incompatible
-# with the export use case. Therefore, in order to make your model code compatible
-# with ``torch.export``, you will need to modify your code to remove graph breaks.
+# the key limitation of ``torch.export``, especially when compared to
+# ``torch.compile``, is that it does not support graph breaks. This is because
+# handling graph breaks involves interpreting the unsupported operation with
+# default Python evaluation, which is incompatible with the export use case.
+# Therefore, in order to make your model code compatible with ``torch.export``,
+# you will need to modify your code to remove graph breaks.
 #
 # A graph break is necessary in cases such as:
 #
@@ -180,8 +181,68 @@ except Exception:
     tb.print_exc()
 
 ######################################################################
-# The sections below demonstrate some ways you can modify your code
-# in order to remove graph breaks.
+# Non-Strict Export
+# -----------------
+#
+# To trace the program, ``torch.export`` uses TorchDynamo, a byte code analysis
+# engine, to symbolically analyze the Python code and build a graph based on the
+# results. This analysis allows ``torch.export`` to provide stronger guarantees
+# about safety, but not all Python code is supported, causing these graph
+# breaks.
+#
+# To address this issue, in PyTorch 2.3, we introduced a new mode of
+# exporting called non-strict mode, where we trace through the program using the
+# Python interpreter executing it exactly as it would in eager mode, allowing us
+# to skip over unsupported Python features. This is done through adding a
+# ``strict=False`` flag.
+#
+# Looking at some of the previous examples which resulted in graph breaks:
+#
+# - Accessing tensor data with ``.data`` now works correctly
+
+class Bad2(torch.nn.Module):
+    def forward(self, x):
+        x.data[0, 0] = 3
+        return x
+
+bad2_nonstrict = export(Bad2(), (torch.randn(3, 3),), strict=False)
+print(bad2_nonstrict.module()(torch.ones(3, 3)))
+
+######################################################################
+# - Calling unsupported functions (such as many built-in functions) traces
+# through, but in this case, ``id(x)`` gets specialized as a constant integer in
+# the graph. This is because ``id(x)`` is not a tensor operation, so the
+# operation is not recorded in the graph.
+
+class Bad3(torch.nn.Module):
+    def forward(self, x):
+        x = x + 1
+        return x + id(x)
+
+bad3_nonstrict = export(Bad3(), (torch.randn(3, 3),), strict=False)
+print(bad3_nonstrict)
+print(bad3_nonstrict.module()(torch.ones(3, 3)))
+
+######################################################################
+# - Unsupported Python language features (such as throwing exceptions, match
+# statements) now also get traced through.
+
+class Bad4(torch.nn.Module):
+    def forward(self, x):
+        try:
+            x = x + 1
+            raise RuntimeError("bad")
+        except:
+            x = x + 2
+        return x
+
+bad4_nonstrict = export(Bad4(), (torch.randn(3, 3),), strict=False)
+print(bad4_nonstrict.module()(torch.ones(3, 3)))
+
+
+######################################################################
+# However, there are still some features that require rewrites to the original
+# module:
 
 ######################################################################
 # Control Flow Ops
@@ -364,6 +425,47 @@ try:
     exported_dynamic_shapes_example2.module()(torch.randn(4, 8), torch.randn(4, 2))
 except Exception:
     tb.print_exc()
+
+######################################################################
+# We can also describe one dimension in terms of other. There are some
+# restrictions to how detailed we can specify one dimension in terms of another,
+# but generally, those in the form of ``A * Dim + B`` should work.
+
+class DerivedDimExample1(torch.nn.Module):
+    def forward(self, x, y):
+        return x + y[1:]
+
+foo = DerivedDimExample1()
+
+x, y = torch.randn(5), torch.randn(6)
+dimx = torch.export.Dim("dimx", min=3, max=6)
+dimy = dimx + 1
+derived_dynamic_shapes1 = ({0: dimx}, {0: dimy})
+
+derived_dim_example1 = export(foo, (x, y), dynamic_shapes=derived_dynamic_shapes1)
+
+print(derived_dim_example1.module()(torch.randn(4), torch.randn(5)))
+
+try:
+    derived_dim_example1.module()(torch.randn(4), torch.randn(6))
+except Exception:
+    tb.print_exc()
+
+
+class DerivedDimExample2(torch.nn.Module):
+    def forward(self, z, y):
+        return z[1:] + y[1::3]
+
+foo = DerivedDimExample2()
+
+z, y = torch.randn(4), torch.randn(10)
+dx = torch.export.Dim("dx", min=3, max=6)
+dz = dx + 1
+dy = dx * 3 + 1
+derived_dynamic_shapes2 = ({0: dz}, {0: dy})
+
+derived_dim_example2 = export(foo, (z, y), dynamic_shapes=derived_dynamic_shapes2)
+print(derived_dim_example2.module()(torch.randn(7), torch.randn(19)))
 
 ######################################################################
 # We can actually use ``torch.export`` to guide us as to which ``dynamic_shapes`` constraints
