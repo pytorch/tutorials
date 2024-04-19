@@ -14,7 +14,7 @@ Prerequisites:
 
 
 Setting up distributed communicators, i.e. NVIDIA Collective Communication Library (NCCL) communicators, for distributed training can pose a significant challenge. For workloads where users need to compose different parallelisms,
-users would need to manually set up and manage NCCL communicators (for example, :class:`ProcessGroup`) for each parallelism solutions. This process could be complicated and susceptible to errors.
+users would need to manually set up and manage NCCL communicators (for example, :class:`ProcessGroup`) for each parallelism solution. This process could be complicated and susceptible to errors.
 :class:`DeviceMesh` can simplify this process, making it more manageable and less prone to errors.
 
 What is DeviceMesh
@@ -30,7 +30,7 @@ Users can also easily manage the underlying process_groups/devices for multi-dim
 
 Why DeviceMesh is Useful
 ------------------------
-DeviceMesh is useful when working with multi-dimensional parallelism (i.e. 3-D parallel) where parallelism composability is requried. For example, when your parallelism solutions require both communication across hosts and within each host.
+DeviceMesh is useful when working with multi-dimensional parallelism (i.e. 3-D parallel) where parallelism composability is required. For example, when your parallelism solutions require both communication across hosts and within each host.
 The image above shows that we can create a 2D mesh that connects the devices within each host, and connects each device with its counterpart on the other hosts in a homogenous setup.
 
 Without DeviceMesh, users would need to manually set up NCCL communicators, cuda devices on each process before applying any parallelism, which could be quite complicated.
@@ -95,7 +95,7 @@ access the underlying :class:`ProcessGroup` if needed.
     from torch.distributed.device_mesh import init_device_mesh
     mesh_2d = init_device_mesh("cuda", (2, 4), mesh_dim_names=("replicate", "shard"))
 
-    # Users can acess the undelying process group thru `get_group` API.
+    # Users can access the underlying process group thru `get_group` API.
     replicate_group = mesh_2d.get_group(mesh_dim="replicate")
     shard_group = mesh_2d.get_group(mesh_dim="shard")
 
