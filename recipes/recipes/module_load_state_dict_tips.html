@@ -547,6 +547,7 @@ to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="tips-for-loading-an-nn-module-from-a-checkpoint">
 <span id="sphx-glr-recipes-recipes-module-load-state-dict-tips-py"></span><h1>Tips for Loading an <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> from a Checkpoint<a class="headerlink" href="#tips-for-loading-an-nn-module-from-a-checkpoint" title="Permalink to this heading">¶</a></h1>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/mikaylagawarecki">Mikayla Gawarecki</a></p>
 <p>If you’re loading a checkpoint and want to reduce compute and memory as much as possible,
 this tutorial shares some recommended practices. In particular, we will discuss</p>
 <ol class="arabic simple">
@@ -619,7 +620,7 @@ loaded into CPU RAM, which can be undesirable when:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loading time without mmap=</span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loading time without mmap=0.015377044677734375
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loading time without mmap=0.014109134674072266
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">mmap</span></code> keyword argument to <code class="docutils literal notranslate"><span class="pre">torch.load</span></code> attempts to solve the above two
@@ -634,7 +635,7 @@ storages will be memory-mapped.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loading time with mmap=</span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loading time with mmap=0.0016951560974121094
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loading time with mmap=0.0019505023956298828
 </pre></div>
 </div>
 <p>As mentioned above, one can use this argument to do per-tensor processing on a
@@ -701,8 +702,13 @@ In order to avoid this, we can pass the <code class="docutils literal notranslat
 <p>A caveat here is that since optimizers hold a reference to
 <code class="docutils literal notranslate"><span class="pre">nn.Module.parameters()</span></code>, the optimizer must be initialized after the module
 is loaded from state dict if <code class="docutils literal notranslate"><span class="pre">assign=True</span></code> is passed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict" title="torch.nn.Module.load_state_dict" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">new_m</span><span class="o">.</span><span class="n">load_state_dict</span></a><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">assign</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="c1"># This MUST be done AFTER the load_state_dict with assign.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># As of PyTorch 2.3.0, one can use ``torch.__future__.set_swap_module_params_on_conversion`` to</span>
+<span class="c1"># avoid this caveat. This `recipe &lt;https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html&gt;`_</span>
+<span class="c1"># provides more details.</span>
+
+<a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict" title="torch.nn.Module.load_state_dict" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">new_m</span><span class="o">.</span><span class="n">load_state_dict</span></a><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">assign</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Before 2.3.0, this MUST be done AFTER the load_state_dict with assign.</span>
+<span class="c1"># In versions &gt;= 2.3.0, one can consider setting ``torch.__future__.set_swap_module_params_on_conversion``</span>
 <a href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD" class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">opt</span></a> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD" class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">new_m</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -713,7 +719,7 @@ is loaded from state dict if <code class="docutils literal notranslate"><span cl
 <code class="docutils literal notranslate"><span class="pre">torch.device()</span></code> context manager with <code class="docutils literal notranslate"><span class="pre">device=meta</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">nn.Module.load_state_dict(assign=True)</span></code> as well as how these tools could
 be used to aid when loading a model from a checkpoint.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.356 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.347 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-module-load-state-dict-tips-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/edc021e5f7c55efead2a89b91cdfae27/module_load_state_dict_tips.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">module_load_state_dict_tips.py</span></code></a></p>

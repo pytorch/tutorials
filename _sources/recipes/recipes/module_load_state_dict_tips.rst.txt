@@ -20,6 +20,7 @@
 
 Tips for Loading an ``nn.Module`` from a Checkpoint
 ===================================================
+**Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
 If you're loading a checkpoint and want to reduce compute and memory as much as possible,
 this tutorial shares some recommended practices. In particular, we will discuss
@@ -31,11 +32,11 @@ this tutorial shares some recommended practices. In particular, we will discuss
 .. note::
    This recipe requires PyTorch 2.1.0 or later.
 
-.. GENERATED FROM PYTHON SOURCE LINES 19-20
+.. GENERATED FROM PYTHON SOURCE LINES 20-21
 
 Let us consider a simple ``nn.Module`` that contains a list of Linear layers:
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-36
+.. GENERATED FROM PYTHON SOURCE LINES 21-37
 
 .. code-block:: default
 
@@ -62,13 +63,13 @@ Let us consider a simple ``nn.Module`` that contains a list of Linear layers:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-40
+.. GENERATED FROM PYTHON SOURCE LINES 38-41
 
 The following snippet demonstrates the use of the the ``mmap`` keyword argument
 to ``torch.load``, the ``torch.device()`` context manager and the ``assign``
 keyword argument to ``nn.Module.load_state_dict()``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-46
+.. GENERATED FROM PYTHON SOURCE LINES 41-47
 
 .. code-block:: default
 
@@ -91,11 +92,11 @@ keyword argument to ``nn.Module.load_state_dict()``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-48
+.. GENERATED FROM PYTHON SOURCE LINES 48-49
 
 Compare the snippet below to the one above:
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-53
+.. GENERATED FROM PYTHON SOURCE LINES 49-54
 
 .. code-block:: default
 
@@ -117,13 +118,13 @@ Compare the snippet below to the one above:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-57
+.. GENERATED FROM PYTHON SOURCE LINES 55-58
 
 The second example does not use any of the features listed above and will be
 less compute and memory efficient for loading a checkpoint. In the following
 sections, we will discuss each of the features in further detail.
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-71
+.. GENERATED FROM PYTHON SOURCE LINES 60-72
 
 Using ``torch.load(mmap=True)``
 -------------------------------
@@ -138,7 +139,7 @@ loaded into CPU RAM, which can be undesirable when:
 * CPU RAM is smaller than the size of the checkpoint.
 * Waiting for the entire checkpoint to be loaded into RAM before performing, for example, some per-tensor processing.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-77
+.. GENERATED FROM PYTHON SOURCE LINES 72-78
 
 .. code-block:: default
 
@@ -156,12 +157,12 @@ loaded into CPU RAM, which can be undesirable when:
 
  .. code-block:: none
 
-    loading time without mmap=0.015377044677734375
+    loading time without mmap=0.014109134674072266
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-84
+.. GENERATED FROM PYTHON SOURCE LINES 79-85
 
 The ``mmap`` keyword argument to ``torch.load`` attempts to solve the above two
 problems. As its name implies, the ``mmap`` keyword argument to ``torch.load``
@@ -170,7 +171,7 @@ which maps a file on disk into virtual memory and lets the OS handle loading and
 unloading into physical memory automatically. When this flag is passed, tensor
 storages will be memory-mapped.
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-90
+.. GENERATED FROM PYTHON SOURCE LINES 85-91
 
 .. code-block:: default
 
@@ -188,17 +189,17 @@ storages will be memory-mapped.
 
  .. code-block:: none
 
-    loading time with mmap=0.0016951560974121094
+    loading time with mmap=0.0019505023956298828
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-93
+.. GENERATED FROM PYTHON SOURCE LINES 92-94
 
 As mentioned above, one can use this argument to do per-tensor processing on a
 checkpoint without loading all tensor storages into CPU memory upfront. For example:
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-107
+.. GENERATED FROM PYTHON SOURCE LINES 94-108
 
 .. code-block:: default
 
@@ -223,13 +224,13 @@ checkpoint without loading all tensor storages into CPU memory upfront. For exam
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-111
+.. GENERATED FROM PYTHON SOURCE LINES 109-112
 
 Using ``torch.device('meta')``
 ------------------------------
 Next, let's consider the creation of the module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-113
+.. GENERATED FROM PYTHON SOURCE LINES 112-114
 
 .. code-block:: default
 
@@ -242,7 +243,7 @@ Next, let's consider the creation of the module.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-131
+.. GENERATED FROM PYTHON SOURCE LINES 115-132
 
 This allocates memory for all parameters/buffers and initializes them per
 the default initialization schemes defined in ``SomeModule.__init__()``, which
@@ -262,7 +263,7 @@ were passed the specified ``device`` as an argument. Tensors on ``torch.device('
 carry data. However, they possess all other metadata a tensor carries such as ``.size()``, ``.stride()``,
 ``.requires_grad``, and others.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-134
+.. GENERATED FROM PYTHON SOURCE LINES 132-135
 
 .. code-block:: default
 
@@ -276,13 +277,13 @@ carry data. However, they possess all other metadata a tensor carries such as ``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-138
+.. GENERATED FROM PYTHON SOURCE LINES 136-139
 
 Using ``load_state_dict(assign=True)``
 --------------------------------------
 Next, we consider the loading of the state dictionary.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-141
+.. GENERATED FROM PYTHON SOURCE LINES 139-142
 
 .. code-block:: default
 
@@ -302,7 +303,7 @@ Next, we consider the loading of the state dictionary.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-154
+.. GENERATED FROM PYTHON SOURCE LINES 143-155
 
 ``nn.Module.load_state_dict()`` is usually implemented via an in-place
 ``param_in_model.copy_(param_in_state_dict)``. This means that the parameter/buffer
@@ -317,13 +318,18 @@ A caveat here is that since optimizers hold a reference to
 ``nn.Module.parameters()``, the optimizer must be initialized after the module
 is loaded from state dict if ``assign=True`` is passed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-159
+.. GENERATED FROM PYTHON SOURCE LINES 155-165
 
 .. code-block:: default
 
 
+    # As of PyTorch 2.3.0, one can use ``torch.__future__.set_swap_module_params_on_conversion`` to
+    # avoid this caveat. This `recipe <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`_
+    # provides more details.
+
     new_m.load_state_dict(state_dict, assign=True)
-    # This MUST be done AFTER the load_state_dict with assign.
+    # Before 2.3.0, this MUST be done AFTER the load_state_dict with assign.
+    # In versions >= 2.3.0, one can consider setting ``torch.__future__.set_swap_module_params_on_conversion``
     opt = torch.optim.SGD(new_m.parameters(), lr=1e-3)
 
 
@@ -333,7 +339,7 @@ is loaded from state dict if ``assign=True`` is passed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-167
+.. GENERATED FROM PYTHON SOURCE LINES 166-173
 
 Conclusion
 -------------
@@ -346,7 +352,7 @@ be used to aid when loading a model from a checkpoint.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.356 seconds)
+   **Total running time of the script:** ( 0 minutes  0.347 seconds)
 
 
 .. _sphx_glr_download_recipes_recipes_module_load_state_dict_tips.py:
