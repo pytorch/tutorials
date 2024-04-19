@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Large Scale Transformer model training with Tensor Parallel <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
 * `PyTorch Inference Performance Tuning on AWS Graviton Processors <https://pytorch.org/tutorials/recipes/inference_tuning_on_aws_graviton.html>`__
 * `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
 * `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
@@ -697,6 +698,13 @@ What's new in PyTorch tutorials?
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: Large Scale Transformer model training with Tensor Parallel
+   :card_description: Learn how to train large models with Tensor Parallel package.
+   :image: _static/img/thumbnails/cropped/Large-Scale-Transformer-model-training-with-Tensor-Parallel.png
+   :link: intermediate/TP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Customize Process Group Backends Using Cpp Extensions
    :card_description: Extend ProcessGroup with custom collective communication implementations.
    :image: _static/img/thumbnails/cropped/Customize-Process-Group-Backends-Using-Cpp-Extensions.png
@@ -1081,6 +1089,7 @@ Additional Resources
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
    intermediate/FSDP_adavnced_tutorial
+   intermediate/TP_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
