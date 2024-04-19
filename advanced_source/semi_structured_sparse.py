@@ -115,17 +115,18 @@ with torch.inference_mode():
 # interesting for two reasons:
 # 
 # * Unlike previous sparse formats,
-# semi-structured sparsity was designed to be efficiently accelerated on
-# GPUs. In 2020, NVIDIA introduced hardware support for semi-structured
-# sparsity with their Ampere architecture, and have also released fast
-# sparse kernels via
-# CUTLASS `cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`__.
+#   semi-structured sparsity was designed to be efficiently accelerated on
+#   GPUs. In 2020, NVIDIA introduced hardware support for semi-structured
+#   sparsity with their Ampere architecture, and have also released fast
+#   sparse kernels via
+#   CUTLASS `cuSPARSELt <https://docs.nvidia.com/cuda/cusparselt/index.html>`__.
+# 
 # * At the same time, semi-structured sparsity tends to have a milder
-# impact on model accuracy compared to other sparse formats, especially
-# when accounting for more advanced pruning / fine-tuning methods. NVIDIA
-# has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_
-# that a simple paradigm of magnitude pruning once to be 2:4 sparse and
-# then retraining the model yields nearly identical model accuracies.
+#   impact on model accuracy compared to other sparse formats, especially
+#   when accounting for more advanced pruning / fine-tuning methods. NVIDIA
+#   has shown in their `white paper <https://arxiv.org/abs/2104.08378>`_
+#   that a simple paradigm of magnitude pruning once to be 2:4 sparse and
+#   then retraining the model yields nearly identical model accuracies.
 # 
 # Semi-structured exists in a sweet spot, providing a 2x (theoretical)
 # speedup at a much lower sparsity level (50%), while still being granular
