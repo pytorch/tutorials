@@ -356,6 +356,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -464,41 +465,37 @@ method:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vgg16-397923af.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vgg16-397923af.pth
 
   0%|          | 0.00/528M [00:00&lt;?, ?B/s]
-  1%|          | 4.62M/528M [00:00&lt;00:12, 45.1MB/s]
-  2%|1         | 9.00M/528M [00:00&lt;00:12, 45.0MB/s]
-  3%|3         | 16.8M/528M [00:00&lt;00:09, 56.9MB/s]
-  4%|4         | 22.1M/528M [00:00&lt;00:09, 54.8MB/s]
-  6%|5         | 31.2M/528M [00:00&lt;00:07, 68.6MB/s]
-  9%|8         | 45.1M/528M [00:00&lt;00:05, 93.6MB/s]
- 12%|#1        | 62.1M/528M [00:00&lt;00:04, 120MB/s]
- 15%|#5        | 79.4M/528M [00:00&lt;00:03, 139MB/s]
- 18%|#7        | 94.4M/528M [00:00&lt;00:03, 145MB/s]
- 21%|##        | 110M/528M [00:01&lt;00:02, 148MB/s]
- 24%|##3       | 126M/528M [00:01&lt;00:02, 158MB/s]
- 27%|##7       | 145M/528M [00:01&lt;00:02, 167MB/s]
- 30%|###       | 161M/528M [00:01&lt;00:02, 149MB/s]
- 33%|###3      | 176M/528M [00:01&lt;00:02, 151MB/s]
- 36%|###6      | 192M/528M [00:01&lt;00:02, 157MB/s]
- 40%|###9      | 209M/528M [00:01&lt;00:02, 162MB/s]
- 43%|####2     | 225M/528M [00:01&lt;00:01, 164MB/s]
- 46%|####5     | 241M/528M [00:01&lt;00:01, 165MB/s]
- 49%|####8     | 258M/528M [00:01&lt;00:01, 167MB/s]
- 52%|#####2    | 275M/528M [00:02&lt;00:01, 171MB/s]
- 55%|#####5    | 292M/528M [00:02&lt;00:01, 175MB/s]
- 59%|#####8    | 309M/528M [00:02&lt;00:01, 175MB/s]
- 62%|######1   | 326M/528M [00:02&lt;00:01, 172MB/s]
- 65%|######5   | 344M/528M [00:02&lt;00:01, 176MB/s]
- 68%|######8   | 362M/528M [00:02&lt;00:00, 179MB/s]
- 72%|#######1  | 379M/528M [00:02&lt;00:00, 180MB/s]
- 75%|#######5  | 396M/528M [00:02&lt;00:00, 180MB/s]
- 78%|#######8  | 414M/528M [00:02&lt;00:00, 180MB/s]
- 82%|########1 | 431M/528M [00:02&lt;00:00, 181MB/s]
- 85%|########5 | 449M/528M [00:03&lt;00:00, 182MB/s]
- 88%|########8 | 466M/528M [00:03&lt;00:00, 182MB/s]
- 92%|#########1| 484M/528M [00:03&lt;00:00, 147MB/s]
- 95%|#########4| 500M/528M [00:03&lt;00:00, 154MB/s]
- 98%|#########8| 518M/528M [00:03&lt;00:00, 162MB/s]
-100%|##########| 528M/528M [00:03&lt;00:00, 153MB/s]
+  3%|3         | 17.2M/528M [00:00&lt;00:02, 180MB/s]
+  7%|6         | 34.9M/528M [00:00&lt;00:02, 182MB/s]
+ 10%|9         | 52.4M/528M [00:00&lt;00:02, 183MB/s]
+ 13%|#3        | 69.9M/528M [00:00&lt;00:02, 183MB/s]
+ 17%|#6        | 87.4M/528M [00:00&lt;00:02, 183MB/s]
+ 20%|#9        | 105M/528M [00:00&lt;00:02, 183MB/s]
+ 23%|##3       | 122M/528M [00:00&lt;00:02, 183MB/s]
+ 27%|##6       | 140M/528M [00:00&lt;00:02, 182MB/s]
+ 30%|##9       | 157M/528M [00:00&lt;00:02, 183MB/s]
+ 33%|###3      | 175M/528M [00:01&lt;00:02, 183MB/s]
+ 36%|###6      | 192M/528M [00:01&lt;00:01, 183MB/s]
+ 40%|###9      | 210M/528M [00:01&lt;00:01, 183MB/s]
+ 43%|####3     | 228M/528M [00:01&lt;00:01, 183MB/s]
+ 46%|####6     | 245M/528M [00:01&lt;00:01, 183MB/s]
+ 50%|####9     | 263M/528M [00:01&lt;00:01, 184MB/s]
+ 53%|#####3    | 280M/528M [00:01&lt;00:01, 184MB/s]
+ 56%|#####6    | 298M/528M [00:01&lt;00:01, 184MB/s]
+ 60%|#####9    | 316M/528M [00:01&lt;00:01, 184MB/s]
+ 63%|######3   | 333M/528M [00:01&lt;00:01, 184MB/s]
+ 66%|######6   | 351M/528M [00:02&lt;00:01, 183MB/s]
+ 70%|######9   | 368M/528M [00:02&lt;00:00, 183MB/s]
+ 73%|#######3  | 386M/528M [00:02&lt;00:00, 184MB/s]
+ 76%|#######6  | 404M/528M [00:02&lt;00:00, 183MB/s]
+ 80%|#######9  | 421M/528M [00:02&lt;00:00, 184MB/s]
+ 83%|########3 | 439M/528M [00:02&lt;00:00, 184MB/s]
+ 86%|########6 | 456M/528M [00:02&lt;00:00, 184MB/s]
+ 90%|########9 | 474M/528M [00:02&lt;00:00, 183MB/s]
+ 93%|#########3| 492M/528M [00:02&lt;00:00, 183MB/s]
+ 96%|#########6| 509M/528M [00:02&lt;00:00, 183MB/s]
+100%|#########9| 527M/528M [00:03&lt;00:00, 183MB/s]
+100%|##########| 528M/528M [00:03&lt;00:00, 183MB/s]
 </pre></div>
 </div>
 <p>To load model weights, you need to create an instance of the same model first, and then load the parameters
@@ -583,7 +580,7 @@ the model, in which case we can pass <code class="docutils literal notranslate">
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html">Saving and Loading a General Checkpoint in PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html?highlight=loading%20nn%20module%20from%20checkpoint">Tips for loading an nn.Module from a checkpoint</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  9.780 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  8.606 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-saveloadrun-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/3648b0dccaebca71b234070fe2124770/saveloadrun_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">saveloadrun_tutorial.py</span></code></a></p>

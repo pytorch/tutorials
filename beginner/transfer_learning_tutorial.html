@@ -356,6 +356,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -484,7 +485,7 @@ with random weights and only this layer is trained.</p></li>
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>   <span class="c1"># interactive mode</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;contextlib.ExitStack object at 0x7f3bbe69b3a0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;contextlib.ExitStack object at 0x7f794459beb0&gt;
 </pre></div>
 </div>
 <div class="section" id="load-data">
@@ -698,9 +699,9 @@ illustrate:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
 
   0%|          | 0.00/44.7M [00:00&lt;?, ?B/s]
- 38%|###8      | 17.1M/44.7M [00:00&lt;00:00, 179MB/s]
- 78%|#######8  | 35.0M/44.7M [00:00&lt;00:00, 183MB/s]
-100%|##########| 44.7M/44.7M [00:00&lt;00:00, 182MB/s]
+ 36%|###6      | 16.1M/44.7M [00:00&lt;00:00, 169MB/s]
+ 73%|#######3  | 32.8M/44.7M [00:00&lt;00:00, 172MB/s]
+100%|##########| 44.7M/44.7M [00:00&lt;00:00, 130MB/s]
 </pre></div>
 </div>
 <div class="section" id="train-and-evaluate">
@@ -713,131 +714,131 @@ minute.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 0/24
 ----------
-train Loss: 0.4794 Acc: 0.7623
-val Loss: 0.2929 Acc: 0.8758
+train Loss: 0.4768 Acc: 0.7582
+val Loss: 0.2961 Acc: 0.8758
 
 Epoch 1/24
 ----------
-train Loss: 0.5355 Acc: 0.7992
-val Loss: 0.7283 Acc: 0.7386
+train Loss: 0.5348 Acc: 0.8033
+val Loss: 0.7096 Acc: 0.7124
 
 Epoch 2/24
 ----------
-train Loss: 0.4425 Acc: 0.8074
-val Loss: 0.2366 Acc: 0.9150
+train Loss: 0.4414 Acc: 0.8156
+val Loss: 0.2506 Acc: 0.9150
 
 Epoch 3/24
 ----------
-train Loss: 0.6332 Acc: 0.7787
-val Loss: 0.2023 Acc: 0.9085
+train Loss: 0.6108 Acc: 0.7664
+val Loss: 0.3450 Acc: 0.8824
 
 Epoch 4/24
 ----------
-train Loss: 0.3663 Acc: 0.8443
-val Loss: 0.2501 Acc: 0.8889
+train Loss: 0.4154 Acc: 0.8361
+val Loss: 0.2825 Acc: 0.8758
 
 Epoch 5/24
 ----------
-train Loss: 0.4570 Acc: 0.8115
-val Loss: 0.2666 Acc: 0.8889
+train Loss: 0.4896 Acc: 0.7705
+val Loss: 0.2330 Acc: 0.9020
 
 Epoch 6/24
 ----------
-train Loss: 0.3676 Acc: 0.8320
-val Loss: 0.2754 Acc: 0.9216
+train Loss: 0.3512 Acc: 0.8566
+val Loss: 0.5176 Acc: 0.8039
 
 Epoch 7/24
 ----------
-train Loss: 0.4033 Acc: 0.8279
-val Loss: 0.2159 Acc: 0.9281
+train Loss: 0.3681 Acc: 0.8279
+val Loss: 0.1977 Acc: 0.9085
 
 Epoch 8/24
 ----------
-train Loss: 0.2071 Acc: 0.9139
-val Loss: 0.2172 Acc: 0.9281
+train Loss: 0.2057 Acc: 0.9221
+val Loss: 0.1996 Acc: 0.9412
 
 Epoch 9/24
 ----------
-train Loss: 0.2733 Acc: 0.8770
-val Loss: 0.2692 Acc: 0.9281
+train Loss: 0.2486 Acc: 0.8893
+val Loss: 0.1889 Acc: 0.9477
 
 Epoch 10/24
 ----------
-train Loss: 0.3581 Acc: 0.8566
-val Loss: 0.2044 Acc: 0.9150
+train Loss: 0.3722 Acc: 0.8443
+val Loss: 0.1764 Acc: 0.9281
 
 Epoch 11/24
 ----------
-train Loss: 0.3178 Acc: 0.8484
-val Loss: 0.2796 Acc: 0.9020
+train Loss: 0.3098 Acc: 0.8770
+val Loss: 0.2307 Acc: 0.9477
 
 Epoch 12/24
 ----------
-train Loss: 0.2419 Acc: 0.8770
-val Loss: 0.2559 Acc: 0.9020
+train Loss: 0.2525 Acc: 0.8811
+val Loss: 0.2009 Acc: 0.9281
 
 Epoch 13/24
 ----------
-train Loss: 0.2967 Acc: 0.8525
-val Loss: 0.1974 Acc: 0.9085
+train Loss: 0.2987 Acc: 0.8852
+val Loss: 0.1906 Acc: 0.9346
 
 Epoch 14/24
 ----------
-train Loss: 0.2703 Acc: 0.8770
-val Loss: 0.2406 Acc: 0.9085
+train Loss: 0.2715 Acc: 0.8852
+val Loss: 0.2273 Acc: 0.9412
 
 Epoch 15/24
 ----------
-train Loss: 0.3123 Acc: 0.8648
-val Loss: 0.2894 Acc: 0.9020
+train Loss: 0.2853 Acc: 0.8770
+val Loss: 0.2525 Acc: 0.9412
 
 Epoch 16/24
 ----------
-train Loss: 0.2330 Acc: 0.8811
-val Loss: 0.2433 Acc: 0.9150
+train Loss: 0.1997 Acc: 0.9221
+val Loss: 0.2017 Acc: 0.9412
 
 Epoch 17/24
 ----------
-train Loss: 0.2598 Acc: 0.9016
-val Loss: 0.2042 Acc: 0.9085
+train Loss: 0.2609 Acc: 0.8893
+val Loss: 0.1816 Acc: 0.9346
 
 Epoch 18/24
 ----------
-train Loss: 0.2964 Acc: 0.8689
-val Loss: 0.2568 Acc: 0.8954
+train Loss: 0.2693 Acc: 0.8811
+val Loss: 0.2139 Acc: 0.9477
 
 Epoch 19/24
 ----------
-train Loss: 0.2069 Acc: 0.9262
-val Loss: 0.2074 Acc: 0.9281
+train Loss: 0.2321 Acc: 0.9057
+val Loss: 0.1888 Acc: 0.9477
 
 Epoch 20/24
 ----------
-train Loss: 0.2737 Acc: 0.8811
-val Loss: 0.2157 Acc: 0.9412
+train Loss: 0.2577 Acc: 0.8975
+val Loss: 0.2066 Acc: 0.9412
 
 Epoch 21/24
 ----------
-train Loss: 0.2528 Acc: 0.8770
-val Loss: 0.2455 Acc: 0.9216
+train Loss: 0.2591 Acc: 0.8893
+val Loss: 0.2447 Acc: 0.9281
 
 Epoch 22/24
 ----------
-train Loss: 0.3082 Acc: 0.8852
-val Loss: 0.2204 Acc: 0.9216
+train Loss: 0.2962 Acc: 0.8689
+val Loss: 0.1919 Acc: 0.9281
 
 Epoch 23/24
 ----------
-train Loss: 0.2969 Acc: 0.8811
-val Loss: 0.2266 Acc: 0.9281
+train Loss: 0.2486 Acc: 0.9057
+val Loss: 0.2158 Acc: 0.9412
 
 Epoch 24/24
 ----------
-train Loss: 0.3222 Acc: 0.8648
-val Loss: 0.1990 Acc: 0.9150
+train Loss: 0.3144 Acc: 0.8770
+val Loss: 0.1884 Acc: 0.9281
 
-Training complete in 1m 20s
-Best val Acc: 0.941176
+Training complete in 1m 18s
+Best val Acc: 0.947712
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">visualize_model</span><span class="p">(</span><span class="n">model_ft</span><span class="p">)</span>
@@ -1006,7 +1007,7 @@ Epoch 24/24
 train Loss: 0.3840 Acc: 0.8320
 val Loss: 0.1768 Acc: 0.9412
 
-Training complete in 0m 50s
+Training complete in 0m 44s
 Best val Acc: 0.954248
 </pre></div>
 </div>
@@ -1057,7 +1058,7 @@ the predicted class labels along with the images.</p>
 <h2>Further Learning<a class="headerlink" href="#further-learning" title="Permalink to this heading">¶</a></h2>
 <p>If you would like to learn more about the applications of transfer learning,
 checkout our <a class="reference external" href="https://pytorch.org/tutorials/intermediate/quantized_transfer_learning_tutorial.html">Quantized Transfer Learning for Computer Vision Tutorial</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  13.338 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  6.213 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-transfer-learning-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/d923ca53b1bfbeb3c222ae46d65d485e/transfer_learning_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transfer_learning_tutorial.py</span></code></a></p>

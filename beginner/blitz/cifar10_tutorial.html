@@ -356,6 +356,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -516,22 +517,33 @@ the num_worker of torch.utils.data.DataLoader() to 0.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 425984/170498071 [00:00&lt;00:40, 4244331.20it/s]
-  5%|4         | 7798784/170498071 [00:00&lt;00:03, 45019574.59it/s]
- 11%|#1        | 19496960/170498071 [00:00&lt;00:01, 77801949.54it/s]
- 18%|#8        | 31195136/170498071 [00:00&lt;00:01, 93197251.34it/s]
- 25%|##5       | 42926080/170498071 [00:00&lt;00:01, 101760216.46it/s]
- 32%|###2      | 54624256/170498071 [00:00&lt;00:01, 106858595.56it/s]
- 39%|###8      | 66289664/170498071 [00:00&lt;00:00, 110040979.54it/s]
- 46%|####5     | 77987840/170498071 [00:00&lt;00:00, 112222212.31it/s]
- 53%|#####2    | 89686016/170498071 [00:00&lt;00:00, 113655663.72it/s]
- 59%|#####9    | 101351424/170498071 [00:01&lt;00:00, 114509931.81it/s]
- 66%|######6   | 113016832/170498071 [00:01&lt;00:00, 115121085.87it/s]
- 73%|#######3  | 124682240/170498071 [00:01&lt;00:00, 115550660.45it/s]
- 80%|#######9  | 136347648/170498071 [00:01&lt;00:00, 115824221.27it/s]
- 87%|########6 | 148045824/170498071 [00:01&lt;00:00, 116014121.27it/s]
- 94%|#########3| 159744000/170498071 [00:01&lt;00:00, 116294331.08it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 106826868.14it/s]
+  0%|          | 491520/170498071 [00:00&lt;00:34, 4900599.75it/s]
+  3%|3         | 5275648/170498071 [00:00&lt;00:05, 30023416.93it/s]
+  8%|8         | 13729792/170498071 [00:00&lt;00:02, 54829401.48it/s]
+ 11%|#1        | 19234816/170498071 [00:00&lt;00:02, 52621411.64it/s]
+ 16%|#5        | 26804224/170498071 [00:00&lt;00:02, 60640433.09it/s]
+ 19%|#9        | 32931840/170498071 [00:00&lt;00:02, 57374574.36it/s]
+ 23%|##3       | 40042496/170498071 [00:00&lt;00:02, 61467951.82it/s]
+ 27%|##7       | 46268416/170498071 [00:00&lt;00:02, 59728966.36it/s]
+ 31%|###       | 52658176/170498071 [00:00&lt;00:01, 60932608.76it/s]
+ 34%|###4      | 58785792/170498071 [00:01&lt;00:01, 58290240.08it/s]
+ 38%|###8      | 65404928/170498071 [00:01&lt;00:01, 60519266.20it/s]
+ 42%|####1     | 71499776/170498071 [00:01&lt;00:01, 52697208.72it/s]
+ 46%|####6     | 79003648/170498071 [00:01&lt;00:01, 58614459.48it/s]
+ 50%|####9     | 85098496/170498071 [00:01&lt;00:01, 57669528.82it/s]
+ 54%|#####4    | 92372992/170498071 [00:01&lt;00:01, 61641266.12it/s]
+ 58%|#####7    | 98697216/170498071 [00:01&lt;00:01, 60836436.10it/s]
+ 62%|######1   | 105250816/170498071 [00:01&lt;00:01, 62146927.07it/s]
+ 65%|######5   | 111542272/170498071 [00:01&lt;00:00, 59667741.32it/s]
+ 70%|######9   | 119078912/170498071 [00:02&lt;00:00, 64071249.39it/s]
+ 74%|#######3  | 125566976/170498071 [00:02&lt;00:00, 60126289.80it/s]
+ 78%|#######8  | 133595136/170498071 [00:02&lt;00:00, 65681672.14it/s]
+ 82%|########2 | 140279808/170498071 [00:02&lt;00:00, 60914294.42it/s]
+ 86%|########6 | 147161088/170498071 [00:02&lt;00:00, 63028848.22it/s]
+ 90%|######### | 153583616/170498071 [00:02&lt;00:00, 61524840.99it/s]
+ 94%|#########4| 160530432/170498071 [00:02&lt;00:00, 63708959.48it/s]
+ 98%|#########7| 166985728/170498071 [00:02&lt;00:00, 59765468.32it/s]
+100%|##########| 170498071/170498071 [00:02&lt;00:00, 59306022.82it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -827,7 +839,7 @@ please check out <a class="reference internal" href="data_parallel_tutorial.html
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">dataiter</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  58.030 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  0.763 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-cifar10-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c51fcdf96d93a8e4b3f2943cb36bab19/cifar10_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></p>
