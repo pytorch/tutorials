@@ -12,6 +12,7 @@ if [ -n "$ANACONDA_PYTHON_VERSION" ]; then
   CONDA_FILE="Miniconda3-latest-Linux-x86_64.sh"
 
   mkdir -p /opt/conda
+  chown ci-user:ci-user /opt/conda
 
   source "$(dirname "${BASH_SOURCE[0]}")/common_utils.sh"
 
