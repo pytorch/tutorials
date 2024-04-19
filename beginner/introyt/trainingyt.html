@@ -343,6 +343,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
@@ -519,40 +520,42 @@ and download both training and validation data splits.</p>
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to ./data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:12, 364089.72it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 684676.39it/s]
-  3%|3         | 851968/26421880 [00:00&lt;00:13, 1949961.46it/s]
- 11%|#         | 2883584/26421880 [00:00&lt;00:04, 5630885.50it/s]
- 30%|###       | 8028160/26421880 [00:00&lt;00:01, 13874650.09it/s]
- 53%|#####3    | 14024704/26421880 [00:01&lt;00:00, 20485960.81it/s]
- 75%|#######4  | 19726336/26421880 [00:01&lt;00:00, 26184024.80it/s]
- 87%|########6 | 22937600/26421880 [00:01&lt;00:00, 25522450.43it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 18264405.16it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:12, 363592.23it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:38, 684502.11it/s]
+  3%|3         | 917504/26421880 [00:00&lt;00:09, 2639722.40it/s]
+  7%|7         | 1900544/26421880 [00:00&lt;00:05, 4455500.30it/s]
+ 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 8069336.64it/s]
+ 30%|###       | 8028160/26421880 [00:00&lt;00:01, 17341296.22it/s]
+ 44%|####3     | 11534336/26421880 [00:00&lt;00:00, 20981717.79it/s]
+ 61%|######    | 16089088/26421880 [00:01&lt;00:00, 25168269.87it/s]
+ 75%|#######5  | 19824640/26421880 [00:01&lt;00:00, 28269549.49it/s]
+ 89%|########8 | 23429120/26421880 [00:01&lt;00:00, 28576652.21it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 18891536.12it/s]
 Extracting ./data/FashionMNIST/raw/train-images-idx3-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 328883.09it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 328109.03it/s]
 Extracting ./data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to ./data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:11, 364641.77it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 686817.02it/s]
- 20%|##        | 884736/4422102 [00:00&lt;00:01, 2038814.05it/s]
- 73%|#######3  | 3244032/4422102 [00:00&lt;00:00, 6414823.29it/s]
-100%|##########| 4422102/4422102 [00:00&lt;00:00, 6086002.42it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:11, 363896.92it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 683638.72it/s]
+ 21%|##        | 917504/4422102 [00:00&lt;00:01, 2644891.97it/s]
+ 44%|####3     | 1933312/4422102 [00:00&lt;00:00, 4087583.12it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6104836.21it/s]
 Extracting ./data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to ./data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 38905003.59it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 41364515.31it/s]
 Extracting ./data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to ./data/FashionMNIST/raw
 
 Training set has 60000 instances
@@ -913,7 +916,7 @@ a broad variety of training tasks, including classification in
 different domains, generative adversarial networks, reinforcement
 learning, and more</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  50.251 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  52.264 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-trainingyt-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/9f7a57e14d8a2ebf975344f34d6ef247/trainingyt.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">trainingyt.py</span></code></a></p>

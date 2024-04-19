@@ -343,6 +343,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
@@ -465,36 +466,36 @@ method:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vgg16-397923af.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vgg16-397923af.pth
 
   0%|          | 0.00/528M [00:00&lt;?, ?B/s]
-  3%|3         | 17.0M/528M [00:00&lt;00:03, 177MB/s]
-  6%|6         | 34.2M/528M [00:00&lt;00:02, 179MB/s]
- 10%|9         | 51.5M/528M [00:00&lt;00:02, 179MB/s]
- 13%|#3        | 68.8M/528M [00:00&lt;00:02, 180MB/s]
- 16%|#6        | 86.0M/528M [00:00&lt;00:02, 180MB/s]
- 20%|#9        | 103M/528M [00:00&lt;00:02, 180MB/s]
- 23%|##2       | 120M/528M [00:00&lt;00:02, 180MB/s]
- 26%|##6       | 138M/528M [00:00&lt;00:02, 180MB/s]
- 29%|##9       | 155M/528M [00:00&lt;00:02, 181MB/s]
- 33%|###2      | 173M/528M [00:01&lt;00:02, 181MB/s]
- 36%|###6      | 190M/528M [00:01&lt;00:01, 182MB/s]
- 39%|###9      | 208M/528M [00:01&lt;00:01, 182MB/s]
- 43%|####2     | 225M/528M [00:01&lt;00:01, 182MB/s]
- 46%|####5     | 243M/528M [00:01&lt;00:01, 182MB/s]
- 49%|####9     | 260M/528M [00:01&lt;00:01, 182MB/s]
- 53%|#####2    | 278M/528M [00:01&lt;00:01, 182MB/s]
- 56%|#####5    | 295M/528M [00:01&lt;00:01, 182MB/s]
- 59%|#####9    | 312M/528M [00:01&lt;00:01, 182MB/s]
- 63%|######2   | 330M/528M [00:01&lt;00:01, 182MB/s]
- 66%|######5   | 348M/528M [00:02&lt;00:01, 182MB/s]
- 69%|######9   | 365M/528M [00:02&lt;00:00, 182MB/s]
- 72%|#######2  | 382M/528M [00:02&lt;00:00, 182MB/s]
- 76%|#######5  | 400M/528M [00:02&lt;00:00, 182MB/s]
- 79%|#######9  | 418M/528M [00:02&lt;00:00, 182MB/s]
- 82%|########2 | 435M/528M [00:02&lt;00:00, 183MB/s]
- 86%|########5 | 452M/528M [00:02&lt;00:00, 182MB/s]
- 89%|########9 | 470M/528M [00:02&lt;00:00, 182MB/s]
- 92%|#########2| 487M/528M [00:02&lt;00:00, 182MB/s]
- 96%|#########5| 505M/528M [00:02&lt;00:00, 182MB/s]
- 99%|#########8| 522M/528M [00:03&lt;00:00, 182MB/s]
+  3%|3         | 17.2M/528M [00:00&lt;00:02, 180MB/s]
+  7%|6         | 34.9M/528M [00:00&lt;00:02, 183MB/s]
+ 10%|9         | 52.5M/528M [00:00&lt;00:02, 183MB/s]
+ 13%|#3        | 70.2M/528M [00:00&lt;00:02, 184MB/s]
+ 17%|#6        | 88.0M/528M [00:00&lt;00:02, 184MB/s]
+ 20%|##        | 106M/528M [00:00&lt;00:02, 184MB/s]
+ 23%|##3       | 124M/528M [00:00&lt;00:02, 185MB/s]
+ 27%|##6       | 141M/528M [00:00&lt;00:02, 185MB/s]
+ 30%|###       | 159M/528M [00:00&lt;00:02, 185MB/s]
+ 34%|###3      | 177M/528M [00:01&lt;00:02, 184MB/s]
+ 37%|###6      | 194M/528M [00:01&lt;00:01, 183MB/s]
+ 40%|####      | 212M/528M [00:01&lt;00:01, 182MB/s]
+ 43%|####3     | 230M/528M [00:01&lt;00:01, 182MB/s]
+ 47%|####6     | 247M/528M [00:01&lt;00:01, 182MB/s]
+ 50%|#####     | 264M/528M [00:01&lt;00:01, 182MB/s]
+ 53%|#####3    | 282M/528M [00:01&lt;00:01, 182MB/s]
+ 57%|#####6    | 299M/528M [00:01&lt;00:01, 182MB/s]
+ 60%|######    | 317M/528M [00:01&lt;00:01, 182MB/s]
+ 63%|######3   | 334M/528M [00:01&lt;00:01, 181MB/s]
+ 67%|######6   | 352M/528M [00:02&lt;00:01, 181MB/s]
+ 70%|######9   | 369M/528M [00:02&lt;00:00, 181MB/s]
+ 73%|#######3  | 386M/528M [00:02&lt;00:00, 182MB/s]
+ 77%|#######6  | 404M/528M [00:02&lt;00:00, 182MB/s]
+ 80%|#######9  | 421M/528M [00:02&lt;00:00, 182MB/s]
+ 83%|########3 | 439M/528M [00:02&lt;00:00, 181MB/s]
+ 86%|########6 | 456M/528M [00:02&lt;00:00, 181MB/s]
+ 90%|########9 | 474M/528M [00:02&lt;00:00, 181MB/s]
+ 93%|#########3| 491M/528M [00:02&lt;00:00, 181MB/s]
+ 96%|#########6| 508M/528M [00:02&lt;00:00, 182MB/s]
+100%|#########9| 526M/528M [00:03&lt;00:00, 182MB/s]
 100%|##########| 528M/528M [00:03&lt;00:00, 182MB/s]
 </pre></div>
 </div>
@@ -580,7 +581,7 @@ the model, in which case we can pass <code class="docutils literal notranslate">
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html">Saving and Loading a General Checkpoint in PyTorch</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html?highlight=loading%20nn%20module%20from%20checkpoint">Tips for loading an nn.Module from a checkpoint</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  8.621 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  8.698 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-saveloadrun-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/3648b0dccaebca71b234070fe2124770/saveloadrun_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">saveloadrun_tutorial.py</span></code></a></p>

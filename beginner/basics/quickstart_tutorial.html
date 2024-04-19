@@ -343,6 +343,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
@@ -490,42 +491,42 @@ use the FashionMNIST dataset. Every TorchVision <code class="docutils literal no
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:12, 365675.50it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 685094.36it/s]
-  3%|3         | 819200/26421880 [00:00&lt;00:10, 2339179.20it/s]
-  7%|7         | 1900544/26421880 [00:00&lt;00:06, 4084614.92it/s]
- 22%|##1       | 5701632/26421880 [00:00&lt;00:01, 13142845.41it/s]
- 34%|###4      | 9043968/26421880 [00:00&lt;00:01, 15683476.90it/s]
- 52%|#####2    | 13828096/26421880 [00:01&lt;00:00, 23625268.01it/s]
- 66%|######5   | 17334272/26421880 [00:01&lt;00:00, 22447711.46it/s]
- 86%|########6 | 22773760/26421880 [00:01&lt;00:00, 30024285.46it/s]
-100%|#########9| 26411008/26421880 [00:01&lt;00:00, 26866991.58it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 18279175.84it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:12, 365486.85it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:38, 685994.33it/s]
+  3%|3         | 917504/26421880 [00:00&lt;00:09, 2655327.93it/s]
+  7%|7         | 1933312/26421880 [00:00&lt;00:05, 4096400.95it/s]
+ 21%|##1       | 5603328/26421880 [00:00&lt;00:01, 12814882.75it/s]
+ 35%|###4      | 9142272/26421880 [00:00&lt;00:01, 15939740.34it/s]
+ 52%|#####2    | 13860864/26421880 [00:01&lt;00:00, 23694781.63it/s]
+ 66%|######6   | 17465344/26421880 [00:01&lt;00:00, 22712793.27it/s]
+ 84%|########4 | 22282240/26421880 [00:01&lt;00:00, 28807157.18it/s]
+ 99%|#########9| 26214400/26421880 [00:01&lt;00:00, 26668084.93it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 18289858.25it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 327119.78it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 326896.06it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:11, 364609.37it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 686265.15it/s]
- 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2202314.44it/s]
- 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 7657356.79it/s]
-100%|##########| 4422102/4422102 [00:00&lt;00:00, 6126651.22it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:11, 363996.18it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 683020.39it/s]
+ 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2195264.07it/s]
+ 84%|########3 | 3702784/4422102 [00:00&lt;00:00, 7337096.44it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6099357.56it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 41206635.48it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 33580524.09it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -793,7 +794,7 @@ the state dictionary into it.</p>
 </pre></div>
 </div>
 <p>Read more about <a class="reference external" href="saveloadrun_tutorial.html">Saving &amp; Loading your model</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  0.672 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  5.420 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-quickstart-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/51f1e1167acc0fda8f9d8fd8597ee626/quickstart_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">quickstart_tutorial.py</span></code></a></p>

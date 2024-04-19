@@ -343,6 +343,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
@@ -806,31 +807,23 @@ automobile, ship, truck):</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 425984/170498071 [00:00&lt;00:40, 4191784.90it/s]
-  3%|3         | 5505024/170498071 [00:00&lt;00:05, 31337641.97it/s]
-  7%|7         | 12779520/170498071 [00:00&lt;00:03, 50107820.86it/s]
- 11%|#1        | 19595264/170498071 [00:00&lt;00:02, 57043949.99it/s]
- 16%|#5        | 26968064/170498071 [00:00&lt;00:02, 63004768.07it/s]
- 20%|#9        | 34013184/170498071 [00:00&lt;00:02, 65520399.68it/s]
- 24%|##4       | 41254912/170498071 [00:00&lt;00:01, 67635628.78it/s]
- 28%|##8       | 48431104/170498071 [00:00&lt;00:01, 68935550.95it/s]
- 32%|###2      | 55410688/170498071 [00:00&lt;00:01, 69171395.27it/s]
- 37%|###6      | 62947328/170498071 [00:01&lt;00:01, 71069087.49it/s]
- 41%|####1     | 70057984/170498071 [00:01&lt;00:01, 69680762.58it/s]
- 46%|####5     | 77692928/170498071 [00:01&lt;00:01, 71562851.03it/s]
- 50%|####9     | 84869120/170498071 [00:01&lt;00:01, 70183043.15it/s]
- 54%|#####4    | 92372992/170498071 [00:01&lt;00:01, 71593231.27it/s]
- 58%|#####8    | 99549184/170498071 [00:01&lt;00:00, 70977658.99it/s]
- 63%|######2   | 106823680/170498071 [00:01&lt;00:00, 71470887.37it/s]
- 67%|######6   | 113999872/170498071 [00:01&lt;00:00, 71549264.82it/s]
- 71%|#######1  | 121176064/170498071 [00:01&lt;00:00, 71523388.68it/s]
- 75%|#######5  | 128516096/170498071 [00:01&lt;00:00, 72067175.77it/s]
- 80%|#######9  | 135757824/170498071 [00:02&lt;00:00, 71065621.13it/s]
- 84%|########3 | 143130624/170498071 [00:02&lt;00:00, 71660884.98it/s]
- 88%|########8 | 150306816/170498071 [00:02&lt;00:00, 70745722.05it/s]
- 92%|#########2| 157679616/170498071 [00:02&lt;00:00, 71449639.19it/s]
- 97%|#########6| 164855808/170498071 [00:02&lt;00:00, 71065771.21it/s]
-100%|##########| 170498071/170498071 [00:02&lt;00:00, 67926828.20it/s]
+  0%|          | 458752/170498071 [00:00&lt;00:37, 4545389.87it/s]
+  4%|4         | 7667712/170498071 [00:00&lt;00:03, 44121617.42it/s]
+ 11%|#         | 18743296/170498071 [00:00&lt;00:02, 74443673.85it/s]
+ 17%|#7        | 29065216/170498071 [00:00&lt;00:01, 85708333.18it/s]
+ 22%|##2       | 37847040/170498071 [00:00&lt;00:01, 86410652.52it/s]
+ 29%|##8       | 49152000/170498071 [00:00&lt;00:01, 95434675.95it/s]
+ 35%|###5      | 60129280/170498071 [00:00&lt;00:01, 100100665.73it/s]
+ 41%|####1     | 70156288/170498071 [00:00&lt;00:01, 99404831.16it/s]
+ 48%|####7     | 81821696/170498071 [00:00&lt;00:00, 104706926.39it/s]
+ 55%|#####4    | 93454336/170498071 [00:01&lt;00:00, 108189285.00it/s]
+ 62%|######1   | 104857600/170498071 [00:01&lt;00:00, 109864820.96it/s]
+ 68%|######7   | 115867648/170498071 [00:01&lt;00:00, 107895742.77it/s]
+ 74%|#######4  | 126681088/170498071 [00:01&lt;00:00, 102842322.73it/s]
+ 81%|########  | 137527296/170498071 [00:01&lt;00:00, 104430113.65it/s]
+ 87%|########7 | 148701184/170498071 [00:01&lt;00:00, 106547744.61it/s]
+ 94%|#########3| 159416320/170498071 [00:01&lt;00:00, 102928818.59it/s]
+100%|##########| 170498071/170498071 [00:01&lt;00:00, 98131539.82it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 </pre></div>
 </div>
@@ -1115,7 +1108,7 @@ data it hasn’t trained on:</p>
 accurate at this point. That’s not exactly state-of-the-art, but it’s
 far better than the 10% accuracy we’d expect from a random output. This
 demonstrates that some general learning did happen in the model.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  0.142 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  57.313 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-introyt1-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0e4c2becda3dfc54e1816634d49f8e73/introyt1_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">introyt1_tutorial.py</span></code></a></p>

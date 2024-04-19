@@ -343,6 +343,7 @@
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
@@ -791,29 +792,28 @@ The code below is after some light modifications to the example here:
 Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/9912422 [00:00&lt;?, ?it/s]
- 75%|#######5  | 7438336/9912422 [00:00&lt;00:00, 74201566.95it/s]
-100%|##########| 9912422/9912422 [00:00&lt;00:00, 90412446.03it/s]
+100%|##########| 9912422/9912422 [00:00&lt;00:00, 204891241.91it/s]
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ../data/MNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/28881 [00:00&lt;?, ?it/s]
-100%|##########| 28881/28881 [00:00&lt;00:00, 173795830.45it/s]
+100%|##########| 28881/28881 [00:00&lt;00:00, 43715515.63it/s]
 Extracting ../data/MNIST/raw/train-labels-idx1-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/1648877 [00:00&lt;?, ?it/s]
-100%|##########| 1648877/1648877 [00:00&lt;00:00, 194698668.30it/s]
+100%|##########| 1648877/1648877 [00:00&lt;00:00, 160726286.84it/s]
 Extracting ../data/MNIST/raw/t10k-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/4542 [00:00&lt;?, ?it/s]
-100%|##########| 4542/4542 [00:00&lt;00:00, 46922484.65it/s]
+100%|##########| 4542/4542 [00:00&lt;00:00, 35278756.98it/s]
 Extracting ../data/MNIST/raw/t10k-labels-idx1-ubyte.gz to ../data/MNIST/raw
 </pre></div>
 </div>
@@ -883,22 +883,22 @@ Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.656998
 Test set: Average loss: 0.4197, Accuracy: 8681/10000 (87%)
 
 Train Epoch: 0 [0/60000 (0%)]   Loss: 2.349030
-Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.435156
-Train Epoch: 0 [8192/60000 (13%)]       Loss: 5.443523
-Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.457862
-Train Epoch: 0 [16384/60000 (27%)]      Loss: 1.739216
-Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.448308
-Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.312166
-Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.144984
-Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.498834
-Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.253248
-Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.061112
-Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.883067
-Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.834831
-Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.729032
-Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.767265
+Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.435157
+Train Epoch: 0 [8192/60000 (13%)]       Loss: 5.443530
+Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.457757
+Train Epoch: 0 [16384/60000 (27%)]      Loss: 1.739527
+Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.448547
+Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.311789
+Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.149166
+Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.513509
+Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.243802
+Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.087806
+Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.902758
+Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.836894
+Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.731945
+Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.754629
 
-Test set: Average loss: 0.4390, Accuracy: 8750/10000 (88%)
+Test set: Average loss: 0.4204, Accuracy: 8825/10000 (88%)
 
 cuDNN version: 8902
 
@@ -908,7 +908,7 @@ Memory allocated at end of forward pass:
 fused: 0.59GB, unfused: 0.96GB
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  34.768 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.721 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-custom-function-conv-bn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/187aea79daf1552dd05cdde1f4b4e34d/custom_function_conv_bn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">custom_function_conv_bn_tutorial.py</span></code></a></p>

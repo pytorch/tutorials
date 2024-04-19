@@ -113,7 +113,7 @@ specific inputs, the context manager can be used to sweep through
 measuring performance.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-116
+.. GENERATED FROM PYTHON SOURCE LINES 65-111
 
 .. code-block:: default
 
@@ -141,29 +141,24 @@ measuring performance.
     print(f"The default implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
 
     # Lets explore the speed of each of the 3 implementations
-    from torch.backends.cuda import sdp_kernel, SDPBackend
-
-    # Helpful arguments mapper
-    backend_map = {
-        SDPBackend.MATH: {"enable_math": True, "enable_flash": False, "enable_mem_efficient": False},
-        SDPBackend.FLASH_ATTENTION: {"enable_math": False, "enable_flash": True, "enable_mem_efficient": False},
-        SDPBackend.EFFICIENT_ATTENTION: {
-            "enable_math": False, "enable_flash": False, "enable_mem_efficient": True}
-    }
-
-    with sdp_kernel(**backend_map[SDPBackend.MATH]):
-        print(f"The math implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+    from torch.nn.attention import SDPBackend, sdpa_kernel
 
 
-    with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
+    with sdpa_kernel(SDPBackend.MATH):
+        math_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+        print(f"The math implementation runs in {math_time:.3f} microseconds")
+
+    with sdpa_kernel(SDPBackend.FLASH_ATTENTION):
         try:
-            print(f"The flash attention implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+            flash_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+            print(f"The flash attention implementation runs in {flash_time:.3f} microseconds")
         except RuntimeError:
             print("FlashAttention is not supported. See warnings for reasons.")
 
-    with sdp_kernel(**backend_map[SDPBackend.EFFICIENT_ATTENTION]):
+    with sdpa_kernel(SDPBackend.EFFICIENT_ATTENTION):
         try:
-            print(f"The memory efficient implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+            efficient_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+            print(f"The memory efficient implementation runs in {efficient_time:.3f} microseconds")
         except RuntimeError:
             print("EfficientAttention is not supported. See warnings for reasons.")
 
@@ -176,19 +171,15 @@ measuring performance.
 
  .. code-block:: none
 
-    The default implementation runs in 2305.440 microseconds
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/backends/cuda/__init__.py:342: FutureWarning:
-
-    torch.backends.cuda.sdp_kernel() is deprecated. In the future, this context manager will be removed. Please see, torch.nn.attention.sdpa_kernel() for the new context manager, with updated signature.
-
-    The math implementation runs in 19254.750 microseconds
-    The flash attention implementation runs in 2304.588 microseconds
-    The memory efficient implementation runs in 4176.879 microseconds
+    The default implementation runs in 2305.048 microseconds
+    The math implementation runs in 19239.033 microseconds
+    The flash attention implementation runs in 2304.783 microseconds
+    The memory efficient implementation runs in 4174.442 microseconds
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-126
+.. GENERATED FROM PYTHON SOURCE LINES 112-121
 
 Hardware dependence
 ~~~~~~~~~~~~~~~~~~~
@@ -200,7 +191,7 @@ will have no effect and all three runs should return similar timings.
 - Depending on what compute capability your graphics card supports
 flash attention or memory efficient might have failed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-136
+.. GENERATED FROM PYTHON SOURCE LINES 124-131
 
 Causal Self Attention
 ~~~~~~~~~~~~~~~~~~~~~
@@ -210,7 +201,7 @@ attention block inspired by
 `Andrej Karpathy NanoGPT <https://github.com/karpathy/nanoGPT>`__ repository.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-189
+.. GENERATED FROM PYTHON SOURCE LINES 131-184
 
 .. code-block:: default
 
@@ -284,7 +275,7 @@ attention block inspired by
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-197
+.. GENERATED FROM PYTHON SOURCE LINES 185-192
 
 ``NestedTensor`` and Dense tensor support
 -----------------------------------------
@@ -294,7 +285,7 @@ without needing to pad each sequence to the maximum length in the batch. For mor
 `torch.nested <https://pytorch.org/docs/stable/nested.html>`__ and `NestedTensors Tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-250
+.. GENERATED FROM PYTHON SOURCE LINES 192-245
 
 .. code-block:: default
 
@@ -343,7 +334,7 @@ without needing to pad each sequence to the maximum length in the batch. For mor
     # Currently the fused implementations don't support ``NestedTensor`` for training
     model.eval()
 
-    with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
+    with sdpa_kernel(SDPBackend.FLASH_ATTENTION):
         try:
             print(f"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds")
             print(f"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds")
@@ -363,17 +354,13 @@ without needing to pad each sequence to the maximum length in the batch. For mor
 
     The PyTorch API of nested tensors is in prototype stage and will change in the near future. (Triggered internally at ../aten/src/ATen/NestedTensorImpl.cpp:178.)
 
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/backends/cuda/__init__.py:342: FutureWarning:
-
-    torch.backends.cuda.sdp_kernel() is deprecated. In the future, this context manager will be removed. Please see, torch.nn.attention.sdpa_kernel() for the new context manager, with updated signature.
-
-    Random NT runs in 562.780 microseconds
-    Random Dense runs in 937.137 microseconds
+    Random NT runs in 559.740 microseconds
+    Random Dense runs in 939.713 microseconds
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-261
+.. GENERATED FROM PYTHON SOURCE LINES 246-256
 
 Using SDPA with ``torch.compile``
 =================================
@@ -386,7 +373,7 @@ To demonstrate this, let's compile the ``CausalSelfAttention`` module using
 ``torch.compile()`` and observe the resulting performance improvements.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-277
+.. GENERATED FROM PYTHON SOURCE LINES 256-272
 
 .. code-block:: default
 
@@ -414,13 +401,13 @@ To demonstrate this, let's compile the ``CausalSelfAttention`` module using
 
  .. code-block:: none
 
-    The non compiled module runs in  408.859 microseconds
-    The compiled module runs in  519.230 microseconds
+    The non compiled module runs in  409.401 microseconds
+    The compiled module runs in  518.497 microseconds
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 278-285
+.. GENERATED FROM PYTHON SOURCE LINES 273-280
 
 The exact execution time is dependent on machine, however the results for mine:
 The non compiled module runs in  166.616 microseconds
@@ -430,7 +417,7 @@ PyTorch comes with an amazing built-in profiler that you can use to
 inspect the performance characteristics of your code.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 286-314
+.. GENERATED FROM PYTHON SOURCE LINES 281-309
 
 .. code-block:: default
 
@@ -473,42 +460,42 @@ inspect the performance characteristics of your code.
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                             Non-Compilied Causal Attention        19.34%       2.206ms        76.35%       8.710ms       8.710ms       0.000us         0.00%      11.094ms      11.094ms             1  
-                             Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.332ms        50.43%      10.332ms      10.332ms             1  
-                                               aten::matmul         2.51%     286.000us        27.10%       3.092ms      61.840us       0.000us         0.00%       8.153ms     163.060us            50  
-                                                   aten::mm        18.62%       2.124ms        22.76%       2.597ms      51.940us       7.747ms        37.81%       8.153ms     163.060us            50  
-                                               aten::linear         1.84%     210.000us        30.50%       3.479ms      69.580us       0.000us         0.00%       7.977ms     159.540us            50  
-             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.545ms        27.06%       5.545ms     221.800us            25  
-                         aten::scaled_dot_product_attention         2.01%     229.000us        18.20%       2.076ms      83.040us       0.000us         0.00%       2.941ms     117.640us            25  
-                  aten::_scaled_dot_product_flash_attention         3.41%     389.000us        16.19%       1.847ms      73.880us       0.000us         0.00%       2.941ms     117.640us            25  
-                             aten::_flash_attention_forward         4.59%     524.000us        11.77%       1.343ms      53.720us       2.409ms        11.76%       2.941ms     117.640us            25  
-    void pytorch_flash::flash_fwd_kernel<pytorch_flash::...         0.00%       0.000us         0.00%       0.000us       0.000us       2.409ms        11.76%       2.409ms      96.360us            25  
+                             Non-Compilied Causal Attention        20.11%       2.260ms        74.64%       8.386ms       8.386ms       0.000us         0.00%      11.114ms      11.114ms             1  
+                             Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.332ms        50.38%      10.332ms      10.332ms             1  
+                                               aten::linear         1.29%     145.000us        29.19%       3.280ms      65.600us       0.000us         0.00%       8.158ms     163.160us            50  
+                                               aten::matmul         2.50%     281.000us        25.53%       2.868ms      57.360us       0.000us         0.00%       8.158ms     163.160us            50  
+                                                   aten::mm        17.03%       1.913ms        21.14%       2.375ms      47.500us       7.753ms        37.80%       8.158ms     163.160us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.559ms        27.11%       5.559ms     222.360us            25  
+                         aten::scaled_dot_product_attention         1.91%     215.000us        17.67%       1.985ms      79.400us       0.000us         0.00%       2.956ms     118.240us            25  
+                  aten::_scaled_dot_product_flash_attention         3.36%     377.000us        15.75%       1.770ms      70.800us       0.000us         0.00%       2.956ms     118.240us            25  
+                             aten::_flash_attention_forward         4.44%     499.000us        11.49%       1.291ms      51.640us       2.423ms        11.81%       2.956ms     118.240us            25  
+    void pytorch_flash::flash_fwd_kernel<pytorch_flash::...         0.00%       0.000us         0.00%       0.000us       0.000us       2.423ms        11.81%       2.423ms      96.920us            25  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 11.408ms
-    Self CUDA time total: 20.488ms
+    Self CPU time total: 11.236ms
+    Self CUDA time total: 20.508ms
 
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                                  Compiled Causal Attention         6.36%     738.000us        90.85%      10.549ms      10.549ms       0.000us         0.00%      10.985ms      10.985ms             1  
-                                      Torch-Compiled Region        10.54%       1.224ms        83.30%       9.673ms     386.920us       0.000us         0.00%      10.985ms     439.400us            25  
-                                           CompiledFunction        43.06%       5.000ms        71.67%       8.322ms     332.880us       0.000us         0.00%      10.985ms     439.400us            25  
-                                  Compiled Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.364ms        50.49%      10.364ms      10.364ms             1  
-                                                   aten::mm         7.97%     925.000us        12.36%       1.435ms      28.700us       7.745ms        37.73%       8.152ms     163.040us            50  
-             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.548ms        27.03%       5.548ms     221.920us            25  
-                  aten::_scaled_dot_product_flash_attention         2.26%     263.000us        14.97%       1.738ms      69.520us       0.000us         0.00%       2.833ms     113.320us            25  
-                             aten::_flash_attention_forward         4.60%     534.000us        11.32%       1.315ms      52.600us       2.419ms        11.78%       2.833ms     113.320us            25  
-    void pytorch_flash::flash_fwd_kernel<pytorch_flash::...         0.00%       0.000us         0.00%       0.000us       0.000us       2.419ms        11.78%       2.419ms      96.760us            25  
-    ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us       2.197ms        10.70%       2.197ms      87.880us            25  
+                                  Compiled Causal Attention         6.40%     729.000us        89.76%      10.224ms      10.224ms       0.000us         0.00%      10.983ms      10.983ms             1  
+                                      Torch-Compiled Region        10.52%       1.198ms        82.13%       9.355ms     374.200us       0.000us         0.00%      10.983ms     439.320us            25  
+                                           CompiledFunction        42.25%       4.813ms        70.53%       8.034ms     321.360us       0.000us         0.00%      10.983ms     439.320us            25  
+                                  Compiled Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.348ms        50.45%      10.348ms      10.348ms             1  
+                                                   aten::mm         8.11%     924.000us        12.41%       1.414ms      28.280us       7.747ms        37.77%       8.154ms     163.080us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.552ms        27.07%       5.552ms     222.080us            25  
+                  aten::_scaled_dot_product_flash_attention         2.50%     285.000us        14.92%       1.700ms      68.000us       0.000us         0.00%       2.829ms     113.160us            25  
+                             aten::_flash_attention_forward         4.52%     515.000us        11.11%       1.266ms      50.640us       2.415ms        11.77%       2.829ms     113.160us            25  
+    void pytorch_flash::flash_fwd_kernel<pytorch_flash::...         0.00%       0.000us         0.00%       0.000us       0.000us       2.415ms        11.77%       2.415ms      96.600us            25  
+    ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us       2.195ms        10.70%       2.195ms      87.800us            25  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 11.612ms
-    Self CUDA time total: 20.528ms
+    Self CPU time total: 11.391ms
+    Self CUDA time total: 20.510ms
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-330
+.. GENERATED FROM PYTHON SOURCE LINES 310-325
 
 The previous code snippet generates a report of the top 10 PyTorch functions
 that consumed the most GPU execution time, for both the compiled and non-compiled module.
@@ -526,14 +513,107 @@ the module took the time per train step from: ``6090.49ms`` to
 the Shakespeare dataset.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 333-345
+.. GENERATED FROM PYTHON SOURCE LINES 327-342
+
+Using SDPA with attn_bias subclasses`
+==========================================
+
+As of PyTorch 2.3, we have added a new submodule that contains tensor subclasses.
+Designed to be used with ``torch.nn.functional.scaled_dot_product_attention``.
+The module is named ``torch.nn.attention.bias`` and contains the following two
+utilities for generating causal attention variants:
+
+- ``torch.nn.attention.bias.causal_upper_left``
+- ``torch.nn.attention.bias.causal_lower_right``
+
+.. note::
+   The current argument ``is_causal`` in ``torch.nn.functional.scaled_dot_product_attention``
+   is the same as using ``torch.nn.attention.bias.causal_upper_left``.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 342-395
+
+.. code-block:: default
+
+
+    from torch.nn.attention.bias import causal_lower_right, causal_upper_left
+
+    batch_size = 32
+    sequence_length_q = 2
+    sequence_length_kv = 10
+    num_heads = 16
+    embed_dimension = 32
+
+    dtype = torch.float16
+
+    query = torch.rand(batch_size, num_heads, sequence_length_q, embed_dimension, device=device, dtype=dtype)
+    key = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype)
+    value = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype)
+
+    upper_left_bias = causal_upper_left(sequence_length_q, sequence_length_kv)
+    lower_right_bias = causal_lower_right(sequence_length_q, sequence_length_kv)
+
+    print(type(upper_left_bias))
+    print(type(lower_right_bias))
+
+    assert type(upper_left_bias) == type(lower_right_bias)
+    assert issubclass(type(upper_left_bias), torch.Tensor)
+
+    # As you can see from the previous output, are the same type ``torch.nn.attention.bias.CausalBias``
+    # and subclass ``torch.Tensor``
+
+    # Lets see what these tensors look like
+    print(upper_left_bias)
+    print(lower_right_bias)
+
+    # Upper Left Bias aligns the causal attention mask to the upper left corner of the attention scores matrix.
+    # This only has an impact when the attention scores matrix is not square, which is common for decoding use cases.
+    # Another way of thinking about this concept is that when you use upper left bias,
+    # the 0th token in the query is aligned to the 0th token in the key, while for lower right bias,
+    # Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score
+    # between the 0th token in the query and the 0th token in the key.
+    # For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k
+    # (for example, ``attn_score[-1][-1])`` is all True since the last token in q is at the same position as the last token in k
+    # even if the sequence length of q and k are different.
+
+    # These objects are intended to be used with sdpa
+    out_upper_left = F.scaled_dot_product_attention(query, key, value, upper_left_bias)
+    out_lower_right = F.scaled_dot_product_attention(query, key, value, lower_right_bias)
+    out_is_causal = F.scaled_dot_product_attention(query, key, value, is_causal=True)
+
+    assert torch.allclose(out_upper_left, out_is_causal)
+    assert not torch.allclose(out_upper_left, out_lower_right)
+
+    # These attention biases should also be compatible with torch.compile
+    compiled_sdpa = torch.compile(F.scaled_dot_product_attention, fullgraph=True)
+    out_upper_left = compiled_sdpa(query, key, value, upper_left_bias)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <class 'torch.nn.attention.bias.CausalBias'>
+    <class 'torch.nn.attention.bias.CausalBias'>
+    tensor([[ True, False, False, False, False, False, False, False, False, False],
+            [ True,  True, False, False, False, False, False, False, False, False]])
+    tensor([[ True,  True,  True,  True,  True,  True,  True,  True,  True, False],
+            [ True,  True,  True,  True,  True,  True,  True,  True,  True,  True]])
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 396-408
 
 Conclusion
 ==========
 
 In this tutorial, we have demonstrated the basic usage of
 ``torch.nn.functional.scaled_dot_product_attention``. We have shown how
-the ``sdp_kernel`` context manager can be used to assert a certain
+the ``sdpa_kernel`` context manager can be used to assert a certain
 implementation is used on GPU. As well, we built a simple
 ``CausalSelfAttention`` module that works with ``NestedTensor`` and is torch
 compilable. In the process we have shown how to the profiling tools can
@@ -544,7 +624,7 @@ module.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  7.819 seconds)
+   **Total running time of the script:** ( 0 minutes  7.877 seconds)
 
 
 .. _sphx_glr_download_intermediate_scaled_dot_product_attention_tutorial.py:
