@@ -433,6 +433,8 @@ training_args = transformers.TrainingArguments(
     per_device_train_batch_size=32,
     per_device_eval_batch_size=256,
     logging_steps=50, 
+    # Limit max steps for tutorial runnners. Delete the below line to see the final accuracy numbers. 
+    max_steps=500,
     report_to=None,
 )
 
