@@ -1,15 +1,13 @@
 Welcome to PyTorch Tutorials
 ============================
 
-What's new in PyTorch tutorials?
+**What's new in PyTorch tutorials?**
 
-* `Large Scale Transformer model training with Tensor Parallel <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
-* `PyTorch Inference Performance Tuning on AWS Graviton Processors <https://pytorch.org/tutorials/recipes/inference_tuning_on_aws_graviton.html>`__
-* `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
-* `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
-* `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
-* `Compiling the optimizer with torch.compile <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
-
+* `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html>`__
+* `Large Scale Transformer model training with Tensor Parallel (TP) <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
+* `Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/advanced/semi_structured_sparse.html>`__
+* `torch.export Tutorial with torch.export.Dim <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+* `Extension points in nn.Module for load_state_dict and tensor subclasses <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`__
 
 .. raw:: html
 
