@@ -1,14 +1,13 @@
 Welcome to PyTorch Tutorials
 ============================
 
-What's new in PyTorch tutorials?
+**What's new in PyTorch tutorials?**
 
-* `PyTorch Inference Performance Tuning on AWS Graviton Processors <https://pytorch.org/tutorials/recipes/inference_tuning_on_aws_graviton.html>`__
-* `Using TORCH_LOGS python API with torch.compile <https://pytorch.org/tutorials/recipes/torch_logs.html>`__
-* `PyTorch 2 Export Quantization with X86 Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_x86_inductor.html>`__
-* `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
-* `Compiling the optimizer with torch.compile <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
-
+* `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html>`__
+* `Large Scale Transformer model training with Tensor Parallel (TP) <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
+* `Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/advanced/semi_structured_sparse.html>`__
+* `torch.export Tutorial with torch.export.Dim <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+* `Extension points in nn.Module for load_state_dict and tensor subclasses <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`__
 
 .. raw:: html
 
@@ -581,6 +580,13 @@ What's new in PyTorch tutorials?
    :tags: Model-Optimization,Best-Practice,CUDA,Frontend-APIs
 
 .. customcarditem::
+   :header: (beta) Accelerating BERT with semi-structured sparsity
+   :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile. 
+   :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
+   :link: advanced/semi_structured_sparse.html
+   :tags: Text,Model-Optimization
+
+.. customcarditem::
    :header: (beta) Dynamic Quantization on an LSTM Word Language Model
    :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-an-LSTM-Word-Language-Model.png
@@ -694,6 +700,13 @@ What's new in PyTorch tutorials?
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
    :link: intermediate/dist_tuto.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Large Scale Transformer model training with Tensor Parallel
+   :card_description: Learn how to train large models with Tensor Parallel package.
+   :image: _static/img/thumbnails/cropped/Large-Scale-Transformer-model-training-with-Tensor-Parallel.png
+   :link: intermediate/TP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -1081,6 +1094,7 @@ Additional Resources
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
    intermediate/FSDP_adavnced_tutorial
+   intermediate/TP_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial

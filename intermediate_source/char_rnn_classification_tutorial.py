@@ -179,14 +179,13 @@ print(lineToTensor('Jones').size())
 # graph itself. This means you can implement a RNN in a very "pure" way,
 # as regular feed-forward layers.
 #
-# This RNN module (mostly copied from `the PyTorch for Torch users
-# tutorial <https://pytorch.org/tutorials/beginner/former_torchies/
-# nn_tutorial.html#example-2-recurrent-net>`__)
-# is just 2 linear layers which operate on an input and hidden state, with
-# a ``LogSoftmax`` layer after the output.
+# This RNN module implements a "vanilla RNN" an is just 3 linear layers 
+# which operate on an input and hidden state, with a ``LogSoftmax`` layer 
+# after the output.
 #
 
 import torch.nn as nn
+import torch.nn.functional as F
 
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -194,13 +193,13 @@ class RNN(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        self.i2h = nn.Linear(input_size, hidden_size)
+        self.h2h = nn.Linear(hidden_size, hidden_size)
         self.h2o = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
-        combined = torch.cat((input, hidden), 1)
-        hidden = self.i2h(combined)
+        hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
         output = self.h2o(hidden)
         output = self.softmax(output)
         return output, hidden
