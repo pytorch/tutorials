@@ -784,7 +784,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Using the ExecuTorch SDK to Profile a Model
    :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models 
-   :image: _static/img/thumbnails/cropped/android.png
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
    :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
    :tags: Edge
 
