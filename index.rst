@@ -1134,7 +1134,7 @@ Additional Resources
 
    Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
    Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
-   Using the ExecuTorch SDK to Profile a Model<https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
+   Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
    Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
    Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
    Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>   
