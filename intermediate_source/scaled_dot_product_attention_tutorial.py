@@ -86,29 +86,24 @@ value = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, dev
 print(f"The default implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
 
 # Lets explore the speed of each of the 3 implementations
-from torch.backends.cuda import sdp_kernel, SDPBackend
-
-# Helpful arguments mapper
-backend_map = {
-    SDPBackend.MATH: {"enable_math": True, "enable_flash": False, "enable_mem_efficient": False},
-    SDPBackend.FLASH_ATTENTION: {"enable_math": False, "enable_flash": True, "enable_mem_efficient": False},
-    SDPBackend.EFFICIENT_ATTENTION: {
-        "enable_math": False, "enable_flash": False, "enable_mem_efficient": True}
-}
-
-with sdp_kernel(**backend_map[SDPBackend.MATH]):
-    print(f"The math implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+from torch.nn.attention import SDPBackend, sdpa_kernel
 
 
-with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
+with sdpa_kernel(SDPBackend.MATH):
+    math_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+    print(f"The math implementation runs in {math_time:.3f} microseconds")
+
+with sdpa_kernel(SDPBackend.FLASH_ATTENTION):
     try:
-        print(f"The flash attention implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+        flash_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+        print(f"The flash attention implementation runs in {flash_time:.3f} microseconds")
     except RuntimeError:
         print("FlashAttention is not supported. See warnings for reasons.")
 
-with sdp_kernel(**backend_map[SDPBackend.EFFICIENT_ATTENTION]):
+with sdpa_kernel(SDPBackend.EFFICIENT_ATTENTION):
     try:
-        print(f"The memory efficient implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds")
+        efficient_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value)
+        print(f"The memory efficient implementation runs in {efficient_time:.3f} microseconds")
     except RuntimeError:
         print("EfficientAttention is not supported. See warnings for reasons.")
 
@@ -239,7 +234,7 @@ random_dense, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=N
 # Currently the fused implementations don't support ``NestedTensor`` for training
 model.eval()
 
-with sdp_kernel(**backend_map[SDPBackend.FLASH_ATTENTION]):
+with sdpa_kernel(SDPBackend.FLASH_ATTENTION):
     try:
         print(f"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds")
         print(f"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds")
@@ -328,6 +323,74 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 # the Shakespeare dataset.
 #
 
+######################################################################
+# Using SDPA with attn_bias subclasses`
+# ==========================================
+#
+# As of PyTorch 2.3, we have added a new submodule that contains tensor subclasses.
+# Designed to be used with ``torch.nn.functional.scaled_dot_product_attention``.
+# The module is named ``torch.nn.attention.bias`` and contains the following two
+# utilities for generating causal attention variants:
+#
+# - ``torch.nn.attention.bias.causal_upper_left``
+# - ``torch.nn.attention.bias.causal_lower_right``
+#
+# .. note::
+#    The current argument ``is_causal`` in ``torch.nn.functional.scaled_dot_product_attention``
+#    is the same as using ``torch.nn.attention.bias.causal_upper_left``.
+#
+
+from torch.nn.attention.bias import causal_lower_right, causal_upper_left
+
+batch_size = 32
+sequence_length_q = 2
+sequence_length_kv = 10
+num_heads = 16
+embed_dimension = 32
+
+dtype = torch.float16
+
+query = torch.rand(batch_size, num_heads, sequence_length_q, embed_dimension, device=device, dtype=dtype)
+key = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype)
+value = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype)
+
+upper_left_bias = causal_upper_left(sequence_length_q, sequence_length_kv)
+lower_right_bias = causal_lower_right(sequence_length_q, sequence_length_kv)
+
+print(type(upper_left_bias))
+print(type(lower_right_bias))
+
+assert type(upper_left_bias) == type(lower_right_bias)
+assert issubclass(type(upper_left_bias), torch.Tensor)
+
+# As you can see from the previous output, are the same type ``torch.nn.attention.bias.CausalBias``
+# and subclass ``torch.Tensor``
+
+# Lets see what these tensors look like
+print(upper_left_bias)
+print(lower_right_bias)
+
+# Upper Left Bias aligns the causal attention mask to the upper left corner of the attention scores matrix.
+# This only has an impact when the attention scores matrix is not square, which is common for decoding use cases.
+# Another way of thinking about this concept is that when you use upper left bias,
+# the 0th token in the query is aligned to the 0th token in the key, while for lower right bias,
+# Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score
+# between the 0th token in the query and the 0th token in the key.
+# For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k
+# (for example, ``attn_score[-1][-1])`` is all True since the last token in q is at the same position as the last token in k
+# even if the sequence length of q and k are different.
+
+# These objects are intended to be used with sdpa
+out_upper_left = F.scaled_dot_product_attention(query, key, value, upper_left_bias)
+out_lower_right = F.scaled_dot_product_attention(query, key, value, lower_right_bias)
+out_is_causal = F.scaled_dot_product_attention(query, key, value, is_causal=True)
+
+assert torch.allclose(out_upper_left, out_is_causal)
+assert not torch.allclose(out_upper_left, out_lower_right)
+
+# These attention biases should also be compatible with torch.compile
+compiled_sdpa = torch.compile(F.scaled_dot_product_attention, fullgraph=True)
+out_upper_left = compiled_sdpa(query, key, value, upper_left_bias)
 
 ######################################################################
 # Conclusion
@@ -335,7 +398,7 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 #
 # In this tutorial, we have demonstrated the basic usage of
 # ``torch.nn.functional.scaled_dot_product_attention``. We have shown how
-# the ``sdp_kernel`` context manager can be used to assert a certain
+# the ``sdpa_kernel`` context manager can be used to assert a certain
 # implementation is used on GPU. As well, we built a simple
 # ``CausalSelfAttention`` module that works with ``NestedTensor`` and is torch
 # compilable. In the process we have shown how to the profiling tools can
