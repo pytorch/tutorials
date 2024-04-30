@@ -552,13 +552,6 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
-   :header: Optimizing Vision Transformer Model
-   :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
-   :image: _static/img/thumbnails/cropped/mobile.png
-   :link: beginner/vt_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Mobile
-
-.. customcarditem::
    :header: Parametrizations Tutorial
    :card_description: Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
@@ -772,21 +765,50 @@ Welcome to PyTorch Tutorials
    :link: intermediate/FSDP_adavnced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
-.. Mobile
+.. Edge
 
 .. customcarditem::
-   :header: Image Segmentation DeepLabV3 on iOS
-   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on iOS.
-   :image: _static/img/thumbnails/cropped/ios.png
-   :link: beginner/deeplabv3_on_ios.html
-   :tags: Mobile
+   :header: Exporting to ExecuTorch Tutorial
+   :card_description: Learn about how to use ExecuTorch, a unified ML stack for lowering PyTorch models to edge devices.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html
+   :tags: Edge
 
 .. customcarditem::
-   :header: Image Segmentation DeepLabV3 on Android
-   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on Android.
-   :image: _static/img/thumbnails/cropped/android.png
-   :link: beginner/deeplabv3_on_android.html
-   :tags: Mobile
+   :header: Running an ExecuTorch Model in C++ Tutorial
+   :card_description: Learn how to load and execute an ExecuTorch model in C++
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Using the ExecuTorch SDK to Profile a Model
+   :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models 
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Building an ExecuTorch iOS Demo App
+   :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/demo-apps-ios.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Building an ExecuTorch Android Demo App
+   :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/demo-apps-android.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Lowering a Model as a Delegate
+   :card_description: Learn to accelerate your program using ExecuTorch by applying delegates through three methods: lowering the whole module, composing it with another module, and partitioning parts of a module.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html
+   :tags: Edge
+
 
 .. Recommendation Systems
 
@@ -1108,10 +1130,14 @@ Additional Resources
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Mobile
+   :caption: Edge with ExecuTorch
 
-   beginner/deeplabv3_on_ios
-   beginner/deeplabv3_on_android
+   Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
+   Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
+   Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
+   Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
+   Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
+   Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>   
 
 .. toctree::
    :maxdepth: 2
