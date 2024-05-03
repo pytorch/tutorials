@@ -18,50 +18,54 @@
 .. _sphx_glr_prototype_nestedtensor.py:
 
 
-NestedTensors
+Getting Started with Nested Tensors
 ===============================================================
 
-NestedTensors are similar to regular tensors, except for their shape:
+Nested tensors generalize the shape of regular dense tensors, allowing for representation
+of ragged-sized data.
 
-* for a regular tensor, each dimension has a size
+* for a regular tensor, each dimension is regular and has a size
 
-* for a nestedtensor, not all dimensions have regular sizes; some of them are jagged
+* for a nested tensor, not all dimensions have regular sizes; some of them are ragged
 
-Nestedtensors are a natural solution for representing sequential data within various domains:
+Nested tensors are a natural solution for representing sequential data within various domains:
 
-* in NLP, sentences can have variable lengths, so a batch of sentences forms a nestedtensor
+* in NLP, sentences can have variable lengths, so a batch of sentences forms a nested tensor
 
-* in CV, images can have variable shapes, so a batch of images forms a nestedtensor
+* in CV, images can have variable shapes, so a batch of images forms a nested tensor
 
-In this tutorial, we will demonstrate basic usage of nestedtensors and motivate their usefulness
-for operating on sequential data of varying lengths with a real-world example.
+In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness
+for operating on sequential data of varying lengths with a real-world example. In particular,
+they are invaluable for building transformers that can efficiently operate on ragged sequential
+inputs. Below, we present an implementation of multi-head attention using nested tensors that,
+combined usage of ``torch.compile``, out-performs operating naively on tensors with padding.
 
-NestedTensor are currently a prototype feature and are subject to change.
+Nested tensors are currently a prototype feature and are subject to change.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-35
+.. GENERATED FROM PYTHON SOURCE LINES 41-46
 
-NestedTensor Initialization
+Nested tensor initialization
 ----------------------------
 
-From the Python frontend, a nestedtensor can be created from a list of tensors.
+From the Python frontend, a nested tensor can be created from a list of tensors.
 We denote nt[i] as the ith tensor component of a nestedtensor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-42
+.. GENERATED FROM PYTHON SOURCE LINES 51-53
 
 By padding every underlying tensor to the same shape,
 a nestedtensor can be converted to a regular tensor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-47
+.. GENERATED FROM PYTHON SOURCE LINES 57-58
 
 All tensors posses an attribute for determining if they are nested;
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-54
+.. GENERATED FROM PYTHON SOURCE LINES 62-65
 
 It is common to construct nestedtensors from batches of irregularly shaped tensors.
 i.e. dimension 0 is assumed to be the batch dimension.
 Indexing dimension 0 gives back the first underlying tensor component.
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-60
+.. GENERATED FROM PYTHON SOURCE LINES 65-71
 
 .. code-block:: default
 
@@ -72,13 +76,13 @@ Indexing dimension 0 gives back the first underlying tensor component.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-64
+.. GENERATED FROM PYTHON SOURCE LINES 72-75
 
 An important note is that slicing in dimension 0 has not been supported yet.
 Which means it not currently possible to construct a view that combines the underlying
 tensor components.
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-88
+.. GENERATED FROM PYTHON SOURCE LINES 77-99
 
 Nested Tensor Operations
 ------------------------
@@ -103,7 +107,7 @@ The semantics for nestedtensors are similar, except that -1 no longer infers.
 Instead, it inherits the old size (here 2 for ``nt[0]`` and 3 for ``nt[1]``).
 -1 is the only legal size to specify for a jagged dimension.
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-100
+.. GENERATED FROM PYTHON SOURCE LINES 103-111
 
 **transpose**
 
@@ -114,7 +118,7 @@ Note that for nestedtensors dimension 0 is special;
 it is assumed to be the batch dimension,
 so transposes involving nestedtensor dimension 0 are not supported.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-110
+.. GENERATED FROM PYTHON SOURCE LINES 115-121
 
 **others**
 
@@ -123,13 +127,13 @@ Applying the operation on a nestedtensor is equivalent to
 applying the operation to the underlying tensor components,
 with the result being a nestedtensor as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-124
+.. GENERATED FROM PYTHON SOURCE LINES 132-135
 
 Why Nested Tensor
 -----------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-132
+.. GENERATED FROM PYTHON SOURCE LINES 137-143
 
 When data is sequential, it is often the case that each sample has a different length.
 For example, in a batch of sentences, each sentence has a different number of words.
@@ -138,120 +142,54 @@ to the same shape in order to form a batch.
 For example, we have 2 sentences with different lengths and a vocabulary
 In order to represent his as single tensor we pad with 0 to the max length in the batch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-150
+.. GENERATED FROM PYTHON SOURCE LINES 155-164
 
-This techinque of padding a batch of data to its max length is not optimal.
+This technique of padding a batch of data to its max length is not optimal.
 The padded data is not needed for computation and wastes memory by allocating
 larger tensors than necessary.
 Further, not all operations have the same semnatics when applied to padded data.
 For matrix multiplications in order to ignore the padded entries, one needs to pad
 with 0 while for softmax one has to pad with -inf to ignore specific entries.
+The primary objective of nested tensor is to facilitate operations on ragged
+data using the standard PyTorch tensor UX, thereby eliminating the need
+for inefficient and complex padding and masking.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-159
+.. GENERATED FROM PYTHON SOURCE LINES 170-174
 
 Let us take a look at a practical example: the multi-head attention component
 utilized in `Transformers <https://arxiv.org/pdf/1706.03762.pdf>`__.
-The nestedtensor version is straightforward.
+We can implement this in such a way that it can operate on either padded
+or nested tensors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-247
-
-The 0-padded tensor version additionally requires masks
-for more complicated treatments at padded entries.
-
-.. GENERATED FROM PYTHON SOURCE LINES 348-349
+.. GENERATED FROM PYTHON SOURCE LINES 245-246
 
 set hyperparameters following `the Transformer paper <https://arxiv.org/pdf/1706.03762.pdf>`__
 
-.. GENERATED FROM PYTHON SOURCE LINES 354-355
+.. GENERATED FROM PYTHON SOURCE LINES 252-253
 
 except for dropout probability: set to 0 for correctness check
 
-.. GENERATED FROM PYTHON SOURCE LINES 358-359
+.. GENERATED FROM PYTHON SOURCE LINES 256-257
 
 Let us generate some realistic fake data from Zipf's law.
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-381
+.. GENERATED FROM PYTHON SOURCE LINES 270-271
 
-create inputs
+Create nested tensor batch inputs
 
-.. GENERATED FROM PYTHON SOURCE LINES 381-416
+.. GENERATED FROM PYTHON SOURCE LINES 298-299
 
-.. code-block:: default
+Generate padded forms of query, key, value for comparison
 
+.. GENERATED FROM PYTHON SOURCE LINES 310-311
 
-    # create parameters
+Construct the model
 
+.. GENERATED FROM PYTHON SOURCE LINES 314-315
 
+Check correctness and performance
 
-
-
-    # create nested input
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # pad input
-
-
-
-
-    # create attention masks
-
-
-
-    #  We need to mask out the padding entries in the attention weights.
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 417-418
-
-check correctness and performance
-
-.. GENERATED FROM PYTHON SOURCE LINES 442-449
-
-Although the nestedtensor version avoids wasted computation on padding, it is not faster
-then the equivalent padded tensor version. This is because the nestedtensor version
-has implemented a few of the kernels, like softmax, in a non optimal way.
-
-There are plans to implement performance critical operations using the new Pytorch 2.0 stack
-For now, some performant kernels are provided for specific use cases, e.g.
-self-attention evaluation by multi-head attention formula.
-
-.. GENERATED FROM PYTHON SOURCE LINES 449-455
-
-.. code-block:: default
-
-
-    # embeddings are assumed to be the same
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 456-457
-
-extract parameters for correctness check
-
-.. GENERATED FROM PYTHON SOURCE LINES 467-472
-
-If we set need_weights to False this will enable the fast path in the library.
-Under the hood this will call _scaled_dot_product_attention. If your tensors
-are on CUDA, than a fused, efficient attention kernel will be used. For
-more detailed performance characteristics look at the benchmark in
-pytorch/benchmarks/transformer/sdp.py
-
-.. GENERATED FROM PYTHON SOURCE LINES 472-493
+.. GENERATED FROM PYTHON SOURCE LINES 315-357
 
 .. code-block:: default
 
@@ -266,6 +204,7 @@ pytorch/benchmarks/transformer/sdp.py
 
 
 
+    # padding-specific step: remove output projection bias from padded entries for fair comparison
 
 
 
@@ -274,6 +213,49 @@ pytorch/benchmarks/transformer/sdp.py
 
 
 
+    # warm up compile first...
+
+
+    # ...now benchmark
+
+
+
+    # warm up compile first...
+
+    # ...now benchmark
+
+
+
+    # padding-specific step: remove output projection bias from padded entries for fair comparison
+
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 358-363
+
+Note that without ``torch.compile``, the overhead of the python subclass nested tensor
+can make it slower than the equivalent computation on padded tensors. However, once
+``torch.compile`` is enabled, operating on nested tensors gives a multiple x speedup.
+Avoiding wasted computation on padding becomes only more valuable as the percentage
+of padding in the batch increases.
+
+.. GENERATED FROM PYTHON SOURCE LINES 366-372
+
+Conclusion
+----------
+In this tutorial, we have learned how to perform basic operations with nested tensors and
+how implement multi-head attention for transformers in a way that avoids computation on padding.
+For more information, check out the docs for the
+`torch.nested <https://pytorch.org/docs/stable/nested.html>`__ namespace.
+
+.. GENERATED FROM PYTHON SOURCE LINES 372-373
+
+.. code-block:: default
 
 
     # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
