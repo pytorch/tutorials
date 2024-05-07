@@ -310,12 +310,12 @@ We've now completed our trainer and parameter server specific code, and all that
            help="""Total number of participating processes. Should be the sum of
            master node and all training nodes.""")
        parser.add_argument(
-           "rank",
+           "--rank",
            type=int,
            default=None,
            help="Global rank of this process. Pass in 0 for master.")
        parser.add_argument(
-           "num_gpus",
+           "--num_gpus",
            type=int,
            default=0,
            help="""Number of GPUs to use for training, Currently supports between 0
