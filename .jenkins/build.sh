@@ -59,7 +59,8 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
-
+  npx pagefind
+  
   # Step 3.1: Run the post-processing script:
   python .jenkins/post_process_notebooks.py
 
@@ -120,7 +121,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
-  npx pagefind
   cp -r _build/html docs
 
   # Step 2: Wait for all workers to finish
