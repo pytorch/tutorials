@@ -1,0 +1,39 @@
+<!-- docs/_templates/search.html -->
+{%- extends "layout.html" %}
+
+{%- block htmltitle -%}
+<title>{{ _("Search") }} - {{ docstitle }}</title>
+{%- endblock htmltitle -%}
+
+{% block content %}
+<h1>{{ _("Search") }}</h1>
+<div id="search-results"></div>
+{% endblock %}
+
+{% block footer %}
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // Load the Pagefind UI
+  new PagefindUI({
+    element: "#search-results",
+    showImages: false,
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  // Get the value of `q`
+  const query = urlParams.get('q');
+  // Get the input element for Pagefind’s UI
+  const searchInputElement = document.querySelector("#search-results form[role=search] input");
+
+  // Create a new event for the input element
+  const inputChangeEvent = new Event('input');
+  // Change the value of the input element
+  searchInputElement.value = query;
+  // Dispatch the input event for Pagefind
+  searchInputElement?.dispatchEvent(inputChangeEvent);
+  // And change the page focus to the input element
+  searchInputElement?.focus();
+});
+</script>
+{{ super() }}
+{% endblock %}

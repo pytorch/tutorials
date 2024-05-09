@@ -87,6 +87,10 @@ intersphinx_mapping = {
     "torchvision": ("https://pytorch.org/vision/stable/", None),
 }
 
+html_additional_pages = {
+    'search': 'search.html', # relative to the docs/_templates directory
+}
+
 # -- Sphinx-gallery configuration --------------------------------------------
 
 def reset_seeds(gallery_conf, fname):
