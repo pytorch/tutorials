@@ -151,6 +151,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/torch_logs.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Extension points in nn.Module for loading state_dict and tensor subclasses
+   :card_description: New extension points in nn.Module.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/swap_tensors.html
+   :tags: Basics
+
 
 .. Interpretability
 
@@ -298,6 +305,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :card_description: Speed up the optimizer using torch.compile
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/compiling_optimizer.html
+   :tags: Model-Optimization
+
+.. Using User-Defined Triton Kernels with ``torch.compile``
+
+.. customcarditem::
+   :header: Using User-Defined Triton Kernels with ``torch.compile``
+   :card_description: Learn how to use user-defined kernels with ``torch.compile``
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_user_defined_triton_kernel_tutorial.html
    :tags: Model-Optimization
 
 .. Intel(R) Extension for PyTorch*
