@@ -57,12 +57,12 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
   npx pagefind
   
   # Step 3.1: Run the post-processing script:
-  python .jenkins/post_process_notebooks.py
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
@@ -120,6 +120,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   npx pagefind
   cp -r _build/html docs
