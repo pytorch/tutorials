@@ -167,5 +167,5 @@ else:
 # See Also
 # ---------
 #
-# * `Compiling the Optimizers: <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
-# * `Implementing High-Performance Transformers with Scaled Dot Product Attention<https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`__
+# * `Compiling the Optimizers <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__
+# * `Implementing High-Performance Transformers with Scaled Dot Product Attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`__
