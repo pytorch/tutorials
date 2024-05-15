@@ -217,5 +217,5 @@ RPC Tutorials are listed below:
 PyTorch Distributed Developers
 ------------------------------
 
-If you'd like to contribute to PyTorch Distributed, please refer to our
+If you'd like to contribute to PyTorch Distributed, refer to our
 `Developer Guide <https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md>`_.

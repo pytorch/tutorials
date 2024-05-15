@@ -61,7 +61,7 @@ class Net(nn.Module):
         # outputs a Tensor with size (N, 6, 28, 28), where N is the size of the batch
         c1 = F.relu(self.conv1(input))
         # Subsampling layer S2: 2x2 grid, purely functional,
-        # this layer does not have any parameter, and outputs a (N, 16, 14, 14) Tensor
+        # this layer does not have any parameter, and outputs a (N, 6, 14, 14) Tensor
         s2 = F.max_pool2d(c1, (2, 2))
         # Convolution layer C3: 6 input channels, 16 output channels,
         # 5x5 square convolution, it uses RELU activation function, and
