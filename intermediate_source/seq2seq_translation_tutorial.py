@@ -331,7 +331,7 @@ class EncoderRNN(nn.Module):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
 
-        self.embedding = nn.Embedding(input_size, hidden_size)
+        self.embedding = nn.Embedding(input_size, hidden_size, padding_idx=0)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
 
@@ -371,21 +371,22 @@ class EncoderRNN(nn.Module):
 class DecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size):
         super(DecoderRNN, self).__init__()
-        self.embedding = nn.Embedding(output_size, hidden_size)
+        self.embedding = nn.Embedding(output_size, hidden_size, padding_idx=0)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.out = nn.Linear(hidden_size, output_size)
 
-    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None, teacher_forcing_ratio=0.5):
         batch_size = encoder_outputs.size(0)
         decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=device).fill_(SOS_token)
         decoder_hidden = encoder_hidden
         decoder_outputs = []
+        use_teacher_forcing = target_tensor is not None and random.random() < teacher_forcing_ratio
 
         for i in range(MAX_LENGTH):
             decoder_output, decoder_hidden  = self.forward_step(decoder_input, decoder_hidden)
             decoder_outputs.append(decoder_output)
 
-            if target_tensor is not None:
+            if use_teacher_forcing:
                 # Teacher forcing: Feed the target as the next input
                 decoder_input = target_tensor[:, i].unsqueeze(1) # Teacher forcing
             else:
@@ -476,18 +477,19 @@ class BahdanauAttention(nn.Module):
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1):
         super(AttnDecoderRNN, self).__init__()
-        self.embedding = nn.Embedding(output_size, hidden_size)
+        self.embedding = nn.Embedding(output_size, hidden_size, padding_idx=0)
         self.attention = BahdanauAttention(hidden_size)
         self.gru = nn.GRU(2 * hidden_size, hidden_size, batch_first=True)
         self.out = nn.Linear(hidden_size, output_size)
         self.dropout = nn.Dropout(dropout_p)
 
-    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None, teacher_forcing_ratio=0.5):
         batch_size = encoder_outputs.size(0)
         decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=device).fill_(SOS_token)
         decoder_hidden = encoder_hidden
         decoder_outputs = []
         attentions = []
+        use_teacher_forcing = target_tensor is not None and random.random() < teacher_forcing_ratio
 
         for i in range(MAX_LENGTH):
             decoder_output, decoder_hidden, attn_weights = self.forward_step(
@@ -496,7 +498,7 @@ class AttnDecoderRNN(nn.Module):
             decoder_outputs.append(decoder_output)
             attentions.append(attn_weights)
 
-            if target_tensor is not None:
+            if use_teacher_forcing:
                 # Teacher forcing: Feed the target as the next input
                 decoder_input = target_tensor[:, i].unsqueeze(1) # Teacher forcing
             else:
@@ -540,6 +542,15 @@ class AttnDecoderRNN(nn.Module):
 # words in the input sentence) and target tensor (indexes of the words in
 # the target sentence). While creating these vectors we will append the
 # EOS token to both sequences.
+#
+# Since sentences can be of varying size, we want to pad shorter sentences
+# to ensure that all sequences have the same length. To do this, we initialize
+# the input_ids and target_ids to the same 2D 0s array.
+#
+# This is why we included padding_idx in our embedding layers.
+# padding_idx will set every input where the value is equal to padding_idx
+# to be zero-ed out. We set padding_idx=0 in our embedding layers, as we
+# are padding our sentences with 0s.
 #
 
 def indexesFromSentence(lang, sentence):
@@ -601,8 +612,9 @@ def get_dataloader(batch_size):
 # in the first place.
 #
 # Because of the freedom PyTorch's autograd gives us, we can randomly
-# choose to use teacher forcing or not with a simple if statement. Turn
-# ``teacher_forcing_ratio`` up to use more of it.
+# choose to use teacher forcing or not with a simple if statement. We have
+# implemented this above in the decoder's forward methods, with a default 50%
+# activation change. Turn ``teacher_forcing_ratio`` up to use more of it.
 #
 
 def train_epoch(dataloader, encoder, decoder, encoder_optimizer,
@@ -703,7 +715,7 @@ def train(train_dataloader, encoder, decoder, n_epochs, learning_rate=0.001,
 #
 
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+plt.switch_backend('TkAgg')
 import matplotlib.ticker as ticker
 import numpy as np
 
@@ -820,8 +832,12 @@ def showAttention(input_sentence, output_words, attentions):
     fig.colorbar(cax)
 
     # Set up axes
-    ax.set_xticklabels([''] + input_sentence.split(' ') +
-                       ['<EOS>'], rotation=90)
+    input_words = [''] + input_sentence.split(' ') + ['<EOS>']
+
+    ax.set_xticks(range(len(input_words)))
+    ax.set_yticks(range(1 + len(output_words)))
+
+    ax.set_xticklabels(input_words, rotation=90)
     ax.set_yticklabels([''] + output_words)
 
     # Show label at every tick
