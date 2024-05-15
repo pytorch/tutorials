@@ -35,7 +35,7 @@ The tutorial build is very large and requires a GPU. If your machine does not ha
 
 1. Install required dependencies by running: `pip install -r requirements.txt`.
 
-> If you want to use `virtualenv`, in the root of the repo, run: `virtualenv venv`, then `source venv/bin/activate`.
+> Typically, you would run either in `conda` or `virtualenv`. If you want to use `virtualenv`, in the root of the repo, run: `virtualenv venv`, then `source venv/bin/activate`.
 
 - If you have a GPU-powered laptop, you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. This might take about 60-120 min for systems with GPUs. If you do not have a GPU installed on your system, then see next step.
 - You can skip the computationally intensive graph generation by running `make html-noplot` to build basic html documentation to `_build/html`. This way, you can quickly preview your tutorial.

@@ -227,7 +227,7 @@ class DQN(nn.Module):
 # This cell instantiates our model and its optimizer, and defines some
 # utilities:
 #
-# -  ``select_action`` - will select an action accordingly to an epsilon
+# -  ``select_action`` - will select an action according to an epsilon
 #    greedy policy. Simply put, we'll sometimes use our model for choosing
 #    the action, and sometimes we'll just sample one uniformly. The
 #    probability of choosing a random action will start at ``EPS_START``
