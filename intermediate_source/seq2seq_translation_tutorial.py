@@ -715,7 +715,7 @@ def train(train_dataloader, encoder, decoder, n_epochs, learning_rate=0.001,
 #
 
 import matplotlib.pyplot as plt
-plt.switch_backend('TkAgg')
+plt.switch_backend('agg')
 import matplotlib.ticker as ticker
 import numpy as np
 
@@ -832,12 +832,8 @@ def showAttention(input_sentence, output_words, attentions):
     fig.colorbar(cax)
 
     # Set up axes
-    input_words = [''] + input_sentence.split(' ') + ['<EOS>']
-
-    ax.set_xticks(range(len(input_words)))
-    ax.set_yticks(range(1 + len(output_words)))
-
-    ax.set_xticklabels(input_words, rotation=90)
+    ax.set_xticklabels([''] + input_sentence.split(' ') +
+                       ['<EOS>'], rotation=90)
     ax.set_yticklabels([''] + output_words)
 
     # Show label at every tick
