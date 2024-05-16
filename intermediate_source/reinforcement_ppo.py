@@ -104,6 +104,7 @@ We will cover six crucial components of TorchRL:
 # description and more about the algorithm itself.
 #
 
+import warnings
 warnings.filterwarnings("ignore")
 from torch import multiprocessing
 
