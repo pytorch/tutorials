@@ -34,8 +34,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 4. Using profiler to analyze memory consumption
 # 5. Using tracing functionality
 # 6. Examining stack traces
-# 7. Visualizing data as a flame graph
-# 8. Using profiler to analyze long-running jobs
+# 7. Using profiler to analyze long-running jobs
 #
 # 1. Import all necessary libraries
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,7 +121,7 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 #                      aten::select       1.668ms       2.292ms       8.988us           255
 # ---------------------------------  ------------  ------------  ------------  ------------
 # Self CPU time total: 57.549m
-# 
+#
 
 ######################################################################
 # Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
@@ -327,35 +326,8 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total"
 #
 # (Warning: stack tracing adds an extra profiling overhead.)
 
-
 ######################################################################
-# 7. Visualizing data as a flame graph
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Execution time (``self_cpu_time_total`` and ``self_cuda_time_total`` metrics) and stack traces
-# can also be visualized as a flame graph. To do this, first export the raw data using ``export_stacks`` (requires ``with_stack=True``):
-
-prof.export_stacks("/tmp/profiler_stacks.txt", "self_cuda_time_total")
-
-######################################################################
-# We recommend using `Flamegraph tool <https://github.com/brendangregg/FlameGraph>`_ to generate an
-# interactive ``.svg`` file:
-#
-# .. code-block:: sh
-#
-#    git clone https://github.com/brendangregg/FlameGraph
-#    cd FlameGraph
-#    ./flamegraph.pl --title "CUDA time" --countname "us." /tmp/profiler_stacks.txt > perf_viz.svg
-#
-
-######################################################################
-#
-# .. image:: ../../_static/img/perf_viz.png
-#    :scale: 25 %
-
-
-######################################################################
-# 8. Using profiler to analyze long-running jobs
+# 7. Using profiler to analyze long-running jobs
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # PyTorch profiler offers an additional API to handle long-running jobs

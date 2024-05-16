@@ -23,8 +23,7 @@ sudo apt-get install -y pandoc
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.2 for testing - uncomment to install nightly binaries (update the version as needed).
 # pip uninstall -y torch torchvision torchaudio torchtext torchdata
-# pip3 install torch==2.2.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
-# pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
+# pip3 install torch==2.3.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121 
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
@@ -57,7 +56,8 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Files to run must be accessible to subprocessed (at least to `download_data.py`)
   export FILES_TO_RUN
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
@@ -119,6 +119,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
