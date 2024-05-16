@@ -219,6 +219,7 @@ Next let's adjust the ``layer_tp_plan`` to enable sequence parallel on the ``RMS
     layer_tp_plan = {
         # Now the input and output of SequenceParallel has Shard(1) layouts,
         # to represent the input/output tensors sharded on the sequence dimension
+        "attention_norm": SequenceParallel(),
         "attention": PrepareModuleInput(
             input_layouts=(Shard(1),),
             desired_input_layouts=(Replicate(),),
@@ -227,7 +228,7 @@ Next let's adjust the ``layer_tp_plan`` to enable sequence parallel on the ``RMS
         "attention.wk": ColwiseParallel(),
         "attention.wv": ColwiseParallel(),
         "attention.wo": RowwiseParallel(output_layouts=Shard(1)),
-        "attention_norm": SequenceParallel(),
+        "ffn_norm": SequenceParallel(),
         "feed_forward": PrepareModuleInput(
             input_layouts=(Shard(1),),
             desired_input_layouts=(Replicate(),),
@@ -235,7 +236,6 @@ Next let's adjust the ``layer_tp_plan`` to enable sequence parallel on the ``RMS
         "feed_forward.w1": ColwiseParallel(),
         "feed_forward.w2": RowwiseParallel(output_layouts=Shard(1)),
         "feed_forward.w3": ColwiseParallel(),
-        "ffn_norm": SequenceParallel(),
     }
 
 
