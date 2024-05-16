@@ -104,11 +104,10 @@ We will cover six crucial components of TorchRL:
 # description and more about the algorithm itself.
 #
 
-# sphinx_gallery_start_ignore
-import warnings
-
 warnings.filterwarnings("ignore")
 from torch import multiprocessing
+
+# sphinx_gallery_start_ignore
 
 # TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
 # `__main__` method call, but for the easy of reading the code switch to fork
@@ -139,7 +138,6 @@ from torchrl.modules import ProbabilisticActor, TanhNormal, ValueOperator
 from torchrl.objectives import ClipPPOLoss
 from torchrl.objectives.value import GAE
 from tqdm import tqdm
-import multiprocessing
 
 ######################################################################
 # Define Hyperparameters
