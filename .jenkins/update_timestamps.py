@@ -66,7 +66,7 @@ def update_timestamp(file_path: str):
                 updated_lines[author_line_index + 1] = timestamp_line
                 if i == author_line_index + 2: updated_lines.append('\n')
 
-            updated_lines.extend(lines[i+1:])
+            updated_lines.extend(lines[i:])
         else:
             # If timestamp line does not exist and there are no blank lines, add it below author line
             updated_lines += [timestamp_line, '\n'] + lines[author_line_index + 1:]

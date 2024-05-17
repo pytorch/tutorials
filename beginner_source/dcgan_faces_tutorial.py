@@ -4,6 +4,7 @@ DCGAN Tutorial
 ==============
 
 **Author**: `Nathan Inkawhich <https://github.com/inkawhich>`__
+**Updated:** *03:40 PM, January 19, 2024*
 
 """
 
