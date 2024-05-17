@@ -56,6 +56,9 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Files to run must be accessible to subprocessed (at least to `download_data.py`)
   export FILES_TO_RUN
 
+  # Step 2.1: Add timestamps to .py and .rst files in source directories
+  bash $DIR/update_timestamps_batch.sh .
+
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
@@ -118,6 +121,10 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   7z a worker_${WORKER_ID}.7z docs
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
+
+  # Step 0.9: Add timestamps to .py and .rst files in source directories
+  bash $DIR/update_timestamps_batch.sh .
+
   # Step 1: Generate no-plot HTML pages for all tutorials
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
