@@ -465,8 +465,8 @@ def nonzero(x):
 @torch.library.register_fake("mylib::nonzero")
 def _(x):
     # Number of nonzero-elements is data-dependent.
-    # Since we cannot peek at the data in an abstract impl,
-    # we use the ctx object to construct a new symint that
+    # Since we cannot peek at the data in an abstract implementation,
+    # we use the `ctx` object to construct a new symint that
     # represents the data-dependent size.
     ctx = torch.library.get_ctx()
     nnz = ctx.new_dynamic_size()
