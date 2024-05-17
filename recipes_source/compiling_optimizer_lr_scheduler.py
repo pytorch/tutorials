@@ -6,8 +6,8 @@
 
 #########################################################
 # The optimizer is a key algorithm for training any deep learning model.
-# In this example, we will show how to pair the ``torch.compile``d optimizer
-# with the LR schedulers to accelerate training convergence
+# In this example, we will show how to pair the an optimizer, which has been compiled using ``torch.compile``,
+# with the LR schedulers to accelerate training convergence.
 #
 # .. note::
 #
@@ -36,14 +36,14 @@ output.sum().backward()
 
 #####################################################################
 # Setting up and running the compiled optimizer with LR Scheduler
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # In this section, we'll use the Adam optimizer with LinearLR Scheduler
-# and create a helper function to wrap the ``step()`` call for each
+# and create a helper function to wrap the ``step()`` call for each of them
 # in ``torch.compile()``.
 #
 # .. note::
 #
-#    ``torch.compile`` is only supported on cuda devices with compute capability >= 7.0
+#    ``torch.compile`` is only supported on CUDA devices that have a compute capability of 7.0 or higher.
 
 
 # exit cleanly if we are on a device that doesn't support torch.compile
