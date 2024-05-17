@@ -611,7 +611,22 @@ If there are any more tensor operations (such as view operations) between the co
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>Now that we have elaborated the sharding plan for each <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code>, there is usually a <code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code> in the first layer and a final <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> projection layer, where user could choose row-wise or column-wise sharding to the first <code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code> and column-wise sharding to the last <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> projection layer with proper input and output layouts specified.</p>
+<p>Now that we have elaborated the sharding plan for each <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code>, there is usually a <code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code> in the first layer and a final <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> projection layer, where user could choose row-wise or column-wise sharding to the first <code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code> and column-wise sharding to the last <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> projection layer with proper input and output layouts specified.
+Here is an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">parallelize_module</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">tp_mesh</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="s2">"tok_embeddings"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span>
+            <span class="n">input_layouts</span><span class="o">=</span><span class="n">Replicate</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="s2">"output"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span>
+            <span class="n">output_layouts</span><span class="o">=</span><span class="n">Replicate</span><span class="p">(),</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If the model to be partitioned is too large to fit into CPU memory, one could either use <code class="docutils literal notranslate"><span class="pre">meta</span></code> device initialization (for example, initialize the model on meta device first, shard the layers, and the materialize the model), or parallelize the <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code> layer by layer during the Transformer model initialization.</p>
@@ -641,6 +656,7 @@ Following the code example earlier, the code below demonstrates how we apply Seq
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer_tp_plan</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># Now the input and output of SequenceParallel has Shard(1) layouts,</span>
     <span class="c1"># to represent the input/output tensors sharded on the sequence dimension</span>
+    <span class="s2">"attention_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
     <span class="s2">"attention"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
         <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),),</span>
         <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),),</span>
@@ -649,7 +665,7 @@ Following the code example earlier, the code below demonstrates how we apply Seq
     <span class="s2">"attention.wk"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
     <span class="s2">"attention.wv"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
     <span class="s2">"attention.wo"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span><span class="n">output_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
-    <span class="s2">"attention_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
+    <span class="s2">"ffn_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
     <span class="s2">"feed_forward"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
         <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),),</span>
         <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),),</span>
@@ -657,21 +673,27 @@ Following the code example earlier, the code below demonstrates how we apply Seq
     <span class="s2">"feed_forward.w1"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
     <span class="s2">"feed_forward.w2"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span><span class="n">output_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
     <span class="s2">"feed_forward.w3"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
-    <span class="s2">"ffn_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>One can see we now use <code class="docutils literal notranslate"><span class="pre">PrepareModuleInput</span></code> to modify the module input layouts to the Attention and FeedForward layers from <code class="docutils literal notranslate"><span class="pre">Shard(1)</span></code> to <code class="docutils literal notranslate"><span class="pre">Replicate()</span></code>, and mark their output layouts as <code class="docutils literal notranslate"><span class="pre">Shard(1)</span></code>.
 Just like what happens to Tensor Parallelism, one only needs to specify the tensor sharding layouts of the inputs and outputs, and the communication between layers will happen automatically.</p>
 <p>Note that with Sequence Parallel, we assume the inputs and outputs of a <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code> are always sharded on the sequence dimension, so that multiple <code class="docutils literal notranslate"><span class="pre">TransformerBlocks</span></code> can be concatenated seamlessly.
-The only exception is that the input to the first <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code> is replicated from the data loaders, so it has to be converted explicitly:</p>
+This can be facilitated by explicitly specifying the output of the beginning <code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code> layer and the input of the final <code class="docutils literal notranslate"><span class="pre">nn.Linear</span></code> projection layer to be <code class="docutils literal notranslate"><span class="pre">Shard(1)</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">parallelize_module</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span>
     <span class="n">tp_mesh</span><span class="p">,</span>
-    <span class="s2">"layers.0"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
-        <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),),</span>
-        <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),),</span>
-    <span class="p">),</span>
+    <span class="p">{</span>
+        <span class="s2">"tok_embeddings"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span>
+            <span class="n">input_layouts</span><span class="o">=</span><span class="n">Replicate</span><span class="p">(),</span>
+            <span class="n">output_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="s2">"norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
+        <span class="s2">"output"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span>
+            <span class="n">input_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">output_layouts</span><span class="o">=</span><span class="n">Replicate</span><span class="p">()</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -689,15 +711,15 @@ The only exception is that the input to the first <code class="docutils literal 
     <span class="n">model</span><span class="p">,</span>
     <span class="n">tp_mesh</span><span class="p">,</span>
     <span class="p">{</span>
+        <span class="s2">"tok_embeddings"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span>
+            <span class="n">input_layouts</span><span class="o">=</span><span class="n">Replicate</span><span class="p">(),</span>
+            <span class="n">output_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="s2">"norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
         <span class="s2">"output"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span>
             <span class="n">input_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
             <span class="c1"># use DTensor as the output</span>
             <span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
-        <span class="s2">"layers.0"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
-            <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),),</span>
-            <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),),</span>
         <span class="p">),</span>
     <span class="p">},</span>
 <span class="p">)</span>
