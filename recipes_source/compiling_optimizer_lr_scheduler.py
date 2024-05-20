@@ -11,7 +11,7 @@
 #
 # .. note::
 #
-#    This tutorial requires PyTorch 2.2.0 or later.
+#    This tutorial requires PyTorch 2.4.0 or later.
 
 #####################################################################
 # Model Setup
@@ -52,7 +52,7 @@ if torch.cuda.get_device_capability() < (7, 0):
     import sys
     sys.exit(0)
 
-# !!! IMPORTANT !!! Wrap the lr in a tensor if we are pairing the
+# !!! IMPORTANT !!! Wrap the lr in a Tensor if we are pairing the
 # the optimizer with an LR Scheduler.
 # Without this, torch.compile will recompile as the value of the LR
 # changes.
@@ -89,11 +89,9 @@ for _ in range(5):
 # with a LinearLR scheduler to demonstrate the LR changing across iterations.
 #
 # See also:
-# * tutorial on the compiled optimizer - `Compiled optimizer tutorial`_
-# * deeper technical details on the compiled optimizer see `Compiling the optimizer with PT2`_
-#
-# .. Compiled optimizer tutorial: https://pytorch.org/tutorials/recipes/compiling_optimizer.html
-# .. Compiling the optimizer with PT2: https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669
+# * tutorial on the compiled optimizer - `Compiled optimizer tutorial <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`_
+# * deeper technical details on the compiled optimizer see `Compiling the optimizer with PT2 <https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669>`_
+
 
 ######################################################################
 # Extension: What happens with a non-tensor LR?
