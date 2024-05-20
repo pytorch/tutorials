@@ -11,7 +11,7 @@
 #
 # .. note::
 #
-#    This tutorial requires PyTorch 2.4.0 or later.
+#    This tutorial requires PyTorch 2.3.0 or later.
 
 #####################################################################
 # Model Setup
