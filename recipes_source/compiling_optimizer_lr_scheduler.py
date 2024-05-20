@@ -80,20 +80,6 @@ for _ in range(5):
 # >> tensor(0.0100)
 
 ######################################################################
-# Conclusion
-# ~~~~~~~~~~
-#
-# In this tutorial we showed how to pair the ``torch.compile``d optimizer
-# with an LR Scheduler to accelerate training convergence. We used a model consisting
-# of a simple sequence of linear layers with the Adam optimizer paired
-# with a LinearLR scheduler to demonstrate the LR changing across iterations.
-#
-# See also:
-# * tutorial on the compiled optimizer - `Compiled optimizer tutorial <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`_
-# * deeper technical details on the compiled optimizer see `Compiling the optimizer with PT2 <https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669>`_
-
-
-######################################################################
 # Extension: What happens with a non-tensor LR?
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For the curious, we will show how to peek into what happens with ``torch.compile`` when we don't wrap the
@@ -142,3 +128,16 @@ for _ in range(5):
 #
 # With this example, we can see that we recompile the optimizer 4 additional
 # due to the guard failure on the 'lr' in param_groups[0]
+
+######################################################################
+# Conclusion
+# ~~~~~~~~~~
+#
+# In this tutorial we showed how to pair the ``torch.compile``d optimizer
+# with an LR Scheduler to accelerate training convergence. We used a model consisting
+# of a simple sequence of linear layers with the Adam optimizer paired
+# with a LinearLR scheduler to demonstrate the LR changing across iterations.
+#
+# See also:
+# * tutorial on the compiled optimizer - `Compiled optimizer tutorial <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`_
+# * deeper technical details on the compiled optimizer see `Compiling the optimizer with PT2 <https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669>`_
