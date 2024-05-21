@@ -7,7 +7,7 @@
 
 #########################################################
 # The optimizer is a key algorithm for training any deep learning model.
-# In this example, we will show how to pair the an optimizer, which has been compiled using ``torch.compile``,
+# In this example, we will show how to pair the optimizer, which has been compiled using ``torch.compile``,
 # with the LR schedulers to accelerate training convergence.
 #
 # .. note::
@@ -100,13 +100,13 @@ for _ in range(5):
 
 ######################################################################
 # With this example, we can see that we recompile the optimizer a few times
-# due to the guard failure on the 'lr' in param_groups[0].
+# due to the guard failure on the ``lr`` in ``param_groups[0]``.
 
 ######################################################################
 # Conclusion
 # ~~~~~~~~~~
 #
-# In this tutorial we showed how to pair the ``torch.compile``d optimizer
+# In this tutorial we showed how to pair the optimizer compiled with ``torch.compile``
 # with an LR Scheduler to accelerate training convergence. We used a model consisting
 # of a simple sequence of linear layers with the Adam optimizer paired
 # with a LinearLR scheduler to demonstrate the LR changing across iterations.
