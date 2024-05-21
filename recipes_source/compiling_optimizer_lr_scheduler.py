@@ -99,30 +99,7 @@ for _ in range(5):
 
 
 ######################################################################
-# Sample Output:
-# 
-# .. code-block:: bash
-#
-#    >>[DEBUG]:Recompiling function step in /data/users/mlazos/pytorch/torch/optim/adam.py:191
-#    >>    triggered by the following guard failure(s):
-#    >>    - L['self'].param_groups[0]['lr'] == 0.003333333333333333
-#    >>[DEBUG]:Recompiling function step in /data/users/mlazos/pytorch/torch/optim/adam.py:191
-#    >>    triggered by the following guard failure(s):
-#    >>    - L['self'].param_groups[0]['lr'] == 0.004666666666666667
-#    >>    - L['self'].param_groups[0]['lr'] == 0.003333333333333333
-#    >>[DEBUG]:Recompiling function step in /data/users/mlazos/pytorch/torch/optim/adam.py:191
-#    >>    triggered by the following guard failure(s):
-#    >>    - L['self'].param_groups[0]['lr'] == 0.006000000000000001
-#    >>    - L['self'].param_groups[0]['lr'] == 0.004666666666666667
-#    >>    - L['self'].param_groups[0]['lr'] == 0.003333333333333333
-#    >>[DEBUG]:Recompiling function step in /data/users/mlazos/pytorch/torch/optim/adam.py:191
-#    >>    triggered by the following guard failure(s):
-#    >>    - L['self'].param_groups[0]['lr'] == 0.007333333333333335
-#    >>    - L['self'].param_groups[0]['lr'] == 0.006000000000000001
-#    >>    - L['self'].param_groups[0]['lr'] == 0.004666666666666667
-#    >>    - L['self'].param_groups[0]['lr'] == 0.003333333333333333
-#
-# With this example, we can see that we recompile the optimizer 4 additional times
+# With this example, we can see that we recompile the optimizer a few times
 # due to the guard failure on the 'lr' in param_groups[0].
 
 ######################################################################
