@@ -307,6 +307,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/compiling_optimizer.html
    :tags: Model-Optimization
 
+.. (beta) Running the compiled optimizer with an LR Scheduler
+
+.. customcarditem::
+   :header: (beta) Running the compiled optimizer with an LR Scheduler
+   :card_description: Speed up training with LRScheduler and torch.compiled optimizer
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/compiling_optimizer_lr_scheduler.html
+   :tags: Model-Optimization
+
 .. Using User-Defined Triton Kernels with ``torch.compile``
 
 .. customcarditem::
