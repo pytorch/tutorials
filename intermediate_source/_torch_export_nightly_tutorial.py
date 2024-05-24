@@ -435,36 +435,54 @@ print(exported_dynamic_shapes_example3.equality_constraints)
 #
 # Currently, the steps to register a custom op for use by ``torch.export`` are:
 #
-# - Define the custom op using ``torch.library`` (`reference <https://pytorch.org/docs/main/library.html>`__)
-#   as with any other custom op
+# - If you’re writing custom ops purely in Python, use torch.library.custom_op.
 
-from torch.library import Library, impl
+import torch.library
+import numpy as np
 
-m = Library("my_custom_library", "DEF")
-
-m.define("custom_op(Tensor input) -> Tensor")
-
-@impl(m, "custom_op", "CompositeExplicitAutograd")
-def custom_op(x):
-    print("custom_op called!")
-    return torch.relu(x)
+@torch.library.custom_op("mylib::sin", mutates_args=())
+def sin(x):
+    x_np = x.numpy()
+    y_np = np.sin(x_np)
+    return torch.from_numpy(y_np)
 
 ######################################################################
-# - Define a ``"Meta"`` implementation of the custom op that returns an empty
-#   tensor with the same shape as the expected output
+# - You will need to provide abstract implementation so that PT2 can trace through it.
 
-@impl(m, "custom_op", "Meta")
-def custom_op_meta(x):
+@torch.library.register_fake("mylib::sin")
+def _(x):
     return torch.empty_like(x)
+
+# - Sometimes, the custom op you are exporting has data-dependent output, meaning
+# we can't determine the shape of the output at compile time. In this case, you can do
+# following:
+@torch.library.custom_op("mylib::nonzero", mutates_args=())
+def nonzero(x):
+    x_np = x.cpu().numpy()
+    res = np.stack(np.nonzero(x_np), axis=1)
+    return torch.tensor(res, device=x.device)
+
+@torch.library.register_fake("mylib::nonzero")
+def _(x):
+    # The number of nonzero-elements is data-dependent.
+    # Since we cannot peek at the data in an abstract implementation,
+    # we use the `ctx` object to construct a new ``symint`` that
+    # represents the data-dependent size.
+    ctx = torch.library.get_ctx()
+    nnz = ctx.new_dynamic_size()
+    shape = [nnz, x.dim()]
+    result = x.new_empty(shape, dtype=torch.int64)
+    return result
 
 ######################################################################
 # - Call the custom op from the code you want to export using ``torch.ops``
 
 def custom_op_example(x):
     x = torch.sin(x)
-    x = torch.ops.my_custom_library.custom_op(x)
+    x = torch.ops.mylib.sin(x)
     x = torch.cos(x)
-    return x
+    y = torch.ops.mylib.nonzero(x)
+    return x + y.sum()
 
 ######################################################################
 # - Export the code as before
