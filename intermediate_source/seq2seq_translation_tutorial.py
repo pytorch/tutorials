@@ -549,7 +549,7 @@ class AttnDecoderRNN(nn.Module):
 #
 # This is why we included ``padding_idx`` in our embedding layers.
 # padding_idx will set every input where the value is equal to padding_idx
-# to be zero-ed out. We set padding_idx=0 in our embedding layers, as we
+# to be zero-ed out. We set ``padding_idx=0`` in our embedding layers, as we
 # are padding our sentences with 0s.
 #
 
