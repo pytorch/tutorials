@@ -44,7 +44,7 @@ The tutorial build is very large and requires a GPU. If your machine does not ha
 
 ## Building a single tutorial
 
-You can build a single tutorial by using the `GALLERY_PATTERN` environment variable. For example to run only `neural_style_transfer_tutorial.py`, run:
+You can build a single tutorial by using the `GALLERY_PATTERN` environment variable. For example, to run only `neural_style_transfer_tutorial.py`, run:
 
 ```
 GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
