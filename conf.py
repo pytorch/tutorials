@@ -42,7 +42,8 @@ from custom_directives import IncludeDirective, GalleryItemDirective, CustomGall
 import distutils.file_util
 import re
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
-
+import pandocfilters
+import pypandoc
 import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
 
@@ -74,7 +75,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
-    'sphinx_design'
+    'sphinx_design',
 ]
 
 intersphinx_mapping = {
@@ -107,7 +108,10 @@ sphinx_gallery_conf = {
                             "# https://pytorch.org/tutorials/beginner/colab\n"
                             "%matplotlib inline"),
     'reset_modules': (reset_seeds),
-    'ignore_pattern': r'_torch_export_nightly_tutorial.py'
+    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
+    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
+                 'filters': ['.jenkins/custom_pandoc_filter.py'],
+    },
 }
 
 if os.getenv('GALLERY_PATTERN'):

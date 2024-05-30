@@ -160,7 +160,7 @@ functions to be familiar with:
 #     The 1.6 release of PyTorch switched ``torch.save`` to use a new
 #     zip file-based format. ``torch.load`` still retains the ability to
 #     load files in the old format. If for any reason you want ``torch.save``
-#     to use the old format, pass the ``kwarg``parameter ``_use_new_zipfile_serialization=False``.
+#     to use the old format, pass the ``kwarg`` parameter ``_use_new_zipfile_serialization=False``.
 #
 # When saving a model for inference, it is only necessary to save the
 # trained model’s learned parameters. Saving the model’s *state_dict* with

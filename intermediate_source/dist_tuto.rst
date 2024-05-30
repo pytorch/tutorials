@@ -300,7 +300,7 @@ instead of the snippet below.)
         def __init__(self, data, sizes=[0.7, 0.2, 0.1], seed=1234):
             self.data = data
             self.partitions = []
-            rng = Random()
+            rng = Random()  # from random import Random
             rng.seed(seed)
             data_len = len(data)
             indexes = [x for x in range(0, data_len)]
