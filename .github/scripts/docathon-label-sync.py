@@ -37,7 +37,7 @@ def main():
     if not labels_to_add:
         print("The pull request already has the same labels.")
         return
-    pull_request.set_labels(*labels_to_add)
+    pull_request.add_to_labels(*labels_to_add)
     print("Labels added to the pull request!")
         
 
