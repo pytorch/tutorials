@@ -11,23 +11,19 @@ export LANG=C.UTF-8
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # Update root certificates by installing new libgnutls30
-sudo apt-get update || sudo apt-get install libgnutls30
+
+# Install pandoc (does not install from pypi)
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
+sudo apt-get install -y pandoc
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
-rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
-pip uninstall -y ghstack
-pip install --progress-bar off -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
-# Install 2.2 for testing
-pip uninstall -y torch torchvision torchaudio torchtext torchdata
-pip3 install torch==2.2.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
-pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
+# Install 2.2 for testing - uncomment to install nightly binaries (update the version as needed).
+# pip uninstall -y torch torchvision torchaudio torchtext torchdata
+# pip3 install torch==2.3.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121 
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
@@ -57,9 +53,15 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
   echo "FILES_TO_RUN: " ${FILES_TO_RUN}
+  # Files to run must be accessible to subprocessed (at least to `download_data.py`)
+  export FILES_TO_RUN
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
+
+  # Step 3.1: Run the post-processing script:
+  python .jenkins/post_process_notebooks.py
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
@@ -117,6 +119,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
@@ -137,6 +140,9 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
   python .jenkins/validate_tutorials_built.py
+
+  # Step 5.1: Run post-processing script on .ipynb files:
+  python .jenkins/post_process_notebooks.py
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs

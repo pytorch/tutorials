@@ -35,7 +35,7 @@ The tutorial build is very large and requires a GPU. If your machine does not ha
 
 1. Install required dependencies by running: `pip install -r requirements.txt`.
 
-> If you want to use `virtualenv`, in the root of the repo, run: `virtualenv venv`, then `source venv/bin/activate`.
+> Typically, you would run either in `conda` or `virtualenv`. If you want to use `virtualenv`, in the root of the repo, run: `virtualenv venv`, then `source venv/bin/activate`.
 
 - If you have a GPU-powered laptop, you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. This might take about 60-120 min for systems with GPUs. If you do not have a GPU installed on your system, then see next step.
 - You can skip the computationally intensive graph generation by running `make html-noplot` to build basic html documentation to `_build/html`. This way, you can quickly preview your tutorial.
@@ -57,7 +57,13 @@ GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 
 The `GALLERY_PATTERN` variable respects regular expressions.
 
+
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
 PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file. 
 * Additional information can be found in [PyTorch CONTRIBUTING.md](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md).
+
+
+## License
+
+PyTorch Tutorials is BSD licensed, as found in the LICENSE file.

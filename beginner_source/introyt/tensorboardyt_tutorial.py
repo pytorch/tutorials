@@ -249,7 +249,7 @@ writer.flush()
 # 
 # TensorBoard can also be used to examine the data flow within your model.
 # To do this, call the ``add_graph()`` method with a model and sample
-# input. When you open
+# input:
 # 
 
 # Again, grab a single mini-batch of images

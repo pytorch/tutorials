@@ -94,35 +94,36 @@ for param in model.parameters():
 # ``optimizer.zero_grad(set_to_none=True)``.
 
 ###############################################################################
-# Fuse pointwise operations
+# Fuse operations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Pointwise operations (elementwise addition, multiplication, math functions -
-# ``sin()``, ``cos()``, ``sigmoid()`` etc.) can be fused into a single kernel
-# to amortize memory access time and kernel launch time.
+# Pointwise operations such as elementwise addition, multiplication, and math
+# functions like `sin()`, `cos()`, `sigmoid()`, etc., can be combined into a
+# single kernel. This fusion helps reduce memory access and kernel launch times.
+# Typically, pointwise operations are memory-bound; PyTorch eager-mode initiates
+# a separate kernel for each operation, which involves loading data from memory,
+# executing the operation (often not the most time-consuming step), and writing
+# the results back to memory.
+# 
+# By using a fused operator, only one kernel is launched for multiple pointwise
+# operations, and data is loaded and stored just once. This efficiency is
+# particularly beneficial for activation functions, optimizers, and custom RNN cells etc.
 #
-# `PyTorch JIT <https://pytorch.org/docs/stable/jit.html>`_ can fuse kernels
-# automatically, although there could be additional fusion opportunities not yet
-# implemented in the compiler, and not all device types are supported equally.
-#
-# Pointwise operations are memory-bound, for each operation PyTorch launches a
-# separate kernel. Each kernel loads data from the memory, performs computation
-# (this step is usually inexpensive) and stores results back into the memory.
-#
-# Fused operator launches only one kernel for multiple fused pointwise ops and
-# loads/stores data only once to the memory. This makes JIT very useful for
-# activation functions, optimizers, custom RNN cells etc.
+# PyTorch 2 introduces a compile-mode facilitated by TorchInductor, an underlying compiler
+# that automatically fuses kernels. TorchInductor extends its capabilities beyond simple
+# element-wise operations, enabling advanced fusion of eligible pointwise and reduction
+# operations for optimized performance.
 #
 # In the simplest case fusion can be enabled by applying
-# `torch.jit.script <https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script>`_
+# `torch.compile <https://pytorch.org/docs/stable/generated/torch.compile.html>`_
 # decorator to the function definition, for example:
 
-@torch.jit.script
-def fused_gelu(x):
+@torch.compile
+def gelu(x):
     return x * 0.5 * (1.0 + torch.erf(x / 1.41421))
 
 ###############################################################################
 # Refer to
-# `TorchScript documentation <https://pytorch.org/docs/stable/jit.html>`_
+# `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
 # for more advanced use cases.
 
 ###############################################################################
@@ -464,7 +465,7 @@ torch.backends.cudnn.benchmark = True
 # perform the required gradient all-reduce.
 
 ###############################################################################
-# Match the order of layers in constructors and during the execution if using ``DistributedDataParallel``(find_unused_parameters=True)
+# Match the order of layers in constructors and during the execution if using ``DistributedDataParallel(find_unused_parameters=True)``
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # with ``find_unused_parameters=True`` uses the order of layers and parameters

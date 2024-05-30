@@ -104,6 +104,22 @@ We will cover six crucial components of TorchRL:
 # description and more about the algorithm itself.
 #
 
+import warnings
+warnings.filterwarnings("ignore")
+from torch import multiprocessing
+
+# sphinx_gallery_start_ignore
+
+# TorchRL prefers spawn method, that restricts creation of  ``~torchrl.envs.ParallelEnv`` inside
+# `__main__` method call, but for the easy of reading the code switch to fork
+# which is also a default spawn method in Google's Colaboratory
+try:
+    multiprocessing.set_start_method("fork")
+except RuntimeError:
+    pass
+
+# sphinx_gallery_end_ignore
+
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
@@ -118,7 +134,7 @@ from torchrl.data.replay_buffers.storages import LazyTensorStorage
 from torchrl.envs import (Compose, DoubleToFloat, ObservationNorm, StepCounter,
                           TransformedEnv)
 from torchrl.envs.libs.gym import GymEnv
-from torchrl.envs.utils import check_env_specs, set_exploration_mode
+from torchrl.envs.utils import check_env_specs, ExplorationType, set_exploration_type
 from torchrl.modules import ProbabilisticActor, TanhNormal, ValueOperator
 from torchrl.objectives import ClipPPOLoss
 from torchrl.objectives.value import GAE
@@ -137,7 +153,12 @@ from tqdm import tqdm
 # actually return ``frame_skip`` frames).
 #
 
-device = "cpu" if not torch.cuda.is_available() else "cuda:0"
+is_fork = multiprocessing.get_start_method() == "fork"
+device = (
+    torch.device(0)
+    if torch.cuda.is_available() and not is_fork
+    else torch.device("cpu")
+)
 num_cells = 256  # number of cells in each layer i.e. output dim.
 lr = 3e-4
 max_grad_norm = 1.0
@@ -152,22 +173,10 @@ max_grad_norm = 1.0
 # use. In general, the goal of an RL algorithm is to learn to solve the task
 # as fast as it can in terms of environment interactions: the lower the ``total_frames``
 # the better.
-# We also define a ``frame_skip``: in some contexts, repeating the same action
-# multiple times over the course of a trajectory may be beneficial as it makes
-# the behavior more consistent and less erratic. However, "skipping"
-# too many frames will hamper training by reducing the reactivity of the actor
-# to observation changes.
 #
-# When using ``frame_skip`` it is good practice to
-# correct the other frame counts by the number of frames we are grouping
-# together. If we configure a total count of X frames for training but
-# use a ``frame_skip`` of Y, we will be actually collecting ``XY`` frames in total
-# which exceeds our predefined budget.
-#
-frame_skip = 1
-frames_per_batch = 1000 // frame_skip
+frames_per_batch = 1000
 # For a complete training, bring the number of frames up to 1M
-total_frames = 50_000 // frame_skip
+total_frames = 50_000
 
 ######################################################################
 # PPO parameters
@@ -196,14 +205,14 @@ entropy_eps = 1e-4
 #
 # In RL, an *environment* is usually the way we refer to a simulator or a
 # control system. Various libraries provide simulation environments for reinforcement
-# learning, including Gymnasium (previously OpenAI Gym), DeepMind Control Suite, and
+# learning, including Gymnasium (previously OpenAI Gym), DeepMind control suite, and
 # many others.
 # As a general library, TorchRL's goal is to provide an interchangeable interface
 # to a large panel of RL simulators, allowing you to easily swap one environment
 # with another. For example, creating a wrapped gym environment can be achieved with few characters:
 #
 
-base_env = GymEnv("InvertedDoublePendulum-v4", device=device, frame_skip=frame_skip)
+base_env = GymEnv("InvertedDoublePendulum-v4", device=device)
 
 ######################################################################
 # There are a few things to notice in this code: first, we created
@@ -262,7 +271,7 @@ env = TransformedEnv(
     Compose(
         # normalize observations
         ObservationNorm(in_keys=["observation"]),
-        DoubleToFloat(in_keys=["observation"]),
+        DoubleToFloat(),
         StepCounter(),
     ),
 )
@@ -410,8 +419,8 @@ policy_module = ProbabilisticActor(
     in_keys=["loc", "scale"],
     distribution_class=TanhNormal,
     distribution_kwargs={
-        "min": env.action_spec.space.minimum,
-        "max": env.action_spec.space.maximum,
+        "min": env.action_spec.space.low,
+        "max": env.action_spec.space.high,
     },
     return_log_prob=True,
     # we'll need the log-prob for the numerator of the importance weights
@@ -514,7 +523,7 @@ collector = SyncDataCollector(
 #
 
 replay_buffer = ReplayBuffer(
-    storage=LazyTensorStorage(frames_per_batch),
+    storage=LazyTensorStorage(max_size=frames_per_batch),
     sampler=SamplerWithoutReplacement(),
 )
 
@@ -546,16 +555,13 @@ advantage_module = GAE(
 )
 
 loss_module = ClipPPOLoss(
-    actor=policy_module,
-    critic=value_module,
-    advantage_key="advantage",
+    actor_network=policy_module,
+    critic_network=value_module,
     clip_epsilon=clip_epsilon,
     entropy_bonus=bool(entropy_eps),
     entropy_coef=entropy_eps,
     # these keys match by default but we set this for completeness
-    value_target_key=advantage_module.value_target_key,
     critic_coef=1.0,
-    gamma=0.99,
     loss_critic_type="smooth_l1",
 )
 
@@ -586,7 +592,7 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
 
 
 logs = defaultdict(list)
-pbar = tqdm(total=total_frames * frame_skip)
+pbar = tqdm(total=total_frames)
 eval_str = ""
 
 # We iterate over the collector until it reaches the total number of frames it was
@@ -618,7 +624,7 @@ for i, tensordict_data in enumerate(collector):
             optim.zero_grad()
 
     logs["reward"].append(tensordict_data["next", "reward"].mean().item())
-    pbar.update(tensordict_data.numel() * frame_skip)
+    pbar.update(tensordict_data.numel())
     cum_reward_str = (
         f"average reward={logs['reward'][-1]: 4.4f} (init={logs['reward'][0]: 4.4f})"
     )
@@ -633,7 +639,7 @@ for i, tensordict_data in enumerate(collector):
         # number of steps (1000, which is our ``env`` horizon).
         # The ``rollout`` method of the ``env`` can take a policy as argument:
         # it will then execute this policy at each step.
-        with set_exploration_mode("mean"), torch.no_grad():
+        with set_exploration_type(ExplorationType.MEAN), torch.no_grad():
             # execute a rollout with the trained policy
             eval_rollout = env.rollout(1000, policy_module)
             logs["eval reward"].append(eval_rollout["next", "reward"].mean().item())

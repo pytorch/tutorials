@@ -41,6 +41,8 @@ Let's start with the imports:
 """
 from functools import partial
 import os
+import tempfile
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -48,12 +50,22 @@ import torch.optim as optim
 from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
+# sphinx_gallery_start_ignore
+# Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
+# This is only needed to run with sphinx-build.
+import sys
+if not hasattr(sys.stdout, "encoding"):
+    sys.stdout.encoding = "latin1"
+    sys.stdout.fileno = lambda: 0
+# sphinx_gallery_end_ignore
 from ray import tune
-from ray.air import Checkpoint, session
+from ray import train
+from ray.train import Checkpoint, get_checkpoint
 from ray.tune.schedulers import ASHAScheduler
+import ray.cloudpickle as pickle
 
 ######################################################################
-# Most of the imports are needed for building the PyTorch model. Only the last three
+# Most of the imports are needed for building the PyTorch model. Only the last 
 # imports are for Ray Tune.
 #
 # Data loaders
@@ -124,13 +136,15 @@ class Net(nn.Module):
 #
 #     net = Net(config["l1"], config["l2"])
 #
-#     checkpoint = session.get_checkpoint()
-#
+#     checkpoint = get_checkpoint()
 #     if checkpoint:
-#         checkpoint_state = checkpoint.to_dict()
-#         start_epoch = checkpoint_state["epoch"]
-#         net.load_state_dict(checkpoint_state["net_state_dict"])
-#         optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#         with checkpoint.as_directory() as checkpoint_dir:
+#             data_path = Path(checkpoint_dir) / "data.pkl"
+#             with open(data_path, "rb") as fp:
+#                 checkpoint_state = pickle.load(fp)
+#             start_epoch = checkpoint_state["epoch"]
+#             net.load_state_dict(checkpoint_state["net_state_dict"])
+#             optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
 #     else:
 #         start_epoch = 0
 #
@@ -186,12 +200,16 @@ class Net(nn.Module):
 #         "net_state_dict": net.state_dict(),
 #         "optimizer_state_dict": optimizer.state_dict(),
 #     }
-#     checkpoint = Checkpoint.from_dict(checkpoint_data)
+#     with tempfile.TemporaryDirectory() as checkpoint_dir:
+#         data_path = Path(checkpoint_dir) / "data.pkl"
+#         with open(data_path, "wb") as fp:
+#             pickle.dump(checkpoint_data, fp)
 #
-#     session.report(
-#         {"loss": val_loss / val_steps, "accuracy": correct / total},
-#         checkpoint=checkpoint,
-#     )
+#         checkpoint = Checkpoint.from_directory(checkpoint_dir)
+#         train.report(
+#             {"loss": val_loss / val_steps, "accuracy": correct / total},
+#             checkpoint=checkpoint,
+#         )
 #
 # Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
 # we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
@@ -225,13 +243,15 @@ def train_cifar(config, data_dir=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 
-    checkpoint = session.get_checkpoint()
-
+    checkpoint = get_checkpoint()
     if checkpoint:
-        checkpoint_state = checkpoint.to_dict()
-        start_epoch = checkpoint_state["epoch"]
-        net.load_state_dict(checkpoint_state["net_state_dict"])
-        optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+        with checkpoint.as_directory() as checkpoint_dir:
+            data_path = Path(checkpoint_dir) / "data.pkl"
+            with open(data_path, "rb") as fp:
+                checkpoint_state = pickle.load(fp)
+            start_epoch = checkpoint_state["epoch"]
+            net.load_state_dict(checkpoint_state["net_state_dict"])
+            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
     else:
         start_epoch = 0
 
@@ -300,12 +320,17 @@ def train_cifar(config, data_dir=None):
             "net_state_dict": net.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
         }
-        checkpoint = Checkpoint.from_dict(checkpoint_data)
+        with tempfile.TemporaryDirectory() as checkpoint_dir:
+            data_path = Path(checkpoint_dir) / "data.pkl"
+            with open(data_path, "wb") as fp:
+                pickle.dump(checkpoint_data, fp)
 
-        session.report(
-            {"loss": val_loss / val_steps, "accuracy": correct / total},
-            checkpoint=checkpoint,
-        )
+            checkpoint = Checkpoint.from_directory(checkpoint_dir)
+            train.report(
+                {"loss": val_loss / val_steps, "accuracy": correct / total},
+                checkpoint=checkpoint,
+            )
+    
     print("Finished Training")
 
 
@@ -438,23 +463,18 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
             best_trained_model = nn.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint = best_trial.checkpoint.to_air_checkpoint()
-    best_checkpoint_data = best_checkpoint.to_dict()
+    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="accuracy", mode="max")
+    with best_checkpoint.as_directory() as checkpoint_dir:
+        data_path = Path(checkpoint_dir) / "data.pkl"
+        with open(data_path, "rb") as fp:
+            best_checkpoint_data = pickle.load(fp)
 
-    best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
-
-    test_acc = test_accuracy(best_trained_model, device)
-    print("Best trial test set accuracy: {}".format(test_acc))
+        best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
+        test_acc = test_accuracy(best_trained_model, device)
+        print("Best trial test set accuracy: {}".format(test_acc))
 
 
 if __name__ == "__main__":
-    # sphinx_gallery_start_ignore
-    # Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
-    # This is only needed to run with sphinx-build.
-    import sys
-
-    sys.stdout.fileno = lambda: False
-    # sphinx_gallery_end_ignore
     # You can change the number of GPUs per trial here:
     main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
 
