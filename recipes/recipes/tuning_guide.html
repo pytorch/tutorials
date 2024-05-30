@@ -671,30 +671,32 @@ setting it to zero, for more details refer to the
 <p>Alternatively, starting from PyTorch 1.7, call <code class="docutils literal notranslate"><span class="pre">model</span></code> or
 <code class="docutils literal notranslate"><span class="pre">optimizer.zero_grad(set_to_none=True)</span></code>.</p>
 </div>
-<div class="section" id="fuse-pointwise-operations">
-<h3>Fuse pointwise operations<a class="headerlink" href="#fuse-pointwise-operations" title="Permalink to this heading">¶</a></h3>
-<p>Pointwise operations (elementwise addition, multiplication, math functions -
-<code class="docutils literal notranslate"><span class="pre">sin()</span></code>, <code class="docutils literal notranslate"><span class="pre">cos()</span></code>, <code class="docutils literal notranslate"><span class="pre">sigmoid()</span></code> etc.) can be fused into a single kernel
-to amortize memory access time and kernel launch time.</p>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/jit.html">PyTorch JIT</a> can fuse kernels
-automatically, although there could be additional fusion opportunities not yet
-implemented in the compiler, and not all device types are supported equally.</p>
-<p>Pointwise operations are memory-bound, for each operation PyTorch launches a
-separate kernel. Each kernel loads data from the memory, performs computation
-(this step is usually inexpensive) and stores results back into the memory.</p>
-<p>Fused operator launches only one kernel for multiple fused pointwise ops and
-loads/stores data only once to the memory. This makes JIT very useful for
-activation functions, optimizers, custom RNN cells etc.</p>
+<div class="section" id="fuse-operations">
+<h3>Fuse operations<a class="headerlink" href="#fuse-operations" title="Permalink to this heading">¶</a></h3>
+<p>Pointwise operations such as elementwise addition, multiplication, and math
+functions like <cite>sin()</cite>, <cite>cos()</cite>, <cite>sigmoid()</cite>, etc., can be combined into a
+single kernel. This fusion helps reduce memory access and kernel launch times.
+Typically, pointwise operations are memory-bound; PyTorch eager-mode initiates
+a separate kernel for each operation, which involves loading data from memory,
+executing the operation (often not the most time-consuming step), and writing
+the results back to memory.</p>
+<p>By using a fused operator, only one kernel is launched for multiple pointwise
+operations, and data is loaded and stored just once. This efficiency is
+particularly beneficial for activation functions, optimizers, and custom RNN cells etc.</p>
+<p>PyTorch 2 introduces a compile-mode facilitated by TorchInductor, an underlying compiler
+that automatically fuses kernels. TorchInductor extends its capabilities beyond simple
+element-wise operations, enabling advanced fusion of eligible pointwise and reduction
+operations for optimized performance.</p>
 <p>In the simplest case fusion can be enabled by applying
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script">torch.jit.script</a>
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.compile.html">torch.compile</a>
 decorator to the function definition, for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
-<span class="k">def</span> <span class="nf">fused_gelu</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">compile</span>
+<span class="k">def</span> <span class="nf">gelu</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">erf</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1.41421</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Refer to
-<a class="reference external" href="https://pytorch.org/docs/stable/jit.html">TorchScript documentation</a>
+<a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">Introduction to torch.compile</a>
 for more advanced use cases.</p>
 </div>
 <div class="section" id="enable-channels-last-memory-format-for-computer-vision-models">
@@ -1106,7 +1108,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#disable-gradient-calculation-for-validation-or-inference">Disable gradient calculation for validation or inference</a></li>
 <li><a class="reference internal" href="#disable-bias-for-convolutions-directly-followed-by-a-batch-norm">Disable bias for convolutions directly followed by a batch norm</a></li>
 <li><a class="reference internal" href="#use-parameter-grad-none-instead-of-model-zero-grad-or-optimizer-zero-grad">Use parameter.grad = None instead of model.zero_grad() or optimizer.zero_grad()</a></li>
-<li><a class="reference internal" href="#fuse-pointwise-operations">Fuse pointwise operations</a></li>
+<li><a class="reference internal" href="#fuse-operations">Fuse operations</a></li>
 <li><a class="reference internal" href="#enable-channels-last-memory-format-for-computer-vision-models">Enable channels_last memory format for computer vision models</a></li>
 <li><a class="reference internal" href="#checkpoint-intermediate-buffers">Checkpoint intermediate buffers</a></li>
 <li><a class="reference internal" href="#disable-debugging-apis">Disable debugging APIs</a></li>
