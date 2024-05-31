@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+.. _python-custom-ops-tutorial:
+
 Python Custom Operators
 =======================
 

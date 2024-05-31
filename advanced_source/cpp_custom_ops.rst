@@ -23,18 +23,18 @@ https://github.com/pytorch/extension-cpp .
 Build System
 ------------
 
-If you author custom C++/CUDA code, it needs to be compiled somehow.
+If you are developing custom C++/CUDA code, it must be compiled.
 Note that if you’re interfacing with a Python library that already has bindings
-to precompiled C++/CUDA code, then you may actually want to write a Python custom operator
-(TODO: tutorial)
+to precompiled C++/CUDA code, you might consider writing a custom Python operator
+instead (:ref:`python-custom-ops-tutorial`).
 
 Use `torch.utils.cpp_extension <https://pytorch.org/docs/stable/cpp_extension.html>`_
 to compile custom C++/CUDA code for use with PyTorch
 C++ extensions may be built either "ahead of time" with setuptools, or "just in time"
-via `load_inline <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.load_inline>`;
+via `load_inline <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.load_inline>`_;
 we’ll focus on the "ahead of time" flavor.
 
-Using cpp_extension is as simple as writing the following setup.py:
+Using ``cpp_extension`` is as simple as writing the following ``setup.py``:
 
 .. code-block:: python
 
@@ -46,15 +46,18 @@ Using cpp_extension is as simple as writing the following setup.py:
             cpp_extension.CppExtension("extension_cpp", ["muladd.cpp"])],
         cmdclass={'build_ext': cpp_extension.BuildExtension})
 
-If you need to compile CUDA code (e.g. .cu files), then instead use
+If you need to compile CUDA code (for example, ``.cu`` files), then instead use
 `torch.utils.cpp_extension.CUDAExtension <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension>`_
-Please see how https://github.com/pytorch/extension-cpp is set up for more details.
+Please see how
+`extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an example for
+how this is set up.
 
 Defining the custom op and adding backend implementations
 ---------------------------------------------------------
-First, let’s write a C++ function that computes mymuladd:
+First, let’s write a C++ function that computes ``mymuladd``:
 
 .. code-block:: cpp
+
    at::Tensor mymuladd_cpu(at::Tensor a, const at::Tensor& b, double c) {
      TORCH_CHECK(a.sizes() == b.sizes());
      TORCH_CHECK(a.dtype() == at::kFloat);
@@ -74,29 +77,31 @@ First, let’s write a C++ function that computes mymuladd:
    }
 
 In order to use this from PyTorch’s Python frontend, we need to register it
-as a PyTorch operator using the TORCH_LIBRARY API. This will automatically
+as a PyTorch operator using the ``TORCH_LIBRARY`` API. This will automatically
 bind the operator to Python.
 
 Operator registration is a two step-process:
 
-- we need to define the operator (so that PyTorch knows about it)
-- we need to register various backend implementations (e.g. CPU/CUDA) to the operator
+- **Defining the operator** - This step ensures that PyTorch is aware of the new operator.
+- **Registering backend implementations** - In this step, implementations for various
+  backends, such as CPU and CUDA, are associated with the operator.
 
 How to define an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-To define an operator:
+To define an operator, follow these steps:
 
-- select a namespace for an operator. We recommend the namespace be the name of your top-level
-project; we’ll use "extension_cpp" in our tutorial.
-- provide a schema string that specifies the input/output types of the operator and if an
-input Tensors will be mutated. We support more types in addition to Tensor and float;
-please see `The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
-for more details.
+1. select a namespace for an operator. We recommend the namespace be the name of your top-level
+   project; we’ll use "extension_cpp" in our tutorial.
+2. provide a schema string that specifies the input/output types of the operator and if an
+   input Tensors will be mutated. We support more types in addition to Tensor and float;
+   please see `The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
+   for more details.
 
-If you are authoring an operator that can mutate its input Tensors, please see here
-(:ref:`mutable-ops`) for how to specify that.
+   * If you are authoring an operator that can mutate its input Tensors, please see here
+     (:ref:`mutable-ops`) for how to specify that.
 
 .. code-block:: cpp
+
   TORCH_LIBRARY(extension_cpp, m) {
      // Note that "float" in the schema corresponds to the C++ double type
      // and the Python float type.
@@ -107,16 +112,19 @@ This makes the operator available from Python via ``torch.ops.extension_cpp.mymu
 
 How to register backend implementations for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Use TORCH_LIBRARY_IMPL to register a backend implementation for the operator.
+Use ``TORCH_LIBRARY_IMPL`` to register a backend implementation for the operator.
 
 .. code-block:: cpp
+
    TORCH_LIBRARY_IMPL(extension_cpp, CPU, m) {
      m.impl("mymuladd", &mymuladd_cpu);
    }
 
-If we also have a CUDA implementation myaddmul_cuda, we can register it in a separate TORCH_LIBRARY_IMPL block:
+If you also have a CUDA implementation of ``myaddmul``, you can register it
+in a separate ``TORCH_LIBRARY_IMPL`` block:
 
 .. code-block:: cpp
+
   __global__ void muladd_kernel(int numel, const float* a, const float* b, float c, float* result) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < numel) result[idx] = a[idx] * b[idx] + c;
@@ -147,9 +155,9 @@ If we also have a CUDA implementation myaddmul_cuda, we can register it in a sep
 How to add torch.compile support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To add torch.compile support for an operator, we must add a FakeTensor kernel (also
-known as a “meta kernel” or “abstract impl”). FakeTensors are Tensors that have
-metadata (i.e. shape, dtype, device) but no data: the FakeTensor kernel for an
+To add ``torch.compile`` support for an operator, we must add a FakeTensor kernel (also
+known as a "meta kernel" or "abstract impl"). FakeTensors are Tensors that have
+metadata (such as shape, dtype, device) but no data: the FakeTensor kernel for an
 operator specifies how to compute the metadata of output tensors given the metadata of input tensors.
 
 We recommend that this be done from Python via the `torch.library.register_fake` API,
@@ -158,6 +166,7 @@ though it is possible to do this from C++ as well (see
 for more details).
 
 .. code-block:: python
+
 	@torch.library.register_fake("extension_cpp::mymuladd")
 	def _(a, b, c):
 	    torch._check(a.shape == b.shape)
@@ -168,13 +177,14 @@ for more details).
   	
 How to add training (autograd) support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Use torch.library.register_autograd to add training support for an operator. Prefer
-this over directly using Python torch.autograd.Function or C++ torch::autograd::Function;
-one must use those in a very specific way to avoid silent incorrectness (see
+Use ``torch.library.register_autograd`` to add training support for an operator. Prefer
+this over directly using Python ``torch.autograd.Function`` or C++ ``torch::autograd::Function``;
+you must use those in a very specific way to avoid silent incorrectness (see
 `The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
 for more details).
 
 .. code-block:: python
+
   def _backward(ctx, grad):
       a, b = ctx.saved_tensors
       grad_a, grad_b = None, None
@@ -193,7 +203,7 @@ for more details).
           saved_a = a
       ctx.save_for_backward(saved_a, saved_b)
   
-  # This adds training support for the operator. You must provide us
+  # This code adds training support for the operator. You must provide us
   # the backward formula for the operator and a `setup_context` function
   # to save values to be used in the backward.
   torch.library.register_autograd(
@@ -201,12 +211,13 @@ for more details).
 
 Note that the backward must be a composition of PyTorch-understood operators.
 If you wish to use another custom C++ or CUDA kernel in your backwards pass,
-it must be wrapped into a custom op.
+it must be wrapped into a custom operator.
 
-So if we had our own custom mymul kernel, we would need to wrap it into a
+If we had our own custom ``mymul`` kernel, we would need to wrap it into a
 custom operator and then call that from the backward:
 
 .. code-block:: cpp
+
   // New! a mymul_cpu kernel
   at::Tensor mymul_cpu(const at::Tensor& a, const at::Tensor& b) {
     TORCH_CHECK(a.sizes() == b.sizes());
@@ -261,7 +272,7 @@ custom operator and then call that from the backward:
       ctx.save_for_backward(saved_a, saved_b)
   
   
-  # This adds training support for the operator. You must provide us
+  # This code adds training support for the operator. You must provide us
   # the backward formula for the operator and a `setup_context` function
   # to save values to be used in the backward.
   torch.library.register_autograd(
@@ -269,11 +280,13 @@ custom operator and then call that from the backward:
 
 How to test an operator
 -----------------------
-Use torch.library.opcheck to test that the custom op was registered correctly.
-This does not test that the gradients are mathematically correct; please write
-separate tests for that (either manual ones or torch.autograd.gradcheck).
+Use ``torch.library.opcheck`` to test that the custom op was registered correctly.
+Note that this function does not test that the gradients are mathematically correct
+-- plan to write separate tests for that, either manual ones or by using
+``torch.autograd.gradcheck``.
 
 .. code-block:: python
+
   def sample_inputs(device, *, requires_grad=False):
       def make_tensor(*size):
           return torch.randn(size, device=device, requires_grad=requires_grad)
@@ -308,12 +321,13 @@ How to create mutable operators
 -------------------------------
 You may wish to author a custom operator that mutates its inputs. Use ``Tensor(a!)`` 
 to specify each mutable Tensor in the schema; otherwise, there will be undefined
-behavior. If there are multiple mutated Tensors, use different names (i.e. ``Tensor(a!)``,
+behavior. If there are multiple mutated Tensors, use different names (for example, ``Tensor(a!)``,
 ``Tensor(b!)``, ``Tensor(c!)``) for each mutable Tensor.
 
 Let's author a ``myadd_out(a, b, out)`` operator, which writes the contents of ``a+b`` into ``out``.
 
 .. code-block:: cpp
+
   // An example of an operator that mutates one of its inputs.
   void myadd_out_cpu(const at::Tensor& a, const at::Tensor& b, at::Tensor& out) {
     TORCH_CHECK(a.sizes() == b.sizes());
@@ -338,6 +352,7 @@ Let's author a ``myadd_out(a, b, out)`` operator, which writes the contents of `
 When defining the operator, we must specify that it mutates the out Tensor in the schema:
 
 .. code-block:: cpp
+
 	TORCH_LIBRARY(extension_cpp, m) {
 		m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
 		m.def("mymul(Tensor a, Tensor b) -> Tensor");
@@ -352,14 +367,14 @@ When defining the operator, we must specify that it mutates the out Tensor in th
 		m.impl("myadd_out", &myadd_out_cpu);
 	}
 
-Please do not return any mutated Tensors as outputs of the operator; this will
-run you into problems later down the line.
+.. note::
+
+  Do not return any mutated Tensors as outputs of the operator as this will
+  cause incompatibility with PyTorch subsystems like ``torch.compile``.
 
 Conclusion
 ----------
 In this tutorial, we went over the recommended approach to integrating Custom C++
-and CUDA operators with PyTorch. The TORCH_LIBRARY/torch.library APIs are fairly
-low-level; more detail about how to use them can be found over at
-`The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
-
-
+and CUDA operators with PyTorch. The ``TORCH_LIBRARY/torch.library`` APIs are fairly
+low-level. For more information about how to use the API, see
+`The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_.
