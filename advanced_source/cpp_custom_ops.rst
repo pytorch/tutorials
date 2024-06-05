@@ -47,7 +47,7 @@ Using ``cpp_extension`` is as simple as writing the following ``setup.py``:
         cmdclass={'build_ext': cpp_extension.BuildExtension})
 
 If you need to compile CUDA code (for example, ``.cu`` files), then instead use
-`torch.utils.cpp_extension.CUDAExtension <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension>`_
+`torch.utils.cpp_extension.CUDAExtension <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension>`_.
 Please see how
 `extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an example for
 how this is set up.
@@ -167,14 +167,14 @@ for more details).
 
 .. code-block:: python
 
-	@torch.library.register_fake("extension_cpp::mymuladd")
-	def _(a, b, c):
-	    torch._check(a.shape == b.shape)
-	    torch._check(a.dtype == torch.float)
-	    torch._check(b.dtype == torch.float)
-	    torch._check(a.device == b.device)
-	    return torch.empty_like(a)
-  	
+  @torch.library.register_fake("extension_cpp::mymuladd")
+  def _(a, b, c):
+      torch._check(a.shape == b.shape)
+      torch._check(a.dtype == torch.float)
+      torch._check(b.dtype == torch.float)
+      torch._check(a.device == b.device)
+      return torch.empty_like(a)
+    
 How to add training (autograd) support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Use ``torch.library.register_autograd`` to add training support for an operator. Prefer
@@ -353,19 +353,19 @@ When defining the operator, we must specify that it mutates the out Tensor in th
 
 .. code-block:: cpp
 
-	TORCH_LIBRARY(extension_cpp, m) {
-		m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
-		m.def("mymul(Tensor a, Tensor b) -> Tensor");
-		// New!
-		m.def("myadd_out(Tensor a, Tensor b, Tensor(a!) out) -> ()");
-	}
+  TORCH_LIBRARY(extension_cpp, m) {
+    m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
+    m.def("mymul(Tensor a, Tensor b) -> Tensor");
+    // New!
+    m.def("myadd_out(Tensor a, Tensor b, Tensor(a!) out) -> ()");
+  }
 
-	TORCH_LIBRARY_IMPL(extension_cpp, CPU, m) {
-		m.impl("mymuladd", &mymuladd_cpu);
-		m.impl("mymul", &mymul_cpu);
-		// New!
-		m.impl("myadd_out", &myadd_out_cpu);
-	}
+  TORCH_LIBRARY_IMPL(extension_cpp, CPU, m) {
+    m.impl("mymuladd", &mymuladd_cpu);
+    m.impl("mymul", &mymul_cpu);
+    // New!
+    m.impl("myadd_out", &myadd_out_cpu);
+  }
 
 .. note::
 
