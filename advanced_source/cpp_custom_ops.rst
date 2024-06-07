@@ -167,6 +167,13 @@ for more details).
 
 .. code-block:: python
 
+  # Important: the C++ custom operator definitions should be loaded first
+  # before calling ``torch.library`` APIs that add registrations for the
+  # C++ custom operator(s). The following import loads our
+  # C++ custom operator definitions.
+  # See the next section for more details.
+  from . import _C
+
   @torch.library.register_fake("extension_cpp::mymuladd")
   def _(a, b, c):
       torch._check(a.shape == b.shape)
@@ -174,6 +181,24 @@ for more details).
       torch._check(b.dtype == torch.float)
       torch._check(a.device == b.device)
       return torch.empty_like(a)
+
+How to set up hybrid Python/C++ registration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In this tutorial, we defined a custom operator in C++, added CPU/CUDA
+implementations in C++, and added ``FakeTensor`` kernels and backward formulas
+in Python. The order in which these registrations are loaded (or imported)
+matters (importing in the wrong order will lead to an error).
+
+To use the custom operator with hybrid Python/C++ registrations, we must
+first load the C++ library that holds the custom operator definition
+and then call the ``torch.library`` registration APIs. This can happen in one
+of two ways:
+
+1. If you're following this tutorial, importing the Python C extension module
+   we created will load the C++ custom operator definitions.
+2. If your C++ custom operator is located in a shared library object, you can
+   also use ``torch.ops.load_library("/path/to/library.so")`` to load it.
+
     
 How to add training (autograd) support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

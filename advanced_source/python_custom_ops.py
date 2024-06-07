@@ -74,7 +74,7 @@ def f(img):
 # do two things:
 #
 # 1. wrap the function into a PyTorch custom operator.
-# 2. add a "FakeTensor kernel" (aka "meta kernel") to the operator.
+# 2. add a "``FakeTensor`` kernel" (aka "meta kernel") to the operator.
 #    Given the metadata (e.g. shapes)
 #    of the input Tensors, this function says how to compute the metadata
 #    of the output Tensor(s).
@@ -84,14 +84,14 @@ from typing import Sequence
 
 # Use torch.library.custom_op to define a new custom operator.
 # If your operator mutates any input Tensors, their names must be specified
-# in the mutates_args argument.
+# in the ``mutates_args`` argument.
 @torch.library.custom_op("mylib::crop", mutates_args=())
 def crop(pic: torch.Tensor, box: Sequence[int]) -> torch.Tensor:
     img = to_pil_image(pic.cpu())
     cropped_img = img.crop(box)
     return (pil_to_tensor(cropped_img) / 255.).to(pic.device, pic.dtype)
 
-# Use register_fake to add a FakeTensor kernel for the operator
+# Use register_fake to add a ``FakeTensor`` kernel for the operator
 @crop.register_fake
 def _(pic, box):
     channels = pic.shape[0]
@@ -99,7 +99,7 @@ def _(pic, box):
     return pic.new_empty(channels, y1 - y0, x1 - x0)
 
 ######################################################################
-# After this, ``crop`` now works whout graph breaks:
+# After this, ``crop`` now works without graph breaks:
 
 @torch.compile(fullgraph=True)
 def f(img):
@@ -214,7 +214,7 @@ def numpy_sin(input: torch.Tensor, output: torch.Tensor) -> None:
 
 ######################################################################
 # Because the operator doesn't return anything, there is no need to register
-# a FakeTensor kernel (meta kernel) to get it to work with ``torch.compile``.
+# a ``FakeTensor`` kernel (meta kernel) to get it to work with ``torch.compile``.
 
 @torch.compile(fullgraph=True)
 def f(x):
