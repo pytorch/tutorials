@@ -30,6 +30,7 @@ import numpy as np
 data = [[1, 2], [3, 4]]
 x_data = torch.tensor(data)
 
+
 ######################################################################
 # **From a NumPy array**
 #
@@ -51,6 +52,16 @@ print(f"Random Tensor: \n {x_rand} \n")
 
 
 ######################################################################
+# **Tensor as Diagonal Matrix
+#
+# Like NumPy operations, the eye function creates a diagonal matrix of which the diagonal elements have ones and 
+# off diagonal elements have zeros
+
+x_eye = torch.eye(3, 4)
+print(f"Diagonal Tensor: \n {x_eye} \n")
+
+######################################################################
+#
 # **With random or constant values:**
 #
 # ``shape`` is a tuple of tensor dimensions. In the functions below, it determines the dimensionality of the output tensor.
@@ -94,6 +105,30 @@ print(f"Device tensor is stored on: {tensor.device}")
 # Tensor Operations
 # ~~~~~~~~~~~~~~~~~
 #
+# **Check for a tensor**
+# 
+# We can check whether an object in python is a tensor or not. Typically, is_tensor function checks 
+# and is_storage function checkes whether an object is stored as tensor object.
+x = [1, 2, 3, 4, 5]
+
+print(f"x is tensor: {torch.is_tensor(x)}\n")
+print(f"x is tensor: {torch.is_storage(x)}\n")
+
+y = torch.randn(1, 2, 3, 4, 5)
+print(f"x is tensor: {torch.is_tensor(y)}\n")
+print(f"x is tensor: {torch.is_storage(y)}\n")
+
+######################################################################
+# Here x is not a tensor
+# while y is a tensor but it is not stored.
+#
+# **Count Elements in a Tensor**
+#
+# To check the total number of elements in an input tensor object, the numerical element function can be used.
+print(f"Total number of elements in tensor y: {torch.numel(y)}\n")
+print(f"Total number of elements in 2D tensor: {torch.numel(x_data)}\n")
+#
+#
 # Over 100 tensor operations, including transposing, indexing, slicing,
 # mathematical operations, linear algebra, random sampling, and more are
 # comprehensively described
@@ -128,6 +163,10 @@ print(tensor)
 # another tensor joining op that is subtly different from ``torch.cat``.
 t1 = torch.cat([tensor, tensor, tensor], dim=1)
 print(t1)
+
+######################################################################
+# **Linear Spacing**
+# 
 
 ######################################################################
 # **Multiplying tensors**
