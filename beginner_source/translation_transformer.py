@@ -132,7 +132,7 @@ class TokenEmbedding(nn.Module):
         self.emb_size = emb_size
 
     def forward(self, tokens: Tensor):
-        return self.embedding(tokens.long()) * math.sqrt(self.emb_size)
+        return self.embedding(tokens.long()) / math.sqrt(self.emb_size)
 
 # Seq2Seq Network
 class Seq2SeqTransformer(nn.Module):
