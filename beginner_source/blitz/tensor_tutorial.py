@@ -108,7 +108,7 @@ print(f"Device tensor is stored on: {tensor.device}")
 # **Check for a tensor**
 # 
 # We can check whether an object in python is a tensor or not. Typically, is_tensor function checks 
-# and is_storage function checkes whether an object is stored as tensor object.
+# and is_storage function checkes whether an object is a pytorch storage object.
 x = [1, 2, 3, 4, 5]
 
 print(f"x is tensor: {torch.is_tensor(x)}\n")
