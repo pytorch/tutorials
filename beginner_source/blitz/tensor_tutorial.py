@@ -112,11 +112,11 @@ print(f"Device tensor is stored on: {tensor.device}")
 x = [1, 2, 3, 4, 5]
 
 print(f"x is tensor: {torch.is_tensor(x)}\n")
-print(f"x is tensor: {torch.is_storage(x)}\n")
+print(f"x is pytorch storage object: {torch.is_storage(x)}\n")
 
 y = torch.randn(1, 2, 3, 4, 5)
-print(f"x is tensor: {torch.is_tensor(y)}\n")
-print(f"x is tensor: {torch.is_storage(y)}\n")
+print(f"y is tensor: {torch.is_tensor(y)}\n")
+print(f"y is pytorch storage object: {torch.is_storage(y)}\n")
 
 ######################################################################
 # Here x is not a tensor
@@ -126,6 +126,9 @@ print(f"x is tensor: {torch.is_storage(y)}\n")
 #
 # To check the total number of elements in an input tensor object, the numerical element function can be used.
 print(f"Total number of elements in tensor y: {torch.numel(y)}\n")
+#
+data = [[1, 2], [3, 4]]
+x_data = torch.tensor(data)
 print(f"Total number of elements in 2D tensor: {torch.numel(x_data)}\n")
 #
 #
