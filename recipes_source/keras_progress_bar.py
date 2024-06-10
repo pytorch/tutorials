@@ -19,9 +19,10 @@ Implementing a Keras Progress Bar
 # --------
 #
 # Keras implements a progress bar that shows a nice snapshot of what is occurring during model training.
-# This can be more visually appealing and less burden some for a developer to write the code to report
-# key metrics. Adding a Keras progress bar only takes a few lines of code.
+# This offers a more visually appealing command line report and
+# is less burdensome than a developer having to write code to gather important metrics.
 #
+# Adding a Keras progress bar only takes a few lines of code and is a nice addition to any training/test loop.
 
 #########################################################################
 # Traditional Approach
