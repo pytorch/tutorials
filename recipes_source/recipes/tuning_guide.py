@@ -327,7 +327,7 @@ with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bf
 #
 # Hardware tensor core operations tend to use a different floating point format
 # which sacrifices precision at expense of speed gains.
-# Prior to pytorch 1.12 this was enabled by default but since this version
+# Prior to PyTorch 1.12 this functionality was enabled by default but since this version
 # it must be explicitly set as it can conflict with some operations which do not
 # benefit from Tensor core computations.
 
