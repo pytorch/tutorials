@@ -312,8 +312,8 @@ train_loop_pbar_with_val(
     new_train_dataloader, val_dataloader, model, loss_fn, optimizer, epochs
 )
 ######################################################################
-# As a sniff test, run the original `test_loop()` with the validation dataset and
-# verify the output is the same as the last epoch in the `train_loop_pbar_with_val()` loop:
+# As a sniff test, run the original ``test_loop()`` with the validation dataset and
+# verify the output is the same as the last epoch in the ``train_loop_pbar_with_val()`` loop:
 test_loop(val_dataloader, model, loss_fn)
 
 ######################################################################
