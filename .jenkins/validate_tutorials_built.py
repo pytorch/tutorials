@@ -38,7 +38,7 @@ NOT_RUN = [
     "prototype_source/nestedtensor",
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
-    "recipes_source/recipes/loading_data_recipe",
+    # "recipes_source/recipes/loading_data_recipe",  # deprecated and replaced with beginner_source/basics/data_tutorial.py
     "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
