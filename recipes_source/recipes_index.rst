@@ -31,14 +31,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Basics
 
 .. customcarditem::
-   :header: Loading data in PyTorch
-   :card_description: Learn how to use PyTorch packages to prepare and load common datasets for your model.
-   :image: ../_static/img/thumbnails/cropped/loading-data.PNG
-   :link: ../beginner/basics/data_tutorial.html
-   :tags: Basics
-
-
-.. customcarditem::
    :header: Defining a Neural Network
    :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: ../_static/img/thumbnails/cropped/defining-a-network.PNG
@@ -407,7 +399,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. toctree::
    :hidden:
 
-   /recipes/loading_data_recipe
    /recipes/recipes/defining_a_neural_network
    /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
