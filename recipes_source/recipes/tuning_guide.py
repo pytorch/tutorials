@@ -343,7 +343,7 @@ torch.set_float32_matmul_precision("high")
 # Use CUDA Graphs
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # At the time of using a GPU, work first must be launched from the CPU and
-# on some cases the context switch between CPU and GPU can lead to bad resource
+# in some cases the context switch between CPU and GPU can lead to bad resource
 # utilization. CUDA graphs are a way to keep computation within the GPU without
 # paying the extra cost of kernel launches and host synchronization.
 
