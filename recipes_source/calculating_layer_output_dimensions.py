@@ -44,6 +44,7 @@ Calculating Output Dimensions for Convolutional and Pooling Layers
 
 import torch
 
+
 class Net(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -82,6 +83,8 @@ class Net(torch.nn.Module):
         x = self.flatten(x)
         x = self.relu(self.fc1(x))
         return x
+
+
 ######################################################################
 # Let's see if I guessed correctly:
 
@@ -92,7 +95,7 @@ x = torch.ones(1, 1, 28, 28)  # batch_size, channels, height, width
 try:
     _ = model(x)
 except RuntimeError as e:
-    print(f'Error occured: {e}')
+    print(f"Error occured: {e}")
 ######################################################################
 # Looks like something is off.
 # There are shapes that don't align in my model somewhere -- most likely the first linear layer that transitions from convolutional space to linear space.
@@ -111,7 +114,17 @@ except RuntimeError as e:
 # and trace the dimensionality shifts as data flows through our model:
 import math
 
-def calc_shape(c_in, h_in, w_in, c_out=None, kernel=(3, 3), padding=(0, 0), dilation=(1, 1), stride=(1, 1)):
+
+def calc_shape(
+    c_in,
+    h_in,
+    w_in,
+    c_out=None,
+    kernel=(3, 3),
+    padding=(0, 0),
+    dilation=(1, 1),
+    stride=(1, 1),
+):
     """
     Helper function to determine output shape after convolution or pool layer.
 
@@ -135,9 +148,15 @@ def calc_shape(c_in, h_in, w_in, c_out=None, kernel=(3, 3), padding=(0, 0), dila
         Stride of the convolution.
     """
     c_out = c_in if c_out is None else c_out
-    h_out = math.floor(((h_in + 2 * padding[0] - dilation[0] * (kernel[0] - 1) - 1) / stride[0]) + 1)
-    w_out = math.floor(((w_in + 2 * padding[1] - dilation[1] * (kernel[1] - 1) - 1) / stride[1]) + 1)
+    h_out = math.floor(
+        ((h_in + 2 * padding[0] - dilation[0] * (kernel[0] - 1) - 1) / stride[0]) + 1
+    )
+    w_out = math.floor(
+        ((w_in + 2 * padding[1] - dilation[1] * (kernel[1] - 1) - 1) / stride[1]) + 1
+    )
     return c_out, h_out, w_out
+
+
 ######################################################################
 # With this helper function in hand, we can trace pseudo-data through
 # our model and see what the correct dimensionality should be for our
@@ -159,6 +178,8 @@ print(f"Post Conv2d.1 shape   : {conv2_out}")
 # (the default value of stride is the kernel_size)
 pool_out = calc_shape(*conv2_out, kernel=(2, 2), stride=(2, 2))
 print(f"Post MaxPool2d.0 shape: {pool_out}")
+
+
 ######################################################################
 # Looks like our answer is ``64 * 12 * 12``! Let's give it a try:
 class Net(torch.nn.Module):
@@ -179,16 +200,18 @@ class Net(torch.nn.Module):
         x = self.relu(self.fc1(x))
         return x
 
+
 model = Net()
 x = torch.ones(1, 1, 28, 28)  # batch_size, channels, height, width
 try:
     _ = model(x)
 except RuntimeError as e:
-    print(f'Error occured: {e}')
+    print(f"Error occured: {e}")
 
 ######################################################################
 # Success! No error was reported.
 # Now, we can add our final touches to the network and be on our way:
+
 
 class Net(torch.nn.Module):
     def __init__(self):
@@ -209,6 +232,7 @@ class Net(torch.nn.Module):
         x = self.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
 
 ######################################################################
 # Approach 2: Add temporary internal print statements to report the data.shape
@@ -236,12 +260,15 @@ class DebugNet(torch.nn.Module):
         x = self.pool(x)
         print(f"after pool shape: {x.shape}")
 
+
 model = DebugNet()
 x = torch.ones(1, 1, 28, 28)  # batch_size, channels, height, width
 try:
     _ = model(x)
 except RuntimeError as e:
-    print(f'Error occured: {e}')
+    print(f"Error occured: {e}")
+
+
 ######################################################################
 # As expected, we see that the shape of the data after the pooling layer is ``[1, 64, 12, 12]``.
 # With this information, we can update our model, remove the print statements, and get on to training.
@@ -264,6 +291,8 @@ class Net(torch.nn.Module):
         x = self.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
+
 #####################################################################
 # Approach 2 with the ``Sequential`` class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,6 +304,7 @@ class Net(torch.nn.Module):
 #
 # Notice the shape of the data is no longer printed layer by layer,
 # but now printed as the start and at the transition point.
+
 
 class DebugNet2(torch.nn.Module):
     def __init__(self):
@@ -300,12 +330,13 @@ class DebugNet2(torch.nn.Module):
         x = self.classifier(x)
         return x
 
+
 model = DebugNet2()
 x = torch.ones(1, 1, 28, 28)  # batch_size, channels, height, width
 try:
     _ = model(x)
 except RuntimeError as e:
-    print(f'Error occured: {e}')
+    print(f"Error occured: {e}")
 
 ######################################################################
 # Approach 3: Use the ``torchinfo`` package
@@ -322,6 +353,7 @@ except RuntimeError as e:
 # calculated for you (given you provide the correct ``input_shape``):
 import torchinfo
 
+
 class Net(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -335,9 +367,12 @@ class Net(torch.nn.Module):
         x = self.relu(self.conv2(x))
         x = self.pool(x)
 
+
 model = Net()
 # If running from a notebook, use print(torchinfo.summary(model, input_size=(1, 1, 28, 28)))
 torchinfo.summary(model, input_size=(1, 1, 28, 28))
+
+
 ######################################################################
 # Again, from this output, we can see the answer we need is ``64 * 12 * 12``.
 # We can update our model and move to training:
@@ -360,6 +395,7 @@ class Net(torch.nn.Module):
         x = self.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
 
 ######################################################################
 # Conclusion
