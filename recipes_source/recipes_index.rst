@@ -158,6 +158,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Implementing a Keras Progress Bar
+   :card_description: Learn how to implement a Keras progress bar in your model training loop.
+   :image: ../_static/img/thumbnails/cropped/keras-progress-bar.png
+   :link: ../recipes/keras_progress_bar.html
+   :tags: Basics
 
 .. Interpretability
 
@@ -434,3 +440,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
+   /recipes/keras_progress_bar
