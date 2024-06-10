@@ -33,12 +33,13 @@ Inspecting Model Parameters
 #
 from torch import nn
 
+
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(28*28, 512),
+            nn.Linear(28 * 28, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
@@ -49,6 +50,7 @@ class NeuralNetwork(nn.Module):
         x = self.flatten(x)
         logits = self.linear_relu_stack(x)
         return logits
+
 
 model = NeuralNetwork()
 print(model)
@@ -81,7 +83,7 @@ for name, param in model.named_parameters():
 # and output shape (``out_features``) specified in each of the model's layers.
 #
 # Take for example the first ``nn.Linear(28*28, 512)`` module specified:
-layer = nn.Linear(28*28, 512)
+layer = nn.Linear(28 * 28, 512)
 
 for name, param in layer.named_parameters():
     print(name, param.size())
@@ -105,20 +107,22 @@ for name, param in layer.named_parameters():
 # There is also a helpful ``.numel()`` method that can be used to gather
 # the number of elements that are in each model parameter:
 for name, param in model.named_parameters():
-    print(f'{name=}, {param.size()=}, {param.numel()=}')
+    print(f"{name=}, {param.size()=}, {param.numel()=}")
 
 #########################################################################
 # The number of elements for each parameter is calculated by taking
 # the product of the entries of the Size tensor.
 # The ``.numel()`` can be used to find all the parameters in a model by taking
 # the sum across all the layer parameters:
-print(f'Total model params: {sum(p.numel() for p in model.parameters()):,}')
+print(f"Total model params: {sum(p.numel() for p in model.parameters()):,}")
 
 #########################################################################
 # Sometimes, only the *trainable* parameters are of interest.
 # Use the ``requires_grad`` attribute to collect only those parameters
 # that require a gradient to be computed (i.e. those parameters that will be optimized during model training):
-print(f'Total model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
+print(
+    f"Total model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}"
+)
 
 #########################################################################
 # Since all the model weights currently require a gradient, the number
@@ -128,14 +132,17 @@ print(f'Total model trainable params: {sum(p.numel() for p in model.parameters()
 # by setting ``requires_grad=False`` which will result in the trainable
 # parameters count having 401,408 less parameters.
 for name, param in model.named_parameters():
-    if name == 'linear_relu_stack.0.weight':
+    if name == "linear_relu_stack.0.weight":
         param.requires_grad = False
-    print(f'{name=}, {param.size()=}, {param.numel()=}, {param.requires_grad=}')
-print(f'Total model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
+    print(f"{name=}, {param.size()=}, {param.numel()=}, {param.requires_grad=}")
+print(
+    f"Total model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}"
+)
 #########################################################################
 # Inspecting Parameters of a Convolutional Neural Network
 # -------------------------------------------------------
 # These techniques also work for Convolutional Neural Networks:
+
 
 class CNN(nn.Module):
     def __init__(self):
@@ -159,13 +166,16 @@ class CNN(nn.Module):
         x = self.classifier(x)
         return x
 
+
 cnn_model = CNN()
 print(cnn_model)
-print('-'*72)
+print("-" * 72)
 for name, param in cnn_model.named_parameters():
-    print(f'{name=}, {param.size()=}, {param.numel()=}, {param.requires_grad=}')
-print('-'*72)
-print(f'Total model trainable params: {sum(p.numel() for p in cnn_model.parameters() if p.requires_grad):,}')
+    print(f"{name=}, {param.size()=}, {param.numel()=}, {param.requires_grad=}")
+print("-" * 72)
+print(
+    f"Total model trainable params: {sum(p.numel() for p in cnn_model.parameters() if p.requires_grad):,}"
+)
 
 ######################################################################
 # As with the simple network example above, the number of elements per parameter
@@ -173,7 +183,7 @@ print(f'Total model trainable params: {sum(p.numel() for p in cnn_model.paramete
 import numpy as np
 
 for name, param in cnn_model.named_parameters():
-    print(f'{name=}, {param.size()=}, {np.prod(param.size())=} == {param.numel()=}')
+    print(f"{name=}, {param.size()=}, {np.prod(param.size())=} == {param.numel()=}")
 
 ######################################################################
 # For a more robust approach, consider using the `torchinfo package <https://github.com/TylerYep/torchinfo>`__ (formerly ``torch-summary``).
@@ -186,8 +196,10 @@ import torchinfo
 
 # If running from a notebook, use print(torchinfo.summary(model))
 torchinfo.summary(model)
-print('-'*72)
-print(f'Manually gathered model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
+print("-" * 72)
+print(
+    f"Manually gathered model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}"
+)
 ######################################################################
 # There is one minor, but important, difference in the way ``torchinfo`` reports the number of parameters per layer.
 # Notice that the ``weight`` and ``bias`` parameter counts are **combined**
@@ -201,32 +213,35 @@ print(f'Manually gathered model trainable params: {sum(p.numel() for p in model.
 #
 # A similar report can be generated manually by summing parameters per layer:
 from collections import defaultdict
+
 layer_params = defaultdict(int)
 
 for name, param in model.named_parameters():
     # combine weight and bias together using layer name
     # linear_relu_stack.0 = linear_relu_stack.0.weight + linear_relu_stack.bias
-    layer_params[name.rsplit('.', 1)[0]] += param.numel()
+    layer_params[name.rsplit(".", 1)[0]] += param.numel()
 
 for name, total_params in layer_params.items():
-    print(f'{name=} {total_params=:,}')
+    print(f"{name=} {total_params=:,}")
 
 ######################################################################
 # These approaches works for the Convolutional Neural Network as well:
 
 # If running from a notebook, use print(torchinfo.summary(model))
 torchinfo.summary(cnn_model)
-print('-'*72)
-print(f'Manually gathered model trainable params: {sum(p.numel() for p in cnn_model.parameters() if p.requires_grad):,}')
-print('-'*72)
-print('Manually generated total number of parameters per layer:')
+print("-" * 72)
+print(
+    f"Manually gathered model trainable params: {sum(p.numel() for p in cnn_model.parameters() if p.requires_grad):,}"
+)
+print("-" * 72)
+print("Manually generated total number of parameters per layer:")
 cnn_layer_params = defaultdict(int)
 
 for name, param in cnn_model.named_parameters():
-    cnn_layer_params[name.rsplit('.', 1)[0]] += param.numel()
+    cnn_layer_params[name.rsplit(".", 1)[0]] += param.numel()
 
 for name, total_params in cnn_layer_params.items():
-    print(f'{name=} {total_params=:,}')
+    print(f"{name=} {total_params=:,}")
 
 ######################################################################
 # Conclusion
@@ -242,4 +257,3 @@ for name, total_params in cnn_layer_params.items():
 # ---------------
 #
 # * `torchinfo <https://github.com/TylerYep/torchinfo>`__: provides information complementary to what is provided by ``print(model)`` in PyTorch, similar to Tensorflow's model.summary() API.
-
