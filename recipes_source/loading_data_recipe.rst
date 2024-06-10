@@ -1,3 +1,5 @@
+:orphan:
+
 Loading data in PyTorch
 =======================
 
