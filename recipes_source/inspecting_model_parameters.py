@@ -10,9 +10,9 @@ Inspecting Model Parameters
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
 
-      * How to inspect a model's parameters using `.parameters()` and `.named_parameters()`
+      * How to inspect a model's parameters using ``.parameters()`` and ``.named_parameters()``
       * How to collect the trainable parameters of a model
-      * How to use the `torchinfo` package (formerly `torch-summary`) to print a model summary
+      * How to use the ``torchinfo`` package (formerly ``torch-summary``) to print a model summary
 """
 
 #########################################################################
@@ -56,43 +56,43 @@ print(model)
 #########################################################################
 # Layers inside a neural network are parameterized, i.e.
 # have associated weights and biases that are optimized during training.
-# Subclassing `nn.Module` automatically tracks all fields defined
+# Subclassing ``nn.Module`` automatically tracks all fields defined
 # inside a model object, and makes all parameters accessible using a
-# model’s `parameters()` or `named_parameters()` methods.
+# model’s ``parameters()`` or ``named_parameters()`` methods.
 #
 # To inspect the shape of the parameter's associated with each layer in the model,
-# use `model.parameters()`:
+# use ``model.parameters()``:
 print([param.shape for param in model.parameters()])
 
 #########################################################################
 # Sometimes, it's more helpful to be able to have a name associated with
-# the parameters of each layer. Use `model.named_parameters()` to access
+# the parameters of each layer. Use ``model.named_parameters()`` to access
 # the parameter name in addition to the shape:
 for name, param in model.named_parameters():
     print(name, param.shape)
 
 #########################################################################
-# Notice that the parameters are collected from the `nn.Linear` modules
-# specified in the network. Because the default behavior for `nn.Linear`
-# is to include a bias term, the output shows both a `weight` and `bias`
-# parameter for each of the `nn.Linear` modules.
+# Notice that the parameters are collected from the ``nn.Linear`` modules
+# specified in the network. Because the default behavior for ``nn.Linear``
+# is to include a bias term, the output shows both a ``weight`` and ``bias``
+# parameter for each of the ``nn.Linear`` modules.
 #
-# The shape of these parameters relate to the input shape (`in_features`)
-# and output shape (`out_features`) specified in each of the model's layers.
+# The shape of these parameters relate to the input shape (``in_features``)
+# and output shape (``out_features``) specified in each of the model's layers.
 #
-# Take for example the first `nn.Linear(28*28, 512)` module specified:
+# Take for example the first ``nn.Linear(28*28, 512)`` module specified:
 layer = nn.Linear(28*28, 512)
 
 for name, param in layer.named_parameters():
     print(name, param.size())
 
 #########################################################################
-# The first line from the printed `model.named_parameters()` section
-# (`linear_relu_stack.0.weight torch.Size([512, 784])`) specifies
-# the `weight` associated with this layer.
-# The second line from the printed `model.named_parameters()` section
-# (`linear_relu_stack.0.bias torch.Size([512])`) specifies
-# the `bias` associated with this layer. The printed statements using `.named_parameters()`
+# The first line from the printed ``model.named_parameters()`` section
+# (``linear_relu_stack.0.weight torch.Size([512, 784])``) specifies
+# the ``weight`` associated with this layer.
+# The second line from the printed ``model.named_parameters()`` section
+# (``linear_relu_stack.0.bias torch.Size([512])``) specifies
+# the ``bias`` associated with this layer. The printed statements using ``.named_parameters()``
 # are *not* meant to report the original shapes of the model's **layers**
 # but the shape of the **weights** (and/or **biases**) of the **parameters of the layers**.
 # This can cause confusion for new practitioners since the shape of the weights
@@ -102,7 +102,7 @@ for name, param in layer.named_parameters():
 # docstring).
 
 #########################################################################
-# There is also a helpful `.numel()` method that can be used to gather
+# There is also a helpful ``.numel()`` method that can be used to gather
 # the number of elements that are in each model parameter:
 for name, param in model.named_parameters():
     print(f'{name=}, {param.size()=}, {param.numel()=}')
@@ -110,13 +110,13 @@ for name, param in model.named_parameters():
 #########################################################################
 # The number of elements for each parameter is calculated by taking
 # the product of the entries of the Size tensor.
-# The `.numel()` can be used to find all the parameters in a model by taking
+# The ``.numel()`` can be used to find all the parameters in a model by taking
 # the sum across all the layer parameters:
 print(f'Total model params: {sum(p.numel() for p in model.parameters()):,}')
 
 #########################################################################
 # Sometimes, only the *trainable* parameters are of interest.
-# Use the `requires_grad` attribute to collect only those parameters
+# Use the ``requires_grad`` attribute to collect only those parameters
 # that require a gradient to be computed (i.e. those parameters that will be optimized during model training):
 print(f'Total model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
 
@@ -124,8 +124,8 @@ print(f'Total model trainable params: {sum(p.numel() for p in model.parameters()
 # Since all the model weights currently require a gradient, the number
 # of trainable parameters are the same as the total number of model
 # parameters. Simply for educational purposes, parameters can be frozen
-# to show a difference in count. Below, the first linear layer's `weight` parameters are frozen
-# by setting `requires_grad=False` which will result in the trainable
+# to show a difference in count. Below, the first linear layer's ``weight`` parameters are frozen
+# by setting ``requires_grad=False`` which will result in the trainable
 # parameters count having 401,408 less parameters.
 for name, param in model.named_parameters():
     if name == 'linear_relu_stack.0.weight':
@@ -176,11 +176,11 @@ for name, param in cnn_model.named_parameters():
     print(f'{name=}, {param.size()=}, {np.prod(param.size())=} == {param.numel()=}')
 
 ######################################################################
-# For a more robust approach, consider using the `torchinfo package <https://github.com/TylerYep/torchinfo>`__ (formerly `torch-summary`).
-# This package provides information complementary to what is provided by `print(model)` in PyTorch,
-# similar to Tensorflow's `model.summary()` API to view the visualization of the model.
+# For a more robust approach, consider using the `torchinfo package <https://github.com/TylerYep/torchinfo>`__ (formerly ``torch-summary``).
+# This package provides information complementary to what is provided by ``print(model)`` in PyTorch,
+# similar to Tensorflow's ``model.summary()`` API to view the visualization of the model.
 #
-# Notice that the trainable parameters reported by `torchinfo` matches
+# Notice that the trainable parameters reported by ``torchinfo`` matches
 # the manually gathered trainable parameters.
 import torchinfo
 
@@ -189,15 +189,15 @@ torchinfo.summary(model)
 print('-'*72)
 print(f'Manually gathered model trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
 ######################################################################
-# There is one minor, but important, difference in the way `torchinfo` reports the number of parameters per layer.
-# Notice that the `weight` and `bias` parameter counts are **combined**
+# There is one minor, but important, difference in the way ``torchinfo`` reports the number of parameters per layer.
+# Notice that the ``weight`` and ``bias`` parameter counts are **combined**
 # to report on the *total* number of parameters per layer.
-# For example, the first linear layer of the `model` created in the
+# For example, the first linear layer of the ``model`` created in the
 # "Inspecting Parameters of a Simple Neural Network" section has a
-# `weight` parameter with `401,408` elements and a `bias` parameter
-# with `512`. Combining these two yields a total
-# of `401,920` (`401,408+512`) parameters for the layer -- which is
-# equivalent to what the `torchinfo` summary showed.
+# ``weight`` parameter with ``401,408`` elements and a ``bias`` parameter
+# with ``512``. Combining these two yields a total
+# of ``401,920`` (``401,408+512``) parameters for the layer -- which is
+# equivalent to what the ``torchinfo`` summary showed.
 #
 # A similar report can be generated manually by summing parameters per layer:
 from collections import defaultdict
@@ -234,12 +234,12 @@ for name, total_params in cnn_layer_params.items():
 #
 # Layers inside a neural network have associated weights and biases
 # that are optimized during training. These parameters (model weights)
-# are made accessible using a model’s `parameters()` or `named_parameters()`
+# are made accessible using a model’s ``parameters()`` or ``named_parameters()``
 # methods. Interacting with these parameters can help inform model
 # architecture decisions or support model debugging.
 #
 # Further Reading
 # ---------------
 #
-# * `torchinfo <https://github.com/TylerYep/torchinfo>`__: provides information complementary to what is provided by `print(model)` in PyTorch, similar to Tensorflow's model.summary() API.
+# * `torchinfo <https://github.com/TylerYep/torchinfo>`__: provides information complementary to what is provided by ``print(model)`` in PyTorch, similar to Tensorflow's model.summary() API.
 
