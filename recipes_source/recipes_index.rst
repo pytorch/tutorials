@@ -407,7 +407,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. toctree::
    :hidden:
 
-   /recipes/recipes/loading_data_recipe
+   /recipes/loading_data_recipe
    /recipes/recipes/defining_a_neural_network
    /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
