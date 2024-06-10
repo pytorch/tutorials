@@ -322,7 +322,7 @@ with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bf
 ###############################################################################
 # Enable Tensor cores
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# Tensor cores are specialized hardware to compute matrix-matrix multiplication
+# Tensor cores are specialized hardware designed to compute matrix-matrix multiplication
 # operations which neural network operation can take advantage of.
 #
 # Hardware tensor core operations tend to use a different floating point format
