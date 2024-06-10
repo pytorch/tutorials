@@ -382,14 +382,12 @@ def get_transform(train):
 # expects during training and inference time on sample data.
 import utils
 
-
 model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights="DEFAULT")
 dataset = PennFudanDataset('data/PennFudanPed', get_transform(train=True))
 data_loader = torch.utils.data.DataLoader(
     dataset,
     batch_size=2,
     shuffle=True,
-    num_workers=4,
     collate_fn=utils.collate_fn
 )
 
@@ -433,7 +431,6 @@ data_loader = torch.utils.data.DataLoader(
     dataset,
     batch_size=2,
     shuffle=True,
-    num_workers=4,
     collate_fn=utils.collate_fn
 )
 
@@ -441,7 +438,6 @@ data_loader_test = torch.utils.data.DataLoader(
     dataset_test,
     batch_size=1,
     shuffle=False,
-    num_workers=4,
     collate_fn=utils.collate_fn
 )
 
