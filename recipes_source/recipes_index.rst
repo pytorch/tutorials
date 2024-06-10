@@ -34,7 +34,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: Loading data in PyTorch
    :card_description: Learn how to use PyTorch packages to prepare and load common datasets for your model.
    :image: ../_static/img/thumbnails/cropped/loading-data.PNG
-   :link: ../recipes/recipes/loading_data_recipe.html
+   :link: ../beginner/basics/data_tutorial.html
    :tags: Basics
 
 
