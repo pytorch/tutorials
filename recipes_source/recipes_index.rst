@@ -158,6 +158,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Calculating Output Dimensions for Convolutional and Pooling Layers
+   :card_description: Learn how to transition from convolution and pooling layers to linear layers in a model.
+   :image: ../_static/img/thumbnails/cropped/calc-layer-output-dims.png
+   :link: ../recipes/calculating_layer_output_dimensions.html
+   :tags: Basics
 
 .. Interpretability
 
@@ -434,3 +440,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
+    /recipes/calculating_layer_output_dimensions
