@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Inspecting Model Parameters Tutorial
-====================================
+Inspecting Model Parameters
+===========================
 
 **Author:** `Logan Thomas <https://github.com/loganthomas>`_
 
