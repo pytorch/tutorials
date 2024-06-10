@@ -1,7 +1,7 @@
-Intel® Extension for PyTorch* Backend
-=====================================
+Intel® Extension for PyTorch* Backend on Intel® CPUs
+====================================================
 
-To work better with `torch.compile`, Intel® Extension for PyTorch* implements a backend ``ipex``. 
+To work better with `torch.compile` on Intel® CPUs, Intel® Extension for PyTorch* implements a backend ``ipex``.
 It targets to improve hardware resource usage efficiency on Intel platforms for better performance.
 The `ipex` backend is implemented with further customizations designed in Intel® Extension for
 PyTorch* for the model compilation.
