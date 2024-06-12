@@ -107,7 +107,7 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 
 # Load pretrained model weights
 model_url = 'https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth'
-batch_size = 1    # just a random number
+batch_size = 64    # just a random number
 
 # Initialize model with the pretrained weights
 map_location = lambda storage, loc: storage
@@ -218,6 +218,21 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 # ONNX exporter, so please contact us in that case.
 #
 
+#Timing comparison
+import time
+
+x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
+
+start = time.time()
+torch_out = torch_model(x)
+end = time.time()
+print(f"Inference used {end - start} seconds")
+
+start = time.time()
+ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
+ort_outs = ort_session.run(None, ort_inputs)
+end = time.time()
+print(f"Inference used {end - start} seconds")
 
 ######################################################################
 # Running the model on an image using ONNX Runtime
