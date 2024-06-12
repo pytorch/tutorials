@@ -226,13 +226,13 @@ x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
 start = time.time()
 torch_out = torch_model(x)
 end = time.time()
-print(f"Inference used {end - start} seconds")
+print(f"Inference of Pytorch model used {end - start} seconds")
 
 start = time.time()
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
 ort_outs = ort_session.run(None, ort_inputs)
 end = time.time()
-print(f"Inference used {end - start} seconds")
+print(f"Inference of ONNX model used {end - start} seconds")
 
 ######################################################################
 # Running the model on an image using ONNX Runtime
