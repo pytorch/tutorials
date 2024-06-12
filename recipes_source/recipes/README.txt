@@ -16,12 +16,12 @@ PyTorch Recipes
 	 Saving and loading models for inference in PyTorch
          https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html
 
-5. custom_dataset_transforms_loader.py 
+5. custom_dataset_transforms_loader.py
 	 Developing Custom PyTorch Dataloaders
          https://pytorch.org/tutorials/recipes/recipes/custom_dataset_transforms_loader.html
 
 
-6. Captum_Recipe.py 
+6. Captum_Recipe.py
 	 Model Interpretability using Captum
          https://pytorch.org/tutorials/recipes/recipes/Captum_Recipe.html
 
@@ -45,7 +45,7 @@ PyTorch Recipes
          Saving and loading multiple models in one file using PyTorch
          https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html
 
-12. warmstarting_model_using_parameters_from_a_different_model.py 
+12. warmstarting_model_using_parameters_from_a_different_model.py
          Warmstarting models using parameters from different model
          https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html
 
@@ -60,3 +60,7 @@ PyTorch Recipes
 15. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+16. inspecting_model_parameters.py
+         Inspecting Model Parameters
+         https://pytorch.org/tutorials/recipes/inspecting_model_parameters.html
