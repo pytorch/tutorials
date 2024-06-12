@@ -767,7 +767,8 @@ CPU affinity setting controls how workloads are distributed over multiple cores.
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span>N
 </pre></div>
 </div>
-<p>Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. <code class="docutils literal notranslate"><span class="pre">OMP_PROC_BIND</span></code> specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. <code class="docutils literal notranslate"><span class="pre">OMP_SCHEDULE</span></code> determines how OpenMP threads are scheduled. <code class="docutils literal notranslate"><span class="pre">GOMP_CPU_AFFINITY</span></code> binds threads to specific CPUs.</p>
+<p>Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. <code class="docutils literal notranslate"><span class="pre">OMP_PROC_BIND</span></code> specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. <code class="docutils literal notranslate"><span class="pre">OMP_SCHEDULE</span></code> determines how OpenMP threads are scheduled. <code class="docutils literal notranslate"><span class="pre">GOMP_CPU_AFFINITY</span></code> binds threads to specific CPUs.
+An important tuning parameter is core pinning which prevent the threads of migrating between multiple CPUs, enhancing data location and minimizing inter core communication.</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OMP_SCHEDULE</span><span class="o">=</span>STATIC
 <span class="nb">export</span><span class="w"> </span><span class="nv">OMP_PROC_BIND</span><span class="o">=</span>CLOSE
 <span class="nb">export</span><span class="w"> </span><span class="nv">GOMP_CPU_AFFINITY</span><span class="o">=</span><span class="s2">&quot;N-M&quot;</span>
@@ -859,6 +860,33 @@ The following code snippets serves as an example of using <code class="docutils 
 </div>
 <div class="section" id="gpu-specific-optimizations">
 <h2>GPU specific optimizations<a class="headerlink" href="#gpu-specific-optimizations" title="Permalink to this heading">¶</a></h2>
+<div class="section" id="enable-tensor-cores">
+<h3>Enable Tensor cores<a class="headerlink" href="#enable-tensor-cores" title="Permalink to this heading">¶</a></h3>
+<p>Tensor cores are specialized hardware designed to compute matrix-matrix multiplication
+operations, primarily utilized in deep learning and AI workloads. Tensor cores have
+specific precision requirements which can be adjusted manually or via the Automatic
+Mixed Precision API.</p>
+<p>In particular, tensor operations take advantage of lower precision workloads.
+Which can be controlled via <code class="docutils literal notranslate"><span class="pre">torch.set_float32_matmul_precision</span></code>.
+The default format is set to ‘highest,’ which utilizes the tensor data type.
+However, PyTorch offers alternative precision settings: ‘high’ and ‘medium.’
+These options prioritize computational speed over numerical precision.”</p>
+</div>
+<div class="section" id="use-cuda-graphs">
+<h3>Use CUDA Graphs<a class="headerlink" href="#use-cuda-graphs" title="Permalink to this heading">¶</a></h3>
+<p>At the time of using a GPU, work first must be launched from the CPU and
+in some cases the context switch between CPU and GPU can lead to bad resource
+utilization. CUDA graphs are a way to keep computation within the GPU without
+paying the extra cost of kernel launches and host synchronization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># It can be enabled using</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;reduce-overhead&quot;</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;max-autotune&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Support for CUDA graph is in development, and its usage can incur in increased
+device memory consumption and some models might not compile.</p>
+</div>
 <div class="section" id="enable-cudnn-auto-tuner">
 <h3>Enable cuDNN auto-tuner<a class="headerlink" href="#enable-cudnn-auto-tuner" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference external" href="https://developer.nvidia.com/cudnn">NVIDIA cuDNN</a> supports many algorithms
@@ -1124,6 +1152,8 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </ul>
 </li>
 <li><a class="reference internal" href="#gpu-specific-optimizations">GPU specific optimizations</a><ul>
+<li><a class="reference internal" href="#enable-tensor-cores">Enable Tensor cores</a></li>
+<li><a class="reference internal" href="#use-cuda-graphs">Use CUDA Graphs</a></li>
 <li><a class="reference internal" href="#enable-cudnn-auto-tuner">Enable cuDNN auto-tuner</a></li>
 <li><a class="reference internal" href="#avoid-unnecessary-cpu-gpu-synchronization">Avoid unnecessary CPU-GPU synchronization</a></li>
 <li><a class="reference internal" href="#create-tensors-directly-on-the-target-device">Create tensors directly on the target device</a></li>

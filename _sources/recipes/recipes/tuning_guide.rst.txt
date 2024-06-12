@@ -263,9 +263,10 @@ With the following command, PyTorch run the task on N OpenMP threads.
 
    export OMP_NUM_THREADS=N
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-222
+.. GENERATED FROM PYTHON SOURCE LINES 215-223
 
 Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. ``OMP_PROC_BIND`` specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. ``OMP_SCHEDULE`` determines how OpenMP threads are scheduled. ``GOMP_CPU_AFFINITY`` binds threads to specific CPUs.
+An important tuning parameter is core pinning which prevent the threads of migrating between multiple CPUs, enhancing data location and minimizing inter core communication.
 
 .. code-block:: sh
 
@@ -273,7 +274,7 @@ Typically, the following environment variables are used to set for CPU affinity 
    export OMP_PROC_BIND=CLOSE
    export GOMP_CPU_AFFINITY="N-M"
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-231
+.. GENERATED FROM PYTHON SOURCE LINES 225-232
 
 Intel OpenMP Runtime Library (``libiomp``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,7 +284,7 @@ By default, PyTorch uses GNU OpenMP (GNU ``libgomp``) for parallel computation. 
 
    export LD_PRELOAD=<path>/libiomp5.so:$LD_PRELOAD
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-241
+.. GENERATED FROM PYTHON SOURCE LINES 234-242
 
 Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in ``libiomp`` to control CPU affinity settings.
 ``KMP_AFFINITY`` binds OpenMP threads to physical processing units. ``KMP_BLOCKTIME`` sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting ``KMP_BLOCKTIME`` to 1 or 0 yields good performances.
@@ -294,7 +295,7 @@ The following commands show a common settings with Intel OpenMP Runtime Library.
    export KMP_AFFINITY=granularity=fine,compact,1,0
    export KMP_BLOCKTIME=1
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-251
+.. GENERATED FROM PYTHON SOURCE LINES 244-252
 
 Switch Memory allocator
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -305,7 +306,7 @@ Use environment variable ``LD_PRELOAD`` to take advantage of one of them.
 
    export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-261
+.. GENERATED FROM PYTHON SOURCE LINES 254-262
 
 Use oneDNN Graph with TorchScript for inference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,7 +317,7 @@ A model should be JIT-traced using an example input.
 Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
 The example code-snippets below are for resnet50, but they can very well be extended to use oneDNN Graph with custom models as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-265
+.. GENERATED FROM PYTHON SOURCE LINES 262-266
 
 .. code-block:: default
 
@@ -325,12 +326,12 @@ The example code-snippets below are for resnet50, but they can very well be exte
     torch.jit.enable_onednn_fusion(True)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-268
+.. GENERATED FROM PYTHON SOURCE LINES 267-269
 
 Using the oneDNN Graph API requires just one extra line of code for inference with Float32.
 If you are using oneDNN Graph, please avoid calling ``torch.jit.optimize_for_inference``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-279
+.. GENERATED FROM PYTHON SOURCE LINES 269-280
 
 .. code-block:: default
 
@@ -346,11 +347,11 @@ If you are using oneDNN Graph, please avoid calling ``torch.jit.optimize_for_inf
     traced_model = torch.jit.freeze(traced_model)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-281
+.. GENERATED FROM PYTHON SOURCE LINES 281-282
 
 Once a model is JIT-traced with a sample input, it can then be used for inference after a couple of warm-up runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-289
+.. GENERATED FROM PYTHON SOURCE LINES 282-290
 
 .. code-block:: default
 
@@ -363,14 +364,14 @@ Once a model is JIT-traced with a sample input, it can then be used for inferenc
         traced_model(*sample_input)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-294
+.. GENERATED FROM PYTHON SOURCE LINES 291-295
 
 While the JIT fuser for oneDNN Graph also supports inference with ``BFloat16`` datatype,
 performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16
 instruction set architecture (ISA).
 The following code snippets serves as an example of using ``BFloat16`` datatype for inference with oneDNN Graph:
 
-.. GENERATED FROM PYTHON SOURCE LINES 294-312
+.. GENERATED FROM PYTHON SOURCE LINES 295-313
 
 .. code-block:: default
 
@@ -393,18 +394,58 @@ The following code snippets serves as an example of using ``BFloat16`` datatype 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 313-316
+.. GENERATED FROM PYTHON SOURCE LINES 314-317
 
 Train a model on CPU with PyTorch ``DistributedDataParallel``(DDP) functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) ``oneCCL`` (collective communications library) for efficient distributed deep learning training implementing such collectives like ``allreduce``, ``allgather``, ``alltoall``, implements PyTorch C10D ``ProcessGroup`` API and can be dynamically loaded as external ``ProcessGroup``. Upon optimizations implemented in PyTorch DDP module, ``torch-ccl`` accelerates communication operations. Beside the optimizations made to communication kernels, ``torch-ccl`` also features simultaneous computation-communication functionality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 318-320
+.. GENERATED FROM PYTHON SOURCE LINES 319-321
 
 GPU specific optimizations
 --------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 322-330
+.. GENERATED FROM PYTHON SOURCE LINES 323-335
+
+Enable Tensor cores
+~~~~~~~~~~~~~~~~~~~~~~~
+Tensor cores are specialized hardware designed to compute matrix-matrix multiplication
+operations, primarily utilized in deep learning and AI workloads. Tensor cores have
+specific precision requirements which can be adjusted manually or via the Automatic
+Mixed Precision API.
+
+In particular, tensor operations take advantage of lower precision workloads.
+Which can be controlled via ``torch.set_float32_matmul_precision``.
+The default format is set to 'highest,' which utilizes the tensor data type. 
+However, PyTorch offers alternative precision settings: 'high' and 'medium.'
+These options prioritize computational speed over numerical precision."
+
+.. GENERATED FROM PYTHON SOURCE LINES 337-343
+
+Use CUDA Graphs
+~~~~~~~~~~~~~~~~~~~~~~~
+At the time of using a GPU, work first must be launched from the CPU and
+in some cases the context switch between CPU and GPU can lead to bad resource
+utilization. CUDA graphs are a way to keep computation within the GPU without
+paying the extra cost of kernel launches and host synchronization.
+
+.. GENERATED FROM PYTHON SOURCE LINES 343-349
+
+.. code-block:: default
+
+
+    # It can be enabled using 
+    torch.compile(m, "reduce-overhead")
+    # or
+    torch.compile(m, "max-autotune")
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 350-352
+
+Support for CUDA graph is in development, and its usage can incur in increased
+device memory consumption and some models might not compile.
+
+.. GENERATED FROM PYTHON SOURCE LINES 354-362
 
 Enable cuDNN auto-tuner
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -415,14 +456,14 @@ kernel with the best performance on a given hardware for a given input size.
 For convolutional networks (other types currently not supported), enable cuDNN
 autotuner before launching the training loop by setting:
 
-.. GENERATED FROM PYTHON SOURCE LINES 330-332
+.. GENERATED FROM PYTHON SOURCE LINES 362-364
 
 .. code-block:: default
 
 
     torch.backends.cudnn.benchmark = True
 
-.. GENERATED FROM PYTHON SOURCE LINES 333-340
+.. GENERATED FROM PYTHON SOURCE LINES 365-372
 
 * the auto-tuner decisions may be non-deterministic; different algorithm may
   be selected for different runs.  For more details see
@@ -432,7 +473,7 @@ autotuner before launching the training loop by setting:
   associated with algorithm selection for each input size.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 343-359
+.. GENERATED FROM PYTHON SOURCE LINES 375-391
 
 Avoid unnecessary CPU-GPU synchronization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,7 +492,7 @@ When possible, avoid operations which require synchronizations, for example:
   tensors e.g. ``if (cuda_tensor != 0).all()``
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 361-373
+.. GENERATED FROM PYTHON SOURCE LINES 393-405
 
 Create tensors directly on the target device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -466,7 +507,7 @@ This is applicable to all functions which create new tensors and accept
 `torch.full() <https://pytorch.org/docs/stable/generated/torch.full.html#torch.full>`_
 and similar.
 
-.. GENERATED FROM PYTHON SOURCE LINES 375-405
+.. GENERATED FROM PYTHON SOURCE LINES 407-437
 
 Use mixed precision and AMP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -499,7 +540,7 @@ To use Tensor Cores:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 407-431
+.. GENERATED FROM PYTHON SOURCE LINES 439-463
 
 Preallocate memory in case of variable input length
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -526,12 +567,12 @@ following steps:
 #. proceed to regular training
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 433-435
+.. GENERATED FROM PYTHON SOURCE LINES 465-467
 
 Distributed optimizations
 -------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 437-448
+.. GENERATED FROM PYTHON SOURCE LINES 469-480
 
 Use efficient data-parallel backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -545,7 +586,7 @@ multiple-GPUs. For more information refer to the
 `relevant section of CUDA Best Practices <https://pytorch.org/docs/stable/notes/cuda.html#use-nn-parallel-distributeddataparallel-instead-of-multiprocessing-or-nn-dataparallel>`_
 from PyTorch documentation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 450-466
+.. GENERATED FROM PYTHON SOURCE LINES 482-498
 
 Skip unnecessary all-reduce if training with ``DistributedDataParallel`` and gradient accumulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -564,7 +605,7 @@ context manager which disables gradient all-reduce for particular iteration.
 accumulation, the last iteration should follow the default execution and
 perform the required gradient all-reduce.
 
-.. GENERATED FROM PYTHON SOURCE LINES 468-488
+.. GENERATED FROM PYTHON SOURCE LINES 500-520
 
 Match the order of layers in constructors and during the execution if using ``DistributedDataParallel(find_unused_parameters=True)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -587,7 +628,7 @@ operations encountered during the backward pass. With
 ``find_unused_parameters=False`` it's not necessary to reorder layers or
 parameters to achieve optimal performance.
 
-.. GENERATED FROM PYTHON SOURCE LINES 490-507
+.. GENERATED FROM PYTHON SOURCE LINES 522-539
 
 Load-balance workload in a distributed setting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
