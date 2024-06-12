@@ -135,7 +135,7 @@ def init_model():
 ######################################################################
 # First, let's compare inference.
 #
-# Note that in the call to ``torch.compile``, we have the additional
+# Note that in the call to ``torch.compile``, we have have the additional
 # ``mode`` argument, which we will discuss below.
 
 model = init_model()
