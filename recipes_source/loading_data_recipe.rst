@@ -7,4 +7,4 @@ The content is deprecated. See `Datasets & DataLoaders <https://pytorch.org/tuto
 
 .. raw:: html
 
-   <meta http-equiv="Refresh" content="0; url='https://pytorch.org/tutorials/beginner/basics/data_tutorial.html'" />
+   <meta http-equiv="Refresh" content="1; url='https://pytorch.org/tutorials/beginner/basics/data_tutorial.html'" />
