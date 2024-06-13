@@ -283,6 +283,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: Config Optimization on Intel® Xeon
+   :card_description: How to use the script for optimizing configurations on Intel® Xeon CPUs.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/xeon_run_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
    :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
