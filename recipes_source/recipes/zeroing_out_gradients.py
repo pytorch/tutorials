@@ -44,23 +44,23 @@ they aren’t already available.
 ######################################################################
 # Steps
 # -----
-# 
+#
 # Steps 1 through 4 set up our data and neural network for training. The
 # process of zeroing out the gradients happens in step 5. If you already
 # have your data and neural network built, skip to 5.
-# 
+#
 # 1. Import all necessary libraries for loading our data
 # 2. Load and normalize the dataset
 # 3. Build the neural network
 # 4. Define the loss function
 # 5. Zero the gradients while training the network
-# 
+#
 # 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # For this recipe, we will just be using ``torch`` and ``torchvision`` to
 # access the dataset.
-# 
+#
 
 import torch
 
@@ -76,10 +76,10 @@ import torchvision.transforms as transforms
 ######################################################################
 # 2. Load and normalize the dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # PyTorch features various built-in datasets (see the Loading Data recipe
 # for more information).
-# 
+#
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -102,10 +102,10 @@ classes = ('plane', 'car', 'bird', 'cat',
 ######################################################################
 # 3. Build the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # We will use a convolutional neural network. To learn more see the
 # Defining a Neural Network recipe.
-# 
+#
 
 class Net(nn.Module):
     def __init__(self):
@@ -130,9 +130,9 @@ class Net(nn.Module):
 ######################################################################
 # 4. Define a Loss function and optimizer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Let’s use a Classification Cross-Entropy loss and SGD with momentum.
-# 
+#
 
 net = Net()
 criterion = nn.CrossEntropyLoss()
@@ -142,14 +142,14 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 ######################################################################
 # 5. Zero the gradients while training the network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # This is when things start to get interesting. We simply have to loop
 # over our data iterator, and feed the inputs to the network and optimize.
-# 
+#
 # Notice that for each entity of data, we zero out the gradients. This is
 # to ensure that we aren’t tracking any unnecessary information when we
 # train our neural network.
-# 
+#
 
 for epoch in range(2):  # loop over the dataset multiple times
 
@@ -181,13 +181,13 @@ print('Finished Training')
 # You can also use ``model.zero_grad()``. This is the same as using
 # ``optimizer.zero_grad()`` as long as all your model parameters are in
 # that optimizer. Use your best judgment to decide which one to use.
-# 
+#
 # Congratulations! You have successfully zeroed out gradients PyTorch.
-# 
+#
 # Learn More
 # ----------
-# 
+#
 # Take a look at these other recipes to continue your learning:
-# 
-# - `Loading data in PyTorch <https://pytorch.org/tutorials/recipes/recipes/loading_data_recipe.html>`__
+#
+# - `Loading data in PyTorch <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__
 # - `Saving and loading models across devices in PyTorch <https://pytorch.org/tutorials/recipes/recipes/save_load_across_devices.html>`__
