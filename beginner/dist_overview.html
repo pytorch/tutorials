@@ -477,11 +477,7 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="pytorch-distributed-overview">
 <h1>PyTorch Distributed Overview<a class="headerlink" href="#pytorch-distributed-overview" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a></p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;"/></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst">github</a>.</p>
-</div>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/wconstab/">Will Constable</a></p>
 <p>This is the overview page for the <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> package. The goal of
 this page is to categorize documents into different topics and briefly
 describe each of them. If this is your first time building distributed training
@@ -489,199 +485,85 @@ applications using PyTorch, it is recommended to use this document to navigate
 to the technology that can best serve your use case.</p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>As of PyTorch v1.6.0, features in <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> can be categorized into
-three main components:</p>
+<p>The PyTorch Distributed library includes a collective of parallelism modules,
+a communications layer, and infrastructure for launching and
+debugging large training jobs.</p>
+<div class="section" id="parallelism-apis">
+<h3>Parallelism APIs<a class="headerlink" href="#parallelism-apis" title="Permalink to this heading">¶</a></h3>
+<p>These Parallelism Modules offer high-level functionality and compose with existing models:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">Distributed Data-Parallel Training</a>
-(DDP) is a widely adopted single-program multiple-data training paradigm. With
-DDP, the model is replicated on every process, and every model replica will be
-fed with a different set of input data samples. DDP takes care of gradient
-communication to keep model replicas synchronized and overlaps it with the
-gradient computations to speed up training.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">RPC-Based Distributed Training</a>
-(RPC) supports general training structures that cannot fit into
-data-parallel training such as distributed pipeline parallelism, parameter
-server paradigm, and combinations of DDP with other training paradigms. It
-helps manage remote object lifetime and extends the
-<a class="reference external" href="https://pytorch.org/docs/stable/autograd.html">autograd engine</a> beyond
-machine boundaries.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">Collective Communication</a>
-(c10d) library supports sending tensors across processes within a group. It
-offers both collective communication APIs (e.g.,
-<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_reduce">all_reduce</a>
-and <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_gather">all_gather</a>)
-and P2P communication APIs (e.g.,
-<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.send">send</a>
-and <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.isend">isend</a>).
-DDP and RPC (<a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#process-group-backend">ProcessGroup Backend</a>)
-are built on c10d, where the former uses collective communications
-and the latter uses P2P communications. Usually, developers do not need to
-directly use this raw communication API, as the DDP and RPC APIs can serve
-many distributed training scenarios. However, there are use cases where this API
-is still helpful. One example would be distributed parameter averaging, where
-applications would like to compute the average values of all model parameters
-after the backward pass instead of using DDP to communicate gradients. This can
-decouple communications from computations and allow finer-grain control over
-what to communicate, but on the other hand, it also gives up the performance
-optimizations offered by DDP.
-<a class="reference external" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a>
-shows examples of using c10d communication APIs.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">Distributed Data-Parallel (DDP)</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">Fully Sharded Data-Parallel Training (FSDP)</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">Tensor Parallel (TP)</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/main/distributed.pipelining.html">Pipeline Parallel (PP)</a></p></li>
 </ul>
 </div>
-<div class="section" id="data-parallel-training">
-<h2>Data Parallel Training<a class="headerlink" href="#data-parallel-training" title="Permalink to this heading">¶</a></h2>
-<p>PyTorch provides several options for data-parallel training. For applications
-that gradually grow from simple to complex and from prototype to production, the
-common development trajectory would be:</p>
+<div class="section" id="sharding-primitives">
+<h3>Sharding primitives<a class="headerlink" href="#sharding-primitives" title="Permalink to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">DTensor</span></code> and <code class="docutils literal notranslate"><span class="pre">DeviceMesh</span></code> are primitives used to build parallelism in terms of sharded or replicated tensors on N-dimensional process groups.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/README.md">DTensor</a> represents a tensor that is sharded and/or replicated, and communicates automatically to reshard tensors as needed by operations.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#devicemesh">DeviceMesh</a> abstracts the accelerator device communicators into a multi-dimensional array, which manages the underlying <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> instances for collective communications in multi-dimensional parallelisms.  Try out our <a class="reference external" href="https://pytorch.org/tutorials/recipes/distributed_device_mesh.html">Device Mesh Recipe</a> to learn more.</p></li>
+</ul>
+</div>
+<div class="section" id="communications-apis">
+<h3>Communications APIs<a class="headerlink" href="#communications-apis" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>The <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">PyTorch distributed communication layer (C10D)</a> offers both collective communication APIs (e.g., <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_reduce">all_reduce</a></dt><dd><p>and <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_gather">all_gather</a>)
+and P2P communication APIs (e.g.,
+<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.send">send</a>
+and <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.isend">isend</a>),
+which are used under the hood in all of the parallelism implementations.
+<a class="reference external" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a>
+shows examples of using c10d communication APIs.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="launcher">
+<h3>Launcher<a class="headerlink" href="#launcher" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a> is a widely-used launcher script, which spawns processes on the local and remote machines for running distributed PyTorch programs.</p>
+</div>
+</div>
+<div class="section" id="applying-parallelism-to-scale-your-model">
+<h2>Applying Parallelism To Scale Your Model<a class="headerlink" href="#applying-parallelism-to-scale-your-model" title="Permalink to this heading">¶</a></h2>
+<p>Data Parallelism is a widely adopted single-program multiple-data training paradigm
+where the model is replicated on every process, every model replica computes local gradients for
+a different set of input data samples, gradients are averaged within the data-parallel communicator group before each optimizer step.</p>
+<p>Model Parallelism techniques (or Sharded Data Parallelism) are required when a model doesn’t fit in GPU, and can be combined together to form multi-dimensional (N-D) parallelism techniques.</p>
+<p>When deciding what parallelism techniques to choose for your model, use these common guidelines:</p>
 <ol class="arabic simple">
-<li><p>Use single-device training if the data and model can fit in one GPU, and
-training speed is not a concern.</p></li>
-<li><p>Use single-machine multi-GPU
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html">DataParallel</a>
-to make use of multiple GPUs on a single machine to speed up training with
-minimal code changes.</p></li>
-<li><p>Use single-machine multi-GPU
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>,
-if you would like to further speed up training and are willing to write a
-little more code to set it up.</p></li>
-<li><p>Use multi-machine <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>
-and the <a class="reference external" href="https://github.com/pytorch/examples/blob/master/distributed/ddp/README.md">launching script</a>,
-if the application needs to scale across machine boundaries.</p></li>
-<li><p>Use multi-GPU <a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">FullyShardedDataParallel</a>
-training on a single-machine or multi-machine when the data and model cannot
-fit on one GPU.</p></li>
-<li><p>Use <a class="reference external" href="https://pytorch.org/docs/stable/distributed.elastic.html">torch.distributed.elastic</a>
-to launch distributed training if errors (e.g., out-of-memory) are expected or if
-resources can join and leave dynamically during training.</p></li>
+<li><p>Use <a class="reference external" href="https://pytorch.org/docs/stable/notes/ddp.html">DistributedDataParallel (DDP)</a>,
+if your model fits in a single GPU but you want to easily scale up training using multiple GPUs.</p>
+<ul class="simple">
+<li><p>Use <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a>, to launch multiple pytorch processes if you are you using more than one node.</p></li>
+<li><p>See also: <a class="reference external" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></p></li>
+</ul>
+</li>
+<li><p>Use <a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">FullyShardedDataParallel (FSDP)</a> when your model cannot fit on one GPU.</p>
+<ul class="simple">
+<li><p>See also: <a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">Getting Started with FSDP</a></p></li>
+</ul>
+</li>
+<li><p>Use <a class="reference external" href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">Tensor Parallel (TP)</a> and/or <a class="reference external" href="https://pytorch.org/docs/main/distributed.pipelining.html">Pipeline Parallel (PP)</a> if you reach scaling limitations with FSDP.</p>
+<ul class="simple">
+<li><p>Try our <a class="reference external" href="https://pytorch.org/tutorials/intermediate/TP_tutorial.html">Tensor Parallelism Tutorial</a></p></li>
+<li><p>See also: <a class="reference external" href="https://github.com/pytorch/torchtitan">TorchTitan end to end example of 3D parallelism</a></p></li>
+</ul>
+</li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Data-parallel training also works with <a class="reference external" href="https://pytorch.org/docs/stable/notes/amp_examples.html#working-with-multiple-gpus">Automatic Mixed Precision (AMP)</a>.</p>
 </div>
-<div class="section" id="torch-nn-dataparallel">
-<h3><code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code><a class="headerlink" href="#torch-nn-dataparallel" title="Permalink to this heading">¶</a></h3>
-<p>The <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html">DataParallel</a>
-package enables single-machine multi-GPU parallelism with the lowest coding
-hurdle. It only requires a one-line change to the application code. The tutorial
-<a class="reference external" href="../beginner/blitz/data_parallel_tutorial.html">Optional: Data Parallelism</a>
-shows an example. Although <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> is very easy to
-use, it usually does not offer the best performance because it replicates the
-model in every forward pass, and its single-process multi-thread parallelism
-naturally suffers from
-<a class="reference external" href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a> contention. To get
-better performance, consider using
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>.</p>
-</div>
-<div class="section" id="torch-nn-parallel-distributeddataparallel">
-<h3><code class="docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code><a class="headerlink" href="#torch-nn-parallel-distributeddataparallel" title="Permalink to this heading">¶</a></h3>
-<p>Compared to <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html">DataParallel</a>,
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>
-requires one more step to set up, i.e., calling
-<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group">init_process_group</a>.
-DDP uses multi-process parallelism, and hence there is no GIL contention across
-model replicas. Moreover, the model is broadcast at DDP construction time instead
-of in every forward pass, which also helps to speed up training. DDP is shipped
-with several performance optimization technologies. For a more in-depth
-explanation, refer to this
-<a class="reference external" href="http://www.vldb.org/pvldb/vol13/p3005-li.pdf">paper</a> (VLDB’20).</p>
-<p>DDP materials are listed below:</p>
-<ol class="arabic simple">
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/notes/ddp.html">DDP notes</a>
-offer a starter example and some brief descriptions of its design and
-implementation. If this is your first time using DDP, start from this
-document.</p></li>
-<li><p><a class="reference external" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a>
-explains some common problems with DDP training, including unbalanced
-workload, checkpointing, and multi-device models. Note that, DDP can be
-easily combined with single-machine multi-device model parallelism which is
-described in the
-<a class="reference external" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a>
-tutorial.</p></li>
-<li><p>The <a class="reference external" href="https://github.com/pytorch/examples/blob/main/distributed/ddp/README.md">Launching and configuring distributed data parallel applications</a>
-document shows how to use the DDP launching script.</p></li>
-<li><p>The <a class="reference external" href="../recipes/zero_redundancy_optimizer.html">Shard Optimizer States With ZeroRedundancyOptimizer</a>
-recipe demonstrates how <a class="reference external" href="https://pytorch.org/docs/stable/distributed.optim.html">ZeroRedundancyOptimizer</a>
-helps to reduce optimizer memory footprint.</p></li>
-<li><p>The <a class="reference external" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a>
-tutorial walks through using the generic join context for distributed training with uneven inputs.</p></li>
-</ol>
-</div>
-<div class="section" id="torch-distributed-fullyshardeddataparallel">
-<h3><code class="docutils literal notranslate"><span class="pre">torch.distributed.FullyShardedDataParallel</span></code><a class="headerlink" href="#torch-distributed-fullyshardeddataparallel" title="Permalink to this heading">¶</a></h3>
-<p>The <a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">FullyShardedDataParallel</a>
-(FSDP) is a type of data parallelism paradigm which maintains a per-GPU copy of a model’s
-parameters, gradients and optimizer states, it shards all of these states across
-data-parallel workers. The support for FSDP was added starting PyTorch v1.11. The tutorial
-<a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">Getting Started with FSDP</a>
-provides in depth explanation and example of how FSDP works.</p>
-</div>
-<div class="section" id="torch-distributed-elastic">
-<h3>torch.distributed.elastic<a class="headerlink" href="#torch-distributed-elastic" title="Permalink to this heading">¶</a></h3>
-<p>With the growth of the application complexity and scale, failure recovery
-becomes a requirement. Sometimes it is inevitable to hit errors
-like out-of-memory (OOM) when using DDP, but DDP itself cannot recover from those errors,
-and it is not possible to handle them using a standard <code class="docutils literal notranslate"><span class="pre">try-except</span></code> construct.
-This is because DDP requires all processes to operate in a closely synchronized manner
-and all <code class="docutils literal notranslate"><span class="pre">AllReduce</span></code> communications launched in different processes must match.
-If one of the processes in the group
-throws an exception, it is likely to lead to desynchronization (mismatched
-<code class="docutils literal notranslate"><span class="pre">AllReduce</span></code> operations) which would then cause a crash or hang.
-<a class="reference external" href="https://pytorch.org/docs/stable/distributed.elastic.html">torch.distributed.elastic</a>
-adds fault tolerance and the ability to make use of a dynamic pool of machines (elasticity).</p>
-</div>
-</div>
-<div class="section" id="rpc-based-distributed-training">
-<h2>RPC-Based Distributed Training<a class="headerlink" href="#rpc-based-distributed-training" title="Permalink to this heading">¶</a></h2>
-<p>Many training paradigms do not fit into data parallelism, e.g.,
-parameter server paradigm, distributed pipeline parallelism, reinforcement
-learning applications with multiple observers or agents, etc.
-<a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">torch.distributed.rpc</a> aims at
-supporting general distributed training scenarios.</p>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">torch.distributed.rpc</a>
-has four main pillars:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#rpc">RPC</a> supports running
-a given function on a remote worker.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#rref">RRef</a> helps to manage the
-lifetime of a remote object. The reference counting protocol is presented in the
-<a class="reference external" href="https://pytorch.org/docs/stable/rpc/rref.html#remote-reference-protocol">RRef notes</a>.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#distributed-autograd-framework">Distributed Autograd</a>
-extends the autograd engine beyond machine boundaries. Please refer to
-<a class="reference external" href="https://pytorch.org/docs/stable/rpc/distributed_autograd.html#distributed-autograd-design">Distributed Autograd Design</a>
-for more details.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim">Distributed Optimizer</a>
-automatically reaches out to all participating workers to update
-parameters using gradients computed by the distributed autograd engine.</p></li>
-</ul>
-<p>RPC Tutorials are listed below:</p>
-<ol class="arabic simple">
-<li><p>The <a class="reference external" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a>
-tutorial first uses a simple Reinforcement Learning (RL) example to
-demonstrate RPC and RRef. Then, it applies a basic distributed model
-parallelism to an RNN example to show how to use distributed autograd and
-distributed optimizer.</p></li>
-<li><p>The <a class="reference external" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a>
-tutorial borrows the spirit of
-<a class="reference external" href="https://people.eecs.berkeley.edu/~brecht/papers/hogwildTR.pdf">HogWild! training</a>
-and applies it to an asynchronous parameter server (PS) training application.</p></li>
-<li><p>The <a class="reference external" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a>
-tutorial extends the single-machine pipeline parallel example (presented in
-<a class="reference external" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a>)
-to a distributed environment and shows how to implement it using RPC.</p></li>
-<li><p>The <a class="reference external" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a>
-tutorial demonstrates how to implement RPC batch processing using the
-<a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.functions.async_execution">@rpc.functions.async_execution</a>
-decorator, which can help speed up inference and training. It uses
-RL and PS examples similar to those in the above tutorials 1 and 2.</p></li>
-<li><p>The <a class="reference external" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a>
-tutorial demonstrates how to combine DDP with RPC to train a model using
-distributed data parallelism combined with distributed model parallelism.</p></li>
-</ol>
 </div>
 <div class="section" id="pytorch-distributed-developers">
 <h2>PyTorch Distributed Developers<a class="headerlink" href="#pytorch-distributed-developers" title="Permalink to this heading">¶</a></h2>
 <p>If you’d like to contribute to PyTorch Distributed, refer to our
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md">Developer Guide</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;"/></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst">github</a>.</p>
+</div>
 </div>
 </div>
 </article>
@@ -727,15 +609,14 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">PyTorch Distributed Overview</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#data-parallel-training">Data Parallel Training</a><ul>
-<li><a class="reference internal" href="#torch-nn-dataparallel"><code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code></a></li>
-<li><a class="reference internal" href="#torch-nn-parallel-distributeddataparallel"><code class="docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code></a></li>
-<li><a class="reference internal" href="#torch-distributed-fullyshardeddataparallel"><code class="docutils literal notranslate"><span class="pre">torch.distributed.FullyShardedDataParallel</span></code></a></li>
-<li><a class="reference internal" href="#torch-distributed-elastic">torch.distributed.elastic</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#parallelism-apis">Parallelism APIs</a></li>
+<li><a class="reference internal" href="#sharding-primitives">Sharding primitives</a></li>
+<li><a class="reference internal" href="#communications-apis">Communications APIs</a></li>
+<li><a class="reference internal" href="#launcher">Launcher</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rpc-based-distributed-training">RPC-Based Distributed Training</a></li>
+<li><a class="reference internal" href="#applying-parallelism-to-scale-your-model">Applying Parallelism To Scale Your Model</a></li>
 <li><a class="reference internal" href="#pytorch-distributed-developers">PyTorch Distributed Developers</a></li>
 </ul>
 </li>
