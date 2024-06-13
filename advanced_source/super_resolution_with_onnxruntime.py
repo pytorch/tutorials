@@ -316,8 +316,12 @@ final_img = Image.merge(
 # Save the image, we will compare this with the output image from mobile device
 final_img.save("./_static/img/cat_superres_with_ort.jpg")
 
+# Save resized original image (without super-resolution)
+img = transforms.Resize([img_out_y.size[0], img_out_y.size[1]])(img)
+img.save("cat_resized.jpg")
 
 ######################################################################
+# .. figure:: /_static/img/cat_resized.jpg
 # .. figure:: /_static/img/cat_superres_with_ort.jpg
 #    :alt: output\_cat
 #
@@ -328,7 +332,7 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 # ONNX Runtime can also be deployed to the cloud for model inferencing
 # using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
 #
-# More information about ONNX Runtime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
+# More information about ONNX Runtime's performance `here <https://onnxruntime.ai/docs/performance>`__.
 #
 #
 # For more information about ONNX Runtime `here <https://github.com/microsoft/onnxruntime>`__.
