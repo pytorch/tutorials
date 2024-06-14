@@ -4,7 +4,7 @@ torch.backends.xeon.run_cpu
 There are a set of configurations that would influence the performance of PyTorch inference running on Intel(R) Xeon(R) Scalable Processors.
 To get peak performance, the ``torch.backends.xeon.run_cpu`` script is provided that optimizes the configuration of thread and memory management.
 For thread management, the script configures thread affinity and the preload of Intel(R) OMP library.
-For memory management, it configures NUMA binding and preloads optimized memory allocation libraries (e.g. tcmalloc, jemalloc).
+For memory management, it configures NUMA binding and preloads optimized memory allocation libraries (e.g. TCMalloc, JeMalloc).
 In addition, the script provides tunable parameters for compute resource allocation in both single instance and multiple instance scenarios,
 helping the users try out an optimal coordination of resource utilization for the specific workloads.
 
