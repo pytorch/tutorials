@@ -12,7 +12,7 @@ def get_last_commit_timestamp_for_file(file_path: str) -> str:
     Returns:
         str: Last committed timestamp string
     """
-    git_command = ["git", "log", "-1", "--format=%at", "--", file_path]
+    git_command = ["git", "log", "-1", '--date=format:%B %d, %Y', "--format=%at", "--", file_path]
     timestamp = subprocess.check_output(git_command).decode().strip()
 
     if not timestamp:
