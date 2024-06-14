@@ -2,6 +2,9 @@ PyTorch Distributed Overview
 ============================
 **Author**: `Will Constable <https://github.com/wconstab/>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst>`__.
+
 This is the overview page for the ``torch.distributed`` package. The goal of
 this page is to categorize documents into different topics and briefly
 describe each of them. If this is your first time building distributed training
@@ -89,6 +92,3 @@ PyTorch Distributed Developers
 
 If you'd like to contribute to PyTorch Distributed, refer to our
 `Developer Guide <https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md>`_.
-
-.. note::
-   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst>`__.
