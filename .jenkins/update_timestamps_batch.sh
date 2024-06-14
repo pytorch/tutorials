@@ -1,16 +1,21 @@
 #!/bin/bash
 
-SOURCEDIR=$1
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-directories=("$SOURCEDIR/beginner_source" "$SOURCEDIR/intermediate_source" "$SOURCEDIR/advanced_source")
+# Check if SPHINX_SHOULD_RUN is already set
+if [ -z "$SPHINX_SHOULD_RUN" ]; then
+    # If not set, retrieve it using get_sphinx_filenames.py and export it
+    SPHINX_SHOULD_RUN=$(python "$DIR/get_sphinx_filenames.py")
+    export SPHINX_SHOULD_RUN
+fi
 
-for dir in "${directories[@]}"; do
-    # Process .py and .rst files in the current directory
-    for file in "$dir"/*.{py,rst}; do
-        if [ -f "$file" ]; then
-            python "$DIR/update_timestamps.py" "$file"
-        fi
-    done
+# Convert the pipe-separated filenames into an array
+IFS='|' read -r -a file_array <<< "$SPHINX_SHOULD_RUN"
+
+# Loop through each file and update timestamps if it exists
+for file in "${file_array[@]}"; do
+    file="../$file"
+    if [ -f "$file" ]; then
+        python "$DIR/update_timestamps.py" "$file"
+    fi
 done

@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List
 
 from get_files_to_run import get_all_files
@@ -11,3 +10,6 @@ def get_files_for_sphinx() -> List[str]:
 
 
 SPHINX_SHOULD_RUN = "|".join(get_files_for_sphinx())
+
+if __name__ == "__main__":
+    print(SPHINX_SHOULD_RUN)
