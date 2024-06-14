@@ -431,6 +431,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
+   /recipes/recipes/xeon_run_cpu
    /recipes/recipes/intel_extension_for_pytorch
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
