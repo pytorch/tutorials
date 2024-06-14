@@ -57,7 +57,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
   # Step 2.1: Add timestamps to .py and .rst files in source directories
-  bash $DIR/update_timestamps_batch.sh .
+  bash $DIR/update_timestamps_batch.sh
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
@@ -123,7 +123,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
 
   # Step 0.9: Add timestamps to .py and .rst files in source directories
-  bash $DIR/update_timestamps_batch.sh .
+  bash $DIR/update_timestamps_batch.sh
 
   # Step 1: Generate no-plot HTML pages for all tutorials
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme

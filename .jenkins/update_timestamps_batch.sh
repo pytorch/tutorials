@@ -14,7 +14,7 @@ IFS='|' read -r -a file_array <<< "$SPHINX_SHOULD_RUN"
 
 # Loop through each file and update timestamps if it exists
 for file in "${file_array[@]}"; do
-    file="../$file"
+    file="$DIR/../$file"
     if [ -f "$file" ]; then
         python "$DIR/update_timestamps.py" "$file"
     fi
