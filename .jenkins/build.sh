@@ -23,7 +23,7 @@ sudo apt-get install -y pandoc
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.4 for testing - uncomment to install nightly binaries (update the version as needed).
 pip uninstall -y torch torchvision torchaudio torchtext torchdata
-pip3 install torch==2.4.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
+pip3 install torch==2.4.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
