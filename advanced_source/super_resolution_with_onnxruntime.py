@@ -228,8 +228,8 @@ torch_out = torch_model(x)
 end = time.time()
 print(f"Inference of Pytorch model used {end - start} seconds")
 
-start = time.time()
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
+start = time.time()
 ort_outs = ort_session.run(None, ort_inputs)
 end = time.time()
 print(f"Inference of ONNX model used {end - start} seconds")
