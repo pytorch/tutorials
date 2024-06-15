@@ -218,7 +218,17 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 # ONNX exporter, so please contact us in that case.
 #
 
-#Timing comparison
+######################################################################
+# Timing Comparison Between Models
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+
+######################################################################
+# Since ONNX models optimize for inference speed, running the same
+# data on an ONNX model instead of a native pytorch model should result in an 
+# improvement of up to 2x. Improvement is more pronounced with higher batch sizes.
+
+
 import time
 
 x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
@@ -233,6 +243,7 @@ start = time.time()
 ort_outs = ort_session.run(None, ort_inputs)
 end = time.time()
 print(f"Inference of ONNX model used {end - start} seconds")
+
 
 ######################################################################
 # Running the model on an image using ONNX Runtime
