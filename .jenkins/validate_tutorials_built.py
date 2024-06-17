@@ -26,7 +26,6 @@ NOT_RUN = [
     "beginner_source/text_sentiment_ngrams_tutorial", # not building with 2.3 RC, might be able to turn on with GA
     "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
-    "intermediate_source/torchvision_tutorial", # disable due to RuntimeError: DataLoader worker (pid(s) 20092) exited unexpectedly
     "intermediate_source/fx_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
@@ -38,7 +37,6 @@ NOT_RUN = [
     "prototype_source/nestedtensor",
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
-    "recipes_source/recipes/loading_data_recipe",
     "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
