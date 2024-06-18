@@ -333,8 +333,12 @@ img.save("cat_resized.jpg")
 
 ######################################################################
 # .. figure:: /_static/img/cat_resized.jpg
+#
+# Low-res image
+# 
 # .. figure:: /_static/img/cat_superres_with_ort.jpg
-#    :alt: output\_cat
+#
+# Image after super-resolution
 #
 #
 # ONNX Runtime being a cross platform engine, you can run it across
