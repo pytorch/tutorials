@@ -8,14 +8,14 @@ For memory management, it configures NUMA binding and preloads optimized memory 
 In addition, the script provides tunable parameters for compute resource allocation in both single instance and multiple instance scenarios,
 helping the users try out an optimal coordination of resource utilization for the specific workloads.
 
-What you will learn
+What You Will Learn
 -------------------
 
-* How to utilize tools like ``numactl``, ``taskset``, Intel(R) OpenMP Runtime Library and optimized memory allocators such as TCMalloc and JeMalloc for enhanced performance.
-* How to configure CPU cores and memory management to maximize PyTorch inference performance on Intel(R) Xeon(R) processors.
+* How to utilize tools like ``numactl``, ``taskset``, Intel(R) OpenMP Runtime Library and optimized memory allocators such as ``TCMalloc`` and ``JeMalloc`` for enhanced performance.
+* How to configure CPU resources and memory management to maximize PyTorch inference performance on Intel(R) Xeon(R) processors.
 
-Introduction for Optimizations
-------------------------------
+Introduction of the Optimizations
+---------------------------------
 
 Applying NUMA Access Control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,9 +107,9 @@ or
 Choosing an Optimized Memory Allocator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Memory allocator plays an important role from performance perspective as well. A more efficient memory usage reduces overhead on unnecessary memory allocations or destructions, and thus results in a faster execution. From practical experiences, for deep learning workloads, JeMalloc or TCMalloc can get better performance by reusing memory as much as possible than default malloc function.
+Memory allocator plays an important role from performance perspective as well. A more efficient memory usage reduces overhead on unnecessary memory allocations or destructions, and thus results in a faster execution. From practical experiences, for deep learning workloads, ``TCMalloc`` or ``JeMalloc`` can get better performance by reusing memory as much as possible than default malloc operations.
 
-You can install TCMalloc by running the following command on Ubuntu:
+You can install ``TCMalloc`` by running the following command on Ubuntu:
 
 .. code-block:: console
 
@@ -127,7 +127,7 @@ In a conda environment, it can also be installed by running:
 
    $ conda install conda-forge::gperftools
 
-On Ubuntu JeMalloc can be installed by this command:
+On Ubuntu ``JeMalloc`` can be installed by this command:
 
 .. code-block:: console
 
@@ -289,8 +289,8 @@ Conclusion
 ----------
 
 In this tutorial, we explored a variety of advanced configurations and tools designed to optimize PyTorch inference performance on Intel(R) Xeon(R) Scalable Processors. 
-By leveraging the ``torch.backends.xeon.run_cpu script``, we demonstrated how to fine-tune thread and memory management to achieve peak performance.
-We covered essential concepts such as NUMA access control, optimized memory allocators like TCMalloc and JeMalloc, and the use of Intel(R) OpenMP for efficient multithreading.
+By leveraging the ``torch.backends.xeon.run_cpu`` script, we demonstrated how to fine-tune thread and memory management to achieve peak performance.
+We covered essential concepts such as NUMA access control, optimized memory allocators like ``TCMalloc`` and ``JeMalloc``, and the use of Intel(R) OpenMP for efficient multithreading.
 
 Additionally, we provided practical command-line examples to guide you through setting up single and multiple instance scenarios, ensuring optimal resource utilization tailored to specific workloads.
 By understanding and applying these techniques, users can significantly enhance the efficiency and speed of their PyTorch applications on Intel(R) Xeon(R) platforms.
