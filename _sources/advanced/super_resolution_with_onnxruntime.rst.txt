@@ -143,7 +143,7 @@ differently in inference and training mode.
 
     # Load pretrained model weights
     model_url = 'https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth'
-    batch_size = 1    # just a random number
+    batch_size = 64    # just a random number
 
     # Initialize model with the pretrained weights
     map_location = lambda storage, loc: storage
@@ -277,18 +277,53 @@ As a side-note, if they do not match then there is an issue in the
 ONNX exporter, so please contact us in that case.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 223-226
+.. GENERATED FROM PYTHON SOURCE LINES 222-225
+
+Timing Comparison Between Models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 227-230
+
+Since ONNX models optimize for inference speed, running the same
+data on an ONNX model instead of a native pytorch model should result in an 
+improvement of up to 2x. Improvement is more pronounced with higher batch sizes.
+
+.. GENERATED FROM PYTHON SOURCE LINES 230-248
+
+.. code-block:: default
+
+
+
+    import time
+
+    x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
+
+    start = time.time()
+    torch_out = torch_model(x)
+    end = time.time()
+    print(f"Inference of Pytorch model used {end - start} seconds")
+
+    ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
+    start = time.time()
+    ort_outs = ort_session.run(None, ort_inputs)
+    end = time.time()
+    print(f"Inference of ONNX model used {end - start} seconds")
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 249-252
 
 Running the model on an image using ONNX Runtime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-231
+.. GENERATED FROM PYTHON SOURCE LINES 255-257
 
 So far we have exported a model from PyTorch and shown how to load it
 and run it in ONNX Runtime with a dummy tensor as an input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-239
+.. GENERATED FROM PYTHON SOURCE LINES 259-265
 
 For this tutorial, we will use a famous cat image used widely which
 looks like below
@@ -297,7 +332,7 @@ looks like below
    :alt: cat
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 241-254
+.. GENERATED FROM PYTHON SOURCE LINES 267-280
 
 First, let's load the image, preprocess it using standard PIL
 python library. Note that this preprocessing is the standard practice of
@@ -313,7 +348,7 @@ After extracting the Y component, we convert it to a tensor which
 will be the input of our model.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-271
+.. GENERATED FROM PYTHON SOURCE LINES 280-297
 
 .. code-block:: default
 
@@ -335,14 +370,14 @@ will be the input of our model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 272-276
+.. GENERATED FROM PYTHON SOURCE LINES 298-302
 
 Now, as a next step, let's take the tensor representing the
 grayscale resized cat image and run the super-resolution model in
 ONNX Runtime as explained previously.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-282
+.. GENERATED FROM PYTHON SOURCE LINES 302-308
 
 .. code-block:: default
 
@@ -353,7 +388,7 @@ ONNX Runtime as explained previously.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-290
+.. GENERATED FROM PYTHON SOURCE LINES 309-316
 
 At this point, the output of the model is a tensor.
 Now, we'll process the output of the model to construct back the
@@ -363,7 +398,7 @@ implementation of super-resolution model
 `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-305
+.. GENERATED FROM PYTHON SOURCE LINES 316-334
 
 .. code-block:: default
 
@@ -381,12 +416,22 @@ implementation of super-resolution model
     # Save the image, we will compare this with the output image from mobile device
     final_img.save("./_static/img/cat_superres_with_ort.jpg")
 
+    # Save resized original image (without super-resolution)
+    img = transforms.Resize([img_out_y.size[0], img_out_y.size[1]])(img)
+    img.save("cat_resized.jpg")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-321
+.. GENERATED FROM PYTHON SOURCE LINES 335-357
+
+Here is the comparison between the two images: 
+
+.. figure:: /_static/img/cat_resized.jpg
+
+Low-resolution image
 
 .. figure:: /_static/img/cat_superres_with_ort.jpg
-   :alt: output\_cat
+
+Image after super-resolution
 
 
 ONNX Runtime being a cross platform engine, you can run it across
@@ -395,7 +440,7 @@ multiple platforms and on both CPUs and GPUs.
 ONNX Runtime can also be deployed to the cloud for model inferencing
 using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
 
-More information about ONNX Runtime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
+More information about ONNX Runtime's performance `here <https://onnxruntime.ai/docs/performance>`__.
 
 
 For more information about ONNX Runtime `here <https://github.com/microsoft/onnxruntime>`__.

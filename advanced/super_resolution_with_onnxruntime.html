@@ -576,7 +576,7 @@ This is required since operators like dropout or batchnorm behave
 differently in inference and training mode.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load pretrained model weights</span>
 <span class="n">model_url</span> <span class="o">=</span> <span class="s1">'https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth'</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>    <span class="c1"># just a random number</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">64</span>    <span class="c1"># just a random number</span>
 
 <span class="c1"># Initialize model with the pretrained weights</span>
 <span class="n">map_location</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">storage</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">storage</span>
@@ -673,6 +673,28 @@ computed by ONNX Runtime.</p>
 numerically with the given precision (<code class="docutils literal notranslate"><span class="pre">rtol=1e-03</span></code> and <code class="docutils literal notranslate"><span class="pre">atol=1e-05</span></code>).
 As a side-note, if they do not match then there is an issue in the
 ONNX exporter, so please contact us in that case.</p>
+<div class="section" id="timing-comparison-between-models">
+<h2>Timing Comparison Between Models<a class="headerlink" href="#timing-comparison-between-models" title="Permalink to this heading">¶</a></h2>
+<p>Since ONNX models optimize for inference speed, running the same
+data on an ONNX model instead of a native pytorch model should result in an
+improvement of up to 2x. Improvement is more pronounced with higher batch sizes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">torch_out</span> <span class="o">=</span> <span class="n">torch_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inference of Pytorch model used </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
+
+<span class="n">ort_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">ort_outs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">ort_inputs</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inference of ONNX model used </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="running-the-model-on-an-image-using-onnx-runtime">
 <h2>Running the model on an image using ONNX Runtime<a class="headerlink" href="#running-the-model-on-an-image-using-onnx-runtime" title="Permalink to this heading">¶</a></h2>
 <p>So far we have exported a model from PyTorch and shown how to load it
@@ -735,16 +757,26 @@ implementation of super-resolution model
 
 <span class="c1"># Save the image, we will compare this with the output image from mobile device</span>
 <span class="n">final_img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"./_static/img/cat_superres_with_ort.jpg"</span><span class="p">)</span>
+
+<span class="c1"># Save resized original image (without super-resolution)</span>
+<span class="n">img</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-transforms sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/generated/torchvision.transforms.Resize.html#torchvision.transforms.Resize" title="torchvision.transforms.Resize"><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span></a><span class="p">([</span><span class="n">img_out_y</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_out_y</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]])(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"cat_resized.jpg"</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Here is the comparison between the two images:</p>
 <div class="figure align-default">
-<img alt="output\_cat" src="../_images/cat_superres_with_ort.jpg"/>
+<img alt="../_images/cat_resized.jpg" src="../_images/cat_resized.jpg"/>
 </div>
+<p>Low-resolution image</p>
+<div class="figure align-default">
+<img alt="../_images/cat_superres_with_ort.jpg" src="../_images/cat_superres_with_ort.jpg"/>
+</div>
+<p>Image after super-resolution</p>
 <p>ONNX Runtime being a cross platform engine, you can run it across
 multiple platforms and on both CPUs and GPUs.</p>
 <p>ONNX Runtime can also be deployed to the cloud for model inferencing
 using Azure Machine Learning Services. More information <a class="reference external" href="https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx">here</a>.</p>
-<p>More information about ONNX Runtime’s performance <a class="reference external" href="https://github.com/microsoft/onnxruntime#high-performance">here</a>.</p>
+<p>More information about ONNX Runtime’s performance <a class="reference external" href="https://onnxruntime.ai/docs/performance">here</a>.</p>
 <p>For more information about ONNX Runtime <a class="reference external" href="https://github.com/microsoft/onnxruntime">here</a>.</p>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-super-resolution-with-onnxruntime-py">
@@ -801,6 +833,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a><ul>
+<li><a class="reference internal" href="#timing-comparison-between-models">Timing Comparison Between Models</a></li>
 <li><a class="reference internal" href="#running-the-model-on-an-image-using-onnx-runtime">Running the model on an image using ONNX Runtime</a></li>
 </ul>
 </li>
