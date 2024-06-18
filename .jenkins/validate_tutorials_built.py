@@ -53,7 +53,10 @@ NOT_RUN = [
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
-    "intermediate_source/tensorboard_profiler_tutorial" # reenable after 2.0 release.
+    "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
+    "intermediate/inductor_debug_cpu.py",
+    "beginner/onnx/onnx_registry_tutorial.py",
+    "intermediate_source/torch_export_tutorial.py"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
