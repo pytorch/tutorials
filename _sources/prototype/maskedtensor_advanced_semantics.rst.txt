@@ -41,13 +41,13 @@ Preparation
 .. code-block:: default
 
 
-
-
-
-
+    import torch
+    from torch.masked import masked_tensor
+    import numpy as np
+    import warnings
 
     # Disable prototype warnings and such
-
+    warnings.filterwarnings(action='ignore', category=UserWarning)
 
 
 
@@ -72,10 +72,78 @@ NumPy's ``MaskedArray`` has a few fundamental semantics differences from MaskedT
    `apply the logical_or operator <https://github.com/numpy/numpy/blob/68299575d8595d904aff6f28e12d21bf6428a4ba/numpy/ma/core.py#L1016-L1024>`__.
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 45-55
+
+.. code-block:: default
+
+
+    data = torch.arange(5.)
+    mask = torch.tensor([True, True, False, True, False])
+    npm0 = np.ma.masked_array(data.numpy(), (~mask).numpy())
+    npm1 = np.ma.masked_array(data.numpy(), (mask).numpy())
+
+    print("npm0:\n", npm0)
+    print("npm1:\n", npm1)
+    print("npm0 + npm1:\n", npm0 + npm1)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    npm0:
+     [0.0 1.0 -- 3.0 --]
+    npm1:
+     [-- -- 2.0 -- 4.0]
+    npm0 + npm1:
+     [-- -- -- -- --]
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 56-59
 
 Meanwhile, MaskedTensor does not support addition or binary operators with masks that don't match --
 to understand why, please find the :ref:`section on reductions <reduction-semantics>`.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 59-70
+
+.. code-block:: default
+
+
+    mt0 = masked_tensor(data, mask)
+    mt1 = masked_tensor(data, ~mask)
+    print("mt0:\n", mt0)
+    print("mt1:\n", mt1)
+
+    try:
+        mt0 + mt1
+    except ValueError as e:
+        print ("mt0 + mt1 failed. Error: ", e)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    mt0:
+     MaskedTensor(
+      [  0.0000,   1.0000,       --,   3.0000,       --]
+    )
+    mt1:
+     MaskedTensor(
+      [      --,       --,   2.0000,       --,   4.0000]
+    )
+    mt0 + mt1 failed. Error:  Input masks must match. If you need support for this, please open an issue on Github.
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 71-75
@@ -83,6 +151,39 @@ to understand why, please find the :ref:`section on reductions <reduction-semant
 However, if this behavior is desired, MaskedTensor does support these semantics by giving access to the data and masks
 and conveniently converting a MaskedTensor to a Tensor with masked values filled in using :func:`to_tensor`.
 For example:
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 75-84
+
+.. code-block:: default
+
+
+    t0 = mt0.to_tensor(0)
+    t1 = mt1.to_tensor(0)
+    mt2 = masked_tensor(t0 + t1, mt0.get_mask() & mt1.get_mask())
+
+    print("t0:\n", t0)
+    print("t1:\n", t1)
+    print("mt2 (t0 + t1):\n", mt2)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    t0:
+     tensor([0., 1., 0., 3., 0.])
+    t1:
+     tensor([0., 0., 2., 0., 4.])
+    mt2 (t0 + t1):
+     MaskedTensor(
+      [      --,       --,       --,       --,       --]
+    )
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 85-100
@@ -103,9 +204,93 @@ Fundamentally, :class:`MaskedTensor`s perform the same reduction operation while
 (unspecified) values. By way of example:
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 100-109
+
+.. code-block:: default
+
+
+    data = torch.arange(12, dtype=torch.float).reshape(3, 4)
+    mask = torch.randint(2, (3, 4), dtype=torch.bool)
+    mt = masked_tensor(data, mask)
+
+    print("data:\n", data)
+    print("mask:\n", mask)
+    print("mt:\n", mt)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    data:
+     tensor([[ 0.,  1.,  2.,  3.],
+            [ 4.,  5.,  6.,  7.],
+            [ 8.,  9., 10., 11.]])
+    mask:
+     tensor([[False,  True, False, False],
+            [False,  True, False, False],
+            [False,  True, False, False]])
+    mt:
+     MaskedTensor(
+      [
+        [      --,   1.0000,       --,       --],
+        [      --,   5.0000,       --,       --],
+        [      --,   9.0000,       --,       --]
+      ]
+    )
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 110-112
 
 Now, the different reductions (all on dim=1):
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 112-119
+
+.. code-block:: default
+
+
+    print("torch.sum:\n", torch.sum(mt, 1))
+    print("torch.mean:\n", torch.mean(mt, 1))
+    print("torch.prod:\n", torch.prod(mt, 1))
+    print("torch.amin:\n", torch.amin(mt, 1))
+    print("torch.amax:\n", torch.amax(mt, 1))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    torch.sum:
+     MaskedTensor(
+      [  1.0000,   5.0000,   9.0000]
+    )
+    torch.mean:
+     MaskedTensor(
+      [  1.0000,   5.0000,   9.0000]
+    )
+    torch.prod:
+     MaskedTensor(
+      [  1.0000,   5.0000,   9.0000]
+    )
+    torch.amin:
+     MaskedTensor(
+      [  1.0000,   5.0000,   9.0000]
+    )
+    torch.amax:
+     MaskedTensor(
+      [  1.0000,   5.0000,   9.0000]
+    )
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 120-127
@@ -118,9 +303,64 @@ Now, we can revisit the question: why do we enforce the invariant that masks mus
 In other words, why don't we use the same semantics as ``np.ma.masked_array``? Consider the following example:
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 127-138
+
+.. code-block:: default
+
+
+    data0 = torch.arange(10.).reshape(2, 5)
+    data1 = torch.arange(10.).reshape(2, 5) + 10
+    mask0 = torch.tensor([[True, True, False, False, False], [False, False, False, True, True]])
+    mask1 = torch.tensor([[False, False, False, True, True], [True, True, False, False, False]])
+    npm0 = np.ma.masked_array(data0.numpy(), (mask0).numpy())
+    npm1 = np.ma.masked_array(data1.numpy(), (mask1).numpy())
+
+    print("npm0:", npm0)
+    print("npm1:", npm1)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    npm0: [[-- -- 2.0 3.0 4.0]
+     [5.0 6.0 7.0 -- --]]
+    npm1: [[10.0 11.0 12.0 -- --]
+     [-- -- 17.0 18.0 19.0]]
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 Now, let's try addition:
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 141-145
+
+.. code-block:: default
+
+
+    print("(npm0 + npm1).sum(0):\n", (npm0 + npm1).sum(0))
+    print("npm0.sum(0) + npm1.sum(0):\n", npm0.sum(0) + npm1.sum(0))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    (npm0 + npm1).sum(0):
+     [-- -- 38.0 -- --]
+    npm0.sum(0) + npm1.sum(0):
+     [15.0 17.0 38.0 21.0 23.0]
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 146-154
@@ -132,6 +372,29 @@ which can certainly be confusing for the user.
 That being said, if the user wishes, there are ways around this
 (for example, filling in the MaskedTensor's undefined elements with 0 values using :func:`to_tensor`
 like shown below), but the user must now be more explicit with their intentions.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 154-160
+
+.. code-block:: default
+
+
+    mt0 = masked_tensor(data0, ~mask0)
+    mt1 = masked_tensor(data1, ~mask1)
+
+    (mt0.to_tensor(0) + mt1.to_tensor(0)).sum(0)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    tensor([15., 17., 38., 21., 23.])
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 161-171
@@ -147,22 +410,10 @@ to be more intentional with their code at times, but we believe this to be the b
 If you have any thoughts on this, please `let us know <https://github.com/pytorch/pytorch/issues>`__!
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-172
-
-.. code-block:: default
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-
-
-
-
-
-
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.001 seconds)
+   **Total running time of the script:** ( 0 minutes  0.025 seconds)
 
 
 .. _sphx_glr_download_prototype_maskedtensor_advanced_semantics.py:

@@ -417,6 +417,27 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Python Custom Operators Landing Page
+   :card_description: This is the landing page for all things related to custom operators in PyTorch.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/custom_ops_landing_page.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
+   :header: Python Custom Operators
+   :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/python_custom_ops.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
+   :header: Custom C++ and CUDA Operators
+   :card_description: How to extend PyTorch with custom C++ and CUDA operators.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/cpp_custom_ops.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
    :header: Custom C++ and CUDA Extensions
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
@@ -574,7 +595,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: (beta) Accelerating BERT with semi-structured sparsity
-   :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile. 
+   :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: advanced/semi_structured_sparse.html
    :tags: Text,Model-Optimization
@@ -783,7 +804,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Using the ExecuTorch SDK to Profile a Model
-   :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models 
+   :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models
    :image: _static/img/ExecuTorch-Logo-cropped.svg
    :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
    :tags: Edge
@@ -921,6 +942,7 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
+   advanced/custom_ops_landing_page
 
 .. toctree::
    :maxdepth: 2
@@ -1067,6 +1089,9 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   advanced/custom_ops_landing_page
+   advanced/python_custom_ops
+   advanced/cpp_custom_ops
    intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
@@ -1137,7 +1162,7 @@ Additional Resources
    Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
    Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
    Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
-   Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>   
+   Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>
 
 .. toctree::
    :maxdepth: 2
