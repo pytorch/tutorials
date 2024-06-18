@@ -27,6 +27,8 @@ Reinforcement Learning (DQN) Tutorial
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
 on the CartPole-v1 task from `Gymnasium <https://gymnasium.farama.org>`__.
 
+You might find it helpful to read the original `Deep Q Learning (DQN) <https://arxiv.org/abs/1312.5602>`__ paper
+
 **Task**
 
 The agent has to decide between two actions - moving the cart left or
@@ -76,7 +78,7 @@ We'll also use the following from PyTorch:
 -  optimization (``torch.optim``)
 -  automatic differentiation (``torch.autograd``)
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-89
+.. GENERATED FROM PYTHON SOURCE LINES 64-95
 
 .. code-block:: default
 
@@ -104,7 +106,11 @@ We'll also use the following from PyTorch:
     plt.ion()
 
     # if GPU is to be used
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else
+        "mps" if torch.backends.mps.is_available() else
+        "cpu"
+    )
 
 
 
@@ -114,7 +120,7 @@ We'll also use the following from PyTorch:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-109
+.. GENERATED FROM PYTHON SOURCE LINES 96-115
 
 Replay Memory
 -------------
@@ -136,7 +142,7 @@ For this, we're going to need two classes:
    method for selecting a random batch of transitions for training.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-130
+.. GENERATED FROM PYTHON SOURCE LINES 115-136
 
 .. code-block:: default
 
@@ -168,7 +174,7 @@ For this, we're going to need two classes:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-204
+.. GENERATED FROM PYTHON SOURCE LINES 137-210
 
 Now, let's define our model. But first, let's quickly recap what a DQN is.
 
@@ -244,7 +250,7 @@ network). In effect, the network is trying to predict the *expected return* of
 taking each action given the current input.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-221
+.. GENERATED FROM PYTHON SOURCE LINES 210-227
 
 .. code-block:: default
 
@@ -272,7 +278,7 @@ taking each action given the current input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-242
+.. GENERATED FROM PYTHON SOURCE LINES 228-248
 
 Training
 --------
@@ -295,7 +301,7 @@ utilities:
    episode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-320
+.. GENERATED FROM PYTHON SOURCE LINES 248-326
 
 .. code-block:: default
 
@@ -384,7 +390,7 @@ utilities:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-336
+.. GENERATED FROM PYTHON SOURCE LINES 327-342
 
 Training loop
 ^^^^^^^^^^^^^
@@ -402,7 +408,7 @@ added stability. The target network is updated at every step with a
 the hyperparameter ``TAU``, which was previously defined.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 336-384
+.. GENERATED FROM PYTHON SOURCE LINES 342-390
 
 .. code-block:: default
 
@@ -461,7 +467,7 @@ the hyperparameter ``TAU``, which was previously defined.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 385-398
+.. GENERATED FROM PYTHON SOURCE LINES 391-404
 
 Below, you can find the main training loop. At the beginning we reset
 the environment and obtain the initial ``state`` Tensor. Then, we sample
@@ -477,12 +483,12 @@ episodes. Training RL agents can be a noisy process, so restarting training
 can produce better results if convergence is not observed.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 399-447
+.. GENERATED FROM PYTHON SOURCE LINES 405-453
 
 .. code-block:: default
 
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() or torch.backends.mps.is_available():
         num_episodes = 600
     else:
         num_episodes = 50
@@ -551,7 +557,7 @@ can produce better results if convergence is not observed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 448-459
+.. GENERATED FROM PYTHON SOURCE LINES 454-465
 
 Here is the diagram that illustrates the overall resulting data flow.
 
@@ -568,7 +574,7 @@ expected Q values. A soft update of its weights are performed at every step.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 5 minutes  33.186 seconds)
+   **Total running time of the script:** ( 4 minutes  23.355 seconds)
 
 
 .. _sphx_glr_download_intermediate_reinforcement_q_learning.py:

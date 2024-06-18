@@ -492,6 +492,7 @@ to download the full example code</p>
 </dl>
 <p>This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
 on the CartPole-v1 task from <a class="reference external" href="https://gymnasium.farama.org">Gymnasium</a>.</p>
+<p>You might find it helpful to read the original <a class="reference external" href="https://arxiv.org/abs/1312.5602">Deep Q Learning (DQN)</a> paper</p>
 <p><strong>Task</strong></p>
 <p>The agent has to decide between two actions - moving the cart left or
 right - so that the pole attached to it stays upright. You can find more
@@ -554,7 +555,11 @@ pip3<span class="w"> </span>install<span class="w"> </span>gymnasium<span class=
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
 
 <span class="c1"># if GPU is to be used</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span>
+    <span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span>
+    <span class="s2">"mps"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-backends-mps sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/backends.html#torch.backends.mps.is_available" title="torch.backends.mps.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span>
+    <span class="s2">"cpu"</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="replay-memory">
@@ -844,7 +849,7 @@ episodes is insufficient for to observe good performance on CartPole.
 You should see the model constantly achieve 500 steps within 600 training
 episodes. Training RL agents can be a noisy process, so restarting training
 can produce better results if convergence is not observed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="ow">or</span> <a class="sphx-glr-backref-module-torch-backends-mps sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/backends.html#torch.backends.mps.is_available" title="torch.backends.mps.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
     <span class="n">num_episodes</span> <span class="o">=</span> <span class="mi">600</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">num_episodes</span> <span class="o">=</span> <span class="mi">50</span>
@@ -909,7 +914,7 @@ replay memory and also run optimization step on every iteration.
 Optimization picks a random batch from the replay memory to do training of the
 new policy. The “older” target_net is also used in optimization to compute the
 expected Q values. A soft update of its weights are performed at every step.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  33.186 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  23.355 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-reinforcement-q-learning-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/6ea0e49c7d0da2713588ef1a3b64eb35/reinforcement_q_learning.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">reinforcement_q_learning.py</span></code></a></p>
