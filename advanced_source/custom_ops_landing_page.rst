@@ -13,8 +13,8 @@ APIs.
 TL;DR
 -----
 
-How do I author a custom op from Python?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Authoring a custom operator from Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Please see :ref:`python-custom-ops-tutorial`.
 
@@ -24,8 +24,8 @@ respect to ``torch.compile`` and ``torch.export``.
 - you have some Python bindings to C++/CUDA kernels and want those to compose with PyTorch
 subsystems (like ``torch.compile`` or ``torch.autograd``)
 
-How do I integrate custom C++ and/or CUDA code with PyTorch?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Integrating custom C++ and/or CUDA code with PyTorch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Please see :ref:`cpp-custom-ops-tutorial`.
 

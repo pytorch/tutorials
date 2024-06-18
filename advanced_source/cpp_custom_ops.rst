@@ -1,8 +1,21 @@
+.. _cpp-custom-ops-tutorial:
+
 Custom C++ and CUDA Operators
 =============================
 
-.. note::
-   This tutorial is for PyTorch 2.4+ and the PyTorch nightlies.
+**Author:** `Richard Zou <https://github.com/zou3519>`_
+
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+
+      * How to integrate custom operators written in C++/CUDA with PyTorch
+      * How to test custom operators using ``torch.library.opcheck``
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+
+      * PyTorch 2.4 or later
+      * Basic understanding of C++ and CUDA programming
 
 PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc).
 However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the
@@ -17,11 +30,11 @@ the operation are as follows:
   def mymuladd(a: Tensor, b: Tensor, c: float):
       return a * b + c
 
-You can find the end-to-end working example for this tutorial over at
-https://github.com/pytorch/extension-cpp .
+You can find the end-to-end working example for this tutorial
+`here <https://github.com/pytorch/extension-cpp>`_ .
 
-Build System
-------------
+Setting up the Build System
+---------------------------
 
 If you are developing custom C++/CUDA code, it must be compiled.
 Note that if you’re interfacing with a Python library that already has bindings
@@ -54,7 +67,7 @@ how this is set up.
 
 Defining the custom op and adding backend implementations
 ---------------------------------------------------------
-First, let’s write a C++ function that computes ``mymuladd``:
+First, let's write a C++ function that computes ``mymuladd``:
 
 .. code-block:: cpp
 
@@ -86,8 +99,8 @@ Operator registration is a two step-process:
 - **Registering backend implementations** - In this step, implementations for various
   backends, such as CPU and CUDA, are associated with the operator.
 
-How to define an operator
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Defining an operator
+^^^^^^^^^^^^^^^^^^^^
 To define an operator, follow these steps:
 
 1. select a namespace for an operator. We recommend the namespace be the name of your top-level
@@ -110,8 +123,8 @@ To define an operator, follow these steps:
 
 This makes the operator available from Python via ``torch.ops.extension_cpp.mymuladd``.
 
-How to register backend implementations for an operator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Registering backend implementations for an operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Use ``TORCH_LIBRARY_IMPL`` to register a backend implementation for the operator.
 
 .. code-block:: cpp
@@ -129,7 +142,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < numel) result[idx] = a[idx] * b[idx] + c;
   }
-  
+
   at::Tensor mymuladd_cuda(const at::Tensor& a, const at::Tensor& b, double c) {
     TORCH_CHECK(a.sizes() == b.sizes());
     TORCH_CHECK(a.dtype() == at::kFloat);
@@ -142,17 +155,17 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     const float* a_ptr = a_contig.data_ptr<float>();
     const float* b_ptr = b_contig.data_ptr<float>();
     float* result_ptr = result.data_ptr<float>();
-  
+
     int numel = a_contig.numel();
     muladd_kernel<<<(numel+255)/256, 256>>>(numel, a_ptr, b_ptr, c, result_ptr);
     return result;
   }
-  
+
   TORCH_LIBRARY_IMPL(extension_cpp, CUDA, m) {
     m.impl("mymuladd", &mymuladd_cuda);
   }
 
-How to add torch.compile support for an operator
+Adding ``torch.compile`` support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To add ``torch.compile`` support for an operator, we must add a FakeTensor kernel (also
@@ -182,8 +195,8 @@ for more details).
       torch._check(a.device == b.device)
       return torch.empty_like(a)
 
-How to set up hybrid Python/C++ registration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Setting up hybrid Python/C++ registration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In this tutorial, we defined a custom operator in C++, added CPU/CUDA
 implementations in C++, and added ``FakeTensor`` kernels and backward formulas
 in Python. The order in which these registrations are loaded (or imported)
@@ -199,9 +212,9 @@ of two ways:
 2. If your C++ custom operator is located in a shared library object, you can
    also use ``torch.ops.load_library("/path/to/library.so")`` to load it.
 
-    
-How to add training (autograd) support for an operator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Adding training (autograd) support for an operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Use ``torch.library.register_autograd`` to add training support for an operator. Prefer
 this over directly using Python ``torch.autograd.Function`` or C++ ``torch::autograd::Function``;
 you must use those in a very specific way to avoid silent incorrectness (see
@@ -218,7 +231,7 @@ for more details).
       if ctx.needs_input_grad[1]:
           grad_b = grad * a
       return grad_a, grad_b, None
-  
+
   def _setup_context(ctx, inputs, output):
       a, b, c = inputs
       saved_a, saved_b = None, None
@@ -227,7 +240,7 @@ for more details).
       if ctx.needs_input_grad[1]:
           saved_a = a
       ctx.save_for_backward(saved_a, saved_b)
-  
+
   # This code adds training support for the operator. You must provide us
   # the backward formula for the operator and a `setup_context` function
   # to save values to be used in the backward.
@@ -248,8 +261,8 @@ custom operator and then call that from the backward:
     TORCH_CHECK(a.sizes() == b.sizes());
     TORCH_CHECK(a.dtype() == at::kFloat);
     TORCH_CHECK(b.dtype() == at::kFloat);
-    TORCH_INTERNAL_ASSERT(a.device().type() == at::DeviceType::CPU);
-    TORCH_INTERNAL_ASSERT(b.device().type() == at::DeviceType::CPU);
+    TORCH_CHECK(a.device().type() == at::DeviceType::CPU);
+    TORCH_CHECK(b.device().type() == at::DeviceType::CPU);
     at::Tensor a_contig = a.contiguous();
     at::Tensor b_contig = b.contiguous();
     at::Tensor result = torch::empty(a_contig.sizes(), a_contig.options());
@@ -261,14 +274,14 @@ custom operator and then call that from the backward:
     }
     return result;
   }
-  
+
   TORCH_LIBRARY(extension_cpp, m) {
     m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
     // New! defining the mymul operator
     m.def("mymul(Tensor a, Tensor b) -> Tensor");
   }
-  
-  
+
+
   TORCH_LIBRARY_IMPL(extension_cpp, CPU, m) {
     m.impl("mymuladd", &mymuladd_cpu);
     // New! registering the cpu kernel for the mymul operator
@@ -285,8 +298,8 @@ custom operator and then call that from the backward:
       if ctx.needs_input_grad[1]:
           grad_b = torch.ops.extension_cpp.mymul.default(grad, a)
       return grad_a, grad_b, None
-  
-  
+
+
   def _setup_context(ctx, inputs, output):
       a, b, c = inputs
       saved_a, saved_b = None, None
@@ -295,16 +308,16 @@ custom operator and then call that from the backward:
       if ctx.needs_input_grad[1]:
           saved_a = a
       ctx.save_for_backward(saved_a, saved_b)
-  
-  
+
+
   # This code adds training support for the operator. You must provide us
   # the backward formula for the operator and a `setup_context` function
   # to save values to be used in the backward.
   torch.library.register_autograd(
       "extension_cpp::mymuladd", _backward, setup_context=_setup_context)
 
-How to test an operator
------------------------
+Testing an operator
+-------------------
 Use ``torch.library.opcheck`` to test that the custom op was registered correctly.
 Note that this function does not test that the gradients are mathematically correct
 -- plan to write separate tests for that, either manual ones or by using
@@ -315,20 +328,20 @@ Note that this function does not test that the gradients are mathematically corr
   def sample_inputs(device, *, requires_grad=False):
       def make_tensor(*size):
           return torch.randn(size, device=device, requires_grad=requires_grad)
-  
+
       def make_nondiff_tensor(*size):
           return torch.randn(size, device=device, requires_grad=False)
-  
+
       return [
           [make_tensor(3), make_tensor(3), 1],
           [make_tensor(20), make_tensor(20), 3.14],
           [make_tensor(20), make_nondiff_tensor(20), -123],
           [make_nondiff_tensor(2, 3), make_tensor(2, 3), -0.3],
       ]
-  
+
   def reference_muladd(a, b, c):
       return a * b + c
-  
+
   samples = sample_inputs(device, requires_grad=True)
   samples.extend(sample_inputs(device, requires_grad=False))
   for args in samples:
@@ -336,15 +349,15 @@ Note that this function does not test that the gradients are mathematically corr
       result = torch.ops.extension_cpp.mymuladd(*args)
       expected = reference_muladd(*args)
       torch.testing.assert_close(result, expected)
-  
+
       # Use opcheck to check for incorrect usage of operator registration APIs
       torch.library.opcheck(torch.ops.extension_cpp.mymuladd.default, args)
 
 .. _mutable-ops:
 
-How to create mutable operators
--------------------------------
-You may wish to author a custom operator that mutates its inputs. Use ``Tensor(a!)`` 
+Creating mutable operators
+--------------------------
+You may wish to author a custom operator that mutates its inputs. Use ``Tensor(a!)``
 to specify each mutable Tensor in the schema; otherwise, there will be undefined
 behavior. If there are multiple mutated Tensors, use different names (for example, ``Tensor(a!)``,
 ``Tensor(b!)``, ``Tensor(c!)``) for each mutable Tensor.

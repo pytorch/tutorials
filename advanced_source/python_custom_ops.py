@@ -6,8 +6,16 @@
 Python Custom Operators
 =======================
 
-.. note::
-   This tutorial is for PyTorch 2.4+ and the PyTorch nightlies.
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+
+      * How to integrate custom operators written in Python with PyTorch
+      * How to test custom operators using ``torch.library.opcheck``
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+
+      * PyTorch 2.4 or later
 
 PyTorch offers a large library of operators that work on Tensors (e.g.
 ``torch.add``, ``torch.sum``, etc). However, you might wish to use a new customized
@@ -170,7 +178,7 @@ display(img.grad)
 
 ######################################################################
 # Testing Python Custom operators
-# -------------------------
+# -------------------------------
 # Use ``torch.library.opcheck`` to test that the custom operator was registered
 # correctly. This does not test that the gradients are mathematically correct;
 # please write separate tests for that (either manual ones or ``torch.autograd.gradcheck``).
@@ -192,7 +200,7 @@ for example in examples:
 
 ######################################################################
 # Mutable Python Custom operators
-# -------------------------
+# -------------------------------
 # You can also wrap a Python function that mutates its inputs into a custom 
 # operator.
 # Functions that mutate inputs are common because that is how many low-level
