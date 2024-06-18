@@ -332,9 +332,11 @@ img = transforms.Resize([img_out_y.size[0], img_out_y.size[1]])(img)
 img.save("cat_resized.jpg")
 
 ######################################################################
+# Here is the comparison between the two images: 
+#
 # .. figure:: /_static/img/cat_resized.jpg
 #
-# Low-res image
+# Low-resolution image
 # 
 # .. figure:: /_static/img/cat_superres_with_ort.jpg
 #
