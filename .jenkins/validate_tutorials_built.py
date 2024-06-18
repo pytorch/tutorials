@@ -29,6 +29,7 @@ NOT_RUN = [
     "intermediate_source/fx_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
+    "advanced_source/python_custom_ops",  # https://github.com/pytorch/pytorch/issues/127443
     "advanced_source/ddp_pipeline",  # requires 4 gpus
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "prototype_source/fx_graph_mode_ptq_dynamic",
