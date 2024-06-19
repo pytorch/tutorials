@@ -147,7 +147,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 # We define ``train_loop`` that loops over our optimization code, and ``test_loop`` that
 # evaluates the model's performance against our test data.
 
-def train_loop(dataloader, model, loss_fn, optimizer):
+def train_loop(dataloader, model, batch_size, loss_fn, optimizer):
     size = len(dataloader.dataset)
     # Set the model to training mode - important for batch normalization and dropout layers
     # Unnecessary in this situation but added for best practices
@@ -198,7 +198,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 epochs = 10
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
-    train_loop(train_dataloader, model, loss_fn, optimizer)
+    train_loop(train_dataloader, model, batch_size, loss_fn, optimizer)
     test_loop(test_dataloader, model, loss_fn)
 print("Done!")
 
