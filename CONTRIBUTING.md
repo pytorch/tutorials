@@ -162,7 +162,7 @@ Write for a global audience with an instructive and directive voice.
 
 - PyTorch has a global audience; use clear, easy to understand
   language. Avoid idioms or other figures of speech.
-- To keep your instructions concise, use 
+- To keep your instructions concise, use
   [active voice](https://writing.wisc.edu/handbook/style/ccs_activevoice/) as much as possible.
 - For a short guide on the essentials of writing style,
   [The Elements of Style](https://www.gutenberg.org/files/37134/37134-h/37134-h.htm)
@@ -219,7 +219,7 @@ described in the preceding sections:
 Tutorial](https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html)
 
 If you are creating a recipe, we recommend that you use [this
-template](https://github.com/pytorch/tutorials/blob/tutorials_refresh/recipes_source/recipes/example_recipe.py)
+template](https://github.com/pytorch/tutorials/blob/main/beginner_source/template_tutorial.py)
 as a guide.
 
 
@@ -261,7 +261,7 @@ For Python files, our CI system runs your code during each build.
 
 In order for your tutorial to appear on the website, and through tag
 search, you need to include it in `index.rst`, or for recipes, in
-`recipes_index.rst`. 
+`recipes_index.rst`.
 
 1. Open the relevant file
    [`index.rst`](https://github.com/pytorch/tutorials/blob/main/index.rst)
