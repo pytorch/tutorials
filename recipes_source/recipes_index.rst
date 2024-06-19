@@ -150,6 +150,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Inspecting Model Parameters
+   :card_description: Learn how to gather and inspect parameters (model weights) of your models.
+   :image: ../_static/img/thumbnails/cropped/inspect-model-parameters.png
+   :link: ../recipes/inspecting_model_parameters.html
+   :tags: Basics
 
 .. Interpretability
 
@@ -425,3 +431,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
+   /recipes/interpreting_model_parameters
