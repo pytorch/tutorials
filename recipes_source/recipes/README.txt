@@ -56,3 +56,7 @@ PyTorch Recipes
 14. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+15. calculating_layer_output_dimensions.py
+         Calculating Output Dimensions for Convolutional and Pooling Layers
+         https://pytorch.org/tutorials/recipes/calculating_layer_output_dimensions.html
