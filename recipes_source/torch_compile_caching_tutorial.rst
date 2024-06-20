@@ -6,7 +6,7 @@ Introduction
 ------------------
 
 PyTorch Inductor implements several caches to reduce compilation latency. These caches are transparent to the user.
-This recipes demonstrates how you to configure various parts of the caching in ``torch.compile``.
+This recipe demonstrates how you can configure various parts of the caching in ``torch.compile``.
 
 Prerequisites
 -------------------
@@ -23,9 +23,10 @@ Before starting this recipe, make sure that you have the following:
 Inductor Cache Settings
 ----------------------------
 
-Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is the FX graph cache that stores compiled FX graphs. This cache allows Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration, etc.). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in Redis.
+Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is the FX graph cache that stores compiled FX graphs. This cache allows Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.
 
-There are a few settings relevant to caching and to FX graph caching in particular. The settings are accessible via environment variables, or can be hard-coded in Inductor’s config file.
+There are a few settings relevant to caching and to FX graph caching in particular.
+The settings are accessible via environment variables listed below or can be hard-coded in the Inductor’s config file.
 
 TORCHINDUCTOR_FX_GRAPH_CACHE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,13 +34,13 @@ This setting enables the local FX graph cache feature, i.e., by storing artifact
 
 TORCHINDUCTOR_CACHE_DIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
-This setting specifies the location of all on-disk caches. By default, the location is in the system temp directory under ``torchinductor_<username>``, e.g., ``/tmp/torchinductor_myusername``.
+This setting specifies the location of all on-disk caches. By default, the location is in the system temp directory under ``torchinductor_<username>``, for example, ``/tmp/torchinductor_myusername``.
 
-Note that if ``TRITON_CACHE_DIR`` is not set in the environment, Inductor sets the Triton cache directory to this same temp location (under the Triton subdirectory).
+Note that if ``TRITON_CACHE_DIR`` is not set in the environment, Inductor sets the Triton cache directory to this same temp location, under the Triton subdirectory.
 
 TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This setting enables the remote FX graph cache feature. The current implementation uses Redis. ``1`` enables, and any other value disables. The following environment variables configure the host and port of the Redis server:
+This setting enables the remote FX graph cache feature. The current implementation uses Redis. ``1`` enables cache, and any other value disables. The following environment variables configure the host and port of the Redis server:
 
 ``TORCHINDUCTOR_REDIS_HOST`` (defaults to ``localhost``)
 ``TORCHINDUCTOR_REDIS_PORT`` (defaults to ``6379``)
@@ -52,4 +53,9 @@ This setting enables a remote cache for Inductor’s autotuner. As with the remo
 
 TORCHINDUCTOR_FORCE_DISABLE_CACHES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Set this value to ``1`` to disable all Inductor caching. This setting is useful to, e.g., experiment with cold-start compile time, or to force recompilation for debugging purposes.
+Set this value to ``1`` to disable all Inductor caching. This setting is useful for tasks like experimenting with cold-start compile times or forcing recompilation for debugging purposes.
+
+Conclusion
+-------------
+In this recipe, we have learned that PyTorch Inductor's caching mechanisms significantly reduce compilation latency by utilizing both local and remote caches, which operate seamlessly in the background without requiring user intervention.
+Additionally, we explored the various settings and environment variables that allow users to configure and optimize these caching features according to their specific needs.
