@@ -1,3 +1,39 @@
+# 🎉 Docathon H1 2024 Leaderboard 🎉
+
+This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2024 docathon. 
+A big shout out to everyone who have participated! We have awarded points for each merged PR. 
+For the **easy** label, we have awarded 2 points. For the **medium** label, we have awarded 5 points. 
+For the **advanced** label, we have awarded 10 points. In some cases, we have awarded credit for the PRs that 
+were not merged or issues that have been closed without a merged PR. 
+
+| Author | Points | PR |
+|--- | --- | ---|
+| ahoblitz | 34 | https://github.com/pytorch/pytorch/pull/128566, https://github.com/pytorch/pytorch/pull/128408, https://github.com/pytorch/pytorch/pull/128171, https://github.com/pytorch/pytorch/pull/128083, https://github.com/pytorch/pytorch/pull/128082, https://github.com/pytorch/pytorch/pull/127983, https://github.com/pytorch/xla/pull/7214 | 
+| afrittoli | 25 | https://github.com/pytorch/pytorch/pull/128139, https://github.com/pytorch/pytorch/pull/128133, https://github.com/pytorch/pytorch/pull/128132, https://github.com/pytorch/pytorch/pull/128129, https://github.com/pytorch/pytorch/pull/128127 | 
+| kiszk | 20 | https://github.com/pytorch/pytorch/pull/128337, https://github.com/pytorch/pytorch/pull/128123, https://github.com/pytorch/pytorch/pull/128022, https://github.com/pytorch/pytorch/pull/128312 | 
+| loganthomas | 19 | https://github.com/pytorch/pytorch/pull/128676, https://github.com/pytorch/pytorch/pull/128192, https://github.com/pytorch/pytorch/pull/128189, https://github.com/pytorch/tutorials/pull/2922, https://github.com/pytorch/tutorials/pull/2910, https://github.com/pytorch/xla/pull/7195 | 
+| ignaciobartol | 17 | https://github.com/pytorch/pytorch/pull/128741, https://github.com/pytorch/pytorch/pull/128135, https://github.com/pytorch/pytorch/pull/127938, https://github.com/pytorch/tutorials/pull/2936 | 
+| arunppsg | 17 | https://github.com/pytorch/pytorch/pull/128391, https://github.com/pytorch/pytorch/pull/128021, https://github.com/pytorch/pytorch/pull/128018, https://github.com/pytorch-labs/torchfix/pull/59 | 
+| alperenunlu | 17 | https://github.com/pytorch/tutorials/pull/2934, https://github.com/pytorch/tutorials/pull/2909, https://github.com/pytorch/pytorch/pull/104043 | 
+| anandptl84 | 10 | https://github.com/pytorch/pytorch/pull/128196, https://github.com/pytorch/pytorch/pull/128098 | 
+| GdoongMathew | 10 | https://github.com/pytorch/pytorch/pull/128136, https://github.com/pytorch/pytorch/pull/128051 | 
+| ZhaoqiongZ | 10 | https://github.com/pytorch/pytorch/pull/127872 | 
+| ZailiWang | 10 | https://github.com/pytorch/tutorials/pull/2931 | 
+| jingxu10 | 8 | https://github.com/pytorch/pytorch/pull/127280, https://github.com/pytorch/pytorch/pull/127279, https://github.com/pytorch/pytorch/pull/127278, https://github.com/pytorch/tutorials/pull/2919 | 
+| sitamgithub-MSIT | 7 | https://github.com/pytorch/tutorials/pull/2900, https://github.com/pytorch/xla/pull/7208 | 
+| spzala | 5 | https://github.com/pytorch/pytorch/pull/128679, https://github.com/pytorch/pytorch/pull/128657 | 
+| TharinduRusira | 5 | https://github.com/pytorch/pytorch/pull/128197 | 
+| zabboud | 5 | https://github.com/pytorch/pytorch/pull/128055 | 
+| orion160 | 5 | https://github.com/pytorch/tutorials/pull/2912 | 
+| Ricktho1 | 5 | https://github.com/pytorch/xla/pull/7273 | 
+| IvanLauLinTiong | 4 | https://github.com/pytorch/pytorch/pull/128526, https://github.com/pytorch/tutorials/pull/2849 | 
+| sshkhr | 2 | https://github.com/pytorch/pytorch/pull/128155 | 
+| rk7697 | 2 | https://github.com/pytorch/pytorch/pull/127993 | 
+| hippocookie | 2 | https://github.com/pytorch/tutorials/pull/2937 | 
+| diningeachox | 2 | https://github.com/pytorch/tutorials/pull/2935 | 
+| akhil-maker | 2 | https://github.com/pytorch/tutorials/pull/2899 | 
+| saurabhkthakur | 2 | https://github.com/pytorch/tutorials/pull/2896 | 
+
 # 🎉 Docathon H2 2023 Leaderboard 🎉
 
 This is the list of the docathon contributors that have participated and contributed to the H2 2023 PyTorch docathon. 
