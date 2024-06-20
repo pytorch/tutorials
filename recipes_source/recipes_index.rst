@@ -317,6 +317,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/torch_compile_user_defined_triton_kernel_tutorial.html
    :tags: Model-Optimization
 
+.. Compile Time Caching in ``torch.compile``
+
+.. customcarditem::
+   :header: Compile Time Caching in ``torch.compile``
+   :card_description: Learn how to configure compile time caching in ``torch.compile``
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_caching_tutorial.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
