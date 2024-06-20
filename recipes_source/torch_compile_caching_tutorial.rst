@@ -1,6 +1,6 @@
 Compile Time Caching in ``torch.compile``
 =========================================================
-**Author:** `Oguz Ulgen <https://github.com/oulgen>`_ and `Sam Larsen <https://github.com/masnesral>`_
+**Authors:** `Oguz Ulgen <https://github.com/oulgen>`_ and `Sam Larsen <https://github.com/masnesral>`_
 
 Introduction
 ------------------
@@ -21,7 +21,7 @@ Before starting this recipe, make sure that you have the following:
 * PyTorch 2.4 or later
 
 Inductor Cache Settings
---------------------
+----------------------------
 
 Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is the FX graph cache that stores compiled FX graphs. This cache allows Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration, etc.). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in Redis.
 
