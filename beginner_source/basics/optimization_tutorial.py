@@ -44,8 +44,10 @@ test_data = datasets.FashionMNIST(
     transform=ToTensor()
 )
 
-train_dataloader = DataLoader(training_data, batch_size=64)
-test_dataloader = DataLoader(test_data, batch_size=64)
+batch_size = 64
+
+train_dataloader = DataLoader(training_data, batch_size=batch_size)
+test_dataloader = DataLoader(test_data, batch_size=batch_size)
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -81,9 +83,11 @@ model = NeuralNetwork()
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
-learning_rate = 1e-3
-batch_size = 64
 epochs = 5
+learning_rate = 1e-3
+# batch_size defined earlier in Prerequisite Code
+
+print(f'{epochs=} {batch_size=} {learning_rate=}')
 
 
 
