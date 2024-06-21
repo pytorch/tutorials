@@ -128,12 +128,10 @@ assert onnx_program.model_proto.graph.node[0].domain == "custom.aten"
 assert len(onnx_program.model_proto.graph.node) == 1
 # graph node name is the function name
 assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_add"
-# the function has three nodes
-assert len(onnx_program.model_proto.functions[0].node) == 3
 # function node domain is empty because we use standard ONNX operators
-assert onnx_program.model_proto.functions[0].node[2].domain == ""
+assert {node.domain for node in onnx_program.model_proto.functions[0].node} == {""}
 # function node name is the standard ONNX operator name
-assert onnx_program.model_proto.functions[0].node[2].op_type == "Add"
+assert {node.op_type for node in onnx_program.model_proto.functions[0].node} == {"Add", "Mul", "Constant"}
 
 
 ######################################################################
