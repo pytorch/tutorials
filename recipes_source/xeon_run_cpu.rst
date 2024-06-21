@@ -193,6 +193,7 @@ The command above has the following positional arguments:
 .. list-table::
    :widths: 25 50
    :header-rows: 1
+
    * - knob
      - help
    * - ``program``
@@ -208,6 +209,7 @@ The generic option settings (knobs) include the following:
 .. list-table::
    :widths: 25 10 15 50
    :header-rows: 1
+
    * - knob
      - type
      - default value
@@ -238,6 +240,7 @@ Knobs for applying or disabling optimizations are:
 .. list-table::
    :widths: 25 10 15 50
    :header-rows: 1
+
    * - knob
      - type
      - default value
@@ -268,6 +271,7 @@ Knobs for controlling instance number and compute resource allocation are:
 .. list-table::
    :widths: 25 10 15 50
    :header-rows: 1
+
    * - knob
      - type
      - default value
@@ -328,6 +332,7 @@ Knobs for controlling instance number and compute resource allocation are:
    .. list-table::
       :widths: 25 50
       :header-rows: 1
+
       * - Environment Variable
         - Value
       * - LD_PRELOAD
