@@ -190,14 +190,6 @@ The argument list and usage guidance can be shown with the following command:
 
 The command above has the following positional arguments:
 
-+------------------+---------------------------------------------------------+
-| knob             | help                                                    |
-+==================+=========================================================+
-| ``program``      | The full path of the program/script to be launched.     |
-+------------------+---------------------------------------------------------+
-| ``program_args`` | All the arguments for the program/script to be launched.|
-+------------------+---------------------------------------------------------+
-
 .. list-table::
    :widths: 25 50
    :header-rows: 1
@@ -212,20 +204,6 @@ Explanation of the options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The generic option settings (knobs) include the following:
-
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
-| knob                 | type | default value | help                                                                                                                    |
-+======================+======+===============+=========================================================================================================================+
-| ``-h``, ``--help``   |      |               | Show the help message and exit.                                                                                         |
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
-| ``-m``, ``--module`` |      |               | Changes each process to interpret the launch script as a python module, executing with the same behavior as "python -m".|
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
-| ``--no-python``      | bool | False         | Do not prepend the program with "python" - just exec it directly. Useful when the script is not a Python script.        |
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
-| ``--log-path``       | str  | ''            | The log file directory. Default path is ``''``, which means disable logging to files.                                   |
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
-| ``--log-file-prefix``| str  | 'run'         | log file name prefix.                                                                                                   |
-+----------------------+------+---------------+-------------------------------------------------------------------------------------------------------------------------+
 
 .. list-table::
    :widths: 25 10 15 50
@@ -257,18 +235,6 @@ The generic option settings (knobs) include the following:
 
 Knobs for applying or disabling optimizations are:
 
-+-----------------------------+------+---------------+--------------------------------------------------------------------------------------------------------------------------+
-| knob                        | type | default value | help                                                                                                                     |
-+=============================+======+===============+==========================================================================================================================+
-| ``--enable-tcmalloc``       | bool | False         | Enable ``TCMalloc`` memory allocator.                                                                                    |
-+-----------------------------+------+---------------+--------------------------------------------------------------------------------------------------------------------------+
-| ``--enable-jemalloc``       | bool | False         | Enable ``JeMalloc`` memory allocator.                                                                                    |
-+-----------------------------+------+---------------+--------------------------------------------------------------------------------------------------------------------------+
-| ``--use-default-allocator`` | bool | False         | Use default memory allocator. Neither ``TCMalloc`` nor ``JeMalloc`` would be used.                                       |
-+-----------------------------+------+---------------+--------------------------------------------------------------------------------------------------------------------------+
-| ``--disable-iomp``          | bool | False         | By default, Intel(R) OpenMP lib will be used if installed. Setting this flag would disable the usage of Intel(R) OpenMP. |
-+-----------------------------+------+---------------+--------------------------------------------------------------------------------------------------------------------------+
-
 .. list-table::
    :widths: 25 10 15 50
    :header-rows: 1
@@ -298,34 +264,6 @@ Knobs for applying or disabling optimizations are:
    Memory allocator influences performance. If users do not specify a desired memory allocator, the ``run_cpu`` script will search if any of them is installed in the order of TCMalloc > JeMalloc > PyTorch default memory allocator, and takes the first matched one.
 
 Knobs for controlling instance number and compute resource allocation are:
-
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| knob                        | type | default value | help                                                                                                                                         |
-+=============================+======+===============+==============================================================================================================================================+
-| ``--ninstances``            | int  | 0             | Number of instances.                                                                                                                         |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--ncores-per-instance``   | int  | 0             | Number of cores used by every instance.                                                                                                      |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--node-id``               | int  | -1            | Node id for multi-instance, by default all nodes will be used.                                                                               |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--core-list``             | str  | ''            | Specify the core list as "core_id, core_id, ...." or core range as "core_id-core_id". By dafault all the cores will be used.                 |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--use-logical-core``      | bool | False         | By default only physical cores are used. Specify this flag to use logical cores.                                                             |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--skip-cross-node-cores`` | bool | False         | Prevent the workload to be executed on cores across NUMA nodes.                                                                              |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--rank``                  | int  | -1            | Specify instance index to assign ncores_per_instance for rank; otherwise ncores_per_instance will be assigned sequentially to the instances. |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--multi-instance``        | bool | False         | A quick set to invoke multiple instances of the workload on multi-socket CPU servers.                                                        |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--latency-mode``          | bool | False         | A quick set to invoke benchmarking with latency mode, in which all physical cores are used and 4 cores per instance.                         |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--throughput-mode``       | bool | False         | A quick set to invoke benchmarking with throughput mode, in which all physical cores are used and 1 numa node per instance.                  |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--disable-numactl``       | bool | False         | By default ``numactl`` command is used to control NUMA access. Setting this flag will disable it.                                            |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--disable-taskset``       | bool | False         | Disable the usage of ``taskset`` command.                                                                                                    |
-+-----------------------------+------+---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. list-table::
    :widths: 25 10 15 50
@@ -387,26 +325,10 @@ Knobs for controlling instance number and compute resource allocation are:
 
    Environment variables that will be set by this script include the following:
 
-   +------------------+-------------------------------------------------------------------------------------------------+
-   | Environ Variable |                                             Value                                               |
-   +==================+=================================================================================================+
-   |    LD_PRELOAD    | Depending on knobs you set, <lib>/libiomp5.so, <lib>/libjemalloc.so, <lib>/libtcmalloc.so might |
-   |                  | be appended to LD_PRELOAD.                                                                      |
-   +------------------+-------------------------------------------------------------------------------------------------+
-   |   KMP_AFFINITY   | If libiomp5.so is preloaded, KMP_AFFINITY could be set to "granularity=fine,compact,1,0".       |
-   +------------------+-------------------------------------------------------------------------------------------------+
-   |   KMP_BLOCKTIME  | If libiomp5.so is preloaded, KMP_BLOCKTIME is set to "1".                                       |
-   +------------------+-------------------------------------------------------------------------------------------------+
-   |  OMP_NUM_THREADS | value of ncores_per_instance                                                                    |
-   +------------------+-------------------------------------------------------------------------------------------------+
-   |    MALLOC_CONF   | If libjemalloc.so is preloaded, MALLOC_CONF will be set to                                      |
-   |                  | "oversize_threshold:1,background_thread:true,metadata_thp:auto".                                |
-   +------------------+-------------------------------------------------------------------------------------------------+
-
    .. list-table::
       :widths: 25 50
       :header-rows: 1
-      * - Environ Variable
+      * - Environment Variable
         - Value
       * - LD_PRELOAD
         - Depending on knobs you set, <lib>/libiomp5.so, <lib>/libjemalloc.so, <lib>/libtcmalloc.so might be appended to LD_PRELOAD.
