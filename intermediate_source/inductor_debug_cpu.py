@@ -110,6 +110,7 @@ def forward1(self, arg0_1, arg1_1):
 # C++ kernel in ``output_code``:
 #
 
+import torch
 from torch._inductor.async_compile import AsyncCompile
 async_compile = AsyncCompile()
 
