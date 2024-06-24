@@ -11,10 +11,9 @@ helping the users try out an optimal coordination of resource utilization for th
 What You Will Learn
 -------------------
 
-* How to utilize tools like ``numactl``, ``taskset``, Intel® OpenMP Runtime Library and
-   optimized memory allocators such as ``TCMalloc`` and ``JeMalloc`` for enhanced performance.
-* How to configure CPU resources and memory management to maximize PyTorch
-   inference performance on Intel® Xeon® processors.
+* How to utilize tools like ``numactl``, ``taskset``, Intel® OpenMP Runtime Library and optimized memory
+  allocators such as ``TCMalloc`` and ``JeMalloc`` for enhanced performance.
+* How to configure CPU resources and memory management to maximize PyTorch inference performance on Intel® Xeon® processors.
 
 Introduction of the Optimizations
 ---------------------------------
