@@ -1,9 +1,9 @@
-Optimizing PyTorch Inference with Intel(R) Xeon(R) Scalable Processors
+Optimizing PyTorch Inference with Intel® Xeon® Scalable Processors
 ======================================================================
 
-There are several configuration options that can impact the performance of PyTorch inference when executed on Intel(R) Xeon(R) Scalable Processors.
+There are several configuration options that can impact the performance of PyTorch inference when executed on Intel® Xeon® Scalable Processors.
 To get peak performance, the ``torch.backends.xeon.run_cpu`` script is provided that optimizes the configuration of thread and memory management.
-For thread management, the script configures thread affinity and the preload of Intel(R) OMP library.
+For thread management, the script configures thread affinity and the preload of Intel® OMP library.
 For memory management, it configures NUMA binding and preloads optimized memory allocation libraries, such as TCMalloc and JeMalloc.
 In addition, the script provides tunable parameters for compute resource allocation in both single instance and multiple instance scenarios,
 helping the users try out an optimal coordination of resource utilization for the specific workloads.
@@ -11,10 +11,10 @@ helping the users try out an optimal coordination of resource utilization for th
 What You Will Learn
 -------------------
 
-* How to utilize tools like ``numactl``, ``taskset``, Intel(R) OpenMP Runtime Library and
+* How to utilize tools like ``numactl``, ``taskset``, Intel® OpenMP Runtime Library and
    optimized memory allocators such as ``TCMalloc`` and ``JeMalloc`` for enhanced performance.
 * How to configure CPU resources and memory management to maximize PyTorch
-   inference performance on Intel(R) Xeon(R) processors.
+   inference performance on Intel® Xeon® processors.
 
 Introduction of the Optimizations
 ---------------------------------
@@ -31,7 +31,7 @@ Local memory access is much faster than remote memory access.
 
 Users can get CPU information with ``lscpu`` command on Linux to learn how many cores and sockets are there on the machine.
 Additionally, this command provides NUMA information, such as the distribution of CPU cores.
-Below is an example of executing  ``lscpu`` on a machine equipped with an Intel(R) Xeon(R) CPU Max 9480:
+Below is an example of executing  ``lscpu`` on a machine equipped with an Intel® Xeon® CPU Max 9480:
 
 .. code-block:: console
 
@@ -88,13 +88,13 @@ on CentOS you can run the following command:
 
    $ yum install util-linux
 
-Using Intel(R) OpenMP Runtime Library
+Using Intel® OpenMP Runtime Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 OpenMP is an implementation of multithreading, a method of parallelizing where a primary thread (a series of instructions executed consecutively) forks a specified number of sub-threads and the system divides a task among them. The threads then run concurrently, with the runtime environment allocating threads to different processors.
-Users can control OpenMP behaviors with some environment variable settings to fit for their workloads, the settings are read and executed by OMP libraries. By default, PyTorch uses GNU OpenMP Library (GNU libgomp) for parallel computation. On Intel(R) platforms, Intel(R) OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It usually brings more performance benefits compared to libgomp.
+Users can control OpenMP behaviors with some environment variable settings to fit for their workloads, the settings are read and executed by OMP libraries. By default, PyTorch uses GNU OpenMP Library (GNU libgomp) for parallel computation. On Intel® platforms, Intel® OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It usually brings more performance benefits compared to libgomp.
 
-The Intel(R) OpenMP Runtime Library can be installed using one of these commands:
+The Intel® OpenMP Runtime Library can be installed using one of these commands:
 
 .. code-block:: console
 
@@ -260,7 +260,7 @@ Knobs for applying or disabling optimizations are:
    * - ``--disable-iomp``
      - bool
      - False
-     - By default, Intel(R) OpenMP lib will be used if installed. Setting this flag would disable the usage of Intel(R) OpenMP.
+     - By default, Intel® OpenMP lib will be used if installed. Setting this flag would disable the usage of Intel® OpenMP.
 
 .. note::
 
@@ -351,12 +351,12 @@ Knobs for controlling instance number and compute resource allocation are:
 Conclusion
 ----------
 
-In this tutorial, we explored a variety of advanced configurations and tools designed to optimize PyTorch inference performance on Intel(R) Xeon(R) Scalable Processors. 
+In this tutorial, we explored a variety of advanced configurations and tools designed to optimize PyTorch inference performance on Intel® Xeon® Scalable Processors. 
 By leveraging the ``torch.backends.xeon.run_cpu`` script, we demonstrated how to fine-tune thread and memory management to achieve peak performance.
-We covered essential concepts such as NUMA access control, optimized memory allocators like ``TCMalloc`` and ``JeMalloc``, and the use of Intel(R) OpenMP for efficient multithreading.
+We covered essential concepts such as NUMA access control, optimized memory allocators like ``TCMalloc`` and ``JeMalloc``, and the use of Intel® OpenMP for efficient multithreading.
 
 Additionally, we provided practical command-line examples to guide you through setting up single and multiple instance scenarios, ensuring optimal resource utilization tailored to specific workloads.
-By understanding and applying these techniques, users can significantly enhance the efficiency and speed of their PyTorch applications on Intel(R) Xeon(R) platforms.
+By understanding and applying these techniques, users can significantly enhance the efficiency and speed of their PyTorch applications on Intel® Xeon® platforms.
 
 See also:
 
