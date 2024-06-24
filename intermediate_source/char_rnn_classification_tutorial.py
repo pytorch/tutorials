@@ -23,19 +23,6 @@ Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
 spelling:
 
-.. code-block:: sh
-
-    $ python predict.py Hinton
-    (-0.47) Scottish
-    (-1.52) English
-    (-3.57) Irish
-
-    $ python predict.py Schmidhuber
-    (-0.19) German
-    (-2.48) Czech
-    (-2.68) Dutch
-
-
 Recommended Preparation
 =======================
 
@@ -344,10 +331,10 @@ class RNN(nn.Module):
 
         return output, hidden
 
-    def categoryFromOutput(self, output):
+    def label_from_output(self, output):
         top_n, top_i = output.topk(1)
-        category_i = top_i[0].item()
-        return self.output_labels[category_i], category_i
+        label_i = top_i[0].item()
+        return self.output_labels[label_i], label_i
 
 ###########################
 #Now we can score the output for names!
@@ -360,7 +347,7 @@ rnn = RNN(NameData.n_letters, n_hidden, alldata.labels)
 input = NameData(label='none', text='Albert').tensor
 output, next_hidden = rnn.forward_multi(input)
 print(output) 
-print(rnn.categoryFromOutput(output))
+print(rnn.label_from_output(output))
 
 ######################################################################
 #
@@ -426,10 +413,10 @@ class RNN(nn.Module):
 
         return output, hidden
 
-    def categoryFromOutput(self, output):
+    def label_from_output(self, output):
         top_n, top_i = output.topk(1)
-        category_i = top_i[0].item()
-        return self.output_labels[category_i], category_i    
+        label_i = top_i[0].item()
+        return self.output_labels[label_i], label_i    
     
     def learn_single(self, label_tensor, line_tensor, learning_rate = 0.005):
         #Train the RNN for one example with a learning rate that defaults to 0.005. 
@@ -531,9 +518,9 @@ def evaluate(rnn, testing_data):
         for i in range(len(testing_data)):
             (label_tensor, text_tensor, label, text) = testing_data[i]
             (output, hidden) = rnn.forward_multi(text_tensor)
-            guess, guess_i = rnn.categoryFromOutput(output)
-            category_i = rnn.output_labels.index(label)
-            confusion[category_i][guess_i] += 1
+            guess, guess_i = rnn.label_from_output(output)
+            label_i = rnn.output_labels.index(label)
+            confusion[label_i][guess_i] += 1
 
     # Normalize by dividing every row by its sum
     for i in range(len(rnn.output_labels)):
@@ -571,7 +558,7 @@ evaluate(rnn, test_set)
 # Exercises
 # =========
 #
-# -  Try with a different dataset of line -> category, for example:
+# -  Try with a different dataset of line -> label, for example:
 #
 #    -  Any word -> language
 #    -  First name -> gender
