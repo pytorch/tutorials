@@ -83,20 +83,6 @@ def opt_foo2(x, y):
     return a + b
 print(opt_foo2(t1, t2))
 
-# When using the decorator approach, nested function calls within the decorated
-# function will also be compiled.
-
-def nested_function(x):
-    return torch.sin(x)
-
-@torch.compile
-def outer_function(x, y):
-    a = nested_function(x)
-    b = torch.cos(y)
-    return a + b
-
-print(outer_function(t1, t2))
-
 ######################################################################
 # We can also optimize ``torch.nn.Module`` instances.
 
@@ -114,8 +100,25 @@ mod = MyModule()
 opt_mod = torch.compile(mod)
 print(opt_mod(t))
 
+######################################################################
+# torch.compile and Nested Calls
+# ------------------------------
+# Nested function calls within the decorated function will also be compiled.
+
+def nested_function(x):
+    return torch.sin(x)
+
+@torch.compile
+def outer_function(x, y):
+    a = nested_function(x)
+    b = torch.cos(y)
+    return a + b
+
+print(outer_function(t1, t2))
+
+######################################################################
 # In the same fashion, when compiling a module all sub-modules and methods
-# within it are also compiled.
+# within it, that are not in a skiplist, are also compiled.
 
 class OuterModule(torch.nn.Module):
     def __init__(self):
@@ -133,12 +136,20 @@ print(opt_outer_mod(t))
 
 ######################################################################
 # We can also disable some functions from being compiled by using
-# `torch.compiler.disable`
+# `torch.compiler.disable`. Suppose you want to disable the tracing on just
+# the `complex_function` function, but want to continue the tracing back in
+# `complex_conjugate`. In this case, you can use
+# `torch.compiler.disable(recursive=False)` option. Otherwise, the default is
+# `recursive=True`.
 
-@torch.compiler.disable
+def complex_conjugate(z):
+    return torch.conj(z)
+
+@torch.compiler.disable(recursive=False)
 def complex_function(real, imag):
     # Assuming this function cause problems in the compilation
-    return torch.complex(real, imag)
+    z = torch.complex(real, imag)
+    return complex_conjugate(z)
 
 def outer_function():
     real = torch.tensor([2, 3], dtype=torch.float32)
@@ -159,25 +170,27 @@ except Exception as e:
 #
 # Behavior of ``torch.compile`` with Nested Modules and Function Calls
 #
-# When you use ``torch.compile``, the compiler will try to recursively inline
-# and compile every function call inside the target function or module.
+# When you use ``torch.compile``, the compiler will try to recursively compile
+# every function call inside the target function or module inside the target
+# function or module that is not in a skiplist (e.g. builtins, some functions in
+# the torch.* namespace).
 # 
-# This includes:
-#
-# - **Nested function calls:** All functions called within the decorated or compiled function will also be compiled.
-# 
-# - **Nested modules:** If a ``torch.nn.Module`` is compiled, all sub-modules and functions within the module are also compiled.
-#
 # **Best Practices:**
 #
-# 1. **Modular Testing:** Test individual functions and modules with ``torch.compile``
+# 1. **Top-Level Compilation:** One approach is to compile at the highest level
+# possible (i.e., when the top-level module is initialized/called) and
+# selectively disable compilation when encountering excessive graph breaks or
+# errors. If there are still many compile issues, compile individual
+# subcomponents instead.
+#
+# 2. **Modular Testing:** Test individual functions and modules with ``torch.compile``
 # before integrating them into larger models to isolate potential issues.
-# 
-# 2. **Disable Compilation Selectively:** If certain functions or sub-modules
+#
+# 3. **Disable Compilation Selectively:** If certain functions or sub-modules
 # cannot be handled by `torch.compile`, use the `torch.compiler.disable` context
 # managers to recursively exclude them from compilation.
-# 
-# 3. **Compile Leaf Functions First:** In complex models with multiple nested
+#
+# 4. **Compile Leaf Functions First:** In complex models with multiple nested
 # functions and modules, start by compiling the leaf functions or modules first.
 # For more information see `TorchDynamo APIs for fine-grained tracing <https://pytorch.org/docs/stable/torch.compiler_fine_grain_apis.html>`__.
 
