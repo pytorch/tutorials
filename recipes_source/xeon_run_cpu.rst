@@ -217,23 +217,23 @@ The generic option settings (knobs) include the following:
    * - ``-h``, ``--help``
      - 
      - 
-     - Show the help message and exit.
+     - To show the help message and exit.
    * - ``-m``, ``--module``
      - 
      - 
-     - Changes each process to interpret the launch script as a python module, executing with the same behavior as "python -m".
+     - To change each process to interpret the launch script as a python module, executing with the same behavior as "python -m".
    * - ``--no-python``
      - bool
      - False
-     - Do not prepend the program with "python" - just exec it directly. Useful when the script is not a Python script.
+     - To avoid prepending the program with "python" - just execute it directly. Useful when the script is not a Python script.
    * - ``--log-path``
      - str
      - ``''``
-     - The log file directory. Default path is ``''``, which means disable logging to files.
+     - To specify the log file directory. Default path is ``''``, which means disable logging to files.
    * - ``--log-file-prefix``
      - str
-     - 'run'
-     - log file name prefix.
+     - "run"
+     - Prefix of the log file name.
 
 Knobs for applying or disabling optimizations are:
 
@@ -248,15 +248,15 @@ Knobs for applying or disabling optimizations are:
    * - ``--enable-tcmalloc``
      - bool
      - False
-     - Enable ``TCMalloc`` memory allocator.
+     - To enable ``TCMalloc`` memory allocator.
    * - ``--enable-jemalloc``
      - bool
      - False
-     - Enable ``JeMalloc`` memory allocator.
+     - To enable ``JeMalloc`` memory allocator.
    * - ``--use-default-allocator``
      - bool
      - False
-     - Use default memory allocator. Neither ``TCMalloc`` nor ``JeMalloc`` would be used.
+     - To use default memory allocator. Neither ``TCMalloc`` nor ``JeMalloc`` would be used.
    * - ``--disable-iomp``
      - bool
      - False
@@ -264,7 +264,7 @@ Knobs for applying or disabling optimizations are:
 
 .. note::
 
-   Memory allocator influences performance. If users do not specify a desired memory allocator, the ``run_cpu`` script will search if any of them is installed in the order of TCMalloc > JeMalloc > PyTorch default memory allocator, and takes the first matched one.
+   Memory allocators influence performance. If the user does not specify a desired memory allocator, the ``run_cpu`` script will search if any of them is installed in the order of TCMalloc > JeMalloc > PyTorch default memory allocator, and takes the first matched one.
 
 Knobs for controlling instance number and compute resource allocation are:
 
@@ -283,27 +283,27 @@ Knobs for controlling instance number and compute resource allocation are:
    * - ``--ncores-per-instance``
      - int
      - 0
-     - Number of cores used by every instance.
+     - Number of cores used by each instance.
    * - ``--node-id``
      - int
      - -1
-     - Node id for multi-instance, by default all nodes will be used.
+     - The node ID to be used for multi-instance, by default all nodes will be used.
    * - ``--core-list``
      - str
      - ``''``
-     - Specify the core list as ``'core_id, core_id, ....'`` or core range as ``'core_id-core_id'``. By dafault all the cores will be used.
+     - To specify the core list as ``'core_id, core_id, ....'`` or core range as ``'core_id-core_id'``. By dafault all the cores will be used.
    * - ``--use-logical-core``
      - bool
      - False
-     - By default only physical cores are used. Specify this flag to use logical cores.
+     - By default only physical cores are used. Specifying this flag enables logical cores usage.
    * - ``--skip-cross-node-cores``
      - bool
      - False
-     - Prevent the workload to be executed on cores across NUMA nodes.
+     - To prevent the workload to be executed on cores across NUMA nodes.
    * - ``--rank``
      - int
      - -1
-     - Specify instance index to assign ncores_per_instance for rank; otherwise ncores_per_instance will be assigned sequentially to the instances.
+     - To specify instance index to assign ncores_per_instance for rank; otherwise ncores_per_instance will be assigned sequentially to the instances.
    * - ``--multi-instance``
      - bool
      - False
@@ -323,7 +323,7 @@ Knobs for controlling instance number and compute resource allocation are:
    * - ``--disable-taskset``
      - bool
      - False
-     - Disable the usage of ``taskset`` command.
+     - To disable the usage of ``taskset`` command.
 	 
 .. note::
 
