@@ -228,18 +228,7 @@ print(c)
 # integer with the ``.to()`` method. Note that ``c`` contains all the same
 # values as ``b``, but truncated to integers.
 # 
-# Available data types include:
-# 
-# -  ``torch.bool``
-# -  ``torch.int8``
-# -  ``torch.uint8``
-# -  ``torch.int16``
-# -  ``torch.int32``
-# -  ``torch.int64``
-# -  ``torch.half``
-# -  ``torch.float``
-# -  ``torch.double``
-# -  ``torch.bfloat``
+# For more information, see the `data types documentation <https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype>`__.
 # 
 # Math & Logic with PyTorch Tensors
 # ---------------------------------
