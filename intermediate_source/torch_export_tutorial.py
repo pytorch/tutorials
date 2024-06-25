@@ -556,7 +556,7 @@ def custom_op(input: torch.Tensor) -> torch.Tensor:
 # - Define a ``"Meta"`` implementation of the custom op that returns an empty
 #   tensor with the same shape as the expected output
 
-@custom_op.register_fake
+@custom_op.register_fake 
 def custom_op_meta(x):
     return torch.empty_like(x)
 
