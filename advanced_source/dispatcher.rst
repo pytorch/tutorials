@@ -1,6 +1,11 @@
 Registering a Dispatched Operator in C++
 ========================================
 
+.. warning::
+
+    This tutorial is deprecated as of PyTorch 2.4. Please see :ref:`custom-ops-landing-page`
+    for the newest up-to-date guides on extending PyTorch with Custom Operators.
+
 The dispatcher is an internal component of PyTorch which is responsible for
 figuring out what code should actually get run when you call a function like
 ``torch::add``.  This can be nontrivial, because PyTorch operations need

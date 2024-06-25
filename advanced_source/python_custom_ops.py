@@ -258,5 +258,5 @@ for example in example_inputs:
 # For more detailed information, see:
 #
 # - `the torch.library documentation <https://pytorch.org/docs/stable/library.html>`_
-# - `the Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
+# - `the Custom Operators Manual <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual>`_
 #

@@ -2,6 +2,10 @@ Custom C++ and CUDA Extensions
 ==============================
 **Author**: `Peter Goldsborough <https://www.goldsborough.me/>`_
 
+.. warning::
+
+    This tutorial is deprecated as of PyTorch 2.4. Please see :ref:`custom-ops-landing-page`
+    for the newest up-to-date guides on extending PyTorch with Custom C++/CUDA Extensions.
 
 PyTorch provides a plethora of operations related to neural networks, arbitrary
 tensor algebra, data wrangling and other purposes. However, you may still find
@@ -225,7 +229,7 @@ Instead of:
 Currently open issue for nvcc bug `here
 <https://github.com/pytorch/pytorch/issues/69460>`_.
 Complete workaround code example `here
-<https://github.com/facebookresearch/pytorch3d/commit/cb170ac024a949f1f9614ffe6af1c38d972f7d48>`_. 
+<https://github.com/facebookresearch/pytorch3d/commit/cb170ac024a949f1f9614ffe6af1c38d972f7d48>`_.
 
 Forward Pass
 ************

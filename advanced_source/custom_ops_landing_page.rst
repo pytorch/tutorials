@@ -19,10 +19,11 @@ Authoring a custom operator from Python
 Please see :ref:`python-custom-ops-tutorial`.
 
 You may wish to author a custom operator from Python (as opposed to C++) if:
+
 - you have a Python function you want PyTorch to treat as an opaque callable, especially with
-respect to ``torch.compile`` and ``torch.export``.
+  respect to ``torch.compile`` and ``torch.export``.
 - you have some Python bindings to C++/CUDA kernels and want those to compose with PyTorch
-subsystems (like ``torch.compile`` or ``torch.autograd``)
+  subsystems (like ``torch.compile`` or ``torch.autograd``)
 
 Integrating custom C++ and/or CUDA code with PyTorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,6 +31,7 @@ Integrating custom C++ and/or CUDA code with PyTorch
 Please see :ref:`cpp-custom-ops-tutorial`.
 
 You may wish to author a custom operator from C++ (as opposed to Python) if:
+
 - you have custom C++ and/or CUDA code.
 - you plan to use this code with ``AOTInductor`` to do Python-less inference.
 
