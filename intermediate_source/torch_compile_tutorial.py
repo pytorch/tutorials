@@ -118,7 +118,7 @@ print(outer_function(t1, t2))
 
 ######################################################################
 # In the same fashion, when compiling a module all sub-modules and methods
-# within it, that are not in a skiplist, are also compiled.
+# within it, that are not in a skip list, are also compiled.
 
 class OuterModule(torch.nn.Module):
     def __init__(self):
@@ -172,7 +172,7 @@ except Exception as e:
 #
 # When you use ``torch.compile``, the compiler will try to recursively compile
 # every function call inside the target function or module inside the target
-# function or module that is not in a skiplist (e.g. builtins, some functions in
+# function or module that is not in a skip list (such as built-ins, some functions in
 # the torch.* namespace).
 # 
 # **Best Practices:**
