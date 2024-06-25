@@ -136,11 +136,11 @@ print(opt_outer_mod(t))
 
 ######################################################################
 # We can also disable some functions from being compiled by using
-# `torch.compiler.disable`. Suppose you want to disable the tracing on just
-# the `complex_function` function, but want to continue the tracing back in
-# `complex_conjugate`. In this case, you can use
-# `torch.compiler.disable(recursive=False)` option. Otherwise, the default is
-# `recursive=True`.
+# ``torch.compiler.disable``. Suppose you want to disable the tracing on just
+# the ``complex_function`` function, but want to continue the tracing back in
+# ``complex_conjugate``. In this case, you can use
+# ``torch.compiler.disable(recursive=False)`` option. Otherwise, the default is
+# ``recursive=True``.
 
 def complex_conjugate(z):
     return torch.conj(z)
