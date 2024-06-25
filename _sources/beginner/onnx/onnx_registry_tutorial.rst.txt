@@ -140,26 +140,6 @@ We will override the registration of ``aten::add.Tensor`` with our custom implem
         )
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:136: UserWarning:
-
-    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-    aten::add.Tensor is supported by ONNX registry:       True
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/transformers/utils/generic.py:309: UserWarning:
-
-    torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils._pytree.register_pytree_node instead.
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 122-126
 
 Now let's inspect the model and verify the model has a ``custom_aten_add`` instead of ``aten::add.Tensor``.
@@ -181,12 +161,6 @@ operator, and one for constant attribute.
     assert onnx_program.model_proto.functions[0].node[3].domain == ""
     # function node name is the standard ONNX operator name
     assert onnx_program.model_proto.functions[0].node[3].op_type == "Add"
-
-
-
-
-
-
 
 
 
@@ -237,12 +211,6 @@ As an additional step, we can use ONNX Runtime to run the model, and compare the
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 179-193
 
 Custom operators with existing ONNX Runtime support
@@ -268,22 +236,6 @@ Before we begin, let's check whether ``aten::gelu.default`` is really supported 
     onnx_registry = torch.onnx.OnnxRegistry()
     print(f"aten::gelu.default is supported by ONNX registry: \
         {onnx_registry.is_registered_op(namespace='aten', op_name='gelu', overload='default')}")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:136: UserWarning:
-
-    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-    aten::gelu.default is supported by ONNX registry:     True
-
 
 
 
@@ -328,22 +280,6 @@ so :meth:`onnx_registry.is_registered_op` returns ``True``.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    'Gelu' is not a known op in 'com.microsoft'
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:136: UserWarning:
-
-    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 234-239
 
 Let's inspect the model and verify the model uses :func:`custom_aten_gelu` instead of
@@ -365,12 +301,6 @@ node for ``Gelu`` with namespace ``com.microsoft``.
     assert onnx_program.model_proto.functions[0].node[0].domain == "com.microsoft"
     # function node name is the node name used in the function
     assert onnx_program.model_proto.functions[0].node[0].op_type == "Gelu"
-
-
-
-
-
-
 
 
 
@@ -414,12 +344,6 @@ and compare the results with PyTorch.
     assert len(torch_outputs) == len(onnxruntime_outputs)
     for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
         torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 286-308
@@ -478,12 +402,6 @@ This can be done by using ``torch._custom_op``.
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 335-344
 
 Custom Ops Registration in ONNX Registry
@@ -530,23 +448,6 @@ and ``CustomOpTwo``. These two ops are registered and built in
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    'CustomOpOne' is not a known op in 'test.customop'
-    'CustomOpTwo' is not a known op in 'test.customop'
-    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:136: UserWarning:
-
-    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 375-379
 
 The ``onnx_program`` exposes the exported model as protobuf through ``onnx_program.model_proto``.
@@ -565,12 +466,6 @@ there are two function nodes, one for each operator.
     assert onnx_program.model_proto.functions[0].node[0].op_type == "CustomOpOne"
     assert onnx_program.model_proto.functions[0].node[1].domain == "test.customop"
     assert onnx_program.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
-
-
-
-
-
-
 
 
 
@@ -660,7 +555,7 @@ sit tight and have fun going through all of them to learn all there is about the
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.920 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_beginner_onnx_onnx_registry_tutorial.py:
