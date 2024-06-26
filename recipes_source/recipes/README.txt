@@ -56,3 +56,7 @@ PyTorch Recipes
 14. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+15. keras_progress_bar.py
+         Implementing a Keras Progress Bar
+         https://pytorch.org/tutorials/recipes/keras_progress_bar.html
