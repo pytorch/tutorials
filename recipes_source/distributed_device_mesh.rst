@@ -148,6 +148,26 @@ Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable
 
     torchrun --nproc_per_node=8 hsdp.py
 
+How to use DeviceMesh for your custom parallel solutions
+--------------------------------------------------------
+When working with large scale training, one can have a more complicated custom parallel training composition. For example, one may need to slice out submeshes for different parallelism solutions.
+DeviceMesh allows users to slice child mesh from the parent mesh and re-use the NCCL communicators already created when the parent mesh is initialized.
+
+.. code-block:: python
+
+    from torch.distributed.device_mesh import init_device_mesh
+    mesh_3d = init_device_mesh("cuda", (2, 2, 2), mesh_dim_names=("replicate", "shard", "tp"))
+
+    # Users can slice child meshes from the parent mesh.
+    hsdp_mesh = mesh_3d["replicate", "shard"]
+    tp_mesh = mesh_3d["tp"]
+
+    # Users can access the underlying process group thru `get_group` API.
+    replicate_group = hsdp_mesh["Replicate"].get_group()
+    shard_group = hsdp_mesh["Shard"].get_group()
+    tp_group = tp_mesh.get_group()
+
+
 Conclusion
 ----------
 In conclusion, we have learned about :class:`DeviceMesh` and :func:`init_device_mesh`, as well as how
