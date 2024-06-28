@@ -194,7 +194,7 @@ class NamesDataset(Dataset):
         for filename in text_files:
             label = os.path.splitext(os.path.basename(filename))[0]
             labels_set.add(label)
-            lines = NamesDataset.readLines(filename)
+            lines = open(filename, encoding='utf-8').read().strip().split('\n')
             for name in lines: 
                 self.data.append(NameData(label=label, text=name))
 
@@ -207,11 +207,6 @@ class NamesDataset(Dataset):
         data_item = self.data[idx]
         label_tensor = torch.tensor([self.labels.index(data_item.label)], dtype=torch.long)
         return label_tensor, data_item.tensor, data_item.label, data_item.text
-    
-    # Read a file and split into lines
-    def readLines(filename):
-        lines = open(filename, encoding='utf-8').read().strip().split('\n')
-        return lines
     
 
 #########################
@@ -265,9 +260,6 @@ class RNN(nn.Module):
         self.h2o = nn.Linear(hidden_size, len(output_labels))
         self.softmax = nn.LogSoftmax(dim=1)
 
-    def initHidden(self):
-        return torch.zeros(1, self.hidden_size)
-
     def forward(self, input, hidden):
         hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
         output = self.h2o(hidden)
@@ -285,11 +277,10 @@ print(rnn)
 ######################################################################
 # To run a step of this network we need to pass a single character input 
 # and a hidden state (which we initialize as zeros at first). We'll get to 
-# multi-character names during training
+# multi-character names next
 
 input = NameData(label='none', text='A').tensor
-hidden = torch.zeros(1, n_hidden)
-output, next_hidden = rnn(input[0], hidden)
+output, next_hidden = rnn(input[0], torch.zeros(1, n_hidden))
 print(output) 
 
 ######################################################################
@@ -297,7 +288,7 @@ print(output)
 # --------------------
 # Multi-character names require just a little bit more effort which is 
 # keeping track of the hidden output and passing it back into the RNN. 
-# You can see this defined in the function forward_multi()
+# You can see this updated work defined in the function forward()
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -313,39 +304,34 @@ class RNN(nn.Module):
         self.h2h = nn.Linear(hidden_size, hidden_size)
         self.h2o = nn.Linear(hidden_size, len(output_labels))
         self.softmax = nn.LogSoftmax(dim=1)
-
-    def initHidden(self):
-        return torch.zeros(1, self.hidden_size)
-
-    def forward(self, input, hidden):
-        hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
-        output = self.h2o(hidden)
-        output = self.softmax(output)
-        return output, hidden
     
-    def forward_multi(self, line_tensor):
-        hidden = rnn.initHidden()
+    def forward(self, line_tensor):
+        hidden = torch.zeros(1, rnn.hidden_size)
+        output = torch.zeros(1, len(self.output_labels))
 
         for i in range(line_tensor.size()[0]):
-            output, hidden = rnn.forward(line_tensor[i], hidden)
+            input = line_tensor[i]
+            hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
+            output = self.h2o(hidden)
+            output = self.softmax(output)
 
-        return output, hidden
+        return output
 
     def label_from_output(self, output):
         top_n, top_i = output.topk(1)
         label_i = top_i[0].item()
         return self.output_labels[label_i], label_i
 
+
 ###########################
 #Now we can score the output for names!
 
 
 n_hidden = 128
-hidden = torch.zeros(1, n_hidden)
 rnn = RNN(NameData.n_letters, n_hidden, alldata.labels)
 
 input = NameData(label='none', text='Albert').tensor
-output, next_hidden = rnn.forward_multi(input)
+output = rnn(input) #this is equivalent to output = rnn.forward(input)
 print(output) 
 print(rnn.label_from_output(output))
 
@@ -375,15 +361,15 @@ print(rnn.label_from_output(output))
 # -  Back-propagate
 # -  Return the output and loss
 #
-# We also define a learn_batch() function which trains on a given dataset
-
+# We also define a learn() function which trains on a given dataset with minibatches
 
 import torch.nn as nn
 import torch.nn.functional as F
 import random 
+import numpy as np 
 
 class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_labels, criterion = nn.NLLLoss()):
+    def __init__(self, input_size, hidden_size, output_labels):
         super(RNN, self).__init__()
 
         self.hidden_size = hidden_size
@@ -393,97 +379,76 @@ class RNN(nn.Module):
         self.h2h = nn.Linear(hidden_size, hidden_size)
         self.h2o = nn.Linear(hidden_size, len(output_labels))
         self.softmax = nn.LogSoftmax(dim=1)
-
-        self.criterion = criterion
-
-    def initHidden(self):
-        return torch.zeros(1, self.hidden_size)
-
-    def forward(self, input, hidden):
-        hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
-        output = self.h2o(hidden)
-        output = self.softmax(output)
-        return output, hidden
     
-    def forward_multi(self, line_tensor):
-        hidden = self.initHidden()
+    def forward(self, line_tensor):
+        hidden = torch.zeros(1, rnn.hidden_size)
+        output = torch.zeros(1, len(self.output_labels))
 
         for i in range(line_tensor.size()[0]):
-            output, hidden = self.forward(line_tensor[i], hidden)
+            input = line_tensor[i]
+            hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
+            output = self.h2o(hidden)
+            output = self.softmax(output)
 
-        return output, hidden
+        return output
 
     def label_from_output(self, output):
         top_n, top_i = output.topk(1)
         label_i = top_i[0].item()
-        return self.output_labels[label_i], label_i    
+        return self.output_labels[label_i], label_i
     
-    def learn_single(self, label_tensor, line_tensor, learning_rate = 0.005):
-        #Train the RNN for one example with a learning rate that defaults to 0.005. 
-        
-
-        rnn.zero_grad()
-        output, hidden = self.forward_multi(line_tensor)
-        
-        loss = self.criterion(output, label_tensor)
-        loss.backward()
-
-        # Add parameters' gradients to their values, multiplied by learning rate
-        for p in self.parameters():
-            p.data.add_(p.grad.data, alpha=-learning_rate)
-
-        return output, loss.item()
-
-    def learn_batch(self, training_data, n_iters = 1000, report_every = 100):
+    def learn(self, training_data, n_epoch = 1000, n_batch_size = 64, report_every = 50, learning_rate = 0.005, criterion = nn.NLLLoss()):
         """
         Learn on a batch of training_data for a specified number of iterations and reporting thresholds
         """
-
         # Keep track of losses for plotting
         current_loss = 0
         all_losses = []
+        self.train() 
+        optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate)
 
         start = time.time()
-        print(f"training data = {training_data}")
-        print(f"size = {len(training_data)}")
+        print(f"training on data set with n = {len(training_data)}")
 
-        for iter in range(1, n_iters + 1):
-            rand_idx = random.randint(0,len(training_data)-1)
-            (label_tensor, text_tensor, label, text) = training_data[rand_idx]
+        for iter in range(1, n_epoch + 1): 
+            self.zero_grad() # clear the gradients 
 
-            output, loss = self.learn_single(label_tensor, text_tensor)
-            current_loss += loss
+            # create some minibatches
+            # we cannot use dataloaders because each of our names is a different length
+            batches = list(range(len(training_data)))
+            random.shuffle(batches)
+            batches = np.array_split(batches, len(batches) //n_batch_size )
 
-            # Print ``iter`` number, loss, name and guess
+            for idx, batch in enumerate(batches): 
+                batch_loss = 0
+                for i in batch: #for each example in this batch
+                    (label_tensor, text_tensor, label, text) = training_data[i]
+                    output = self.forward(text_tensor)
+                    loss = criterion(output, label_tensor)
+                    batch_loss += loss
+
+                # optimize parameters
+                batch_loss.backward()
+                nn.utils.clip_grad_norm_(self.parameters(), 3)
+                optimizer.step()
+                optimizer.zero_grad()
+
+                current_loss += batch_loss.item() / len(batch)
+            
+            all_losses.append(current_loss / len(batches) )
             if iter % report_every == 0:
-                all_losses.append(current_loss / report_every)
-                print(f"{iter} ({iter / n_iters:.0%}): \t iteration loss = {all_losses[-1]}")
-                current_loss = 0
+                print(f"{iter} ({iter / n_epoch:.0%}): \t average batch loss = {all_losses[-1]}")
+            current_loss = 0
         
         return all_losses
 
-###########################
-#We can test this with one of our examples and see the output vector, loss and guess of a class from a random network.
-#
-#Here is a single input example
+##########################################################################
+# We can now train a dataset with mini batches for a specified number of epochs
 
 n_hidden = 128
 hidden = torch.zeros(1, n_hidden)
 rnn = RNN(NameData.n_letters, n_hidden, alldata.labels)
-
-(label_tensor, text_tensor, label, text) = train_set[0]
-print(f"training on name = {text} with label = {label}")
-(output, loss) = rnn.learn_single(label_tensor, text_tensor)
-
-print("LogSoftmax outputs (highest score is predicted class")
-for i in range(len(output[0])):
-    print (f"\t{i}. {alldata.labels[i]} => {output[0][i]}") 
-
-###########################
-#We can also train on our training data set by randomly selecting examples
-
-
-all_losses = rnn.learn_batch(train_set, n_iters=200000, report_every=10000)
+all_losses = rnn.learn(train_set)
 
 ######################################################################
 # Plotting the Results
@@ -513,11 +478,12 @@ plt.show()
 
 def evaluate(rnn, testing_data):
     confusion = torch.zeros(len(rnn.output_labels), len(rnn.output_labels))
-
-    with torch.no_grad(): # do not record the gradiants during eval phase 
+    
+    rnn.eval() #set to eval mode
+    with torch.no_grad(): # do not record the gradiants during eval phase
         for i in range(len(testing_data)):
             (label_tensor, text_tensor, label, text) = testing_data[i]
-            (output, hidden) = rnn.forward_multi(text_tensor)
+            output = rnn.forward(text_tensor)
             guess, guess_i = rnn.label_from_output(output)
             label_i = rnn.output_labels.index(label)
             confusion[label_i][guess_i] += 1
@@ -541,7 +507,8 @@ def evaluate(rnn, testing_data):
     ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
     # sphinx_gallery_thumbnail_number = 2
-    plt.show()    
+    plt.show()
+
 
 evaluate(rnn, test_set)
 
