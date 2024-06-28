@@ -150,7 +150,7 @@ Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable
 
 How to use DeviceMesh for your custom parallel solutions
 --------------------------------------------------------
-When working with large scale training, one can have a more complicated custom parallel training composition. For example, one may need to slice out submeshes for different parallelism solutions.
+When working with large scale training, you might have more complex custom parallel training composition. For example, you may need to slice out submeshes for different parallelism solutions.
 DeviceMesh allows users to slice child mesh from the parent mesh and re-use the NCCL communicators already created when the parent mesh is initialized.
 
 .. code-block:: python
