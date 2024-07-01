@@ -31,14 +31,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Basics
 
 .. customcarditem::
-   :header: Loading data in PyTorch
-   :card_description: Learn how to use PyTorch packages to prepare and load common datasets for your model.
-   :image: ../_static/img/thumbnails/cropped/loading-data.PNG
-   :link: ../recipes/recipes/loading_data_recipe.html
-   :tags: Basics
-
-
-.. customcarditem::
    :header: Defining a Neural Network
    :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: ../_static/img/thumbnails/cropped/defining-a-network.PNG
@@ -283,6 +275,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: CPU launcher script for optimal performance on Intel® Xeon
+   :card_description: How to use launcher script for optimal runtime configurations on Intel® Xeon CPUs.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/xeon_run_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
    :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -307,6 +306,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/compiling_optimizer.html
    :tags: Model-Optimization
 
+.. (beta) Running the compiled optimizer with an LR Scheduler
+
+.. customcarditem::
+   :header: (beta) Running the compiled optimizer with an LR Scheduler
+   :card_description: Speed up training with LRScheduler and torch.compiled optimizer
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/compiling_optimizer_lr_scheduler.html
+   :tags: Model-Optimization
+
 .. Using User-Defined Triton Kernels with ``torch.compile``
 
 .. customcarditem::
@@ -314,6 +322,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :card_description: Learn how to use user-defined kernels with ``torch.compile``
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/torch_compile_user_defined_triton_kernel_tutorial.html
+   :tags: Model-Optimization
+
+.. Compile Time Caching in ``torch.compile``
+
+.. customcarditem::
+   :header: Compile Time Caching in ``torch.compile``
+   :card_description: Learn how to configure compile time caching in ``torch.compile``
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_caching_tutorial.html
    :tags: Model-Optimization
 
 .. Intel(R) Extension for PyTorch*
@@ -398,7 +415,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. toctree::
    :hidden:
 
-   /recipes/recipes/loading_data_recipe
    /recipes/recipes/defining_a_neural_network
    /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
@@ -415,6 +431,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
+   /recipes/recipes/xeon_run_cpu
    /recipes/recipes/intel_extension_for_pytorch
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
