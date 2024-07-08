@@ -326,9 +326,9 @@ example](https://github.com/pytorch/tutorials/blob/main/_static/img/thumbnails/c
 
 The following command builds an HTML version of the tutorial website.
 
-    ```
-    make html-noplot
-    ```
+```
+make html-noplot
+```
 
 This command does not run your tutorial code. To build the tutorial in a
 way that executes the code, use `make docs`. However, unless you have a

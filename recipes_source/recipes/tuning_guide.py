@@ -213,6 +213,7 @@ def gelu(x):
 
 ###############################################################################
 # Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. ``OMP_PROC_BIND`` specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. ``OMP_SCHEDULE`` determines how OpenMP threads are scheduled. ``GOMP_CPU_AFFINITY`` binds threads to specific CPUs.
+# An important tuning parameter is core pinning which prevent the threads of migrating between multiple CPUs, enhancing data location and minimizing inter core communication.
 #
 # .. code-block:: sh
 #
@@ -317,6 +318,37 @@ with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bf
 ###############################################################################
 # GPU specific optimizations
 # --------------------------
+
+###############################################################################
+# Enable Tensor cores
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Tensor cores are specialized hardware designed to compute matrix-matrix multiplication
+# operations, primarily utilized in deep learning and AI workloads. Tensor cores have
+# specific precision requirements which can be adjusted manually or via the Automatic
+# Mixed Precision API.
+#
+# In particular, tensor operations take advantage of lower precision workloads.
+# Which can be controlled via ``torch.set_float32_matmul_precision``.
+# The default format is set to 'highest,' which utilizes the tensor data type. 
+# However, PyTorch offers alternative precision settings: 'high' and 'medium.'
+# These options prioritize computational speed over numerical precision."
+
+###############################################################################
+# Use CUDA Graphs
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# At the time of using a GPU, work first must be launched from the CPU and
+# in some cases the context switch between CPU and GPU can lead to bad resource
+# utilization. CUDA graphs are a way to keep computation within the GPU without
+# paying the extra cost of kernel launches and host synchronization.
+
+# It can be enabled using 
+torch.compile(m, "reduce-overhead")
+# or
+torch.compile(m, "max-autotune")
+
+###############################################################################
+# Support for CUDA graph is in development, and its usage can incur in increased
+# device memory consumption and some models might not compile.
 
 ###############################################################################
 # Enable cuDNN auto-tuner
