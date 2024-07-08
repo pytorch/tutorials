@@ -366,7 +366,7 @@ for i, sample in enumerate(transformed_dataset):
 # -  Shuffling the data
 # -  Load the data in parallel using ``multiprocessing`` workers.
 #
-# ``torch.utils.data.DataLoader`` is an iterator which provides all these
+# ``torch.utils.data.DataLoader`` is an iterable which provides all these
 # features. Parameters used below should be clear. One parameter of
 # interest is ``collate_fn``. You can specify how exactly the samples need
 # to be batched using ``collate_fn``. However, default collate should work
