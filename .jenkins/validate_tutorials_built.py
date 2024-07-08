@@ -30,7 +30,6 @@ NOT_RUN = [
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/python_custom_ops",  # https://github.com/pytorch/pytorch/issues/127443
-    "advanced_source/ddp_pipeline",  # requires 4 gpus
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "prototype_source/fx_graph_mode_ptq_dynamic",
     "prototype_source/vmap_recipe",
@@ -54,7 +53,10 @@ NOT_RUN = [
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
-    "intermediate_source/tensorboard_profiler_tutorial" # reenable after 2.0 release.
+    "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
+    "intermediate_source/inductor_debug_cpu", # reenable after 2942 
+    "beginner_source/onnx/onnx_registry_tutorial", # reenable after 2941 is fixed.
+    "intermediate_source/torch_export_tutorial" # reenable after 2940 is fixed.
 ]
 
 def tutorial_source_dirs() -> List[Path]:
