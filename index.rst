@@ -745,13 +745,6 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Distributed Pipeline Parallelism Using RPC
-   :card_description: Demonstrate how to implement distributed pipeline parallelism using RPC
-   :image: _static/img/thumbnails/cropped/Distributed-Pipeline-Parallelism-Using-RPC.png
-   :link: intermediate/dist_pipeline_parallel_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Implementing Batch RPC Processing Using Asynchronous Executions
    :card_description: Learn how to use rpc.functions.async_execution to implement batch RPC
    :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
@@ -763,13 +756,6 @@ Welcome to PyTorch Tutorials
    :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
    :image: _static/img/thumbnails/cropped/Combining-Distributed-DataParallel-with-Distributed-RPC-Framework.png
    :link: advanced/rpc_ddp_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
-   :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
-   :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
-   :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -1145,10 +1131,8 @@ Additional Resources
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
-   intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   advanced/ddp_pipeline
    advanced/generic_join
 
 .. toctree::
