@@ -163,7 +163,7 @@ DeviceMesh allows users to slice child mesh from the parent mesh and re-use the 
     tp_mesh = mesh_3d["tp"]
 
     # Users can access the underlying process group thru `get_group` API.
-    replicate_group = hsdp_mesh["Replicate"].get_group()
+    replicate_group = hsdp_mesh["replicate"].get_group()
     shard_group = hsdp_mesh["Shard"].get_group()
     tp_group = tp_mesh.get_group()
 
