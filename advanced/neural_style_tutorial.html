@@ -398,6 +398,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -727,38 +728,33 @@ network to evaluation mode using <code class="docutils literal notranslate"><spa
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vgg19-dcbb9e9d.pth
 
   0%|          | 0.00/548M [00:00&lt;?, ?B/s]
-  3%|3         | 17.2M/548M [00:00&lt;00:03, 180MB/s]
-  6%|6         | 34.9M/548M [00:00&lt;00:02, 182MB/s]
- 10%|9         | 52.4M/548M [00:00&lt;00:02, 183MB/s]
- 13%|#2        | 69.9M/548M [00:00&lt;00:02, 183MB/s]
- 16%|#5        | 87.5M/548M [00:00&lt;00:02, 183MB/s]
- 19%|#9        | 105M/548M [00:00&lt;00:02, 183MB/s]
- 22%|##2       | 122M/548M [00:00&lt;00:02, 183MB/s]
- 26%|##5       | 140M/548M [00:00&lt;00:02, 183MB/s]
- 29%|##8       | 158M/548M [00:00&lt;00:02, 183MB/s]
- 32%|###1      | 175M/548M [00:01&lt;00:02, 183MB/s]
- 35%|###5      | 193M/548M [00:01&lt;00:02, 184MB/s]
- 38%|###8      | 210M/548M [00:01&lt;00:01, 184MB/s]
- 42%|####1     | 228M/548M [00:01&lt;00:01, 184MB/s]
- 45%|####4     | 246M/548M [00:01&lt;00:01, 184MB/s]
- 48%|####8     | 263M/548M [00:01&lt;00:01, 183MB/s]
- 51%|#####1    | 281M/548M [00:01&lt;00:01, 184MB/s]
- 54%|#####4    | 299M/548M [00:01&lt;00:01, 184MB/s]
- 58%|#####7    | 316M/548M [00:01&lt;00:01, 184MB/s]
- 61%|######    | 334M/548M [00:01&lt;00:01, 184MB/s]
- 64%|######4   | 352M/548M [00:02&lt;00:01, 184MB/s]
- 67%|######7   | 369M/548M [00:02&lt;00:01, 184MB/s]
- 71%|#######   | 387M/548M [00:02&lt;00:00, 184MB/s]
- 74%|#######3  | 404M/548M [00:02&lt;00:00, 184MB/s]
- 77%|#######7  | 422M/548M [00:02&lt;00:00, 184MB/s]
- 80%|########  | 440M/548M [00:02&lt;00:00, 183MB/s]
- 83%|########3 | 457M/548M [00:02&lt;00:00, 182MB/s]
- 87%|########6 | 475M/548M [00:02&lt;00:00, 182MB/s]
- 90%|########9 | 492M/548M [00:02&lt;00:00, 182MB/s]
- 93%|#########3| 510M/548M [00:02&lt;00:00, 183MB/s]
- 96%|#########6| 527M/548M [00:03&lt;00:00, 183MB/s]
- 99%|#########9| 545M/548M [00:03&lt;00:00, 184MB/s]
-100%|##########| 548M/548M [00:03&lt;00:00, 183MB/s]
+  4%|3         | 20.4M/548M [00:00&lt;00:02, 213MB/s]
+  7%|7         | 40.9M/548M [00:00&lt;00:02, 214MB/s]
+ 11%|#1        | 61.4M/548M [00:00&lt;00:02, 214MB/s]
+ 15%|#4        | 81.9M/548M [00:00&lt;00:02, 214MB/s]
+ 19%|#8        | 102M/548M [00:00&lt;00:02, 214MB/s]
+ 22%|##2       | 123M/548M [00:00&lt;00:02, 214MB/s]
+ 26%|##6       | 143M/548M [00:00&lt;00:01, 214MB/s]
+ 30%|##9       | 164M/548M [00:00&lt;00:01, 214MB/s]
+ 34%|###3      | 184M/548M [00:00&lt;00:01, 214MB/s]
+ 37%|###7      | 205M/548M [00:01&lt;00:01, 213MB/s]
+ 41%|####1     | 225M/548M [00:01&lt;00:01, 214MB/s]
+ 45%|####4     | 246M/548M [00:01&lt;00:01, 214MB/s]
+ 49%|####8     | 266M/548M [00:01&lt;00:01, 214MB/s]
+ 52%|#####2    | 287M/548M [00:01&lt;00:01, 214MB/s]
+ 56%|#####6    | 307M/548M [00:01&lt;00:01, 214MB/s]
+ 60%|#####9    | 328M/548M [00:01&lt;00:01, 215MB/s]
+ 64%|######3   | 348M/548M [00:01&lt;00:00, 215MB/s]
+ 67%|######7   | 369M/548M [00:01&lt;00:00, 215MB/s]
+ 71%|#######1  | 390M/548M [00:01&lt;00:00, 215MB/s]
+ 75%|#######4  | 410M/548M [00:02&lt;00:00, 215MB/s]
+ 79%|#######8  | 431M/548M [00:02&lt;00:00, 215MB/s]
+ 82%|########2 | 451M/548M [00:02&lt;00:00, 215MB/s]
+ 86%|########6 | 472M/548M [00:02&lt;00:00, 215MB/s]
+ 90%|########9 | 492M/548M [00:02&lt;00:00, 215MB/s]
+ 94%|#########3| 513M/548M [00:02&lt;00:00, 215MB/s]
+ 97%|#########7| 534M/548M [00:02&lt;00:00, 215MB/s]
+100%|##########| 548M/548M [00:02&lt;00:00, 214MB/s]
 </pre></div>
 </div>
 <p>Additionally, VGG networks are trained on images with each channel
@@ -970,25 +966,25 @@ To copy construct from a tensor, it is recommended to use sourceTensor.clone().d
 
 Optimizing..
 run [50]:
-Style Loss : 4.047278 Content Loss: 4.130445
+Style Loss : 4.036522 Content Loss: 4.102869
 
 run [100]:
-Style Loss : 1.166251 Content Loss: 3.043549
+Style Loss : 1.110710 Content Loss: 3.004134
 
 run [150]:
-Style Loss : 0.715753 Content Loss: 2.659321
+Style Loss : 0.712808 Content Loss: 2.645101
 
 run [200]:
-Style Loss : 0.482481 Content Loss: 2.491908
+Style Loss : 0.475477 Content Loss: 2.490910
 
 run [250]:
-Style Loss : 0.348535 Content Loss: 2.404064
+Style Loss : 0.344615 Content Loss: 2.401833
 
 run [300]:
-Style Loss : 0.266067 Content Loss: 2.351256
+Style Loss : 0.263164 Content Loss: 2.347321
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  37.200 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.734 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b3bcd49c4dd9be3a44c6c5d2e2a8b0cd/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></p>

@@ -400,6 +400,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -549,57 +550,51 @@ and <a class="reference external" href="buildmodel_tutorial.html">Build Model</a
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:13, 360322.66it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 676764.04it/s]
-  3%|2         | 720896/26421880 [00:00&lt;00:16, 1599043.93it/s]
-  5%|5         | 1376256/26421880 [00:00&lt;00:10, 2385999.08it/s]
-  8%|8         | 2129920/26421880 [00:00&lt;00:08, 3014780.93it/s]
- 11%|#1        | 2949120/26421880 [00:01&lt;00:06, 3515914.17it/s]
- 15%|#4        | 3833856/26421880 [00:01&lt;00:05, 3951270.93it/s]
- 18%|#8        | 4849664/26421880 [00:01&lt;00:04, 4465491.08it/s]
- 22%|##2       | 5931008/26421880 [00:01&lt;00:04, 4922860.61it/s]
- 27%|##7       | 7143424/26421880 [00:01&lt;00:03, 5449028.52it/s]
- 32%|###1      | 8454144/26421880 [00:02&lt;00:03, 5985844.58it/s]
- 37%|###7      | 9895936/26421880 [00:02&lt;00:02, 7105680.21it/s]
- 41%|####      | 10715136/26421880 [00:02&lt;00:02, 6811265.38it/s]
- 47%|####6     | 12386304/26421880 [00:02&lt;00:01, 7597158.95it/s]
- 54%|#####3    | 14221312/26421880 [00:02&lt;00:01, 9372072.61it/s]
- 58%|#####7    | 15237120/26421880 [00:02&lt;00:01, 9428435.75it/s]
- 62%|######1   | 16285696/26421880 [00:02&lt;00:01, 8914001.16it/s]
- 70%|#######   | 18546688/26421880 [00:02&lt;00:00, 11181797.21it/s]
- 75%|#######4  | 19791872/26421880 [00:03&lt;00:00, 10546183.27it/s]
- 85%|########4 | 22347776/26421880 [00:03&lt;00:00, 13402132.96it/s]
- 90%|######### | 23789568/26421880 [00:03&lt;00:00, 12129591.03it/s]
-100%|##########| 26421880/26421880 [00:03&lt;00:00, 7604267.24it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:13, 359857.55it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:38, 680120.77it/s]
+  3%|3         | 917504/26421880 [00:00&lt;00:12, 2104001.17it/s]
+  8%|7         | 2097152/26421880 [00:00&lt;00:06, 3848347.38it/s]
+ 13%|#2        | 3375104/26421880 [00:00&lt;00:04, 4991883.21it/s]
+ 18%|#8        | 4816896/26421880 [00:01&lt;00:03, 6005870.31it/s]
+ 24%|##4       | 6356992/26421880 [00:01&lt;00:02, 7725821.39it/s]
+ 27%|##7       | 7208960/26421880 [00:01&lt;00:02, 7767214.24it/s]
+ 31%|###       | 8126464/26421880 [00:01&lt;00:02, 7438934.41it/s]
+ 38%|###7      | 9994240/26421880 [00:01&lt;00:01, 9758706.67it/s]
+ 42%|####1     | 11042816/26421880 [00:01&lt;00:01, 9741399.07it/s]
+ 46%|####6     | 12189696/26421880 [00:01&lt;00:01, 9266095.40it/s]
+ 55%|#####4    | 14417920/26421880 [00:01&lt;00:00, 12089927.42it/s]
+ 59%|#####9    | 15695872/26421880 [00:02&lt;00:00, 11997991.52it/s]
+ 65%|######4   | 17072128/26421880 [00:02&lt;00:00, 11270765.86it/s]
+ 75%|#######4  | 19791872/26421880 [00:02&lt;00:00, 14191492.71it/s]
+ 81%|########1 | 21430272/26421880 [00:02&lt;00:00, 13403028.90it/s]
+ 92%|#########1| 24215552/26421880 [00:02&lt;00:00, 16954150.66it/s]
+100%|#########9| 26312704/26421880 [00:02&lt;00:00, 17867590.28it/s]
+100%|##########| 26421880/26421880 [00:02&lt;00:00, 9897758.12it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 324599.76it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 328776.53it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:12, 359663.55it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 676009.04it/s]
- 16%|#6        | 720896/4422102 [00:00&lt;00:02, 1596321.81it/s]
- 30%|##9       | 1310720/4422102 [00:00&lt;00:01, 2240272.83it/s]
- 44%|####4     | 1966080/4422102 [00:00&lt;00:00, 2724596.40it/s]
- 61%|######    | 2686976/4422102 [00:01&lt;00:00, 3136200.98it/s]
- 79%|#######8  | 3473408/4422102 [00:01&lt;00:00, 3519525.76it/s]
- 99%|#########8| 4358144/4422102 [00:01&lt;00:00, 3936549.31it/s]
-100%|##########| 4422102/4422102 [00:01&lt;00:00, 3020509.85it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:11, 364414.57it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 685072.65it/s]
+ 19%|#9        | 851968/4422102 [00:00&lt;00:01, 1950033.54it/s]
+ 62%|######1   | 2719744/4422102 [00:00&lt;00:00, 5269850.73it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6090368.97it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 35630820.12it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 41764558.98it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -889,7 +884,7 @@ Done!
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html">torch.optim</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">Warmstart Training a Model</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  17.913 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  7.683 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-optimization-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0662a149d54bd776924742c96eb6282d/optimization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">optimization_tutorial.py</span></code></a></p>
