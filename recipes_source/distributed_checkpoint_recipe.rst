@@ -253,6 +253,13 @@ The reason that we need the ``state_dict`` prior to loading is:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
         state_dict = { "app": AppState(model, optimizer)}
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+        # generates the state dict we will load into
+        model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+        state_dict = {
+            "model": model_state_dict,
+            "optimizer": optimizer_state_dict
+        }
         dcp.load(
             state_dict=state_dict,
             checkpoint_id=CHECKPOINT_DIR,
