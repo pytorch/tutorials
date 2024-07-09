@@ -1,8 +1,8 @@
 Asynchronous Saving with Distributed Checkpoint (DCP)
 =====================================================
 
-Checkpointing is often a bottle-neck in the critical distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
-One excellent strategy to offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
+Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
+One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
 from the `Getting Started with Distributed Checkpoint Tutorial <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__
 to show how this can be integrated quite easily with `torch.distributed.checkpoint.async_save`.
 
@@ -111,18 +111,19 @@ Speciically:
             model(torch.rand(8, 16, device="cuda")).sum().backward()
             optimizer.step()
 
-            state_dict = { "app": AppState(model, optimizer) }
+            # waits for checkpointing to finish if one exists, avoiding queuing more then one checkpoint request at a time
             if checkpoint_future is not None:
-                # waits for checkpointing to finish, avoiding queuing more then one checkpoint request at a time
                 checkpoint_future.result()
-            dcp.async_save(state_dict, checkpoint_id=f"{CHECKPOINT_DIR}_step{step}")
+
+            state_dict = { "app": AppState(model, optimizer) }
+            checkpoint_future = dcp.async_save(state_dict, checkpoint_id=f"{CHECKPOINT_DIR}_step{step}")
 
         cleanup()
 
 
     if __name__ == "__main__":
         world_size = torch.cuda.device_count()
-        print(f"Running fsdp checkpoint example on {world_size} devices.")
+        print(f"Running async checkpoint example on {world_size} devices.")
         mp.spawn(
             run_fsdp_checkpoint_save_example,
             args=(world_size,),
@@ -133,8 +134,9 @@ Speciically:
 
 Even more performance with Pinned Memory
 -----------------------------------------
-If the above optimization is still not performant enough for a use case, PyTorch offers an additional optimization for GPU models by utilizing a pinned memory buffer.
-This optimization attacks the main overhead of asynchronous checkpointing, which is the in-memory copying to checkpointing buffers.
+If the above optimization is still not performant enough, users may wish to take advantage of an additional optimization for GPU models which utilizes a pinned memory buffer for checkpoint staging.
+Specifically, this optimization attacks the main overhead of asynchronous checkpointing, which is the in-memory copying to checkpointing buffers. By maintaing a pinned memory buffer between
+checkpoint requests users can take advantage of direct memory access to speed up this copy.
 
 Note: The main drawback of this optimization is the persistence of the buffer in between checkpointing steps. Without the pinned memory optimization (as demonstrated above),
 any checkpointing buffers are released as soon as checkpointing is finished. With the pinned memory implementation, this buffer is maintained in between steps, leading to the same
