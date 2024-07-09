@@ -114,7 +114,7 @@ with sdpa_kernel(SDPBackend.EFFICIENT_ATTENTION):
 #
 # Depending on what machine you ran the above cell on and what hardware is
 # available, your results might be different.
-# - If you don’t have a GPU and are running on CPU then the context manager
+# - If you don’t have a GPU and are running on CPU then with FP32 the context manager
 # will have no effect and all three runs should return similar timings.
 # - Depending on what compute capability your graphics card supports
 # flash attention or memory efficient might have failed.
