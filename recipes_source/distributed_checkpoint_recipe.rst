@@ -249,7 +249,6 @@ The reason that we need the ``state_dict`` prior to loading is:
         model = ToyModel().to(rank)
         model = FSDP(model)
 
-        loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
         state_dict = { "app": AppState(model, optimizer)}
