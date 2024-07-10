@@ -30,7 +30,9 @@ Speciically:
 
 * Memory requirements - Asynchronous checkpointing works by first copying models into internal CPU-buffers.
     This is helpful since it ensures model and optimizer weights are not changing while the model is still checkpointing,
-    but does raise CPU memory by a factor of checkpoint size times the number of process on the host.
+    but does raise CPU memory by a factor of ``checkpoint_size_per_rank X number_of_ranks``. Additionally, users should take care to understand
+    the memory constraints of their systems. Specifically, pinned memory implies the usage of ``page-lock`` memory, which can be scarce as compared to
+    ``pageable`` memory.
 
 * Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. In general, users can
     employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
