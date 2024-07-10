@@ -9,16 +9,18 @@ Template Tutorial
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-      * Item 1
-      * Item 2
-      * Item 3
+       * Item 1
+       * Item 2
+       * Item 3
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
 
-      * PyTorch v2.0.0
-      * GPU ???
-      * Other items 3
+       * PyTorch v2.0.0
+       * GPU ???
+       * Other items 3
 
 If you have a video, add it here like this:
 
