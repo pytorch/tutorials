@@ -156,9 +156,12 @@ If the above optimization is still not performant enough, you can take advantage
 Specifically, this optimization attacks the main overhead of asynchronous checkpointing, which is the in-memory copying to checkpointing buffers. By maintaining a pinned memory buffer between
 checkpoint requests users can take advantage of direct memory access to speed up this copy.
 
-.. note:: The main drawback of this optimization is the persistence of the buffer in between checkpointing steps. Without the pinned memory optimization (as demonstrated above),
-any checkpointing buffers are released as soon as checkpointing is finished. With the pinned memory implementation, this buffer is maintained between steps, leading to the same
-peak memory pressure being sustained through the application life.
+.. note::
+   The main drawback of this optimization is the persistence of the buffer in between checkpointing steps. Without 
+   the pinned memory optimization (as demonstrated above), any checkpointing buffers are released as soon as 
+   checkpointing is finished. With the pinned memory implementation, this buffer is maintained between steps, 
+   leading to the same
+   peak memory pressure being sustained through the application life.
 
 
 .. code-block:: python
