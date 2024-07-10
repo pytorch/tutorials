@@ -330,14 +330,17 @@ Formats
 ----------
 One drawback not yet mentioned is that DCP saves checkpoints in a format which is inherently different then those generated using torch.save.
 Since this can be an issue when users wish to share models with users used to the torch.save format, or in general just want to add format flexibility
-to their applications. For this case, we provide the `format_utils` module in `torch.distributed.checkpoint.format_utils`.
+to their applications. For this case, we provide the ``format_utils`` module in ``torch.distributed.checkpoint.format_utils``.
 
 A command line utility is provided for the users convenience, which follows the following format:
-`python -m torch.distributed.checkpoint.format_utils -m <checkpoint location> <location to write formats to> <mode>` where mode is one of `torch_to_dcp` or `dcp_to_torch`.
+.. code-block:: bash
+
+    python -m torch.distributed.checkpoint.format_utils -m <checkpoint location> <location to write formats to> <mode>
+
+In the command above, ``mode`` is one of ``torch_to_dcp``` or ``dcp_to_torch``.
+
 
 Alternatively, methods are also provided for users who may wish to convert checkpoints directly.
-
-
 .. code-block:: python
 
     import os

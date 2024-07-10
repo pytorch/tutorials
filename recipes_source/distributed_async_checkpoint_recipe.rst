@@ -4,20 +4,36 @@ Asynchronous Saving with Distributed Checkpoint (DCP)
 Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
 One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
 from the `Getting Started with Distributed Checkpoint Tutorial <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__
-to show how this can be integrated quite easily with `torch.distributed.checkpoint.async_save`.
+to show how this can be integrated quite easily with ``torch.distributed.checkpoint.async_save``.
+
+**Author**: , `Lucas Pasqualin <https://github.com/lucasllc>`__, `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__
+
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to use DCP to generate checkpoints in parallel
+       * Effective strategies to optimize performance
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.4.0 or later
+       * `Getting Started with Distributed Checkpoint Tutorial <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__
 
 
-Notes on Asynchronous Checkpointing
+Asynchronous Checkpointing Overview
 ------------------------------------
-Before getting started with Asynchronous Checkpointing, it's important that we discuss some differences and limitations as compared to synchronous checkpointing.
+Before getting started with Asynchronous Checkpointing, it's important to understand it's differences and limitations as compared to synchronous checkpointing.
 Speciically:
 
 * Memory requirements - Asynchronous checkpointing works by first copying models into internal CPU-buffers.
     This is helpful since it ensures model and optimizer weights are not changing while the model is still checkpointing,
     but does raise CPU memory by a factor of checkpoint size times the number of process on the host.
 
-* Checkpoint Management - Since checkpointing is Asynchronous, it is up to the user to manage concurrently run checkpoints. In general users can
-    employ their own management strategies by handling the future object returned form `async_save`. For most users, we recommend limiting
+* Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. In general, users can
+    employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
     checkpoints to one asynchronous request at a time, avoiding additional memory pressure per request.
 
 
@@ -134,12 +150,12 @@ Speciically:
 
 Even more performance with Pinned Memory
 -----------------------------------------
-If the above optimization is still not performant enough, users may wish to take advantage of an additional optimization for GPU models which utilizes a pinned memory buffer for checkpoint staging.
-Specifically, this optimization attacks the main overhead of asynchronous checkpointing, which is the in-memory copying to checkpointing buffers. By maintaing a pinned memory buffer between
+If the above optimization is still not performant enough, you can take advantage of an additional optimization for GPU models which utilizes a pinned memory buffer for checkpoint staging.
+Specifically, this optimization attacks the main overhead of asynchronous checkpointing, which is the in-memory copying to checkpointing buffers. By maintaining a pinned memory buffer between
 checkpoint requests users can take advantage of direct memory access to speed up this copy.
 
-Note: The main drawback of this optimization is the persistence of the buffer in between checkpointing steps. Without the pinned memory optimization (as demonstrated above),
-any checkpointing buffers are released as soon as checkpointing is finished. With the pinned memory implementation, this buffer is maintained in between steps, leading to the same
+.. note:: The main drawback of this optimization is the persistence of the buffer in between checkpointing steps. Without the pinned memory optimization (as demonstrated above),
+any checkpointing buffers are released as soon as checkpointing is finished. With the pinned memory implementation, this buffer is maintained between steps, leading to the same
 peak memory pressure being sustained through the application life.
 
 
@@ -257,3 +273,13 @@ peak memory pressure being sustained through the application life.
             nprocs=world_size,
             join=True,
         )
+
+
+Conclusion
+----------
+In conclusion, we have learned how to use DCP's :func:`async_save` API to generate checkpoints off the critical training path. We've also learned about the
+additional memory and concurrency overhead introduced by using this API, as well as additional optimizations which utilize pinned memory to speed things up
+even further.
+
+-  `Saving and loading models tutorial <https://pytorch.org/tutorials/beginner/saving_loading_models.html>`__
+-  `Getting started with FullyShardedDataParallel tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
