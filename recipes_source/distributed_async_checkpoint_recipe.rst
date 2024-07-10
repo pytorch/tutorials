@@ -1,6 +1,8 @@
 Asynchronous Saving with Distributed Checkpoint (DCP)
 =====================================================
 
+**Author:** `Lucas Pasqualin <https://github.com/lucasllc>`__, `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__
+
 Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
 One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
 from the `Getting Started with Distributed Checkpoint Tutorial <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__
