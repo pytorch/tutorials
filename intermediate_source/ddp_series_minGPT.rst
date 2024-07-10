@@ -11,6 +11,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       -  Best practices when writing a distributed training script
       -  Increased flexibility with saving/loading artifacts in the cloud
@@ -23,6 +24,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
             :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/tree/main/distributed/minGPT-ddp>`__
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       - Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
       - [Optional] Familiarity with `multinode training <ddp_series_multinode.html>`__
