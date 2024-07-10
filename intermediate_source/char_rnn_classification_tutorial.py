@@ -66,8 +66,8 @@ helper function will be __str__ to convert objects to strings for easy printing
 There are two key pieces of this that we will flesh out over the course of this tutorial. First is the basic data 
 object which a label and some text. In this instance, label = the country of origin and text = the name. 
 
-However, our data has some issues that we will need to clean up. First off, we need to convert unicode to plain ASCII to 
-limit the RNN input layers. This is accomplished by converting unicode strings to ASCII and allowing a samll set of allowed characters (allowed_characters)
+However, our data has some issues that we will need to clean up. First off, we need to convert Unicode to plain ASCII to 
+limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing a small set of allowed characters (allowed_characters)
 """
 
 import torch
@@ -218,7 +218,7 @@ print(f"loaded {len(alldata)} items of data")
 print(f"example = {alldata[0]}")
 
 #########################
-#Using the dataset object allows us to easily split the data into train and test sets. Here we create na 80/20 
+#Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20 
 #split but the torch.utils.data has more useful utilities.
 
 train_set, test_set = torch.utils.data.random_split(alldata, [.8, .2])
@@ -227,7 +227,7 @@ print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}
 
 #########################
 #Now we have a basic dataset containing 20074 examples where each example is a pairing of label and name. We have also 
-#split the datset into training and testing so we can validate the model that we build. 
+#split the dataset into training and testing so we can validate the model that we build. 
 
 
 ######################################################################
@@ -397,7 +397,7 @@ class RNN(nn.Module):
         label_i = top_i[0].item()
         return self.output_labels[label_i], label_i
     
-    def learn(self, training_data, n_epoch = 1000, n_batch_size = 64, report_every = 50, learning_rate = 0.005, criterion = nn.NLLLoss()):
+    def learn(self, training_data, n_epoch = 250, n_batch_size = 64, report_every = 50, learning_rate = 0.005, criterion = nn.NLLLoss()):
         """
         Learn on a batch of training_data for a specified number of iterations and reporting thresholds
         """
@@ -480,7 +480,7 @@ def evaluate(rnn, testing_data):
     confusion = torch.zeros(len(rnn.output_labels), len(rnn.output_labels))
     
     rnn.eval() #set to eval mode
-    with torch.no_grad(): # do not record the gradiants during eval phase
+    with torch.no_grad(): # do not record the gradients during eval phase
         for i in range(len(testing_data)):
             (label_tensor, text_tensor, label, text) = testing_data[i]
             output = rnn.forward(text_tensor)
