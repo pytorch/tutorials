@@ -14,6 +14,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       -  How to migrate a single-GPU training script to multi-GPU via DDP
       -  Setting up the distributed process group
@@ -26,6 +27,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
             :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
       
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       * High-level overview of `how DDP works  <ddp_series_theory.html>`__
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
