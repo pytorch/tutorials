@@ -14,11 +14,12 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
       :margin: 0
       
-      -  Launching multi-GPU training jobs with ``torchrun``
-      -  Saving and loading snapshots of your training job
-      -  Structuring your training script for graceful restarts
+      - Launching multi-GPU training jobs with ``torchrun``
+      - Saving and loading snapshots of your training job
+      - Structuring your training script for graceful restarts
 
       .. grid:: 1
 
@@ -27,6 +28,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
             :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu_torchrun.py>`__
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
       :margin: 0
 
       * High-level `overview <ddp_series_theory.html>`__ of DDP

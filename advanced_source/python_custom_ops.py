@@ -9,13 +9,15 @@ Python Custom Operators
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-      * How to integrate custom operators written in Python with PyTorch
-      * How to test custom operators using ``torch.library.opcheck``
+       * How to integrate custom operators written in Python with PyTorch
+       * How to test custom operators using ``torch.library.opcheck``
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
 
-      * PyTorch 2.4 or later
+       * PyTorch 2.4 or later
 
 PyTorch offers a large library of operators that work on Tensors (e.g.
 ``torch.add``, ``torch.sum``, etc). However, you might wish to use a new customized
