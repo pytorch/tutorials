@@ -44,33 +44,47 @@ It would also be useful to know about RNNs and how they work:
    Networks <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__
    is about LSTMs specifically but also informative about RNNs in
    general
-
-Preparing the Data
-==================
-
-.. note::
-   Download the data from
-   `here <https://download.pytorch.org/tutorial/data.zip>`_
-   and extract it to the current directory.
-
-Included in the ``data/names`` directory are 18 text files named as
-``[Language].txt``. Each file contains a bunch of names, one name per
-line, mostly romanized (but we still need to convert from Unicode to
-ASCII).
-
-The first thing we need to define is our data items. In this case, we will create a class called NameData 
-which will have an __init__ function to specify the input fields and some helper functions. Our first 
-helper function will be __str__ to convert objects to strings for easy printing 
-
-
-There are two key pieces of this that we will flesh out over the course of this tutorial. First is the basic data 
-object which a label and some text. In this instance, label = the country of origin and text = the name. 
-
-However, our data has some issues that we will need to clean up. First off, we need to convert Unicode to plain ASCII to 
-limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing a small set of allowed characters (allowed_characters)
 """
 
-import torch
+######################################################################
+# Preparing Torch 
+# ==========================
+#
+# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). 
+#
+
+import torch 
+
+# Check if CUDA is available
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+
+torch.set_default_device(device)
+print(f"Using device = {torch.get_default_device()}")
+
+######################################################################
+# Preparing the Data
+# ==================
+#
+# Download the data from `here <https://download.pytorch.org/tutorial/data.zip>`__ 
+# and extract it to the current directory.
+#
+# Included in the ``data/names`` directory are 18 text files named as
+# ``[Language].txt``. Each file contains a bunch of names, one name per
+# line, mostly romanized (but we still need to convert from Unicode to
+# ASCII).
+#
+# The first thing we need to define is our data items. In this case, we will create a class called NameData 
+# which will have an __init__ function to specify the input fields and some helper functions. Our first 
+# helper function will be __str__ to convert objects to strings for easy printing 
+#
+# There are two key pieces of this that we will flesh out over the course of this tutorial. First is the basic data 
+# object which a label and some text. In this instance, label = the country of origin and text = the name. 
+#
+# However, our data has some issues that we will need to clean up. First off, we need to convert Unicode to plain ASCII to 
+# limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing a small set of allowed characters (allowed_characters)
+
 import string 
 import unicodedata
 
@@ -102,7 +116,7 @@ print (f"{NameData(label='Polish', text='Ślusàrski')}")
 
 ######################################################################
 # Turning Names into Tensors
-# --------------------------
+# ==========================
 #
 # Now that we have all the names organized, we need to turn them into
 # Tensors to make any use of them.
@@ -119,7 +133,6 @@ print (f"{NameData(label='Polish', text='Ślusàrski')}")
 #
 # For this, you'll need to add a couple of capabilities to our NameData object.
 
-import torch
 import string 
 import unicodedata
 
@@ -157,18 +170,18 @@ class NameData:
         return tensor
 
 #########################
-#Here are some examples of how to use the NameData object
+# Here are some examples of how to use the NameData object
 
 print (f"{NameData(label='none', text='a')}")
 print (f"{NameData(label='Korean', text='Ahn')}")
 
 #########################
-#Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach 
-#for other RNN tasks with text.
+# Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach 
+# for other RNN tasks with text.
 #
-#Next, we need to combine all our examples into a dataset so we can train, text and validate our models. For this, 
-#we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>` classes 
-#to hold our dataset. Each Dataset needs to implement three functions: __init__, __len__, and __getitem__. 
+# Next, we need to combine all our examples into a dataset so we can train, text and validate our models. For this, 
+# we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>` classes 
+# to hold our dataset. Each Dataset needs to implement three functions: __init__, __len__, and __getitem__. 
 
 from io import open
 import glob
@@ -219,9 +232,10 @@ print(f"example = {alldata[0]}")
 
 #########################
 #Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20 
-#split but the torch.utils.data has more useful utilities.
+#split but the torch.utils.data has more useful utilities. Here we specify a generator since we need to use the 
+#same device as torch defaults to above. 
 
-train_set, test_set = torch.utils.data.random_split(alldata, [.8, .2])
+train_set, test_set = torch.utils.data.random_split(alldata, [.8, .2], generator=torch.Generator(device=device).manual_seed(1))
 
 print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}")
 
@@ -448,7 +462,10 @@ class RNN(nn.Module):
 n_hidden = 128
 hidden = torch.zeros(1, n_hidden)
 rnn = RNN(NameData.n_letters, n_hidden, alldata.labels)
-all_losses = rnn.learn(train_set)
+start = time.time()
+all_losses = rnn.learn(train_set, n_epoch=10, learning_rate=0.2, report_every=1)
+end = time.time()
+print(f"training took {end-start}s")
 
 ######################################################################
 # Plotting the Results
@@ -495,7 +512,7 @@ def evaluate(rnn, testing_data):
     # Set up plot
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.matshow(confusion.numpy())
+    cax = ax.matshow(confusion.cpu().numpy()) #numpy uses cpu here so we need to use a cpu version
     fig.colorbar(cax)
 
     # Set up axes
@@ -525,16 +542,16 @@ evaluate(rnn, test_set)
 # Exercises
 # =========
 #
+# -  Get better results with a bigger and/or better shaped network
+#
+#    -  Vary the hyperparameters to improve performance (e.g. 250 epochs, batch size, learning rate ) 
+#    -  Add more linear layers
+#    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
+#    -  Combine multiple of these RNNs as a higher level network
+# 
 # -  Try with a different dataset of line -> label, for example:
 #
 #    -  Any word -> language
 #    -  First name -> gender
 #    -  Character name -> writer
 #    -  Page title -> blog or subreddit
-#
-# -  Get better results with a bigger and/or better shaped network
-#
-#    -  Add more linear layers
-#    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
-#    -  Combine multiple of these RNNs as a higher level network
-#
