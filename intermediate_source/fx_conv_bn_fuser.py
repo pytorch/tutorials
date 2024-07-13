@@ -32,7 +32,7 @@ import torch.nn as nn
 # For this tutorial, we are going to create a model consisting of convolutions
 # and batch norms. Note that this model has some tricky components - some of
 # the conv/batch norm patterns are hidden within Sequentials and one of the
-# BatchNorms is wrapped in another Module.
+# ``BatchNorms`` is wrapped in another Module.
 
 class WrappedBatchNorm(nn.Module):
     def __init__(self):
@@ -137,7 +137,7 @@ def fuse_conv_bn_weights(conv_w, conv_b, bn_rm, bn_rv, bn_eps, bn_w, bn_b):
 
 def _parent_name(target : str) -> Tuple[str, str]:
     """
-    Splits a qualname into parent path and last atom.
+    Splits a ``qualname`` into parent path and last atom.
     For example, `foo.bar.baz` -> (`foo.bar`, `baz`)
     """
     *parent, name = target.rsplit('.', 1)
@@ -217,7 +217,7 @@ torch.testing.assert_allclose(fused_model(inp), model(inp))
 
 ######################################################################
 # Benchmarking our Fusion on ResNet18
-# ----------
+# -----------------------------------
 # We can test our fusion pass on a larger model like ResNet18 and see how much
 # this pass improves inference performance.
 import torchvision.models as models
@@ -242,9 +242,9 @@ print("Unfused time: ", benchmark(rn18))
 print("Fused time: ", benchmark(fused_rn18))
 ######################################################################
 # As we previously saw, the output of our FX transformation is
-# (Torchscriptable) PyTorch code, we can easily `jit.script` the output to try
+# ("torchscriptable") PyTorch code, we can easily ``jit.script`` the output to try
 # and increase our performance even more. In this way, our FX model
-# transformation composes with Torchscript with no issues.
+# transformation composes with TorchScript with no issues.
 jit_rn18 = torch.jit.script(fused_rn18)
 print("jit time: ", benchmark(jit_rn18))
 

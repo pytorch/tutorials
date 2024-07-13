@@ -1,5 +1,14 @@
 Welcome to PyTorch Tutorials
 ============================
+
+**What's new in PyTorch tutorials?**
+
+* `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html>`__
+* `Large Scale Transformer model training with Tensor Parallel (TP) <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
+* `Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/advanced/semi_structured_sparse.html>`__
+* `torch.export Tutorial with torch.export.Dim <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+* `Extension points in nn.Module for load_state_dict and tensor subclasses <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`__
+
 .. raw:: html
 
     <div class="tutorials-callout-container">
@@ -128,6 +137,20 @@ Welcome to PyTorch Tutorials
    :link: intermediate/spatial_transformer_tutorial.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Inference on Whole Slide Images with TIAToolbox
+   :card_description: Learn how to use the TIAToolbox to perform inference on whole slide images.
+   :image: _static/img/thumbnails/cropped/TIAToolbox-Tutorial.png
+   :link: intermediate/tiatoolbox_tutorial.html
+   :tags: Image/Video
+
+.. customcarditem::
+   :header: Semi-Supervised Learning Tutorial Based on USB
+   :card_description: Learn how to train semi-supervised learning algorithms (on custom data) using USB and PyTorch.
+   :image: _static/img/usb_semisup_learn/code.png
+   :link: advanced/usb_semisup_learn.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -203,11 +226,11 @@ Welcome to PyTorch Tutorials
 .. Text
 
 .. customcarditem::
-   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
-   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
-   :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
-   :link: beginner/transformer_tutorial.html
-   :tags: Text
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: beginner/bettertransformer_tutorial.html
+   :tags: Production,Text
 
 .. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
@@ -218,7 +241,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
-   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials.
+   :card_description: After using character-level RNN to classify names, learn how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
    :tags: Text
@@ -244,6 +267,29 @@ Welcome to PyTorch Tutorials
    :link: beginner/translation_transformer.html
    :tags: Text
 
+.. customcarditem::
+   :header: Pre-process custom text dataset using Torchtext
+   :card_description: Learn how to use torchtext to prepare a custom dataset
+   :image: _static/img/thumbnails/cropped/torch_text_logo.png
+   :link: beginner/torchtext_custom_dataset_tutorial.html
+   :tags: Text
+
+
+.. ONNX
+
+.. customcarditem::
+   :header: (optional) Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
+   :card_description: Build a image classifier model in PyTorch and convert it to ONNX before deploying it with ONNX Runtime.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: beginner/onnx/export_simple_model_to_onnx_tutorial.html
+   :tags: Production,ONNX,Backends
+
+.. customcarditem::
+   :header: Introduction to ONNX Registry
+   :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: advanced/onnx_registry_tutorial.html
+   :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
 
@@ -255,14 +301,42 @@ Welcome to PyTorch Tutorials
    :tags: Reinforcement-Learning
 
 .. customcarditem::
+   :header: Reinforcement Learning (PPO) with TorchRL
+   :card_description: Learn how to use PyTorch and TorchRL to train a Proximal Policy Optimization agent on the Inverted Pendulum task from Gym.
+   :image: _static/img/invpendulum.gif
+   :link: intermediate/reinforcement_ppo.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
    :header: Train a Mario-playing RL Agent
    :card_description: Use PyTorch to train a Double Q-learning agent to play Mario.
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
 
+.. customcarditem::
+   :header: Recurrent DQN
+   :card_description: Use TorchRL to train recurrent policies
+   :image: _static/img/rollout_recurrent.png
+   :link: intermediate/dqn_with_rnn_tutorial.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Code a DDPG Loss
+   :card_description: Use TorchRL to code a DDPG Loss
+   :image: _static/img/half_cheetah.gif
+   :link: advanced/coding_ddpg.html
+   :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Writing your environment and transforms
+   :card_description: Use TorchRL to code a Pendulum
+   :image: _static/img/pendulum.gif
+   :link: advanced/pendulum.html
+   :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -286,11 +360,29 @@ Welcome to PyTorch Tutorials
    :tags: Production,TorchScript
 
 .. customcarditem::
-   :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+   :header: (optional) Exporting a PyTorch Model to ONNX using TorchScript backend and Running it using ONNX Runtime
    :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
    :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
    :link: advanced/super_resolution_with_onnxruntime.html
-   :tags: Production
+   :tags: Production,ONNX
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Learn how to profile a PyTorch application
+   :link: beginner/profiler.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Introduction to Holistic Trace Analysis
+   :link: beginner/hta_intro_tutorial.html
+   :tags: Profiling
+
+.. customcarditem::
+   :header: Profiling PyTorch
+   :card_description: Trace Diff using Holistic Trace Analysis
+   :link: beginner/hta_trace_diff_tutorial.html
+   :tags: Profiling
 
 .. Code Transformations with FX
 
@@ -325,6 +417,27 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Python Custom Operators Landing Page
+   :card_description: This is the landing page for all things related to custom operators in PyTorch.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/custom_ops_landing_page.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
+   :header: Python Custom Operators
+   :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/python_custom_ops.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
+   :header: Custom C++ and CUDA Operators
+   :card_description: How to extend PyTorch with custom C++ and CUDA operators.
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
+   :link: advanced/cpp_custom_ops.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
    :header: Custom C++ and CUDA Extensions
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
@@ -357,7 +470,7 @@ Welcome to PyTorch Tutorials
    :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
    :image: _static/img/thumbnails/cropped/realtime_rpi.png
    :link: intermediate/realtime_rpi.html
-   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+   :tags: TorchScript,Model-Optimization,Image/Video,Quantization
 
 .. customcarditem::
    :header: Autograd in C++ Frontend
@@ -381,6 +494,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Facilitating New Backend Integration by PrivateUse1
+   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with the native PyTorch backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/privateuseone.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -399,6 +519,34 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use forward-mode automatic differentiation.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/forward_ad_usage.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Jacobians, Hessians, hvp, vhp, and more
+   :card_description: Learn how to compute advanced autodiff quantities using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/jacobians_hessians.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Model Ensembling
+   :card_description: Learn how to ensemble models using torch.vmap
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/ensembling.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Per-Sample-Gradients
+   :card_description: Learn how to compute per-sample-gradients using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/per_sample_grads.html
+   :tags: Frontend-APIs
+
+.. customcarditem::
+   :header: Neural Tangent Kernels
+   :card_description: Learn how to compute neural tangent kernels using torch.func
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/neural_tangent_kernels.html
    :tags: Frontend-APIs
 
 .. Model Optimization
@@ -424,16 +572,9 @@ Welcome to PyTorch Tutorials
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
 
- .. customcarditem::
-    :header: Optimizing Vision Transformer Model
-    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
-    :image: _static/img/thumbnails/cropped/mobile.png
-    :link: beginner/vt_tutorial.html
-    :tags: Model-Optimization,Best-Practice,Mobile
-
 .. customcarditem::
    :header: Parametrizations Tutorial
-   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
    :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
@@ -444,6 +585,20 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: intermediate/pruning_tutorial.html
    :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
+   :header: How to save memory by fusing the optimizer step into the backward pass
+   :card_description: Learn a memory-saving technique through fusing the optimizer step into the backward pass using memory snapshots.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/optimizer_step_in_backward_tutorial.html
+   :tags: Model-Optimization,Best-Practice,CUDA,Frontend-APIs
+
+.. customcarditem::
+   :header: (beta) Accelerating BERT with semi-structured sparsity
+   :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile.
+   :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
+   :link: advanced/semi_structured_sparse.html
+   :tags: Text,Model-Optimization
 
 .. customcarditem::
    :header: (beta) Dynamic Quantization on an LSTM Word Language Model
@@ -473,13 +628,71 @@ Welcome to PyTorch Tutorials
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
 
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex
+   :tags: Model-Optimization,Production
+
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex_2
+   :tags: Model-Optimization,Production
+
+.. customcarditem::
+   :header: Multi-Objective Neural Architecture Search with Ax
+   :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
+   :image: _static/img/ax_logo.png
+   :link: intermediate/ax_multiobjective_nas_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Ax,TorchX
+
+.. customcarditem::
+   :header: torch.compile Tutorial
+   :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Inductor CPU Backend Debugging and Profiling
+   :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/inductor_debug_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
+   :card_description: This tutorial explores the new torch.nn.functional.scaled_dot_product_attention and how it can be used to construct Transformer components.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/scaled_dot_product_attention_tutorial.html
+   :tags: Model-Optimization,Attention,Transformer
+
+.. customcarditem::
+   :header: Knowledge Distillation in Convolutional Neural Networks
+   :card_description:  Learn how to improve the accuracy of lightweight models using more powerful models as teachers.
+   :image: _static/img/thumbnails/cropped/knowledge_distillation_pytorch_logo.png
+   :link: beginner/knowledge_distillation_tutorial.html
+   :tags: Model-Optimization,Image/Video
+
 .. Parallel-and-Distributed-Training
+
+
 
 .. customcarditem::
    :header: PyTorch Distributed Overview
    :card_description: Briefly go over all concepts and features in the distributed package. Use this document to find the distributed training technology that can best serve your application.
    :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
    :link: beginner/dist_overview.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Distributed Data Parallel in PyTorch - Video Tutorials
+   :card_description: This series of video tutorials walks you through distributed training in PyTorch via DDP.
+   :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
+   :link: beginner/ddp_series_intro.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -504,6 +717,13 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: Large Scale Transformer model training with Tensor Parallel
+   :card_description: Learn how to train large models with Tensor Parallel package.
+   :image: _static/img/thumbnails/cropped/Large-Scale-Transformer-model-training-with-Tensor-Parallel.png
+   :link: intermediate/TP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Customize Process Group Backends Using Cpp Extensions
    :card_description: Extend ProcessGroup with custom collective communication implementations.
    :image: _static/img/thumbnails/cropped/Customize-Process-Group-Backends-Using-Cpp-Extensions.png
@@ -525,10 +745,10 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Distributed Pipeline Parallelism Using RPC
-   :card_description: Demonstrate how to implement distributed pipeline parallelism using RPC
-   :image: _static/img/thumbnails/cropped/Distributed-Pipeline-Parallelism-Using-RPC.png
-   :link: intermediate/dist_pipeline_parallel_tutorial.html
+   :header: Introduction to Distributed Pipeline Parallelism
+   :card_description: Demonstrate how to implement pipeline parallelism using torch.distributed.pipelining
+   :image: _static/img/thumbnails/cropped/Introduction-to-Distributed-Pipeline-Parallelism.png
+   :link: intermediate/pipelining_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -546,34 +766,63 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Training Transformer models using Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using pipeline parallelism.
-   :image: _static/img/thumbnails/cropped/Training-Transformer-models-using-Pipeline-Parallelism.png
-   :link: intermediate/pipeline_tutorial.html
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
-   :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
-   :link: advanced/ddp_pipeline.html
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_adavnced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
-.. Mobile
+.. Edge
 
 .. customcarditem::
-   :header: Image Segmentation DeepLabV3 on iOS
-   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on iOS.
-   :image: _static/img/thumbnails/cropped/ios.png
-   :link: beginner/deeplabv3_on_ios.html
-   :tags: Mobile
+   :header: Exporting to ExecuTorch Tutorial
+   :card_description: Learn about how to use ExecuTorch, a unified ML stack for lowering PyTorch models to edge devices.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html
+   :tags: Edge
 
 .. customcarditem::
-   :header: Image Segmentation DeepLabV3 on Android
-   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on Android.
-   :image: _static/img/thumbnails/cropped/android.png
-   :link: beginner/deeplabv3_on_android.html
-   :tags: Mobile
+   :header: Running an ExecuTorch Model in C++ Tutorial
+   :card_description: Learn how to load and execute an ExecuTorch model in C++
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Using the ExecuTorch SDK to Profile a Model
+   :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Building an ExecuTorch iOS Demo App
+   :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/demo-apps-ios.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Building an ExecuTorch Android Demo App
+   :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/demo-apps-android.html
+   :tags: Edge
+
+.. customcarditem::
+   :header: Lowering a Model as a Delegate
+   :card_description: Learn to accelerate your program using ExecuTorch by applying delegates through three methods: lowering the whole module, composing it with another module, and partitioning parts of a module.
+   :image: _static/img/ExecuTorch-Logo-cropped.svg
+   :link: https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html
+   :tags: Edge
+
 
 .. Recommendation Systems
 
@@ -583,6 +832,23 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/torchrec.png
    :link: intermediate/torchrec_tutorial.html
    :tags: TorchRec,Recommender
+
+.. customcarditem::
+   :header: Exploring TorchRec sharding
+   :card_description: This tutorial covers the sharding schemes of embedding tables by using <code>EmbeddingPlanner</code> and <code>DistributedModelParallel</code> API.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: advanced/sharding.html
+   :tags: TorchRec,Recommender
+
+.. Multimodality
+
+.. customcarditem::
+   :header: Introduction to TorchMultimodal
+   :card_description: TorchMultimodal is a library that provides models, primitives and examples for training multimodal tasks
+   :image: _static/img/thumbnails/torchrec.png
+   :link: beginner/flava_finetuning_tutorial.html
+   :tags: TorchMultimodal
+
 
 .. End of tutorial card section
 
@@ -611,9 +877,9 @@ Additional Resources
 
 .. customcalloutitem::
    :header: Examples of PyTorch
-   :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
-   :button_link: https://github.com/pytorch/examples
-   :button_text: Checkout Examples
+   :description: A set of examples around PyTorch in Vision, Text, Reinforcement Learning that you can incorporate in your existing work.
+   :button_link: https://pytorch.org/examples?utm_source=examples&utm_medium=examples-landing
+   :button_text: Check Out Examples
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
@@ -669,6 +935,7 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
+   advanced/custom_ops_landing_page
 
 .. toctree::
    :maxdepth: 2
@@ -708,6 +975,7 @@ Additional Resources
    beginner/dcgan_faces_tutorial
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
+   intermediate/tiatoolbox_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -732,13 +1000,22 @@ Additional Resources
    :hidden:
    :caption: Text
 
-   beginner/transformer_tutorial
+   beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
+   beginner/torchtext_custom_dataset_tutorial
 
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Backends
+
+   beginner/onnx/intro_onnx
 
 .. toctree::
    :maxdepth: 2
@@ -747,7 +1024,9 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/reinforcement_ppo
    intermediate/mario_rl_tutorial
+   advanced/pendulum
 
 .. toctree::
    :maxdepth: 2
@@ -755,11 +1034,22 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
+   beginner/onnx/intro_onnx
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
    intermediate/realtime_rpi
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Profiling PyTorch
+
+   beginner/profiler
+   beginner/hta_intro_tutorial
+   beginner/hta_trace_diff_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -778,6 +1068,10 @@ Additional Resources
 
    intermediate/memory_format_tutorial
    intermediate/forward_ad_usage
+   intermediate/jacobians_hessians
+   intermediate/ensembling
+   intermediate/per_sample_grads
+   intermediate/neural_tangent_kernels.py
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
@@ -788,6 +1082,9 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   advanced/custom_ops_landing_page
+   advanced/python_custom_ops
+   advanced/cpp_custom_ops
    intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
@@ -795,6 +1092,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/dispatcher
    advanced/extend_dispatcher
+   advanced/privateuseone
 
 .. toctree::
    :maxdepth: 2
@@ -812,6 +1110,15 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
+   intermediate/torchserve_with_ipex
+   intermediate/torchserve_with_ipex_2
+   intermediate/nvfuser_intro_tutorial
+   intermediate/ax_multiobjective_nas_tutorial
+   intermediate/torch_compile_tutorial
+   intermediate/inductor_debug_cpu
+   intermediate/scaled_dot_product_attention_tutorial
+   beginner/knowledge_distillation_tutorial
+
 
 .. toctree::
    :maxdepth: 2
@@ -819,29 +1126,36 @@ Additional Resources
    :hidden:
    :caption: Parallel and Distributed Training
 
+   distributed/home
    beginner/dist_overview
+   beginner/ddp_series_intro
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/FSDP_adavnced_tutorial
+   intermediate/TP_tutorial
+   intermediate/pipelining_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
-   intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   intermediate/pipeline_tutorial
-   advanced/ddp_pipeline
    advanced/generic_join
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Mobile
+   :caption: Edge with ExecuTorch
 
-   beginner/deeplabv3_on_ios
-   beginner/deeplabv3_on_android
-   
+   Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
+   Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
+   Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
+   Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
+   Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
+   Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
@@ -849,3 +1163,12 @@ Additional Resources
    :caption: Recommendation Systems
 
    intermediate/torchrec_tutorial
+   advanced/sharding
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Multimodality
+
+   beginner/flava_finetuning_tutorial

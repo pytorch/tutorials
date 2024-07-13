@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Train a Mario-playing RL Agent
-================
+===============================
 
-Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
-Subramanian <https://github.com/suraj813>`__, `Howard
-Wang <https://github.com/hw26>`__, `Steven
-Guo <https://github.com/GuoYuzhang>`__.
+**Authors:** `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj Subramanian <https://github.com/suraj813>`__, `Howard Wang <https://github.com/hw26>`__, `Steven Guo <https://github.com/GuoYuzhang>`__.
 
 
 This tutorial walks you through the fundamentals of Deep Reinforcement
@@ -31,8 +28,13 @@ as your companion. The full code is available
 ######################################################################
 #
 #
-
-# !pip install gym-super-mario-bros==7.3.0
+#  .. code-block:: bash
+#
+#      %%bash
+#      pip install gym-super-mario-bros==7.4.0
+#      pip install tensordict==0.3.0
+#      pip install torchrl==0.3.0
+#
 
 import torch
 from torch import nn
@@ -41,7 +43,7 @@ from PIL import Image
 import numpy as np
 from pathlib import Path
 from collections import deque
-import random, datetime, os, copy
+import random, datetime, os
 
 # Gym is an OpenAI toolkit for RL
 import gym
@@ -54,6 +56,8 @@ from nes_py.wrappers import JoypadSpace
 # Super Mario environment for OpenAI Gym
 import gym_super_mario_bros
 
+from tensordict import TensorDict
+from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 
 ######################################################################
 # RL Definitions
@@ -95,8 +99,11 @@ import gym_super_mario_bros
 # (next) state, reward and other info.
 #
 
-# Initialize Super Mario environment
-env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
+# Initialize Super Mario environment (in v0.26 change render mode to 'human' to see results on the screen)
+if gym.__version__ < '0.26':
+    env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", new_step_api=True)
+else:
+    env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0", render_mode='rgb', apply_api_compatibility=True)
 
 # Limit the action-space to
 #   0. walk right
@@ -104,7 +111,7 @@ env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
 env = JoypadSpace(env, [["right"], ["right", "A"]])
 
 env.reset()
-next_state, reward, done, info = env.step(action=0)
+next_state, reward, done, trunc, info = env.step(action=0)
 print(f"{next_state.shape},\n {reward},\n {done},\n {info}")
 
 
@@ -151,14 +158,13 @@ class SkipFrame(gym.Wrapper):
     def step(self, action):
         """Repeat action, and sum reward"""
         total_reward = 0.0
-        done = False
         for i in range(self._skip):
             # Accumulate reward and repeat the same action
-            obs, reward, done, info = self.env.step(action)
+            obs, reward, done, trunk, info = self.env.step(action)
             total_reward += reward
             if done:
                 break
-        return obs, total_reward, done, info
+        return obs, total_reward, done, trunk, info
 
 
 class GrayScaleObservation(gym.ObservationWrapper):
@@ -193,7 +199,7 @@ class ResizeObservation(gym.ObservationWrapper):
 
     def observation(self, observation):
         transforms = T.Compose(
-            [T.Resize(self.shape), T.Normalize(0, 255)]
+            [T.Resize(self.shape, antialias=True), T.Normalize(0, 255)]
         )
         observation = transforms(observation).squeeze(0)
         return observation
@@ -203,7 +209,10 @@ class ResizeObservation(gym.ObservationWrapper):
 env = SkipFrame(env, skip=4)
 env = GrayScaleObservation(env)
 env = ResizeObservation(env, shape=84)
-env = FrameStack(env, num_stack=4)
+if gym.__version__ < '0.26':
+    env = FrameStack(env, num_stack=4, new_step_api=True)
+else:
+    env = FrameStack(env, num_stack=4)
 
 
 ######################################################################
@@ -283,12 +292,11 @@ class Mario:
         self.action_dim = action_dim
         self.save_dir = save_dir
 
-        self.use_cuda = torch.cuda.is_available()
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Mario's DNN to predict the most optimal action - we implement this in the Learn section
         self.net = MarioNet(self.state_dim, self.action_dim).float()
-        if self.use_cuda:
-            self.net = self.net.to(device="cuda")
+        self.net = self.net.to(device=self.device)
 
         self.exploration_rate = 1
         self.exploration_rate_decay = 0.99999975
@@ -302,9 +310,9 @@ class Mario:
     Given a state, choose an epsilon-greedy action and update value of step.
 
     Inputs:
-    state(LazyFrame): A single observation of the current state, dimension is (state_dim)
+    state(``LazyFrame``): A single observation of the current state, dimension is (state_dim)
     Outputs:
-    action_idx (int): An integer representing which action Mario will perform
+    ``action_idx`` (``int``): An integer representing which action Mario will perform
     """
         # EXPLORE
         if np.random.rand() < self.exploration_rate:
@@ -312,12 +320,8 @@ class Mario:
 
         # EXPLOIT
         else:
-            state = state.__array__()
-            if self.use_cuda:
-                state = torch.tensor(state).cuda()
-            else:
-                state = torch.tensor(state)
-            state = state.unsqueeze(0)
+            state = state[0].__array__() if isinstance(state, tuple) else state.__array__()
+            state = torch.tensor(state, device=self.device).unsqueeze(0)
             action_values = self.net(state, model="online")
             action_idx = torch.argmax(action_values, axis=1).item()
 
@@ -349,7 +353,7 @@ class Mario:
 class Mario(Mario):  # subclassing for continuity
     def __init__(self, state_dim, action_dim, save_dir):
         super().__init__(state_dim, action_dim, save_dir)
-        self.memory = deque(maxlen=100000)
+        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = 32
 
     def cache(self, state, next_state, action, reward, done):
@@ -357,36 +361,32 @@ class Mario(Mario):  # subclassing for continuity
         Store the experience to self.memory (replay buffer)
 
         Inputs:
-        state (LazyFrame),
-        next_state (LazyFrame),
-        action (int),
-        reward (float),
-        done(bool))
+        state (``LazyFrame``),
+        next_state (``LazyFrame``),
+        action (``int``),
+        reward (``float``),
+        done(``bool``))
         """
-        state = state.__array__()
-        next_state = next_state.__array__()
+        def first_if_tuple(x):
+            return x[0] if isinstance(x, tuple) else x
+        state = first_if_tuple(state).__array__()
+        next_state = first_if_tuple(next_state).__array__()
 
-        if self.use_cuda:
-            state = torch.tensor(state).cuda()
-            next_state = torch.tensor(next_state).cuda()
-            action = torch.tensor([action]).cuda()
-            reward = torch.tensor([reward]).cuda()
-            done = torch.tensor([done]).cuda()
-        else:
-            state = torch.tensor(state)
-            next_state = torch.tensor(next_state)
-            action = torch.tensor([action])
-            reward = torch.tensor([reward])
-            done = torch.tensor([done])
+        state = torch.tensor(state)
+        next_state = torch.tensor(next_state)
+        action = torch.tensor([action])
+        reward = torch.tensor([reward])
+        done = torch.tensor([done])
 
-        self.memory.append((state, next_state, action, reward, done,))
+        # self.memory.append((state, next_state, action, reward, done,))
+        self.memory.add(TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}, batch_size=[]))
 
     def recall(self):
         """
         Retrieve a batch of experiences from memory
         """
-        batch = random.sample(self.memory, self.batch_size)
-        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+        batch = self.memory.sample(self.batch_size).to(self.device)
+        state, next_state, action, reward, done = (batch.get(key) for key in ("state", "next_state", "action", "reward", "done"))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
 
@@ -402,7 +402,7 @@ class Mario(Mario):  # subclassing for continuity
 # In our implementation, we share feature generator ``features`` across
 # :math:`Q_{online}` and :math:`Q_{target}`, but maintain separate FC
 # classifiers for each. :math:`\theta_{target}` (the parameters of
-# :math:`Q_{target}`) is frozen to prevent updation by backprop. Instead,
+# :math:`Q_{target}`) is frozen to prevent updating by backprop. Instead,
 # it is periodically synced with :math:`\theta_{online}` (more on this
 # later).
 #
@@ -411,7 +411,7 @@ class Mario(Mario):  # subclassing for continuity
 
 
 class MarioNet(nn.Module):
-    """mini cnn structure
+    """mini CNN structure
   input -> (conv2d + relu) x 3 -> flatten -> (dense + relu) x 2 -> output
   """
 
@@ -424,7 +424,23 @@ class MarioNet(nn.Module):
         if w != 84:
             raise ValueError(f"Expecting input width: 84, got: {w}")
 
-        self.online = nn.Sequential(
+        self.online = self.__build_cnn(c, output_dim)
+
+        self.target = self.__build_cnn(c, output_dim)
+        self.target.load_state_dict(self.online.state_dict())
+
+        # Q_target parameters are frozen.
+        for p in self.target.parameters():
+            p.requires_grad = False
+
+    def forward(self, input, model):
+        if model == "online":
+            return self.online(input)
+        elif model == "target":
+            return self.target(input)
+
+    def __build_cnn(self, c, output_dim):
+        return nn.Sequential(
             nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
@@ -436,18 +452,6 @@ class MarioNet(nn.Module):
             nn.ReLU(),
             nn.Linear(512, output_dim),
         )
-
-        self.target = copy.deepcopy(self.online)
-
-        # Q_target parameters are frozen.
-        for p in self.target.parameters():
-            p.requires_grad = False
-
-    def forward(self, input, model):
-        if model == "online":
-            return self.online(input)
-        elif model == "target":
-            return self.target(input)
 
 
 ######################################################################
@@ -717,17 +721,18 @@ class MetricLogger:
                 f"{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):>20}\n"
             )
 
-        for metric in ["ep_rewards", "ep_lengths", "ep_avg_losses", "ep_avg_qs"]:
-            plt.plot(getattr(self, f"moving_avg_{metric}"))
-            plt.savefig(getattr(self, f"{metric}_plot"))
+        for metric in ["ep_lengths", "ep_avg_losses", "ep_avg_qs", "ep_rewards"]:
             plt.clf()
+            plt.plot(getattr(self, f"moving_avg_{metric}"), label=f"moving_avg_{metric}")
+            plt.legend()
+            plt.savefig(getattr(self, f"{metric}_plot"))
 
 
 ######################################################################
 # Let’s play!
 # """""""""""""""
 #
-# In this example we run the training loop for 10 episodes, but for Mario to truly learn the ways of
+# In this example we run the training loop for 40 episodes, but for Mario to truly learn the ways of
 # his world, we suggest running the loop for at least 40,000 episodes!
 #
 use_cuda = torch.cuda.is_available()
@@ -741,7 +746,7 @@ mario = Mario(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=sav
 
 logger = MetricLogger(save_dir)
 
-episodes = 10
+episodes = 40
 for e in range(episodes):
 
     state = env.reset()
@@ -753,7 +758,7 @@ for e in range(episodes):
         action = mario.act(state)
 
         # Agent performs action
-        next_state, reward, done, info = env.step(action)
+        next_state, reward, done, trunc, info = env.step(action)
 
         # Remember
         mario.cache(state, next_state, action, reward, done)
@@ -773,7 +778,7 @@ for e in range(episodes):
 
     logger.log_episode()
 
-    if e % 20 == 0:
+    if (e % 20 == 0) or (e == episodes - 1):
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 

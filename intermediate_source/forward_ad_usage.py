@@ -25,7 +25,7 @@ resultant new tensor object is called a "dual tensor" for its connection
 to dual numbers[0].
 
 As the forward pass is performed, if any input tensors are dual tensors,
-extra computation is performed to propogate this "sensitivity" of the
+extra computation is performed to propagate this "sensitivity" of the
 function.
 
 """
@@ -63,12 +63,12 @@ with fwAD.dual_level():
     dual_input_alt = fwAD.make_dual(primal, tangent.T)
     assert fwAD.unpack_dual(dual_input_alt).tangent is not tangent
 
-    # Tensors that do not not have an associated tangent are automatically
+    # Tensors that do not have an associated tangent are automatically
     # considered to have a zero-filled tangent of the same shape.
     plain_tensor = torch.randn(10, 10)
     dual_output = fn(dual_input, plain_tensor)
 
-    # Unpacking the dual returns a namedtuple with ``primal`` and ``tangent``
+    # Unpacking the dual returns a ``namedtuple`` with ``primal`` and ``tangent``
     # as attributes
     jvp = fwAD.unpack_dual(dual_output).tangent
 
@@ -100,13 +100,12 @@ with fwAD.dual_level():
     jvp = fwAD.unpack_dual(out).tangent
 
 ######################################################################
-# Using Modules stateless API (experimental)
+# Using the functional Module API (beta)
 # --------------------------------------------------------------------
 # Another way to use ``nn.Module`` with forward AD is to utilize
-# the stateless API. NB: At the time of writing the stateless API is still
-# experimental and may be subject to change.
+# the functional Module API (also known as the stateless Module API).
 
-from torch.nn.utils._stateless import functional_call
+from torch.func import functional_call
 
 # We need a fresh module because the functional call requires the
 # the model to have parameters registered.
@@ -137,7 +136,7 @@ class Fn(torch.autograd.Function):
     @staticmethod
     def forward(ctx, foo):
         result = torch.exp(foo)
-        # Tensors stored in ctx can be used in the subsequent forward grad
+        # Tensors stored in ``ctx`` can be used in the subsequent forward grad
         # computation.
         ctx.result = result
         return result
@@ -145,7 +144,7 @@ class Fn(torch.autograd.Function):
     @staticmethod
     def jvp(ctx, gI):
         gO = gI * ctx.result
-        # If the tensor stored in ctx will not also be used in the backward pass,
+        # If the tensor stored in`` ctx`` will not also be used in the backward pass,
         # one can manually free it using ``del``
         del ctx.result
         return gO
@@ -162,15 +161,86 @@ with fwAD.dual_level():
 
 # It is important to use ``autograd.gradcheck`` to verify that your
 # custom autograd Function computes the gradients correctly. By default,
-# gradcheck only checks the backward-mode (reverse-mode) AD gradients. Specify
+# ``gradcheck`` only checks the backward-mode (reverse-mode) AD gradients. Specify
 # ``check_forward_ad=True`` to also check forward grads. If you did not
-# implement the backward formula for your function, you can also tell gradcheck
+# implement the backward formula for your function, you can also tell ``gradcheck``
 # to skip the tests that require backward-mode AD by specifying
 # ``check_backward_ad=False``, ``check_undefined_grad=False``, and
 # ``check_batched_grad=False``.
 torch.autograd.gradcheck(Fn.apply, (primal,), check_forward_ad=True,
                          check_backward_ad=False, check_undefined_grad=False,
                          check_batched_grad=False)
+
+######################################################################
+# Functional API (beta)
+# --------------------------------------------------------------------
+# We also offer a higher-level functional API in functorch
+# for computing Jacobian-vector products that you may find simpler to use
+# depending on your use case.
+#
+# The benefit of the functional API is that there isn't a need to understand
+# or use the lower-level dual tensor API and that you can compose it with
+# other `functorch transforms (like vmap) <https://pytorch.org/functorch/stable/notebooks/jacobians_hessians.html>`_;
+# the downside is that it offers you less control.
+#
+# Note that the remainder of this tutorial will require functorch
+# (https://github.com/pytorch/functorch) to run. Please find installation
+# instructions at the specified link.
+
+import functorch as ft
+
+primal0 = torch.randn(10, 10)
+tangent0 = torch.randn(10, 10)
+primal1 = torch.randn(10, 10)
+tangent1 = torch.randn(10, 10)
+
+def fn(x, y):
+    return x ** 2 + y ** 2
+
+# Here is a basic example to compute the JVP of the above function.
+# The ``jvp(func, primals, tangents)`` returns ``func(*primals)`` as well as the
+# computed Jacobian-vector product (JVP). Each primal must be associated with a tangent of the same shape.
+primal_out, tangent_out = ft.jvp(fn, (primal0, primal1), (tangent0, tangent1))
+
+# ``functorch.jvp`` requires every primal to be associated with a tangent.
+# If we only want to associate certain inputs to `fn` with tangents,
+# then we'll need to create a new function that captures inputs without tangents:
+primal = torch.randn(10, 10)
+tangent = torch.randn(10, 10)
+y = torch.randn(10, 10)
+
+import functools
+new_fn = functools.partial(fn, y=y)
+primal_out, tangent_out = ft.jvp(new_fn, (primal,), (tangent,))
+
+######################################################################
+# Using the functional API with Modules
+# --------------------------------------------------------------------
+# To use ``nn.Module`` with ``functorch.jvp`` to compute Jacobian-vector products
+# with respect to the model parameters, we need to reformulate the
+# ``nn.Module`` as a function that accepts both the model parameters and inputs
+# to the module.
+
+model = nn.Linear(5, 5)
+input = torch.randn(16, 5)
+tangents = tuple([torch.rand_like(p) for p in model.parameters()])
+
+# Given a ``torch.nn.Module``, ``ft.make_functional_with_buffers`` extracts the state
+# (``params`` and buffers) and returns a functional version of the model that
+# can be invoked like a function.
+# That is, the returned ``func`` can be invoked like
+# ``func(params, buffers, input)``.
+# ``ft.make_functional_with_buffers`` is analogous to the ``nn.Modules`` stateless API
+# that you saw previously and we're working on consolidating the two.
+func, params, buffers = ft.make_functional_with_buffers(model)
+
+# Because ``jvp`` requires every input to be associated with a tangent, we need to
+# create a new function that, when given the parameters, produces the output
+def func_params_only(params):
+    return func(params, buffers, input)
+
+model_output, jvp_out = ft.jvp(func_params_only, (params,), (tangents,))
+
 
 ######################################################################
 # [0] https://en.wikipedia.org/wiki/Dual_number

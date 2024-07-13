@@ -26,7 +26,7 @@ Setup
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-::
+.. code-block:: sh
 
    pip install torch
 
@@ -39,7 +39,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Initialize the optimizer
 # 4. Access the model and optimizer ``state_dict``
 # 
@@ -52,11 +52,12 @@ available.
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training

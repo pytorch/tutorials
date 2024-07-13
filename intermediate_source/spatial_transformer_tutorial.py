@@ -27,7 +27,6 @@ any existing CNN with very little modification.
 # License: BSD
 # Author: Ghassen Hamrouni
 
-from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -85,7 +84,7 @@ test_loader = torch.utils.data.DataLoader(
 #
 # .. figure:: /_static/img/stn/stn-arch.png
 #
-# .. Note::
+# .. note::
 #    We need the latest version of PyTorch that contains
 #    affine_grid and grid_sample modules.
 #

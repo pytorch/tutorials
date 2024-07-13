@@ -84,16 +84,22 @@ for X, y in test_dataloader:
 # To define a neural network in PyTorch, we create a class that inherits
 # from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. We define the layers of the network
 # in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate
-# operations in the neural network, we move it to the GPU if available.
+# operations in the neural network, we move it to the GPU or MPS if available.
 
-# Get cpu or gpu device for training.
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# Get cpu, gpu or mps device for training.
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 print(f"Using {device} device")
 
 # Define model
 class NeuralNetwork(nn.Module):
     def __init__(self):
-        super(NeuralNetwork, self).__init__()
+        super().__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(28*28, 512),
@@ -146,12 +152,12 @@ def train(dataloader, model, loss_fn, optimizer):
         loss = loss_fn(pred, y)
 
         # Backpropagation
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        optimizer.zero_grad()
 
         if batch % 100 == 0:
-            loss, current = loss.item(), batch * len(X)
+            loss, current = loss.item(), (batch + 1) * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 ##############################################################################
@@ -209,7 +215,7 @@ print("Saved PyTorch Model State to model.pth")
 # The process for loading a model includes re-creating the model structure and loading
 # the state dictionary into it.
 
-model = NeuralNetwork()
+model = NeuralNetwork().to(device)
 model.load_state_dict(torch.load("model.pth"))
 
 #############################################################
@@ -231,6 +237,7 @@ classes = [
 model.eval()
 x, y = test_data[0][0], test_data[0][1]
 with torch.no_grad():
+    x = x.to(device)
     pred = model(x)
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')

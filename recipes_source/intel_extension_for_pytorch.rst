@@ -1,18 +1,24 @@
 Intel® Extension for PyTorch*
 =============================
 
-Intel Extension for PyTorch* extends PyTorch with optimizations for extra
-performance boost on Intel hardware. Most of the optimizations will be
-included in stock PyTorch releases eventually, and the intention of the
-extension is to deliver up to date features and optimizations for PyTorch
-on Intel hardware, examples include AVX-512 Vector Neural Network
-Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).
+Intel® Extension for PyTorch* extends PyTorch* with up-to-date features
+optimizations for an extra performance boost on Intel hardware. Optimizations
+take advantage of AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and
+Intel® Advanced Matrix Extensions (Intel® AMX) on Intel CPUs as well as Intel
+X\ :sup:`e`\  Matrix Extensions (XMX) AI engines on Intel discrete GPUs.
+Moreover, through PyTorch* `xpu` device, Intel® Extension for PyTorch* provides
+easy GPU acceleration for Intel discrete GPUs with PyTorch*.
 
 Intel® Extension for PyTorch* has been released as an open–source project
 at `Github <https://github.com/intel/intel-extension-for-pytorch>`_.
 
+- Source code for CPU is available at `master branch <https://github.com/intel/intel-extension-for-pytorch/tree/master>`_.
+- Source code for GPU is available at `xpu-master branch <https://github.com/intel/intel-extension-for-pytorch/tree/xpu-master>`_.
+
 Features
 --------
+
+Intel® Extension for PyTorch* shares most of features for CPU and GPU.
 
 - **Ease-of-use Python API:** Intel® Extension for PyTorch* provides simple
   frontend Python APIs and utilities for users to get performance optimizations
@@ -33,7 +39,8 @@ Features
   optimization of operators have been massively enabled in Intel® Extension
   for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
   these optimizations will be landed in PyTorch master through PRs that are
-  being submitted and reviewed.
+  being submitted and reviewed. Auto Mixed Precision (AMP) with both BFloat16
+  and Float16 have been enabled for Intel discrete GPUs.
 - **Graph Optimization:** To optimize performance further with torchscript,
   Intel® Extension for PyTorch* supports fusion of frequently used operator
   patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
@@ -63,15 +70,23 @@ You just need to import Intel® Extension for PyTorch* package and apply its
 optimize function against the model object. If it is a training workload, the
 optimize function also needs to be applied against the optimizer object.
 
-For training and inference with BFloat16 data type, torch.cpu.amp has been
-enabled in PyTorch upstream to support mixed precision with convenience, and
+For training and inference with BFloat16 data type, `torch.cpu.amp` has been
+enabled in PyTorch upstream to support mixed precision with convenience.
 BFloat16 datatype has been enabled excessively for CPU operators in PyTorch
-upstream and Intel® Extension for PyTorch*. Running torch.cpu.amp will match
-each operator to its appropriate datatype and returns the best possible
-performance.
+upstream and Intel® Extension for PyTorch*. Meanwhile `torch.xpu.amp`,
+registered by Intel® Extension for PyTorch*, enables easy usage of BFloat16
+and Float16 data types on Intel discrete GPUs. Either `torch.cpu.amp` or
+`torch.xpu.amp` matches each operator to its appropriate datatype automatically
+and returns the best possible performance.
+
+Examples -- CPU
+---------------
+
+This section shows examples of training and inference on CPU with Intel®
+Extension for PyTorch*
 
 The code changes that are required for Intel® Extension for PyTorch* are
-highlighted with comments in a line above.
+highlighted.
 
 Training
 ~~~~~~~~
@@ -82,32 +97,46 @@ Float32
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
+   import torchvision
    import intel_extension_for_pytorch as ipex
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   model = Model()
-   model.set_state_dict(torch.load(PATH))
-   optimizer.set_state_dict(torch.load(PATH))
-   # Invoke optimize function against the model object and optimizer object
-   model, optimizer = ipex.optimize(model, optimizer, dtype=torch.float32)
-   
-   for images, label in train_loader():
-       # Setting memory_format to torch.channels_last could improve performance with 4D input data. This is optional.
-       images = images.to(memory_format=torch.channels_last)
-       loss = criterion(model(images), label)
+
+   LR = 0.001
+   DOWNLOAD = True
+   DATA = 'datasets/cifar10/'
+
+   transform = torchvision.transforms.Compose([
+       torchvision.transforms.Resize((224, 224)),
+       torchvision.transforms.ToTensor(),
+       torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+   ])
+   train_dataset = torchvision.datasets.CIFAR10(
+           root=DATA,
+           train=True,
+           transform=transform,
+           download=DOWNLOAD,
+   )
+   train_loader = torch.utils.data.DataLoader(
+           dataset=train_dataset,
+           batch_size=128
+   )
+
+   model = torchvision.models.resnet50()
+   criterion = torch.nn.CrossEntropyLoss()
+   optimizer = torch.optim.SGD(model.parameters(), lr = LR, momentum=0.9)
+   model.train()
+   model, optimizer = ipex.optimize(model, optimizer=optimizer)
+
+   for batch_idx, (data, target) in enumerate(train_loader):
+       optimizer.zero_grad()
+       output = model(data)
+       loss = criterion(output, target)
        loss.backward()
        optimizer.step()
-   torch.save(model.state_dict(), PATH)
-   torch.save(optimizer.state_dict(), PATH)
+       print(batch_idx)
+   torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        }, 'checkpoint.pth')
 
 BFloat16
 ^^^^^^^^
@@ -115,33 +144,47 @@ BFloat16
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
+   import torchvision
    import intel_extension_for_pytorch as ipex
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   model = Model()
-   model.set_state_dict(torch.load(PATH))
-   optimizer.set_state_dict(torch.load(PATH))
-   # Invoke optimize function against the model object and optimizer object with data type set to torch.bfloat16
-   model, optimizer = ipex.optimize(model, optimizer, dtype=torch.bfloat16)
-   
-   for images, label in train_loader():
+
+   LR = 0.001
+   DOWNLOAD = True
+   DATA = 'datasets/cifar10/'
+
+   transform = torchvision.transforms.Compose([
+       torchvision.transforms.Resize((224, 224)),
+       torchvision.transforms.ToTensor(),
+       torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+   ])
+   train_dataset = torchvision.datasets.CIFAR10(
+           root=DATA,
+           train=True,
+           transform=transform,
+           download=DOWNLOAD,
+   )
+   train_loader = torch.utils.data.DataLoader(
+           dataset=train_dataset,
+           batch_size=128
+   )
+
+   model = torchvision.models.resnet50()
+   criterion = torch.nn.CrossEntropyLoss()
+   optimizer = torch.optim.SGD(model.parameters(), lr = LR, momentum=0.9)
+   model.train()
+   model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=torch.bfloat16)
+
+   for batch_idx, (data, target) in enumerate(train_loader):
+       optimizer.zero_grad()
        with torch.cpu.amp.autocast():
-           # Setting memory_format to torch.channels_last could improve performance with 4D input data. This is optional.
-           images = images.to(memory_format=torch.channels_last)
-           loss = criterion(model(images), label)
-       loss.backward()
+           output = model(data)
+           loss = criterion(output, target)
+           loss.backward()
        optimizer.step()
-   torch.save(model.state_dict(), PATH)
-   torch.save(optimizer.state_dict(), PATH)
+       print(batch_idx)
+   torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        }, 'checkpoint.pth')
 
 Inference - Imperative Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -152,24 +195,19 @@ Float32
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
-   import intel_extension_for_pytorch as ipex
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   input = torch.randn(2, 4)
-   model = Model()
+   import torchvision.models as models
+
+   model = models.resnet50(pretrained=True)
    model.eval()
-   # Invoke optimize function against the model object
-   model = ipex.optimize(model, dtype=torch.float32)
-   res = model(input)
+   data = torch.rand(1, 3, 224, 224)
+
+   #################### code changes ####################
+   import intel_extension_for_pytorch as ipex
+   model = ipex.optimize(model)
+   ######################################################
+
+   with torch.no_grad():
+     model(data)
 
 BFloat16
 ^^^^^^^^
@@ -177,26 +215,25 @@ BFloat16
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
-   import intel_extension_for_pytorch as ipex
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   input = torch.randn(2, 4)
-   model = Model()
+   from transformers import BertModel
+
+   model = BertModel.from_pretrained(args.model_name)
    model.eval()
-   # Invoke optimize function against the model object with data type set to torch.bfloat16
+
+   vocab_size = model.config.vocab_size
+   batch_size = 1
+   seq_length = 512
+   data = torch.randint(vocab_size, size=[batch_size, seq_length])
+
+   #################### code changes ####################
+   import intel_extension_for_pytorch as ipex
    model = ipex.optimize(model, dtype=torch.bfloat16)
-   with torch.cpu.amp.autocast():
-       res = model(input)
- 
+   ######################################################
+
+   with torch.no_grad():
+     with torch.cpu.amp.autocast():
+       model(data)
+
 Inference - TorchScript Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -211,29 +248,23 @@ Float32
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
-   import intel_extension_for_pytorch as ipex
-   
-   # oneDNN graph fusion is enabled by default, uncomment the line below to disable it explicitly
-   # ipex.enable_onednn_fusion(False)
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   input = torch.randn(2, 4)
-   model = Model()
+   import torchvision.models as models
+
+   model = models.resnet50(pretrained=True)
    model.eval()
-   # Invoke optimize function against the model object
-   model = ipex.optimize(model, dtype=torch.float32)
-   model = torch.jit.trace(model, torch.randn(2, 4))
-   model = torch.jit.freeze(model)
-   res = model(input)
+   data = torch.rand(1, 3, 224, 224)
+
+   #################### code changes ####################
+   import intel_extension_for_pytorch as ipex
+   model = ipex.optimize(model)
+   ######################################################
+
+   with torch.no_grad():
+     d = torch.rand(1, 3, 224, 224)
+     model = torch.jit.trace(model, d)
+     model = torch.jit.freeze(model)
+
+     model(data)
 
 BFloat16
 ^^^^^^^^
@@ -241,33 +272,361 @@ BFloat16
 .. code:: python3
 
    import torch
-   import torch.nn as nn
-   # Import intel_extension_for_pytorch
-   import intel_extension_for_pytorch as ipex
-   
-   # oneDNN graph fusion is enabled by default, uncomment the line below to disable it explicitly
-   # ipex.enable_onednn_fusion(False)
-   
-   class Model(nn.Module):
-       def __init__(self):
-           super(Model, self).__init__()
-           self.linear = nn.Linear(4, 5)
-   
-       def forward(self, input):
-           return self.linear(input)
-   
-   input = torch.randn(2, 4)
-   model = Model()
-   model.eval()
-   # Invoke optimize function against the model with data type set to torch.bfloat16
-   model = ipex.optimize(model, dtype=torch.bfloat16)
-   with torch.cpu.amp.autocast():
-       model = torch.jit.trace(model, torch.randn(2, 4))
-       model = torch.jit.freeze(model)
-       res = model(input)
+   from transformers import BertModel
 
-C++
-~~~
+   model = BertModel.from_pretrained(args.model_name)
+   model.eval()
+
+   vocab_size = model.config.vocab_size
+   batch_size = 1
+   seq_length = 512
+   data = torch.randint(vocab_size, size=[batch_size, seq_length])
+
+   #################### code changes ####################
+   import intel_extension_for_pytorch as ipex
+   model = ipex.optimize(model, dtype=torch.bfloat16)
+   ######################################################
+
+   with torch.no_grad():
+     with torch.cpu.amp.autocast():
+       d = torch.randint(vocab_size, size=[batch_size, seq_length])
+       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
+       model = torch.jit.freeze(model)
+
+       model(data)
+
+Examples -- GPU
+---------------
+
+This section shows examples of training and inference on GPU with Intel®
+Extension for PyTorch*
+
+The code changes that are required for Intel® Extension for PyTorch* are
+highlighted with comments in a line above.
+
+Training
+~~~~~~~~
+
+Float32
+^^^^^^^
+
+.. code:: python3
+
+   import torch
+   import torchvision
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   LR = 0.001
+   DOWNLOAD = True
+   DATA = 'datasets/cifar10/'
+
+   transform = torchvision.transforms.Compose([
+       torchvision.transforms.Resize((224, 224)),
+       torchvision.transforms.ToTensor(),
+       torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+   ])
+   train_dataset = torchvision.datasets.CIFAR10(
+           root=DATA,
+           train=True,
+           transform=transform,
+           download=DOWNLOAD,
+   )
+   train_loader = torch.utils.data.DataLoader(
+           dataset=train_dataset,
+           batch_size=128
+   )
+
+   model = torchvision.models.resnet50()
+   criterion = torch.nn.CrossEntropyLoss()
+   optimizer = torch.optim.SGD(model.parameters(), lr = LR, momentum=0.9)
+   model.train()
+   #################################### code changes ################################
+   model = model.to("xpu")
+   model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=torch.float32)
+   #################################### code changes ################################
+
+   for batch_idx, (data, target) in enumerate(train_loader):
+       ########## code changes ##########
+       data = data.to("xpu")
+       target = target.to("xpu")
+       ########## code changes ##########
+       optimizer.zero_grad()
+       output = model(data)
+       loss = criterion(output, target)
+       loss.backward()
+       optimizer.step()
+       print(batch_idx)
+   torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        }, 'checkpoint.pth')
+
+BFloat16
+^^^^^^^^
+
+.. code:: python3
+
+   import torch
+   import torchvision
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   LR = 0.001
+   DOWNLOAD = True
+   DATA = 'datasets/cifar10/'
+
+   transform = torchvision.transforms.Compose([
+       torchvision.transforms.Resize((224, 224)),
+       torchvision.transforms.ToTensor(),
+       torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+   ])
+   train_dataset = torchvision.datasets.CIFAR10(
+           root=DATA,
+           train=True,
+           transform=transform,
+           download=DOWNLOAD,
+   )
+   train_loader = torch.utils.data.DataLoader(
+           dataset=train_dataset,
+           batch_size=128
+   )
+
+   model = torchvision.models.resnet50()
+   criterion = torch.nn.CrossEntropyLoss()
+   optimizer = torch.optim.SGD(model.parameters(), lr = LR, momentum=0.9)
+   model.train()
+   ##################################### code changes ################################
+   model = model.to("xpu")
+   model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=torch.bfloat16)
+   ##################################### code changes ################################
+
+   for batch_idx, (data, target) in enumerate(train_loader):
+       optimizer.zero_grad()
+       ######################### code changes #########################
+       data = data.to("xpu")
+       target = target.to("xpu")
+       with torch.xpu.amp.autocast(enabled=True, dtype=torch.bfloat16):
+       ######################### code changes #########################
+           output = model(data)
+           loss = criterion(output, target)
+       loss.backward()
+       optimizer.step()
+       print(batch_idx)
+   torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        }, 'checkpoint.pth')
+
+Inference - Imperative Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Float32
+^^^^^^^
+
+.. code:: python3
+
+   import torch
+   import torchvision.models as models
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = models.resnet50(pretrained=True)
+   model.eval()
+   data = torch.rand(1, 3, 224, 224)
+
+   model = model.to(memory_format=torch.channels_last)
+   data = data.to(memory_format=torch.channels_last)
+
+   #################### code changes ################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.float32)
+   #################### code changes ################
+
+   with torch.no_grad():
+     model(data)
+
+BFloat16
+^^^^^^^^
+
+.. code:: python3
+
+   import torch
+   import torchvision.models as models
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = models.resnet50(pretrained=True)
+   model.eval()
+   data = torch.rand(1, 3, 224, 224)
+
+   model = model.to(memory_format=torch.channels_last)
+   data = data.to(memory_format=torch.channels_last)
+
+   #################### code changes #################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.bfloat16)
+   #################### code changes #################
+
+   with torch.no_grad():
+     ################################# code changes ######################################
+     with torch.xpu.amp.autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=False):
+     ################################# code changes ######################################
+       model(data)
+
+Float16
+^^^^^^^
+
+.. code:: python3
+
+   import torch
+   import torchvision.models as models
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = models.resnet50(pretrained=True)
+   model.eval()
+   data = torch.rand(1, 3, 224, 224)
+
+   model = model.to(memory_format=torch.channels_last)
+   data = data.to(memory_format=torch.channels_last)
+
+   #################### code changes ################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.float16)
+   #################### code changes ################
+
+   with torch.no_grad():
+     ################################# code changes ######################################
+     with torch.xpu.amp.autocast(enabled=True, dtype=torch.float16, cache_enabled=False):
+     ################################# code changes ######################################
+       model(data)
+
+Inference - TorchScript Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TorchScript mode makes graph optimization possible, hence improves
+performance for some topologies. Intel® Extension for PyTorch* enables most
+commonly used operator pattern fusion, and users can get the performance
+benefit without additional code changes.
+
+Float32
+^^^^^^^
+
+.. code:: python3
+
+   import torch
+   from transformers import BertModel
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = BertModel.from_pretrained(args.model_name)
+   model.eval()
+
+   vocab_size = model.config.vocab_size
+   batch_size = 1
+   seq_length = 512
+   data = torch.randint(vocab_size, size=[batch_size, seq_length])
+
+   #################### code changes ################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.float32)
+   #################### code changes ################
+
+   with torch.no_grad():
+     d = torch.randint(vocab_size, size=[batch_size, seq_length])
+     ##### code changes #####
+     d = d.to("xpu")
+     ##### code changes #####
+     model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
+     model = torch.jit.freeze(model)
+
+     model(data)
+
+BFloat16
+^^^^^^^^
+
+.. code:: python3
+
+   import torch
+   from transformers import BertModel
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = BertModel.from_pretrained(args.model_name)
+   model.eval()
+
+   vocab_size = model.config.vocab_size
+   batch_size = 1
+   seq_length = 512
+   data = torch.randint(vocab_size, size=[batch_size, seq_length])
+
+   #################### code changes #################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.bfloat16)
+   #################### code changes #################
+
+   with torch.no_grad():
+     d = torch.randint(vocab_size, size=[batch_size, seq_length])
+     ################################# code changes ######################################
+     d = d.to("xpu")
+     with torch.xpu.amp.autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=False):
+     ################################# code changes ######################################
+       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
+       model = torch.jit.freeze(model)
+
+       model(data)
+
+Float16
+^^^^^^^
+
+.. code:: python3
+
+   import torch
+   from transformers import BertModel
+   ############# code changes ###############
+   import intel_extension_for_pytorch as ipex
+   ############# code changes ###############
+
+   model = BertModel.from_pretrained(args.model_name)
+   model.eval()
+
+   vocab_size = model.config.vocab_size
+   batch_size = 1
+   seq_length = 512
+   data = torch.randint(vocab_size, size=[batch_size, seq_length])
+
+   #################### code changes ################
+   model = model.to("xpu")
+   data = data.to("xpu")
+   model = ipex.optimize(model, dtype=torch.float16)
+   #################### code changes ################
+
+   with torch.no_grad():
+     d = torch.randint(vocab_size, size=[batch_size, seq_length])
+     ################################# code changes ######################################
+     d = d.to("xpu")
+     with torch.xpu.amp.autocast(enabled=True, dtype=torch.float16, cache_enabled=False):
+     ################################# code changes ######################################
+       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
+       model = torch.jit.freeze(model)
+
+       model(data)
+
+C++ (CPU only)
+~~~~~~~~~~~~~~
 
 To work with libtorch, C++ library of PyTorch, Intel® Extension for PyTorch*
 provides its C++ dynamic library as well. The C++ library is supposed to handle
@@ -286,7 +645,7 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
    #include <torch/script.h>
    #include <iostream>
    #include <memory>
-   
+
    int main(int argc, const char* argv[]) {
        torch::jit::script::Module module;
        try {
@@ -299,41 +658,92 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
        std::vector<torch::jit::IValue> inputs;
        // make sure input data are converted to channels last format
        inputs.push_back(torch::ones({1, 3, 224, 224}).to(c10::MemoryFormat::ChannelsLast));
-   
+
        at::Tensor output = module.forward(inputs).toTensor();
-   
+
        return 0;
    }
 
-**CMakeList.txt**
+**CMakeLists.txt**
 
 ::
 
    cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
    project(example-app)
-   
-   find_package(Torch REQUIRED)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wl,--no-as-needed")
-   
+
+   find_package(intel_ext_pt_cpu REQUIRED)
+
    add_executable(example-app example-app.cpp)
-   # Link the binary against the C++ dynamic library file of Intel® Extension for PyTorch*
-   target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib/libintel-ext-pt-cpu.so")
+   target_link_libraries(example-app "${TORCH_LIBRARIES}")
 
    set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
-
-**Note:** Since Intel® Extension for PyTorch* is still under development, name of
-the c++ dynamic library in the master branch may defer to
-*libintel-ext-pt-cpu.so* shown above. Please check the name out in the
-installation folder. The so file name starts with *libintel-*.
 
 **Command for compilation**
 
 ::
 
-   $ cmake -DCMAKE_PREFIX_PATH=<LIBPYTORCH_PATH> -DINTEL_EXTENSION_FOR_PYTORCH_PATH=<INTEL_EXTENSION_FOR_PYTORCH_INSTALLATION_PATH> ..
+   $ cmake -DCMAKE_PREFIX_PATH=<LIBPYTORCH_PATH> ..
    $ make
+
+If `Found INTEL_EXT_PT_CPU` is shown as `TRUE`, the extension had been linked
+into the binary. This can be verified with the Linux command `ldd`.
+
+::
+
+   $ cmake -DCMAKE_PREFIX_PATH=/workspace/libtorch ..
+   -- The C compiler identification is GNU 9.3.0
+   -- The CXX compiler identification is GNU 9.3.0
+   -- Check for working C compiler: /usr/bin/cc
+   -- Check for working C compiler: /usr/bin/cc -- works
+   -- Detecting C compiler ABI info
+   -- Detecting C compiler ABI info - done
+   -- Detecting C compile features
+   -- Detecting C compile features - done
+   -- Check for working CXX compiler: /usr/bin/c++
+   -- Check for working CXX compiler: /usr/bin/c++ -- works
+   -- Detecting CXX compiler ABI info
+   -- Detecting CXX compiler ABI info - done
+   -- Detecting CXX compile features
+   -- Detecting CXX compile features - done
+   -- Looking for pthread.h
+   -- Looking for pthread.h - found
+   -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+   -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+   -- Looking for pthread_create in pthreads
+   -- Looking for pthread_create in pthreads - not found
+   -- Looking for pthread_create in pthread
+   -- Looking for pthread_create in pthread - found
+   -- Found Threads: TRUE
+   -- Found Torch: /workspace/libtorch/lib/libtorch.so
+   -- Found INTEL_EXT_PT_CPU: TRUE
+   -- Configuring done
+   -- Generating done
+   -- Build files have been written to: /workspace/build
+
+   $ ldd example-app
+           ...
+           libtorch.so => /workspace/libtorch/lib/libtorch.so (0x00007f3cf98e0000)
+           libc10.so => /workspace/libtorch/lib/libc10.so (0x00007f3cf985a000)
+           libintel-ext-pt-cpu.so => /workspace/libtorch/lib/libintel-ext-pt-cpu.so (0x00007f3cf70fc000)
+           libtorch_cpu.so => /workspace/libtorch/lib/libtorch_cpu.so (0x00007f3ce16ac000)
+           ...
+           libdnnl_graph.so.0 => /workspace/libtorch/lib/libdnnl_graph.so.0 (0x00007f3cde954000)
+           ...
+
+Model Zoo (CPU only)
+--------------------
+
+Use cases that had already been optimized by Intel engineers are available at
+`Model Zoo for Intel® Architecture <https://github.com/IntelAI/models/>`_ (with
+the branch name in format of `pytorch-r<version>-models`). Many PyTorch use
+cases for benchmarking are also available on the GitHub page. You can get
+performance benefits out-of-the-box by simply running scripts in the Model Zoo.
 
 Tutorials
 ---------
 
-Please visit `Intel® Extension for PyTorch* Github repo <https://github.com/intel/intel-extension-for-pytorch>`_ for more tutorials.
+More detailed tutorials are available in the official Intel® Extension
+for PyTorch* Documentation:
+
+- `CPU <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/>`_
+- `GPU <https://intel.github.io/intel-extension-for-pytorch/xpu/latest/>`_

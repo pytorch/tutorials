@@ -10,7 +10,7 @@
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Automatic Differentiation with ``torch.autograd``
-=======================================
+=================================================
 
 When training neural networks, the most frequently used algorithm is
 **back propagation**. In this algorithm, parameters (model weights) are
@@ -130,9 +130,7 @@ print(z_det.requires_grad)
 
 ######################################################################
 # There are reasons you might want to disable gradient tracking:
-#   - To mark some parameters in your neural network as **frozen parameters**. This is
-#     a very common scenario for
-#     `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
+#   - To mark some parameters in your neural network as **frozen parameters**.
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
 #     not track gradients would be more efficient.
 
@@ -172,7 +170,7 @@ print(z_det.requires_grad)
 
 ######################################################################
 # Optional Reading: Tensor Gradients and Jacobian Products
-# --------------------------------------
+# --------------------------------------------------------
 #
 # In many cases, we have a scalar loss function, and we need to compute
 # the gradient with respect to some parameters. However, there are cases
@@ -203,14 +201,14 @@ print(z_det.requires_grad)
 # compute the product:
 #
 
-inp = torch.eye(5, requires_grad=True)
-out = (inp+1).pow(2)
-out.backward(torch.ones_like(inp), retain_graph=True)
+inp = torch.eye(4, 5, requires_grad=True)
+out = (inp+1).pow(2).t()
+out.backward(torch.ones_like(out), retain_graph=True)
 print(f"First call\n{inp.grad}")
-out.backward(torch.ones_like(inp), retain_graph=True)
+out.backward(torch.ones_like(out), retain_graph=True)
 print(f"\nSecond call\n{inp.grad}")
 inp.grad.zero_()
-out.backward(torch.ones_like(inp), retain_graph=True)
+out.backward(torch.ones_like(out), retain_graph=True)
 print(f"\nCall after zeroing gradients\n{inp.grad}")
 
 

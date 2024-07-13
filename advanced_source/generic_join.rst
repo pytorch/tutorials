@@ -3,6 +3,9 @@ Distributed Training with Uneven Inputs Using the Join Context Manager
 
 **Author**\ : `Andrew Gu <https://github.com/andwgu>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/advanced_source/generic_join.rst>`__.
+
 .. note:: ``Join`` is introduced in PyTorch 1.10 as a prototype feature. This
     API is subject to change.
 

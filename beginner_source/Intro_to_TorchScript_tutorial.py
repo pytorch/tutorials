@@ -2,7 +2,7 @@
 Introduction to TorchScript
 ===========================
 
-*James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
+**Authors:** James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com), rev2
 
 This tutorial is an introduction to TorchScript, an intermediate
 representation of a PyTorch model (subclass of ``nn.Module``) that
@@ -33,13 +33,14 @@ model from C++.
 
 import torch  # This is all you need to use both PyTorch and TorchScript!
 print(torch.__version__)
+torch.manual_seed(191009)  # set the seed for reproducibility
 
 
 ######################################################################
 # Basics of PyTorch Model Authoring
 # ---------------------------------
 #
-# Let’s start out be defining a simple ``Module``. A ``Module`` is the
+# Let’s start out by defining a simple ``Module``. A ``Module`` is the
 # basic unit of composition in PyTorch. It contains:
 #
 # 1. A constructor, which prepares the module for invocation
@@ -111,7 +112,7 @@ print(my_cell(x, h))
 # ``Module``\ ’s subclass hierarchy. In our example, we can see our
 # ``Linear`` subclass and its parameters.
 #
-# By composing ``Module``\ s in this way, we can succintly and readably
+# By composing ``Module``\ s in this way, we can succinctly and readably
 # author models with reusable components.
 #
 # You may have noticed ``grad_fn`` on the outputs. This is a detail of
@@ -147,7 +148,7 @@ print(my_cell(x, h))
 
 
 ######################################################################
-# We’ve once again redefined our MyCell class, but here we’ve defined
+# We’ve once again redefined our ``MyCell`` class, but here we’ve defined
 # ``MyDecisionGate``. This module utilizes **control flow**. Control flow
 # consists of things like loops and ``if``-statements.
 #
@@ -158,7 +159,7 @@ print(my_cell(x, h))
 # have to explicitly define derivatives for all constructs in the
 # language.
 #
-# .. figure:: https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/dynamic_graph.gif
+# .. figure:: https://github.com/pytorch/pytorch/raw/main/docs/source/_static/img/dynamic_graph.gif
 #    :alt: How autograd works
 #
 #    How autograd works
@@ -202,7 +203,7 @@ traced_cell(x, h)
 # inputs* the network might see.
 #
 # What exactly has this done? It has invoked the ``Module``, recorded the
-# operations that occured when the ``Module`` was run, and created an
+# operations that occurred when the ``Module`` was run, and created an
 # instance of ``torch.jit.ScriptModule`` (of which ``TracedModule`` is an
 # instance)
 #
@@ -283,7 +284,7 @@ print(traced_cell.code)
 # Looking at the ``.code`` output, we can see that the ``if-else`` branch
 # is nowhere to be found! Why? Tracing does exactly what we said it would:
 # run the code, record the operations *that happen* and construct a
-# ScriptModule that does exactly that. Unfortunately, things like control
+# ``ScriptModule`` that does exactly that. Unfortunately, things like control
 # flow are erased.
 #
 # How can we faithfully represent this module in TorchScript? We provide a
@@ -308,7 +309,7 @@ print(scripted_cell.code)
 
 # New inputs
 x, h = torch.rand(3, 4), torch.rand(3, 4)
-traced_cell(x, h)
+print(scripted_cell(x, h))
 
 
 ######################################################################

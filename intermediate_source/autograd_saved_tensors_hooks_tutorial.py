@@ -1,6 +1,6 @@
 """
 Hooks for autograd saved tensors
-=======================
+================================
 
 """
 
@@ -13,8 +13,7 @@ Hooks for autograd saved tensors
 # packing/unpacking process.
 #
 # This tutorial assumes you are familiar with how backpropagation works in
-# theory. If not, read this first:
-# https://colab.research.google.com/drive/1aWNdmYt7RcHMbUk-Xz2Cv5-cGFSWPXe0#scrollTo=AHcEJ6nXUb7W
+# theory. If not, read `this <https://colab.research.google.com/drive/1aWNdmYt7RcHMbUk-Xz2Cv5-cGFSWPXe0#scrollTo=AHcEJ6nXUb7W>`_ first.
 #
 
 
@@ -45,7 +44,7 @@ Hooks for autograd saved tensors
 
 
 ######################################################################
-# We start with a simple example: :math: `y = a \mapsto \cdot b` , for which
+# We start with a simple example: :math:`y = a \cdot b` , for which
 # we know the gradients of :math:`y` with respect to :math:`a` and
 # :math:`b`:
 #
@@ -107,8 +106,8 @@ y = f(f(f(x)))
 
 ######################################################################
 # In the example above, executing without grad would only have kept ``x``
-# and ``y`` in the scope, But the graph additionnally stores ``f(x)`` and
-# ``f(f(x)``. Hence, running a forward pass during training will be more
+# and ``y`` in the scope, But the graph additionally stores ``f(x)`` and
+# ``f(f(x))``. Hence, running a forward pass during training will be more
 # costly in memory usage than during evaluation (more precisely, when
 # autograd is not required).
 #
@@ -182,7 +181,7 @@ y.sum().backward()
 
 
 ######################################################################
-# The ``pack_hook`` function will be called everytime an operation saves
+# The ``pack_hook`` function will be called every time an operation saves
 # a tensor for backward.
 # The output of ``pack_hook`` is then stored in the computation graph
 # instead of the original tensor.
@@ -218,8 +217,9 @@ assert(x.grad.equal(2 * x))
 #
 
 ######################################################################
-# **Returning and int**
-
+# Returning an ``int``
+# ^^^^^^^^^^^^^^^^^^^^
+#
 # Returning the index of a Python list
 # Relatively harmless but with debatable usefulness
 
@@ -240,8 +240,9 @@ y.sum().backward()
 assert(x.grad.equal(2 * x))
 
 ######################################################################
-# **Returning a tuple**
-
+# Returning a tuple
+# ^^^^^^^^^^^^^^^^^
+#
 # Returning some tensor and a function how to unpack it
 # Quite unlikely to be useful in its current form
 
@@ -262,9 +263,10 @@ y.sum().backward()
 assert(torch.allclose(x.grad, 2 * x))
 
 ######################################################################
-# **Returning a str**
-
-# Returning the __repr__ of the tensor
+# Returning a ``str``
+# ^^^^^^^^^^^^^^^^^^^
+#
+# Returning the ``__repr__ of`` the tensor
 # Probably never do this
 
 x = torch.randn(5, requires_grad=True)
@@ -337,7 +339,7 @@ loss.backward()
 
 
 ######################################################################
-# In practice, on a A100 GPU, for a resnet-152 with batch size 256, this
+# In practice, on a A100 GPU, for a ResNet-152 with batch size 256, this
 # corresponds to a GPU memory usage reduction from 48GB to 5GB, at the
 # cost of a 6x slowdown.
 #

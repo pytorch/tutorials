@@ -2,6 +2,8 @@ Implementing Batch RPC Processing Using Asynchronous Executions
 ===============================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/rpc_async_execution.rst>`__.
 
 Prerequisites:
 
@@ -520,4 +522,3 @@ Learn More
 -  `Batch-Updating Parameter Server Source Code <https://github.com/pytorch/examples/blob/master/distributed/rpc/batch/parameter_server.py>`__
 -  `Batch-Processing CartPole Solver <https://github.com/pytorch/examples/blob/master/distributed/rpc/batch/reinforce.py>`__
 -  `Distributed Autograd <https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework>`__
--  `Distributed Pipeline Parallelism <dist_pipeline_parallel_tutorial.html>`__

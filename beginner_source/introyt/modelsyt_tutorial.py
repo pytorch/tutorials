@@ -95,7 +95,7 @@ for param in tinymodel.linear2.parameters():
 # The most basic type of neural network layer is a *linear* or *fully
 # connected* layer. This is a layer where every input influences every
 # output of the layer to a degree specified by the layer’s weights. If a
-# model has *m* inputs and *n* outputs, the weights will be an *m*x*n*
+# model has *m* inputs and *n* outputs, the weights will be an *m* x *n*
 # matrix. For example:
 # 
 
@@ -137,7 +137,7 @@ print(y)
 # spatial correlation. They are very commonly used in computer vision,
 # where they detect close groupings of features which the compose into
 # higher-level features. They pop up in other contexts too - for example,
-# in NLP applications, where the a word’s immediate context (that is, the
+# in NLP applications, where a word’s immediate context (that is, the
 # other words nearby in the sequence) can affect the meaning of a
 # sentence.
 # 
@@ -342,7 +342,7 @@ print(maxpool_layer(my_tensor))
 # the 6x6 input.
 # 
 # **Normalization layers** re-center and normalize the output of one layer
-# before feeding it to another. Centering the and scaling the intermediate
+# before feeding it to another. Centering and scaling the intermediate
 # tensors has a number of beneficial effects, such as letting you use
 # higher learning rates without exploding/vanishing gradients.
 # 

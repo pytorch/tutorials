@@ -2,13 +2,16 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/dist_tuto.rst>`__.
+
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
 
 In this short tutorial, we will be going over the distributed package
 of PyTorch. We'll see how to set up the distributed setting, use the
-different communication strategies, and go over some the internals of
+different communication strategies, and go over some of the internals of
 the package.
 
 Setup
@@ -36,7 +39,7 @@ with your local sysadmin or use your favorite coordination tool (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
 `clustershell <https://cea-hpc.github.io/clustershell/>`__, or
 `others <https://slurm.schedmd.com/>`__). For the purpose of this
-tutorial, we will use a single machine and fork multiple processes using
+tutorial, we will use a single machine and spawn multiple processes using
 the following template.
 
 .. code:: python
@@ -147,7 +150,7 @@ return a ``Work`` object upon which we can choose to
         req.wait()
         print('Rank ', rank, ' has data ', tensor[0])
 
-When using immediates we have to be careful about with our usage of the sent and received tensors.
+When using immediates we have to be careful about how we use the sent and received tensors.
 Since we do not know when the data will be communicated to the other process,
 we should not modify the sent tensor nor access the received tensor before ``req.wait()`` has completed.
 In other words,
@@ -159,7 +162,7 @@ However, after ``req.wait()``
 has been executed we are guaranteed that the communication took place,
 and that the value stored in ``tensor[0]`` is 1.0.
 
-Point-to-point communication is useful when we want a fine-grained
+Point-to-point communication is useful when we want more fine-grained
 control over the communication of our processes. They can be used to
 implement fancy algorithms, such as the one used in `Baidu's
 DeepSpeech <https://github.com/baidu-research/baidu-allreduce>`__ or
@@ -199,8 +202,8 @@ As opposed to point-to-point communcation, collectives allow for
 communication patterns across all processes in a **group**. A group is a
 subset of all our processes. To create a group, we can pass a list of
 ranks to ``dist.new_group(group)``. By default, collectives are executed
-on the all processes, also known as the **world**. For example, in order
-to obtain the sum of all tensors at all processes, we can use the
+on all processes, also known as the **world**. For example, in order
+to obtain the sum of all tensors on all processes, we can use the
 ``dist.all_reduce(tensor, op, group)`` collective.
 
 .. code:: python
@@ -229,7 +232,7 @@ of 6 collectives currently implemented in PyTorch.
 
 -  ``dist.broadcast(tensor, src, group)``: Copies ``tensor`` from
    ``src`` to all other processes.
--  ``dist.reduce(tensor, dst, op, group)``: Applies ``op`` to all
+-  ``dist.reduce(tensor, dst, op, group)``: Applies ``op`` to every
    ``tensor`` and stores the result in ``dst``.
 -  ``dist.all_reduce(tensor, op, group)``: Same as reduce, but the
    result is stored in all processes.
@@ -240,7 +243,7 @@ of 6 collectives currently implemented in PyTorch.
    from all processes in ``dst``.
 -  ``dist.all_gather(tensor_list, tensor, group)``: Copies ``tensor``
    from all processes to ``tensor_list``, on all processes.
--  ``dist.barrier(group)``: block all processes in `group` until each one has entered this function.
+-  ``dist.barrier(group)``: Blocks all processes in `group` until each one has entered this function.
 
 Distributed Training
 --------------------
@@ -297,7 +300,7 @@ instead of the snippet below.)
         def __init__(self, data, sizes=[0.7, 0.2, 0.1], seed=1234):
             self.data = data
             self.partitions = []
-            rng = Random()
+            rng = Random()  # from random import Random
             rng.seed(seed)
             data_len = len(data)
             indexes = [x for x in range(0, data_len)]
@@ -324,7 +327,7 @@ the following few lines:
                                      transforms.Normalize((0.1307,), (0.3081,))
                                  ]))
         size = dist.get_world_size()
-        bsz = 128 / float(size)
+        bsz = 128 // size
         partition_sizes = [1.0 / size for _ in range(size)]
         partition = DataPartitioner(dataset, partition_sizes)
         partition = partition.use(dist.get_rank())
@@ -339,7 +342,7 @@ number of replicas in order to maintain the *overall* batch size of 128.
 
 We can now write our usual forward-backward-optimize training code, and
 add a function call to average the gradients of our models. (The
-following is largely inspired from the official `PyTorch MNIST
+following is largely inspired by the official `PyTorch MNIST
 example <https://github.com/pytorch/examples/blob/master/mnist/main.py>`__.)
 
 .. code:: python
@@ -392,7 +395,7 @@ Our Own Ring-Allreduce
 ~~~~~~~~~~~~~~~~~~~~~~
 
 As an additional challenge, imagine that we wanted to implement
-DeepSpeech's efficient ring allreduce. This is fairly easily implemented
+DeepSpeech's efficient ring allreduce. This is fairly easy to implement
 using point-to-point collectives.
 
 .. code:: python
@@ -426,7 +429,7 @@ In the above script, the ``allreduce(send, recv)`` function has a
 slightly different signature than the ones in PyTorch. It takes a
 ``recv`` tensor and will store the sum of all ``send`` tensors in it. As
 an exercise left to the reader, there is still one difference between
-our version and the one in DeepSpeech: their implementation divide the
+our version and the one in DeepSpeech: their implementation divides the
 gradient tensor into *chunks*, so as to optimally utilize the
 communication bandwidth. (Hint:
 `torch.chunk <https://pytorch.org/docs/stable/torch.html#torch.chunk>`__)
@@ -440,7 +443,7 @@ divided into two subsections:
 
 1. Communication Backends: where we learn how to use MPI and Gloo for
    GPU-GPU communication.
-2. Initialization Methods: where we understand how to best setup the
+2. Initialization Methods: where we understand how to best set up the
    initial coordination phase in ``dist.init_process_group()``.
 
 Communication Backends
@@ -466,7 +469,7 @@ optimized as the ones provided by the NCCL backend.
 
 As you have surely noticed, our
 distributed SGD example does not work if you put ``model`` on the GPU.
-In order to use multiple GPUs, let us also do the following
+In order to use multiple GPUs, let us also make the following
 modifications:
 
 1.  Use ``device = torch.device("cuda:{}".format(rank))``
@@ -493,7 +496,7 @@ large computer clusters. `Some <https://developer.nvidia.com/mvapich>`__
 advantage of CUDA IPC and GPU Direct technologies in order to avoid
 memory copies through the CPU.
 
-Unfortunately, PyTorch's binaries can not include an MPI implementation
+Unfortunately, PyTorch's binaries cannot include an MPI implementation
 and we'll have to recompile it by hand. Fortunately, this process is
 fairly simple given that upon compilation, PyTorch will look *by itself*
 for an available MPI implementation. The following steps install the MPI

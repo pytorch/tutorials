@@ -10,7 +10,7 @@ This implementation uses the nn package from PyTorch to build the network.
 PyTorch autograd makes it easy to define computational graphs and take gradients,
 but raw autograd can be a bit too low-level for defining complex neural networks;
 this is where the nn package can help. The nn package defines a set of Modules,
-which you can think of as a neural network layer that has produces output from
+which you can think of as a neural network layer that produces output from
 input and may have some trainable weights.
 """
 import torch

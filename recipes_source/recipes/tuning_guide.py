@@ -13,8 +13,8 @@ General optimizations
 """
 
 ###############################################################################
-# Enable async data loading and augmentation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Enable asynchronous data loading and augmentation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`_
 # supports asynchronous data loading and data augmentation in separate worker
 # subprocesses. The default setting for ``DataLoader`` is ``num_workers=0``,
@@ -94,35 +94,36 @@ for param in model.parameters():
 # ``optimizer.zero_grad(set_to_none=True)``.
 
 ###############################################################################
-# Fuse pointwise operations
+# Fuse operations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Pointwise operations (elementwise addition, multiplication, math functions -
-# ``sin()``, ``cos()``, ``sigmoid()`` etc.) can be fused into a single kernel
-# to amortize memory access time and kernel launch time.
+# Pointwise operations such as elementwise addition, multiplication, and math
+# functions like `sin()`, `cos()`, `sigmoid()`, etc., can be combined into a
+# single kernel. This fusion helps reduce memory access and kernel launch times.
+# Typically, pointwise operations are memory-bound; PyTorch eager-mode initiates
+# a separate kernel for each operation, which involves loading data from memory,
+# executing the operation (often not the most time-consuming step), and writing
+# the results back to memory.
+# 
+# By using a fused operator, only one kernel is launched for multiple pointwise
+# operations, and data is loaded and stored just once. This efficiency is
+# particularly beneficial for activation functions, optimizers, and custom RNN cells etc.
 #
-# `PyTorch JIT <https://pytorch.org/docs/stable/jit.html>`_ can fuse kernels
-# automatically, although there could be additional fusion opportunities not yet
-# implemented in the compiler, and not all device types are supported equally.
-#
-# Pointwise operations are memory-bound, for each operation PyTorch launches a
-# separate kernel. Each kernel loads data from the memory, performs computation
-# (this step is usually inexpensive) and stores results back into the memory.
-#
-# Fused operator launches only one kernel for multiple fused pointwise ops and
-# loads/stores data only once to the memory. This makes JIT very useful for
-# activation functions, optimizers, custom RNN cells etc.
+# PyTorch 2 introduces a compile-mode facilitated by TorchInductor, an underlying compiler
+# that automatically fuses kernels. TorchInductor extends its capabilities beyond simple
+# element-wise operations, enabling advanced fusion of eligible pointwise and reduction
+# operations for optimized performance.
 #
 # In the simplest case fusion can be enabled by applying
-# `torch.jit.script <https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script>`_
+# `torch.compile <https://pytorch.org/docs/stable/generated/torch.compile.html>`_
 # decorator to the function definition, for example:
 
-@torch.jit.script
-def fused_gelu(x):
+@torch.compile
+def gelu(x):
     return x * 0.5 * (1.0 + torch.erf(x / 1.41421))
 
 ###############################################################################
 # Refer to
-# `TorchScript documentation <https://pytorch.org/docs/stable/jit.html>`_
+# `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
 # for more advanced use cases.
 
 ###############################################################################
@@ -172,7 +173,7 @@ def fused_gelu(x):
 # * profiler related:
 #   `torch.autograd.profiler.emit_nvtx <https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.emit_nvtx>`_,
 #   `torch.autograd.profiler.profile <https://pytorch.org/docs/stable/autograd.html#torch.autograd.profiler.profile>`_
-# * autograd gradcheck:
+# * autograd ``gradcheck``:
 #   `torch.autograd.gradcheck <https://pytorch.org/docs/stable/autograd.html#torch.autograd.gradcheck>`_
 #   or
 #   `torch.autograd.gradgradcheck <https://pytorch.org/docs/stable/autograd.html#torch.autograd.gradgradcheck>`_
@@ -188,62 +189,166 @@ def fused_gelu(x):
 # NUMA or non-uniform memory access is a memory layout design used in data center machines meant to take advantage of locality of memory in multi-socket machines with multiple memory controllers and blocks. Generally speaking, all deep learning workloads, training or inference, get better performance without accessing hardware resources across NUMA nodes. Thus, inference can be run with multiple instances, each instance runs on one socket, to raise throughput. For training tasks on single node, distributed training is recommended to make each training process run on one socket.
 #
 # In general cases the following command executes a PyTorch script on cores on the Nth node only, and avoids cross-socket memory access to reduce memory access overhead.
-
-# numactl --cpunodebind=N --membind=N python <pytorch_script>
+#
+# .. code-block:: sh
+#
+#    numactl --cpunodebind=N --membind=N python <pytorch_script>
 
 ###############################################################################
-# More detailed descriptions can be found `here <https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_.
+# More detailed descriptions can be found `here <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/tutorials/performance_tuning/tuning_guide.html>`_.
 
 ###############################################################################
 # Utilize OpenMP
 # ~~~~~~~~~~~~~~
 # OpenMP is utilized to bring better performance for parallel computation tasks.
-# OMP_NUM_THREADS is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
-# CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. GOMP_CPU_AFFINITY or KMP_AFFINITY determines how to bind OpenMP* threads to physical processing units. Detailed information can be found `here <https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_.
+# ``OMP_NUM_THREADS`` is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
+# CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. ``GOMP_CPU_AFFINITY`` or ``KMP_AFFINITY`` determines how to bind OpenMP* threads to physical processing units. Detailed information can be found `here <https://intel.github.io/intel-extension-for-pytorch/cpu/latest/tutorials/performance_tuning/tuning_guide.html>`_.
 
 ###############################################################################
 # With the following command, PyTorch run the task on N OpenMP threads.
-
-# export OMP_NUM_THREADS=N
-
-###############################################################################
-# Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. OMP_PROC_BIND specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. OMP_SCHEDULE determines how OpenMP threads are scheduled. GOMP_CPU_AFFINITY binds threads to specific CPUs.
-
-# export OMP_SCHEDULE=STATIC
-# export OMP_PROC_BIND=CLOSE
-# export GOMP_CPU_AFFINITY="N-M"
+#
+# .. code-block:: sh
+#
+#    export OMP_NUM_THREADS=N
 
 ###############################################################################
-# Intel OpenMP Runtime Library (libiomp)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# By default, PyTorch uses GNU OpenMP (GNU libgomp) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It sometimes brings more performance benefits compared to libgomp. Utilizing environment variable LD_PRELOAD can switch OpenMP library to libiomp:
-
-# export LD_PRELOAD=<path>/libiomp5.so:$LD_PRELOAD
+# Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. ``OMP_PROC_BIND`` specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. ``OMP_SCHEDULE`` determines how OpenMP threads are scheduled. ``GOMP_CPU_AFFINITY`` binds threads to specific CPUs.
+# An important tuning parameter is core pinning which prevent the threads of migrating between multiple CPUs, enhancing data location and minimizing inter core communication.
+#
+# .. code-block:: sh
+#
+#    export OMP_SCHEDULE=STATIC
+#    export OMP_PROC_BIND=CLOSE
+#    export GOMP_CPU_AFFINITY="N-M"
 
 ###############################################################################
-# Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in libiomp to control CPU affinity settings.
-# KMP_AFFINITY binds OpenMP threads to physical processing units. KMP_BLOCKTIME sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting KMP_BLOCKTIME to 1 or 0 yields good performances.
+# Intel OpenMP Runtime Library (``libiomp``)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# By default, PyTorch uses GNU OpenMP (GNU ``libgomp``) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (``libiomp``) provides OpenMP API specification support. It sometimes brings more performance benefits compared to ``libgomp``. Utilizing environment variable ``LD_PRELOAD`` can switch OpenMP library to ``libiomp``:
+#
+# .. code-block:: sh
+#
+#    export LD_PRELOAD=<path>/libiomp5.so:$LD_PRELOAD
+
+###############################################################################
+# Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in ``libiomp`` to control CPU affinity settings.
+# ``KMP_AFFINITY`` binds OpenMP threads to physical processing units. ``KMP_BLOCKTIME`` sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting ``KMP_BLOCKTIME`` to 1 or 0 yields good performances.
 # The following commands show a common settings with Intel OpenMP Runtime Library.
-
-# export KMP_AFFINITY=granularity=fine,compact,1,0
-# export KMP_BLOCKTIME=1
+#
+# .. code-block:: sh
+#
+#    export KMP_AFFINITY=granularity=fine,compact,1,0
+#    export KMP_BLOCKTIME=1
 
 ###############################################################################
 # Switch Memory allocator
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# For deep learning workloads, Jemalloc or TCMalloc can get better performance by reusing memory as much as possible than default malloc funtion. `Jemalloc <https://github.com/jemalloc/jemalloc>`_ is a general purpose malloc implementation that emphasizes fragmentation avoidance and scalable concurrency support. `TCMalloc <https://google.github.io/tcmalloc/overview.html>`_ also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
-# Use environment variable LD_PRELOAD to take advantage of one of them.
-
-# export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD
+# For deep learning workloads, ``Jemalloc`` or ``TCMalloc`` can get better performance by reusing memory as much as possible than default ``malloc`` function. `Jemalloc <https://github.com/jemalloc/jemalloc>`_ is a general purpose ``malloc`` implementation that emphasizes fragmentation avoidance and scalable concurrency support. `TCMalloc <https://google.github.io/tcmalloc/overview.html>`_ also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
+# Use environment variable ``LD_PRELOAD`` to take advantage of one of them.
+#
+# .. code-block:: sh
+#
+#    export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD
 
 ###############################################################################
-# Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.
+# Use oneDNN Graph with TorchScript for inference
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
+# In PyTorch 2.0, it is supported as a beta feature for ``Float32`` & ``BFloat16`` data-types.
+# oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
+# A model should be JIT-traced using an example input.
+# Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
+# The example code-snippets below are for resnet50, but they can very well be extended to use oneDNN Graph with custom models as well.
+
+# Only this extra line of code is required to use oneDNN Graph
+torch.jit.enable_onednn_fusion(True)
+
+###############################################################################
+# Using the oneDNN Graph API requires just one extra line of code for inference with Float32.
+# If you are using oneDNN Graph, please avoid calling ``torch.jit.optimize_for_inference``.
+
+# sample input should be of the same shape as expected inputs
+sample_input = [torch.rand(32, 3, 224, 224)]
+# Using resnet50 from torchvision in this example for illustrative purposes,
+# but the line below can indeed be modified to use custom models as well.
+model = getattr(torchvision.models, "resnet50")().eval()
+# Tracing the model with example input
+traced_model = torch.jit.trace(model, sample_input)
+# Invoking torch.jit.freeze
+traced_model = torch.jit.freeze(traced_model)
+
+###############################################################################
+# Once a model is JIT-traced with a sample input, it can then be used for inference after a couple of warm-up runs.
+
+with torch.no_grad():
+    # a couple of warm-up runs
+    traced_model(*sample_input)
+    traced_model(*sample_input)
+    # speedup would be observed after warm-up runs
+    traced_model(*sample_input)
+
+###############################################################################
+# While the JIT fuser for oneDNN Graph also supports inference with ``BFloat16`` datatype,
+# performance benefit with oneDNN Graph is only exhibited by machines with AVX512_BF16
+# instruction set architecture (ISA).
+# The following code snippets serves as an example of using ``BFloat16`` datatype for inference with oneDNN Graph:
+
+# AMP for JIT mode is enabled by default, and is divergent with its eager mode counterpart
+torch._C._jit_set_autocast_mode(False)
+
+with torch.no_grad(), torch.cpu.amp.autocast(cache_enabled=False, dtype=torch.bfloat16):
+    # Conv-BatchNorm folding for CNN-based Vision Models should be done with ``torch.fx.experimental.optimization.fuse`` when AMP is used
+    import torch.fx.experimental.optimization as optimization
+    # Please note that optimization.fuse need not be called when AMP is not used
+    model = optimization.fuse(model)
+    model = torch.jit.trace(model, (example_input))
+    model = torch.jit.freeze(model)
+    # a couple of warm-up runs
+    model(example_input)
+    model(example_input)
+    # speedup would be observed in subsequent runs.
+    model(example_input)
+
+
+###############################################################################
+# Train a model on CPU with PyTorch ``DistributedDataParallel``(DDP) functionality
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) ``oneCCL`` (collective communications library) for efficient distributed deep learning training implementing such collectives like ``allreduce``, ``allgather``, ``alltoall``, implements PyTorch C10D ``ProcessGroup`` API and can be dynamically loaded as external ``ProcessGroup``. Upon optimizations implemented in PyTorch DDP module, ``torch-ccl`` accelerates communication operations. Beside the optimizations made to communication kernels, ``torch-ccl`` also features simultaneous computation-communication functionality.
 
 ###############################################################################
 # GPU specific optimizations
 # --------------------------
+
+###############################################################################
+# Enable Tensor cores
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Tensor cores are specialized hardware designed to compute matrix-matrix multiplication
+# operations, primarily utilized in deep learning and AI workloads. Tensor cores have
+# specific precision requirements which can be adjusted manually or via the Automatic
+# Mixed Precision API.
+#
+# In particular, tensor operations take advantage of lower precision workloads.
+# Which can be controlled via ``torch.set_float32_matmul_precision``.
+# The default format is set to 'highest,' which utilizes the tensor data type. 
+# However, PyTorch offers alternative precision settings: 'high' and 'medium.'
+# These options prioritize computational speed over numerical precision."
+
+###############################################################################
+# Use CUDA Graphs
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# At the time of using a GPU, work first must be launched from the CPU and
+# in some cases the context switch between CPU and GPU can lead to bad resource
+# utilization. CUDA graphs are a way to keep computation within the GPU without
+# paying the extra cost of kernel launches and host synchronization.
+
+# It can be enabled using 
+torch.compile(m, "reduce-overhead")
+# or
+torch.compile(m, "max-autotune")
+
+###############################################################################
+# Support for CUDA graph is in development, and its usage can incur in increased
+# device memory consumption and some models might not compile.
 
 ###############################################################################
 # Enable cuDNN auto-tuner
@@ -280,7 +385,7 @@ torch.backends.cudnn.benchmark = True
 # * memory copies: ``tensor.cuda()``,  ``cuda_tensor.cpu()`` and equivalent
 #   ``tensor.to(device)`` calls
 # * ``cuda_tensor.nonzero()``
-# * python control flow which depends on results of operations performed on cuda
+# * python control flow which depends on results of operations performed on CUDA
 #   tensors e.g. ``if (cuda_tensor != 0).all()``
 #
 
@@ -289,7 +394,7 @@ torch.backends.cudnn.benchmark = True
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Instead of calling ``torch.rand(size).cuda()`` to generate a random tensor,
 # produce the output directly on the target device:
-# ``torch.rand(size, device=torch.device('cuda'))``.
+# ``torch.rand(size, device='cuda')``.
 #
 # This is applicable to all functions which create new tensors and accept
 # ``device`` argument:
@@ -331,7 +436,7 @@ torch.backends.cudnn.benchmark = True
 #
 
 ###############################################################################
-# Pre-allocate memory in case of variable input length
+# Preallocate memory in case of variable input length
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Models for speech recognition or for NLP are often trained on input tensors
 # with variable sequence length. Variable length can be problematic for PyTorch
@@ -342,14 +447,14 @@ torch.backends.cudnn.benchmark = True
 # buffers. This process is time consuming and causes fragmentation in the
 # caching allocator which may result in out-of-memory errors.
 #
-# A typical solution is to implement pre-allocation. It consists of the
+# A typical solution is to implement preallocation. It consists of the
 # following steps:
 #
 # #. generate a (usually random) batch of inputs with maximum sequence length
 #    (either corresponding to max length in the training dataset or to some
 #    predefined threshold)
 # #. execute a forward and a backward pass with the generated batch, do not
-#    execute an optimizer or a learning rate scheduler, this step pre-allocates
+#    execute an optimizer or a learning rate scheduler, this step preallocates
 #    buffers of maximum size, which can be reused in subsequent
 #    training iterations
 # #. zero out gradients
@@ -374,8 +479,8 @@ torch.backends.cudnn.benchmark = True
 # from PyTorch documentation.
 
 ###############################################################################
-# Skip unnecessary all-reduce if training with DistributedDataParallel and gradient accumulation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Skip unnecessary all-reduce if training with ``DistributedDataParallel`` and gradient accumulation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # By default
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # executes gradient all-reduce after every backward pass to compute the average
@@ -392,8 +497,8 @@ torch.backends.cudnn.benchmark = True
 # perform the required gradient all-reduce.
 
 ###############################################################################
-# Match the order of layers in constructors and during the execution if using DistributedDataParallel(find_unused_parameters=True)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Match the order of layers in constructors and during the execution if using ``DistributedDataParallel(find_unused_parameters=True)``
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # with ``find_unused_parameters=True`` uses the order of layers and parameters
 # from model constructors to build buckets for ``DistributedDataParallel``

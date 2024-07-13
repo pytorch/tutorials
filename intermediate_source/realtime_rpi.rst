@@ -68,7 +68,7 @@ PyTorch and all the other libraries we need have ARM 64-bit/aarch64 variants so 
 .. code:: shell
 
     $ pip install torch torchvision torchaudio
-    $ pip install opencv-contrib-python
+    $ pip install opencv-python
     $ pip install numpy --upgrade
 
 .. image:: https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png
@@ -312,7 +312,7 @@ Detecting a mug:
 
 
 Troubleshooting: Performance
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyTorch by default will use all of the cores available. If you have anything
 running in the background on the Raspberry Pi it may cause contention with the

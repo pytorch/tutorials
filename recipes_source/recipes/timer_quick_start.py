@@ -9,16 +9,15 @@ API, with several PyTorch specific modifications. Familiarity with the
 builtin `Timer` class is not required for this tutorial, however we assume
 that the reader is familiar with the fundamentals of performance work.
 
-A more comprehensive performace tuning tutorial is available at:
-
-    https://pytorch.org/tutorials/recipes/recipes/benchmark.html
+For a more comprehensive performance tuning tutorial, see
+`PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`__.
 
 
 **Contents:**
     1. `Defining a Timer <#defining-a-timer>`__
-    2. `Wall time: \`Timer.blocked_autorange(...)\` <#wall-time-timer-blocked-autorange>`__
+    2. `Wall time: Timer.blocked_autorange(...) <#wall-time-timer-blocked-autorange>`__
     3. `C++ snippets <#c-snippets>`__
-    4. `Instruction counts: \`Timer.collect_callgrind(...)\` <#instruction-counts-timer-collect-callgrind>`__
+    4. `Instruction counts: Timer.collect_callgrind(...) <#instruction-counts-timer-collect-callgrind>`__
     5. `Instruction counts: Delving deeper <#instruction-counts-delving-deeper>`__
     6. `A/B testing with Callgrind <#a-b-testing-with-callgrind>`__
     7. `Wrapping up <#wrapping-up>`__
@@ -46,20 +45,20 @@ timer = Timer(
         y = torch.ones((128,))
     """,
 
-    # Alternately, `globals` can be used to pass variables from the outer scope.
-    # -------------------------------------------------------------------------
-    # globals={
-    #     "x": torch.ones((128,)),
-    #     "y": torch.ones((128,)),
-    # },
+    # Alternatively, ``globals`` can be used to pass variables from the outer scope.
+    # 
+    #    globals={
+    #        "x": torch.ones((128,)),
+    #        "y": torch.ones((128,)),
+    #    },
 
     # Control the number of threads that PyTorch uses. (Default: 1)
     num_threads=1,
 )
 
 ###############################################################################
-# 2. Wall time: `Timer.blocked_autorange(...)`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2. Wall time: ``Timer.blocked_autorange(...)``
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # This method will handle details such as picking a suitable number if repeats,
 # fixing the number of threads, and providing a convenient representation of
@@ -126,11 +125,11 @@ print(cpp_timer.blocked_autorange(min_run_time=1))
 #
 
 ###############################################################################
-# 4. Instruction counts: `Timer.collect_callgrind(...)`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 4. Instruction counts: ``Timer.collect_callgrind(...)``
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# For deep dive investigations, `Timer.collect_callgrind` wraps
-# `Callgrind <https://valgrind.org/docs/manual/cl-manual.html>` in order to
+# For deep dive investigations, ``Timer.collect_callgrind`` wraps
+# `Callgrind <https://valgrind.org/docs/manual/cl-manual.html>`__ in order to
 # collect instruction counts. These are useful as they offer fine grained and
 # deterministic (or very low noise in the case of Python) insights into how a
 # snippet is run.
@@ -161,13 +160,13 @@ print(stats)
 # 5. Instruction counts: Delving deeper
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# The string representation of CallgrindStats is similar to that of
+# The string representation of ``CallgrindStats`` is similar to that of
 # Measurement. `Noisy symbols` are a Python concept (removing calls in the
 # CPython interpreter which are known to be noisy).
 #
 # For more detailed analysis, however, we will want to look at specific calls.
-# `CallgrindStats.stats()` returns a FunctionCounts object to make this easier.
-# Conceptually, FunctionCounts can be thought of as a tuple of pairs with some
+# ``CallgrindStats.stats()`` returns a ``FunctionCounts`` object to make this easier.
+# Conceptually, ``FunctionCounts`` can be thought of as a tuple of pairs with some
 # utility methods, where each pair is `(number of instructions, file path and
 # function name)`.
 #
@@ -175,14 +174,18 @@ print(stats)
 #   One generally doesn't care about absolute path. For instance, the full path
 #   and function name for a multiply call is something like:
 #
-#       /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
+# .. code-block:: sh
+#
+#    /the/prefix/to/your/pytorch/install/dir/pytorch/build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const [/the/path/to/your/conda/install/miniconda3/envs/ab_ref/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so]
 #
 #   when in reality, all of the information that we're interested in can be
 #   represented in:
 #
-#       build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
+# .. code-block:: sh
 #
-#   CallgrindStats.as_standardized() makes a best effort to strip low signal
+#    build/aten/src/ATen/core/TensorMethods.cpp:at::Tensor::mul(at::Tensor const&) const
+#
+#   ``CallgrindStats.as_standardized()`` makes a best effort to strip low signal
 #   portions of the file path, as well as the shared object and is generally
 #   recommended.
 #
@@ -251,8 +254,8 @@ print(inclusive_stats.transform(group_by_file)[:10])
 #
 
 ###############################################################################
-# 6. A/B testing with Callgrind
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 6. A/B testing with ``Callgrind``
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # One of the most useful features of instruction counts is they allow fine
 # grained comparison of computation, which is critical when analyzing
@@ -275,8 +278,8 @@ broadcasting_stats = Timer(
 
 ###############################################################################
 # Often we want to A/B test two different environments. (e.g. testing a PR, or
-# experimenting with compile flags.) This is quite simple, as CallgrindStats,
-# FunctionCounts, and Measurement are all pickleable. Simply save measurements
+# experimenting with compile flags.) This is quite simple, as ``CallgrindStats``,
+# ``FunctionCounts``, and Measurement are all pickleable. Simply save measurements
 # from each environment, and load them in a single process for analysis.
 #
 
@@ -329,7 +332,7 @@ print(delta.transform(extract_fn_name))
 ###############################################################################
 # So the broadcasting version takes an extra 580 instructions per call (recall
 # that we're collecting 100 runs per sample), or about 10%. There are quite a
-# few TensorIterator calls, so lets drill down to those. FunctionCounts.filter
+# few ``TensorIterator`` calls, so lets drill down to those. ``FunctionCounts.filter``
 # makes this easy.
 #
 
@@ -356,7 +359,7 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 #
 
 ###############################################################################
-# This makes plain what is going on: there is a fast path in TensorIterator
+# This makes plain what is going on: there is a fast path in ``TensorIterator``
 # setup, but in the {128} x {1} case we miss it and have to do a more general
 # analysis which is more expensive. The most prominent call omitted by the
 # filter is `c10::SmallVectorImpl<long>::operator=(...)`, which is also part
@@ -380,15 +383,15 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 # 8. Footnotes
 # ~~~~~~~~~~~~
 #
-#   - Implied `import torch`
+#   - Implied ``import torch``
 #       If `globals` does not contain "torch", Timer will automatically
-#       populate it. This means that `Timer("torch.empty(())")` will work.
+#       populate it. This means that ``Timer("torch.empty(())")`` will work.
 #       (Though other imports should be placed in `setup`,
-#       e.g. `Timer("np.zeros(())", "import numpy as np")`)
+#       e.g. ``Timer("np.zeros(())", "import numpy as np")``)
 #
-#   - REL_WITH_DEB_INFO
+#   - ``REL_WITH_DEB_INFO``
 #       In order to provide full information about the PyTorch internals which
-#       are executed, Callgrind needs access to C++ debug symbols. This is
-#       accomplished by setting REL_WITH_DEB_INFO=1 when building PyTorch.
-#       Otherwise function calls will be opaque. (The resultant CallgrindStats
+#       are executed, ``Callgrind`` needs access to C++ debug symbols. This is
+#       accomplished by setting ``REL_WITH_DEB_INFO=1`` when building PyTorch.
+#       Otherwise function calls will be opaque. (The resultant ``CallgrindStats``
 #       will warn if debug symbols are missing.)

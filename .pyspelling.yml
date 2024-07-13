@@ -1,0 +1,121 @@
+spellchecker: aspell
+matrix:
+- name: python
+  sources:
+    - beginner_source/*.py
+    - intermediate_source/*.py
+    - advanced_source/*.py
+    - recipes_source/*/*.py
+  dictionary:
+    wordlists:
+      - en-wordlist.txt
+  pipeline:
+  - pyspelling.filters.python:
+      group_comments: true
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+        # Exclude figure rST tags
+        - open: '\.\.\s+(figure|literalinclude|math|image|grid)::'
+          close: '\n'
+        # Exclude roles:
+        - open: ':(?:(class|py:mod|mod|func|meth|obj)):`'
+          content: '[^`]*'
+          close: '`'
+        # Exclude reStructuredText hyperlinks
+        - open: '\s'
+          content: '\w*'
+          close: '_'
+        # Exclude raw directive
+        - open: '\.\. (raw)::.*$\n*'
+          close: '\n'
+        # Exclude Python coding directives
+        - open: '-\*- coding:'
+          close: '\n'
+        # Exclude Authors:
+        - open: 'Author(|s):'
+          close: '\n'
+        # Exclude .rst directives:
+        - open: ':math:`.*`'
+          close: ' '
+        # Ignore multiline content in codeblock
+        - open: '(?s)^::\n\n  '
+          close: '^\n'
+        # Ignore reStructuredText block directives
+        - open: '\.\. (code-block|math)::.*$\n*'
+          content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
+          close: '(^(?![ \t]+.*$))'
+        # Ignore references like "[1] Author: Title"
+        - open: '\[\d\]'
+          close: '\n'
+  - pyspelling.filters.markdown:
+  - pyspelling.filters.html:
+      ignores:
+        - code
+        - pre
+  - pyspelling.filters.url:
+- name: reST
+  sources:
+  - beginner_source/*.rst
+  dictionary:
+    wordlists:
+      - en-wordlist.txt
+  pipeline:
+  - pyspelling.filters.text:
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+      # Ignore text between inline back ticks
+      - open: '(div style|iframe).*'
+        close: '\n'
+      - open: '(- )?(?P<open>`+)'
+        close: '(?P=open)'
+      - open: ':figure:.*'
+        close: '\n'
+      # Ignore reStructuredText roles
+      - open: ':(?:(class|file|func|math|ref|octicon|meth|obj)):`'
+        content: '[^`]*'
+        close: '`'
+      - open: ':width:'
+        close: '$'
+      # Exclude raw directive
+      - open: '\.\. (raw|grid-item-card|galleryitem|includenodoc)::.*$\n*'
+        close: '\n'
+      # Ignore reStructuredText literals
+      - open: '::$'
+        close: '(?P<literal>(?:((?P<indent>[ ]+).*$)|(\n))+)'
+      # Ignore reStructuredText hyperlinks
+      - open: '\s'
+        content: '\w*'
+        close: '_'
+      # Ignore hyperlink in the DDP tutorials
+      - open: '`.*'
+        close: '`__'
+      # Ignore reStructuredText header ---
+      - open: '^'
+        content: '--*'
+        close: '$'
+      # Ignore reStructuredText header '''
+      - open: '^'
+        content: '''''*'
+        close: '$'
+      # Ignore reStructuredText block directives
+      - open: '\.\. (code-block|math|table)::.*$\n*'
+        content: '(?P<first>(^(?P<indent>[ ]+).*$\n))(?P<other>(^([ \t]+.*|[ \t]*)$\n)*)'
+        close: '(^(?![ \t]+.*$))'
+      - open: '\.\. (raw)::.*$\n*'
+        close: '^\s*$'
+      # Ignore reStructuredText substitution definitions
+      - open: '^\.\. \|[^|]+\|'
+        close: '$'
+      # Ignore reStructuredText substitutions
+      - open: '\|'
+        content: '[^|]*'
+        close: '\|_?'
+      # Ignore reStructuredText toctree
+      - open: '\.\.\s+toctree::'
+        close: '(?P<toctree>(?:((?P<indent>[ ]+).*$)|(\n))+)'
+      # Ignore directives
+      - open: '\.\.\s+(image|include|only)::'
+        close: '$'
+  - pyspelling.filters.url:

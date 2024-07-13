@@ -20,13 +20,12 @@ Goal of this tutorial:
 - Understand PyTorch’s Tensor library and neural networks at a high level.
 - Train a small neural network to classify images
 
-
-.. Note::
-    Make sure you have the `torch`_ and `torchvision`_ packages installed.
+To run the tutorials below, make sure you have the `torch`_, `torchvision`_,
+and `matplotlib`_ packages installed.
 
 .. _torch: https://github.com/pytorch/pytorch
 .. _torchvision: https://github.com/pytorch/vision
-
+.. _matplotlib: https://github.com/matplotlib/matplotlib
 
 .. toctree::
    :hidden:
@@ -36,18 +35,33 @@ Goal of this tutorial:
    /beginner/blitz/neural_networks_tutorial
    /beginner/blitz/cifar10_tutorial
 
-.. galleryitem:: /beginner/blitz/tensor_tutorial.py
-    :figure: /_static/img/tensor_illustration_flat.png
+.. grid:: 4
 
-.. galleryitem:: /beginner/blitz/autograd_tutorial.py
-    :figure: /_static/img/autodiff.png
+   .. grid-item-card::  :octicon:`file-code;1em` Tensors
+      :link: blitz/tensor_tutorial.html
 
-.. galleryitem:: /beginner/blitz/neural_networks_tutorial.py
-    :figure: /_static/img/mnist.png
+      In this tutorial, you will learn the basics of PyTorch tensors.
+      +++
+      :octicon:`code;1em` Code
 
-.. galleryitem:: /beginner/blitz/cifar10_tutorial.py
-    :figure: /_static/img/cifar10.png
+   .. grid-item-card::  :octicon:`file-code;1em` A Gentle Introduction to torch.autograd
+      :link: blitz/autograd_tutorial.html
 
-.. raw:: html
+      Learn about autograd.
+      +++
+      :octicon:`code;1em` Code
 
-    <div style='clear:both'></div>
+   .. grid-item-card::  :octicon:`file-code;1em` Neural Networks
+      :link: blitz/neural_networks_tutorial.html
+
+      This tutorial demonstrates how you can train neural networks in PyTorch.
+      +++
+      :octicon:`code;1em` Code
+
+   .. grid-item-card::  :octicon:`file-code;1em` Training a Classifier
+      :link: blitz/cifar10_tutorial.html
+
+      Learn how to train an image classifier in PyTorch by using the
+      CIFAR10 dataset.
+      +++
+      :octicon:`code;1em` Code

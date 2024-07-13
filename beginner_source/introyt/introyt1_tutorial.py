@@ -87,7 +87,7 @@ print(ones)
 twos = torch.ones(2, 3) * 2 # every element is multiplied by 2
 print(twos)
 
-threes = ones + twos       # additon allowed because shapes are similar
+threes = ones + twos       # addition allowed because shapes are similar
 print(threes)              # tensors are added element-wise
 print(threes.shape)        # this has the same dimensions as input tensors
 
@@ -176,12 +176,12 @@ class LeNet(nn.Module):
 
     def __init__(self):
         super(LeNet, self).__init__()
-        # 1 input image channel (black & white), 6 output channels, 3x3 square convolution
+        # 1 input image channel (black & white), 6 output channels, 5x5 square convolution
         # kernel
-        self.conv1 = nn.Conv2d(1, 6, 3)
-        self.conv2 = nn.Conv2d(6, 16, 3)
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5*5 from image dimension
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
@@ -288,7 +288,7 @@ import torchvision.transforms as transforms
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))])
 
 
 ##########################################################################
@@ -297,9 +297,28 @@ transform = transforms.Compose(
 # -  ``transforms.ToTensor()`` converts images loaded by Pillow into 
 #    PyTorch tensors.
 # -  ``transforms.Normalize()`` adjusts the values of the tensor so
-#    that their average is zero and their standard deviation is 0.5. Most
+#    that their average is zero and their standard deviation is 1.0. Most
 #    activation functions have their strongest gradients around x = 0, so
 #    centering our data there can speed learning.
+#    The values passed to the transform are the means (first tuple) and the
+#    standard deviations (second tuple) of the rgb values of the images in
+#    the dataset. You can calculate these values yourself by running these
+#    few lines of code:
+#          ```
+#           from torch.utils.data import ConcatDataset
+#           transform = transforms.Compose([transforms.ToTensor()])
+#           trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+#                                        download=True, transform=transform)
+#
+#           #stack all train images together into a tensor of shape 
+#           #(50000, 3, 32, 32)
+#           x = torch.stack([sample[0] for sample in ConcatDataset([trainset])])
+#           
+#           #get the mean of each channel            
+#           mean = torch.mean(x, dim=(0,2,3)) #tensor([0.4914, 0.4822, 0.4465])
+#           std = torch.std(x, dim=(0,2,3)) #tensor([0.2470, 0.2435, 0.2616])  
+# 
+#          ```   
 # 
 # There are many more transforms available, including cropping, centering,
 # rotation, and reflection.
@@ -369,7 +388,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))
@@ -446,7 +465,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))
@@ -561,7 +580,7 @@ print('Finished Training')
 # 
 # **When you run the cell above,** you should see something like this:
 # 
-# ::
+# .. code-block:: sh
 # 
 #    [1,  2000] loss: 2.235
 #    [1,  4000] loss: 1.940

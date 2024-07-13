@@ -6,7 +6,7 @@ PyTorch: Defining New autograd Functions
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
 to :math:`\pi` by minimizing squared Euclidean distance. Instead of writing the
 polynomial as :math:`y=a+bx+cx^2+dx^3`, we write the polynomial as
-:math:`y=a+b P_3(c+dx)` where :math:`P_3(x)=\frac{1}{2}\left(5x^3-3x\right)` is
+:math:`y=a+b P_3(c+dx)` where :math:`P_3(x)=\\frac{1}{2}\\left(5x^3-3x\\right)` is
 the `Legendre polynomial`_ of degree three.
 
 .. _Legendre polynomial:
@@ -16,7 +16,7 @@ This implementation computes the forward pass using operations on PyTorch
 Tensors, and uses PyTorch autograd to compute gradients.
 
 In this implementation we implement our own custom autograd function to perform
-:math:`P_3'(x)`. By mathematics, :math:`P_3'(x)=\frac{3}{2}\left(5x^2-1\right)`
+:math:`P_3'(x)`. By mathematics, :math:`P_3'(x)=\\frac{3}{2}\\left(5x^2-1\\right)`
 """
 import torch
 import math

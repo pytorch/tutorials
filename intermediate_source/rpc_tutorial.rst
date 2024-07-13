@@ -2,6 +2,8 @@ Getting Started with Distributed RPC Framework
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/rpc_tutorial.rst>`__.
 
 Prerequisites:
 

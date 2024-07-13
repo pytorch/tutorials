@@ -144,7 +144,7 @@ using `make_grid <https://pytorch.org/vision/stable/utils.html#torchvision.utils
 
     # get some random training images
     dataiter = iter(trainloader)
-    images, labels = dataiter.next()
+    images, labels = next(dataiter)
 
     # create grid of images
     img_grid = torchvision.utils.make_grid(images)

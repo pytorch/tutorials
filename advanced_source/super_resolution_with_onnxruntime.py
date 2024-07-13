@@ -1,10 +1,17 @@
 """
 (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
-========================================================================
+===================================================================================
+
+.. note::
+    As of PyTorch 2.1, there are two versions of ONNX Exporter.
+
+    * ``torch.onnx.dynamo_export`` is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0.
+    * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0.
 
 In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format and then run it with ONNX Runtime.
+in PyTorch into the ONNX format using the TorchScript ``torch.onnx.export` ONNX exporter.
 
+The exported model will be executed with ONNX Runtime.
 ONNX Runtime is a performance-focused engine for ONNX models,
 which inferences efficiently across multiple platforms and hardware
 (Windows, Linux, and Mac and on both CPUs and GPUs).
@@ -15,16 +22,17 @@ multiple models as explained `here
 For this tutorial, you will need to install `ONNX <https://github.com/onnx/onnx>`__
 and `ONNX Runtime <https://github.com/microsoft/onnxruntime>`__.
 You can get binary builds of ONNX and ONNX Runtime with
-``pip install onnx onnxruntime``.
-Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.
 
-``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
-the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
+.. code-block:: bash
+
+   %%bash
+   pip install onnx onnxruntime
+
+ONNX Runtime recommends using the latest stable runtime for PyTorch.
 
 """
 
 # Some standard imports
-import io
 import numpy as np
 
 from torch import nn
@@ -37,12 +45,12 @@ import torch.onnx
 # and is widely used in image processing or video editing. For this
 # tutorial, we will use a small super-resolution model.
 #
-# First, let's create a SuperResolution model in PyTorch.
+# First, let's create a ``SuperResolution`` model in PyTorch.
 # This model uses the efficient sub-pixel convolution layer described in
 # `"Real-Time Single Image and Video Super-Resolution Using an Efficient
 # Sub-Pixel Convolutional Neural Network" - Shi et al <https://arxiv.org/abs/1609.05158>`__
 # for increasing the resolution of an image by an upscale factor.
-# The model expects the Y component of the YCbCr of an image as an input, and
+# The model expects the Y component of the ``YCbCr`` of an image as an input, and
 # outputs the upscaled Y component in super resolution.
 #
 # `The
@@ -87,7 +95,7 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 
 ######################################################################
 # Ordinarily, you would now train this model; however, for this tutorial,
-# we will instead download some pre-trained weights. Note that this model
+# we will instead download some pretrained weights. Note that this model
 # was not trained fully for good accuracy and is used here for
 # demonstration purposes only.
 #
@@ -99,7 +107,7 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 
 # Load pretrained model weights
 model_url = 'https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth'
-batch_size = 1    # just a random number
+batch_size = 64    # just a random number
 
 # Initialize model with the pretrained weights
 map_location = lambda storage, loc: storage
@@ -154,9 +162,9 @@ torch.onnx.export(torch_model,               # model being run
 # the same values when run in ONNX Runtime.
 #
 # But before verifying the model's output with ONNX Runtime, we will check
-# the ONNX model with ONNX's API.
+# the ONNX model with ONNX API.
 # First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
-# will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
+# will output a ``onnx.ModelProto`` structure (a top-level file/container format for bundling a ML model.
 # For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
 # Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 # and confirm that the model has a valid schema.
@@ -181,14 +189,14 @@ onnx.checker.check_model(onnx_model)
 # In order to run the model with ONNX Runtime, we need to create an
 # inference session for the model with the chosen configuration
 # parameters (here we use the default config).
-# Once the session is created, we evaluate the model using the run() api.
+# Once the session is created, we evaluate the model using the run() API.
 # The output of this call is a list containing the outputs of the model
 # computed by ONNX Runtime.
 #
 
 import onnxruntime
 
-ort_session = onnxruntime.InferenceSession("super_resolution.onnx")
+ort_session = onnxruntime.InferenceSession("super_resolution.onnx", providers=["CPUExecutionProvider"])
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
@@ -205,10 +213,36 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 
 ######################################################################
 # We should see that the output of PyTorch and ONNX Runtime runs match
-# numerically with the given precision (rtol=1e-03 and atol=1e-05).
+# numerically with the given precision (``rtol=1e-03`` and ``atol=1e-05``).
 # As a side-note, if they do not match then there is an issue in the
 # ONNX exporter, so please contact us in that case.
 #
+
+######################################################################
+# Timing Comparison Between Models
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+
+######################################################################
+# Since ONNX models optimize for inference speed, running the same
+# data on an ONNX model instead of a native pytorch model should result in an 
+# improvement of up to 2x. Improvement is more pronounced with higher batch sizes.
+
+
+import time
+
+x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
+
+start = time.time()
+torch_out = torch_model(x)
+end = time.time()
+print(f"Inference of Pytorch model used {end - start} seconds")
+
+ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
+start = time.time()
+ort_outs = ort_session.run(None, ort_inputs)
+end = time.time()
+print(f"Inference of ONNX model used {end - start} seconds")
 
 
 ######################################################################
@@ -230,13 +264,13 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 #
 
 ######################################################################
-# First, let's load the image, pre-process it using standard PIL
+# First, let's load the image, preprocess it using standard PIL
 # python library. Note that this preprocessing is the standard practice of
 # processing data for training/testing neural networks.
 #
 # We first resize the image to fit the size of the model's input (224x224).
 # Then we split the image into its Y, Cb, and Cr components.
-# These components represent a greyscale image (Y), and
+# These components represent a grayscale image (Y), and
 # the blue-difference (Cb) and red-difference (Cr) chroma components.
 # The Y component being more sensitive to the human eye, we are
 # interested in this component which we will be transforming.
@@ -262,7 +296,7 @@ img_y.unsqueeze_(0)
 
 ######################################################################
 # Now, as a next step, let's take the tensor representing the
-# greyscale resized cat image and run the super-resolution model in
+# grayscale resized cat image and run the super-resolution model in
 # ONNX Runtime as explained previously.
 #
 
@@ -293,10 +327,20 @@ final_img = Image.merge(
 # Save the image, we will compare this with the output image from mobile device
 final_img.save("./_static/img/cat_superres_with_ort.jpg")
 
+# Save resized original image (without super-resolution)
+img = transforms.Resize([img_out_y.size[0], img_out_y.size[1]])(img)
+img.save("cat_resized.jpg")
 
 ######################################################################
+# Here is the comparison between the two images: 
+#
+# .. figure:: /_static/img/cat_resized.jpg
+#
+# Low-resolution image
+# 
 # .. figure:: /_static/img/cat_superres_with_ort.jpg
-#    :alt: output\_cat
+#
+# Image after super-resolution
 #
 #
 # ONNX Runtime being a cross platform engine, you can run it across
@@ -305,7 +349,7 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 # ONNX Runtime can also be deployed to the cloud for model inferencing
 # using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
 #
-# More information about ONNX Runtime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
+# More information about ONNX Runtime's performance `here <https://onnxruntime.ai/docs/performance>`__.
 #
 #
 # For more information about ONNX Runtime `here <https://github.com/microsoft/onnxruntime>`__.

@@ -40,8 +40,9 @@ Setup / Imports
 Let's start with the imports:
 """
 from functools import partial
-import numpy as np
 import os
+import tempfile
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -49,12 +50,22 @@ import torch.optim as optim
 from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
+# sphinx_gallery_start_ignore
+# Fixes ``AttributeError: '_LoggingTee' object has no attribute 'fileno'``.
+# This is only needed to run with sphinx-build.
+import sys
+if not hasattr(sys.stdout, "encoding"):
+    sys.stdout.encoding = "latin1"
+    sys.stdout.fileno = lambda: 0
+# sphinx_gallery_end_ignore
 from ray import tune
-from ray.tune import CLIReporter
+from ray import train
+from ray.train import Checkpoint, get_checkpoint
 from ray.tune.schedulers import ASHAScheduler
+import ray.cloudpickle as pickle
 
 ######################################################################
-# Most of the imports are needed for building the PyTorch model. Only the last three
+# Most of the imports are needed for building the PyTorch model. Only the last 
 # imports are for Ray Tune.
 #
 # Data loaders
@@ -64,23 +75,26 @@ from ray.tune.schedulers import ASHAScheduler
 
 
 def load_data(data_dir="./data"):
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+    transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    )
 
     trainset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=True, download=True, transform=transform)
+        root=data_dir, train=True, download=True, transform=transform
+    )
 
     testset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=False, download=True, transform=transform)
+        root=data_dir, train=False, download=True, transform=transform
+    )
 
     return trainset, testset
+
 
 ######################################################################
 # Configurable neural network
 # ---------------------------
-# We can only tune those parameters that are configurable. In this example, we can specify
+# We can only tune those parameters that are configurable.
+# In this example, we can specify
 # the layer sizes of the fully connected layers:
 
 
@@ -97,11 +111,12 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = torch.flatten(x, 1)  # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 ######################################################################
 # The train function
@@ -109,20 +124,29 @@ class Net(nn.Module):
 # Now it gets interesting, because we introduce some changes to the example `from the PyTorch
 # documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_.
 #
-# We wrap the training script in a function ``train_cifar(config, checkpoint_dir=None, data_dir=None)``.
-# As you can guess, the ``config`` parameter will receive the hyperparameters we would like to
-# train with. The ``checkpoint_dir`` parameter is used to restore checkpoints. The ``data_dir`` specifies
-# the directory where we load and store the data, so multiple runs can share the same data source.
+# We wrap the training script in a function ``train_cifar(config, data_dir=None)``.
+# The ``config`` parameter will receive the hyperparameters we would like to
+# train with. The ``data_dir`` specifies the directory where we load and store the data,
+# so that multiple runs can share the same data source.
+# We also load the model and optimizer state at the start of the run, if a checkpoint
+# is provided. Further down in this tutorial you will find information on how
+# to save the checkpoint and what it is used for.
 #
 # .. code-block:: python
 #
 #     net = Net(config["l1"], config["l2"])
 #
-#     if checkpoint_dir:
-#         model_state, optimizer_state = torch.load(
-#             os.path.join(checkpoint_dir, "checkpoint"))
-#         net.load_state_dict(model_state)
-#         optimizer.load_state_dict(optimizer_state)
+#     checkpoint = get_checkpoint()
+#     if checkpoint:
+#         with checkpoint.as_directory() as checkpoint_dir:
+#             data_path = Path(checkpoint_dir) / "data.pkl"
+#             with open(data_path, "rb") as fp:
+#                 checkpoint_state = pickle.load(fp)
+#             start_epoch = checkpoint_state["epoch"]
+#             net.load_state_dict(checkpoint_state["net_state_dict"])
+#             optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#     else:
+#         start_epoch = 0
 #
 # The learning rate of the optimizer is made configurable, too:
 #
@@ -171,11 +195,21 @@ class Net(nn.Module):
 #
 # .. code-block:: python
 #
-#     with tune.checkpoint_dir(epoch) as checkpoint_dir:
-#         path = os.path.join(checkpoint_dir, "checkpoint")
-#         torch.save((net.state_dict(), optimizer.state_dict()), path)
+#     checkpoint_data = {
+#         "epoch": epoch,
+#         "net_state_dict": net.state_dict(),
+#         "optimizer_state_dict": optimizer.state_dict(),
+#     }
+#     with tempfile.TemporaryDirectory() as checkpoint_dir:
+#         data_path = Path(checkpoint_dir) / "data.pkl"
+#         with open(data_path, "wb") as fp:
+#             pickle.dump(checkpoint_data, fp)
 #
-#     tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+#         checkpoint = Checkpoint.from_directory(checkpoint_dir)
+#         train.report(
+#             {"loss": val_loss / val_steps, "accuracy": correct / total},
+#             checkpoint=checkpoint,
+#         )
 #
 # Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
 # we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
@@ -185,9 +219,10 @@ class Net(nn.Module):
 #
 # The checkpoint saving is optional, however, it is necessary if we wanted to use advanced
 # schedulers like
-# `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
+# `Population Based Training <https://docs.ray.io/en/latest/tune/examples/pbt_guide.html>`_.
 # Also, by saving the checkpoint we can later load the trained models and validate them
-# on a test set.
+# on a test set. Lastly, saving checkpoints is useful for fault tolerance, and it allows
+# us to interrupt training and continue training later.
 #
 # Full training function
 # ~~~~~~~~~~~~~~~~~~~~~~
@@ -195,7 +230,7 @@ class Net(nn.Module):
 # The full code example looks like this:
 
 
-def train_cifar(config, checkpoint_dir=None, data_dir=None):
+def train_cifar(config, data_dir=None):
     net = Net(config["l1"], config["l2"])
 
     device = "cpu"
@@ -208,30 +243,33 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 
-    if checkpoint_dir:
-        model_state, optimizer_state = torch.load(
-            os.path.join(checkpoint_dir, "checkpoint"))
-        net.load_state_dict(model_state)
-        optimizer.load_state_dict(optimizer_state)
+    checkpoint = get_checkpoint()
+    if checkpoint:
+        with checkpoint.as_directory() as checkpoint_dir:
+            data_path = Path(checkpoint_dir) / "data.pkl"
+            with open(data_path, "rb") as fp:
+                checkpoint_state = pickle.load(fp)
+            start_epoch = checkpoint_state["epoch"]
+            net.load_state_dict(checkpoint_state["net_state_dict"])
+            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+    else:
+        start_epoch = 0
 
     trainset, testset = load_data(data_dir)
 
     test_abs = int(len(trainset) * 0.8)
     train_subset, val_subset = random_split(
-        trainset, [test_abs, len(trainset) - test_abs])
+        trainset, [test_abs, len(trainset) - test_abs]
+    )
 
     trainloader = torch.utils.data.DataLoader(
-        train_subset,
-        batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        train_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
+    )
     valloader = torch.utils.data.DataLoader(
-        val_subset,
-        batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        val_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
+    )
 
-    for epoch in range(10):  # loop over the dataset multiple times
+    for epoch in range(start_epoch, 10):  # loop over the dataset multiple times
         running_loss = 0.0
         epoch_steps = 0
         for i, data in enumerate(trainloader, 0):
@@ -252,8 +290,10 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
             running_loss += loss.item()
             epoch_steps += 1
             if i % 2000 == 1999:  # print every 2000 mini-batches
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                running_loss / epoch_steps))
+                print(
+                    "[%d, %5d] loss: %.3f"
+                    % (epoch + 1, i + 1, running_loss / epoch_steps)
+                )
                 running_loss = 0.0
 
         # Validation loss
@@ -275,12 +315,24 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
                 val_loss += loss.cpu().numpy()
                 val_steps += 1
 
-        with tune.checkpoint_dir(epoch) as checkpoint_dir:
-            path = os.path.join(checkpoint_dir, "checkpoint")
-            torch.save((net.state_dict(), optimizer.state_dict()), path)
+        checkpoint_data = {
+            "epoch": epoch,
+            "net_state_dict": net.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+        }
+        with tempfile.TemporaryDirectory() as checkpoint_dir:
+            data_path = Path(checkpoint_dir) / "data.pkl"
+            with open(data_path, "wb") as fp:
+                pickle.dump(checkpoint_data, fp)
 
-        tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+            checkpoint = Checkpoint.from_directory(checkpoint_dir)
+            train.report(
+                {"loss": val_loss / val_steps, "accuracy": correct / total},
+                checkpoint=checkpoint,
+            )
+    
     print("Finished Training")
+
 
 ######################################################################
 # As you can see, most of the code is adapted directly from the original example.
@@ -296,7 +348,8 @@ def test_accuracy(net, device="cpu"):
     trainset, testset = load_data()
 
     testloader = torch.utils.data.DataLoader(
-        testset, batch_size=4, shuffle=False, num_workers=2)
+        testset, batch_size=4, shuffle=False, num_workers=2
+    )
 
     correct = 0
     total = 0
@@ -311,6 +364,7 @@ def test_accuracy(net, device="cpu"):
 
     return correct / total
 
+
 ######################################################################
 # The function also expects a ``device`` parameter, so we can do the
 # test set validation on a GPU.
@@ -322,14 +376,14 @@ def test_accuracy(net, device="cpu"):
 # .. code-block:: python
 #
 #     config = {
-#         "l1": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
-#         "l2": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
+#         "l1": tune.choice([2 ** i for i in range(9)]),
+#         "l2": tune.choice([2 ** i for i in range(9)]),
 #         "lr": tune.loguniform(1e-4, 1e-1),
 #         "batch_size": tune.choice([2, 4, 8, 16])
 #     }
 #
-# The ``tune.sample_from()`` function makes it possible to define your own sample
-# methods to obtain hyperparameters. In this example, the ``l1`` and ``l2`` parameters
+# The ``tune.choice()`` accepts a list of values that are uniformly sampled from.
+# In this example, the ``l1`` and ``l2`` parameters
 # should be powers of 2 between 4 and 256, so either 4, 8, 16, 32, 64, 128, or 256.
 # The ``lr`` (learning rate) should be uniformly sampled between 0.0001 and 0.1. Lastly,
 # the batch size is a choice between 2, 4, 8, and 16.
@@ -353,7 +407,6 @@ def test_accuracy(net, device="cpu"):
 #         config=config,
 #         num_samples=num_samples,
 #         scheduler=scheduler,
-#         progress_reporter=reporter,
 #         checkpoint_at_end=True)
 #
 # You can specify the number of CPUs, which are then available e.g.
@@ -377,34 +430,30 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
     config = {
-        "l1": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
-        "l2": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+        "l1": tune.choice([2**i for i in range(9)]),
+        "l2": tune.choice([2**i for i in range(9)]),
         "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8, 16])
+        "batch_size": tune.choice([2, 4, 8, 16]),
     }
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
         max_t=max_num_epochs,
         grace_period=1,
-        reduction_factor=2)
-    reporter = CLIReporter(
-        # parameter_columns=["l1", "l2", "lr", "batch_size"],
-        metric_columns=["loss", "accuracy", "training_iteration"])
+        reduction_factor=2,
+    )
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
-        progress_reporter=reporter)
+    )
 
     best_trial = result.get_best_trial("loss", "min", "last")
-    print("Best trial config: {}".format(best_trial.config))
-    print("Best trial final validation loss: {}".format(
-        best_trial.last_result["loss"]))
-    print("Best trial final validation accuracy: {}".format(
-        best_trial.last_result["accuracy"]))
+    print(f"Best trial config: {best_trial.config}")
+    print(f"Best trial final validation loss: {best_trial.last_result['loss']}")
+    print(f"Best trial final validation accuracy: {best_trial.last_result['accuracy']}")
 
     best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
     device = "cpu"
@@ -414,13 +463,15 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
             best_trained_model = nn.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint_dir = best_trial.checkpoint.value
-    model_state, optimizer_state = torch.load(os.path.join(
-        best_checkpoint_dir, "checkpoint"))
-    best_trained_model.load_state_dict(model_state)
+    best_checkpoint = result.get_best_checkpoint(trial=best_trial, metric="accuracy", mode="max")
+    with best_checkpoint.as_directory() as checkpoint_dir:
+        data_path = Path(checkpoint_dir) / "data.pkl"
+        with open(data_path, "rb") as fp:
+            best_checkpoint_data = pickle.load(fp)
 
-    test_acc = test_accuracy(best_trained_model, device)
-    print("Best trial test set accuracy: {}".format(test_acc))
+        best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
+        test_acc = test_accuracy(best_trained_model, device)
+        print("Best trial test set accuracy: {}".format(test_acc))
 
 
 if __name__ == "__main__":
@@ -431,32 +482,31 @@ if __name__ == "__main__":
 ######################################################################
 # If you run the code, an example output could look like this:
 #
-# ::
+# .. code-block:: sh
 #
-#     Number of trials: 10 (10 TERMINATED)
-#     +-----+------+------+-------------+--------------+---------+------------+--------------------+
-#     | ... |   l1 |   l2 |          lr |   batch_size |    loss |   accuracy | training_iteration |
-#     |-----+------+------+-------------+--------------+---------+------------+--------------------|
-#     | ... |   64 |    4 | 0.00011629  |            2 | 1.87273 |     0.244  |                  2 |
-#     | ... |   32 |   64 | 0.000339763 |            8 | 1.23603 |     0.567  |                  8 |
-#     | ... |    8 |   16 | 0.00276249  |           16 | 1.1815  |     0.5836 |                 10 |
-#     | ... |    4 |   64 | 0.000648721 |            4 | 1.31131 |     0.5224 |                  8 |
-#     | ... |   32 |   16 | 0.000340753 |            8 | 1.26454 |     0.5444 |                  8 |
-#     | ... |    8 |    4 | 0.000699775 |            8 | 1.99594 |     0.1983 |                  2 |
-#     | ... |  256 |    8 | 0.0839654   |           16 | 2.3119  |     0.0993 |                  1 |
-#     | ... |   16 |  128 | 0.0758154   |           16 | 2.33575 |     0.1327 |                  1 |
-#     | ... |   16 |    8 | 0.0763312   |           16 | 2.31129 |     0.1042 |                  4 |
-#     | ... |  128 |   16 | 0.000124903 |            4 | 2.26917 |     0.1945 |                  1 |
-#     +-----+------+------+-------------+--------------+---------+------------+--------------------+
+#     Number of trials: 10/10 (10 TERMINATED)
+#     +-----+--------------+------+------+-------------+--------+---------+------------+
+#     | ... |   batch_size |   l1 |   l2 |          lr |   iter |    loss |   accuracy |
+#     |-----+--------------+------+------+-------------+--------+---------+------------|
+#     | ... |            2 |    1 |  256 | 0.000668163 |      1 | 2.31479 |     0.0977 |
+#     | ... |            4 |   64 |    8 | 0.0331514   |      1 | 2.31605 |     0.0983 |
+#     | ... |            4 |    2 |    1 | 0.000150295 |      1 | 2.30755 |     0.1023 |
+#     | ... |           16 |   32 |   32 | 0.0128248   |     10 | 1.66912 |     0.4391 |
+#     | ... |            4 |    8 |  128 | 0.00464561  |      2 | 1.7316  |     0.3463 |
+#     | ... |            8 |  256 |    8 | 0.00031556  |      1 | 2.19409 |     0.1736 |
+#     | ... |            4 |   16 |  256 | 0.00574329  |      2 | 1.85679 |     0.3368 |
+#     | ... |            8 |    2 |    2 | 0.00325652  |      1 | 2.30272 |     0.0984 |
+#     | ... |            2 |    2 |    2 | 0.000342987 |      2 | 1.76044 |     0.292  |
+#     | ... |            4 |   64 |   32 | 0.003734    |      8 | 1.53101 |     0.4761 |
+#     +-----+--------------+------+------+-------------+--------+---------+------------+
 #
-#
-#     Best trial config: {'l1': 8, 'l2': 16, 'lr': 0.00276249, 'batch_size': 16, 'data_dir': '...'}
-#     Best trial final validation loss: 1.181501
-#     Best trial final validation accuracy: 0.5836
-#     Best trial test set accuracy: 0.5806
+#     Best trial config: {'l1': 64, 'l2': 32, 'lr': 0.0037339984519545164, 'batch_size': 4}
+#     Best trial final validation loss: 1.5310075663924216
+#     Best trial final validation accuracy: 0.4761
+#     Best trial test set accuracy: 0.4737
 #
 # Most trials have been stopped early in order to avoid wasting resources.
-# The best performing trial achieved a validation accuracy of about 58%, which could
+# The best performing trial achieved a validation accuracy of about 47%, which could
 # be confirmed on the test set.
 #
 # So that's it! You can now tune the parameters of your PyTorch models.

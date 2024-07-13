@@ -9,7 +9,7 @@ that are hard to deploy. On the contrary, biological neural networks are
 known to use efficient sparse connectivity. Identifying optimal  
 techniques to compress models by reducing the number of parameters in them is 
 important in order to reduce memory, battery, and hardware consumption without 
-sacrificing accuracy, deploy lightweight models on device, and guarantee 
+sacrificing accuracy. This in turn allows you to deploy lightweight models on device, and guarantee 
 privacy with private on-device computation. On the research front, pruning is 
 used to investigate the differences in learning dynamics between 
 over-parametrized and under-parametrized networks, to study the role of lucky 
@@ -44,9 +44,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class LeNet(nn.Module):
     def __init__(self):
         super(LeNet, self).__init__()
-        # 1 input image channel, 6 output channels, 3x3 square conv kernel
-        self.conv1 = nn.Conv2d(1, 6, 3)
-        self.conv2 = nn.Conv2d(6, 16, 3)
+        # 1 input image channel, 6 output channels, 5x5 square conv kernel
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5x5 image dimension
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
@@ -339,8 +339,8 @@ print(
 # pruning this technique implements (supported options are ``global``,
 # ``structured``, and ``unstructured``). This is needed to determine
 # how to combine masks in the case in which pruning is applied
-# iteratively. In other words, when pruning a pre-pruned parameter,
-# the current prunining techique is expected to act on the unpruned
+# iteratively. In other words, when pruning a prepruned parameter,
+# the current pruning technique is expected to act on the unpruned
 # portion of the parameter. Specifying the ``PRUNING_TYPE`` will
 # enable the ``PruningContainer`` (which handles the iterative
 # application of pruning masks) to correctly identify the slice of the

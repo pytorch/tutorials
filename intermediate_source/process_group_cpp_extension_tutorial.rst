@@ -1,8 +1,10 @@
 Customize Process Group Backends Using Cpp Extensions
 =====================================================
 
-**Author**: `Feng Tian <https://github.com/ftian1>`__, `Shen Li <https://mrshenli.github.io/>`__
+**Author**: `Howard Huang <https://github.com/H-Huang>`__, `Feng Tian <https://github.com/ftian1>`__, `Shen Li <https://mrshenli.github.io/>`__, `Min Si <https://minsii.github.io/>`__
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/process_group_cpp_extension_tutorial.rst>`__.
 
 Prerequisites:
 
@@ -11,8 +13,7 @@ Prerequisites:
 -  `PyTorch Cpp Extension <https://pytorch.org/docs/stable/cpp_extension.html>`__
 -  `Writing Distributed Applications with PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__
 
-This tutorial demonstrates how to implement a custom ``ProcessGroup``
-backend and plug that into
+This tutorial demonstrates how to implement a custom ``Backend`` and plug that into
 `PyTorch distributed package <https://pytorch.org/docs/stable/distributed.html>`__ using
 `cpp extensions <https://pytorch.org/docs/stable/cpp_extension.html>`__. This is helpful when you need a specialized software
 stack for your hardware, or when you would like to experiment with new
@@ -30,9 +31,9 @@ training features, including
 In order to make the same collective communication API work with
 different communication backends, the distributed package abstracts collective
 communication operations into a
-`ProcessGroup <https://github.com/pytorch/pytorch/blob/release/1.10/torch/csrc/distributed/c10d/ProcessGroup.hpp>`__
+`Backend <https://github.com/pytorch/pytorch/blob/main/torch/csrc/distributed/c10d/Backend.hpp>`__
 class. Different backends can
-then be implemented as subclasses of ``ProcessGroup`` using preferred
+then be implemented as subclasses of ``Backend`` using preferred
 third-party libraries. PyTorch distributed comes with three default backends,
 ``ProcessGroupNCCL``, ``ProcessGroupGloo``, and ``ProcessGroupMPI``. However,
 beyond these three backends, there are also other communication libraries
@@ -47,7 +48,7 @@ Therefore, the distributed package exposes extension APIs to allow customizing
 collective communication backends.
 
 
-The 4 steps below show how to implement a dummy ``ProcessGroup`` backend
+The 4 steps below show how to implement a dummy ``Backend`` backend
 and use that in Python application code. Please note that this tutorial focuses
 on demonstrating the extension APIs, instead of developing a functioning
 communication backend. Hence, the ``dummy`` backend just covers a subset of the
@@ -55,17 +56,17 @@ APIs (``all_reduce`` and ``all_gather``), and simply sets the values of tensors
 to 0.
 
 
-Step 1: Implement a Subclass of ``ProcessGroup``
+Step 1: Implement a Subclass of ``Backend``
 ------------------------------------------------
 
-This first step is to implement a ``ProcessGroup`` subclass that overrides
+This first step is to implement a ``Backend`` subclass that overrides
 target collective communication APIs and runs the custom communication algorithm.
-The extension also needs to implement a ``ProcessGroup::Work`` subclass, which
+The extension also needs to implement a ``Work`` subclass, which
 serves as a future of communication results and allows asynchronous execution in
 application code. If the extension uses third-party libraries, it can
-include the headers and call into the library APIs from the ``ProcessGroupDummy``
+include the headers and call into the library APIs from the ``BackendDummy``
 subclass. The two code snippets below present the implementation of ``dummy.h`` and
-``dummy.cpp``. See the `dummy collectives <https://github.com/mrshenli/dummy_collectives>`__
+``dummy.cpp``. See the `dummy collectives <https://github.com/H-Huang/torch_collective_extension>`__
 repository for the full implementation.
 
 .. code-block:: cpp
@@ -73,48 +74,49 @@ repository for the full implementation.
     // file name: dummy.hpp
     #include <torch/python.h>
 
-    #include <c10d/ProcessGroup.hpp>
-    #include <c10d/Store.hpp>
-    #include <c10d/Types.hpp>
-    #include <c10d/Utils.hpp>
+    #include <torch/csrc/distributed/c10d/Backend.hpp>
+    #include <torch/csrc/distributed/c10d/Work.hpp>
+    #include <torch/csrc/distributed/c10d/Store.hpp>
+    #include <torch/csrc/distributed/c10d/Types.hpp>
+    #include <torch/csrc/distributed/c10d/Utils.hpp>
 
     #include <pybind11/chrono.h>
 
     namespace c10d {
 
-    class ProcessGroupDummy : public ProcessGroup {
+    class BackendDummy : public Backend {
       public:
+        BackendDummy(int rank, int size);
 
-        class WorkDummy : public ProcessGroup::Work {
-          public:
-            WorkDummy(
-                OpType opType,
-                c10::intrusive_ptr<c10::ivalue::Future> future) // future of the output
-                : ProcessGroup::Work(
-                    -1, // rank, only used by recvAnySource, irrelevant in this demo
-                    opType),
-                future_(std::move(future)) {}
-            // There are several additional helper functions that need to be
-            // implemented. Please refer to https://github.com/mrshenli/dummy_collectives
-            // for the full implementation.
-
-          private:
-            c10::intrusive_ptr<c10::ivalue::Future> future_;
-        };
-
-        ProcessGroupDummy(int rank, int size);
-
-        c10::intrusive_ptr<ProcessGroup::Work> allgather(
+        c10::intrusive_ptr<Work> allgather(
             std::vector<std::vector<at::Tensor>>& outputTensors,
             std::vector<at::Tensor>& inputTensors,
             const AllgatherOptions& opts = AllgatherOptions()) override;
 
-        c10::intrusive_ptr<ProcessGroup::Work> allreduce(
+        c10::intrusive_ptr<Work> allreduce(
             std::vector<at::Tensor>& tensors,
             const AllreduceOptions& opts = AllreduceOptions()) override;
 
         // The collective communication APIs without a custom implementation
         // will error out if invoked by application code.
+    };
+
+    class WorkDummy : public Work {
+      public:
+        WorkDummy(
+          OpType opType,
+          c10::intrusive_ptr<c10::ivalue::Future> future) // future of the output
+          : Work(
+              -1, // rank, only used by recvAnySource, irrelevant in this demo
+              opType),
+          future_(std::move(future)) {}
+        bool isCompleted() override;
+        bool isSuccess() const override;
+        bool wait(std::chrono::milliseconds timeout = kUnsetTimeout) override;
+        virtual c10::intrusive_ptr<c10::ivalue::Future> getFuture() override;
+
+      private:
+        c10::intrusive_ptr<c10::ivalue::Future> future_;
     };
     } // namespace c10d
 
@@ -128,7 +130,7 @@ repository for the full implementation.
 
     // This is a dummy allgather that sets all output tensors to zero
     // Modify the implementation to conduct real communication asynchronously
-    c10::intrusive_ptr<ProcessGroup::Work> ProcessGroupDummy::allgather(
+    c10::intrusive_ptr<Work> BackendDummy::allgather(
             std::vector<std::vector<at::Tensor>>& outputTensors,
             std::vector<at::Tensor>& inputTensors,
             const AllgatherOptions& /* unused */) {
@@ -146,7 +148,7 @@ repository for the full implementation.
 
     // This is a dummy allreduce that sets all output tensors to zero
     // Modify the implementation to conduct real communication asynchronously
-    c10::intrusive_ptr<ProcessGroup::Work> ProcessGroupDummy::allreduce(
+    c10::intrusive_ptr<Work> BackendDummy::allreduce(
             std::vector<at::Tensor>& tensors,
             const AllreduceOptions& opts) {
         for (auto& tensor : tensors) {
@@ -167,42 +169,48 @@ The backend constructors are called
 `from Python side <https://github.com/pytorch/pytorch/blob/v1.9.0/torch/distributed/distributed_c10d.py#L643-L650>`__,
 so the extension also needs to expose the constructor APIs to Python. This can
 be done by adding the following methods. In this example, ``store`` and
-``timeout`` are ignored by the ``ProcessGroupDummy`` instantiation method, as
+``timeout`` are ignored by the ``BackendDummy`` instantiation method, as
 those are not used in this dummy implementation. However, real-world extensions
 should consider using the ``store`` to perform rendezvous and supporting the
 ``timeout`` argument.
 
 .. code-block:: cpp
 
-    class ProcessGroupDummy : public ProcessGroup {
-        static c10::intrusive_ptr<ProcessGroup> createProcessGroupDummy(
+    // file name: dummy.hpp
+    class BackendDummy : public Backend {
+        ...
+        <Step 1 code>
+        ...
+
+        static c10::intrusive_ptr<Backend> createBackendDummy(
             const c10::intrusive_ptr<::c10d::Store>& store,
             int rank,
             int size,
             const std::chrono::duration<float>& timeout);
 
-        static void ProcessGroupDummyConstructor() __attribute__((constructor)) {
+        static void BackendDummyConstructor() __attribute__((constructor)) {
             py::object module = py::module::import("torch.distributed");
             py::object register_backend =
                 module.attr("Backend").attr("register_backend");
             // torch.distributed.Backend.register_backend will add `dummy` as a
             // new valid backend.
-            register_backend("dummy", py::cpp_function(createProcessGroupDummy));
+            register_backend("dummy", py::cpp_function(createBackendDummy));
         }
     }
 
 .. code-block:: cpp
 
-    c10::intrusive_ptr<ProcessGroup> ProcessGroupDummy::createProcessGroupDummy(
+    // file name: dummy.cpp
+    c10::intrusive_ptr<Backend> BackendDummy::createBackendDummy(
             const c10::intrusive_ptr<::c10d::Store>& /* unused */,
             int rank,
             int size,
             const std::chrono::duration<float>& /* unused */) {
-        return c10::make_intrusive<ProcessGroupDummy>(rank, size);
+        return c10::make_intrusive<BackendDummy>(rank, size);
     }
 
     PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-        m.def("createProcessGroupDummy", &ProcessGroupDummy::createProcessGroupDummy);
+        m.def("createBackendDummy", &BackendDummy::createBackendDummy);
     }
 
 
@@ -212,7 +220,7 @@ Step 3: Build The Custom Extension
 Now, the extension source code files are ready. We can then use
 `cpp extensions <https://pytorch.org/docs/stable/cpp_extension.html>`__
 to build it. To do that, create a ``setup.py`` file that prepares the paths and
-commands. Then call ``python setup.py install`` to install the extension.
+commands. Then call ``python setup.py develop`` to install the extension.
 
 If the extension depends on third-party libraries, you can also specify
 ``libraries_dirs`` and ``libraries`` to the cpp extension APIs. See the
@@ -258,6 +266,12 @@ After installation, you can conveniently use the ``dummy`` backend when calling
 `init_process_group <https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group>`__
 as if it is an builtin backend.
 
+We can specify dispatching based on backend by changing the ``backend`` argument of ``init_process_group``. We
+can dispatch collective with CPU tensor to ``gloo`` backend and dispatch collective with CUDA tensor to ``dummy`` backend by
+specifying ``cpu:gloo,cuda:dummy`` as the backend argument.
+
+To send all tensors to ``dummy`` backend, we can simply specify ``dummy`` as the backend argument.
+
 .. code-block:: python
 
     import os
@@ -272,17 +286,22 @@ as if it is an builtin backend.
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '29500'
 
-    dist.init_process_group("dummy", rank=0, world_size=1)
+    # Alternatively:
+    # dist.init_process_group("dummy", rank=0, world_size=1)
+    dist.init_process_group("cpu:gloo,cuda:dummy", rank=0, world_size=1)
 
+    # this goes through gloo
     x = torch.ones(6)
     dist.all_reduce(x)
-    y = x.cuda()
-    dist.all_reduce(y)
-
     print(f"cpu allreduce: {x}")
-    print(f"cuda allreduce: {y}")
 
-    try:
-        dist.broadcast(x, 0)
-    except RuntimeError:
-        print("got RuntimeError as broadcast is not implemented in Dummy ProcessGroup")
+    # this goes through dummy
+    if torch.cuda.is_available():
+        y = x.cuda()
+        dist.all_reduce(y)
+        print(f"cuda allreduce: {y}")
+
+        try:
+            dist.broadcast(y, 0)
+        except RuntimeError:
+            print("got RuntimeError when calling broadcast")

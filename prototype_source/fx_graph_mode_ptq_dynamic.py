@@ -1,10 +1,10 @@
 """
 (prototype) FX Graph Mode Post Training Dynamic Quantization
-===========================================================
+============================================================
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
-This tutorial introduces the steps to do post training dynamic quantization in graph mode based on ``torch.fx``. 
+This tutorial introduces the steps to do post training dynamic quantization in graph mode based on ``torch.fx``.
 We have a separate tutorial for `FX Graph Mode Post Training Static Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`_,
 comparison between FX Graph Mode Quantization and Eager Mode Quantization can be found in the `quantization docs <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`_
 
@@ -13,20 +13,21 @@ tldr; The FX Graph Mode API for dynamic quantization looks like the following:
 .. code:: python
 
     import torch
-    from torch.quantization import default_dynamic_qconfig
-    # Note that this is temporary, we'll expose these functions to torch.quantization after official releasee
+    from torch.ao.quantization import default_dynamic_qconfig, QConfigMapping
+    # Note that this is temporary, we'll expose these functions to torch.ao.quantization after official releasee
     from torch.quantization.quantize_fx import prepare_fx, convert_fx
 
     float_model.eval()
-    qconfig = get_default_qconfig("fbgemm")
-    qconfig_dict = {"": qconfig}
-    prepared_model = prepare_fx(float_model, qconfig_dict)  # fuse modules and insert observers
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    qconfig = get_default_qconfig("x86")
+    qconfig_mapping = QConfigMapping().set_global(qconfig)
+    prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
     # no calibration is required for dynamic quantization
     quantized_model = convert_fx(prepared_model)  # convert the model to a dynamically quantized model
 
-In this tutorial, we’ll apply dynamic quantization to an LSTM-based next word-prediction model, 
-closely following the word language model from the PyTorch examples. 
-We will copy the code from `Dynamic Quantization on an LSTM Word Language Model <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`_ 
+In this tutorial, we’ll apply dynamic quantization to an LSTM-based next word-prediction model,
+closely following the word language model from the PyTorch examples.
+We will copy the code from `Dynamic Quantization on an LSTM Word Language Model <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`_
 and omit the descriptions.
 
 """
@@ -36,20 +37,20 @@ and omit the descriptions.
 # 1. Define the Model, Download Data and Model
 # --------------------------------------------
 #
-# Download the `data <https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip>`_ 
+# Download the `data <https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip>`_
 # and unzip to data folder
-# 
+#
 # .. code::
-#     
+#
 #     mkdir data
 #     cd data
 #     wget https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip
 #     unzip wikitext-2-v1.zip
 #
 # Download model to the data folder:
-# 
+#
 # .. code::
-# 
+#
 #     wget https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth
 #
 # Define the model:
@@ -105,7 +106,7 @@ def init_hidden(lstm_model, bsz):
     nhid = lstm_model.rnn.hidden_size
     return (torch.zeros(nlayers, bsz, nhid, device=device),
             torch.zeros(nlayers, bsz, nhid, device=device))
-    
+
 
 # Load Text Data
 class Dictionary(object):
@@ -191,6 +192,7 @@ def batchify(data, bsz):
     return data.view(bsz, -1).t().contiguous()
 
 test_data = batchify(corpus.test, eval_batch_size)
+example_inputs = (next(iter(test_data))[0])
 
 # Evaluation functions
 def get_batch(source, i):
@@ -224,25 +226,41 @@ def evaluate(model_, data_source):
 ######################################################################
 # 2. Post Training Dynamic Quantization
 # -------------------------------------
-# Now we can dynamically quantize the model. 
+# Now we can dynamically quantize the model.
 # We can use the same function as post training static quantization but with a dynamic qconfig.
 
 from torch.quantization.quantize_fx import prepare_fx, convert_fx
-from torch.quantization import default_dynamic_qconfig, float_qparams_weight_only_qconfig
+from torch.ao.quantization import default_dynamic_qconfig, float_qparams_weight_only_qconfig, QConfigMapping
 
-# Full docs for supported qconfig for floating point modules/ops can be found in docs for quantization (TODO: link)
-# Full docs for qconfig_dict can be found in the documents of prepare_fx (TODO: link)
-qconfig_dict = {
-    "object_type": [
-        (nn.Embedding, float_qparams_weight_only_qconfig),
-        (nn.LSTM, default_dynamic_qconfig),
-        (nn.Linear, default_dynamic_qconfig)
-    ]
-}
-# Deepcopying the original model because quantization api changes the model inplace and we want
+# Full docs for supported qconfig for floating point modules/ops can be found in `quantization docs <https://pytorch.org/docs/stable/quantization.html#module-torch.quantization>`_
+# Full docs for `QConfigMapping <https://pytorch.org/docs/stable/generated/torch.ao.quantization.qconfig_mapping.QConfigMapping.html#torch.ao.quantization.qconfig_mapping.QConfigMapping>`_
+qconfig_mapping = (QConfigMapping()
+    .set_object_type(nn.Embedding, float_qparams_weight_only_qconfig)
+    .set_object_type(nn.LSTM, default_dynamic_qconfig)
+    .set_object_type(nn.Linear, default_dynamic_qconfig)
+)
+# Load model to create the original model because quantization api changes the model inplace and we want
 # to keep the original model for future comparison
-model_to_quantize = copy.deepcopy(model)
-prepared_model = prepare_fx(model_to_quantize, qconfig_dict)
+
+
+model_to_quantize = LSTMModel(
+    ntoken = ntokens,
+    ninp = 512,
+    nhid = 256,
+    nlayers = 5,
+)
+
+model_to_quantize.load_state_dict(
+    torch.load(
+        model_data_filepath + 'word_language_model_quantize.pth',
+        map_location=torch.device('cpu')
+        )
+    )
+
+model_to_quantize.eval()
+
+
+prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
 print("prepared model:", prepared_model)
 quantized_model = convert_fx(prepared_model)
 print("quantized model", quantized_model)
@@ -252,11 +270,11 @@ print("quantized model", quantized_model)
 # For dynamically quantized objects, we didn't do anything in ``prepare_fx`` for modules,
 # but will insert observers for weight for dynamically quantizable forunctionals and torch ops.
 # We also fuse the modules like Conv + Bn, Linear + ReLU.
-# 
-# In convert we'll convert the float modules to dynamically quantized modules and 
+#
+# In convert we'll convert the float modules to dynamically quantized modules and
 # convert float ops to dynamically quantized ops. We can see in the example model,
 # ``nn.Embedding``, ``nn.Linear`` and ``nn.LSTM`` are dynamically quantized.
-# 
+#
 # Now we can compare the size and runtime of the quantized model.
 
 def print_size_of_model(model):
@@ -283,10 +301,10 @@ time_model_evaluation(model, test_data)
 time_model_evaluation(quantized_model, test_data)
 
 #####################################################################
-# There is a roughly 2x speedup for this model. Also note that the speedup 
+# There is a roughly 2x speedup for this model. Also note that the speedup
 # may vary depending on model, device, build, input batch sizes, threading etc.
 #
 # 3. Conclusion
 # -------------
-# This tutorial introduces the api for post training dynamic quantization in FX Graph Mode, 
+# This tutorial introduces the api for post training dynamic quantization in FX Graph Mode,
 # which dynamically quantizes the same modules as Eager Mode Quantization.

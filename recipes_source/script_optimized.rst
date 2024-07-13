@@ -194,16 +194,23 @@ The optimized model can then be saved and deployed in mobile apps:
 
     optimized_torchscript_model.save("optimized_torchscript_model.pth")
 
-By default, `optimize_for_mobile` will perform the following types of optimizations:
+By default, for the CPU backend, `optimize_for_mobile` performs the following types of optimizations:
 
-* Conv2D and BatchNorm fusion which folds Conv2d-BatchNorm2d into Conv2d;
+* `Conv2D and BatchNorm fusion` which folds Conv2d-BatchNorm2d into Conv2d;
 
-* Insert and fold prepacked ops which rewrites the model graph to replace 2D convolutions and linear ops with their prepacked counterparts.
+* `Insert and fold prepacked ops` which rewrites the model graph to replace 2D convolutions and linear ops with their prepacked counterparts.
 
-* ReLU and hardtanh fusion which rewrites graph by finding ReLU/hardtanh ops and fuses them together.
+* `ReLU and hardtanh fusion` which rewrites graph by finding ReLU/hardtanh ops and fuses them together.
 
-* Dropout removal which removes dropout nodes from this module when training is false.
+* `Dropout removal` which removes dropout nodes from this module when training is false.
 
+* `Conv packed params hoisting` which moves convolution packed params to the root module, so that the convolution structs can be deleted. This decreases model size without impacting numerics.
+
+For the Vulkan backend,`optimize_for_mobile` performs the following type of optimization:
+
+* `Automatic GPU transfer` which rewrites the graph so that moving input and output data to and from the GPU becomes part of the model.
+
+Optimization types can be disabled by passing an optimization blocklist as an argument to `optimize_for_mobile`.
 
 Learn More
 -----------------

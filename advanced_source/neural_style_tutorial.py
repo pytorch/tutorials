@@ -14,7 +14,7 @@ This tutorial explains how to implement the `Neural-Style algorithm <https://arx
 developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 Neural-Style, or Neural-Transfer, allows you to take an image and
 reproduce it with a new artistic style. The algorithm takes three images,
-an input image, a content-image, and a style-image, and changes the input 
+an input image, a content-image, and a style-image, and changes the input
 to resemble the content of the content-image and the artistic style of the style-image.
 
  
@@ -44,10 +44,8 @@ to resemble the content of the content-image and the artistic style of the style
 # -  ``PIL``, ``PIL.Image``, ``matplotlib.pyplot`` (load and display
 #    images)
 # -  ``torchvision.transforms`` (transform PIL images into tensors)
-# -  ``torchvision.models`` (train or load pre-trained models)
+# -  ``torchvision.models`` (train or load pretrained models)
 # -  ``copy`` (to deep copy the models; system package)
-
-from __future__ import print_function
 
 import torch
 import torch.nn as nn
@@ -58,7 +56,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 import torchvision.transforms as transforms
-import torchvision.models as models
+from torchvision.models import vgg19, VGG19_Weights
 
 import copy
 
@@ -72,6 +70,7 @@ import copy
 # method is used to move tensors or modules to a desired device. 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_default_device(device)
 
 ######################################################################
 # Loading the Images
@@ -84,11 +83,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # torch library are trained with tensor values ranging from 0 to 1. If you
 # try to feed the networks with 0 to 255 tensor images, then the activated
 # feature maps will be unable to sense the intended content and style.
-# However, pre-trained networks from the Caffe library are trained with 0
+# However, pretrained networks from the Caffe library are trained with 0
 # to 255 tensor images. 
 #
 #
-# .. Note::
+# .. note::
 #     Here are links to download the images required to run the tutorial:
 #     `picasso.jpg <https://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
 #     `dancing.jpg <https://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
@@ -96,7 +95,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #     with name ``images`` in your current working directory.
 
 # desired size of the output image
-imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
+imsize = 512 if torch.cuda.is_available() else 128  # use small size if no GPU
 
 loader = transforms.Compose([
     transforms.Resize(imsize),  # scale imported image
@@ -184,7 +183,7 @@ class ContentLoss(nn.Module):
         return input
 
 ######################################################################
-# .. Note::
+# .. note::
 #    **Important detail**: although this module is named ``ContentLoss``, it
 #    is not a true PyTorch Loss function. If you want to define your content
 #    loss as a PyTorch Loss function, you have to create a PyTorch autograd function 
@@ -220,7 +219,7 @@ def gram_matrix(input):
     # b=number of feature maps
     # (c,d)=dimensions of a f. map (N=c*d)
 
-    features = input.view(a * b, c * d)  # resise F_XL into \hat F_XL
+    features = input.view(a * b, c * d)  # resize F_XL into \hat F_XL
 
     G = torch.mm(features, features.t())  # compute the gram product
 
@@ -251,7 +250,7 @@ class StyleLoss(nn.Module):
 # Importing the Model
 # -------------------
 # 
-# Now we need to import a pre-trained neural network. We will use a 19
+# Now we need to import a pretrained neural network. We will use a 19
 # layer VGG network like the one used in the paper.
 # 
 # PyTorch’s implementation of VGG is a module divided into two child
@@ -263,7 +262,7 @@ class StyleLoss(nn.Module):
 # network to evaluation mode using ``.eval()``.
 # 
 
-cnn = models.vgg19(pretrained=True).features.to(device).eval()
+cnn = vgg19(weights=VGG19_Weights.DEFAULT).features.eval()
 
 
 
@@ -273,11 +272,11 @@ cnn = models.vgg19(pretrained=True).features.to(device).eval()
 # We will use them to normalize the image before sending it into the network.
 # 
 
-cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406])
+cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225])
 
 # create a module to normalize input image so we can easily put it in a
-# nn.Sequential
+# ``nn.Sequential``
 class Normalization(nn.Module):
     def __init__(self, mean, std):
         super(Normalization, self).__init__()
@@ -288,14 +287,14 @@ class Normalization(nn.Module):
         self.std = torch.tensor(std).view(-1, 1, 1)
 
     def forward(self, img):
-        # normalize img
+        # normalize ``img``
         return (img - self.mean) / self.std
 
 
 ######################################################################
 # A ``Sequential`` module contains an ordered list of child modules. For
-# instance, ``vgg19.features`` contains a sequence (Conv2d, ReLU, MaxPool2d,
-# Conv2d, ReLU…) aligned in the right order of depth. We need to add our
+# instance, ``vgg19.features`` contains a sequence (``Conv2d``, ``ReLU``, ``MaxPool2d``,
+# ``Conv2d``, ``ReLU``…) aligned in the right order of depth. We need to add our
 # content loss and style loss layers immediately after the convolution
 # layer they are detecting. To do this we must create a new ``Sequential``
 # module that has content loss and style loss modules correctly inserted.
@@ -310,14 +309,14 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                content_layers=content_layers_default,
                                style_layers=style_layers_default):
     # normalization module
-    normalization = Normalization(normalization_mean, normalization_std).to(device)
+    normalization = Normalization(normalization_mean, normalization_std)
 
-    # just in order to have an iterable access to or list of content/syle
+    # just in order to have an iterable access to or list of content/style
     # losses
     content_losses = []
     style_losses = []
 
-    # assuming that cnn is a nn.Sequential, so we make a new nn.Sequential
+    # assuming that ``cnn`` is a ``nn.Sequential``, so we make a new ``nn.Sequential``
     # to put in modules that are supposed to be activated sequentially
     model = nn.Sequential(normalization)
 
@@ -328,8 +327,8 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
             name = 'conv_{}'.format(i)
         elif isinstance(layer, nn.ReLU):
             name = 'relu_{}'.format(i)
-            # The in-place version doesn't play very nicely with the ContentLoss
-            # and StyleLoss we insert below. So we replace with out-of-place
+            # The in-place version doesn't play very nicely with the ``ContentLoss``
+            # and ``StyleLoss`` we insert below. So we replace with out-of-place
             # ones here.
             layer = nn.ReLU(inplace=False)
         elif isinstance(layer, nn.MaxPool2d):
@@ -371,8 +370,11 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 # 
 
 input_img = content_img.clone()
-# if you want to use white noise instead uncomment the below line:
-# input_img = torch.randn(content_img.data.size(), device=device)
+# if you want to use white noise by using the following code:
+#
+# .. code-block:: python
+#
+#    input_img = torch.randn(content_img.data.size())
 
 # add the original input image to the figure:
 plt.figure()
@@ -385,7 +387,7 @@ imshow(input_img, title='Input Image')
 # 
 # As Leon Gatys, the author of the algorithm, suggested `here <https://discuss.pytorch.org/t/pytorch-tutorial-for-neural-transfert-of-artistic-style/336/20?u=alexis-jacq>`__, we will use
 # L-BFGS algorithm to run our gradient descent. Unlike training a network,
-# we want to train the input image in order to minimise the content/style
+# we want to train the input image in order to minimize the content/style
 # losses. We will create a PyTorch L-BFGS optimizer ``optim.LBFGS`` and pass
 # our image to it as the tensor to optimize.
 # 
@@ -400,7 +402,7 @@ def get_input_optimizer(input_img):
 # Finally, we must define a function that performs the neural transfer. For
 # each iteration of the networks, it is fed an updated input and computes
 # new losses. We will run the ``backward`` methods of each loss module to
-# dynamicaly compute their gradients. The optimizer requires a “closure”
+# dynamically compute their gradients. The optimizer requires a “closure”
 # function, which reevaluates the module and returns the loss.
 # 
 # We still have one final constraint to address. The network may try to
@@ -420,6 +422,9 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     # We want to optimize the input and not the model parameters so we
     # update all the requires_grad fields accordingly
     input_img.requires_grad_(True)
+    # We also put the model in evaluation mode, so that specific layers 
+    # such as dropout or batch normalization layers behave correctly. 
+    model.eval()
     model.requires_grad_(False)
 
     optimizer = get_input_optimizer(input_img)

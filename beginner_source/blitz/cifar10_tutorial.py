@@ -105,7 +105,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))
@@ -115,7 +115,7 @@ print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
 
 ########################################################################
 # 2. Define a Convolutional Neural Network
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Copy the neural network from the Neural Networks section before and modify it to
 # take 3-channel images (instead of 1-channel images as it was defined).
 
@@ -210,7 +210,7 @@ torch.save(net.state_dict(), PATH)
 # Okay, first step. Let us display an image from the test set to get familiar.
 
 dataiter = iter(testloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # print images
 imshow(torchvision.utils.make_grid(images))

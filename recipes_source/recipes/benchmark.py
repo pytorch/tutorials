@@ -39,11 +39,11 @@ Before we begin, install ``torch`` if it isn’t already available.
 # 1. Defining functions to benchmark
 # 2. Benchmarking with ``timeit.Timer``
 # 3. Benchmarking with ``torch.utils.benchmark.Timer``
-# 4. Benchmarking with `Blocked Autorange`
+# 4. Benchmarking with ``Blocked Autorange``
 # 5. Comparing benchmark results
 # 6. Saving/Loading benchmark results
-# 7. Generating inputs with `Fuzzed Parameters`
-# 8. Collecting instruction counts with `Callgrind`
+# 7. Generating inputs with ``Fuzzed Parameters``
+# 8. Collecting instruction counts with ``Callgrind``
 #
 # 1. Defining functions to benchmark
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +63,7 @@ def batched_dot_mul_sum(a, b):
 
 
 def batched_dot_bmm(a, b):
-    '''Computes batched dot by reducing to bmm'''
+    '''Computes batched dot by reducing to ``bmm``'''
     a = a.reshape(-1, 1, a.shape[-1])
     b = b.reshape(-1, b.shape[-1], 1)
     return torch.bmm(a, b).flatten(-3)
@@ -159,11 +159,11 @@ print(t1.timeit(100))
 #
 # Another important difference, and the reason why the results diverge
 # is that PyTorch benchmark module runs in a single thread by default.
-# We can change the number of threads with the num_threads arg.
+# We can change the number of threads with the ``num_threads`` argument.
 #
 # ``torch.utils.benchmark.Timer`` takes several additional arguments
-# including: `label`, `sub_label`, `description` and `env` which change
-# the ``__repr__`` of the measurement object returned and are used for
+# including: ``label``, ``sub_label``, ``description`` and ``env`` which change
+# the __repr__ of the measurement object returned and are used for
 # grouping the results (more on this later).
 #
 
@@ -227,7 +227,7 @@ t1 = timeit.Timer(
     setup='from __main__ import batched_dot_bmm',
     globals={'x': x})
 
-# Ran each twice to show difference before/after warmup
+# Ran each twice to show difference before/after warm-up
 print(f'mul_sum(x, x):  {t0.timeit(100) / 100 * 1e6:>5.1f} us')
 print(f'mul_sum(x, x):  {t0.timeit(100) / 100 * 1e6:>5.1f} us')
 print(f'bmm(x, x):      {t1.timeit(100) / 100 * 1e6:>5.1f} us')
@@ -253,7 +253,7 @@ t1 = benchmark.Timer(
     setup='from __main__ import batched_dot_bmm',
     globals={'x': x})
 
-# Run only once since benchmark module does warmup for us
+# Run only once since benchmark module does warm-up for us
 print(t0.timeit(100))
 print(t1.timeit(100))
 
@@ -278,7 +278,7 @@ print(t1.timeit(100))
 # version using the ``timeit`` module takes much longer than the second
 # run. This is because ``bmm`` calls into `cuBLAS` which needs to be
 # loaded the first time it's called which takes some time. This is why
-# it's important to do a warmup run before benchmarking, luckily for
+# it's important to do a warm-up run before benchmarking, luckily for
 # us, PyTorch's ``benchmark`` module takes care of that.
 #
 # The difference in the results between ``timeit`` and ``benchmark`` modules
@@ -469,7 +469,7 @@ compare.print()
 #
 
 ######################################################################
-# The results above indicate that the version which reduces to bmm
+# The results above indicate that the version which reduces to ``bmm``
 # is better for larger tensors running on multiple threads, while for
 # smaller and/or single thread code, the other version is better.
 #
@@ -485,14 +485,14 @@ compare.print()
 # 6. Saving/Loading benchmark results
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# `Measurements` (and `CallgrindStats` which are described in section 8)
-# are pickleable. This makes A/B testing easy, as you can collect
+# `Measurements` (and ``CallgrindStats`` which are described in section 8)
+# can be serialized by the ``pickle`` module. This makes A/B testing easy, as you can collect
 # measurements from two separate environments, pickle them, and then
 # load both in a single environment. Timer even takes an `env`
 # constructor argument so that such A/B testing works seamlessly.
 #
 # Let's imagine that rather than two Python functions, the add/sum
-# and bmm approaches were in two different builds of PyTorch.
+# and ``bmm`` approaches were in two different builds of PyTorch.
 # The example below demonstrates how one might A/B test them. For
 # simplicity, we only use a subset of shapes, and simply round trip
 # results through pickle rather than actually using multiple environments
@@ -549,14 +549,14 @@ assert(str(benchmark.Compare(results)) == str(benchmark.Compare(round_tripped_re
 # is a good idea to run benchmarks on a number of different inputs.
 # However, creating all these input tensors can be tedious which is
 # where ``torch.utils.benchmark.Fuzzer`` and related classes come in.
-# Let's take a look at how we can use the Fuzzer to create some test
+# Let's take a look at how we can use the ``Fuzzer`` to create some test
 # cases for the benchmark.
 #
 
 from torch.utils.benchmark import Fuzzer, FuzzedParameter, FuzzedTensor, ParameterAlias
 
 # Generates random tensors with 128 to 10000000 elements and sizes k0 and k1 chosen from a
-# loguniform distribution in [1, 10000], 40% of which will be discontiguous on average.
+# ``loguniform`` distribution in [1, 10000], 40% of which will be discontiguous on average.
 example_fuzzer = Fuzzer(
     parameters = [
         FuzzedParameter('k0', minval=1, maxval=10000, distribution='loguniform'),
@@ -615,11 +615,11 @@ compare.print()
 #
 
 ######################################################################
-# There is a lot of flexibility for defining your own Fuzzers which
+# There is a lot of flexibility for defining your own ``fuzzers`` which
 # is great for creating a powerful set of inputs to benchmark. But to
 # make things even simpler, PyTorch benchmark module comes with some
-# buitin Fuzzers for common benchmarking needs. Let's take a look at
-# how we can use one of these builtin fuzzers.
+# built-in ``fuzzers`` for common benchmarking needs. Let's take a look at
+# how we can use one of these built-in ``fuzzers``.
 #
 
 from torch.utils.benchmark.op_fuzzers import binary
@@ -671,8 +671,8 @@ compare.print()
 #
 
 ######################################################################
-# 8. Collecting instruction counts with `Callgrind`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 8. Collecting instruction counts with ``Callgrind``
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # One of the challenges of optimizing code is the variation and opacity of
 # wall time. There are many sources of non-determinism, from adaptive clock
@@ -723,7 +723,7 @@ cpp_lib = cpp_extension.load_inline(
     cpp_sources=batched_dot_src,
     extra_cflags=['-O3'],
     extra_include_paths=[
-        # `load_inline` needs to know where to find Pybind11 headers.
+        # `load_inline` needs to know where to find ``pybind11`` headers.
         os.path.join(os.getenv('CONDA_PREFIX'), 'include')
     ],
     functions=['batched_dot_mul_sum_v0', 'batched_dot_mul_sum_v1']
@@ -742,7 +742,7 @@ spec.loader.exec_module(cpp_lib)"""
 
 import textwrap
 def pretty_print(result):
-    """Import machinery for cpp_lib.so can get repetitive to look at."""
+    """Import machinery for ``cpp_lib.so`` can get repetitive to look at."""
     print(repr(result).replace(textwrap.indent(module_import_str, "  "), "  import cpp_lib"))
 
 
@@ -801,7 +801,7 @@ pretty_print(t1.blocked_autorange())
 #       1 measurement, 100000 runs , 1 thread
 #
 
-# Let's use Callgrind to determine which is better.
+# Let's use ``Callgrind`` to determine which is better.
 stats_v0 = t0.collect_callgrind()
 stats_v1 = t1.collect_callgrind()
 
@@ -819,7 +819,7 @@ stats_v1 = stats_v1.as_standardized()
 delta = stats_v1.delta(stats_v0).denoise()
 
 # `.transform` is a convenience API for transforming function names. It is
-# useful for increasing cancelation when diff-ing instructions, as well as
+# useful for increasing cancelation when ``diff-ing`` instructions, as well as
 # just generally improving readability.
 replacements = (
     ("???:void pybind11", "pybind11"),
@@ -835,21 +835,19 @@ for before, after in replacements:
 torch.set_printoptions(linewidth=160)
 
 # Once parsed, the instruction counts make clear that passing `a` and `b`
-# by reference is more efficient as it skips some c10::TensorImpl bookkeeping
-# for the intermediate Tensors, and is also works better with PyBind11. This
+# by reference is more efficient as it skips some ``c10::TensorImpl`` bookkeeping
+# for the intermediate Tensors, and is also works better with ``pybind11``. This
 # is consistent with our noisy wall time observations.
 print(delta)
 
 ######################################################################
-# .. code-block:: none
-#    :caption: Output
+# .. code-block::
 #
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.CallgrindStats object at 0x7fb0f06e7630>
 #     cpp_lib.batched_dot_mul_sum_v0(x, x)
 #     setup:
 #       import cpp_lib
 #       x = torch.randn(2, 2)
-#    
 #                                All          Noisy symbols removed
 #         Instructions:      2392671                    2392671
 #         Baseline:             4367                       4367
@@ -862,7 +860,6 @@ print(delta)
 #     setup:
 #       import cpp_lib
 #       x = torch.randn(2, 2)
-#    
 #                                All          Noisy symbols removed
 #         Instructions:      2378978                    2378978
 #         Baseline:             4367                       4367
@@ -877,7 +874,6 @@ print(delta)
 #        -1600  ???:wrap_pybind_function_impl_<at::Tensor (&)(...), 0ul, 1ul>(at::Tensor (&)(...), std::integer_sequence<unsigned long, 0ul, 1ul>)::{lambda(...)
 #        -5200  ???:c10::intrusive_ptr<c10::TensorImpl, c10::UndefinedTensorImpl>::reset_()
 #        -5935  ???:0x000000000022c0e0
-#    
 #     Total: -13693
 #
 

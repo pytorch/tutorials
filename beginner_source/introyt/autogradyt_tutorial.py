@@ -40,7 +40,7 @@ What Do We Need Autograd For?
 
 ###########################################################################
 # A machine learning model is a *function*, with inputs and outputs. For
-# this discussion, we’ll treat the inputs a as an *i*-dimensional vector
+# this discussion, we’ll treat the inputs as an *i*-dimensional vector
 # :math:`\vec{x}`, with elements :math:`x_{i}`. We can then express the
 # model, *M*, as a vector-valued function of the input: :math:`\vec{y} =
 # \vec{M}(\vec{x})`. (We treat the value of M’s output as
@@ -153,7 +153,7 @@ print(b)
 #######################################################################
 # This ``grad_fn`` gives us a hint that when we execute the
 # backpropagation step and compute gradients, we’ll need to compute the
-# derivative of :math:`sin(x)` for all this tensor’s inputs.
+# derivative of :math:`\sin(x)` for all this tensor’s inputs.
 # 
 # Let’s perform some more computations:
 # 
@@ -213,7 +213,7 @@ plt.plot(a.detach(), a.grad.detach())
 #########################################################################
 # Recall the computation steps we took to get here:
 # 
-# ::
+# .. code-block:: python
 # 
 #    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
 #    b = torch.sin(a)
@@ -222,11 +222,11 @@ plt.plot(a.detach(), a.grad.detach())
 #    out = d.sum()
 # 
 # Adding a constant, as we did to compute ``d``, does not change the
-# derivative. That leaves :math:`c = 2 * b = 2 * sin(a)`, the derivative
-# of which should be :math:`2 * cos(a)`. Looking at the graph above,
+# derivative. That leaves :math:`c = 2 * b = 2 * \sin(a)`, the derivative
+# of which should be :math:`2 * \cos(a)`. Looking at the graph above,
 # that’s just what we see.
 # 
-# Be aware than only *leaf nodes* of the computation have their gradients
+# Be aware that only *leaf nodes* of the computation have their gradients
 # computed. If you tried, for example, ``print(c.grad)`` you’d get back
 # ``None``. In this simple example, only the input is a leaf node, so only
 # it has gradients computed.
@@ -250,9 +250,9 @@ class TinyModel(torch.nn.Module):
     def __init__(self):
         super(TinyModel, self).__init__()
         
-        self.layer1 = torch.nn.Linear(1000, 100)
+        self.layer1 = torch.nn.Linear(DIM_IN, HIDDEN_SIZE)
         self.relu = torch.nn.ReLU()
-        self.layer2 = torch.nn.Linear(100, 10)
+        self.layer2 = torch.nn.Linear(HIDDEN_SIZE, DIM_OUT)
     
     def forward(self, x):
         x = self.layer1(x)
@@ -334,7 +334,7 @@ for i in range(0, 5):
     
 print(model.layer2.weight.grad[0][0:10])
 
-optimizer.zero_grad()
+optimizer.zero_grad(set_to_none=False)
 
 print(model.layer2.weight.grad[0][0:10])
 
@@ -395,7 +395,7 @@ print(c3)
 
 
 ##########################################################################
-# ``torch.no_grad()`` can also be used as a function or method dectorator:
+# ``torch.no_grad()`` can also be used as a function or method decorator:
 # 
 
 def add_tensors1(x, y):
@@ -456,10 +456,10 @@ print(y)
 # .. note::
 #     The following code cell throws a runtime error. This is expected.
 # 
-# ::
+#    .. code-block:: python
 #
-#    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
-#    torch.sin_(a)
+#       a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
+#       torch.sin_(a)
 #
 
 #########################################################################
@@ -649,7 +649,7 @@ torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
 # multiplication as ``vjp()`` with the operands reversed. The ``vhp()``
 # and ``hvp()`` methods do the same for a vector-Hessian product.
 # 
-# For more information, including preformance notes on the `docs for the
+# For more information, including performance notes on the `docs for the
 # functional
 # API <https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api>`__
 # 

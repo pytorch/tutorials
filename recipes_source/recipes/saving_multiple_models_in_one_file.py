@@ -23,10 +23,10 @@ Setup
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-::
+.. code-block:: sh
 
    pip install torch
-   
+
 """
 
 
@@ -36,7 +36,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Initialize the optimizer
 # 4. Save multiple models
 # 5. Load multiple models
@@ -54,7 +54,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -151,12 +151,4 @@ modelB.train()
 # 
 # Congratulations! You have successfully saved and loaded multiple models
 # in PyTorch.
-# 
-# Learn More
-# ----------
-# 
-# Take a look at these other recipes to continue your learning:
-# 
-# -  TBD
-# -  TBD
-#  
+#

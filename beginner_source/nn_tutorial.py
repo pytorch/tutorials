@@ -2,10 +2,12 @@
 """
 What is `torch.nn` *really*?
 ============================
-by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
+
+**Authors:** Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 """
+
 ###############################################################################
-# We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
+# We recommend running this tutorial as a notebook, not a script. To download the notebook (``.ipynb``) file,
 # click the link at the top of the page.
 #
 # PyTorch provides the elegantly designed modules and classes `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ ,
@@ -47,7 +49,7 @@ PATH = DATA_PATH / "mnist"
 
 PATH.mkdir(parents=True, exist_ok=True)
 
-URL = "https://github.com/pytorch/tutorials/raw/master/_static/"
+URL = "https://github.com/pytorch/tutorials/raw/main/_static/"
 FILENAME = "mnist.pkl.gz"
 
 if not (PATH / FILENAME).exists():
@@ -73,6 +75,11 @@ from matplotlib import pyplot
 import numpy as np
 
 pyplot.imshow(x_train[0].reshape((28, 28)), cmap="gray")
+# ``pyplot.show()`` only if not on Colab
+try:
+    import google.colab
+except ImportError:
+    pyplot.show()
 print(x_train.shape)
 
 ###############################################################################
@@ -90,8 +97,8 @@ print(x_train.shape)
 print(y_train.min(), y_train.max())
 
 ###############################################################################
-# Neural net from scratch (no torch.nn)
-# ---------------------------------------------
+# Neural net from scratch (without ``torch.nn``)
+# -----------------------------------------------
 #
 # Let's first create a model using nothing but PyTorch tensor operations. We're assuming
 # you're already familiar with the basics of neural networks. (If you're not, you can
@@ -109,7 +116,7 @@ print(y_train.min(), y_train.max())
 #
 # .. note:: We are initializing the weights here with
 #    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
-#    (by multiplying with 1/sqrt(n)).
+#    (by multiplying with ``1/sqrt(n)``).
 
 import math
 
@@ -123,7 +130,7 @@ bias = torch.zeros(10, requires_grad=True)
 # let's just write a plain matrix multiplication and broadcasted addition
 # to create a simple linear model. We also need an activation function, so
 # we'll write `log_softmax` and use it. Remember: although PyTorch
-# provides lots of pre-written loss functions, activation functions, and
+# provides lots of prewritten loss functions, activation functions, and
 # so forth, you can easily write your own using plain python. PyTorch will
 # even create fast GPU or vectorized CPU code for your function
 # automatically.
@@ -242,7 +249,7 @@ for epoch in range(epochs):
 print(loss_func(model(xb), yb), accuracy(model(xb), yb))
 
 ###############################################################################
-# Using torch.nn.functional
+# Using ``torch.nn.functional``
 # ------------------------------
 #
 # We will now refactor our code, so that it does the same thing as before, only
@@ -278,7 +285,7 @@ def model(xb):
 print(loss_func(model(xb), yb), accuracy(model(xb), yb))
 
 ###############################################################################
-# Refactor using nn.Module
+# Refactor using ``nn.Module``
 # -----------------------------
 # Next up, we'll use ``nn.Module`` and ``nn.Parameter``, for a clearer and more
 # concise training loop. We subclass ``nn.Module`` (which itself is a class and
@@ -320,22 +327,26 @@ print(loss_func(model(xb), yb))
 ###############################################################################
 # Previously for our training loop we had to update the values for each parameter
 # by name, and manually zero out the grads for each parameter separately, like this:
-# ::
-#   with torch.no_grad():
-#       weights -= weights.grad * lr
-#       bias -= bias.grad * lr
-#       weights.grad.zero_()
-#       bias.grad.zero_()
+#
+# .. code-block:: python
+#
+#    with torch.no_grad():
+#        weights -= weights.grad * lr
+#        bias -= bias.grad * lr
+#        weights.grad.zero_()
+#        bias.grad.zero_()
 #
 #
 # Now we can take advantage of model.parameters() and model.zero_grad() (which
 # are both defined by PyTorch for ``nn.Module``) to make those steps more concise
 # and less prone to the error of forgetting some of our parameters, particularly
 # if we had a more complicated model:
-# ::
-#   with torch.no_grad():
-#       for p in model.parameters(): p -= p.grad * lr
-#       model.zero_grad()
+#
+# .. code-block:: python
+#
+#    with torch.no_grad():
+#        for p in model.parameters(): p -= p.grad * lr
+#        model.zero_grad()
 #
 #
 # We'll wrap our little training loop in a ``fit`` function so we can run it
@@ -365,8 +376,8 @@ fit()
 print(loss_func(model(xb), yb))
 
 ###############################################################################
-# Refactor using nn.Linear
-# -------------------------
+# Refactor using ``nn.Linear``
+# ----------------------------
 #
 # We continue to refactor our code.  Instead of manually defining and
 # initializing ``self.weights`` and ``self.bias``, and calculating ``xb  @
@@ -398,7 +409,7 @@ fit()
 print(loss_func(model(xb), yb))
 
 ###############################################################################
-# Refactor using optim
+# Refactor using ``torch.optim``
 # ------------------------------
 #
 # Pytorch also has a package with various optimization algorithms, ``torch.optim``.
@@ -406,15 +417,19 @@ print(loss_func(model(xb), yb))
 # of manually updating each parameter.
 #
 # This will let us replace our previous manually coded optimization step:
-# ::
-#   with torch.no_grad():
-#       for p in model.parameters(): p -= p.grad * lr
-#       model.zero_grad()
+#
+# .. code-block:: python
+#
+#    with torch.no_grad():
+#        for p in model.parameters(): p -= p.grad * lr
+#        model.zero_grad()
 #
 # and instead use just:
-# ::
-#   opt.step()
-#   opt.zero_grad()
+#
+# .. code-block:: python
+#
+#    opt.step()
+#    opt.zero_grad()
 #
 # (``optim.zero_grad()`` resets the gradient to 0 and we need to call it before
 # computing the gradient for the next minibatch.)
@@ -473,15 +488,19 @@ from torch.utils.data import TensorDataset
 train_ds = TensorDataset(x_train, y_train)
 
 ###############################################################################
-# Previously, we had to iterate through minibatches of x and y values separately:
-# ::
-#     xb = x_train[start_i:end_i]
-#     yb = y_train[start_i:end_i]
+# Previously, we had to iterate through minibatches of ``x`` and ``y`` values separately:
+#
+# .. code-block:: python
+#
+#    xb = x_train[start_i:end_i]
+#    yb = y_train[start_i:end_i]
 #
 #
 # Now, we can do these two steps together:
-# ::
-#     xb,yb = train_ds[i*bs : i*bs+bs]
+#
+# .. code-block:: python
+#
+#    xb,yb = train_ds[i*bs : i*bs+bs]
 #
 
 model, opt = get_model()
@@ -499,13 +518,13 @@ for epoch in range(epochs):
 print(loss_func(model(xb), yb))
 
 ###############################################################################
-# Refactor using DataLoader
+# Refactor using ``DataLoader``
 # ------------------------------
 #
-# Pytorch's ``DataLoader`` is responsible for managing batches. You can
+# PyTorch's ``DataLoader`` is responsible for managing batches. You can
 # create a ``DataLoader`` from any ``Dataset``. ``DataLoader`` makes it easier
 # to iterate over batches. Rather than having to use ``train_ds[i*bs : i*bs+bs]``,
-# the DataLoader gives us each minibatch automatically.
+# the ``DataLoader`` gives us each minibatch automatically.
 
 from torch.utils.data import DataLoader
 
@@ -513,16 +532,20 @@ train_ds = TensorDataset(x_train, y_train)
 train_dl = DataLoader(train_ds, batch_size=bs)
 
 ###############################################################################
-# Previously, our loop iterated over batches (xb, yb) like this:
-# ::
-#       for i in range((n-1)//bs + 1):
-#           xb,yb = train_ds[i*bs : i*bs+bs]
-#           pred = model(xb)
+# Previously, our loop iterated over batches ``(xb, yb)`` like this:
 #
-# Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the data loader:
-# ::
-#       for xb,yb in train_dl:
-#           pred = model(xb)
+# .. code-block:: python
+#
+#    for i in range((n-1)//bs + 1):
+#        xb,yb = train_ds[i*bs : i*bs+bs]
+#        pred = model(xb)
+#
+# Now, our loop is much cleaner, as ``(xb, yb)`` are loaded automatically from the data loader:
+#
+# .. code-block:: python
+#
+#    for xb,yb in train_dl:
+#        pred = model(xb)
 
 model, opt = get_model()
 
@@ -538,7 +561,7 @@ for epoch in range(epochs):
 print(loss_func(model(xb), yb))
 
 ###############################################################################
-# Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
+# Thanks to PyTorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
 # our training loop is now dramatically smaller and easier to understand. Let's
 # now try to add the basic features necessary to create effective models in practice.
 #
@@ -573,7 +596,7 @@ valid_dl = DataLoader(valid_ds, batch_size=bs * 2)
 #
 # (Note that we always call ``model.train()`` before training, and ``model.eval()``
 # before inference, because these are used by layers such as ``nn.BatchNorm2d``
-# and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
+# and ``nn.Dropout`` to ensure appropriate behavior for these different phases.)
 
 model, opt = get_model()
 
@@ -667,11 +690,11 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # Because none of the functions in the previous section assume anything about
 # the model form, we'll be able to use them to train a CNN without any modification.
 #
-# We will use Pytorch's predefined
+# We will use PyTorch's predefined
 # `Conv2d <https://pytorch.org/docs/stable/nn.html#torch.nn.Conv2d>`_ class
 # as our convolutional layer. We define a CNN with 3 convolutional layers.
 # Each convolution is followed by a ReLU.  At the end, we perform an
-# average pooling.  (Note that ``view`` is PyTorch's version of numpy's
+# average pooling.  (Note that ``view`` is PyTorch's version of Numpy's
 # ``reshape``)
 
 class Mnist_CNN(nn.Module):
@@ -702,7 +725,7 @@ opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 
 ###############################################################################
-# nn.Sequential
+# Using ``nn.Sequential``
 # ------------------------
 #
 # ``torch.nn`` has another handy class we can use to simplify our code:
@@ -729,7 +752,7 @@ def preprocess(x):
     return x.view(-1, 1, 28, 28)
 
 ###############################################################################
-# The model created with ``Sequential`` is simply:
+# The model created with ``Sequential`` is simple:
 
 model = nn.Sequential(
     Lambda(preprocess),
@@ -748,7 +771,7 @@ opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 
 ###############################################################################
-# Wrapping DataLoader
+# Wrapping ``DataLoader``
 # -----------------------------
 #
 # Our CNN is fairly concise, but it only works with MNIST, because:
@@ -772,8 +795,7 @@ class WrappedDataLoader:
         return len(self.dl)
 
     def __iter__(self):
-        batches = iter(self.dl)
-        for b in batches:
+        for b in self.dl:
             yield (self.func(*b))
 
 train_dl, valid_dl = get_data(train_ds, valid_ds, bs)
@@ -850,7 +872,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # We now have a general data pipeline and training loop which you can use for
 # training many types of models using Pytorch. To see how simple training a model
-# can now be, take a look at the `mnist_sample` sample notebook.
+# can now be, take a look at the `mnist_sample notebook <https://github.com/fastai/fastai_dev/blob/master/dev_nb/mnist_sample.ipynb>`__.
 #
 # Of course, there are many things you'll want to add, such as data augmentation,
 # hyperparameter tuning, monitoring training, transfer learning, and so forth.
@@ -862,7 +884,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # ``torch.nn``, ``torch.optim``, ``Dataset``, and ``DataLoader``. So let's summarize
 # what we've seen:
 #
-#  - **torch.nn**
+#  - ``torch.nn``:
 #
 #    + ``Module``: creates a callable which behaves like a function, but can also
 #      contain state(such as neural net layer weights). It knows what ``Parameter`` (s) it

@@ -13,26 +13,27 @@ to easily apply some advanced quantization techniques shown
 `here <https://arxiv.org/abs/1806.08342>`_ so that your quantized models take much less 
 of an accuracy hit than they would otherwise. 
 Warning: we use a lot of boilerplate code from other PyTorch repos to, for example, 
-define the ``MobileNetV2`` model archtecture, define data loaders, and so on. We of course  
+define the ``MobileNetV2`` model architecture, define data loaders, and so on. We of course  
 encourage you to read it; but if you want to get to the quantization features, feel free  
 to skip to the "4. Post-training static quantization" section.  
 We'll start by doing the necessary imports: 
 
 .. code:: python
 
-    import numpy as np  
-    import torch  
-    import torch.nn as nn 
-    import torchvision  
-    from torch.utils.data import DataLoader 
-    from torchvision import datasets  
-    import torchvision.transforms as transforms 
-    import os 
-    import time 
-    import sys  
-    import torch.quantization 
+    import os
+    import sys
+    import time
+    import numpy as np
 
-    # # Setup warnings  
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+
+    import torchvision
+    from torchvision import datasets
+    import torchvision.transforms as transforms
+
+    # Set up warnings
     import warnings 
     warnings.filterwarnings(  
         action='ignore',  
@@ -41,7 +42,7 @@ We'll start by doing the necessary imports:
     ) 
     warnings.filterwarnings(  
         action='default', 
-        module=r'torch.quantization'  
+        module=r'torch.ao.quantization'
     ) 
 
     # Specify random seed for repeatable results  
@@ -58,11 +59,11 @@ to enable quantization:
 - Replace ReLU6 with ReLU 
  
 Note: this code is taken from 
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.  
+`here <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv2.py>`_.
 
 .. code:: python
 
-    from torch.quantization import QuantStub, DeQuantStub 
+    from torch.ao.quantization import QuantStub, DeQuantStub
 
     def _make_divisible(v, divisor, min_value=None):  
         """ 
@@ -196,9 +197,7 @@ Note: this code is taken from
                     nn.init.zeros_(m.bias)  
 
         def forward(self, x): 
-
             x = self.quant(x) 
-
             x = self.features(x)  
             x = x.mean([2, 3])  
             x = self.classifier(x)  
@@ -207,14 +206,15 @@ Note: this code is taken from
 
         # Fuse Conv+BN and Conv+BN+Relu modules prior to quantization 
         # This operation does not change the numerics 
-        def fuse_model(self): 
+        def fuse_model(self, is_qat=False): 
+            fuse_modules = torch.ao.quantization.fuse_modules_qat if is_qat else torch.ao.quantization.fuse_modules
             for m in self.modules():  
                 if type(m) == ConvBNReLU: 
-                    torch.quantization.fuse_modules(m, ['0', '1', '2'], inplace=True) 
+                    fuse_modules(m, ['0', '1', '2'], inplace=True)
                 if type(m) == InvertedResidual: 
                     for idx in range(len(m.conv)):  
                         if type(m.conv[idx]) == nn.Conv2d:  
-                            torch.quantization.fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True) 
+                            fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
 
 2. Helper functions 
 ------------------- 
@@ -314,25 +314,22 @@ in this data. These functions mostly come from
 .. code:: python
 
     def prepare_data_loaders(data_path):  
-
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],  
                                          std=[0.229, 0.224, 0.225])
         dataset = torchvision.datasets.ImageNet(
-               data_path, split="train",
-             transforms.Compose([  
-                       transforms.RandomResizedCrop(224),  
-                       transforms.RandomHorizontalFlip(),  
-                       transforms.ToTensor(),  
-                       normalize,  
-                   ]))  
+            data_path, split="train", transform=transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
         dataset_test = torchvision.datasets.ImageNet(
-              data_path, split="val", 
-                  transforms.Compose([  
-                      transforms.Resize(256), 
-                      transforms.CenterCrop(224), 
-                      transforms.ToTensor(),  
-                      normalize,  
-                  ])) 
+            data_path, split="val", transform=transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
         train_sampler = torch.utils.data.RandomSampler(dataset) 
         test_sampler = torch.utils.data.SequentialSampler(dataset_test) 
@@ -348,8 +345,8 @@ in this data. These functions mostly come from
         return data_loader, data_loader_test  
 
 
-Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``  
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_. 
+Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the model
+`here <https://download.pytorch.org/models/mobilenet_v2-b0353104.pth>`_. 
 
 .. code:: python
 
@@ -424,9 +421,9 @@ values to floats - and then back to ints - between every operation, resulting in
 
     # Specify quantization configuration  
     # Start with simple min/max range estimation and per-tensor quantization of weights 
-    myModel.qconfig = torch.quantization.default_qconfig  
+    myModel.qconfig = torch.ao.quantization.default_qconfig
     print(myModel.qconfig)  
-    torch.quantization.prepare(myModel, inplace=True) 
+    torch.ao.quantization.prepare(myModel, inplace=True)
 
     # Calibrate first 
     print('Post Training Quantization Prepare: Inserting Observers')  
@@ -437,7 +434,10 @@ values to floats - and then back to ints - between every operation, resulting in
     print('Post Training Quantization: Calibration done') 
 
     # Convert to quantized model  
-    torch.quantization.convert(myModel, inplace=True) 
+    torch.ao.quantization.convert(myModel, inplace=True)
+    # You may see a user warning about needing to calibrate the model. This warning can be safely ignored.
+    # This warning occurs because not all modules are run in each model runs, so some
+    # modules may not be calibrated.
     print('Post Training Quantization: Convert done') 
     print('\n Inverted Residual Block: After fusion and quantization, note fused modules: \n\n',myModel.features[1].conv) 
 
@@ -462,12 +462,13 @@ quantizing for x86 architectures. This configuration does the following:
     per_channel_quantized_model = load_model(saved_model_dir + float_model_file)  
     per_channel_quantized_model.eval()  
     per_channel_quantized_model.fuse_model()  
-    per_channel_quantized_model.qconfig = torch.quantization.get_default_qconfig('fbgemm')  
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    per_channel_quantized_model.qconfig = torch.ao.quantization.get_default_qconfig('x86')
     print(per_channel_quantized_model.qconfig)  
 
-    torch.quantization.prepare(per_channel_quantized_model, inplace=True) 
+    torch.ao.quantization.prepare(per_channel_quantized_model, inplace=True)
     evaluate(per_channel_quantized_model,criterion, data_loader, num_calibration_batches) 
-    torch.quantization.convert(per_channel_quantized_model, inplace=True) 
+    torch.ao.quantization.convert(per_channel_quantized_model, inplace=True)
     top1, top5 = evaluate(per_channel_quantized_model, criterion, data_loader_test, neval_batches=num_eval_batches) 
     print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg)) 
     torch.jit.save(torch.jit.script(per_channel_quantized_model), saved_model_dir + scripted_quantized_model_file)
@@ -536,16 +537,17 @@ We fuse modules as before
 .. code:: python
 
     qat_model = load_model(saved_model_dir + float_model_file)  
-    qat_model.fuse_model()  
+    qat_model.fuse_model(is_qat=True)  
 
-    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001)  
-    qat_model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')  
+    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001) 
+    # The old 'fbgemm' is still available but 'x86' is the recommended default. 
+    qat_model.qconfig = torch.ao.quantization.get_default_qat_qconfig('x86')
   
 Finally, ``prepare_qat`` performs the "fake quantization", preparing the model for quantization-aware training
 
 .. code:: python
 
-    torch.quantization.prepare_qat(qat_model, inplace=True) 
+    torch.ao.quantization.prepare_qat(qat_model, inplace=True)
     print('Inverted Residual Block: After preparation for QAT, note fake-quantization modules \n',qat_model.features[1].conv)
   
 Training a quantized model with high accuracy requires accurate modeling of numerics at 
@@ -565,13 +567,13 @@ inference. For quantization aware training, therefore, we modify the training lo
         train_one_epoch(qat_model, criterion, optimizer, data_loader, torch.device('cpu'), num_train_batches) 
         if nepoch > 3:  
             # Freeze quantizer parameters 
-            qat_model.apply(torch.quantization.disable_observer)  
+            qat_model.apply(torch.ao.quantization.disable_observer)
         if nepoch > 2:  
             # Freeze batch norm mean and variance estimates 
             qat_model.apply(torch.nn.intrinsic.qat.freeze_bn_stats) 
 
         # Check the accuracy after each epoch 
-        quantized_model = torch.quantization.convert(qat_model.eval(), inplace=False) 
+        quantized_model = torch.ao.quantization.convert(qat_model.eval(), inplace=False)
         quantized_model.eval()  
         top1, top5 = evaluate(quantized_model,criterion, data_loader_test, neval_batches=num_eval_batches)  
         print('Epoch %d :Evaluation accuracy on %d images, %2.2f'%(nepoch, num_eval_batches * eval_batch_size, top1.avg)) 

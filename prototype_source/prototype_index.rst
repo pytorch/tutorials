@@ -42,14 +42,14 @@ Prototype features are not available as part of binary distributions like PyPI o
 
 .. customcarditem::
    :header: FX Graph Mode Post Training Dynamic Quantization
-   :card_description: Learn how to do post training dynamic quantization in graph mode based on torch.fx. 
+   :card_description: Learn how to do post training dynamic quantization in graph mode based on torch.fx.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/fx_graph_mode_ptq_dynamic.html
    :tags: FX,Quantization
 
 .. customcarditem::
    :header: FX Graph Mode Post Training Static Quantization
-   :card_description: Learn how to do post training static quantization in graph mode based on torch.fx. 
+   :card_description: Learn how to do post training static quantization in graph mode based on torch.fx.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/fx_graph_mode_ptq_static.html
    :tags: FX,Quantization
@@ -67,6 +67,43 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/numeric_suite_tutorial.html
    :tags: Debugging,Quantization
+
+.. customcarditem::
+   :header: How to Write a Quantizer for PyTorch 2 Export Quantization
+   :card_description: Learn how to implement a Quantizer for PT2 Export Quantization
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quantizer.html
+   :tags: Quantization
+
+.. customcarditem::
+   :header: PyTorch 2 Export Post Training Quantization
+   :card_description: Learn how to use Post Training Quantization in PyTorch 2 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_ptq.html
+   :tags: Quantization          
+   
+.. customcarditem::
+   :header: PyTorch 2 Export Quantization-Aware Training
+   :card_description: Learn how to use Quantization-Aware-Training in PyTorch 2 Export.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_qat.html
+   :tags: Quantization
+
+.. customcarditem::
+   :header: PyTorch 2 Export Quantization with X86 Backend through Inductor
+   :card_description: Learn how to use PT2 Export Quantization with X86 Backend through Inductor.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/pt2e_quant_x86_inductor.html
+   :tags: Quantization
+
+.. Sparsity
+
+.. customcarditem::
+   :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
+   :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: prototype/semi_structured_sparse.html
+   :tags: Model-Optimiziation
 
 .. Mobile
 
@@ -90,21 +127,21 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../prototype/vulkan_workflow.html
    :tags: Mobile
-   
+
 .. customcarditem::
    :header: Tracing-based Selective Build Mobile Interpreter in Android and iOS
    :card_description: Learn how to optimize the mobile interpreter size with a tracing-based selective build.
    :image: ../_static/img/thumbnails/cropped/mobile.png
    :link: ../prototype/tracing_based_selective_build.html
    :tags: Mobile
-   
+
 .. customcarditem::
    :header: Convert Mobilenetv2 to Core ML
    :card_description: Learn how to prepare a computer vision model to use the PyTorch Core ML mobile backend.
    :image: ../_static/img/thumbnails/cropped/ios.png
    :link: ../prototype/ios_coreml_workflow.html
    :tags: Mobile
-   
+
 .. Modules
 
 .. customcarditem::
@@ -132,6 +169,54 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/vmap_recipe.html
    :tags: vmap
 
+.. NestedTensor
+
+.. customcarditem::
+   :header: Nested Tensor
+   :card_description: Learn about nested tensors, the new way to batch heterogeneous-length data
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/nestedtensor.html
+   :tags: NestedTensor
+
+.. MaskedTensor
+
+.. customcarditem::
+   :header: MaskedTensor Overview
+   :card_description: Learn about masked tensors, the source of truth for specified and unspecified values
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_overview.html
+   :tags: MaskedTensor
+
+.. customcarditem::
+   :header: Masked Tensor Sparsity
+   :card_description: Learn about how to leverage sparse layouts (e.g. COO and CSR) in MaskedTensor
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_sparsity.html
+   :tags: MaskedTensor
+
+.. customcarditem::
+   :header: Masked Tensor Advanced Semantics
+   :card_description: Learn more about Masked Tensor's advanced semantics (reductions and comparing vs. NumPy's MaskedArray)
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_advanced_semantics.html
+   :tags: MaskedTensor
+
+.. customcarditem::
+   :header: MaskedTensor: Simplifying Adagrad Sparse Semantics
+   :card_description: See a showcase on how masked tensors can enable sparse semantics and provide for a cleaner dev experience 
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/maskedtensor_adagrad.html
+   :tags: MaskedTensor
+   
+.. Model-Optimization
+
+.. customcarditem::
+   :header: Inductor Cpp Wrapper Tutorial
+   :card_description: Speed up your models with Inductor Cpp Wrapper
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/inductor_cpp_wrapper_tutorial.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -154,6 +239,10 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
    prototype/graph_mode_dynamic_bert_tutorial.html
+   prototype/inductor_cpp_wrapper_tutorial.html
+   prototype/pt2e_quantizer.html
+   prototype/pt2e_quant_ptq.html
+   prototype/pt2e_quant_qat.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html
@@ -162,3 +251,8 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/torchscript_freezing.html
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
+   prototype/nestedtensor.html
+   prototype/maskedtensor_overview.html
+   prototype/maskedtensor_sparsity.html
+   prototype/maskedtensor_advanced_semantics.html
+   prototype/maskedtensor_adagrad.html

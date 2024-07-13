@@ -13,7 +13,7 @@ Quantization involves converting the weights and activations of your model from 
 to int, which can result in smaller model size and faster inference with only a small
 hit to accuracy.
 
-In this tutorial, we'll apply the easiest form of quantization -
+In this tutorial, we will apply the easiest form of quantization -
 `dynamic quantization <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_ -
 to an LSTM-based next word-prediction model, closely following the
 `word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
@@ -130,12 +130,12 @@ model_data_filepath = 'data/'
 corpus = Corpus(model_data_filepath + 'wikitext-2')
 
 ######################################################################
-# 3. Load the pre-trained model
+# 3. Load the pretrained model
 # -----------------------------
 #
 # This is a tutorial on dynamic quantization, a quantization technique
 # that is applied after a model has been trained. Therefore, we'll simply load some
-# pre-trained weights into this model architecture; these weights were obtained
+# pretrained weights into this model architecture; these weights were obtained
 # by training for five epochs using the default settings in the word language model
 # example.
 
@@ -159,7 +159,7 @@ model.eval()
 print(model)
 
 ######################################################################
-# Now let's generate some text to ensure that the pre-trained model is working
+# Now let's generate some text to ensure that the pretrained model is working
 # properly - similarly to before, we follow
 # `here <https://github.com/pytorch/examples/blob/master/word_language_model/generate.py>`_
 
@@ -200,11 +200,11 @@ eval_batch_size = 1
 
 # create test data set
 def batchify(data, bsz):
-    # Work out how cleanly we can divide the dataset into bsz parts.
+    # Work out how cleanly we can divide the dataset into ``bsz`` parts.
     nbatch = data.size(0) // bsz
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
     data = data.narrow(0, 0, nbatch * bsz)
-    # Evenly divide the data across the bsz batches.
+    # Evenly divide the data across the ``bsz`` batches.
     return data.view(bsz, -1).t().contiguous()
 
 test_data = batchify(corpus.test, eval_batch_size)
