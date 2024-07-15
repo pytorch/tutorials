@@ -263,7 +263,7 @@ the intent is to save or load in "non-distributed" style, meaning entirely in th
         }
 
         # since no progress group is initialized, DCP will disable any collectives.
-        dcp.load(
+        DCP.load(
             state_dict=state_dict,
             checkpoint_id=CHECKPOINT_DIR,
         )
