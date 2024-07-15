@@ -3,7 +3,6 @@
 NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
-**Updated**: `Matthew Schultz <https://github.com/mgs28>`_ 
 
 We will be building and training a basic character-level Recurrent Neural
 Network (RNN) to classify words. This tutorial, along with two other
