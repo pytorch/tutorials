@@ -203,7 +203,7 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
 
   add_executable(example-app example-app.cpp)
   target_link_libraries(example-app "${TORCH_LIBRARIES}")
-  set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
+  set_property(TARGET example-app PROPERTY CXX_STANDARD 17)
 
 The last thing we need to build the example application is the LibTorch
 distribution. You can always grab the latest stable release from the `download
