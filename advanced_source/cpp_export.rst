@@ -245,7 +245,7 @@ We can now run the following commands to build the application from within the
 
   mkdir build
   cd build
-  cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  cmake -S ~/example-app -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
   cmake --build . --config Release
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
