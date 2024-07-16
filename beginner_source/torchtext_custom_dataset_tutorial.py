@@ -365,12 +365,8 @@ def showSomeTransformedSentences(data_pipe):
         if sources[0][-1] != 0:
             continue # Just to visualize padding of shorter sentences
         for i in range(4):
-            source = ""
-            for token in sources[i]:
-                source += " " + source_index_to_string[token]
-            target = ""
-            for token in targets[i]:
-                target += " " + target_index_to_string[token]
+            source += " " + " ".join([source_index_to_string[token] for token in sources[i]])
+            target += " " + " ".join([target_index_to_string[token] for token in targets[i]])
             print(f"Source: {source}")
             print(f"Traget: {target}")
         break
