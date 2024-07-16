@@ -1,20 +1,29 @@
 """
-In this tutorial, we will embark on an exciting journey to build and
-train a VGG network from scratch using Python and popular deep learning
-libraries such as PyTorch. We will dive into the details of the VGG
-architecture, understanding its components and the rationale behind its
-design.
+Pretraining VGG from scratch 
+============================
 
-Our tutorial is designed for both beginners who are new to deep learning
-and seasoned practitioners looking to deepen their understanding of CNN
-architectures.
+
+**Author:** `WoongJoon Choi <https://github.com/woongjoonchoi>`_
+
+
+
 
 """
 
 
 ######################################################################
-# Author : `WoongJoon Choi <https://github.com/woongjoonchoi>`__
-# 
+# In this tutorial, we will embark on an exciting journey to build and
+# train a VGG network from scratch using Python and popular deep learning
+# libraries such as PyTorch. We will dive into the details of the VGG
+# architecture, understanding its components and the rationale behind its
+# design.
+#
+# Our tutorial is designed for both beginners who are new to deep learning
+# and seasoned practitioners looking to deepen their understanding of CNN
+# architectures.
+
+
+
 
 import torch.optim as optim
 import albumentations as A
@@ -30,7 +39,7 @@ from PIL import Image
 
 
 ######################################################################
-# I recommend using GPU for this tutorial.
+# We recommend using GPU for this tutorial.
 # 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -126,7 +135,7 @@ model_layers =None
 
 ######################################################################
 # | If your GPU memory is 24GB ,The maximum batch size is 128. But, if you
-#   use Colab , I recommend using 32 .
+#   use Colab , We recommend using 32 .
 # | You can modify the batch size according to your preference.
 # 
 
