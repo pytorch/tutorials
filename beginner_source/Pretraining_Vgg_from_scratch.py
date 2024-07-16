@@ -5,22 +5,22 @@ Pretraining VGG from scratch
 
 **Author:** `WoongJoon Choi <https://github.com/woongjoonchoi>`_
 
+In this tutorial, we will embark on an exciting journey to build and
+train a VGG network from scratch using Python and popular deep learning
+libraries such as PyTorch. We will dive into the details of the VGG
+architecture, understanding its components and the rationale behind its
+design.
 
+Our tutorial is designed for both beginners who are new to deep learning
+and seasoned practitioners looking to deepen their understanding of CNN
+architectures.
 
 
 """
 
 
 ######################################################################
-# In this tutorial, we will embark on an exciting journey to build and
-# train a VGG network from scratch using Python and popular deep learning
-# libraries such as PyTorch. We will dive into the details of the VGG
-# architecture, understanding its components and the rationale behind its
-# design.
-#
-# Our tutorial is designed for both beginners who are new to deep learning
-# and seasoned practitioners looking to deepen their understanding of CNN
-# architectures.
+
 
 
 
@@ -650,3 +650,23 @@ if DatasetName == 'ImageNet' :
                     ]
 
                 )
+
+######################################################################
+# Conculsion
+# ----------
+# We have seen how pretraining VGG from scratch . This Tutorial will be helpful to reproduce another Foundation Model .
+
+######################################################################
+# More things to try
+# ------------------
+# - Trying On ImageNet
+# - Try All version of Model
+# - Try All evaluation method in VGG paper
+
+
+######################################################################
+# Further Reading
+# ---------------
+
+# - `VGG training using python script <https://github.com/woongjoonchoi/DeepLearningPaper-Reproducing/tree/master/Vgg>`__
+# - `VGG paper <https://arxiv.org/abs/1409.1556>`__
