@@ -237,7 +237,7 @@ the intent is to save or load in "non-distributed" style, meaning entirely in th
     import os
 
     import torch
-    import torch.distributed.checkpoint as DCP
+    import torch.distributed.checkpoint as dcp
     import torch.nn as nn
 
 
@@ -263,7 +263,7 @@ the intent is to save or load in "non-distributed" style, meaning entirely in th
         }
 
         # since no progress group is initialized, DCP will disable any collectives.
-        DCP.load(
+        dcp.load(
             state_dict=state_dict,
             checkpoint_id=CHECKPOINT_DIR,
         )
