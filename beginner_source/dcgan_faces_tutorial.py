@@ -113,12 +113,12 @@ DCGAN Tutorial
 # 
 
 #%matplotlib inline
-import argparse
-import os
+#import argparse
+#import os
 import random
 import torch
 import torch.nn as nn
-import torch.nn.parallel
+#import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 import torchvision.datasets as dset
