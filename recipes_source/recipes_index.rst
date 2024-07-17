@@ -275,6 +275,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: CPU launcher script for optimal performance on Intel® Xeon
+   :card_description: How to use launcher script for optimal runtime configurations on Intel® Xeon CPUs.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/xeon_run_cpu.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
    :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -424,6 +431,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
+   /recipes/recipes/xeon_run_cpu
    /recipes/recipes/intel_extension_for_pytorch
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
