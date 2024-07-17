@@ -8,7 +8,7 @@ Introduction to Libuv TCPStore Backend
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
-
+    :class-card: card-prerequisites
       *  What is the new TCPStore backend
       *  Compare the new libuv backend against the legacy backend
       *  How to enable to use the legacy backend
@@ -188,6 +188,7 @@ The second benchmark we did is to measure the runtime of TCPStore ``store_based_
     )
 
 We compute the average by dividing the runtime measured on rank 0 by ``number_runs`` and report it in the figure below:
+
 .. figure:: /_static/img/distributed/tcpstore_barrier_time.png
    :width: 100%
    :align: center
