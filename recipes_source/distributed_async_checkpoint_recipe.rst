@@ -26,7 +26,7 @@ to show how this can be integrated quite easily with ``torch.distributed.checkpo
 Asynchronous Checkpointing Overview
 ------------------------------------
 Before getting started with Asynchronous Checkpointing, it's important to understand it's differences and limitations as compared to synchronous checkpointing.
-Speciically:
+Specifically:
 
 * Memory requirements - Asynchronous checkpointing works by first copying models into internal CPU-buffers.
     This is helpful since it ensures model and optimizer weights are not changing while the model is still checkpointing,
