@@ -44,8 +44,10 @@ test_data = datasets.FashionMNIST(
     transform=ToTensor()
 )
 
-train_dataloader = DataLoader(training_data, batch_size=64)
-test_dataloader = DataLoader(test_data, batch_size=64)
+batch_size = 64
+
+train_dataloader = DataLoader(training_data, batch_size=batch_size)
+test_dataloader = DataLoader(test_data, batch_size=batch_size)
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -81,9 +83,11 @@ model = NeuralNetwork()
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
-learning_rate = 1e-3
-batch_size = 64
 epochs = 5
+learning_rate = 1e-3
+# batch_size defined earlier in Prerequisite Code
+
+print(f'{epochs=} {batch_size=} {learning_rate=}')
 
 
 
@@ -147,7 +151,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 # We define ``train_loop`` that loops over our optimization code, and ``test_loop`` that
 # evaluates the model's performance against our test data.
 
-def train_loop(dataloader, model, loss_fn, optimizer):
+def train_loop(dataloader, model, batch_size, loss_fn, optimizer):
     size = len(dataloader.dataset)
     # Set the model to training mode - important for batch normalization and dropout layers
     # Unnecessary in this situation but added for best practices
@@ -198,7 +202,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 epochs = 10
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
-    train_loop(train_dataloader, model, loss_fn, optimizer)
+    train_loop(train_dataloader, model, batch_size, loss_fn, optimizer)
     test_loop(test_dataloader, model, loss_fn)
 print("Done!")
 
