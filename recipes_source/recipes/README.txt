@@ -56,3 +56,7 @@ PyTorch Recipes
 14. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+15. inspecting_model_parameters.py
+         Inspecting Model Parameters
+         https://pytorch.org/tutorials/recipes/inspecting_model_parameters.html
