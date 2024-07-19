@@ -286,11 +286,11 @@ The PyTorch 2 Export QAT flow is largely similar to the PTQ flow:
 
   # train omitted
 
-  converted_model = convert_pt2e(prepared_model)
-  # we have a model with aten ops doing integer computations when possible
-
   # move the quantized model to eval mode, equivalent to `m.eval()`
   torch.ao.quantization.move_exported_model_to_eval(converted_model)
+
+  converted_model = convert_pt2e(prepared_model)
+  # we have a model with aten ops doing integer computations when possible
 
   # Lower the model into Inductor
   with torch.no_grad():
