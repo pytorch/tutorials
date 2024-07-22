@@ -233,8 +233,9 @@ onnx_program = torch.onnx.dynamo_export(
 # Let's inspect the model and verify the model uses op_type ``Gelu``
 # from namespace ``com.microsoft``.
 #
-# Note that :func:`custom_aten_gelu` does not exist in the graph, because
-# the funtions with less than 3 operators are inlined automatically.
+# .. note::
+#     :func:`custom_aten_gelu` does not exist in the graph because
+#     functions with fewer than three operators are inlined automatically.
 #
 
 # graph node domain is the custom domain we registered
