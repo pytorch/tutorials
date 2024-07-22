@@ -255,7 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators Landing Page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
 <ul>
@@ -351,7 +351,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators Landing Page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/python_custom_ops.html">Python Custom Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_custom_ops.html">Custom C++ and CUDA Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
@@ -976,17 +976,11 @@ or use <code class="docutils literal notranslate"><span class="pre">torch._loggi
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> can export PyTorch programs with custom operators.</p>
 <p>Currently, the steps to register a custom op for use by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> are:</p>
 <ul class="simple">
-<li><p>Define the custom op using <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> (<a class="reference external" href="https://pytorch.org/docs/main/library.html">reference</a>)
+<li><p>Define the custom op using <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> (<a class="reference external" href="https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html">reference</a>)
 as with any other custom op</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.library</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/library.html#torch.library.impl" title="torch.library.impl"><span class="n">impl</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/library.html#torch.library.impl_abstract" title="torch.library.impl_abstract"><span class="n">impl_abstract</span></a>
-
-<span class="n">m</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-library sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch.library.Library" title="torch.library.Library"><span class="n">Library</span></a><span class="p">(</span><span class="s2">"my_custom_library"</span><span class="p">,</span> <span class="s2">"DEF"</span><span class="p">)</span>
-
-<span class="n">m</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s2">"custom_op(Tensor input) -&gt; Tensor"</span><span class="p">)</span>
-
-<span class="nd">@impl</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"custom_op"</span><span class="p">,</span> <span class="s2">"CompositeExplicitAutograd"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">custom_op</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">custom_op</span><span class="p">(</span><span class="s2">"my_custom_library::custom_op"</span><span class="p">,</span> <span class="n">mutates_args</span><span class="o">=</span><span class="p">{})</span>
+<span class="k">def</span> <span class="nf">custom_op</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"custom_op called!"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
@@ -995,7 +989,7 @@ as with any other custom op</p></li>
 <li><p>Define a <code class="docutils literal notranslate"><span class="pre">"Meta"</span></code> implementation of the custom op that returns an empty
 tensor with the same shape as the expected output</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@impl_abstract</span><span class="p">(</span><span class="s2">"my_custom_library::custom_op"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@custom_op</span><span class="o">.</span><span class="n">register_fake</span>
 <span class="k">def</span> <span class="nf">custom_op_meta</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>

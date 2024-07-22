@@ -705,46 +705,40 @@ Custom Ops
 
 Currently, the steps to register a custom op for use by ``torch.export`` are:
 
-- Define the custom op using ``torch.library`` (`reference <https://pytorch.org/docs/main/library.html>`__)
+- Define the custom op using ``torch.library`` (`reference <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__)
   as with any other custom op
 
-.. GENERATED FROM PYTHON SOURCE LINES 549-561
+.. GENERATED FROM PYTHON SOURCE LINES 549-555
 
 .. code-block:: default
 
 
-    from torch.library import Library, impl, impl_abstract
-
-    m = Library("my_custom_library", "DEF")
-
-    m.define("custom_op(Tensor input) -> Tensor")
-
-    @impl(m, "custom_op", "CompositeExplicitAutograd")
-    def custom_op(x):
+    @torch.library.custom_op("my_custom_library::custom_op", mutates_args={})
+    def custom_op(input: torch.Tensor) -> torch.Tensor:
         print("custom_op called!")
         return torch.relu(x)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 562-564
+.. GENERATED FROM PYTHON SOURCE LINES 556-558
 
 - Define a ``"Meta"`` implementation of the custom op that returns an empty
   tensor with the same shape as the expected output
 
-.. GENERATED FROM PYTHON SOURCE LINES 564-569
+.. GENERATED FROM PYTHON SOURCE LINES 558-563
 
 .. code-block:: default
 
 
-    @impl_abstract("my_custom_library::custom_op")
+    @custom_op.register_fake 
     def custom_op_meta(x):
         return torch.empty_like(x)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 570-571
+.. GENERATED FROM PYTHON SOURCE LINES 564-565
 
 - Call the custom op from the code you want to export using ``torch.ops``
 
-.. GENERATED FROM PYTHON SOURCE LINES 571-579
+.. GENERATED FROM PYTHON SOURCE LINES 565-573
 
 .. code-block:: default
 
@@ -757,11 +751,11 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
             return x
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 580-581
+.. GENERATED FROM PYTHON SOURCE LINES 574-575
 
 - Export the code as before
 
-.. GENERATED FROM PYTHON SOURCE LINES 581-586
+.. GENERATED FROM PYTHON SOURCE LINES 575-580
 
 .. code-block:: default
 
@@ -771,7 +765,7 @@ Currently, the steps to register a custom op for use by ``torch.export`` are:
     print(exported_custom_op_example.module()(torch.randn(3, 3)))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 587-594
+.. GENERATED FROM PYTHON SOURCE LINES 581-588
 
 Note in the above outputs that the custom op is included in the exported graph.
 And when we call the exported graph as a function, the original custom op is called,
@@ -781,7 +775,7 @@ If you have a custom operator implemented in C++, please refer to
 `this document <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz>`__
 to make it compatible with ``torch.export``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 596-606
+.. GENERATED FROM PYTHON SOURCE LINES 590-600
 
 Decompositions
 --------------
@@ -794,7 +788,7 @@ mutate or alias inputs.  You can find a list of all ATen operators
 and you can inspect if an operator is functional by checking
 ``op._schema.is_mutable``, for example:
 
-.. GENERATED FROM PYTHON SOURCE LINES 606-610
+.. GENERATED FROM PYTHON SOURCE LINES 600-604
 
 .. code-block:: default
 
@@ -803,7 +797,7 @@ and you can inspect if an operator is functional by checking
     print(torch.ops.aten.add_.Tensor._schema.is_mutable)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 611-633
+.. GENERATED FROM PYTHON SOURCE LINES 605-627
 
 By default, the environment in which you want to run the exported graph
 should support all ~2000 of these operators.
@@ -828,7 +822,7 @@ which will decompose the all ATen operators to the
 `Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__
 which consists of only ~180 operators.
 
-.. GENERATED FROM PYTHON SOURCE LINES 633-648
+.. GENERATED FROM PYTHON SOURCE LINES 627-642
 
 .. code-block:: default
 
@@ -848,7 +842,7 @@ which consists of only ~180 operators.
     print(core_ir_ep.graph)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 649-661
+.. GENERATED FROM PYTHON SOURCE LINES 643-655
 
 Notice that after running ``run_decompositions`` the
 ``torch.ops.aten.t.default`` operator, which is not part of the Core ATen
@@ -863,7 +857,7 @@ you can pass in a list of operators you would like to decompose to the
 function, which will return a decomposition table using existing
 decomposition implementations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 661-678
+.. GENERATED FROM PYTHON SOURCE LINES 655-672
 
 .. code-block:: default
 
@@ -885,13 +879,13 @@ decomposition implementations.
     print(core_ir_ep.graph)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 679-682
+.. GENERATED FROM PYTHON SOURCE LINES 673-676
 
 If there is no existing decomposition function for an ATen operator that you would
 like to decompose, feel free to send a pull request into PyTorch
 implementing the decomposition!
 
-.. GENERATED FROM PYTHON SOURCE LINES 684-699
+.. GENERATED FROM PYTHON SOURCE LINES 678-693
 
 ExportDB
 --------
@@ -909,7 +903,7 @@ Examples are also tagged by category so that they can be more easily searched.
 For example, let's use ExportDB to get a better understanding of how the predicate works in the ``cond`` operator.
 We can look at the example called ``cond_predicate``, which has a ``torch.cond`` tag. The example code looks like:
 
-.. GENERATED FROM PYTHON SOURCE LINES 699-710
+.. GENERATED FROM PYTHON SOURCE LINES 693-704
 
 .. code-block:: default
 
@@ -925,7 +919,7 @@ We can look at the example called ``cond_predicate``, which has a ``torch.cond``
         return cond(pred, lambda x: x.cos(), lambda y: y.sin(), [x])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 711-719
+.. GENERATED FROM PYTHON SOURCE LINES 705-713
 
 More generally, ExportDB can be used as a reference when one of the following occurs:
 
@@ -936,7 +930,7 @@ More generally, ExportDB can be used as a reference when one of the following oc
 ExportDB is not exhaustive, but is intended to cover all use cases found in typical PyTorch code. Feel free to reach
 out if there is an important Python/PyTorch feature that should be added to ExportDB or supported by ``torch.export``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 721-730
+.. GENERATED FROM PYTHON SOURCE LINES 715-724
 
 Running the Exported Program
 ----------------------------
@@ -948,7 +942,7 @@ exported artifact to backends such as Inductor through ``torch.compile``,
 `AOTInductor <https://pytorch.org/docs/main/torch.compiler_aot_inductor.html>`__,
 or `TensorRT <https://pytorch.org/TensorRT/dynamo/dynamo_export.html>`__.
 
-.. GENERATED FROM PYTHON SOURCE LINES 730-752
+.. GENERATED FROM PYTHON SOURCE LINES 724-746
 
 .. code-block:: default
 
@@ -975,7 +969,7 @@ or `TensorRT <https://pytorch.org/TensorRT/dynamo/dynamo_export.html>`__.
     print(res)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 753-767
+.. GENERATED FROM PYTHON SOURCE LINES 747-761
 
 .. code-block:: python
 
@@ -992,7 +986,7 @@ or `TensorRT <https://pytorch.org/TensorRT/dynamo/dynamo_export.html>`__.
    # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
    res = torch._export.aot_load(so_path, device="cuda")(inp)
 
-.. GENERATED FROM PYTHON SOURCE LINES 769-775
+.. GENERATED FROM PYTHON SOURCE LINES 763-769
 
 Conclusion
 ----------
