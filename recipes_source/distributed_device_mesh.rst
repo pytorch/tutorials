@@ -148,6 +148,26 @@ Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable
 
     torchrun --nproc_per_node=8 hsdp.py
 
+How to use DeviceMesh for your custom parallel solutions
+--------------------------------------------------------
+When working with large scale training, you might have more complex custom parallel training composition. For example, you may need to slice out submeshes for different parallelism solutions.
+DeviceMesh allows users to slice child mesh from the parent mesh and re-use the NCCL communicators already created when the parent mesh is initialized.
+
+.. code-block:: python
+
+    from torch.distributed.device_mesh import init_device_mesh
+    mesh_3d = init_device_mesh("cuda", (2, 2, 2), mesh_dim_names=("replicate", "shard", "tp"))
+
+    # Users can slice child meshes from the parent mesh.
+    hsdp_mesh = mesh_3d["replicate", "shard"]
+    tp_mesh = mesh_3d["tp"]
+
+    # Users can access the underlying process group thru `get_group` API.
+    replicate_group = hsdp_mesh["replicate"].get_group()
+    shard_group = hsdp_mesh["Shard"].get_group()
+    tp_group = tp_mesh.get_group()
+
+
 Conclusion
 ----------
 In conclusion, we have learned about :class:`DeviceMesh` and :func:`init_device_mesh`, as well as how
@@ -156,4 +176,4 @@ they can be used to describe the layout of devices across the cluster.
 For more information, please see the following:
 
 - `2D parallel combining Tensor/Sequance Parallel with FSDP <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__
-- `Composable PyTorch Distributed with PT2 <chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://static.sched.com/hosted_files/pytorch2023/d1/%5BPTC%2023%5D%20Composable%20PyTorch%20Distributed%20with%20PT2.pdf>`__
+- `Composable PyTorch Distributed with PT2 <https://static.sched.com/hosted_files/pytorch2023/d1/%5BPTC%2023%5D%20Composable%20PyTorch%20Distributed%20with%20PT2.pdf>`__

@@ -9,15 +9,17 @@ Recurrent DQN: Training recurrent policies
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-      * How to incorporating an RNN in an actor in TorchRL
-      * How to use that memory-based policy with a replay buffer and a loss module
+       * How to incorporating an RNN in an actor in TorchRL
+       * How to use that memory-based policy with a replay buffer and a loss module
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
 
-      * PyTorch v2.0.0
-      * gym[mujoco]
-      * tqdm
+       * PyTorch v2.0.0
+       * gym[mujoco]
+       * tqdm
 """
 
 #########################################################################
