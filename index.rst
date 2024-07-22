@@ -745,10 +745,10 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Distributed Pipeline Parallelism Using RPC
-   :card_description: Demonstrate how to implement distributed pipeline parallelism using RPC
-   :image: _static/img/thumbnails/cropped/Distributed-Pipeline-Parallelism-Using-RPC.png
-   :link: intermediate/dist_pipeline_parallel_tutorial.html
+   :header: Introduction to Distributed Pipeline Parallelism
+   :card_description: Demonstrate how to implement pipeline parallelism using torch.distributed.pipelining
+   :image: _static/img/thumbnails/cropped/Introduction-to-Distributed-Pipeline-Parallelism.png
+   :link: intermediate/pipelining_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -766,13 +766,6 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
-   :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
-   :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
-   :link: advanced/ddp_pipeline.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Getting Started with Fully Sharded Data Parallel(FSDP)
    :card_description: Learn how to train models with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
@@ -784,6 +777,13 @@ Welcome to PyTorch Tutorials
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_adavnced_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Introduction to Libuv TCPStore Backend
+   :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
+   :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
+   :link: intermediate/TCPStore_libuv_backend.html
    :tags: Parallel-and-Distributed-Training
 
 .. Edge
@@ -1141,14 +1141,14 @@ Additional Resources
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
    intermediate/FSDP_adavnced_tutorial
+   intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
+   intermediate/pipelining_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
-   intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   advanced/ddp_pipeline
    advanced/generic_join
 
 .. toctree::

@@ -87,9 +87,9 @@ def neg1(x):
 # +-----------------------------+----------------------------------------------------------------+
 # | ``fx_graph_transformed.py`` | Transformed FX graph, after pattern match                      |
 # +-----------------------------+----------------------------------------------------------------+
-# | ``ir_post_fusion.txt``      | Inductor IR before fusion                                      |
+# | ``ir_pre_fusion.txt``       | Inductor IR before fusion                                      |
 # +-----------------------------+----------------------------------------------------------------+
-# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                       |
+# | ``ir_post_fusion.txt``      | Inductor IR after fusion                                       |
 # +-----------------------------+----------------------------------------------------------------+
 # | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels       |
 # +-----------------------------+----------------------------------------------------------------+

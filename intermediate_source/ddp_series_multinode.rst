@@ -11,6 +11,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       -  Launching multinode training jobs with ``torchrun``
       -  Code changes (and things to keep in mind) when moving from single-node to multinode training.
@@ -22,6 +23,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
             :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multinode.py>`__
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       -  Familiarity with `multi-GPU training <../beginner/ddp_series_multigpu.html>`__ and `torchrun <../beginner/ddp_series_fault_tolerance.html>`__ 
       -  2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)

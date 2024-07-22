@@ -9,7 +9,7 @@
     * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0.
 
 In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format using the TorchScript ``torch.onnx.export` ONNX exporter.
+in PyTorch into the ONNX format using the TorchScript ``torch.onnx.export`` ONNX exporter.
 
 The exported model will be executed with ONNX Runtime.
 ONNX Runtime is a performance-focused engine for ONNX models,
