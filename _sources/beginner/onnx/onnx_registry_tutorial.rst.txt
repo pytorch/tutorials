@@ -92,7 +92,7 @@ This is possible because the :class:`OnnxRegistry` allows users to override an o
 We will override the registration of ``aten::add.Tensor`` with our custom implementation and verify it exists.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-121
+.. GENERATED FROM PYTHON SOURCE LINES 78-120
 
 .. code-block:: default
 
@@ -120,7 +120,6 @@ We will override the registration of ``aten::add.Tensor`` with our custom implem
     # NOTE: All attributes must be annotated with type hints.
     @onnxscript.script(custom_aten)
     def custom_aten_add(input_x, input_y, alpha: float = 1.0):
-        alpha = opset18.CastLike(alpha, input_y)
         input_y = opset18.Mul(input_y, alpha)
         return opset18.Add(input_x, input_y)
 
@@ -140,14 +139,40 @@ We will override the registration of ``aten::add.Tensor`` with our custom implem
         )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-126
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:137: UserWarning:
+
+    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+
+    aten::add.Tensor is supported by ONNX registry:       True
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/transformers/utils/generic.py:441: FutureWarning:
+
+    `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/transformers/utils/generic.py:309: FutureWarning:
+
+    `torch.utils._pytree._register_pytree_node` is deprecated. Please use `torch.utils._pytree.register_pytree_node` instead.
+
+    Applied 0 of general pattern rewrite rules.
+    Applied 0 of general pattern rewrite rules.
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 121-125
 
 Now let's inspect the model and verify the model has a ``custom_aten_add`` instead of ``aten::add.Tensor``.
 The graph has one graph node for ``custom_aten_add``, and inside of it there are four function nodes, one for each
 operator, and one for constant attribute.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-138
+.. GENERATED FROM PYTHON SOURCE LINES 125-137
 
 .. code-block:: default
 
@@ -158,13 +183,19 @@ operator, and one for constant attribute.
     # graph node name is the function name
     assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_add"
     # function node domain is empty because we use standard ONNX operators
-    assert onnx_program.model_proto.functions[0].node[3].domain == ""
+    assert {node.domain for node in onnx_program.model_proto.functions[0].node} == {""}
     # function node name is the standard ONNX operator name
-    assert onnx_program.model_proto.functions[0].node[3].op_type == "Add"
+    assert {node.op_type for node in onnx_program.model_proto.functions[0].node} == {"Add", "Mul", "Constant"}
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-155
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 138-154
 
 This is how ``custom_aten_add_model`` looks in the ONNX graph using Netron:
 
@@ -183,7 +214,7 @@ This was all that we needed to register the new ATen operator into the ONNX Regi
 As an additional step, we can use ONNX Runtime to run the model, and compare the results with PyTorch.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-178
+.. GENERATED FROM PYTHON SOURCE LINES 154-177
 
 .. code-block:: default
 
@@ -211,7 +242,13 @@ As an additional step, we can use ONNX Runtime to run the model, and compare the
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-193
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 178-192
 
 Custom operators with existing ONNX Runtime support
 ---------------------------------------------------
@@ -228,7 +265,7 @@ the namespace ``com.microsoft`` and operator name ``Gelu``.
 
 Before we begin, let's check whether ``aten::gelu.default`` is really supported by the ONNX registry.
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-199
+.. GENERATED FROM PYTHON SOURCE LINES 192-198
 
 .. code-block:: default
 
@@ -239,12 +276,28 @@ Before we begin, let's check whether ``aten::gelu.default`` is really supported 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-202
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:137: UserWarning:
+
+    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+
+    aten::gelu.default is supported by ONNX registry:     True
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 199-201
 
 In our example, ``aten::gelu.default`` operator is supported by the ONNX registry,
 so :meth:`onnx_registry.is_registered_op` returns ``True``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-233
+.. GENERATED FROM PYTHON SOURCE LINES 201-232
 
 .. code-block:: default
 
@@ -280,15 +333,34 @@ so :meth:`onnx_registry.is_registered_op` returns ``True``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-239
-
-Let's inspect the model and verify the model uses :func:`custom_aten_gelu` instead of
-:class:`aten::gelu`. Note the graph has one graph nodes for
-``custom_aten_gelu``, and inside ``custom_aten_gelu``, there is a function
-node for ``Gelu`` with namespace ``com.microsoft``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-250
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    'Gelu' is not a known op in 'com.microsoft'
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:137: UserWarning:
+
+    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+
+    Applied 0 of general pattern rewrite rules.
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 233-240
+
+Let's inspect the model and verify the model uses op_type ``Gelu``
+from namespace ``com.microsoft``.
+
+.. note::
+    :func:`custom_aten_gelu` does not exist in the graph because
+    functions with fewer than three operators are inlined automatically.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 240-247
 
 .. code-block:: default
 
@@ -296,32 +368,28 @@ node for ``Gelu`` with namespace ``com.microsoft``.
     # graph node domain is the custom domain we registered
     assert onnx_program.model_proto.graph.node[0].domain == "com.microsoft"
     # graph node name is the function name
-    assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_gelu"
-    # function node domain is the custom domain we registered
-    assert onnx_program.model_proto.functions[0].node[0].domain == "com.microsoft"
-    # function node name is the node name used in the function
-    assert onnx_program.model_proto.functions[0].node[0].op_type == "Gelu"
+    assert onnx_program.model_proto.graph.node[0].op_type == "Gelu"
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-265
 
-The following diagram shows ``custom_aten_gelu_model`` ONNX graph using Netron:
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 248-256
+
+The following diagram shows ``custom_aten_gelu_model`` ONNX graph using Netron,
+we can see the ``Gelu`` node from module ``com.microsoft`` used in the function:
 
 .. image:: /_static/img/onnx/custom_aten_gelu_model.png
-   :width: 70%
-   :align: center
-
-Inside the ``custom_aten_gelu`` function, we can see the ``Gelu`` node from module
-``com.microsoft`` used in the function:
-
-.. image:: /_static/img/onnx/custom_aten_gelu_function.png
 
 That is all we need to do. As an additional step, we can use ONNX Runtime to run the model,
 and compare the results with PyTorch.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-285
+.. GENERATED FROM PYTHON SOURCE LINES 256-276
 
 .. code-block:: default
 
@@ -346,7 +414,13 @@ and compare the results with PyTorch.
         torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 286-308
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 277-299
 
 Custom operators without ONNX Runtime support
 ---------------------------------------------
@@ -371,7 +445,7 @@ Firstly, we need to implement the operator in PyTorch FX graph.
 This can be done by using ``torch._custom_op``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-334
+.. GENERATED FROM PYTHON SOURCE LINES 299-325
 
 .. code-block:: default
 
@@ -402,7 +476,13 @@ This can be done by using ``torch._custom_op``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-344
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 326-335
 
 Custom Ops Registration in ONNX Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -414,7 +494,7 @@ and ``CustomOpTwo``. These two ops are registered and built in
 `cpu_ops.cc <https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/testdata/custom_op_library/cpu/cpu_ops.cc>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 345-374
+.. GENERATED FROM PYTHON SOURCE LINES 336-365
 
 .. code-block:: default
 
@@ -448,14 +528,32 @@ and ``CustomOpTwo``. These two ops are registered and built in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 375-379
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    'CustomOpOne' is not a known op in 'test.customop'
+    'CustomOpTwo' is not a known op in 'test.customop'
+    /opt/conda/envs/py_3.10/lib/python3.10/site-packages/torch/onnx/_internal/exporter.py:137: UserWarning:
+
+    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+
+    Applied 0 of general pattern rewrite rules.
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 366-370
 
 The ``onnx_program`` exposes the exported model as protobuf through ``onnx_program.model_proto``.
 The graph has one graph nodes for ``custom_addandround``, and inside ``custom_addandround``,
 there are two function nodes, one for each operator.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 379-388
+.. GENERATED FROM PYTHON SOURCE LINES 370-379
 
 .. code-block:: default
 
@@ -469,7 +567,13 @@ there are two function nodes, one for each operator.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 389-469
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 380-460
 
 This is how ``custom_addandround_model`` ONNX graph looks using Netron:
 
@@ -555,7 +659,7 @@ sit tight and have fun going through all of them to learn all there is about the
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  0.801 seconds)
 
 
 .. _sphx_glr_download_beginner_onnx_onnx_registry_tutorial.py:
