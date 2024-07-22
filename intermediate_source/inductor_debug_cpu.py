@@ -110,7 +110,8 @@ def forward1(self, arg0_1, arg1_1):
 # C++ kernel in ``output_code``:
 #
 
-from torch._inductor.codecache import AsyncCompile
+import torch
+from torch._inductor.async_compile import AsyncCompile
 async_compile = AsyncCompile()
 
 cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''

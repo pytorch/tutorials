@@ -54,7 +54,6 @@ NOT_RUN = [
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
-    "intermediate_source/inductor_debug_cpu", # reenable after 2942 
     "intermediate_source/torch_export_tutorial" # reenable after 2940 is fixed.
 ]
 
