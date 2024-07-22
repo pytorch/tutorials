@@ -399,6 +399,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
@@ -852,24 +853,24 @@ automobile, ship, truck):</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 458752/170498071 [00:00&lt;00:37, 4540027.44it/s]
-  4%|3         | 6651904/170498071 [00:00&lt;00:04, 38103822.24it/s]
-  9%|8         | 15171584/170498071 [00:00&lt;00:02, 59305781.85it/s]
- 14%|#3        | 23560192/170498071 [00:00&lt;00:02, 68811821.57it/s]
- 19%|#8        | 32014336/170498071 [00:00&lt;00:01, 74368553.90it/s]
- 24%|##3       | 40534016/170498071 [00:00&lt;00:01, 77860376.05it/s]
- 29%|##8       | 48824320/170498071 [00:00&lt;00:01, 79496437.61it/s]
- 34%|###3      | 57671680/170498071 [00:00&lt;00:01, 82326047.14it/s]
- 41%|####      | 69173248/170498071 [00:00&lt;00:01, 92510892.91it/s]
- 47%|####7     | 80642048/170498071 [00:01&lt;00:00, 99285680.02it/s]
- 54%|#####4    | 92078080/170498071 [00:01&lt;00:00, 103884385.60it/s]
- 61%|######    | 103579648/170498071 [00:01&lt;00:00, 107209283.83it/s]
- 68%|######7   | 115212288/170498071 [00:01&lt;00:00, 109933027.58it/s]
- 74%|#######4  | 126648320/170498071 [00:01&lt;00:00, 111252875.10it/s]
- 81%|########1 | 138117120/170498071 [00:01&lt;00:00, 112234895.36it/s]
- 88%|########7 | 149684224/170498071 [00:01&lt;00:00, 113198322.49it/s]
- 94%|#########4| 161120256/170498071 [00:01&lt;00:00, 113518862.36it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 95351288.33it/s]
+  0%|          | 491520/170498071 [00:00&lt;00:34, 4910603.52it/s]
+  5%|4         | 7831552/170498071 [00:00&lt;00:03, 45118910.07it/s]
+ 11%|#         | 18382848/170498071 [00:00&lt;00:02, 72602317.84it/s]
+ 17%|#6        | 28737536/170498071 [00:00&lt;00:01, 84650625.77it/s]
+ 23%|##3       | 39321600/170498071 [00:00&lt;00:01, 92170802.41it/s]
+ 29%|##9       | 49774592/170498071 [00:00&lt;00:01, 96284162.74it/s]
+ 35%|###5      | 60096512/170498071 [00:00&lt;00:01, 98426853.99it/s]
+ 41%|####1     | 70680576/170498071 [00:00&lt;00:00, 100706138.96it/s]
+ 47%|####7     | 80936960/170498071 [00:00&lt;00:00, 101285006.18it/s]
+ 53%|#####3    | 91193344/170498071 [00:01&lt;00:00, 101573724.30it/s]
+ 60%|#####9    | 101646336/170498071 [00:01&lt;00:00, 102448177.07it/s]
+ 66%|######5   | 112001024/170498071 [00:01&lt;00:00, 102759064.03it/s]
+ 72%|#######1  | 122617856/170498071 [00:01&lt;00:00, 103615959.39it/s]
+ 78%|#######8  | 133136384/170498071 [00:01&lt;00:00, 104011330.06it/s]
+ 84%|########4 | 143556608/170498071 [00:01&lt;00:00, 103364937.29it/s]
+ 90%|######### | 154009600/170498071 [00:01&lt;00:00, 103580071.77it/s]
+ 96%|#########6| 164397056/170498071 [00:01&lt;00:00, 103549438.94it/s]
+100%|##########| 170498071/170498071 [00:01&lt;00:00, 96447116.08it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 </pre></div>
 </div>
@@ -1154,7 +1155,7 @@ data it hasn’t trained on:</p>
 accurate at this point. That’s not exactly state-of-the-art, but it’s
 far better than the 10% accuracy we’d expect from a random output. This
 demonstrates that some general learning did happen in the model.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  55.209 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  57.259 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-introyt1-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0e4c2becda3dfc54e1816634d49f8e73/introyt1_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">introyt1_tutorial.py</span></code></a></p>

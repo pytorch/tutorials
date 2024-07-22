@@ -462,6 +462,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
@@ -613,6 +614,7 @@ This includes managing fully-qualified-name (FQN) mappings across models and opt
 <ul class="simple">
 <li><p>It produces multiple files per checkpoint, with at least one per rank.</p></li>
 <li><p>It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.</p></li>
+<li><p>DCP offers special handling of Stateful objects (formally defined in <cite>torch.distributed.checkpoint.stateful</cite>), automatically calling both <cite>state_dict</cite> and <cite>load_state_dict</cite> methods if they are defined.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -635,11 +637,42 @@ generalized to other environments.</p>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 <span class="kn">from</span> <span class="nn">torch.distributed.fsdp</span> <span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.checkpoint.state_dict</span> <span class="kn">import</span> <span class="n">get_state_dict</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.checkpoint.state_dict</span> <span class="kn">import</span> <span class="n">get_state_dict</span><span class="p">,</span> <span class="n">set_state_dict</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.checkpoint.stateful</span> <span class="kn">import</span> <span class="n">Stateful</span>
 <span class="kn">from</span> <span class="nn">torch.distributed.fsdp.fully_sharded_data_parallel</span> <span class="kn">import</span> <span class="n">StateDictType</span>
 
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span>
 
+
+<span class="k">class</span> <span class="nc">AppState</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a useful wrapper for checkpointing the Application State. Since this object is compliant</span>
+<span class="sd">    with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the</span>
+<span class="sd">    dcp.save/load APIs.</span>
+
+<span class="sd">    Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model</span>
+<span class="sd">    and optimizer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+
+    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
+            <span class="s2">&quot;optim&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+        <span class="c1"># sets our state dicts on the model and optimizer, now that we&#39;ve loaded</span>
+        <span class="n">set_state_dict</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">model_state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span>
+            <span class="n">optim_state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;optim&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -680,14 +713,8 @@ generalized to other environments.</p>
     <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
-    <span class="c1"># this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
-    <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-    <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
-    <span class="p">}</span>
-    <span class="n">dcp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span><span class="n">checkpoint_id</span><span class="o">=</span><span class="n">CHECKPOINT_DIR</span><span class="p">)</span>
-
+    <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;app&quot;</span><span class="p">:</span> <span class="n">AppState</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span> <span class="p">}</span>
+    <span class="n">dcp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">CHECKPOINT_DIR</span><span class="p">)</span>
 
     <span class="n">cleanup</span><span class="p">()</span>
 
@@ -732,6 +759,36 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span>
 
 
+<span class="k">class</span> <span class="nc">AppState</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a useful wrapper for checkpointing the Application State. Since this object is compliant</span>
+<span class="sd">    with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the</span>
+<span class="sd">    dcp.save/load APIs.</span>
+
+<span class="sd">    Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model</span>
+<span class="sd">    and optimizer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+
+    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
+            <span class="s2">&quot;optim&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+        <span class="c1"># sets our state dicts on the model and optimizer, now that we&#39;ve loaded</span>
+        <span class="n">set_state_dict</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">model_state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span>
+            <span class="n">optim_state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;optim&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
 <span class="k">class</span> <span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ToyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -765,6 +822,9 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
     <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;app&quot;</span><span class="p">:</span> <span class="n">AppState</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)}</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
     <span class="c1"># generates the state dict we will load into</span>
     <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
     <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -774,13 +834,6 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
     <span class="n">dcp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
         <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span>
         <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">CHECKPOINT_DIR</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="c1"># sets our state dicts on the model and optimizer, now that we&#39;ve loaded</span>
-    <span class="n">set_state_dict</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="p">,</span>
-        <span class="n">model_state_dict</span><span class="o">=</span><span class="n">model_state_dict</span><span class="p">,</span>
-        <span class="n">optim_state_dict</span><span class="o">=</span><span class="n">optimizer_state_dict</span>
     <span class="p">)</span>
 
     <span class="n">cleanup</span><span class="p">()</span>
@@ -845,6 +898,32 @@ the intent is to save or load in “non-distributed” style, meaning entirely i
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="formats">
+<h2>Formats<a class="headerlink" href="#formats" title="Permalink to this heading">¶</a></h2>
+<p>One drawback not yet mentioned is that DCP saves checkpoints in a format which is inherently different then those generated using torch.save.
+Since this can be an issue when users wish to share models with users used to the torch.save format, or in general just want to add format flexibility
+to their applications. For this case, we provide the <code class="docutils literal notranslate"><span class="pre">format_utils</span></code> module in <code class="docutils literal notranslate"><span class="pre">torch.distributed.checkpoint.format_utils</span></code>.</p>
+<p>A command line utility is provided for the users convenience, which follows the following format:
+.. code-block:: bash</p>
+<blockquote>
+<div><p>python -m torch.distributed.checkpoint.format_utils -m &lt;checkpoint location&gt; &lt;location to write formats to&gt; &lt;mode&gt;</p>
+</div></blockquote>
+<p>In the command above, <code class="docutils literal notranslate"><span class="pre">mode</span></code> is one of <code class="docutils literal notranslate"><span class="pre">torch_to_dcp`</span></code> or <code class="docutils literal notranslate"><span class="pre">dcp_to_torch</span></code>.</p>
+<p>Alternatively, methods are also provided for users who may wish to convert checkpoints directly.
+.. code-block:: python</p>
+<blockquote>
+<div><p>import os</p>
+<p>import torch
+import torch.distributed.checkpoint as DCP
+from torch.distributed.checkpoint.format_utils import dcp_to_torch_save, torch_save_to_dcp</p>
+<p>CHECKPOINT_DIR = “checkpoint”
+TORCH_SAVE_CHECKPOINT_DIR = “torch_save_checkpoint.pth”</p>
+<p># convert dcp model to torch.save (assumes checkpoint was generated as above)
+dcp_to_torch_save(CHECKPOINT_DIR, TORCH_SAVE_CHECKPOINT_DIR)</p>
+<p># converts the torch.save model back to DCP
+dcp_to_torch_save(TORCH_SAVE_CHECKPOINT_DIR, f”{CHECKPOINT_DIR}_new”)</p>
+</div></blockquote>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
@@ -918,6 +997,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#loading">Loading</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#formats">Formats</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>

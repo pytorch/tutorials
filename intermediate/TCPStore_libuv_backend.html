@@ -1,0 +1,1136 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Introduction to Libuv TCPStore Backend — PyTorch Tutorials 2.4.0+cu124 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="TP_tutorial.html" rel="next" title="Large Scale Transformer model training with Tensor Parallel (TP)"/>
+<link href="FSDP_adavnced_tutorial.html" rel="prev" title="Advanced Model Training with Fully Sharded Data Parallel (FSDP)"/>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Learn
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/get-started">
+<span class="dropdown-title">Get Started</span>
+<p>Run PyTorch locally or get started quickly with one of the supported cloud platforms</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials">
+<span class="dropdown-title">Tutorials</span>
+<p>Whats new in PyTorch tutorials</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
+<span class="dropdown-title">Learn the Basics</span>
+<p>Familiarize yourself with PyTorch concepts and modules</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
+<span class="dropdown-title">PyTorch Recipes</span>
+<p>Bite-size, ready-to-deploy PyTorch code examples</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
+<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
+<p>Master PyTorch basics with our engaging YouTube tutorial series</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Ecosystem
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem">
+<span class="dropdown-title">Tools</span>
+<p>Learn about the tools and frameworks in the PyTorch Ecosystem</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
+<span class="dropdown-title">Contributor Awards - 2023</span>
+<p>Award winners announced at this year's PyTorch Conference</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Edge
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/edge">
+<span class="dropdown-title">About PyTorch Edge</span>
+<p>Build innovative and privacy-aware AI experiences for edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
+<span class="dropdown-title">ExecuTorch</span>
+<p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p>Explore the documentation for comprehensive guidance on how to use PyTorch</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/pytorch-domains">
+<span class="dropdown-title">PyTorch Domains</span>
+<p>Read the PyTorch Domains documentation to learn more about domain-specific libraries</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Blogs &amp; News 
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
+<span class="dropdown-title">PyTorch Blog</span>
+<p>Catch up on the latest technical news and happenings</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-blog">
+<span class="dropdown-title">Community Blog</span>
+<p>Stories from the PyTorch ecosystem</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/videos">
+<span class="dropdown-title">Videos</span>
+<p>Learn about the latest PyTorch tutorials, new, and more </p>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-stories">
+<span class="dropdown-title">Community Stories</span>
+<p>Learn how our community solves real, everyday machine learning problems with PyTorch</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+<p>Find events, webinars, and podcasts</p>
+</a>
+</a></div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                About
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+<p>Learn more about the PyTorch Foundation</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
+<span class="dropdown-title">Governing Board</span>
+<p></p>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="no-dropdown">
+<a data-cta="join" href="https://pytorch.org/join">
+                Become a Member
+              </a>
+</div>
+</li>
+<li>
+<div class="main-menu-item">
+<a class="github-icon" href="https://github.com/pytorch/pytorch">
+</a>
+</div>
+</li>
+<!--- TODO: This block adds the search icon to the nav bar. We will enable it later. 
+          <li>
+            <div class="main-menu-item">
+             <a href="https://github.com/pytorch/pytorch" class="search-icon">
+             </a>
+            </div>
+          </li>
+          --->
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  2.4.0+cu124
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators Landing Page</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tiatoolbox_tutorial.html">Whole Slide Image Classification Using PyTorch and TIAToolbox</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Backends</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_ppo.html">Reinforcement Learning (PPO) with TorchRL Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/pendulum.html">Pendulum: Writing your environment and transforms with TorchRL</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hta_intro_tutorial.html">Introduction to Holistic Trace Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hta_trace_diff_tutorial.html">Trace Diff using Holistic Trace Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="per_sample_grads.html">Per-sample-gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators Landing Page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/python_custom_ops.html">Python Custom Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_custom_ops.html">Custom C++ and CUDA Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to Libuv TCPStore Backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Edge with ExecuTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html">Exporting to ExecuTorch Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href=" https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html">Running an ExecuTorch Model in C++ Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html">Using the ExecuTorch SDK to Profile a Model</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/demo-apps-ios.html">Building an ExecuTorch iOS Demo App</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/demo-apps-android.html">Building an ExecuTorch Android Demo App</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html">Lowering a Model as a Delegate</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/flava_finetuning_tutorial.html">TorchMultimodal Tutorial: Finetuning FLAVA</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Introduction to Libuv TCPStore Backend</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/intermediate/TCPStore_libuv_backend.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/TCPStore_libuv_backend</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</img></div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="section" id="introduction-to-libuv-tcpstore-backend">
+<h1>Introduction to Libuv TCPStore Backend<a class="headerlink" href="#introduction-to-libuv-tcpstore-backend" title="Permalink to this heading">¶</a></h1>
+<p><strong>Authors</strong>: <a class="reference external" href="https://github.com/XilunWu">Xilun Wu</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;"/></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/intermediate_source/TCPStore_libuv_backend.rst">github</a>.</p>
+</div>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-list-unordered" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z" fill-rule="evenodd"></path></svg> Prerequisites</div>
+<ul class="simple">
+<li><p class="sd-card-text">PyTorch 2.4 or later</p></li>
+<li><p class="sd-card-text">Read about the <a class="reference external" href="https://pytorch.org/docs/main/distributed.html#torch.distributed.TCPStore">TCPStore API</a>.</p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
+<p>Recently, we have rolled out a new TCPStore server backend using <a class="reference external" href="https://github.com/libuv/libuv">libuv</a>, a third-party library for asynchronous I/O. This new server backend aims to
+address scalability and robustness challenges in large-scale distributed training jobs, such as those with more than 1024 ranks. We ran a series of
+benchmarks to compare the libuv backend against the old one, and the experiment results demonstrated significant improvements in store initialization
+time and maintained a comparable performance in store I/O operations.</p>
+<p>As a result of these findings, the libuv backend has been set as the default TCPStore server backend in PyTorch 2.4. This change is expected to enhance
+the performance and scalability of distributed training jobs.</p>
+<p>This change introduces a slight incompatibility to store initialization. For users who wish to continue using the legacy backend, the tutorial will
+provide guidance on how to specify to use the previous TCPStore server backend.</p>
+</div>
+<div class="section" id="performance-benchmark">
+<h2>Performance Benchmark<a class="headerlink" href="#performance-benchmark" title="Permalink to this heading">¶</a></h2>
+<p>To better demonstrate the benefit of our new libuv TCPStore backend, we set up a benchmark over a wide range of job size, from 1024 (1K) to 98304 (96K) ranks.
+We first measured the TCPStore initialization time using the code snippet below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Env var are preset when launching the benchmark</span>
+<span class="n">env_rank</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RANK"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">env_world_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORLD_SIZE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">env_master_addr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MASTER_ADDR"</span><span class="p">,</span> <span class="s2">"localhost"</span><span class="p">)</span>
+<span class="n">env_master_port</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MASTER_PORT"</span><span class="p">,</span> <span class="s2">"23456"</span><span class="p">)</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">tcp_store</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">TCPStore</span><span class="p">(</span>
+    <span class="n">env_master_addr</span><span class="p">,</span>
+    <span class="nb">int</span><span class="p">(</span><span class="n">env_master_port</span><span class="p">),</span>
+    <span class="n">world_size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">env_world_size</span><span class="p">),</span>
+    <span class="n">is_master</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">env_rank</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">time_elapsed</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"Complete TCPStore init with rank=</span><span class="si">{</span><span class="n">env_rank</span><span class="si">}</span><span class="s2">, world_size=</span><span class="si">{</span><span class="n">env_world_size</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">time_elapsed</span><span class="si">}</span><span class="s2"> seconds."</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Since the execution of the TCPStore server thread will be blocked until all clients are successfully connected, we take the time measured on rank 0 as the total
+TCPStore initialization runtime. The experiment numbers are reported in the figure below:</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/tcpstore_init_time.png"><img alt="TCPStore Initialization Runtime Benchmark Result" src="../_images/tcpstore_init_time.png" style="width: 100%;"/></a>
+</div>
+<p>Figure 1. shows some significant evidence that the libuv backend is superior to the legacy backend:</p>
+<ul class="simple">
+<li><p>TCPStore with libuv backend always has a faster initialization than the legacy backend, especially at super-large scale</p></li>
+<li><p>The legacy backend would timeout at server-client connecting at 96K scale (for example, over 30 minutes) while the libuv backend completed the initialization in 100 seconds.</p></li>
+</ul>
+<p>The second benchmark we did is to measure the runtime of TCPStore <code class="docutils literal notranslate"><span class="pre">store_based_barrier</span></code> operation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="n">DistStoreError</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_DistStoreError</span>
+<span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># since dist._store_based_barrier is a private function and cannot be directly called, we need to write a function which does the same</span>
+<span class="k">def</span> <span class="nf">store_based_barrier</span><span class="p">(</span>
+    <span class="n">rank</span><span class="p">,</span>
+    <span class="n">store</span><span class="p">,</span>
+    <span class="n">group_name</span><span class="p">,</span>
+    <span class="n">rendezvous_count</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">default_pg_timeout</span><span class="p">,</span>
+    <span class="n">logging_interval</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="n">store_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"store_based_barrier_key:</span><span class="si">{</span><span class="n">group_name</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">store_key</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">world_size</span> <span class="o">=</span> <span class="n">rendezvous_count</span>
+    <span class="n">worker_count</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">store_key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">last_worker_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">store_key</span><span class="si">}</span><span class="s2">:last_worker"</span>
+    <span class="k">if</span> <span class="n">worker_count</span> <span class="o">==</span> <span class="n">world_size</span><span class="p">:</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">last_worker_key</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># This will throw an exception after the logging_interval in which we print out</span>
+            <span class="c1"># the status of the group or time out officially, throwing runtime error</span>
+            <span class="n">store</span><span class="o">.</span><span class="n">wait</span><span class="p">([</span><span class="n">last_worker_key</span><span class="p">],</span> <span class="n">logging_interval</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">worker_count</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">store_key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Print status periodically to keep track.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">"Waiting in store based barrier to initialize process group for "</span>
+                <span class="s2">"rank: </span><span class="si">%s</span><span class="s2">, key: </span><span class="si">%s</span><span class="s2"> (world_size=</span><span class="si">%s</span><span class="s2">, num_workers_joined=</span><span class="si">%s</span><span class="s2">, timeout=</span><span class="si">%s</span><span class="s2">)"</span>
+                <span class="s2">"error: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">rank</span><span class="p">,</span>
+                <span class="n">store_key</span><span class="p">,</span>
+                <span class="n">world_size</span><span class="p">,</span>
+                <span class="n">worker_count</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="p">,</span>
+                <span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">timeout</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DistStoreError</span><span class="p">(</span>
+                    <span class="s2">"Timed out initializing process group in store based barrier on "</span>
+                    <span class="s2">"rank </span><span class="si">{}</span><span class="s2">, for key: </span><span class="si">{}</span><span class="s2"> (world_size=</span><span class="si">{}</span><span class="s2">, num_workers_joined=</span><span class="si">{}</span><span class="s2">, timeout=</span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">rank</span><span class="p">,</span> <span class="n">store_key</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">worker_count</span><span class="p">,</span> <span class="n">timeout</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">"Rank </span><span class="si">%s</span><span class="s2">: Completed store-based barrier for key:</span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2"> nodes."</span><span class="p">,</span>
+        <span class="n">rank</span><span class="p">,</span>
+        <span class="n">store_key</span><span class="p">,</span>
+        <span class="n">world_size</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1"># Env var are preset when launching the benchmark</span>
+<span class="n">env_rank</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RANK"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">env_world_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORLD_SIZE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">env_master_addr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MASTER_ADDR"</span><span class="p">,</span> <span class="s2">"localhost"</span><span class="p">)</span>
+<span class="n">env_master_port</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MASTER_PORT"</span><span class="p">,</span> <span class="s2">"23456"</span><span class="p">)</span>
+
+<span class="n">tcp_store</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">TCPStore</span><span class="p">(</span>
+    <span class="n">env_master_addr</span><span class="p">,</span>
+    <span class="nb">int</span><span class="p">(</span><span class="n">env_master_port</span><span class="p">),</span>
+    <span class="n">world_size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">env_world_size</span><span class="p">),</span>
+    <span class="n">is_master</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">env_rank</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># sync workers</span>
+<span class="n">store_based_barrier</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">env_rank</span><span class="p">),</span> <span class="n">tcp_store</span><span class="p">,</span> <span class="s2">"tcpstore_test"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env_world_size</span><span class="p">))</span>
+
+<span class="n">number_runs</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_runs</span><span class="p">):</span>
+    <span class="n">store_based_barrier</span><span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">env_rank</span><span class="p">),</span> <span class="n">tcp_store</span><span class="p">,</span> <span class="s2">"tcpstore_test"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env_world_size</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">time_elapsed</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"Complete </span><span class="si">{</span><span class="n">number_runs</span><span class="si">}</span><span class="s2"> TCPStore barrier runs with rank=</span><span class="si">{</span><span class="n">env_rank</span><span class="si">}</span><span class="s2">, world_size=</span><span class="si">{</span><span class="n">env_world_size</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">time_elapsed</span><span class="si">}</span><span class="s2"> seconds."</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We compute the average by dividing the runtime measured on rank 0 by <code class="docutils literal notranslate"><span class="pre">number_runs</span></code> and report it in the figure below:</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/tcpstore_barrier_time.png"><img alt="TCPStore Barrier Runtime Benchmark Result" src="../_images/tcpstore_barrier_time.png" style="width: 100%;"/></a>
+</div>
+<p>Figure 2. shows that the I/O performance of libuv backend is comparable to the legacy backend:</p>
+<ul class="simple">
+<li><p>The libuv backend has a comparable performance over the whole spectrum in terms of the number of ranks</p></li>
+<li><p>The libuv backend runtime is more stable than the legacy backend as the number of ranks grows</p></li>
+</ul>
+</div>
+<div class="section" id="impact">
+<h2>Impact<a class="headerlink" href="#impact" title="Permalink to this heading">¶</a></h2>
+<p>One incompatibility that users may need to pay attention is, TCPStore currently does not support initialization with a <code class="docutils literal notranslate"><span class="pre">listen_fd</span></code> when using libuv backend.
+If the user wants to keep using this initialization method, the user can simply pass <code class="docutils literal notranslate"><span class="pre">use_libuv=False</span></code> to stay with the old TCPStore backend.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="n">listen_sock</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">listen_sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s2">"localhost"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">listen_sock</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()</span>
+<span class="n">listen_fd</span> <span class="o">=</span> <span class="n">listen_sock</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+
+<span class="n">tcpstore</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">TCPStore</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">master_listen_fd</span><span class="o">=</span><span class="n">listen_fd</span><span class="p">)</span>  <span class="c1"># expect NotImplementedError</span>
+<span class="n">tcpstore</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">TCPStore</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">master_listen_fd</span><span class="o">=</span><span class="n">listen_fd</span><span class="p">,</span> <span class="n">use_libuv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># OK. Use legacy backend</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exit-route-1-pass-use-libuv-false-to-tcpstore-initialization">
+<h2>Exit Route 1: Pass <code class="docutils literal notranslate"><span class="pre">use_libuv=False</span></code> to TCPStore Initialization<a class="headerlink" href="#exit-route-1-pass-use-libuv-false-to-tcpstore-initialization" title="Permalink to this heading">¶</a></h2>
+<p>As the above code snippet shows, if user calls TCPStore init method to create a store, simply passing <code class="docutils literal notranslate"><span class="pre">use_libuv=False</span></code> allows user to remain using the old
+TCPStore backend. This override has the highest priority over other approaches determining which backend the TCPStore server should choose.</p>
+</div>
+<div class="section" id="exit-route-2-add-use-libuv-0-to-init-method-at-processgroup-initialization">
+<h2>Exit Route 2: Add <code class="docutils literal notranslate"><span class="pre">use_libuv=0</span></code> to <code class="docutils literal notranslate"><span class="pre">init_method</span></code> at ProcessGroup Initialization<a class="headerlink" href="#exit-route-2-add-use-libuv-0-to-init-method-at-processgroup-initialization" title="Permalink to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> creates a TCPStore if user does not explicitly pass one to its initialization. User can add the query option <code class="docutils literal notranslate"><span class="pre">use_libuv=0</span></code> to <code class="docutils literal notranslate"><span class="pre">init_method</span></code> when
+initializing the <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code>. This approach has lower priority than Exit Route 1.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="n">addr</span> <span class="o">=</span> <span class="s2">"localhost"</span>
+<span class="n">port</span> <span class="o">=</span> <span class="mi">23456</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span>
+    <span class="n">backend</span><span class="o">=</span><span class="s2">"cpu:gloo,cuda:nccl"</span><span class="p">,</span>
+    <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">world_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">init_method</span><span class="o">=</span><span class="sa">f</span><span class="s2">"tcp://</span><span class="si">{</span><span class="n">addr</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">?use_libuv=0"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exit-route-3-set-environment-variable-use-libuv-to-0">
+<h2>Exit Route 3: Set Environment Variable <code class="docutils literal notranslate"><span class="pre">USE_LIBUV</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code><a class="headerlink" href="#exit-route-3-set-environment-variable-use-libuv-to-0" title="Permalink to this heading">¶</a></h2>
+<p>When ProcessGroup creates a TCPStore, it also checks the environment vairable <code class="docutils literal notranslate"><span class="pre">USE_LIBUV</span></code> to determine which TCPStore backend to use. User can set the environment
+variable <code class="docutils literal notranslate"><span class="pre">"USE_LIBUV"</span></code> to <code class="docutils literal notranslate"><span class="pre">"0"</span></code> to specify the use of old TCPStore backend. This approach has lower priority than Exit Route 2, for example, if the user sets environment
+variable <code class="docutils literal notranslate"><span class="pre">USE_LIBUV</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code> and also passes <code class="docutils literal notranslate"><span class="pre">use_libuv=0</span></code> in <code class="docutils literal notranslate"><span class="pre">init_method</span></code>, then the old store backend will be chosen.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+
+<span class="n">addr</span> <span class="o">=</span> <span class="s2">"localhost"</span>
+<span class="n">port</span> <span class="o">=</span> <span class="mi">23456</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"USE_LIBUV"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"0"</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span>
+    <span class="n">backend</span><span class="o">=</span><span class="s2">"cpu:gloo,cuda:nccl"</span><span class="p">,</span>
+    <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">world_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">init_method</span><span class="o">=</span><span class="sa">f</span><span class="s2">"tcp://</span><span class="si">{</span><span class="n">addr</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>In PyTorch 2.4, we made the new libuv TCPStore backend the default. Although the new backend has incompatibility with initialization from a <code class="docutils literal notranslate"><span class="pre">listen_fd</span></code>, it
+shows significant performance improvement on store initialization at large-scale and compatible performance on store I/O at small/medium/large scales, which
+brings a major benefit to Distributed Training’s control plane. This tutorial explains our motivation, goes through the performance benchmark, notifies users
+of the potential impact, and introduces three exit routes to remain using the legacy backend. In the long term, we aim to eventually deprecate the legacy backend.</p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="TP_tutorial.html" rel="next" title="Large Scale Transformer model training with Tensor Parallel (TP)">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="FSDP_adavnced_tutorial.html" rel="prev" title="Advanced Model Training with Fully Sharded Data Parallel (FSDP)"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom">
+<div role="contentinfo">
+<p>
+        © Copyright 2024, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</hr></footer>
+</div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Introduction to Libuv TCPStore Backend</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#performance-benchmark">Performance Benchmark</a></li>
+<li><a class="reference internal" href="#impact">Impact</a></li>
+<li><a class="reference internal" href="#exit-route-1-pass-use-libuv-false-to-tcpstore-initialization">Exit Route 1: Pass <code class="docutils literal notranslate"><span class="pre">use_libuv=False</span></code> to TCPStore Initialization</a></li>
+<li><a class="reference internal" href="#exit-route-2-add-use-libuv-0-to-init-method-at-processgroup-initialization">Exit Route 2: Add <code class="docutils literal notranslate"><span class="pre">use_libuv=0</span></code> to <code class="docutils literal notranslate"><span class="pre">init_method</span></code> at ProcessGroup Initialization</a></li>
+<li><a class="reference internal" href="#exit-route-3-set-environment-variable-use-libuv-to-0">Exit Route 3: Set Environment Variable <code class="docutils literal notranslate"><span class="pre">USE_LIBUV</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code></a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="../_static/katex.min.js"></script>
+<script src="../_static/auto-render.min.js"></script>
+<script src="../_static/katex_autorenderer.js"></script>
+<script src="../_static/design-tabs.js"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+// Helper function to make it easier to call dataLayer.push() 
+function gtag(){window.dataLayer.push(arguments);}
+
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; display: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count"),
+      'customEvent:Rating': $(this).attr("data-count") // send to GA custom dimension customEvent:Rating.
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1">
+</img></noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Backends', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Profiling PyTorch', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Edge with ExecuTorch', 'Recommendation Systems', 'Multimodality'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
+</div>
+</div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="https://www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="https://www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li class="resources-mobile-menu-title">
+<a>Learn</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Ecosystem</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/ecosystem">Tools</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Edge</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/edge">About PyTorch Edge</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Docs</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/pytorch-domains">PyTorch Domains</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Blog &amp; News</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/blog/">PyTorch Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-blog">Community Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/videos">Videos</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-stories">Community Stories</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>About</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+</ul>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</img></body>
+</html>
