@@ -417,4 +417,4 @@ Conclusion
 In this tutorial, we went over the recommended approach to integrating Custom C++
 and CUDA operators with PyTorch. The ``TORCH_LIBRARY/torch.library`` APIs are fairly
 low-level. For more information about how to use the API, see
-`The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_.
+`The Custom Operators Manual <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual>`_.
