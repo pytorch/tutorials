@@ -1,7 +1,7 @@
 .. _custom-ops-landing-page:
 
-PyTorch Custom Operators Landing Page
-=====================================
+PyTorch Custom Operators
+===========================
 
 PyTorch offers a large library of operators that work on Tensors (e.g. ``torch.add``,
 ``torch.sum``, etc). However, you may wish to bring a new custom operation to PyTorch
@@ -10,8 +10,7 @@ In order to do so, you must register the custom operation with PyTorch via the P
 `torch.library docs <https://pytorch.org/docs/stable/library.html>`_ or C++ ``TORCH_LIBRARY``
 APIs.
 
-TL;DR
------
+
 
 Authoring a custom operator from Python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
