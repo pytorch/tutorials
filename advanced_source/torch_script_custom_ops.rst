@@ -1,6 +1,11 @@
 Extending TorchScript with Custom C++ Operators
 ===============================================
 
+.. warning::
+
+    This tutorial is deprecated as of PyTorch 2.4. Please see :ref:`custom-ops-landing-page`
+    for the newest up-to-date guides on PyTorch Custom Operators.
+
 The PyTorch 1.0 release introduced a new programming model to PyTorch called
 `TorchScript <https://pytorch.org/docs/master/jit.html>`_. TorchScript is a
 subset of the Python programming language which can be parsed, compiled and

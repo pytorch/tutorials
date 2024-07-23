@@ -388,6 +388,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_checkpoint_recipe.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Asynchronous Checkpointing (DCP)
+   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
+   :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
+   :link: ../recipes/distributed_async_checkpoint_recipe.html
+   :tags: Distributed-Training
+
 .. TorchServe
 
 .. customcarditem::
