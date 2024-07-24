@@ -3,8 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Introduction to Distributed Pipeline Parallelism
- <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
+* `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
 * `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
 * `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
 * `Python Custom Operators <https://pytorch.org/tutorials/advanced/python_custom_ops.html>`__
