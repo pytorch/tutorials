@@ -69,7 +69,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # back this page into RAM (_swap in_ or _page in_).
 # In turn, the OS may have to _swap out_ (or _page out_) another page to make room for the new page.
 #
-# In contrast to pageable memory, a _pinned_ (or _page-locked_ or _non-pegeable_) memory is a type of memory that cannot
+# In contrast to pageable memory, a _pinned_ (or _page-locked_ or _non-pageable_) memory is a type of memory that cannot
 # be swapped out to disk.
 # It allows for faster and more predictable access times, but has the downside that it is more limited than the
 # pageable memory (aka the main memory).
