@@ -12,6 +12,7 @@ APIs.
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       *  How to use ``torch.distributed.pipelining`` APIs
       *  How to apply pipeline parallelism to a transformer model
@@ -19,6 +20,7 @@ APIs.
 
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       * Familiarity with `basic distributed training  <https://pytorch.org/tutorials/beginner/dist_overview.html>`__ in PyTorch
 
