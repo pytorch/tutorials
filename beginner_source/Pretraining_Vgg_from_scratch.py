@@ -56,7 +56,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # -  We train the model from scratch using only the configuration
 #    presented in the paper.
 # 
-#    -  we do not use future method, like Batch normalization,Adam , He
+#    -  we do not use future method, like ``Batch normalization``,Adam , He
 #       initialization.
 # 
 # -  You can apply to ImageNet Data.
@@ -150,7 +150,7 @@ model_layers =None
 ######################################################################
 # We use ``CIFAR100`` Dataset in this tutorial. In VGG paper , the authors
 # scales image isotropically . Then , they apply
-# Normalization,``RandomCrop``,``HorizontalFlip`` . So , we need to override
+# ``Normalization``,``RandomCrop``,``HorizontalFlip`` . So , we need to override
 # CIFAR100 class to apply preprocessing.
 # 
 
