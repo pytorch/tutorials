@@ -949,6 +949,7 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
+   intermediate/pinmem_nonblock
    advanced/custom_ops_landing_page
 
 .. toctree::
