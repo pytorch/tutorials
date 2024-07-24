@@ -1,5 +1,5 @@
 """
-Pretraining VGG from scratch 
+``Pretraining`` VGG from scratch 
 ============================
 
 
@@ -55,7 +55,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # -  We train the model from scratch using only the configuration
 #    presented in the paper.
 # 
-#    -  we do not use future method, like BatchNormalization,Adam , He
+#    -  we do not use future method, like Batch normalization,Adam , He
 #       initialization.
 # 
 # -  You can apply to ImageNet Data.
@@ -68,7 +68,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
-# Why Vgg is so popluar ?
+# Why VGG is so popular ?
 # -----------------------
 # 
 
@@ -76,7 +76,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 ######################################################################
 # VGG became a model that attracted attention because it succeeded in
 # building deeper layers and dramatically shortening the training time
-# compared to alexNet, which was the sota model at the time.:
+# compared to alexnet, which was the SOTA model at the time.:
 # 
 
 
@@ -91,12 +91,12 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # this configuration will be explained below section.
 # 
 
-DatasetName = 'Cifar' # Cifar ,Cifar10, Mnist , ImageNet
+DatasetName = 'Cifar' # CIFAR ,CIFAR10, MNIST , ImageNet
 
 ## model configuration
 
 num_classes =   100
-# CalTech 257 Cifar 100  Cifar10 10 ,Mnist 10 ImageNet 1000
+# Caltech 257 CIFAR 100  CIFAR10 10 ,MNIST 10 ImageNet 1000
 model_version = None ## you must configure it.
 
 ## data configuration
@@ -119,7 +119,7 @@ clip= None # model D grad clip 0.7
 
 update_count = int(256/batch_size)
 accum_step = int(256/batch_size)
-eval_step =26 * accum_step  ## CalTech 5 Cifar 5 Mnist 6 , Cifar10 5 ImageNet  26
+eval_step =26 * accum_step  ## Caltech 5 CIFAR 5 MNIST 6 , CIFAR10 5 ImageNet  26
 
 
 ## model configuration
@@ -147,9 +147,9 @@ model_layers =None
 
 
 ######################################################################
-# We use ``CIFAR100`` Dataset in this tutorial. In Vgg paper , the authors
-# scales image istropically . Then , they apply
-# Normalization,RandomCrop,HorizontalFlip . So , we need to override
+# We use ``CIFAR100`` Dataset in this tutorial. In VGG paper , the authors
+# scales image isotropically . Then , they apply
+# Normalization,``RandomCrop``,``HorizontalFlip`` . So , we need to override
 # CIFAR100 class to apply preprocessing.
 # 
 
@@ -168,8 +168,7 @@ class Custom_Cifar(CIFAR100) :
                         A.Normalize(mean =(0.5071, 0.4867, 0.4408) , std = (0.2675, 0.2565, 0.2761)),
                         A.SmallestMaxSize(max_size=self.S),
                         A.RandomCrop(height =224,width=224),
-                        A.HorizontalFlip(),
-                        # A.RGBShift()
+                        A.HorizontalFlip()
                     ]
 
             )
@@ -216,12 +215,12 @@ class Custom_Cifar(CIFAR100) :
 
 
 ######################################################################
-# | In Vgg paper, they do experiment over 6 models. model A is 11 layers,
-#   model B is 13 layers, model C is 16 layers , model D is 16 laeyrs and
+# | In VGG paper, they do experiment over 6 models. model A is 11 layers,
+#   model B is 13 layers, model C is 16 layers , model D is 16 layers and
 #   model D is 19 layers . you can train all version of models to
 #   reproduce VGG .
 # | ``Config_Channels`` means output channels and ``Config_kernels`` means
-#   kerenl size.
+#   kernel size.
 # 
 
 import torch
@@ -284,8 +283,7 @@ class Model_vgg(nn.Module) :
         self.num_classes = num_classes
         self.linear_out = 4096
         self.xavier_count = xavier_count
-        self.last_xavier= last_xavier  ## if >0 , initialize last 3 fully connected noraml distribution
-        # conv_1_by_1_3_outchannel = num_classes
+        self.last_xavier= last_xavier  ## if >0 , initialize last 3 fully connected normal distribution
         self.except_xavier  = except_xavier
 
         super().__init__()
@@ -307,8 +305,6 @@ class Model_vgg(nn.Module) :
         print('weight intialize end')
     def forward(self,x):
         x = self.feature_extractor(x)
-        # x= self.avgpool(x)  ##  If Linear is output, use this
-        # x= torch.flatten(x,start_dim = 1) ## If Linear is output, use this
         x = self.output_layer(x)
         x= self.avgpool(x)
         x= torch.flatten(x,start_dim = 1)
@@ -318,15 +314,12 @@ class Model_vgg(nn.Module) :
     @torch.no_grad()
     def _init_weights(self,m):
 
-        # print(m)
         if isinstance(m,nn.Conv2d):
             print('-------------')
             print(m.kernel_size)
             print(m.out_channels)
-            # if (m.out_channels == self.num_classes or m.out_channels == self.linear_out) and self.last_xavier>0 :
             if self.last_xavier>0 and (self.except_xavier is  None or self.last_xavier!=self.except_xavier):
                 print('xavier')
-                # self.last_xavier-=1
                 nn.init.xavier_uniform_(m.weight)
             elif self.xavier_count >0 :
                 print('xavier')
@@ -335,10 +328,8 @@ class Model_vgg(nn.Module) :
             else :
                 std = 0.1
                 print(f'normal  std : {std}')
-
                 torch.nn.init.normal_(m.weight,std=std)
-                # if (m.out_channels == self.num_classes or m.out_channels == self.linear_out) :
-                #     self.last_xavier+=10
+
             self.last_xavier +=1
             if m.bias is not None :
                 print('bias zero init')
@@ -361,21 +352,21 @@ class Model_vgg(nn.Module) :
 
 
 ######################################################################
-# When training Vgg , the authors first train model A , then initialized
+# When training VGG , the authors first train model A , then initialized
 # the weights of other models with the weights of model A. Waiting for
 # Model A to be trained takes a long time . The authors mention how to
-# train with xavier initialization rather than initializing with the
+# train with ``xavier`` initialization rather than initializing with the
 # weights of model A. But, they do not mention how to initialize .
 # 
-# | To Reproduce Vgg , we use xavier initialization method to initialize
-#   weights. We apply initialization to few first layes and last layers.
+# | To Reproduce VGG , we use ``xavier`` initialization method to initialize
+#   weights. We apply initialization to few first layers and last layers.
 #   Then , we apply random initialization to other layers.
-# | **we must fix stdandrad deviation to 0.1**. If standard deviation is
+# | **we must fix standard deviation to 0.1**. If standard deviation is
 #   larger than 0.1, the weight get NAN values. For stability, we use 0.1
 #   for standard deviation.
-# | The ``front_xavier`` means how many layers we initialize with xavier
+# | The ``front_xavier`` means how many layers we initialize with ``xavier``
 #   initialization in front of layers and The ``last_xavier`` means how
-#   many layers we initializae with xavier initialization in last of
+#   many layers we initialize with ``xavier`` initialization in last of
 #   layers.
 # 
 # In My experiment, we can use ``front_xavier`` = 4 , ``last_xavier``\ =5
@@ -406,17 +397,15 @@ def accuracy(output, target, topk=(1,)):
 
     res = []
     for k in topk:
-        # print(f'top {k}')
         correct_k = correct[:k].reshape(-1).float().sum(0,keepdim=True)
-        # res.append(correct_k.mul_(100.0 / batch_size))
         res.append(correct_k)
     return res
 
 
 ######################################################################
 # we initiate model and loss function and optimizer and schedulers. In
-# vgg, they use softmax output ,Momentum Optimizer , and Scheduling based
-# on accuarcy.
+# VGG, they use softmax output ,Momentum Optimizer , and Scheduling based
+# on accuracy.
 # 
 
 model = Model_vgg(model_version,num_classes)
@@ -440,9 +429,7 @@ if DatasetName == 'Cifar' :
                     [
                         A.Normalize(mean =(0.5071, 0.4867, 0.4408) , std = (0.2675, 0.2565, 0.2761)),
                         A.SmallestMaxSize(max_size=val_data.S),
-                        A.CenterCrop(height =224,width=224),
-                        # A.HorizontalFlip(),
-                        # A.RGBShift()
+                        A.CenterCrop(height =224,width=224)
                     ]
 
                 )
@@ -492,7 +479,6 @@ for e in range(epoch-resume_epoch) :
         if i> 0 and i%update_count == 0 :
             print(f'Training steps : {i}  parameter update loss :{total_loss} ')
             if grad_clip is not None:
-                # print(f'Training steps : {i}  parameter grad clip to {grad_clip}')
                 torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
@@ -594,8 +580,7 @@ class Cusotm_ImageNet(ImageNet) :
                         A.Normalize(),
                         A.SmallestMaxSize(max_size=self.S),
                         A.RandomCrop(height =224,width=224),
-                        A.HorizontalFlip(),
-                        # A.RGBShift()
+                        A.HorizontalFlip()
                     ]
 
             )
@@ -644,9 +629,7 @@ if DatasetName == 'ImageNet' :
                     [
                         A.Normalize(),
                         A.SmallestMaxSize(max_size=val_data.S),
-                        A.CenterCrop(height =224,width=224),
-                        # A.HorizontalFlip(),
-                        # A.RGBShift()
+                        A.CenterCrop(height =224,width=224)
                     ]
 
                 )
@@ -654,7 +637,7 @@ if DatasetName == 'ImageNet' :
 ######################################################################
 # Conculsion
 # ----------
-# We have seen how pretraining VGG from scratch . This Tutorial will be helpful to reproduce another Foundation Model .
+# We have seen how ``pretraining`` VGG from scratch . This Tutorial will be helpful to reproduce another Foundation Model .
 
 ######################################################################
 # More things to try
@@ -668,5 +651,5 @@ if DatasetName == 'ImageNet' :
 # Further Reading
 # ---------------
 
-# - `VGG training using python script <https://github.com/woongjoonchoi/DeepLearningPaper-Reproducing/tree/master/Vgg>`__
+# - `VGG training using python script <https://github.com/woongjoonchoi/DeepLearningPaper-Reproducing/tree/master/VGG>`__
 # - `VGG paper <https://arxiv.org/abs/1409.1556>`__
