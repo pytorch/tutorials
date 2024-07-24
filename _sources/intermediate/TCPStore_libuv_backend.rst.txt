@@ -8,7 +8,8 @@ Introduction to Libuv TCPStore Backend
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
-    :class-card: card-prerequisites
+      :class-card: card-prerequisites
+  
       *  What is the new TCPStore backend
       *  Compare the new libuv backend against the legacy backend
       *  How to enable to use the legacy backend
