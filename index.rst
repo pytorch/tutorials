@@ -93,6 +93,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/tensorboard_tutorial.html
    :tags: Interpretability,Getting-Started,TensorBoard
 
+.. customcarditem::
+   :header: Good usage of `non_blocking` and `pin_memory()` in PyTorch
+   :card_description: A guide on best practices to copy data from CPU to GPU.
+   :image: _static/img/pinmem.png
+   :link: intermediate/pinmem_nonblock.html
+   :tags: Getting-Started
+
 .. Image/Video
 
 .. customcarditem::
