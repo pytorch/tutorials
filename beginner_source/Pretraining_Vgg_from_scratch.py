@@ -15,11 +15,12 @@ Our tutorial is designed for both beginners who are new to deep learning
 and seasoned practitioners looking to deepen their understanding of CNN
 architectures.
 
+Before you start 
 
+.. code-block:: sh
+
+    pip install albumentations
 """
-
-
-######################################################################
 
 
 
