@@ -29,7 +29,7 @@ Before you start
 import torch.optim as optim
 import albumentations as A
 import numpy as np
-
+import torch
 
 from torchvision.datasets import CIFAR100,CIFAR10,MNIST,ImageNet
 import os
@@ -409,10 +409,11 @@ def accuracy(output, target, topk=(1,)):
 # on accuracy.
 # 
 
+model_version='B'
 model = Model_vgg(model_version,num_classes)
 criterion = nn.CrossEntropyLoss()
 
-optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay,nesterov=nestrov,momentum=momentum)
+optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay,momentum=momentum)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max',patience=10,threshold=1e-3,eps = 1e-5)
 
 
@@ -447,7 +448,7 @@ model = model.to(device)
 
 grad_clip = 1.0
 
-for e in range(epoch-resume_epoch) :
+for e in range(epoch) :
     print(f'Training Epoch : {e}')
     total_loss = 0
     val_iter = iter(val_loader)
@@ -456,7 +457,7 @@ for e in range(epoch-resume_epoch) :
 
     total_acc = [0,0]
     count= 0
-    for i , data in tqdm(enumerate(train_loader)) :
+    for i , data in enumerate(train_loader) :
 
 
         model.train()
@@ -501,7 +502,7 @@ for e in range(epoch-resume_epoch) :
             val_loss = 0
             torch.cuda.empty_cache()
 
-            for j   in tqdm(range(update_count)) :
+            for j   in range(update_count) :
                 loss = None
                 print(f'Evaluation Steps Start')
                 try :
