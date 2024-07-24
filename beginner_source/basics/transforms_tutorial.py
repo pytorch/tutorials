@@ -43,8 +43,8 @@ ds = datasets.FashionMNIST(
 # -------------------------------
 #
 # `ToTensor <https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.ToTensor>`_
-# converts a PIL image or NumPy ``ndarray`` into a ``FloatTensor``. and scales
-# the image's pixel intensity values in the range [0., 1.]
+# converts a PIL image or NumPy ``ndarray`` into a ``FloatTensor`` and scales
+# the image's pixel intensity values to the range [0., 1.]
 #
 
 ##############################################
