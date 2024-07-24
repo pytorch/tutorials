@@ -544,17 +544,11 @@ print(exported_dynamic_shapes_example3.range_constraints)
 #
 # Currently, the steps to register a custom op for use by ``torch.export`` are:
 #
-# - Define the custom op using ``torch.library`` (`reference <https://pytorch.org/docs/main/library.html>`__)
+# - Define the custom op using ``torch.library`` (`reference <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__)
 #   as with any other custom op
 
-from torch.library import Library, impl, impl_abstract
-
-m = Library("my_custom_library", "DEF")
-
-m.define("custom_op(Tensor input) -> Tensor")
-
-@impl(m, "custom_op", "CompositeExplicitAutograd")
-def custom_op(x):
+@torch.library.custom_op("my_custom_library::custom_op", mutates_args={})
+def custom_op(input: torch.Tensor) -> torch.Tensor:
     print("custom_op called!")
     return torch.relu(x)
 
@@ -562,7 +556,7 @@ def custom_op(x):
 # - Define a ``"Meta"`` implementation of the custom op that returns an empty
 #   tensor with the same shape as the expected output
 
-@impl_abstract("my_custom_library::custom_op")
+@custom_op.register_fake 
 def custom_op_meta(x):
     return torch.empty_like(x)
 
