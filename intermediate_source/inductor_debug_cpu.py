@@ -87,9 +87,9 @@ def neg1(x):
 # +-----------------------------+----------------------------------------------------------------+
 # | ``fx_graph_transformed.py`` | Transformed FX graph, after pattern match                      |
 # +-----------------------------+----------------------------------------------------------------+
-# | ``ir_post_fusion.txt``      | Inductor IR before fusion                                      |
+# | ``ir_pre_fusion.txt``       | Inductor IR before fusion                                      |
 # +-----------------------------+----------------------------------------------------------------+
-# | ``ir_pre_fusion.txt``       | Inductor IR after fusion                                       |
+# | ``ir_post_fusion.txt``      | Inductor IR after fusion                                       |
 # +-----------------------------+----------------------------------------------------------------+
 # | ``output_code.py``          | Generated Python code for graph, with C++/Triton kernels       |
 # +-----------------------------+----------------------------------------------------------------+
@@ -110,7 +110,8 @@ def forward1(self, arg0_1, arg1_1):
 # C++ kernel in ``output_code``:
 #
 
-from torch._inductor.codecache import AsyncCompile
+import torch
+from torch._inductor.async_compile import AsyncCompile
 async_compile = AsyncCompile()
 
 cpp_fused_cat_maximum_neg_0 = async_compile.cpp('''
