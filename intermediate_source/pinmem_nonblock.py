@@ -10,7 +10,8 @@ Sending tensors from CPU to GPU can be made faster by using asynchronous transfe
 
 - Calling `tensor.pin_memory().to(device, non_blocking=True)` can be as twice as slow as a plain `tensor.to(device)`;
 - `tensor.to(device, non_blocking=True)` is usually a good choice;
-- `cpu_tensor.to("cuda", non_blocking=True).mean()` is ok, but `cuda_tensor.to("cpu", non_blocking=True).mean()` will produce garbage.
+- `cpu_tensor.to("cuda", non_blocking=True).mean()` will work, but `cuda_tensor.to("cpu", non_blocking=True).mean()`
+  will produce garbage.
 
 """
 
@@ -196,7 +197,7 @@ print("Call to `to(device, non_blocking=True)`", profile_mem("copy_to_device_non
 
 ######################################################################
 # The results are without any doubt better when using `non_blocking=True`, as all transfers are initiated simultaneously on the host side.
-# Note that, interestingly, `to("cuda")` actually performs the same asynchrous device casting operation as the one with  `non_blocking=True` with a synchronization point after each copy. 
+# Note that, interestingly, `to("cuda")` actually performs the same asynchronous device casting operation as the one with  `non_blocking=True` with a synchronization point after each copy. 
 # 
 # The benefit will vary depending on the number and the size of the tensors as well as depending on the hardware being used.
 # 
@@ -286,9 +287,9 @@ except AssertionError:
 # -------------------------
 #
 # We can now wrap up some early recommendations based on our observations:
-# In general, `non_blocking=True` will provide a good speed of transfer, regardless of whether the original tensor is or isn't in pinned memory. If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to pin memory manually is a blocking operation on the host and hence will anihilate much of the benefit of using `non_blocking=True` (and CUDA does the `pin_memory` transfer anyway).
+# In general, `non_blocking=True` will provide a good speed of transfer, regardless of whether the original tensor is or isn't in pinned memory. If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to pin memory manually is a blocking operation on the host and hence will annihilate much of the benefit of using `non_blocking=True` (and CUDA does the `pin_memory` transfer anyway).
 # 
-# One might now legitimetely ask what use there is for the `pin_memory()` method within the `torch.Tensor` class. In the following section, we will explore further how this can be used to accelerate the data transfer even more.
+# One might now legitimately ask what use there is for the `pin_memory()` method within the `torch.Tensor` class. In the following section, we will explore further how this can be used to accelerate the data transfer even more.
 # 
 # Additional considerations
 # -------------------------
@@ -298,7 +299,7 @@ except AssertionError:
 # 
 # The answer is resides in the fact that the dataloader reserves a separate thread to copy the data from pageable to pinned memory, thereby avoiding to block the main thread with this. Consider the following example, where we send a list of tensors to cuda after calling pin_memory on a separate thread:
 # 
-# A more isolated example of this is the TensorDict primitive from the homonymous library: when calling `TensorDict.to(device)`, the default behaviour is to send these tensors to the device asynchronously and make a `device.synchronize()` call after. `TensorDict.to()` also offers a `non_blocking_pin` argument which will spawn multiple threads to do the calls to `pin_memory()` before launching the calls to `to(device)`.
+# A more isolated example of this is the TensorDict primitive from the homonymous library: when calling `TensorDict.to(device)`, the default behavior is to send these tensors to the device asynchronously and make a `device.synchronize()` call after. `TensorDict.to()` also offers a `non_blocking_pin` argument which will spawn multiple threads to do the calls to `pin_memory()` before launching the calls to `to(device)`.
 # This can further speed up the copies as the following example shows:
 #
 # .. code-block:: bash
