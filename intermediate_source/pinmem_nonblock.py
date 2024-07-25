@@ -137,88 +137,47 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 import torch
 import gc
 from torch.utils.benchmark import Timer
+import matplotlib.pyplot as plt
 
-tensor_pageable = torch.randn(100_000)
 
-tensor_pinned = torch.randn(100_000, pin_memory=True)
+def timer(cmd):
+    return Timer(cmd, globals=globals()).adaptive_autorange().median * 1000
 
-print(
-    "Regular to(device)",
-    Timer("tensor_pageable.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "Pinned to(device)",
-    Timer("tensor_pinned.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() along",
-    Timer("tensor_pageable.pin_memory()", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() + to(device)",
-    Timer(
-        "tensor_pageable.pin_memory().to('cuda:0')", globals=globals()
-    ).adaptive_autorange(),
-)
-del tensor_pageable, tensor_pinned
+
+pageable_tensor = torch.randn(1_000_000)
+
+pinned_tensor = torch.randn(1_000_000, pin_memory=True)
+
+pageable_to_device = timer("pageable_tensor.to('cuda:0')")
+pinned_to_device = timer("pinned_tensor.to('cuda:0')")
+pin_mem = timer("pageable_tensor.pin_memory()")
+pin_mem_to_device = timer("pageable_tensor.pin_memory().to('cuda:0')")
+r1 = pinned_to_device / pageable_to_device
+r2 = pin_mem_to_device / pageable_to_device
+
+fig, ax = plt.subplots()
+
+xlabels = ["Pageable Tensor", "Pinned tensor", "Pageable Tensor with pin"]
+bar_labels = [
+    "pageable_tensor.to(device) (1x)",
+    f"pinned_tensor.to(device) ({r1:4.4f}x)",
+    f"pageable_tensor.pin_memory().to(device) ({r2:4.4f}x)",
+]
+values = [pageable_to_device, pinned_to_device, pin_mem_to_device]
+
+ax.bar(xlabels, values, label=bar_labels)
+
+ax.set_ylabel("Runtime (ms)")
+ax.set_title("Device casting runtime (pin-memory)")
+ax.legend()
+
+plt.show()
+
+del pageable_tensor, pinned_tensor
 gc.collect()
 
 ######################################################################
-# Another size (TODO: Remove the one less concinving)
-tensor_pageable = torch.randn(1_000_000)
-
-tensor_pinned = torch.randn(1_000_000, pin_memory=True)
-
-print(
-    "Regular to(device)",
-    Timer("tensor_pageable.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "Pinned to(device)",
-    Timer("tensor_pinned.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() along",
-    Timer("tensor_pageable.pin_memory()", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() + to(device)",
-    Timer(
-        "tensor_pageable.pin_memory().to('cuda:0')", globals=globals()
-    ).adaptive_autorange(),
-)
-del tensor_pageable, tensor_pinned
-gc.collect()
-
-
-######################################################################
-# Another size (TODO: Remove the one less concinving)
-tensor_pageable = torch.randn(10_000)
-
-tensor_pinned = torch.randn(10_000, pin_memory=True)
-
-print(
-    "Regular to(device)",
-    Timer("tensor_pageable.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "Pinned to(device)",
-    Timer("tensor_pinned.to('cuda:0')", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() along",
-    Timer("tensor_pageable.pin_memory()", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory() + to(device)",
-    Timer(
-        "tensor_pageable.pin_memory().to('cuda:0')", globals=globals()
-    ).adaptive_autorange(),
-)
-del tensor_pageable, tensor_pinned
-gc.collect()
-
-######################################################################
+#
 # We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
 # the hood, a pageable tensor must be copied to pinned memory before being sent to GPU.
 #
@@ -253,16 +212,22 @@ def copy_to_device_nonblocking(*tensors, display_peak_mem=False):
 
 
 tensors = [torch.randn(1000) for _ in range(1000)]
-print(
-    "Call to `to(device)`",
-    Timer("copy_to_device(*tensors)", globals=globals()).adaptive_autorange(),
-)
-print(
-    "Call to `to(device, non_blocking=True)`",
-    Timer(
-        "copy_to_device_nonblocking(*tensors)", globals=globals()
-    ).adaptive_autorange(),
-)
+to_device = timer("copy_to_device(*tensors)")
+to_device_nonblocking = timer("copy_to_device_nonblocking(*tensors)")
+
+fig, ax = plt.subplots()
+
+xlabels = ["to(device)", "to(device, non_blocking=True)"]
+bar_labels = xlabels
+values = [to_device, to_device_nonblocking]
+
+ax.bar(xlabels, values, label=bar_labels)
+
+ax.set_ylabel("Runtime (ms)")
+ax.set_title("Device casting runtime (non-blocking)")
+ax.legend()
+
+plt.show()
 
 
 ######################################################################
@@ -318,42 +283,44 @@ def pin_copy_to_device_nonblocking(*tensors):
     return result
 
 
-print("\nCall to `pin_memory()` + `to(device)`")
-print(
-    "pin_memory().to(device)",
-    Timer("pin_copy_to_device(*tensors)", globals=globals()).adaptive_autorange(),
-)
-print(
-    "pin_memory().to(device, non_blocking=True)",
-    Timer(
-        "pin_copy_to_device_nonblocking(*tensors)", globals=globals()
-    ).adaptive_autorange(),
-)
+pin_and_copy = timer("pin_copy_to_device(*tensors)")
+pin_and_copy_nb = timer("pin_copy_to_device_nonblocking(*tensors)")
 
-print("\nCall to `to(device)`")
-print(
-    "to(device)",
-    Timer("copy_to_device(*tensors)", globals=globals()).adaptive_autorange(),
-)
-print(
-    "to(device, non_blocking=True)",
-    Timer(
-        "copy_to_device_nonblocking(*tensors)", globals=globals()
-    ).adaptive_autorange(),
-)
+page_copy = timer("copy_to_device(*tensors")
+page_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned))")
 
-print("\nCall to `to(device)` from pinned tensors")
-tensors_pinned = [torch.zeros(1000, pin_memory=True) for _ in range(1000)]
-print(
-    "tensor_pinned.to(device)",
-    Timer("copy_to_device(*tensors_pinned)", globals=globals()).adaptive_autorange(),
-)
-print(
-    "tensor_pinned.to(device, non_blocking=True)",
-    Timer(
-        "copy_to_device_nonblocking(*tensors_pinned)", globals=globals()
-    ).adaptive_autorange(),
-)
+tensors_pinned = [torch.randn(1000, pin_memory=True) for _ in range(1000)]
+
+pinned_copy = timer("copy_to_device(*tensors")
+pinned_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned))")
+
+strategies = ("pageable copy", "pinned copy", "pin and copy")
+blocking = {
+    "blocking": [page_copy, pinned_copy, pin_and_copy],
+    "non-blocking": [page_copy_nb, pinned_copy_nb, pin_and_copy_nb],
+}
+
+x = [0, 1, 2]
+width = 0.25
+multiplier = 0
+
+
+fig, ax = plt.subplots(layout="constrained")
+
+for attribute, runtimes in blocking.items():
+    offset = width * multiplier
+    rects = ax.bar(x + offset, runtimes, width, label=attribute)
+    ax.bar_label(rects, padding=3)
+    multiplier += 1
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel("Runtime (ms)")
+ax.set_title("Runtime (pin-mem and non-blocking)")
+ax.set_xticks(x + width, strategies)
+ax.legend(loc="upper left", ncols=3)
+ax.set_ylim(0, 250)
+
+plt.show()
 
 del tensors, tensors_pinned
 gc.collect()
@@ -447,47 +414,36 @@ from tensordict import TensorDict
 import torch
 from torch.utils.benchmark import Timer
 
-for s0 in (100, 1000, 10_000, 1_000_000):
-    for s1 in (10, 100, 1000):
-        print("\n\n\n\n", s0, s1)
-        td = TensorDict({str(i): torch.randn(s0) for i in range(s1)})
+td = TensorDict({str(i): torch.randn(1_000_000) for i in range(100)})
 
-        print(
-            Timer("td.to('cuda:0', non_blocking=False)", globals=globals()).adaptive_autorange()
-        )
-        print(Timer("td.to('cuda:0')", globals=globals()).adaptive_autorange())
-        print(torch.get_num_threads())
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=2)", globals=globals()
-            ).adaptive_autorange()
-        )
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=4)", globals=globals()
-            ).adaptive_autorange()
-        )
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=8)", globals=globals()
-            ).adaptive_autorange()
-        )
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=16)", globals=globals()
-            ).adaptive_autorange()
-        )
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=32)", globals=globals()
-            ).adaptive_autorange()
-        )
-        print(
-            Timer(
-                "td.to('cuda:0', non_blocking_pin=True, num_threads=64)", globals=globals()
-            ).adaptive_autorange()
-        )
+copy_blocking = timer("td.to('cuda:0', non_blocking=False)")
+copy_non_blocking = timer("td.to('cuda:0')")
+copy_pin_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=0)")
+copy_pin_multithread_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=4)")
 
+
+r1 = copy_non_blocking / copy_blocking
+r2 = copy_pin_nb / copy_blocking
+r3 = copy_pin_multithread_nb / copy_blocking
+
+fig, ax = plt.subplots()
+
+xlabels = [0, 1, 2, 3]
+bar_labels = [
+    "Blocking copy (1x)",
+    f"Non-blocking copy ({r1:4.4f}x)",
+    f"Blocking pin, non-blocking copy ({r2:4.4f}x)",
+    f"Non-blocking pin, non-blocking copy ({r3:4.4f}x)",
+]
+values = [copy_blocking, copy_non_blocking, copy_pin_nb, copy_pin_multithread_nb]
+
+ax.bar(xlabels, values, label=bar_labels)
+
+ax.set_ylabel("Runtime (ms)")
+ax.set_title("Device casting runtime")
+ax.legend()
+
+plt.show()
 
 ######################################################################
 # As a side note, it may be tempting to create everlasting buffers in pinned memory and copy tensors from pageable memory
