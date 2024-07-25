@@ -157,18 +157,19 @@ r2 = pin_mem_to_device / pageable_to_device
 
 fig, ax = plt.subplots()
 
-xlabels = ["Pageable Tensor", "Pinned tensor", "Pageable Tensor with pin"]
+xlabels = [0, 1, 2]
 bar_labels = [
     "pageable_tensor.to(device) (1x)",
-    f"pinned_tensor.to(device) ({r1:4.4f}x)",
-    f"pageable_tensor.pin_memory().to(device) ({r2:4.4f}x)",
+    f"pinned_tensor.to(device) ({r1:4.2f}x)",
+    f"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)",
 ]
 values = [pageable_to_device, pinned_to_device, pin_mem_to_device]
-
-ax.bar(xlabels, values, label=bar_labels)
+colors = ["tab:blue", "tab:red", "tab:orange"]
+ax.bar(xlabels, values, label=bar_labels, color=colors)
 
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Device casting runtime (pin-memory)")
+ax.set_xticks([])
 ax.legend()
 
 plt.show()
@@ -195,14 +196,14 @@ gc.collect()
 #
 
 
-def copy_to_device(*tensors, display_peak_mem=False):
+def copy_to_device(*tensors):
     result = []
     for tensor in tensors:
         result.append(tensor.to("cuda:0"))
     return result
 
 
-def copy_to_device_nonblocking(*tensors, display_peak_mem=False):
+def copy_to_device_nonblocking(*tensors):
     result = []
     for tensor in tensors:
         result.append(tensor.to("cuda:0", non_blocking=True))
@@ -215,16 +216,20 @@ tensors = [torch.randn(1000) for _ in range(1000)]
 to_device = timer("copy_to_device(*tensors)")
 to_device_nonblocking = timer("copy_to_device_nonblocking(*tensors)")
 
+r1 = to_device_nonblocking / to_device
+
 fig, ax = plt.subplots()
 
-xlabels = ["to(device)", "to(device, non_blocking=True)"]
-bar_labels = xlabels
+xlabels = [0, 1]
+bar_labels = [f"to(device) (1x)", f"to(device, non_blocking=True) ({r1:4.2f}x)"]
+colors = ["tab:blue", "tab:red"]
 values = [to_device, to_device_nonblocking]
 
-ax.bar(xlabels, values, label=bar_labels)
+ax.bar(xlabels, values, label=bar_labels, color=colors)
 
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Device casting runtime (non-blocking)")
+ax.set_xticks([])
 ax.legend()
 
 plt.show()
@@ -283,16 +288,16 @@ def pin_copy_to_device_nonblocking(*tensors):
     return result
 
 
+tensors_pinned = [torch.randn(1000, pin_memory=True) for _ in range(1000)]
+
 pin_and_copy = timer("pin_copy_to_device(*tensors)")
 pin_and_copy_nb = timer("pin_copy_to_device_nonblocking(*tensors)")
 
-page_copy = timer("copy_to_device(*tensors")
-page_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned))")
+page_copy = timer("copy_to_device(*tensors)")
+page_copy_nb = timer("copy_to_device_nonblocking(*tensors)")
 
-tensors_pinned = [torch.randn(1000, pin_memory=True) for _ in range(1000)]
-
-pinned_copy = timer("copy_to_device(*tensors")
-pinned_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned))")
+pinned_copy = timer("copy_to_device(*tensors_pinned)")
+pinned_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned)")
 
 strategies = ("pageable copy", "pinned copy", "pin and copy")
 blocking = {
@@ -300,7 +305,7 @@ blocking = {
     "non-blocking": [page_copy_nb, pinned_copy_nb, pin_and_copy_nb],
 }
 
-x = [0, 1, 2]
+x = torch.arange(3)
 width = 0.25
 multiplier = 0
 
@@ -310,15 +315,14 @@ fig, ax = plt.subplots(layout="constrained")
 for attribute, runtimes in blocking.items():
     offset = width * multiplier
     rects = ax.bar(x + offset, runtimes, width, label=attribute)
-    ax.bar_label(rects, padding=3)
+    ax.bar_label(rects, padding=3, fmt="%.2f")
     multiplier += 1
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Runtime (pin-mem and non-blocking)")
-ax.set_xticks(x + width, strategies)
+ax.set_xticks([])
 ax.legend(loc="upper left", ncols=3)
-ax.set_ylim(0, 250)
 
 plt.show()
 
@@ -431,16 +435,18 @@ fig, ax = plt.subplots()
 xlabels = [0, 1, 2, 3]
 bar_labels = [
     "Blocking copy (1x)",
-    f"Non-blocking copy ({r1:4.4f}x)",
-    f"Blocking pin, non-blocking copy ({r2:4.4f}x)",
-    f"Non-blocking pin, non-blocking copy ({r3:4.4f}x)",
+    f"Non-blocking copy ({r1:4.2f}x)",
+    f"Blocking pin, non-blocking copy ({r2:4.2f}x)",
+    f"Non-blocking pin, non-blocking copy ({r3:4.2f}x)",
 ]
 values = [copy_blocking, copy_non_blocking, copy_pin_nb, copy_pin_multithread_nb]
+colors = ["tab:blue", "tab:red", "tab:orange", "tab:green"]
 
-ax.bar(xlabels, values, label=bar_labels)
+ax.bar(xlabels, values, label=bar_labels, color=colors)
 
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Device casting runtime")
+ax.set_xticks([])
 ax.legend()
 
 plt.show()
