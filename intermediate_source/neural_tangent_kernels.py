@@ -22,8 +22,11 @@ First, some setup. Let's define a simple CNN that we wish to compute the NTK of.
 """
 
 import torch
+import profile_utils
 import torch.nn as nn
 from torch.func import functional_call, vmap, vjp, jvp, jacrev
+from torch._dynamo import config
+config.inline_inbuilt_nn_modules = 1
 device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
 
 class CNN(nn.Module):
@@ -95,6 +98,7 @@ def fnet_single(params, x):
 # The first method consists of doing just that - computing the two Jacobians,
 # and contracting them. Here's how to compute the NTK in the batched case:
 
+@torch.compile
 def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2):
     # Compute J(x1)
     jac1 = vmap(jacrev(fnet_single), (None, 0))(params, x1)
@@ -113,6 +117,7 @@ def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2):
 
 result = empirical_ntk_jacobian_contraction(fnet_single, params, x_train, x_test)
 print(result.shape)
+profile_utils.compute_speedup(empirical_ntk_jacobian_contraction, (fnet_single, params, x_train, x_test), device)
 
 ######################################################################
 # In some cases, you may only want the diagonal or the trace of this quantity,
@@ -120,7 +125,8 @@ print(result.shape)
 # NTK where the non-diagonal elements can be approximated by zero. It's easy to
 # adjust the above function to do that:
 
-def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2, compute='full'):
+@torch.compile
+def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2, compute):
     # Compute J(x1)
     jac1 = vmap(jacrev(fnet_single), (None, 0))(params, x1)
     jac1 = jac1.values()
@@ -148,6 +154,7 @@ def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2, compute='ful
 
 result = empirical_ntk_jacobian_contraction(fnet_single, params, x_train, x_test, 'trace')
 print(result.shape)
+profile_utils.compute_speedup(empirical_ntk_jacobian_contraction, (fnet_single, params, x_train, x_test, 'trace'), device)
 
 ######################################################################
 # The asymptotic time complexity of this method is :math:`N O [FP]` (time to
@@ -189,7 +196,8 @@ print(result.shape)
 #
 # Let's code that up:
 
-def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
+@torch.compile
+def empirical_ntk_ntk_vps(func, params, x1, x2, compute):
     def get_ntk(x1, x2):
         def func_x1(params):
             return func(params, x1)
@@ -226,8 +234,9 @@ def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
 
 # Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
 with torch.backends.cudnn.flags(allow_tf32=False):
-    result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
-    result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
+    result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train, 'full')
+    result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train, 'full')
+    profile_utils.compute_speedup(empirical_ntk_ntk_vps, (fnet_single, params, x_train, x_test, 'full'), device)
 
 assert torch.allclose(result_from_jacobian_contraction, result_from_ntk_vps, atol=1e-5)
 

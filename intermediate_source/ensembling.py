@@ -25,6 +25,9 @@ Let's demonstrate how to do this using an ensemble of simple MLPs.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch._dynamo import config
+config.inline_inbuilt_nn_modules = 1
+import profile_utils
 torch.manual_seed(0)
 
 # Here's a simple MLP
@@ -50,7 +53,7 @@ class SimpleMLP(nn.Module):
 # minibatch of size 64. Furthermore, lets say we want to combine the predictions
 # from 10 different models.
 
-device = 'cuda'
+device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
 num_models = 10
 
 data = torch.randn(100, 64, 1, 28, 28, device=device)
@@ -125,7 +128,12 @@ assert minibatches.shape == (num_models, 64, 1, 28, 28) # verify minibatch has l
 
 from torch import vmap
 
-predictions1_vmap = vmap(fmodel)(params, buffers, minibatches)
+@torch.compile
+def compute_predictions1(params, buffers, minibatches):
+    return vmap(fmodel)(params, buffers, minibatches)
+
+predictions1_vmap = compute_predictions1(params, buffers, minibatches)
+profile_utils.compute_speedup(compute_predictions1, (params, buffers, minibatches), device)
 
 # verify the ``vmap`` predictions match the
 assert torch.allclose(predictions1_vmap, torch.stack(predictions_diff_minibatch_loop), atol=1e-3, rtol=1e-5)
@@ -137,7 +145,12 @@ assert torch.allclose(predictions1_vmap, torch.stack(predictions_diff_minibatch_
 # By using ``None``, we tell ``vmap`` we want the same minibatch to apply for all of
 # the 10 models.
 
-predictions2_vmap = vmap(fmodel, in_dims=(0, 0, None))(params, buffers, minibatch)
+@torch.compile
+def compute_predictions2(params, buffers, minibatch):
+    return vmap(fmodel, in_dims=(0, 0, None))(params, buffers, minibatch)
+
+predictions2_vmap = compute_predictions2(params, buffers, minibatch)
+profile_utils.compute_speedup(compute_predictions2, (params, buffers, minibatch), device)
 
 assert torch.allclose(predictions2_vmap, torch.stack(predictions2), atol=1e-3, rtol=1e-5)
 
