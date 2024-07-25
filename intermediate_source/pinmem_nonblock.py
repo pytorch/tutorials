@@ -193,7 +193,7 @@ bar_labels = [
     "pageable_tensor.to(device) (1x)",
     f"pinned_tensor.to(device) ({r1:4.2f}x)",
     f"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)"
-    f"\npin_memory()={100*pin_mem/pin_mem_to_device:.2f}\% of runtime.",
+    f"\npin_memory()={100*pin_mem/pin_mem_to_device:.2f}% of runtime.",
 ]
 values = [pageable_to_device, pinned_to_device, pin_mem_to_device]
 colors = ["tab:blue", "tab:red", "tab:orange"]
@@ -386,7 +386,9 @@ for attribute, runtimes in blocking.items():
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Runtime (pin-mem and non-blocking)")
-ax.set_xticks(strategies)
+ax.set_xticks([0, 1, 2])
+ax.set_xticklabels(strategies)
+plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 ax.legend(loc="upper left", ncols=3)
 
 plt.show()
