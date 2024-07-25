@@ -159,7 +159,14 @@ import matplotlib.pyplot as plt
 
 
 def timer(cmd):
-    return Timer(cmd, globals=globals()).adaptive_autorange().median * 1000
+    median = (
+        Timer(cmd, globals=globals())
+        .adaptive_autorange(min_run_time=1.0, max_run_time=20.0)
+        .median
+        * 1000
+    )
+    print(f"{cmd}: {median: 4.4f} ms")
+    return median
 
 
 # A tensor in pageable memory
@@ -378,7 +385,7 @@ for attribute, runtimes in blocking.items():
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel("Runtime (ms)")
 ax.set_title("Runtime (pin-mem and non-blocking)")
-ax.set_xticks([])
+ax.set_xticks(strategies)
 ax.legend(loc="upper left", ncols=3)
 
 plt.show()
