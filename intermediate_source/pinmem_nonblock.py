@@ -192,7 +192,8 @@ xlabels = [0, 1, 2]
 bar_labels = [
     "pageable_tensor.to(device) (1x)",
     f"pinned_tensor.to(device) ({r1:4.2f}x)",
-    f"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)",
+    f"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)"
+    f"\npin_memory()={100*pin_mem/pin_mem_to_device:.2f}\% of runtime.",
 ]
 values = [pageable_to_device, pinned_to_device, pin_mem_to_device]
 colors = ["tab:blue", "tab:red", "tab:orange"]
