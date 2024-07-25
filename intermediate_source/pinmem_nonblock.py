@@ -208,7 +208,7 @@ plt.show()
 
 # Clear tensors
 del pageable_tensor, pinned_tensor
-gc.collect()
+_ = gc.collect()
 
 ######################################################################
 #
@@ -394,7 +394,7 @@ ax.legend(loc="upper left", ncols=3)
 plt.show()
 
 del tensors, tensors_pinned
-gc.collect()
+_ = gc.collect()
 
 
 ######################################################################
