@@ -163,6 +163,60 @@ print(
 del tensor_pageable, tensor_pinned
 gc.collect()
 
+######################################################################
+# Another size (TODO: Remove the one less concinving)
+tensor_pageable = torch.randn(1_000_000)
+
+tensor_pinned = torch.randn(1_000_000, pin_memory=True)
+
+print(
+    "Regular to(device)",
+    Timer("tensor_pageable.to('cuda:0')", globals=globals()).adaptive_autorange(),
+)
+print(
+    "Pinned to(device)",
+    Timer("tensor_pinned.to('cuda:0')", globals=globals()).adaptive_autorange(),
+)
+print(
+    "pin_memory() along",
+    Timer("tensor_pageable.pin_memory()", globals=globals()).adaptive_autorange(),
+)
+print(
+    "pin_memory() + to(device)",
+    Timer(
+        "tensor_pageable.pin_memory().to('cuda:0')", globals=globals()
+    ).adaptive_autorange(),
+)
+del tensor_pageable, tensor_pinned
+gc.collect()
+
+
+######################################################################
+# Another size (TODO: Remove the one less concinving)
+tensor_pageable = torch.randn(10_000)
+
+tensor_pinned = torch.randn(10_000, pin_memory=True)
+
+print(
+    "Regular to(device)",
+    Timer("tensor_pageable.to('cuda:0')", globals=globals()).adaptive_autorange(),
+)
+print(
+    "Pinned to(device)",
+    Timer("tensor_pinned.to('cuda:0')", globals=globals()).adaptive_autorange(),
+)
+print(
+    "pin_memory() along",
+    Timer("tensor_pageable.pin_memory()", globals=globals()).adaptive_autorange(),
+)
+print(
+    "pin_memory() + to(device)",
+    Timer(
+        "tensor_pageable.pin_memory().to('cuda:0')", globals=globals()
+    ).adaptive_autorange(),
+)
+del tensor_pageable, tensor_pinned
+gc.collect()
 
 ######################################################################
 # We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
@@ -393,17 +447,46 @@ from tensordict import TensorDict
 import torch
 from torch.utils.benchmark import Timer
 
-td = TensorDict({str(i): torch.randn(1_000_000) for i in range(100)})
+for s0 in (100, 1000, 10_000, 1_000_000):
+    for s1 in (10, 100, 1000):
+        print("\n\n\n\n", s0, s1)
+        td = TensorDict({str(i): torch.randn(s0) for i in range(s1)})
 
-print(
-    Timer("td.to('cuda:0', non_blocking=False)", globals=globals()).adaptive_autorange()
-)
-print(Timer("td.to('cuda:0')", globals=globals()).adaptive_autorange())
-print(
-    Timer(
-        "td.to('cuda:0', non_blocking=True, non_blocking_pin=True)", globals=globals()
-    ).adaptive_autorange()
-)
+        print(
+            Timer("td.to('cuda:0', non_blocking=False)", globals=globals()).adaptive_autorange()
+        )
+        print(Timer("td.to('cuda:0')", globals=globals()).adaptive_autorange())
+        print(torch.get_num_threads())
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=2)", globals=globals()
+            ).adaptive_autorange()
+        )
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=4)", globals=globals()
+            ).adaptive_autorange()
+        )
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=8)", globals=globals()
+            ).adaptive_autorange()
+        )
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=16)", globals=globals()
+            ).adaptive_autorange()
+        )
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=32)", globals=globals()
+            ).adaptive_autorange()
+        )
+        print(
+            Timer(
+                "td.to('cuda:0', non_blocking_pin=True, num_threads=64)", globals=globals()
+            ).adaptive_autorange()
+        )
 
 
 ######################################################################
