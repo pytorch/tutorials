@@ -3,15 +3,24 @@
 A guide on good usage of `non_blocking` and `pin_memory()` in PyTorch
 =====================================================================
 
-TL;DR
------
+**Author**: `Vincent Moens <https://github.com/vmoens>`_
 
-Sending tensors from CPU to GPU can be made faster by using asynchronous transfer and memory pinning, but:
+Introduction
+------------
 
-- Calling `tensor.pin_memory().to(device, non_blocking=True)` can be as twice as slow as a plain `tensor.to(device)`;
-- `tensor.to(device, non_blocking=True)` is usually a good choice;
-- `cpu_tensor.to("cuda", non_blocking=True).mean()` will work, but `cuda_tensor.to("cpu", non_blocking=True).mean()`
-  will produce garbage.
+Transferring data from the CPU to the GPU is fundamental in many PyTorch applications.
+It's crucial for users to understand the most effective tools and options available for moving data between devices.
+This tutorial examines two key methods for device-to-device data transfer in PyTorch:
+:meth:`~torch.Tensor.pin_memory` and :meth:`~torch.Tensor.to` with the `non_blocking=True` option.
+
+Key Learnings
+~~~~~~~~~~~~~
+Optimizing the transfer of tensors from the CPU to the GPU can be achieved through asynchronous transfers and memory
+pinning. However, there are important considerations:
+- Using `tensor.pin_memory().to(device, non_blocking=True)` can be up to twice as slow as a straightforward `tensor.to(device)`.
+- Generally, `tensor.to(device, non_blocking=True)` is an effective choice for enhancing transfer speed.
+- While `cpu_tensor.to("cuda", non_blocking=True).mean()` executes correctly, attempting
+  `cuda_tensor.to("cpu", non_blocking=True).mean()` will result in erroneous outputs.
 
 """
 
@@ -21,37 +30,33 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 
 
 ######################################################################
-# Introduction
-# ------------
 #
-# Sending data from CPU to GPU is a cornerstone of many applications that use PyTorch.
-# Given this, users should have a good understanding of what tools and options they should be using
-# when moving data from one device to another.
-#
-# This tutorial focuses on two aspects of device-to-device transfer: `Tensor.pin_memory()` and `Tensor.to(device,
-# non_blocking=True)`.
 # We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features.
 #
-# - [Background](#background)
-#   - [Memory management basics](#memory-management-basics)
-#   - [CUDA and (non-)pageable memory](#cuda-and-non-pageable-memory)
-#   - [Asynchronous vs synchronous operations](#asynchronous-vs-synchronous-operations)
-# - [Deep dive](#deep-dive)
-#   - [`pin_memory()`](#pin_memory)
-#   - [`non_blocking=True`](#non_blockingtrue)
-#   - [Synergies](#synergies)
-#   - [Other directions (GPU -> CPU etc.)](#other-directions)
-# - [Practical recommendations](#practical-recommendations)
-# - [Case studies](#case-studies)
-# - [Conclusion](#conclusion)
-# - [Additional resources](#additional-resources)
+# - :ref:`Background <pinmem_background>`
+#   - :ref:`Memory management basics <pinmem_mem>`
+#   - :ref:`CUDA and (non-)pageable memory <pinmem_cuda_pageable_mem>`
+#   - :ref:`Asynchronous vs. Synchronous Operations with `non_blocking=True` <pinmem_async_sync>`
+# - :ref:`A PyTorch perspective <pinmem_pt_perspective>`
+#   - :ref:`pin_memory <pinmem_pinmem>`
+#   - :ref:`non_blocking=True <pinmem_nb>`
+#   - :ref:`Synergies <synergies>`
+#   - :ref:`Other directions (GPU -> CPU) <pinmem_otherdir>`
+# - :ref:`Practical recommendations <pinmem_recom>`
+# - :ref:`Additional considerations <pinmem_considerations>`
+# - :ref:`Conclusion <pinmem_conclusion>`
+# - :ref:`Additional resources <pinmem_resources>`
 #
 #
 # Background
 # ----------
 #
+#   .. _pinmem_background:
+#
 # Memory management basics
 # ~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#   .. _pinmem_mem:
 #
 # When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed
 # in memory. The memory we talk about here is a rather complex concept worth looking at carefully.
@@ -80,6 +85,8 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # CUDA and (non-)pageable memory
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+#   .. _pinmem_cuda_pageable_mem:
+#
 # To understand how CUDA copies a tensor from CPU to CUDA, let's consider the two scenarios above:
 # - If the memory is page-locked, the device can access the memory directly in the main memory. The memory addresses are well
 #   defined and functions that need to read these data can be significantly accelerated.
@@ -92,36 +99,42 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # Asynchronous vs. Synchronous Operations with `non_blocking=True` (CUDA `cudaMemcpyAsync`)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+#   .. _pinmem_async_sync:
+#
 # When executing a copy from a host (e.g., CPU) to a device (e.g., GPU), the CUDA toolkit offers modalities to do these
-# operations synchronously or asynchronously with respect to the host. In the synchronous case, the call to `cudaMemcpy`
-# that is queries by `tensor.to(device)` is blocking in the python main thread, which means that the code will stop until
-# the data has been transferred to the device.
+# operations synchronously or asynchronously with respect to the host.
 #
-# When calling `tensor.to(device)`, PyTorch always makes a call to
+# In practice, when calling :meth:`~torch.Tensor.to`, PyTorch always makes a call to
 # [`cudaMemcpyAsync`](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g85073372f776b4c4d5f89f7124b7bf79).
-# If `non_blocking=False` (default), a `cudaStreamSynchronize` will be called after each and every `cudaMemcpyAsync`.
+# If `non_blocking=False` (default), a `cudaStreamSynchronize` will be called after each and every `cudaMemcpyAsync`, making
+# the call to :meth:`~torch.Tensor.to` blocking in the main thread.
 # If `non_blocking=True`, no synchronization is triggered, and the main thread on the host is not blocked.
-# Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously in the latter case,
-# as the thread does not need for one transfer to be completed to initiate the other.
+# Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously,
+# as the thread does not need to wait for one transfer to be completed to initiate the other.
 #
-# .. note:: In general, the transfer is blocking on the device size even if it's not on the host side: the copy on the device cannot
-#   occur while another operation is being executed. However, in some advanced scenarios, multiple copies or copy and kernel
+# .. note:: In general, the transfer is blocking on the device side (even if it isn't on the host side):
+#   the copy on the device cannot occur while another operation is being executed.
+#   However, in some advanced scenarios, multiple copies or copy and kernel
 #   executions can be done simultaneously on the GPU side. To enable this, three requirements must be met:
 #
-# 1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
-#    Tesla or H100 devices have more than one DMA engine.
+#   1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
+#      Tesla or H100 devices have more than one DMA engine.
 #
-# 2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using
-#    `torch.cuda.Stream`.
+#   2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using
+#      :class:`~torch.cuda.Stream`.
 #
-# 3. The source data must be in pinned memory.
+#   3. The source data must be in pinned memory.
 #
 #
 # A PyTorch perspective
 # ---------------------
 #
+#   .. _pinmem_pt_perspective:
+#
 # `pin_memory()`
 # ~~~~~~~~~~~~~~
+#
+#   .. _pinmem_pinmem:
 #
 # PyTorch offers the possibility to create and send tensors to page-locked memory through the `pin_memory` functions and
 # arguments.
@@ -188,6 +201,8 @@ gc.collect()
 #
 # `non_blocking=True`
 # ~~~~~~~~~~~~~~~~~~~
+#
+#   .. _pinmem_nb:
 #
 # As mentioned earlier, many PyTorch operations have the option of being executed asynchronously with respect to the host
 # through the `non_blocking` argument.
@@ -267,6 +282,8 @@ print(
 # Synergies
 # ~~~~~~~~~
 #
+#   .. _pinmem_synergies:
+#
 # Now that we have made the point that data transfer of tensors already in pinned memory to GPU is faster than from
 # pageable memory, and that we know that doing these transfers asynchronously is also faster than synchronously, we can
 # benchmark the various combinations at hand:
@@ -334,6 +351,8 @@ gc.collect()
 # Other directions (GPU -> CPU, CPU -> MPS etc.)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+#   .. _pinmem_otherdir:
+#
 # So far, we have assumed that doing asynchronous copies from CPU to GPU was safe.
 # Indeed, it is a safe thing to do because CUDA will synchronize whenever it is needed to make sure that the data being
 # read is not garbage.
@@ -383,6 +402,8 @@ except AssertionError:
 # Practical recommendations
 # -------------------------
 #
+#   .. _pinmem_recom:
+#
 # We can now wrap up some early recommendations based on our observations:
 # In general, `non_blocking=True` will provide a good speed of transfer, regardless of whether the original tensor is or
 # isn't in pinned memory. If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to
@@ -394,6 +415,8 @@ except AssertionError:
 #
 # Additional considerations
 # -------------------------
+#
+#   .. _pinmem_considerations:
 #
 # PyTorch notoriously provides a `DataLoader` class that accepts a `pin_memory` argument.
 # Given everything we have said so far about calls to `pin_memory`, how does the dataloader manage to accelerate data
@@ -470,5 +493,9 @@ plt.show()
 ######################################################################
 # ## Conclusion
 #
+#   .. _pinmem_conclusion:
+#
 # ## Additional resources
+#
+#   .. _pinmem_resources:
 #
