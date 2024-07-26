@@ -598,7 +598,8 @@ plt.show()
 #
 
 ######################################################################
-# ## Conclusion
+# Conclusion
+# ----------
 #
 #   .. _pinmem_conclusion:
 #
@@ -610,7 +611,15 @@ plt.show()
 # Remember that profiling your code and keeping an eye on the memory consumption are essential to optimize resource
 # usage and achieve the best possible performance.
 #
-# ## Additional resources
+# Additional resources
+# --------------------
 #
 #   .. _pinmem_resources:
+#
+#  If you are dealing with issues with memory copies when using CUDA devices or want to learn more about
+#  what was discussed in this tutorial, check the following references:
+#
+#  - `CUDA toolkit memory management doc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html>`_
+#  - `CUDA pin-memory note <https://forums.developer.nvidia.com/t/pinned-memory/268474>`_
+#  - tensordict :meth:`~tensordict.TensorDict.to` method;
 #
