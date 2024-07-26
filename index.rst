@@ -3,11 +3,11 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html>`__
-* `Large Scale Transformer model training with Tensor Parallel (TP) <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
-* `Accelerating BERT with semi-structured (2:4) sparsity <https://pytorch.org/tutorials/advanced/semi_structured_sparse.html>`__
-* `torch.export Tutorial with torch.export.Dim <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
-* `Extension points in nn.Module for load_state_dict and tensor subclasses <https://pytorch.org/tutorials/recipes/recipes/swap_tensors.html>`__
+* `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
+* `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
+* `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
+* `Python Custom Operators <https://pytorch.org/tutorials/advanced/python_custom_ops.html>`__
+* Updated `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
 
 .. raw:: html
 
@@ -779,6 +779,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/FSDP_adavnced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Introduction to Libuv TCPStore Backend
+   :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
+   :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
+   :link: intermediate/TCPStore_libuv_backend.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Edge
 
 .. customcarditem::
@@ -1134,6 +1141,7 @@ Additional Resources
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
    intermediate/FSDP_adavnced_tutorial
+   intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial
    intermediate/process_group_cpp_extension_tutorial
