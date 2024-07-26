@@ -487,7 +487,7 @@ except AssertionError:
 #
 # Additionally, ``TensorDict.to()`` includes a ``non_blocking_pin`` option  which initiates multiple threads to execute
 # ``pin_memory()`` before proceeding with to ``to(device)``.
-# This approach can further accelerate data transfers, as demonstrated in the following example:
+# This approach can further accelerate data transfers, as demonstrated in the following example.
 #
 # .. code-block:: bash
 #
@@ -536,6 +536,11 @@ ax.legend()
 plt.show()
 
 ######################################################################
+# In this example, we are transferring many large tensors from the CPU to the GPU.
+# This scenario is ideal for utilizing multithreaded ``pin_memory()``, which can significantly enhance performance.
+# However, if the tensors are small, the overhead associated with multithreading may outweigh the benefits.
+# Similarly, if there are only a few tensors, the advantages of pinning tensors on separate threads become limited.
+#
 # As an additional note, while it might seem advantageous to create permanent buffers in pinned memory to shuttle
 # tensors from pageable memory before transferring them to the GPU, this strategy does not necessarily expedite
 # computation. The inherent bottleneck caused by copying data into pinned memory remains a limiting factor.
