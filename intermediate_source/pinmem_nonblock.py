@@ -500,13 +500,18 @@ import torch
 from torch.utils.benchmark import Timer
 
 # Create the dataset
-td = TensorDict({str(i): torch.randn(1_000_000) for i in range(100)})
+for s0 in (10, 100, 1000, 10_000, 100_000, 1_000_000):
+    for s1 in (10, 100, 1000, 10_000):
+        if s0 * s1 >= 1e9:
+            continue
+        print(f"\n\ns0={s0}, s1={s1}")
+        td = TensorDict({str(i): torch.randn(1_000_000) for i in range(100)})
 
-# Runtimes
-copy_blocking = timer("td.to('cuda:0', non_blocking=False)")
-copy_non_blocking = timer("td.to('cuda:0')")
-copy_pin_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=0)")
-copy_pin_multithread_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=4)")
+        # Runtimes
+        copy_blocking = timer("td.to('cuda:0', non_blocking=False)")
+        copy_non_blocking = timer("td.to('cuda:0')")
+        copy_pin_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=0)")
+        copy_pin_multithread_nb = timer("td.to('cuda:0', non_blocking_pin=True, num_threads=4)")
 
 # Rations
 r1 = copy_non_blocking / copy_blocking
