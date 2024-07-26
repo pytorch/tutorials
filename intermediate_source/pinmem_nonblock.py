@@ -501,11 +501,11 @@ from torch.utils.benchmark import Timer
 
 # Create the dataset
 for s0 in (10, 100, 1000, 10_000, 100_000, 1_000_000):
-    for s1 in (10, 100, 1000, 10_000):
+    for s1 in (10, 100, 1000, 10_000, 100_000, 1_000_000):
         if s0 * s1 >= 1e9:
             continue
         print(f"\n\ns0={s0}, s1={s1}")
-        td = TensorDict({str(i): torch.randn(1_000_000) for i in range(100)})
+        td = TensorDict({str(i): torch.randn(s0) for i in range(s1)})
 
         # Runtimes
         copy_blocking = timer("td.to('cuda:0', non_blocking=False)")
