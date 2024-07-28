@@ -597,8 +597,6 @@ plt.show()
 # This reduces the available memory for other critical operations, such as paging, which can negatively impact the
 # overall performance of an algorithm.
 #
-
-######################################################################
 # Conclusion
 # ----------
 #
