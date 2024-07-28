@@ -44,7 +44,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 #   - :ref:`pin_memory <pinmem_pinmem>`
 #   - :ref:`non_blocking=True <pinmem_nb>`
-#   - :ref:`Synergies <synergies>`
+#   - :ref:`Synergies <pinmem_synergies>
 #   - :ref:`Other copy directions (GPU -> CPU) <pinmem_otherdir>`
 #
 # - :ref:`Practical recommendations <pinmem_recom>`
@@ -65,18 +65,18 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed
 # in memory. The memory we talk about here is a rather complex concept worth looking at carefully.
-# We distinguish two types of memories that are handled by the Memory Management Unit: the main memory (for simplicity)
-# and the disk (which may or may not be the hard drive). Together, the available space in disk and RAM (physical memory)
+# We distinguish two types of memory that are handled by the Memory Management Unit: the main memory (for simplicity)
+# and the swap space on disk (which may or may not be the hard drive). Together, the available space in disk and RAM (physical memory)
 # make up the virtual memory, which is an abstraction of the total resources available.
 # In short, the virtual memory makes it so that the available space is larger than what can be found on RAM in isolation
 # and creates the illusion that the main memory is larger than it actually is.
 #
-# In normal circumstances, a regular CPU tensor is _paged_, which means that it is divided in blocks called _pages_ that
+# In normal circumstances, a regular CPU tensor is pageable which means that it is divided in blocks called pages that
 # can live anywhere in the virtual memory (both in RAM or on disk). As mentioned earlier, this has the advantage that
 # the memory seems larger than what the main memory actually is.
 #
 # Typically, when a program accesses a page that is not in RAM, a "page fault" occurs and the operating system (OS) then brings
-# back this page into RAM (_swap in_ or _page in_).
+# back this page into RAM ("swap in" or "page in").
 # In turn, the OS may have to _swap out_ (or _page out_) another page to make room for the new page.
 #
 # In contrast to pageable memory, a _pinned_ (or _page-locked_ or _non-pageable_) memory is a type of memory that cannot
@@ -93,6 +93,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #   .. _pinmem_cuda_pageable_mem:
 #
 # To understand how CUDA copies a tensor from CPU to CUDA, let's consider the two scenarios above:
+#
 # - If the memory is page-locked, the device can access the memory directly in the main memory. The memory addresses are well
 #   defined and functions that need to read these data can be significantly accelerated.
 # - If the memory is pageable, all the pages will have to be brought to the main memory before being sent to the GPU.
@@ -143,7 +144,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # PyTorch offers the possibility to create and send tensors to page-locked memory through the
 # :meth:`~torch.Tensor.pin_memory` method and constructor arguments.
-# Cpu tensors on a machine where a cuda is initialized can be cast to pinned memory through the :meth:`~torch.Tensor.pin_memory`
+# CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the :meth:`~torch.Tensor.pin_memory`
 # method. Importantly, ``pin_memory`` is blocking on the main thread of the host: it will wait for the tensor to be copied to
 # page-locked memory before executing the next operation.
 # New tensors can be directly created in pinned memory with functions like :func:`~torch.zeros`, :func:`~torch.ones` and other
@@ -299,7 +300,7 @@ def profile_mem(cmd):
 print("Call to `to(device)`", profile_mem("copy_to_device(*tensors)"))
 
 ######################################################################
-# and now the ``non_blocing`` version:
+# and now the ``non_blocking`` version:
 #
 
 print(
@@ -316,7 +317,7 @@ print(
 # used.
 #
 # .. note:: Interestingly, the blocking ``to("cuda")`` actually performs the same asynchronous device casting operation
-#   (``cudaMemcpyAsync``) as the one with ```non_blocking=True`` with a synchronization point after each copy.
+#   (``cudaMemcpyAsync``) as the one with ``non_blocking=True`` with a synchronization point after each copy.
 #
 # Synergies
 # ~~~~~~~~~
@@ -429,7 +430,7 @@ try:
         )
     print("No test failed with non_blocking")
 except AssertionError:
-    print(f"One test failed with non_blocking: {i}th assertion!")
+    print(f"{i}th test failed with non_blocking. Skipping remaining tests")
 try:
     i = -1
     for i in range(100):
@@ -459,7 +460,7 @@ except AssertionError:
 #
 # We can now wrap up some early recommendations based on our observations:
 #
-# In general, ``non_blocking=True`` will provide a good throughput, regardless of whether the original tensor is or
+# In general, ``non_blocking=True`` will provide good throughput, regardless of whether the original tensor is or
 # isn't in pinned memory.
 # If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to
 # pin memory manually from python main thread is a blocking operation on the host, and hence will annihilate much of
@@ -473,7 +474,7 @@ except AssertionError:
 #
 #   .. _pinmem_considerations:
 #
-# PyTorch notoriously provides a :class:`~torch.utils.data.DataLoader` class which constructor accepts a
+# PyTorch notoriously provides a :class:`~torch.utils.data.DataLoader` class whose constructor accepts a
 # ``pin_memory`` argument.
 # Considering our previous discussion on ``pin_memory``, you might wonder how the ``DataLoader`` manages to
 # accelerate data transfers if memory pinning is inherently blocking.
@@ -498,7 +499,7 @@ except AssertionError:
 from tensordict import TensorDict
 import torch
 from torch.utils.benchmark import Timer
-
+import matplotlib.pyplot as plt
 # Create the dataset
 td = TensorDict({str(i): torch.randn(1_000_000) for i in range(1000)})
 
