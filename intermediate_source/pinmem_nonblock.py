@@ -44,7 +44,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 #   - :ref:`pin_memory <pinmem_pinmem>`
 #   - :ref:`non_blocking=True <pinmem_nb>`
-#   - :ref:`Synergies <pinmem_synergies>
+#   - :ref:`Synergies <pinmem_synergies>`
 #   - :ref:`Other copy directions (GPU -> CPU) <pinmem_otherdir>`
 #
 # - :ref:`Practical recommendations <pinmem_recom>`
@@ -348,21 +348,20 @@ def pin_copy_to_device_nonblocking(*tensors):
 
 
 ######################################################################
-# Let's also create a list of pinned tensors
+# The benefits of using :meth:`~torch.Tensor.pin_memory` are more pronounced for
+# somewhat large batches of large tensors:
 #
-tensors_pinned = [torch.randn(1000, pin_memory=True) for _ in range(1000)]
 
-######################################################################
-# And now the runs:
-#
-pin_and_copy = timer("pin_copy_to_device(*tensors)")
-pin_and_copy_nb = timer("pin_copy_to_device_nonblocking(*tensors)")
-
+tensors = [torch.randn(1_000_000) for _ in range(1000)]
 page_copy = timer("copy_to_device(*tensors)")
 page_copy_nb = timer("copy_to_device_nonblocking(*tensors)")
 
+tensors_pinned = [torch.randn(1_000_000, pin_memory=True) for _ in range(1000)]
 pinned_copy = timer("copy_to_device(*tensors_pinned)")
 pinned_copy_nb = timer("copy_to_device_nonblocking(*tensors_pinned)")
+
+pin_and_copy = timer("pin_copy_to_device(*tensors)")
+pin_and_copy_nb = timer("pin_copy_to_device_nonblocking(*tensors)")
 
 # Plot
 strategies = ("pageable copy", "pinned copy", "pin and copy")
@@ -500,6 +499,7 @@ from tensordict import TensorDict
 import torch
 from torch.utils.benchmark import Timer
 import matplotlib.pyplot as plt
+
 # Create the dataset
 td = TensorDict({str(i): torch.randn(1_000_000) for i in range(1000)})
 
