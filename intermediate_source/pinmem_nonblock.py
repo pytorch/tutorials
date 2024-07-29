@@ -338,10 +338,12 @@ _ = gc.collect()
 # executing the transfer. This makes sense, since we're actually asking python to execute an operation that CUDA will
 # perform anyway before copying the data from host to device.
 #
-# .. note:: Here too, the observation may vary depending on the available hardware.
-#   The pytorch implementation of
+# .. note:: The pytorch implementation of
 #   `pin_memory <https://github.com/pytorch/pytorch/blob/5298acb5c76855bc5a99ae10016efc86b27949bd/aten/src/ATen/native/Memory.cpp#L58>`_
-#   could be, in rare cases, faster than the corresponding CUDA version.
+#   which relies on creating a brand new storage in pinned memory through `cudaHostAlloc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902>`
+#   could be, in rare cases, faster than transitioning data in chunks as ``cudaMemcpy`` does.
+#   Here too, the observation may vary depending on the available hardware, the size of the tensors being sent or
+#   the amount of available RAM.
 #
 # ``non_blocking=True``
 # ~~~~~~~~~~~~~~~~~~~~~
@@ -738,5 +740,6 @@ plt.show()
 #
 #  - `CUDA toolkit memory management doc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html>`_
 #  - `CUDA pin-memory note <https://forums.developer.nvidia.com/t/pinned-memory/268474>`_
+#  - `How to Optimize Data Transfers in CUDA C/C++ <https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/>`_
 #  - tensordict :meth:`~tensordict.TensorDict.to` method;
 #
