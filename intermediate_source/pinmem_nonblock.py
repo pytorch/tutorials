@@ -212,7 +212,7 @@ benchmark_with_profiler(streamed=True, pinned=True)
 # .. figure:: /_static/img/pinmem/trace_streamed1_pinned0.png
 #    :alt:
 #
-# Only pinned tensors copies to GPU on a separate stream can be executed whilst an arithmetic operation is executed on
+# Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on
 # the main stream:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed1_pinned1.png
