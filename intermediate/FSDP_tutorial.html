@@ -533,7 +533,7 @@ It also comes with considerable engineering complexity to handle the training of
 <p>1.2  Import necessary packages</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of <cite>size_based_auto_wrap_policy</cite> with <cite>default_auto_wrap_policy</cite> and <cite>fsdp_auto_wrap_policy</cite> with <cite>auto_wrap_policy</cite>.</p>
+<p>This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of <cite>size_based_auto_wrap_policy</cite> with <cite>default_auto_wrap_policy</cite>.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Based on: https://github.com/pytorch/examples/blob/master/mnist/main.py</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -752,7 +752,7 @@ CUDA<span class="w"> </span>event<span class="w"> </span>elapsed<span class="w">
 </pre></div>
 </div>
 <p>Wrapping the model with FSDP, the model will look as follows, we can see the model has been wrapped in one FSDP unit.
-Alternatively, we will look at adding the auto_wrap_policy next and will discuss the differences.</p>
+Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will discuss the differences.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w">   </span>FullyShardedDataParallel<span class="o">(</span>
 <span class="w">   </span><span class="o">(</span>_fsdp_wrapped_module<span class="o">)</span>:<span class="w"> </span>FlattenParamsWrapper<span class="o">(</span>
 <span class="w">       </span><span class="o">(</span>_fpw_module<span class="o">)</span>:<span class="w"> </span>Net<span class="o">(</span>
@@ -772,11 +772,11 @@ Alternatively, we will look at adding the auto_wrap_policy next and will discuss
 <a class="reference internal image-reference" href="../_images/FSDP_memory.gif"><img alt="FSDP peak memory" src="../_images/FSDP_memory.gif" style="width: 100%;"/></a>
 <p class="caption"><span class="caption-text">FSDP Peak Memory Usage</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
-<p>Applying <em>auto_wrap_policy</em> in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency.
+<p>Applying <em>fsdp_auto_wrap_policy</em> in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency.
 The way it works is that, suppose your model contains 100 Linear layers. If you do FSDP(model), there will only be one FSDP unit which wraps the entire model.
 In that case, the allgather would collect the full parameters for all 100 linear layers, and hence won’t save CUDA memory for parameter sharding.
 Also, there is only one blocking allgather call for the all 100 linear layers, there will not be communication and computation overlapping between layers.</p>
-<p>To avoid that, you can pass in an auto_wrap_policy, which will seal the current FSDP unit and start a new one automatically when the specified condition is met (e.g., size limit).
+<p>To avoid that, you can pass in an fsdp_auto_wrap_policy, which will seal the current FSDP unit and start a new one automatically when the specified condition is met (e.g., size limit).
 In that way you will have multiple FSDP units, and only one FSDP unit needs to collect full parameters at a time. E.g., suppose you have 5 FSDP units, and each wraps 20 linear layers.
 Then, in the forward, the 1st FSDP unit will allgather parameters for the first 20 linear layers, do computation, discard the parameters and then move on to the next 20 linear layers. So, at any point in time, each rank only materializes parameters/grads for 20 linear layers instead of 100.</p>
 <p>To do so in 2.4 we define the auto_wrap_policy and pass it to FSDP wrapper, in the following example, my_auto_wrap_policy defines that a layer could be wrapped or sharded by FSDP if the number of parameters in this layer is larger than 100.
@@ -789,10 +789,10 @@ Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning
 <span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
-    <span class="n">auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">)</span>
+    <span class="n">fsdp_auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Applying the auto_wrap_policy, the model would be as follows:</p>
+<p>Applying the fsdp_auto_wrap_policy, the model would be as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w">  </span>FullyShardedDataParallel<span class="o">(</span>
 <span class="o">(</span>_fsdp_wrapped_module<span class="o">)</span>:<span class="w"> </span>FlattenParamsWrapper<span class="o">(</span>
 <span class="w">  </span><span class="o">(</span>_fpw_module<span class="o">)</span>:<span class="w"> </span>Net<span class="o">(</span>
@@ -827,7 +827,7 @@ It can be observed that the peak memory usage on each device is smaller compared
 <p>Using this feature may slow down the training considerably, due to frequent copying of tensors from host to device, but it could help improve memory efficiency and train larger scale models.</p>
 <p>In 2.4 we just add it to the FSDP wrapper</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
-    <span class="n">auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">,</span>
+    <span class="n">fsdp_auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">,</span>
     <span class="n">cpu_offload</span><span class="o">=</span><span class="n">CPUOffload</span><span class="p">(</span><span class="n">offload_params</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
