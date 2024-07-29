@@ -131,6 +131,8 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 #   3. The source data must be in pinned memory.
 #
+#  We demonstrate this by running profiles on the following script.
+#
 
 import contextlib
 
@@ -149,6 +151,7 @@ assert torch.cuda.is_available()
 device = torch.device("cuda", torch.cuda.current_device())
 
 
+# The function we want to profile
 def inner(pinned: bool, streamed: bool):
     with torch.cuda.stream(s) if streamed else contextlib.nullcontext():
         if pinned:
@@ -164,6 +167,7 @@ def inner(pinned: bool, streamed: bool):
     t2_h2d_event.synchronize()
 
 
+# Our profiler: profiles the `inner` function and stores the results in a .json file
 def benchmark_with_profiler(
     pinned,
     streamed,
@@ -188,30 +192,40 @@ def benchmark_with_profiler(
     prof.export_chrome_trace(f"trace_streamed{int(streamed)}_pinned{int(pinned)}.json")
 
 
-benchmark_with_profiler(streamed=False, pinned=False)
-benchmark_with_profiler(streamed=True, pinned=False)
-benchmark_with_profiler(streamed=False, pinned=True)
-benchmark_with_profiler(streamed=True, pinned=True)
-
-
 ######################################################################
 # Loading these profile traces in chrome (``chrome://tracing``) shows the following results: first, let's see
 # what happens if both the arithmetic operation on ``t3_cuda`` is executed after the pageable tensor is sent to GPU
 # in the main stream:
 #
+
+benchmark_with_profiler(streamed=False, pinned=False)
+
+######################################################################
 # .. figure:: /_static/img/pinmem/trace_streamed0_pinned0.png
 #    :alt:
 #
+
+benchmark_with_profiler(streamed=True, pinned=False)
+
+######################################################################
 # Using a pinned tensor doesn't change the trace much, both operations are still executed consecutively:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed0_pinned1.png
 #    :alt:
 #
+
+benchmark_with_profiler(streamed=False, pinned=True)
+
+######################################################################
 # Sending a pageable tensor to GPU on a separate stream is also a blocking operation:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed1_pinned0.png
 #    :alt:
 #
+
+benchmark_with_profiler(streamed=True, pinned=True)
+
+######################################################################
 # Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on
 # the main stream:
 #
