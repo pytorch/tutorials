@@ -29,6 +29,9 @@ Preamble
 The performance reported in this tutorial are conditioned on the system used to build the tutorial.
 Although the conclusions should be applicable across different systems, the specific observations may vary slightly
 depending on the hardware available.
+The primary objective of this tutorial is to offer a theoretical framework for understanding CPU to GPU data transfers.
+However, any design decisions should be tailored to individual cases and guided by benchmarked throughput measurements,
+as well as the specific requirements of the task at hand.
 
 """
 
