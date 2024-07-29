@@ -37,7 +37,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # - :ref:`Background <pinned_memory_background>`
 #
 #   - :ref:`Memory management basics <pinned_memory_memory>`
-#   - :ref:`CUDA and (non-)pageable memory <pinned_memory_cuda_pageable_mem>`
+#   - :ref:`CUDA and (non-)pageable memory <pinned_memory_cuda_pageable_memory>`
 #   - :ref:`Asynchronous vs. Synchronous Operations with non_blocking=True <pinned_memory_async_sync>`
 #
 # - :ref:`A PyTorch perspective <pinned_memory_pt_perspective>`
@@ -90,7 +90,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # CUDA and (non-)pageable memory
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinned_memory_cuda_pageable_mem:
+#   .. _pinned_memory_cuda_pageable_memory:
 #
 # To understand how CUDA copies a tensor from CPU to CUDA, let's consider the two scenarios above:
 #
@@ -159,7 +159,7 @@ def inner(pinned: bool, streamed: bool):
         else:
             t2_cuda = t2_cpu_paged.to(device, non_blocking=True)
         t2_h2d_event = s.record_event()
-    # This operation can be executed during the CPU to GPU copy iff the tensor is pinned and the copy is
+    # This operation can be executed during the CPU to GPU copy if and only if the tensor is pinned and the copy is
     #  done in the other stream
     t3_cuda_mul = t3_cuda * t3_cuda * t3_cuda
     t1_h2d_event = torch.cuda.current_stream().record_event()
