@@ -334,9 +334,14 @@ _ = gc.collect()
 # the hood, a pageable tensor must be copied to pinned memory before being sent to GPU.
 #
 # However, contrary to a somewhat common belief, calling :meth:`~torch.Tensor.pin_memory()` on a pageable tensor before
-# casting it to GPU should not bring any speed-up, on the contrary this call is usually slower than just executing
-# the transfer. This makes sense, since we're actually asking python to execute an operation that CUDA will perform
-# anyway before copying the data from host to device.
+# casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just
+# executing the transfer. This makes sense, since we're actually asking python to execute an operation that CUDA will
+# perform anyway before copying the data from host to device.
+#
+# .. note:: Here too, the observation may vary depending on the available hardware.
+#   The pytorch implementation of
+#   `pin_memory <https://github.com/pytorch/pytorch/blob/5298acb5c76855bc5a99ae10016efc86b27949bd/aten/src/ATen/native/Memory.cpp#L58>`_
+#   could be, in rare cases, faster than the corresponding CUDA version.
 #
 # ``non_blocking=True``
 # ~~~~~~~~~~~~~~~~~~~~~
