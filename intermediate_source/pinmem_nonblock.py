@@ -23,6 +23,13 @@ pinning. However, there are important considerations:
 - While ``cpu_tensor.to("cuda", non_blocking=True).mean()`` executes correctly, attempting
   ``cuda_tensor.to("cpu", non_blocking=True).mean()`` will result in erroneous outputs.
 
+Preamble
+~~~~~~~~
+
+The performance reported in this tutorial are conditioned on the system used to build the tutorial.
+Although the conclusions should be applicable across different systems, the specific observations may vary slightly
+depending on the hardware available.
+
 """
 
 import torch
@@ -31,6 +38,14 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 
 
 ######################################################################
+#
+# This tutorial requires tensordict to be installed. If you don't have tensordict in your environment yet, install it
+# by running the following command in a separate cell:
+#
+# .. code-block:: bash
+#
+#    # Install tensordict with the following command
+#    !pip3 install tensordict
 #
 # We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features.
 #
@@ -136,7 +151,6 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 
 import contextlib
 
-import torch
 from torch.cuda import Stream
 
 
@@ -589,10 +603,6 @@ except AssertionError:
 # ``pin_memory()`` before proceeding with to ``to(device)``.
 # This approach can further accelerate data transfers, as demonstrated in the following example.
 #
-# .. code-block:: bash
-#
-#    # Install tensordict with the following command
-#    !pip3 install tensordict
 #
 
 from tensordict import TensorDict
