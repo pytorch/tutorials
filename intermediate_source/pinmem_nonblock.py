@@ -103,7 +103,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # before making the transfer.
 #
 # Asynchronous vs. Synchronous Operations with ``non_blocking=True`` (CUDA ``cudaMemcpyAsync``)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 #   .. _pinned_memory_async_sync:
 #
@@ -131,7 +131,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 #   3. The source data must be in pinned memory.
 #
-#  We demonstrate this by running profiles on the following script.
+#   We demonstrate this by running profiles on the following script.
 #
 
 import contextlib
