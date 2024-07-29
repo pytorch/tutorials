@@ -34,34 +34,34 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features.
 #
-# - :ref:`Background <pinmem_background>`
+# - :ref:`Background <pinned_memory_background>`
 #
-#   - :ref:`Memory management basics <pinmem_mem>`
-#   - :ref:`CUDA and (non-)pageable memory <pinmem_cuda_pageable_mem>`
-#   - :ref:`Asynchronous vs. Synchronous Operations with non_blocking=True <pinmem_async_sync>`
+#   - :ref:`Memory management basics <pinned_memory_memory>`
+#   - :ref:`CUDA and (non-)pageable memory <pinned_memory_cuda_pageable_mem>`
+#   - :ref:`Asynchronous vs. Synchronous Operations with non_blocking=True <pinned_memory_async_sync>`
 #
-# - :ref:`A PyTorch perspective <pinmem_pt_perspective>`
+# - :ref:`A PyTorch perspective <pinned_memory_pt_perspective>`
 #
-#   - :ref:`pin_memory <pinmem_pinmem>`
-#   - :ref:`non_blocking=True <pinmem_nb>`
-#   - :ref:`Synergies <pinmem_synergies>`
-#   - :ref:`Other copy directions (GPU -> CPU) <pinmem_otherdir>`
+#   - :ref:`pin_memory <pinned_memory_pinned>`
+#   - :ref:`non_blocking=True <pinned_memory_non_blocking>`
+#   - :ref:`Synergies <pinned_memory_synergies>`
+#   - :ref:`Other copy directions (GPU -> CPU) <pinned_memory_other_direction>`
 #
-# - :ref:`Practical recommendations <pinmem_recom>`
-# - :ref:`Additional considerations <pinmem_considerations>`
-# - :ref:`Conclusion <pinmem_conclusion>`
-# - :ref:`Additional resources <pinmem_resources>`
+# - :ref:`Practical recommendations <pinned_memory_recommendations>`
+# - :ref:`Additional considerations <pinned_memory_considerations>`
+# - :ref:`Conclusion <pinned_memory_conclusion>`
+# - :ref:`Additional resources <pinned_memory_resources>`
 #
 #
 # Background
 # ----------
 #
-#   .. _pinmem_background:
+#   .. _pinned_memory_background:
 #
 # Memory management basics
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_mem:
+#   .. _pinned_memory_memory:
 #
 # When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed
 # in memory. The memory we talk about here is a rather complex concept worth looking at carefully.
@@ -90,7 +90,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # CUDA and (non-)pageable memory
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_cuda_pageable_mem:
+#   .. _pinned_memory_cuda_pageable_mem:
 #
 # To understand how CUDA copies a tensor from CPU to CUDA, let's consider the two scenarios above:
 #
@@ -105,7 +105,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # Asynchronous vs. Synchronous Operations with ``non_blocking=True`` (CUDA ``cudaMemcpyAsync``)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_async_sync:
+#   .. _pinned_memory_async_sync:
 #
 # When executing a copy from a host (e.g., CPU) to a device (e.g., GPU), the CUDA toolkit offers modalities to do these
 # operations synchronously or asynchronously with respect to the host.
@@ -135,12 +135,12 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # A PyTorch perspective
 # ---------------------
 #
-#   .. _pinmem_pt_perspective:
+#   .. _pinned_memory_pt_perspective:
 #
 # ``pin_memory()``
 # ~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_pinmem:
+#   .. _pinned_memory_pinned:
 #
 # PyTorch offers the possibility to create and send tensors to page-locked memory through the
 # :meth:`~torch.Tensor.pin_memory` method and constructor arguments.
@@ -224,7 +224,7 @@ _ = gc.collect()
 # ``non_blocking=True``
 # ~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_nb:
+#   .. _pinned_memory_non_blocking:
 #
 # As mentioned earlier, many PyTorch operations have the option of being executed asynchronously with respect to the host
 # through the ``non_blocking`` argument.
@@ -322,7 +322,7 @@ print(
 # Synergies
 # ~~~~~~~~~
 #
-#   .. _pinmem_synergies:
+#   .. _pinned_memory_synergies:
 #
 # Now that we have made the point that data transfer of tensors already in pinned memory to GPU is faster than from
 # pageable memory, and that we know that doing these transfers asynchronously is also faster than synchronously, we can
@@ -401,7 +401,7 @@ _ = gc.collect()
 # Other copy directions (GPU -> CPU, CPU -> MPS etc.)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   .. _pinmem_otherdir:
+#   .. _pinned_memory_other_direction:
 #
 # Until now, we have operated under the assumption that asynchronous copies from the CPU to the GPU are safe.
 # This is generally true because CUDA automatically handles synchronization to ensure that the data being accessed is
@@ -455,7 +455,7 @@ except AssertionError:
 # Practical recommendations
 # -------------------------
 #
-#   .. _pinmem_recom:
+#   .. _pinned_memory_recommendations:
 #
 # We can now wrap up some early recommendations based on our observations:
 #
@@ -471,7 +471,7 @@ except AssertionError:
 # Additional considerations
 # -------------------------
 #
-#   .. _pinmem_considerations:
+#   .. _pinned_memory_considerations:
 #
 # PyTorch notoriously provides a :class:`~torch.utils.data.DataLoader` class whose constructor accepts a
 # ``pin_memory`` argument.
@@ -600,7 +600,7 @@ plt.show()
 # Conclusion
 # ----------
 #
-#   .. _pinmem_conclusion:
+#   .. _pinned_memory_conclusion:
 #
 # Throughout this tutorial, we have explored several critical factors that influence transfer speeds and memory
 # management when sending tensors from the host to the device. We've learned that using ``non_blocking=True`` generally
@@ -613,7 +613,7 @@ plt.show()
 # Additional resources
 # --------------------
 #
-#   .. _pinmem_resources:
+#   .. _pinned_memory_resources:
 #
 #  If you are dealing with issues with memory copies when using CUDA devices or want to learn more about
 #  what was discussed in this tutorial, check the following references:
