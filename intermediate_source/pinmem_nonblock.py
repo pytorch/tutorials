@@ -84,7 +84,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 # It allows for faster and more predictable access times, but has the downside that it is more limited than the
 # pageable memory (aka the main memory).
 #
-# .. figure:: /_static/img/pinmem.png
+# .. figure:: /_static/img/pinmem/pinmem.png
 #    :alt:
 #
 # CUDA and (non-)pageable memory
@@ -120,8 +120,8 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # .. note:: In general, the transfer is blocking on the device side (even if it isn't on the host side):
 #   the copy on the device cannot occur while another operation is being executed.
-#   However, in some advanced scenarios, multiple copies or copy and kernel
-#   executions can be done simultaneously on the GPU side. To enable this, three requirements must be met:
+#   However, in some advanced scenarios, a copy and a kernel execution can be done simultaneously on the GPU side.
+#   As the following example will show, three requirements must be met to enable this:
 #
 #   1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
 #      Tesla or H100 devices have more than one DMA engine.
@@ -131,6 +131,92 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 #   3. The source data must be in pinned memory.
 #
+
+import contextlib
+
+import torch
+from torch.cuda import Stream
+
+
+s = Stream()
+
+torch.manual_seed(42)
+t1_cpu_pinned = torch.randn(1024**2 * 5, pin_memory=True)
+t2_cpu_paged = torch.randn(1024**2 * 5, pin_memory=False)
+t3_cuda = torch.randn(1024**2 * 5, device="cuda:0")
+
+assert torch.cuda.is_available()
+device = torch.device("cuda", torch.cuda.current_device())
+
+
+def inner(pinned: bool, streamed: bool):
+    with torch.cuda.stream(s) if streamed else contextlib.nullcontext():
+        if pinned:
+            t1_cuda = t1_cpu_pinned.to(device, non_blocking=True)
+        else:
+            t2_cuda = t2_cpu_paged.to(device, non_blocking=True)
+        t2_h2d_event = s.record_event()
+    # This operation can be executed during the CPU to GPU copy iff the tensor is pinned and the copy is
+    #  done in the other stream
+    t3_cuda_mul = t3_cuda * t3_cuda * t3_cuda
+    t1_h2d_event = torch.cuda.current_stream().record_event()
+    t1_h2d_event.synchronize()
+    t2_h2d_event.synchronize()
+
+
+def benchmark_with_profiler(
+    pinned,
+    streamed,
+) -> None:
+    torch._C._profiler._set_cuda_sync_enabled_val(True)
+    wait, warmup, active = 1, 1, 2
+    num_steps = wait + warmup + active
+    rank = 0
+    with torch.profiler.profile(
+        activities=[
+            torch.profiler.ProfilerActivity.CPU,
+            torch.profiler.ProfilerActivity.CUDA,
+        ],
+        schedule=torch.profiler.schedule(
+            wait=wait, warmup=warmup, active=active, repeat=1, skip_first=1
+        ),
+    ) as prof:
+        for step_idx in range(1, num_steps + 1):
+            inner(streamed=streamed, pinned=pinned)
+            if rank is None or rank == 0:
+                prof.step()
+    prof.export_chrome_trace(f"trace_streamed{int(streamed)}_pinned{int(pinned)}.json")
+
+
+benchmark_with_profiler(streamed=False, pinned=False)
+benchmark_with_profiler(streamed=True, pinned=False)
+benchmark_with_profiler(streamed=False, pinned=True)
+benchmark_with_profiler(streamed=True, pinned=True)
+
+
+######################################################################
+# Loading these profile traces in chrome (``chrome://tracing``) shows the following results: first, let's see
+# what happens if both the arithmetic operation on ``t3_cuda`` is executed after the pageable tensor is sent to GPU
+# in the main stream:
+#
+# .. figure:: /_static/img/pinmem/trace_streamed0_pinned0.png
+#    :alt:
+#
+# Using a pinned tensor doesn't change the trace much, both operations are still executed consecutively:
+#
+# .. figure:: /_static/img/pinmem/trace_streamed0_pinned1.png
+#    :alt:
+#
+# Sending a pageable tensor to GPU on a separate stream is also a blocking operation:
+#
+# .. figure:: /_static/img/pinmem/trace_streamed1_pinned0.png
+#    :alt:
+#
+# Only pinned tensors copies to GPU on a separate stream can be executed whilst an arithmetic operation is executed on
+# the main stream:
+#
+# .. figure:: /_static/img/pinmem/trace_streamed1_pinned1.png
+#    :alt:
 #
 # A PyTorch perspective
 # ---------------------
