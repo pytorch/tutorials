@@ -288,10 +288,10 @@ def timer(cmd):
 
 
 # A tensor in pageable memory
-pageable_tensor = torch.randn(1000)
+pageable_tensor = torch.randn(1_000_000)
 
 # A tensor in page-locked (pinned) memory
-pinned_tensor = torch.randn(1000, pin_memory=True)
+pinned_tensor = torch.randn(1_000_000, pin_memory=True)
 
 # Runtimes:
 pageable_to_device = timer("pageable_tensor.to('cuda:0')")
