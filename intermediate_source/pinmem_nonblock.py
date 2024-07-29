@@ -592,7 +592,7 @@ except AssertionError:
 # .. code-block:: bash
 #
 #    # Install tensordict with the following command
-#    !pip3 install https://github.com/pytorch/tensordict
+#    !pip3 install tensordict
 #
 
 from tensordict import TensorDict
