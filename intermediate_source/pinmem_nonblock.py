@@ -221,30 +221,30 @@ benchmark_with_profiler(streamed=False, pinned=False)
 # .. figure:: /_static/img/pinmem/trace_streamed0_pinned0.png
 #    :alt:
 #
+# Using a pinned tensor doesn't change the trace much, both operations are still executed consecutively:
 
 benchmark_with_profiler(streamed=True, pinned=False)
 
 ######################################################################
-# Using a pinned tensor doesn't change the trace much, both operations are still executed consecutively:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed0_pinned1.png
 #    :alt:
 #
+# Sending a pageable tensor to GPU on a separate stream is also a blocking operation:
 
 benchmark_with_profiler(streamed=False, pinned=True)
 
 ######################################################################
-# Sending a pageable tensor to GPU on a separate stream is also a blocking operation:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed1_pinned0.png
 #    :alt:
 #
+# Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on
+# the main stream:
 
 benchmark_with_profiler(streamed=True, pinned=True)
 
 ######################################################################
-# Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on
-# the main stream:
 #
 # .. figure:: /_static/img/pinmem/trace_streamed1_pinned1.png
 #    :alt:
