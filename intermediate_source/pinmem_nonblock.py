@@ -13,8 +13,9 @@ It's crucial for users to understand the most effective tools and options availa
 This tutorial examines two key methods for device-to-device data transfer in PyTorch:
 :meth:`~torch.Tensor.pin_memory` and :meth:`~torch.Tensor.to` with the ``non_blocking=True`` option.
 
-Key Learnings
-~~~~~~~~~~~~~
+What you will learn
+~~~~~~~~~~~~~~~~~~~
+
 Optimizing the transfer of tensors from the CPU to the GPU can be achieved through asynchronous transfers and memory
 pinning. However, there are important considerations:
 
@@ -51,24 +52,6 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #    !pip3 install tensordict
 #
 # We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features.
-#
-# - :ref:`Background <pinned_memory_background>`
-#
-#   - :ref:`Memory management basics <pinned_memory_memory>`
-#   - :ref:`CUDA and (non-)pageable memory <pinned_memory_cuda_pageable_memory>`
-#   - :ref:`Asynchronous vs. Synchronous Operations with non_blocking=True <pinned_memory_async_sync>`
-#
-# - :ref:`A PyTorch perspective <pinned_memory_pt_perspective>`
-#
-#   - :ref:`pin_memory <pinned_memory_pinned>`
-#   - :ref:`non_blocking=True <pinned_memory_non_blocking>`
-#   - :ref:`Synergies <pinned_memory_synergies>`
-#   - :ref:`Other copy directions (GPU -> CPU) <pinned_memory_other_direction>`
-#
-# - :ref:`Practical recommendations <pinned_memory_recommendations>`
-# - :ref:`Additional considerations <pinned_memory_considerations>`
-# - :ref:`Conclusion <pinned_memory_conclusion>`
-# - :ref:`Additional resources <pinned_memory_resources>`
 #
 #
 # Background
