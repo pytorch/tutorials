@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `A guide on good usage of non_blocking and pin_memory() in PyTorch <https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`__
 * `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
 * `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
 * `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
@@ -949,7 +950,6 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
-   intermediate/pinmem_nonblock
    advanced/custom_ops_landing_page
 
 .. toctree::
@@ -977,6 +977,7 @@ Additional Resources
    beginner/pytorch_with_examples
    beginner/nn_tutorial
    intermediate/tensorboard_tutorial
+   intermediate/pinmem_nonblock
 
 .. toctree::
    :maxdepth: 2
