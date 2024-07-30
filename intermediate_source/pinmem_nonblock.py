@@ -693,7 +693,7 @@ plt.show()
 #
 # - **System Architecture**
 #
-#   How is the system's architecture influencing data transfer speeds (e.g., bus speeds, network latency)?
+#   How is the system's architecture influencing data transfer speeds (for example, bus speeds, network latency)?
 #
 # Additionally, allocating a large number of tensors or sizable tensors in pinned memory can monopolize a substantial
 # portion of RAM.
