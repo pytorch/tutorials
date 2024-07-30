@@ -125,7 +125,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #   As the following example will show, three requirements must be met to enable this:
 #
 #   1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
-#      Tesla or H100 devices have more than one DMA engine.
+#      Tesla, or H100 devices have more than one DMA engine.
 #
 #   2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using
 #      :class:`~torch.cuda.Stream`.
@@ -250,7 +250,7 @@ benchmark_with_profiler(streamed=True, pinned=True)
 # New tensors can be directly created in pinned memory with functions like :func:`~torch.zeros`, :func:`~torch.ones` and other
 # constructors.
 #
-# Let us check the speed of pinning memory and sending tensors to cuda:
+# Let us check the speed of pinning memory and sending tensors to CUDA:
 
 
 import torch
@@ -318,10 +318,10 @@ _ = gc.collect()
 #
 # However, contrary to a somewhat common belief, calling :meth:`~torch.Tensor.pin_memory()` on a pageable tensor before
 # casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just
-# executing the transfer. This makes sense, since we're actually asking python to execute an operation that CUDA will
+# executing the transfer. This makes sense, since we're actually asking Python to execute an operation that CUDA will
 # perform anyway before copying the data from host to device.
 #
-# .. note:: The pytorch implementation of
+# .. note:: The PyTorch implementation of
 #   `pin_memory <https://github.com/pytorch/pytorch/blob/5298acb5c76855bc5a99ae10016efc86b27949bd/aten/src/ATen/native/Memory.cpp#L58>`_
 #   which relies on creating a brand new storage in pinned memory through `cudaHostAlloc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902>`
 #   could be, in rare cases, faster than transitioning data in chunks as ``cudaMemcpy`` does.
@@ -505,7 +505,7 @@ _ = gc.collect()
 
 
 ######################################################################
-# Other copy directions (GPU -> CPU, CPU -> MPS etc.)
+# Other copy directions (GPU -> CPU, CPU -> MPS)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 #   .. _pinned_memory_other_direction:
