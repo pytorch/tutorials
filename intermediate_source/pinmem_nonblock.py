@@ -66,7 +66,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed
 # in memory. The memory we talk about here is a rather complex concept worth looking at carefully.
-# We distinguish two types of memory that are handled by the Memory Management Unit: the main memory (for simplicity)
+# We distinguish two types of memory that are handled by the Memory Management Unit: the RAM (for simplicity)
 # and the swap space on disk (which may or may not be the hard drive). Together, the available space in disk and RAM (physical memory)
 # make up the virtual memory, which is an abstraction of the total resources available.
 # In short, the virtual memory makes it so that the available space is larger than what can be found on RAM in isolation
@@ -78,9 +78,9 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #
 # Typically, when a program accesses a page that is not in RAM, a "page fault" occurs and the operating system (OS) then brings
 # back this page into RAM ("swap in" or "page in").
-# In turn, the OS may have to _swap out_ (or _page out_) another page to make room for the new page.
+# In turn, the OS may have to swap out (or "page out") another page to make room for the new page.
 #
-# In contrast to pageable memory, a _pinned_ (or _page-locked_ or _non-pageable_) memory is a type of memory that cannot
+# In contrast to pageable memory, a pinned (or page-locked or non-pageable) memory is a type of memory that cannot
 # be swapped out to disk.
 # It allows for faster and more predictable access times, but has the downside that it is more limited than the
 # pageable memory (aka the main memory).
@@ -158,13 +158,13 @@ def inner(pinned: bool, streamed: bool):
             t1_cuda = t1_cpu_pinned.to(device, non_blocking=True)
         else:
             t2_cuda = t2_cpu_paged.to(device, non_blocking=True)
-        t2_h2d_event = s.record_event()
+        t_star_cuda_h2d_event = s.record_event()
     # This operation can be executed during the CPU to GPU copy if and only if the tensor is pinned and the copy is
     #  done in the other stream
     t3_cuda_mul = t3_cuda * t3_cuda * t3_cuda
-    t1_h2d_event = torch.cuda.current_stream().record_event()
-    t1_h2d_event.synchronize()
-    t2_h2d_event.synchronize()
+    t3_cuda_h2d_event = torch.cuda.current_stream().record_event()
+    t_star_cuda_h2d_event.synchronize()
+    t3_cuda_h2d_event.synchronize()
 
 
 # Our profiler: profiles the `inner` function and stores the results in a .json file
@@ -206,7 +206,7 @@ benchmark_with_profiler(streamed=False, pinned=False)
 #
 # Using a pinned tensor doesn't change the trace much, both operations are still executed consecutively:
 
-benchmark_with_profiler(streamed=True, pinned=False)
+benchmark_with_profiler(streamed=False, pinned=True)
 
 ######################################################################
 #
@@ -215,7 +215,7 @@ benchmark_with_profiler(streamed=True, pinned=False)
 #
 # Sending a pageable tensor to GPU on a separate stream is also a blocking operation:
 
-benchmark_with_profiler(streamed=False, pinned=True)
+benchmark_with_profiler(streamed=True, pinned=False)
 
 ######################################################################
 #
@@ -323,7 +323,7 @@ _ = gc.collect()
 #
 # .. note:: The PyTorch implementation of
 #   `pin_memory <https://github.com/pytorch/pytorch/blob/5298acb5c76855bc5a99ae10016efc86b27949bd/aten/src/ATen/native/Memory.cpp#L58>`_
-#   which relies on creating a brand new storage in pinned memory through `cudaHostAlloc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902>`
+#   which relies on creating a brand new storage in pinned memory through `cudaHostAlloc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902>`_
 #   could be, in rare cases, faster than transitioning data in chunks as ``cudaMemcpy`` does.
 #   Here too, the observation may vary depending on the available hardware, the size of the tensors being sent or
 #   the amount of available RAM.
@@ -724,5 +724,5 @@ plt.show()
 # - `CUDA toolkit memory management doc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html>`_;
 # - `CUDA pin-memory note <https://forums.developer.nvidia.com/t/pinned-memory/268474>`_;
 # - `How to Optimize Data Transfers in CUDA C/C++ <https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/>`_;
-# - tensordict :meth:`~tensordict.TensorDictBase.to` method.
+# - `tensordict doc <https://pytorch.org/tensordict/stable/index.html>`_ and `repo <https://github.com/pytorch/tensordict>`_.
 #
