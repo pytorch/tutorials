@@ -718,11 +718,11 @@ plt.show()
 #
 #   .. _pinned_memory_resources:
 #
-#  If you are dealing with issues with memory copies when using CUDA devices or want to learn more about
-#  what was discussed in this tutorial, check the following references:
+# If you are dealing with issues with memory copies when using CUDA devices or want to learn more about
+# what was discussed in this tutorial, check the following references:
 #
-#  - `CUDA toolkit memory management doc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html>`_
-#  - `CUDA pin-memory note <https://forums.developer.nvidia.com/t/pinned-memory/268474>`_
-#  - `How to Optimize Data Transfers in CUDA C/C++ <https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/>`_
-#  - tensordict :meth:`~tensordict.TensorDict.to` method;
+# - `CUDA toolkit memory management doc <https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html>`_;
+# - `CUDA pin-memory note <https://forums.developer.nvidia.com/t/pinned-memory/268474>`_;
+# - `How to Optimize Data Transfers in CUDA C/C++ <https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/>`_;
+# - tensordict :meth:`~tensordict.TensorDict.to` method.
 #
