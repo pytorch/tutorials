@@ -274,6 +274,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
 <ul>
@@ -721,6 +722,33 @@ exactly that:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><span class="n">lstm</span><span class="o">.</span><span class="n">make_tensordict_primer</span><span class="p">())</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TransformedEnv(
+    env=GymEnv(env=CartPole-v1, batch_size=torch.Size([]), device=cpu),
+    transform=Compose(
+            ToTensorImage(keys=['pixels']),
+            GrayScale(keys=['pixels']),
+            Resize(w=84, h=84, interpolation=InterpolationMode.BILINEAR, keys=['pixels']),
+            StepCounter(keys=[]),
+            InitTracker(keys=[]),
+            RewardScaling(loc=0.0000, scale=0.1000, keys=['reward']),
+            ObservationNorm(keys=['pixels']),
+            TensorDictPrimer(primers=CompositeSpec(
+                recurrent_state_h: UnboundedContinuousTensorSpec(
+                    shape=torch.Size([1, 128]),
+                    space=None,
+                    device=cpu,
+                    dtype=torch.float32,
+                    domain=continuous),
+                recurrent_state_c: UnboundedContinuousTensorSpec(
+                    shape=torch.Size([1, 128]),
+                    space=None,
+                    device=cpu,
+                    dtype=torch.float32,
+                    domain=continuous),
+                device=cpu,
+                shape=torch.Size([])), default_value={'recurrent_state_h': 0.0, 'recurrent_state_c': 0.0}, random=None)))
+</pre></div>
+</div>
 <p>and that’s it! We can print the environment to check that everything looks good now
 that we have added the primer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
@@ -748,7 +776,9 @@ that we have added the primer:</p>
                     space=None,
                     device=cpu,
                     dtype=torch.float32,
-                    domain=continuous), device=cpu, shape=torch.Size([])), default_value=0.0, random=False)))
+                    domain=continuous),
+                device=cpu,
+                shape=torch.Size([])), default_value={'recurrent_state_h': 0.0, 'recurrent_state_c': 0.0}, random=None)))
 </pre></div>
 </div>
 </div>
@@ -780,7 +810,7 @@ from it, gather the action that has the maximum value.
 The only thing we need to do is to specify the action space, which can be done
 either by passing a string or an action-spec. This allows us to use
 Categorical (sometimes called “sparse”) encoding or the one-hot version of it.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qval</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">QValueModule</span></a><span class="p">(</span><span class="n">action_space</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qval</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">QValueModule</span></a><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -980,15 +1010,15 @@ Pay attention to the key names which will reflect what can be found in this data
     device=cpu,
     is_shared=False)
 
-  0%|          | 50/1000000 [00:00&lt;2:19:53, 119.13it/s]
-  0%|          | 50/1000000 [00:13&lt;2:19:53, 119.13it/s]
-steps: 12, loss_val:  0.0003, action_spread: tensor([ 8, 42]):   0%|          | 50/1000000 [00:24&lt;2:19:53, 119.13it/s]
-steps: 12, loss_val:  0.0003, action_spread: tensor([ 8, 42]):   0%|          | 100/1000000 [00:25&lt;82:12:54,  3.38it/s]
-steps: 26, loss_val:  0.0002, action_spread: tensor([35, 15]):   0%|          | 100/1000000 [00:49&lt;82:12:54,  3.38it/s]
-steps: 26, loss_val:  0.0002, action_spread: tensor([35, 15]):   0%|          | 150/1000000 [00:49&lt;107:04:31,  2.59it/s]
-steps: 26, loss_val:  0.0003, action_spread: tensor([10, 40]):   0%|          | 150/1000000 [01:13&lt;107:04:31,  2.59it/s]
-steps: 26, loss_val:  0.0003, action_spread: tensor([10, 40]):   0%|          | 200/1000000 [01:14&lt;119:25:42,  2.33it/s]
-steps: 26, loss_val:  0.0003, action_spread: tensor([36, 14]):   0%|          | 200/1000000 [01:38&lt;119:25:42,  2.33it/s]
+  0%|          | 50/1000000 [00:00&lt;2:51:53, 96.95it/s]
+  0%|          | 50/1000000 [00:12&lt;2:51:53, 96.95it/s]
+steps: 13, loss_val:  0.0005, action_spread: tensor([ 8, 42]):   0%|          | 50/1000000 [00:25&lt;2:51:53, 96.95it/s]
+steps: 13, loss_val:  0.0005, action_spread: tensor([ 8, 42]):   0%|          | 100/1000000 [00:26&lt;84:48:47,  3.27it/s]
+steps: 14, loss_val:  0.0007, action_spread: tensor([42,  8]):   0%|          | 100/1000000 [00:50&lt;84:48:47,  3.27it/s]
+steps: 14, loss_val:  0.0007, action_spread: tensor([42,  8]):   0%|          | 150/1000000 [00:51&lt;110:10:00,  2.52it/s]
+steps: 14, loss_val:  0.0006, action_spread: tensor([10, 40]):   0%|          | 150/1000000 [01:15&lt;110:10:00,  2.52it/s]
+steps: 14, loss_val:  0.0006, action_spread: tensor([10, 40]):   0%|          | 200/1000000 [01:16&lt;121:30:50,  2.29it/s]
+steps: 22, loss_val:  0.0006, action_spread: tensor([41,  9]):   0%|          | 200/1000000 [01:40&lt;121:30:50,  2.29it/s]
 </pre></div>
 </div>
 <p>Let’s plot our results:</p>
@@ -1020,7 +1050,7 @@ the data</p></li>
 <ul class="simple">
 <li><p>The TorchRL documentation can be found <a class="reference external" href="https://pytorch.org/rl/">here</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  43.958 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  46.111 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-dqn-with-rnn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/14b68b9764c79afe8ef88b11fc27bff7/dqn_with_rnn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dqn_with_rnn_tutorial.py</span></code></a></p>

@@ -276,6 +276,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
 <ul>
@@ -564,45 +565,22 @@ the num_worker of torch.utils.data.DataLoader() to 0.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 491520/170498071 [00:00&lt;00:34, 4900133.82it/s]
-  3%|2         | 4718592/170498071 [00:00&lt;00:06, 26698510.01it/s]
-  5%|5         | 8749056/170498071 [00:00&lt;00:04, 32728080.75it/s]
-  9%|8         | 15237120/170498071 [00:00&lt;00:03, 45253929.73it/s]
- 12%|#1        | 19791872/170498071 [00:00&lt;00:03, 42693574.30it/s]
- 15%|#5        | 25788416/170498071 [00:00&lt;00:02, 48288158.40it/s]
- 19%|#8        | 32210944/170498071 [00:00&lt;00:02, 53087027.73it/s]
- 22%|##2       | 37584896/170498071 [00:00&lt;00:02, 50273467.33it/s]
- 26%|##6       | 44367872/170498071 [00:00&lt;00:02, 55395144.88it/s]
- 29%|##9       | 49971200/170498071 [00:01&lt;00:02, 50606720.15it/s]
- 33%|###3      | 56786944/170498071 [00:01&lt;00:02, 55443290.92it/s]
- 37%|###6      | 62455808/170498071 [00:01&lt;00:02, 48399624.08it/s]
- 41%|####      | 69828608/170498071 [00:01&lt;00:01, 54861834.74it/s]
- 44%|####4     | 75595776/170498071 [00:01&lt;00:01, 49463661.84it/s]
- 49%|####8     | 82739200/170498071 [00:01&lt;00:01, 55071352.84it/s]
- 52%|#####1    | 88539136/170498071 [00:01&lt;00:01, 47311676.80it/s]
- 55%|#####4    | 93650944/170498071 [00:01&lt;00:01, 46294050.88it/s]
- 58%|#####7    | 98533376/170498071 [00:02&lt;00:01, 38392369.10it/s]
- 60%|######    | 102727680/170498071 [00:02&lt;00:01, 37575473.94it/s]
- 63%|######2   | 106725376/170498071 [00:02&lt;00:01, 33922475.44it/s]
- 65%|######4   | 110329856/170498071 [00:02&lt;00:01, 34150528.10it/s]
- 67%|######6   | 113901568/170498071 [00:02&lt;00:01, 31426770.25it/s]
- 69%|######8   | 117276672/170498071 [00:02&lt;00:01, 31792035.17it/s]
- 71%|#######   | 120553472/170498071 [00:02&lt;00:01, 28934546.19it/s]
- 73%|#######2  | 124256256/170498071 [00:03&lt;00:01, 30925891.56it/s]
- 75%|#######4  | 127467520/170498071 [00:03&lt;00:01, 27669936.78it/s]
- 77%|#######7  | 131465216/170498071 [00:03&lt;00:01, 30715642.70it/s]
- 79%|#######9  | 134709248/170498071 [00:03&lt;00:01, 27310358.24it/s]
- 81%|########1 | 138510336/170498071 [00:03&lt;00:01, 29737160.56it/s]
- 83%|########3 | 141656064/170498071 [00:03&lt;00:01, 26726737.13it/s]
- 85%|########5 | 145293312/170498071 [00:03&lt;00:00, 29097955.37it/s]
- 87%|########7 | 148373504/170498071 [00:03&lt;00:00, 26254028.67it/s]
- 89%|########9 | 151945216/170498071 [00:04&lt;00:00, 28401863.81it/s]
- 91%|######### | 154927104/170498071 [00:04&lt;00:00, 25693751.36it/s]
- 93%|#########2| 158334976/170498071 [00:04&lt;00:00, 27744352.08it/s]
- 95%|#########4| 161251328/170498071 [00:04&lt;00:00, 24862332.98it/s]
- 96%|#########6| 164298752/170498071 [00:04&lt;00:00, 26182461.98it/s]
- 98%|#########7| 167051264/170498071 [00:04&lt;00:00, 25379003.50it/s]
-100%|##########| 170498071/170498071 [00:04&lt;00:00, 36225290.42it/s]
+  0%|          | 425984/170498071 [00:00&lt;00:41, 4126133.07it/s]
+  5%|4         | 7831552/170498071 [00:00&lt;00:03, 44695971.76it/s]
+ 11%|#1        | 19562496/170498071 [00:00&lt;00:01, 77423157.01it/s]
+ 18%|#8        | 31293440/170498071 [00:00&lt;00:01, 93058365.57it/s]
+ 25%|##5       | 43057152/170498071 [00:00&lt;00:01, 101757453.13it/s]
+ 32%|###2      | 54788096/170498071 [00:00&lt;00:01, 107002957.20it/s]
+ 39%|###8      | 66486272/170498071 [00:00&lt;00:00, 110204889.92it/s]
+ 46%|####5     | 78217216/170498071 [00:00&lt;00:00, 112402704.51it/s]
+ 53%|#####2    | 89980928/170498071 [00:00&lt;00:00, 114020972.89it/s]
+ 60%|#####9    | 101679104/170498071 [00:01&lt;00:00, 114909886.81it/s]
+ 67%|######6   | 113410048/170498071 [00:01&lt;00:00, 115553582.69it/s]
+ 73%|#######3  | 125173760/170498071 [00:01&lt;00:00, 116109436.43it/s]
+ 80%|########  | 136937472/170498071 [00:01&lt;00:00, 116487111.38it/s]
+ 87%|########7 | 148635648/170498071 [00:01&lt;00:00, 116622331.58it/s]
+ 94%|#########4| 160366592/170498071 [00:01&lt;00:00, 116771915.62it/s]
+100%|##########| 170498071/170498071 [00:01&lt;00:00, 106985455.60it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -903,7 +881,7 @@ please check out <a class="reference internal" href="data_parallel_tutorial.html
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">dataiter</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  56.487 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  55.130 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-cifar10-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c51fcdf96d93a8e4b3f2943cb36bab19/cifar10_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></p>
