@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `A guide on good usage of non_blocking and pin_memory() in PyTorch <https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`__
 * `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
 * `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
 * `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
@@ -92,6 +93,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
    :tags: Interpretability,Getting-Started,TensorBoard
+
+.. customcarditem::
+   :header: Good usage of `non_blocking` and `pin_memory()` in PyTorch
+   :card_description: A guide on best practices to copy data from CPU to GPU.
+   :image: _static/img/pinmem.png
+   :link: intermediate/pinmem_nonblock.html
+   :tags: Getting-Started
 
 .. Image/Video
 
@@ -969,6 +977,7 @@ Additional Resources
    beginner/pytorch_with_examples
    beginner/nn_tutorial
    intermediate/tensorboard_tutorial
+   intermediate/pinmem_nonblock
 
 .. toctree::
    :maxdepth: 2
