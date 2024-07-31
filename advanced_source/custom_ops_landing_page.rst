@@ -1,7 +1,7 @@
 .. _custom-ops-landing-page:
 
-PyTorch Custom Operators Landing Page
-=====================================
+PyTorch Custom Operators
+===========================
 
 PyTorch offers a large library of operators that work on Tensors (e.g. ``torch.add``,
 ``torch.sum``, etc). However, you may wish to bring a new custom operation to PyTorch
@@ -10,8 +10,7 @@ In order to do so, you must register the custom operation with PyTorch via the P
 `torch.library docs <https://pytorch.org/docs/stable/library.html>`_ or C++ ``TORCH_LIBRARY``
 APIs.
 
-TL;DR
------
+
 
 Authoring a custom operator from Python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -19,10 +18,11 @@ Authoring a custom operator from Python
 Please see :ref:`python-custom-ops-tutorial`.
 
 You may wish to author a custom operator from Python (as opposed to C++) if:
+
 - you have a Python function you want PyTorch to treat as an opaque callable, especially with
-respect to ``torch.compile`` and ``torch.export``.
+  respect to ``torch.compile`` and ``torch.export``.
 - you have some Python bindings to C++/CUDA kernels and want those to compose with PyTorch
-subsystems (like ``torch.compile`` or ``torch.autograd``)
+  subsystems (like ``torch.compile`` or ``torch.autograd``)
 
 Integrating custom C++ and/or CUDA code with PyTorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,6 +30,7 @@ Integrating custom C++ and/or CUDA code with PyTorch
 Please see :ref:`cpp-custom-ops-tutorial`.
 
 You may wish to author a custom operator from C++ (as opposed to Python) if:
+
 - you have custom C++ and/or CUDA code.
 - you plan to use this code with ``AOTInductor`` to do Python-less inference.
 
