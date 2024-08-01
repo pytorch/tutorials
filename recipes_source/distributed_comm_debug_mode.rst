@@ -12,7 +12,16 @@ Prerequisites:
 
 What is CommDebugMode and why is it useful
 ------------------------------------------
-As the size of models continues to increase, users are seeking to leverage various combinations of parallel strategies to scale up distributed training. However, the lack of interoperability between existing solutions poses a significant challenge, primarily due to the absence of a unified abstraction that can bridge these different parallelism strategies. To address this issue, PyTorch has proposed DistributedTensor (DTensor)which abstracts away the complexities of tensor communication in distributed training, providing a seamless user experience. However, this abstraction creates a lack of transparency that can make it challenging for users to identify and resolve issues. To address this challenge, my internship project aims to develop and enhance CommDebugMode, a Python context manager that will serve as one of the primary debugging tools for DTensors. CommDebugMode is a python context manager that enables users to view when and why collective operations are happening when using DTensors, addressing this problem.
+As the size of models continues to increase, users are seeking to leverage various combinations
+of parallel strategies to scale up distributed training. However, the lack of interoperability
+between existing solutions poses a significant challenge, primarily due to the absence of a
+unified abstraction that can bridge these different parallelism strategies. To address this
+issue, PyTorch has proposed DistributedTensor(DTensor) which abstracts away the complexities of
+tensor communication in distributed training, providing a seamless user experience. However,
+this abstraction creates a lack of transparency that can make it challenging for users to
+identify and resolve issues. To address this challenge, CommDebugMode, a Python context manager
+will serve as one of the primary debugging tools for DTensors, enabling users to view when and
+why collective operations are happening when using DTensors, addressing this problem.
 
 
 How to use CommDebugMode
@@ -53,15 +62,19 @@ Using CommDebugMode and getting its output is very simple.
                     *c10d_functional.all_reduce: 1
     """
 
-All users have to do is wrap the code running the model in CommDebugMode and call the API that they want to use to display the data. One important thing to note
-is that the users can use a noise_level arguement to control how much information is displayed to the user. You can see what each noise_level will display to the user.
+All users have to do is wrap the code running the model in CommDebugMode and call the API that
+they want to use to display the data. One important thing to note is that the users can use a noise_level
+arguement to control how much information is displayed to the user. The information below shows what each
+noise level displays
 
 | 0. prints module-level collective counts
 | 1. prints dTensor operations not included in trivial operations, module information
 | 2. prints operations not included in trivial operations
 | 3. prints all operations
 
-In the example above, users can see in the first picture that the collective operation, all_reduce, occurs once in the forward pass of the MLPModule. The second picture provides a greater level of detail, allowing users to pinpoint that the all-reduce operation happens in the second linear layer of the MLPModule.
+In the example above, users can see in the first picture that the collective operation, all_reduce, occurs
+once in the forward pass of the MLPModule. The second picture provides a greater level of detail, allowing
+users to pinpoint that the all-reduce operation happens in the second linear layer of the MLPModule.
 
 
 Below is the interactive module tree visualization that users can upload their JSON dump to:
@@ -174,3 +187,11 @@ Below is the interactive module tree visualization that users can upload their J
         <script src="https://cdn.jsdelivr.net/gh/pytorch/pytorch@main/torch/distributed/_tensor/debug/comm_mode_broswer_visual.js"></script>
     </body>
     </html>
+
+Conclusion
+------------------------------------------
+In conclusion, we have learned how to use CommDebugMode in order to debug Distributed Tensors
+and can use future json dumps in the embedded visual browser.
+
+For more detailed information about CommDebugMode, please see
+https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/examples/comm_mode_features_example.py

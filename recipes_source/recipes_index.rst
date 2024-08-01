@@ -395,6 +395,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_async_checkpoint_recipe.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with CommDebugMode
+   :card_description: Learn how to use CommDebugMode for DTensors
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/distributed_comm_debug_mode.html
+   :tags: Distributed-Training
+
 .. TorchServe
 
 .. customcarditem::
@@ -449,3 +456,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
+   /recipes/distributed_comm_debug_mode
