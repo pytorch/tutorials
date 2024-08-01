@@ -87,9 +87,9 @@ The simplest way to create a tensor is with the ``torch.empty()`` call:
  .. code-block:: none
 
     <class 'torch.Tensor'>
-    tensor([[3.6408e+29, 4.5778e-41, 2.5380e-03, 0.0000e+00],
-            [3.7331e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00],
-            [1.1645e-42, 5.0000e-01, 0.0000e+00, 0.0000e+00]])
+    tensor([[3.5873e-43, 0.0000e+00, 2.7402e+00, 0.0000e+00],
+            [2.7064e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00],
+            [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00]])
 
 
 
@@ -271,17 +271,17 @@ have the ``torch.*_like()`` methods:
  .. code-block:: none
 
     torch.Size([2, 2, 3])
-    tensor([[[3.7228e+00, 0.0000e+00, 3.6935e+01],
-             [0.0000e+00, 1.1210e-43, 0.0000e+00]],
+    tensor([[[4.6235e+36, 4.5563e-41, 1.8859e-11],
+             [0.0000e+00, 4.4842e-44, 0.0000e+00]],
 
-            [[8.9683e-44, 0.0000e+00, 3.6984e+01],
-             [0.0000e+00, 0.0000e+00, 0.0000e+00]]])
+            [[4.4842e-44, 0.0000e+00, 8.2181e-12],
+             [0.0000e+00, 0.0000e+00, 1.4013e-45]]])
     torch.Size([2, 2, 3])
-    tensor([[[3.7143e+00, 0.0000e+00, 5.0179e-13],
-             [0.0000e+00, 4.2160e-01, 6.9054e-02]],
+    tensor([[[2.7917e+00, 0.0000e+00, 0.0000e+00],
+             [1.1755e-38, 2.7068e-37, 0.0000e+00]],
 
-            [[0.0000e+00, 0.0000e+00, 0.0000e+00],
-             [0.0000e+00, 0.0000e+00, 0.0000e+00]]])
+            [[1.0842e-19, 0.0000e+00, 2.1561e+02],
+             [0.0000e+00, 2.1490e+02, 0.0000e+00]]])
     torch.Size([2, 2, 3])
     tensor([[[0., 0., 0.],
              [0., 0., 0.]],
@@ -787,11 +787,11 @@ Here is a small sample from some of the major categories of operations:
     m2 = torch.tensor([[3., 0.], [0., 3.]]) # three times identity matrix
 
     print('\nVectors & Matrices:')
-    print(torch.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
+    print(torch.linalg.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
     print(m1)
-    m3 = torch.matmul(m1, m2)
+    m3 = torch.linalg.matmul(m1, m2)
     print(m3)                  # 3 times m1
-    print(torch.svd(m3))       # singular value decomposition
+    print(torch.linalg.svd(m3))       # singular value decomposition
 
 
 
@@ -833,32 +833,28 @@ Here is a small sample from some of the major categories of operations:
     tensor([1, 2])
 
     Vectors & Matrices:
-    /var/lib/workspace/beginner_source/introyt/tensors_deeper_tutorial.py:451: UserWarning:
-
-    Using torch.cross without specifying the dim arg is deprecated.
-    Please either pass the dim explicitly or simply use torch.linalg.cross.
-    The default value of dim will change to agree with that of linalg.cross in a future release. (Triggered internally at ../aten/src/ATen/native/Cross.cpp:62.)
-
     tensor([ 0.,  0., -1.])
     tensor([[0.7375, 0.8328],
             [0.8444, 0.2941]])
     tensor([[2.2125, 2.4985],
             [2.5332, 0.8822]])
-    torch.return_types.svd(
+    torch.return_types.linalg_svd(
     U=tensor([[-0.7889, -0.6145],
             [-0.6145,  0.7889]]),
     S=tensor([4.1498, 1.0548]),
-    V=tensor([[-0.7957,  0.6056],
-            [-0.6056, -0.7957]]))
+    Vh=tensor([[-0.7957, -0.6056],
+            [ 0.6056, -0.7957]]))
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 459-478
+.. GENERATED FROM PYTHON SOURCE LINES 459-480
 
 This is a small sample of operations. For more details and the full inventory of
 math functions, have a look at the
 `documentation <https://pytorch.org/docs/stable/torch.html#math-operations>`__.
+For more details and the full inventory of linear algebra operations, have a
+look at this `documentation <https://pytorch.org/docs/stable/linalg.html>`__.
 
 Altering Tensors in Place
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -876,7 +872,7 @@ place.
 For example:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 478-492
+.. GENERATED FROM PYTHON SOURCE LINES 480-494
 
 .. code-block:: default
 
@@ -915,12 +911,12 @@ For example:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 493-495
+.. GENERATED FROM PYTHON SOURCE LINES 495-497
 
 For arithmetic operations, there are functions that behave similarly:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 495-511
+.. GENERATED FROM PYTHON SOURCE LINES 497-513
 
 .. code-block:: default
 
@@ -971,7 +967,7 @@ For arithmetic operations, there are functions that behave similarly:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 512-525
+.. GENERATED FROM PYTHON SOURCE LINES 514-527
 
 Note that these in-place arithmetic functions are methods on the
 ``torch.Tensor`` object, not attached to the ``torch`` module like many
@@ -987,7 +983,7 @@ is the correct shape and ``dtype``, this can happen without a new memory
 allocation:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 525-543
+.. GENERATED FROM PYTHON SOURCE LINES 527-545
 
 .. code-block:: default
 
@@ -1027,7 +1023,7 @@ allocation:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 544-550
+.. GENERATED FROM PYTHON SOURCE LINES 546-552
 
 Copying Tensors
 ---------------
@@ -1036,7 +1032,7 @@ As with any object in Python, assigning a tensor to a variable makes the
 variable a *label* of the tensor, and does not copy it. For example:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 550-558
+.. GENERATED FROM PYTHON SOURCE LINES 552-560
 
 .. code-block:: default
 
@@ -1062,13 +1058,13 @@ variable a *label* of the tensor, and does not copy it. For example:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 559-562
+.. GENERATED FROM PYTHON SOURCE LINES 561-564
 
 But what if you want a separate copy of the data to work on? The
 ``clone()`` method is there for you:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 562-573
+.. GENERATED FROM PYTHON SOURCE LINES 564-575
 
 .. code-block:: default
 
@@ -1099,7 +1095,7 @@ But what if you want a separate copy of the data to work on? The
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 574-599
+.. GENERATED FROM PYTHON SOURCE LINES 576-601
 
 **There is an important thing to be aware of when using ``clone()``.**
 If your source tensor has autograd, enabled then so will the clone.
@@ -1127,7 +1123,7 @@ improved with autograd’s history tracking turned off. For this, you can
 use the ``.detach()`` method on the source tensor:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 599-612
+.. GENERATED FROM PYTHON SOURCE LINES 601-614
 
 .. code-block:: default
 
@@ -1164,7 +1160,7 @@ use the ``.detach()`` method on the source tensor:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 613-650
+.. GENERATED FROM PYTHON SOURCE LINES 615-652
 
 What’s happening here?
 
@@ -1204,7 +1200,7 @@ First, we should check whether a GPU is available, with the
      GPU-related code.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 650-657
+.. GENERATED FROM PYTHON SOURCE LINES 652-659
 
 .. code-block:: default
 
@@ -1228,7 +1224,7 @@ First, we should check whether a GPU is available, with the
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 658-669
+.. GENERATED FROM PYTHON SOURCE LINES 660-671
 
 Once we’ve determined that one or more GPUs is available, we need to put
 our data someplace where the GPU can see it. Your CPU does computation
@@ -1242,7 +1238,7 @@ There are multiple ways to get your data onto your target device. You
 may do it at creation time:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 669-677
+.. GENERATED FROM PYTHON SOURCE LINES 671-679
 
 .. code-block:: default
 
@@ -1268,7 +1264,7 @@ may do it at creation time:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 678-693
+.. GENERATED FROM PYTHON SOURCE LINES 680-695
 
 By default, new tensors are created on the CPU, so we have to specify
 when we want to create our tensor on the GPU with the optional
@@ -1286,7 +1282,7 @@ creating a device handle that can be passed to your tensors instead of a
 string:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 693-704
+.. GENERATED FROM PYTHON SOURCE LINES 695-706
 
 .. code-block:: default
 
@@ -1316,7 +1312,7 @@ string:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 705-710
+.. GENERATED FROM PYTHON SOURCE LINES 707-712
 
 If you have an existing tensor living on one device, you can move it to
 another with the ``to()`` method. The following line of code creates a
@@ -1324,7 +1320,7 @@ tensor on CPU, and moves it to whichever device handle you acquired in
 the previous cell.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 710-715
+.. GENERATED FROM PYTHON SOURCE LINES 712-717
 
 .. code-block:: default
 
@@ -1340,7 +1336,7 @@ the previous cell.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 716-727
+.. GENERATED FROM PYTHON SOURCE LINES 718-729
 
 It is important to know that in order to do computation involving two or
 more tensors, *all of the tensors must be on the same device*. The
@@ -1354,7 +1350,7 @@ have a GPU device available:
    z = x + y  # exception will be thrown
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 730-749
+.. GENERATED FROM PYTHON SOURCE LINES 732-751
 
 Manipulating Tensor Shapes
 --------------------------
@@ -1376,7 +1372,7 @@ is expecting input of shape ``(N, 3, 226, 226)``, where ``N`` is the
 number of images in the batch. So how do you make a batch of one?
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 749-757
+.. GENERATED FROM PYTHON SOURCE LINES 751-759
 
 .. code-block:: default
 
@@ -1402,7 +1398,7 @@ number of images in the batch. So how do you make a batch of one?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 758-766
+.. GENERATED FROM PYTHON SOURCE LINES 760-768
 
 The ``unsqueeze()`` method adds a dimension of extent 1.
 ``unsqueeze(0)`` adds it as a new zeroth dimension - now you have a
@@ -1413,7 +1409,7 @@ advantage of the fact that any dimension of extent 1 *does not* change
 the number of elements in the tensor.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 766-771
+.. GENERATED FROM PYTHON SOURCE LINES 768-773
 
 .. code-block:: default
 
@@ -1435,7 +1431,7 @@ the number of elements in the tensor.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 772-781
+.. GENERATED FROM PYTHON SOURCE LINES 774-783
 
 Continuing the example above, let’s say the model’s output is a
 20-element vector for each input. You would then expect the output to
@@ -1447,7 +1443,7 @@ What if you want to do some *non-batched* computation with that output -
 something that’s just expecting a 20-element vector?
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 781-797
+.. GENERATED FROM PYTHON SOURCE LINES 783-799
 
 .. code-block:: default
 
@@ -1489,7 +1485,7 @@ something that’s just expecting a 20-element vector?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 798-828
+.. GENERATED FROM PYTHON SOURCE LINES 800-830
 
 You can see from the shapes that our 2-dimensional tensor is now
 1-dimensional, and if you look closely at the output of the cell above
@@ -1522,7 +1518,7 @@ match up according to the broadcasting rules. ``unsqueeze()`` comes to
 the rescue:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 828-836
+.. GENERATED FROM PYTHON SOURCE LINES 830-838
 
 .. code-block:: default
 
@@ -1562,13 +1558,13 @@ the rescue:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 837-840
+.. GENERATED FROM PYTHON SOURCE LINES 839-842
 
 The ``squeeze()`` and ``unsqueeze()`` methods also have in-place
 versions, ``squeeze_()`` and ``unsqueeze_()``:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 840-847
+.. GENERATED FROM PYTHON SOURCE LINES 842-849
 
 .. code-block:: default
 
@@ -1593,7 +1589,7 @@ versions, ``squeeze_()`` and ``unsqueeze_()``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 848-858
+.. GENERATED FROM PYTHON SOURCE LINES 850-860
 
 Sometimes you’ll want to change the shape of a tensor more radically,
 while still preserving the number of elements and their contents. One
@@ -1606,7 +1602,7 @@ provided that the dimensions you request yield the same number of
 elements as the input tensor has:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 858-869
+.. GENERATED FROM PYTHON SOURCE LINES 860-871
 
 .. code-block:: default
 
@@ -1636,7 +1632,7 @@ elements as the input tensor has:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 870-889
+.. GENERATED FROM PYTHON SOURCE LINES 872-891
 
 .. note::
      The ``(6 * 20 * 20,)`` argument in the final line of the cell
@@ -1658,7 +1654,7 @@ more information, see the
 `docs <https://pytorch.org/docs/stable/torch.html#torch.reshape>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 892-905
+.. GENERATED FROM PYTHON SOURCE LINES 894-907
 
 NumPy Bridge
 ------------
@@ -1674,7 +1670,7 @@ efficient abstractions for building ML models. It’s easy to switch
 between ndarrays and PyTorch tensors:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 905-915
+.. GENERATED FROM PYTHON SOURCE LINES 907-917
 
 .. code-block:: default
 
@@ -1704,7 +1700,7 @@ between ndarrays and PyTorch tensors:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 916-922
+.. GENERATED FROM PYTHON SOURCE LINES 918-924
 
 PyTorch creates a tensor of the same shape and containing the same data
 as the NumPy array, going so far as to keep NumPy’s default 64-bit float
@@ -1713,7 +1709,7 @@ data type.
 The conversion can just as easily go the other way:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 922-930
+.. GENERATED FROM PYTHON SOURCE LINES 924-932
 
 .. code-block:: default
 
@@ -1741,14 +1737,14 @@ The conversion can just as easily go the other way:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 931-935
+.. GENERATED FROM PYTHON SOURCE LINES 933-937
 
 It is important to know that these converted objects are using *the same
 underlying memory* as their source objects, meaning that changes to one
 are reflected in the other:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 935-941
+.. GENERATED FROM PYTHON SOURCE LINES 937-943
 
 .. code-block:: default
 
@@ -1777,7 +1773,7 @@ are reflected in the other:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.127 seconds)
+   **Total running time of the script:** ( 0 minutes  0.128 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_tensors_deeper_tutorial.py:
