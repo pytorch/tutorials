@@ -333,6 +333,7 @@ Since this can be an issue when users wish to share models with users used to th
 to their applications. For this case, we provide the ``format_utils`` module in ``torch.distributed.checkpoint.format_utils``.
 
 A command line utility is provided for the users convenience, which follows the following format:
+
 .. code-block:: bash
 
     python -m torch.distributed.checkpoint.format_utils -m <checkpoint location> <location to write formats to> <mode>
@@ -341,6 +342,7 @@ In the command above, ``mode`` is one of ``torch_to_dcp``` or ``dcp_to_torch``.
 
 
 Alternatively, methods are also provided for users who may wish to convert checkpoints directly.
+
 .. code-block:: python
 
     import os
