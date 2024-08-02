@@ -16,7 +16,6 @@ meta-learning, and optimization research.
 
 """
 
-import profile_utils
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -171,7 +170,6 @@ def vmap_ft_compute_grad(params, buffers, data, targets):
     return ft_compute_sample_grad_(params, buffers, data, targets)
 
 ft_per_sample_grads = vmap_ft_compute_grad(params, buffers, data, targets)
-profile_utils.compute_speedup(vmap_ft_compute_grad, (params, buffers, data, targets), device)
 
 ######################################################################
 # we can double check that the results using ``grad`` and ``vmap`` match the
