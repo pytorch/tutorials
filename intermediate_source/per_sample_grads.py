@@ -162,13 +162,13 @@ ft_compute_grad = grad(compute_loss)
 
 ft_compute_sample_grad = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
 
+######################################################################
+# Finally, let's used our transformed function to compute per-sample-gradients:
+
 @torch.compile
 def vmap_ft_compute_grad(params, buffers, data, targets):
     ft_compute_sample_grad_ = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
     return ft_compute_sample_grad_(params, buffers, data, targets)
-
-######################################################################
-# Finally, let's used our transformed function to compute per-sample-gradients:
 
 ft_per_sample_grads = vmap_ft_compute_grad(params, buffers, data, targets)
 profile_utils.compute_speedup(vmap_ft_compute_grad, (params, buffers, data, targets), device)
