@@ -159,6 +159,12 @@ Welcome to PyTorch Tutorials
    :link: advanced/usb_semisup_learn.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Pretraining VGG from scratch 
+   :card_description: Train VGG from scratch
+   :link: beginner/Pretrainig_VGG_from_scratch.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -992,7 +998,7 @@ Additional Resources
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
    intermediate/tiatoolbox_tutorial
-
+   beginner/Pretrainig_VGG_from_scratch
 .. toctree::
    :maxdepth: 2
    :includehidden:
