@@ -159,6 +159,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/usb_semisup_learn.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Autoencoders with PyTorch
+   :card_description: Learn how to train Autoencoders for images using PyTorch.
+   :image: _static/img/thumbnails/cropped/torch-nn.png
+   :link: beginner/autoencoders_tutorial.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -976,6 +983,7 @@ Additional Resources
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
+   beginner/autoencoders_tutorial
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
 
