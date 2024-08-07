@@ -1,16 +1,19 @@
 """
-Autoencoders: A Deep Dive
+Autoencoder: A Deep Dive
 =========================
 
 Introduction
 ~~~~~~~~~~~~
 
-Autoencoders are a type of artificial neural network used for
-unsupervised learning. They are designed to learn efficient data codings
-by projecting the input data into a lower-dimensional latent space and
-then reconstructing the original data from this representation. This
-process forces the autoencoder to capture the most important features of
-the input data.
+Autoencoder represent a class of artificial neural networks  
+utilized for unsupervised learning tasks. They are engineered  
+to learn efficient data encodings by mapping input data into  
+a lower-dimensional latent space, subsequently reconstructing  
+the original data from this latent representation. This  
+methodology compels the autoencoder to encapsulate the most  
+salient features of the input data, thereby enhancing the  
+efficiency and effectiveness of data compression and feature  
+extraction.
 
 Architecture of an Autoencoder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,37 +28,36 @@ A typical autoencoder consists of two main components:
 The goal of training is to minimize the reconstruction error between the
 input and the reconstructed output.
 
-Types of Autoencoders
+Types of Autoencoder
 ~~~~~~~~~~~~~~~~~~~~~
 
-There are several variations of autoencoders:
+There are several variations of autoencoder:
 
--  **Undercomplete Autoencoders:** These have a smaller latent space
-   than the input space, forcing the network to learn a compressed
-   representation of the data.
--  **Denoising Autoencoders:** These are trained on corrupted input
-   data, learning to reconstruct the original clean data.
--  **Variational Autoencoders (VAEs):** These introduce probabilistic
-   elements into the encoding process, allowing for generating new data
-   samples.
--  **Convolutional Autoencoders (CAEs):** These use convolutional
-   layers, making them suitable for image data.
+- **Denoising Autoencoder:** These are trained on corrupted 
+  input data, learning to reconstruct the original clean data.
 
-Applications of Autoencoders
+- **Variational Autoencoder:** These introduce 
+  probabilistic elements into the encoding process, allowing 
+  for generating new data samples.
+
+- **Convolutional Autoencoder (CAE):** These use convolutional 
+  layers, making them suitable for image data.
+
+Applications of Autoencoder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Autoencoders have a wide range of applications:
+Autoencoder have a wide range of applications:
 
 -  **Dimensionality Reduction:** By projecting data into a
-   lower-dimensional space, autoencoders can be used for visualization
+   lower-dimensional space, autoencoder can be used for visualization
    and feature extraction.
--  **Image Denoising:** Denoising autoencoders can effectively remove
+-  **Image Denoising:** Denoising autoencoder can effectively remove
    noise from images.
--  **Anomaly Detection:** Autoencoders can be used to identify unusual
+-  **Anomaly Detection:** Autoencoder can be used to identify unusual
    data points by measuring reconstruction errors.
--  **Image Generation:** VAEs can generate new, realistic images based
+-  **Image Generation:** Variational Autoencoder can generate new, realistic images based
    on the learned latent space distribution.
--  **Data Compression:** Undercomplete autoencoders can be used for data
+-  **Data Compression:** Undercomplete autoencoder can be used for data
    compression.
 
 PyTorch Implementation
@@ -86,7 +88,7 @@ def make_dataloader(data_, batch_size: int):
     """Helper function to convert datasets to batches."""
     batch_size = 32
 
-    # Make the DataLoader Object
+    # Make the Data loader Object
     train_loader = torch.utils.data.DataLoader(
         data_, batch_size=batch_size, shuffle=True, num_workers=2
     )
@@ -142,7 +144,7 @@ def load_cifar_data():
     return load_batch_data("cifar")
 
 def make_model(model_object, lr_rate=0.001, compress_=None):
-    """Make all of the needed obects for training.
+    """Make all of the needed objects for training.
 
     Args:
         model_object:
@@ -222,7 +224,7 @@ def train_model(
             # zero the parameter gradients
             optimizer_obj.zero_grad()
 
-            # Find the output of the Nerual Net
+            # Find the output of the Neural Net
             # Forward Pass
             logits = model_obj(batches)
 
@@ -316,7 +318,7 @@ def test_cifar(cifar_model, data_loader_):
     dataiter = iter(data_loader_)
     images, labels = next(dataiter)
 
-    # show images by cinverting batches to grids
+    # show images by converting batches to grids
     image_show(images, "Original Image")
 
     cifar_model.eval()
@@ -506,9 +508,9 @@ test_model(model_=model_aala, loader_obj=train_loader)
 # representation.
 # 
 # **Decoder:** \* Takes the latent space representation as input. \*
-# Projects it back to the original feature map size using a linear layer
-# and unflattening. \* Applies a series of transposed convolutional layers
-# with LeakyReLU activations to reconstruct the image. \* Uses a sigmoid
+# Projects it back to the original feature map size using a linear
+# and unflatten layer. \* Applies a series of transposed convolutional layers
+# with LeakyReLU activations to reconstruct the image. \* Uses an
 # activation function to output the reconstructed image with pixel values
 # between 0 and 1.
 # 
@@ -575,34 +577,34 @@ plt.show()
 
 
 ######################################################################
-# Autoencoders for Data Noise Reduction
+# Autoencoder for Data Noise Reduction
 # -------------------------------------
 # 
-# Autoencoders have emerged as a powerful tool for mitigating noise in
+# Autoencoder have emerged as a powerful tool for mitigating noise in
 # various data modalities. By training a neural network to reconstruct
 # clean data from noisy inputs, these models effectively learn to filter
 # out unwanted disturbances.
 # 
-# A key advantage of autoencoders lies in their ability to capture
+# A key advantage of autoencoder lies in their ability to capture
 # complex, non-linear relationships within data. This enables them to
 # effectively remove noise while preserving essential features. Moreover,
-# autoencoders are unsupervised learning models, requiring only unlabeled
+# autoencoder are unsupervised learning models, requiring only unlabeled
 # data for training, making them versatile for a wide range of
 # applications.
 # 
-# By effectively removing noise, autoencoders can significantly enhance
+# By effectively removing noise, autoencoder can significantly enhance
 # the performance of downstream machine learning models, leading to
 # improved accuracy and robustness.
 # 
-# Let’s introduce some noise to the picture and see how our model is
-# working to regenrate the output withouht noise.
+# Let's introduce some noise to the image and evaluate how our model
+# performs in reconstructing the output without noise.
 # 
 
 noisy_test(train_loader, model_cnn, linear=False, noise_intensity=0.3)
 
 
 ######################################################################
-# We have added a lot of noise to our input data and our model was abe to
+# We have added a lot of noise to our input data and our model was able to
 # reduce many of them and find the general shape of our original image.
 # 
 
@@ -611,11 +613,11 @@ noisy_test(train_loader, model_cnn, linear=False, noise_intensity=0.3)
 # CIFAR 10
 # ========
 # 
-# We will try to use the autoencoders with CIFAR10 dataset. This dataset
+# We will try to use the autoencoder with CIFAR10 dataset. This dataset
 # consists of color images with 3 channels and 32*32 size.
 # 
 # Since the images in this dataset has more variety and also has colors in
-# them we need to use a bigger model to be able to distinguisg between
+# them we need to use a bigger model to be able to distinguish between
 # pattern and also reproduce the given image with a low loss.
 # 
 
@@ -638,10 +640,10 @@ cifar_loader.dataset.data.shape
 dataiter = iter(cifar_loader)
 images, labels = next(dataiter)
 
-# show images by cinverting batches to grids
+# show images by converting batches to grids
 image_show(images, "Original image")
 
-# We use a similar architectur as before just tweaking some numbers for a bigger model
+# We use a similar architecture as before just tweaking some numbers for a bigger model
 # since these pictures has 3 channels and we need to compress more data in our model
 # We also add some padding to take into account the information that is stored on the edges of the pictures.
 class AutoencoderCNNCIF(nn.Module):
@@ -685,15 +687,14 @@ test_cifar(model_cifar, cifar_loader)
 
 
 ######################################################################
-# Our CNN model has been able to recontsruct mostly many of the details of
-# the pictures, Although the output are a bit blury.
+# Our CNN model has successfully reconstructed many details 
+# of the images, though the outputs remain somewhat blurry.
 # 
-# We can try and add other layers to the model in order to increase its
-# ability to find the patterns in data and preserve them while compressing
-# the pictures.
+# We should consider adding additional layers to the model 
+# to enhance its ability to detect and preserve patterns in 
+# the data during compression.
 # 
-# Another reason that our model is generating blury images could be the
-# ``code layer``, If it is small for this type of data it could lose some
-# details and in recontructing we won’t be able to reover that specific
-# data.
-# 
+# Another potential cause of the blurry images is the size 
+# of the "code layer." If it is too small for this type of 
+# data, it may lose crucial details, making it difficult to 
+# recover specific information during reconstruction.
