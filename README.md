@@ -22,7 +22,7 @@ We use sphinx-gallery's [notebook styled examples](https://sphinx-gallery.github
 
 Here is how you can create a new tutorial (for a detailed description, see [CONTRIBUTING.md](./CONTRIBUTING.md)):
 
-Before submitting a new tutorial read [PyTorch Tutorial Submission Policy](./tutorial_submission_policy.md)
+NOTE: Before submitting a new tutorial, read [PyTorch Tutorial Submission Policy](./tutorial_submission_policy.md).
 
 1. Create a Python file. If you want it executed while inserted into documentation, save the file with the suffix `tutorial` so that the file name is `your_tutorial.py`.
 2. Put it in one of the `beginner_source`, `intermediate_source`, `advanced_source` directory based on the level of difficulty. If it is a recipe, add it to `recipes_source`. For tutorials demonstrating unstable prototype features, add to the `prototype_source`.
