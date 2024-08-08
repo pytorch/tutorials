@@ -33,6 +33,7 @@ How to use CommDebugMode
 Here is how you can use ``CommDebugMode``:
 
 .. code-block:: python
+
     # The model used in this example is a MLPModule that applies Tensor Parallel
     comm_mode = CommDebugMode()
         with comm_mode:
