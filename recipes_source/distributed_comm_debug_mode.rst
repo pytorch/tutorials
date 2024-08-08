@@ -34,6 +34,7 @@ Here is how you can use ``CommDebugMode``:
 
 .. code-block:: python
 
+    # The model used in this example is a MLPModule applying Tensor Parallel
     comm_mode = CommDebugMode()
         with comm_mode:
             output = model(inp)
@@ -73,8 +74,8 @@ you want to use to display the data. You can also use a ``noise_level`` argument
 level of displayed information. Here is what each noise level displays:
 
 | 0. Prints module-level collective counts
-| 1. Prints dTensor operations not included in trivial operations, module information
-| 2. Prints operations not included in trivial operations
+| 1. Prints DTensor operations (not including trivial operations), module sharding information
+| 2. Prints tensor operations (not including trivial operations)
 | 3. Prints all operations
 
 In the example above, you can see that the collective operation, all_reduce, occurs once in the forward pass
@@ -196,8 +197,9 @@ Below is the interactive module tree visualization that you can use to upload yo
 Conclusion
 ------------------------------------------
 
-In this recipe, we have learned how to use ``CommDebugMode`` to debug Distributed Tensors. You can use your
-own JSON outputs in the embedded visual browser.
+In this recipe, we have learned how to use ``CommDebugMode`` to debug Distributed Tensors and
+parallelism solutions that uses communication collectives with PyTorch. You can use your own
+JSON outputs in the embedded visual browser.
 
 For more detailed information about ``CommDebugMode``, see
 `comm_mode_features_example.py
