@@ -18,10 +18,8 @@ unified abstraction that can bridge these different parallelism strategies. To a
 issue, PyTorch has proposed `DistributedTensor(DTensor)
 <https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/examples/comm_mode_features_example.py>`_
 which abstracts away the complexities of tensor communication in distributed training,
-providing a seamless user experience. However, when dealing with existing parallelism solutions
-and developing parallelism solutions using the unified abstraction like DTensor, the lack of
-transparency about what and when the collective communications happens under the hood could
-make it challenging for advanced users to identify and resolve issues. To address this challenge,
+providing a seamless user experience. However, this abstraction creates a lack of transparency
+that can make it challenging for users to identify and resolve issues. To address this challenge,
 ``CommDebugMode``, a Python context manager will serve as one of the primary debugging tools for
 DTensors, enabling users to view when and why collective operations are happening when using DTensors,
 effectively addressing this issue.
@@ -34,7 +32,6 @@ Here is how you can use ``CommDebugMode``:
 
 .. code-block:: python
 
-    # The model used in this example is a MLPModule that applies Tensor Parallel
     comm_mode = CommDebugMode()
         with comm_mode:
             output = model(inp)
@@ -74,8 +71,8 @@ you want to use to display the data. You can also use a ``noise_level`` argument
 level of displayed information. Here is what each noise level displays:
 
 | 0. Prints module-level collective counts
-| 1. Prints DTensor operations (not including trivial operations), module sharding information
-| 2. Prints tensor operations (not including trivial operations)
+| 1. Prints dTensor operations not included in trivial operations, module information
+| 2. Prints operations not included in trivial operations
 | 3. Prints all operations
 
 In the example above, you can see that the collective operation, all_reduce, occurs once in the forward pass
@@ -197,8 +194,7 @@ Below is the interactive module tree visualization that you can use to upload yo
 Conclusion
 ------------------------------------------
 
-In this recipe, we have learned how to use ``CommDebugMode`` to debug Distributed Tensors and
-parallelism solutions that uses communication collectives with PyTorch. You can use your
+In this recipe, we have learned how to use ``CommDebugMode`` to debug Distributed Tensors. You can use your
 own JSON outputs in the embedded visual browser.
 
 For more detailed information about ``CommDebugMode``, see
