@@ -18,11 +18,13 @@ unified abstraction that can bridge these different parallelism strategies. To a
 issue, PyTorch has proposed `DistributedTensor(DTensor)
 <https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/examples/comm_mode_features_example.py>`_
 which abstracts away the complexities of tensor communication in distributed training,
-providing a seamless user experience. However, this abstraction creates a lack of transparency
-that can make it challenging for users to identify and resolve issues. To address this challenge,
-``CommDebugMode``, a Python context manager will serve as one of the primary debugging tools for
-DTensors, enabling users to view when and why collective operations are happening when using DTensors,
-effectively addressing this issue.
+providing a seamless user experience. However, when dealing with existing parallelism solutions and
+developing parallelism solutions using the unified abstraction like DTensor, the lack of transparency
+about what and when the collective communications happens under the hood could make it challenging
+for advanced users to identify and resolve issues. To address this challenge, ``CommDebugMode``, a
+Python context manager will serve as one of the primary debugging tools for DTensors, enabling
+users to view when and why collective operations are happening when using DTensors, effectively
+addressing this issue.
 
 
 How to use CommDebugMode
