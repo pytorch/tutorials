@@ -3,10 +3,14 @@ Using CommDebugMode
 
 **Author**: `Anshul Sinha <https://github.com/sinhaanshul>`__
 
-Prerequisites
 
-- Python 3.8 - 3.11
-- PyTorch 2.2 or later
+In this tutorial, we will explore how to use CommDebugMode with PyTorch's DistributedTensor (DTensor) for debugging by tracking collective operations in distributed training environments.
+
+Prerequisites
+---------------------
+
+* Python 3.8 - 3.11
+* PyTorch 2.2 or later
 
 
 What is CommDebugMode and why is it useful
