@@ -4,7 +4,8 @@ Using CommDebugMode
 **Author**: `Anshul Sinha <https://github.com/sinhaanshul>`__
 
 
-In this tutorial, we will explore how to use CommDebugMode with PyTorch's DistributedTensor (DTensor) for debugging by tracking collective operations in distributed training environments.
+In this tutorial, we will explore how to use CommDebugMode with PyTorch's
+DistributedTensor (DTensor) for debugging by tracking collective operations in distributed training environments.
 
 Prerequisites
 ---------------------
