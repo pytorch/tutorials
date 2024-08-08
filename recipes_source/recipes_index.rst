@@ -275,10 +275,10 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Model-Optimization
 
 .. customcarditem::
-   :header: CPU launcher script for optimal performance on Intel® Xeon
-   :card_description: How to use launcher script for optimal runtime configurations on Intel® Xeon CPUs.
+   :header: Optimizing CPU Performance on Intel® Xeon® with run_cpu Script
+   :card_description: How to use run_cpu script for optimal runtime configurations on Intel® Xeon CPUs.
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/xeon_run_cpu.html
+   :link: ../recipes/xeon_run_cpu.html
    :tags: Model-Optimization
 
 .. customcarditem::
