@@ -428,7 +428,6 @@ def test_accuracy(net, device="cpu"):
 
 def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     data_dir = os.path.abspath("./data")
-    load_data(data_dir)
     config = {
         "l1": tune.choice([2**i for i in range(9)]),
         "l2": tune.choice([2**i for i in range(9)]),
