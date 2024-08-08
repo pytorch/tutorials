@@ -76,11 +76,11 @@ level of displayed information. Here is what each noise level displays:
 | 3. Prints all operations
 
 In the example above, you can see that the collective operation, all_reduce, occurs once in the forward pass
-of the ``MLPModule``. Furthermore, you can use ``CommDebugMode`` pinpoint that the all-reduce operation happens
+of the ``MLPModule``. Furthermore, you can use ``CommDebugMode`` to pinpoint that the all-reduce operation happens
 in the second linear layer of the ``MLPModule``.
 
 
-Below is the interactive module tree visualization that users can upload their JSON dump to:
+Below is the interactive module tree visualization that you can use to upload your own JSON dump:
 
 .. raw:: html
 
