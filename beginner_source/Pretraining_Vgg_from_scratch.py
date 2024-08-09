@@ -21,8 +21,16 @@ Before you start
 
     pip install albumentations
 """
+import subprocess
+import sys
 
-
+try:
+    import albumentations
+    print("albumentations are already installed")
+except ImportError:
+    print("albumentations module not found. Installing...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "albumentations"])
+    print("albumentations module installed successfully.")
 
 
 
@@ -77,7 +85,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 ######################################################################
 # VGG became a model that attracted attention because it succeeded in
 # building deeper layers and dramatically shortening the training time
-# compared to alexnet, which was the SOTA model at the time.:
+# compared to ``alexnet``, which was the SOTA model at the time.:
 # 
 
 
@@ -97,7 +105,7 @@ DatasetName = 'Cifar' # CIFAR ,CIFAR10, MNIST , ImageNet
 ## model configuration
 
 num_classes =   100
-# Caltech 257 CIFAR 100  CIFAR10 10 ,MNIST 10 ImageNet 1000
+# ``Caltech`` 257 CIFAR 100  CIFAR10 10 ,MNIST 10 ImageNet 1000
 model_version = None ## you must configure it.
 
 ## data configuration
@@ -120,7 +128,7 @@ clip= None # model D grad clip 0.7
 
 update_count = int(256/batch_size)
 accum_step = int(256/batch_size)
-eval_step =26 * accum_step  ## Caltech 5 CIFAR 5 MNIST 6 , CIFAR10 5 ImageNet  26
+eval_step =26 * accum_step  ## ``Caltech`` 5 CIFAR 5 MNIST 6 , CIFAR10 5 ImageNet  26
 
 
 ## model configuration
@@ -149,7 +157,7 @@ model_layers =None
 
 ######################################################################
 # We use ``CIFAR100`` Dataset in this tutorial. In VGG paper , the authors
-# scales image isotropically . Then , they apply
+# scales image ``isotropically`` . Then , they apply
 # ``Normalization``,``RandomCrop``,``HorizontalFlip`` . So , we need to override
 # CIFAR100 class to apply preprocessing.
 # 
@@ -637,7 +645,7 @@ if DatasetName == 'ImageNet' :
                 )
 
 ######################################################################
-# Conculsion
+# Conclusion
 # ----------
 # We have seen how ``pretraining`` VGG from scratch . This Tutorial will be helpful to reproduce another Foundation Model .
 
