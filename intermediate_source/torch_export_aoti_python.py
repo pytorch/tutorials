@@ -3,7 +3,7 @@
 """
 (Beta) ``torch.export`` AOTInductor Tutorial for Python runtime
 ===================================================
-**Author:** Ankith Gunapal
+**Author:** Ankith Gunapal, Bin Bao
 """
 
 ######################################################################
