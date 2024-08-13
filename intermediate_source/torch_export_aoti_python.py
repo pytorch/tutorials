@@ -46,7 +46,7 @@
 # Model Compilation
 # ------------
 #
-# We will use TorchVision's pretrained `ResNet18` model and TorchInductor on the 
+# We will use the TorchVision pretrained `ResNet18` model and TorchInductor on the 
 # exported PyTorch program using :func:`torch._export.aot_compile`.
 #
 #  .. note::
