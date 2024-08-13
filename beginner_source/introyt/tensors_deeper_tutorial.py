@@ -228,18 +228,7 @@ print(c)
 # integer with the ``.to()`` method. Note that ``c`` contains all the same
 # values as ``b``, but truncated to integers.
 # 
-# Available data types include:
-# 
-# -  ``torch.bool``
-# -  ``torch.int8``
-# -  ``torch.uint8``
-# -  ``torch.int16``
-# -  ``torch.int32``
-# -  ``torch.int64``
-# -  ``torch.half``
-# -  ``torch.float``
-# -  ``torch.double``
-# -  ``torch.bfloat``
+# For more information, see the `data types documentation <https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype>`__.
 # 
 # Math & Logic with PyTorch Tensors
 # ---------------------------------
@@ -459,17 +448,19 @@ m1 = torch.rand(2, 2)                   # random matrix
 m2 = torch.tensor([[3., 0.], [0., 3.]]) # three times identity matrix
 
 print('\nVectors & Matrices:')
-print(torch.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
+print(torch.linalg.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
 print(m1)
-m3 = torch.matmul(m1, m2)
+m3 = torch.linalg.matmul(m1, m2)
 print(m3)                  # 3 times m1
-print(torch.svd(m3))       # singular value decomposition
+print(torch.linalg.svd(m3))       # singular value decomposition
 
 
 ##################################################################################
 # This is a small sample of operations. For more details and the full inventory of
 # math functions, have a look at the
 # `documentation <https://pytorch.org/docs/stable/torch.html#math-operations>`__.
+# For more details and the full inventory of linear algebra operations, have a
+# look at this `documentation <https://pytorch.org/docs/stable/linalg.html>`__.
 # 
 # Altering Tensors in Place
 # ~~~~~~~~~~~~~~~~~~~~~~~~~

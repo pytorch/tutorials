@@ -226,7 +226,7 @@ The primary goal of integrating new devices through ``PrivateUse1`` is to meet t
 and the next thing to do is to improve usability, which mainly involves the following aspects.
 
 1. Register new backend module to Pytorch.
-2. Generate methods and properties related to the new backend.
+2. Rename PrivateUse1 to a custom name for the new backend.
 3. Generate methods and properties related to the new backend.
 
 Register new backend module to Pytorch

@@ -1,7 +1,7 @@
 Getting Started with Distributed Checkpoint (DCP)
 =====================================================
 
-**Author**: `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__
+**Author**: `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__, `Lucas Pasqualin <https://github.com/lucasllc>`__
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__.
@@ -22,13 +22,18 @@ In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model.
 How DCP works
 --------------
 
-:func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel.
-In addition, checkpointing automatically handles fully-qualified-name (FQN) mappings across models and optimizers, enabling load-time resharding across differing cluster topologies.
+:func:`torch.distributed.checkpoint` enables saving and loading models from multiple ranks in parallel. You can use this module to save on any number of ranks in parallel,
+and then re-shard across differing cluster topologies at load time.
+
+Addditionally, through the use of modules in :func:`torch.distributed.checkpoint.state_dict`,
+DCP offers support for gracefully handling ``state_dict`` generation and loading in distributed settings.
+This includes managing fully-qualified-name (FQN) mappings across models and optimizers, and setting default parameters for PyTorch provided parallelisms.
 
 DCP is different from :func:`torch.save` and :func:`torch.load` in a few significant ways:
 
 * It produces multiple files per checkpoint, with at least one per rank.
 * It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.
+* DCP offers special handling of Stateful objects (formally defined in `torch.distributed.checkpoint.stateful`), automatically calling both `state_dict` and `load_state_dict` methods if they are defined.
 
 .. note::
   The code in this tutorial runs on an 8-GPU server, but it can be easily
@@ -42,7 +47,7 @@ Here we use a toy model wrapped with FSDP for demonstration purposes. Similarly,
 Saving
 ~~~~~~
 
-Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy input data, and save it.
+Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input data, and save it.
 
 .. code-block:: python
 
@@ -50,15 +55,47 @@ Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy inp
 
     import torch
     import torch.distributed as dist
-    import torch.distributed.checkpoint as DCP
+    import torch.distributed.checkpoint as dcp
     import torch.multiprocessing as mp
     import torch.nn as nn
 
     from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+    from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict
+    from torch.distributed.checkpoint.stateful import Stateful
     from torch.distributed.fsdp.fully_sharded_data_parallel import StateDictType
 
     CHECKPOINT_DIR = "checkpoint"
 
+
+    class AppState(Stateful):
+        """This is a useful wrapper for checkpointing the Application State. Since this object is compliant
+        with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the
+        dcp.save/load APIs.
+
+        Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model
+        and optimizer.
+        """
+
+        def __init__(self, model, optimizer=None):
+            self.model = model
+            self.optimizer = optimizer
+
+        def state_dict(self):
+            # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
+            model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+            return {
+                "model": model_state_dict,
+                "optim": optimizer_state_dict
+            }
+
+        def load_state_dict(self, state_dict):
+            # sets our state dicts on the model and optimizer, now that we've loaded
+            set_state_dict(
+                self.model,
+                self.optimizer,
+                model_state_dict=state_dict["model"],
+                optim_state_dict=state_dict["optim"]
+            )
 
     class ToyModel(nn.Module):
         def __init__(self):
@@ -99,20 +136,8 @@ Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy inp
         model(torch.rand(8, 16, device="cuda")).sum().backward()
         optimizer.step()
 
-        # set FSDP StateDictType to SHARDED_STATE_DICT so we can use DCP to checkpoint sharded model state dict
-        # note that we do not support FSDP StateDictType.LOCAL_STATE_DICT
-        FSDP.set_state_dict_type(
-            model,
-            StateDictType.SHARDED_STATE_DICT,
-        )
-        state_dict = {
-            "model": model.state_dict(),
-        }
-
-        DCP.save_state_dict(
-            state_dict=state_dict,
-            storage_writer=DCP.FileSystemWriter(CHECKPOINT_DIR),
-        )
+        state_dict = { "app": AppState(model, optimizer) }
+        dcp.save(state_dict, checkpoint_id=CHECKPOINT_DIR)
 
         cleanup()
 
@@ -152,15 +177,45 @@ The reason that we need the ``state_dict`` prior to loading is:
 
     import torch
     import torch.distributed as dist
-    import torch.distributed.checkpoint as DCP
+    import torch.distributed.checkpoint as dcp
+    from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict
     import torch.multiprocessing as mp
     import torch.nn as nn
 
     from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-    from torch.distributed.fsdp.fully_sharded_data_parallel import StateDictType
 
     CHECKPOINT_DIR = "checkpoint"
 
+
+    class AppState(Stateful):
+        """This is a useful wrapper for checkpointing the Application State. Since this object is compliant
+        with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the
+        dcp.save/load APIs.
+
+        Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model
+        and optimizer.
+        """
+
+        def __init__(self, model, optimizer=None):
+            self.model = model
+            self.optimizer = optimizer
+
+        def state_dict(self):
+            # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
+            model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+            return {
+                "model": model_state_dict,
+                "optim": optimizer_state_dict
+            }
+
+        def load_state_dict(self, state_dict):
+            # sets our state dicts on the model and optimizer, now that we've loaded
+            set_state_dict(
+                self.model,
+                self.optimizer,
+                model_state_dict=state_dict["model"],
+                optim_state_dict=state_dict["optim"]
+            )
 
     class ToyModel(nn.Module):
         def __init__(self):
@@ -194,21 +249,20 @@ The reason that we need the ``state_dict`` prior to loading is:
         model = ToyModel().to(rank)
         model = FSDP(model)
 
-        FSDP.set_state_dict_type(
-            model,
-            StateDictType.SHARDED_STATE_DICT,
-        )
-        # different from ``torch.load()``, DCP requires model state_dict prior to loading to get
-        # the allocated storage and sharding information.
-        state_dict = {
-            "model": model.state_dict(),
-        }
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
-        DCP.load_state_dict(
+        state_dict = { "app": AppState(model, optimizer)}
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+        # generates the state dict we will load into
+        model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+        state_dict = {
+            "model": model_state_dict,
+            "optimizer": optimizer_state_dict
+        }
+        dcp.load(
             state_dict=state_dict,
-            storage_reader=DCP.FileSystemReader(CHECKPOINT_DIR),
+            checkpoint_id=CHECKPOINT_DIR,
         )
-        model.load_state_dict(state_dict["model"])
 
         cleanup()
 
@@ -224,7 +278,8 @@ The reason that we need the ``state_dict`` prior to loading is:
         )
 
 If you would like to load the saved checkpoint into a non-FSDP wrapped model in a non-distributed setup, perhaps for inference, you can also do that with DCP.
-By default, DCP saves and loads a distributed ``state_dict`` in Single Program Multiple Data(SPMD) style. To load without a distributed setup, please set ``no_dist`` to ``True`` when loading with DCP.
+By default, DCP saves and loads a distributed ``state_dict`` in Single Program Multiple Data(SPMD) style. However if no process group is initialized, DCP infers
+the intent is to save or load in "non-distributed" style, meaning entirely in the current process.
 
 .. note::
   Distributed checkpoint support for Multi-Program Multi-Data is still under development.
@@ -259,11 +314,10 @@ By default, DCP saves and loads a distributed ``state_dict`` in Single Program M
             "model": model.state_dict(),
         }
 
-        # turn no_dist to be true to load in non-distributed setting
-        DCP.load_state_dict(
+        # since no progress group is initialized, DCP will disable any collectives.
+        dcp.load(
             state_dict=state_dict,
-            storage_reader=DCP.FileSystemReader(CHECKPOINT_DIR),
-            no_dist=True,
+            checkpoint_id=CHECKPOINT_DIR,
         )
         model.load_state_dict(state_dict["model"])
 
@@ -272,9 +326,47 @@ By default, DCP saves and loads a distributed ``state_dict`` in Single Program M
         run_checkpoint_load_example()
 
 
+Formats
+----------
+One drawback not yet mentioned is that DCP saves checkpoints in a format which is inherently different then those generated using torch.save.
+Since this can be an issue when users wish to share models with users used to the torch.save format, or in general just want to add format flexibility
+to their applications. For this case, we provide the ``format_utils`` module in ``torch.distributed.checkpoint.format_utils``.
+
+A command line utility is provided for the users convenience, which follows the following format:
+
+.. code-block:: bash
+
+    python -m torch.distributed.checkpoint.format_utils -m <checkpoint location> <location to write formats to> <mode>
+
+In the command above, ``mode`` is one of ``torch_to_dcp``` or ``dcp_to_torch``.
+
+
+Alternatively, methods are also provided for users who may wish to convert checkpoints directly.
+
+.. code-block:: python
+
+    import os
+
+    import torch
+    import torch.distributed.checkpoint as DCP
+    from torch.distributed.checkpoint.format_utils import dcp_to_torch_save, torch_save_to_dcp
+
+    CHECKPOINT_DIR = "checkpoint"
+    TORCH_SAVE_CHECKPOINT_DIR = "torch_save_checkpoint.pth"
+
+    # convert dcp model to torch.save (assumes checkpoint was generated as above)
+    dcp_to_torch_save(CHECKPOINT_DIR, TORCH_SAVE_CHECKPOINT_DIR)
+
+    # converts the torch.save model back to DCP
+    dcp_to_torch_save(TORCH_SAVE_CHECKPOINT_DIR, f"{CHECKPOINT_DIR}_new")
+
+
+
 Conclusion
 ----------
-In conclusion, we have learned how to use DCP's :func:`save_state_dict` and :func:`load_state_dict` APIs, as well as how they are different form :func:`torch.save` and :func:`torch.load`.
+In conclusion, we have learned how to use DCP's :func:`save` and :func:`load` APIs, as well as how they are different form :func:`torch.save` and :func:`torch.load`.
+Additionally, we've learned how to use :func:`get_state_dict` and :func:`set_state_dict` to automatically manage parallelism-specific FQN's and defaults during state dict
+generation and loading.
 
 For more information, please see the following:
 

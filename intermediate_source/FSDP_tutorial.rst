@@ -10,7 +10,7 @@ Training AI models at a large scale is a challenging task that requires a lot of
 It also comes with considerable engineering complexity to handle the training of these very large models.
 `PyTorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
 
-In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
+In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/stable/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
 `GPT 3 models up to 1T parameters <https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
 
 
@@ -63,16 +63,14 @@ Here we use a toy model to run training on the MNIST dataset for demonstration p
 
 1.1 Install PyTorch along with Torchvision
 
-.. code-block:: bash 
-
-    pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
+See the `Get Started guide <https://pytorch.org/get-started/locally/>`__ for information on installation.
 
 We add the following code snippets to a python script “FSDP_mnist.py”.
 
 1.2  Import necessary packages
 
 .. note::
-    This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of `size_based_auto_wrap_policy` with `default_auto_wrap_policy`.
+    This tutorial is intended for PyTorch versions 1.12 and later. If you are using an earlier version, replace all instances of `size_based_auto_wrap_policy` with `default_auto_wrap_policy` and `fsdp_auto_wrap_policy` with `auto_wrap_policy`.
 
 .. code-block:: python
 
@@ -310,7 +308,7 @@ We have recorded cuda events to measure the time of FSDP model specifics. The CU
     CUDA event elapsed time on training loop 40.67462890625sec
 
 Wrapping the model with FSDP, the model will look as follows, we can see the model has been wrapped in one FSDP unit.
-Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will discuss the differences. 
+Alternatively, we will look at adding the auto_wrap_policy next and will discuss the differences. 
 
 .. code-block:: bash
 
@@ -337,12 +335,12 @@ The following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarg
 
    FSDP Peak Memory Usage
 
-Applying *fsdp_auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
+Applying *auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
 The way it works is that, suppose your model contains 100 Linear layers. If you do FSDP(model), there will only be one FSDP unit which wraps the entire model. 
 In that case, the allgather would collect the full parameters for all 100 linear layers, and hence won't save CUDA memory for parameter sharding.
 Also, there is only one blocking allgather call for the all 100 linear layers, there will not be communication and computation overlapping between layers. 
 
-To avoid that, you can pass in an fsdp_auto_wrap_policy, which will seal the current FSDP unit and start a new one automatically when the specified condition is met (e.g., size limit).
+To avoid that, you can pass in an auto_wrap_policy, which will seal the current FSDP unit and start a new one automatically when the specified condition is met (e.g., size limit).
 In that way you will have multiple FSDP units, and only one FSDP unit needs to collect full parameters at a time. E.g., suppose you have 5 FSDP units, and each wraps 20 linear layers.
 Then, in the forward, the 1st FSDP unit will allgather parameters for the first 20 linear layers, do computation, discard the parameters and then move on to the next 20 linear layers. So, at any point in time, each rank only materializes parameters/grads for 20 linear layers instead of 100.
 
@@ -360,9 +358,9 @@ Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning
     model = Net().to(rank)
 
     model = FSDP(model,
-        fsdp_auto_wrap_policy=my_auto_wrap_policy)
+        auto_wrap_policy=my_auto_wrap_policy)
 
-Applying the fsdp_auto_wrap_policy, the model would be as follows:
+Applying the auto_wrap_policy, the model would be as follows:
 
 .. code-block:: bash
 
@@ -413,7 +411,7 @@ In 2.4 we just add it to the FSDP wrapper
 .. code-block:: python
 
     model = FSDP(model,
-        fsdp_auto_wrap_policy=my_auto_wrap_policy,
+        auto_wrap_policy=my_auto_wrap_policy,
         cpu_offload=CPUOffload(offload_params=True))
 
 

@@ -42,7 +42,6 @@ class SimpleCNN(nn.Module):
         x = F.relu(x)
         x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
-        output = x
         return output
 
 def loss_fn(predictions, targets):

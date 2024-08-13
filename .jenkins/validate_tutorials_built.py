@@ -22,19 +22,20 @@ NOT_RUN = [
     "beginner_source/former_torchies/tensor_tutorial_old",
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
+    "beginner_source/torchtext_custom_dataset_tutorial", # not building with 2.3 RC, might be able to turn on with GA
+    "beginner_source/text_sentiment_ngrams_tutorial", # not building with 2.3 RC, might be able to turn on with GA
     "beginner_source/t5_tutorial", # re-enable after this is fixed: https://github.com/pytorch/text/issues/1756
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
-    "advanced_source/ddp_pipeline",  # requires 4 gpus
+    "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "prototype_source/fx_graph_mode_ptq_dynamic",
     "prototype_source/vmap_recipe",
     "prototype_source/torchscript_freezing",
     "prototype_source/nestedtensor",
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
-    "recipes_source/recipes/loading_data_recipe",
     "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
@@ -51,7 +52,8 @@ NOT_RUN = [
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
-    "intermediate_source/tensorboard_profiler_tutorial" # reenable after 2.0 release.
+    "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
+    "intermediate_source/torch_export_tutorial" # reenable after 2940 is fixed.
 ]
 
 def tutorial_source_dirs() -> List[Path]:

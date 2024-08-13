@@ -1,7 +1,7 @@
 Customize Process Group Backends Using Cpp Extensions
 =====================================================
 
-**Author**: `Howard Huang <https://github.com/H-Huang>`, `Feng Tian <https://github.com/ftian1>`__, `Shen Li <https://mrshenli.github.io/>`__, `Min Si <https://minsii.github.io/>`__
+**Author**: `Howard Huang <https://github.com/H-Huang>`__, `Feng Tian <https://github.com/ftian1>`__, `Shen Li <https://mrshenli.github.io/>`__, `Min Si <https://minsii.github.io/>`__
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/process_group_cpp_extension_tutorial.rst>`__.
@@ -100,7 +100,7 @@ repository for the full implementation.
         // The collective communication APIs without a custom implementation
         // will error out if invoked by application code.
     };
-    
+
     class WorkDummy : public Work {
       public:
         WorkDummy(
@@ -266,8 +266,8 @@ After installation, you can conveniently use the ``dummy`` backend when calling
 `init_process_group <https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group>`__
 as if it is an builtin backend.
 
-We can specify dispatching based on backend by changing the ``backend`` argument of ``init_process_group``. We 
-can dispatch collective with CPU tensor to ``gloo`` backend and dispatch collective with CUDA tensor to ``dummy`` backend by 
+We can specify dispatching based on backend by changing the ``backend`` argument of ``init_process_group``. We
+can dispatch collective with CPU tensor to ``gloo`` backend and dispatch collective with CUDA tensor to ``dummy`` backend by
 specifying ``cpu:gloo,cuda:dummy`` as the backend argument.
 
 To send all tensors to ``dummy`` backend, we can simply specify ``dummy`` as the backend argument.

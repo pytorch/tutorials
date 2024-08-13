@@ -232,21 +232,21 @@ search_space = SearchSpace(
 # we get the logic to read and parse the TensorBoard logs for free.
 #
 
-from ax.metrics.tensorboard import TensorboardCurveMetric
+from ax.metrics.tensorboard import TensorboardMetric
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 
-
-class MyTensorboardMetric(TensorboardCurveMetric):
+class MyTensorboardMetric(TensorboardMetric):
 
     # NOTE: We need to tell the new TensorBoard metric how to get the id /
     # file handle for the TensorBoard logs from a trial. In this case
     # our convention is to just save a separate file per trial in
     # the prespecified log dir.
-    @classmethod
-    def get_ids_from_trials(cls, trials):
-        return {
-            trial.index: Path(log_dir).joinpath(str(trial.index)).as_posix()
-            for trial in trials
-        }
+    def _get_event_multiplexer_for_trial(self, trial):
+        mul = event_multiplexer.EventMultiplexer(max_reload_threads=20)
+        mul.AddRunsFromDirectory(Path(log_dir).joinpath(str(trial.index)).as_posix(), None)
+        mul.Reload()
+    
+        return mul
 
     # This indicates whether the metric is queryable while the trial is
     # still running. We don't use this in the current tutorial, but Ax
@@ -266,12 +266,12 @@ class MyTensorboardMetric(TensorboardCurveMetric):
 
 val_acc = MyTensorboardMetric(
     name="val_acc",
-    curve_name="val_acc",
+    tag="val_acc",
     lower_is_better=False,
 )
 model_num_params = MyTensorboardMetric(
     name="num_params",
-    curve_name="num_params",
+    tag="num_params",
     lower_is_better=True,
 )
 

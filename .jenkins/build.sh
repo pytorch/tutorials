@@ -11,9 +11,6 @@ export LANG=C.UTF-8
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # Update root certificates by installing new libgnutls30
-sudo apt-get update || sudo apt-get install libgnutls30
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
 # Install pandoc (does not install from pypi)
 sudo apt-get update
@@ -21,17 +18,12 @@ sudo apt-get install -y pandoc
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
-rm -rf src
-# NS: ghstack is not needed to build tutorials and right now it forces importlib to be downgraded to 3.X 
-pip uninstall -y ghstack
-pip install --progress-bar off -r $DIR/../requirements.txt
 
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
-# Install 2.2 for testing - uncomment to install nightly binaries (update the version as needed).
+# Install 2.4 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 # pip uninstall -y torch torchvision torchaudio torchtext torchdata
-# pip3 install torch==2.2.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu121
-# pip3 install torchdata torchtext --index-url https://download.pytorch.org/whl/test/cpu
+# pip3 install torch==2.4.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
@@ -44,7 +36,6 @@ awsv2 configure set default.s3.multipart_threshold 5120MB
 if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
   python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
-  # python $DIR/remove_runnable_code.py advanced_source/ddp_pipeline_tutorial.py advanced_source/ddp_pipeline_tutorial.py || true
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
@@ -64,7 +55,8 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Files to run must be accessible to subprocessed (at least to `download_data.py`)
   export FILES_TO_RUN
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
@@ -126,6 +118,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
