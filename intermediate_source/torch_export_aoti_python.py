@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-(Beta) ``torch.export`` AOT Inductor Tutorial for Python runtime
+(Beta) ``torch.export`` AOTInductor Tutorial for Python runtime
 ===================================================
 **Author:** Ankith Gunapal
 """
@@ -31,7 +31,7 @@
 # Prerequisites
 # -------------
 #   * PyTorch 2.4 or later
-#   * Basic understanding of ``torch._export`` and AOT Inductor
+#   * Basic understanding of ``torch._export`` and AOTInductor
 #   * Complete the `AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`_ tutorial
 
 ######################################################################
@@ -40,6 +40,7 @@
 # * How to use AOTInductor for python runtime.
 # * How  to use :func:`torch._export.aot_compile` to generate a shared library
 # * How to run a shared library in Python runtime using :func:`torch._export.aot_load`.
+# * When do you use AOTInductor for python runtime
 
 ######################################################################
 # Model Compilation
@@ -124,24 +125,24 @@ with torch.inference_mode():
     output = model(example_inputs)
 
 ######################################################################
-# When to use AOT Inductor Python Runtime
+# When to use AOTInductor for Python Runtime
 # ---------------------------------------
 #
-# One of the requirements for using AOT Inductor is that the model shouldn't have any graph breaks.
-# Once this requirement is met, the primary use case for using AOT Inductor Python Runtime is for
+# One of the requirements for using AOTInductor is that the model shouldn't have any graph breaks.
+# Once this requirement is met, the primary use case for using AOTInductor Python Runtime is for
 # model deployment using Python.
-# There are mainly two reasons why you would use AOT Inductor Python Runtime:
+# There are mainly two reasons why you would use AOTInductor Python Runtime:
 #
 # -  ``torch._export.aot_compile`` generates a shared library. This is useful for model
 #    versioning for deployments and tracking model performance over time.
 # -  With :func:`torch.compile` being a JIT compiler, there is a warmup
 #    cost associated with the first compilation. Your deployment needs to account for the
-#    compilation time taken for the first inference. With AOT Inductor, the compilation is
+#    compilation time taken for the first inference. With AOTInductor, the compilation is
 #    done offline using ``torch._export.aot_compile``. The deployment would only load the
 #    shared library using ``torch._export.aot_load`` and run inference.
 #
 #
-# The section below shows the speedup achieved with AOT Inductor for first inference
+# The section below shows the speedup achieved with AOTInductor for first inference
 #
 # We define a utility function ``timed`` to measure the time taken for inference
 #
@@ -175,7 +176,7 @@ def timed(fn):
 
 
 ######################################################################
-# Lets measure the time for first inference using AOT Inductor
+# Lets measure the time for first inference using AOTInductor
 
 torch._dynamo.reset()
 
@@ -184,7 +185,7 @@ example_inputs = (torch.randn(1, 3, 224, 224, device=device),)
 
 with torch.inference_mode():
     _, time_taken = timed(lambda: model(example_inputs))
-    print(f"Time taken for first inference for AOT Inductor is {time_taken:.2f} ms")
+    print(f"Time taken for first inference for AOTInductor is {time_taken:.2f} ms")
 
 
 ######################################################################
@@ -203,7 +204,7 @@ with torch.inference_mode():
     print(f"Time taken for first inference for torch.compile is {time_taken:.2f} ms")
 
 ######################################################################
-# We see that there is a drastic speedup in first inference time using AOT Inductor compared
+# We see that there is a drastic speedup in first inference time using AOTInductor compared
 # to ``torch.compile``
 
 ######################################################################
@@ -215,4 +216,4 @@ with torch.inference_mode():
 # and ``torch._export.aot_load`` APIs. This process demonstrates the practical application of 
 # generating a shared library and running it within a Python environment, even with dynamic shape
 # considerations and device-specific optimizations. We also looked at the advantage of using 
-# AOT Inductor in model deployments, with regards to speed up in first inference time.
+# AOTInductor in model deployments, with regards to speed up in first inference time.
