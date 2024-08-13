@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-torch.export AOT Inductor Tutorial for Python runtime
+(Beta) ``torch.export`` AOT Inductor Tutorial for Python runtime
 ===================================================
 **Author:** Ankith Gunapal
 """
@@ -20,7 +20,7 @@ torch.export AOT Inductor Tutorial for Python runtime
 #
 # In this tutorial, you will learn an end-to-end example of how to use AOTInductor for python runtime.
 # We will look at how  to use :func:`torch._export.aot_compile` to generate a shared library.
-# We also look at how we can run the shared library in python runtime using :func:`torch._export.aot_load`.
+# Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
 #
 # **Contents**
 #
@@ -32,15 +32,15 @@ torch.export AOT Inductor Tutorial for Python runtime
 # Model Compilation
 # ------------
 #
-# We will use TorchVision's pretrained `ResNet18` model in this example and use TorchInductor on the 
-# exported PyTorch program using :func:`torch._export.aot_compile`
+# We will use TorchVision's pretrained `ResNet18` model and TorchInductor on the 
+# exported PyTorch program using :func:`torch._export.aot_compile`.
 #
 #  .. note::
 #
 #       This API also supports :func:`torch.compile` options like `mode`
 #       As an example, if used on a CUDA enabled device, we can set `"max_autotune": True`
 #
-# We also specify `dynamic_shapes` for the batch dimension. In this example, min=2 is not a bug and is 
+# We also specify ``dynamic_shapes`` for the batch dimension. In this example, ``min=2`` is not a bug and is 
 # explained in `The 0/1 Specialization Problem <https://docs.google.com/document/d/16VPOa3d-Liikf48teAOmxLc92rgvJdfosIy-yoT38Io/edit?fbclid=IwAR3HNwmmexcitV0pbZm_x1a4ykdXZ9th_eJWK-3hBtVgKnrkmemz6Pm5jRQ#heading=h.ez923tomjvyk>`__
 
 
@@ -87,14 +87,14 @@ with torch.inference_mode():
 # Model Inference in Python
 # ------------
 #
-# Typically the shared object generated above is used in a non-Python environment. In PyTorch 2.3, 
-# we added a new API :func:`torch._export.aot_load` to load the shared library in python runtime.
+# Typically, the shared object generated above is used in a non-Python environment. In PyTorch 2.3, 
+# we added a new API called :func:`torch._export.aot_load` to load the shared library in the Python runtime.
 # The API follows a similar structure to the :func:`torch.jit.load` API . We specify the path 
-# of the shared library and the device where this should be loaded.
+# of the shared library and the device where it should be loaded.
 #  .. note::
 #
-#      We specify batch_size=1 for inference and it works even though we specified min=2 in 
-#      :func:`torch._export.aot_compile`
+#      In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
+#      :func:`torch._export.aot_compile`.
 
 
 import os
