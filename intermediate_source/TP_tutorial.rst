@@ -83,8 +83,6 @@ To see how to utilize DeviceMesh to set up multi-dimensional parallelisms, pleas
 
 .. code-block:: python
 
-    # run this via torchrun: torchrun --standalone --nproc_per_node=8 ./tp_tutorial.py
-
     from torch.distributed.device_mesh import init_device_mesh
 
     tp_mesh = init_device_mesh("cuda", (8,))
