@@ -88,11 +88,15 @@ with torch.inference_mode():
 
     # min=2 is not a bug and is explained in the 0/1 Specialization Problem
     batch_dim = torch.export.Dim("batch", min=2, max=32)
-    so_path = torch._export.aot_compile(
+    exported_program = torch.export.export(
         model,
         example_inputs,
         # Specify the first dimension of the input x as dynamic
         dynamic_shapes={"x": {0: batch_dim}},
+    )
+    so_path = torch._inductor.aot_compile(
+        exported_program.module(),
+        example_inputs,
         # Specify the generated shared library path
         options=aot_compile_options
     )
@@ -211,7 +215,7 @@ with torch.inference_mode():
 # Conclusion
 # ----------
 #
-# In this tutorial, we have learned how to effectively use the AOTInductor for Python runtime by 
+# In this recipe, we have learned how to effectively use the AOTInductor for Python runtime by 
 # compiling and loading a pretrained ``ResNet18`` model using the ``torch._export.aot_compile``
 # and ``torch._export.aot_load`` APIs. This process demonstrates the practical application of 
 # generating a shared library and running it within a Python environment, even with dynamic shape
