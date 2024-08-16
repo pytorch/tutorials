@@ -21,6 +21,8 @@
 # In this tutorial, you will learn an end-to-end example of how to use AOTInductor for python runtime.
 # We will look at how  to use :func:`torch._export.aot_compile` to generate a shared library.
 # Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
+# You will learn about the speed up seen in the first inference time using AOTInductor, especially when using 
+# ``max-autotune`` mode which can take some time to execute.
 #
 # **Contents**
 #
