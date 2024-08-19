@@ -3,14 +3,14 @@
 """
 (Beta) ``torch.export`` AOTInductor Tutorial for Python runtime
 ===================================================
-**Author:** Ankith Gunapal, Bin Bao
+**Author:** Ankith Gunapal, Bin Bao, Angela Yi
 """
 
 ######################################################################
 #
 # .. warning::
 #
-#     ``torch._export.aot_compile`` and ``torch._export.aot_load`` are in Beta status and are subject to backwards compatibility
+#     ``torch._inductor.aot_compile`` and ``torch._export.aot_load`` are in Beta status and are subject to backwards compatibility
 #     breaking changes. This tutorial provides an example of how to use these APIs for model deployment using Python runtime.
 #
 # It has been shown `previously <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`__ how AOTInductor can be used 
@@ -19,8 +19,8 @@
 #
 #
 # In this tutorial, you will learn an end-to-end example of how to use AOTInductor for python runtime.
-# We will look at how  to use :func:`torch._export.aot_compile` to generate a shared library.
-# Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
+# We will look at how  to use :func:`torch._inductor.aot_compile` along with :func:`torch.export.export` to generate a 
+# shared library. Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
 # You will learn about the speed up seen in the first inference time using AOTInductor, especially when using 
 # ``max-autotune`` mode which can take some time to execute.
 #
@@ -33,14 +33,14 @@
 # Prerequisites
 # -------------
 #   * PyTorch 2.4 or later
-#   * Basic understanding of ``torch._export`` and AOTInductor
+#   * Basic understanding of ``torch.export`` and AOTInductor
 #   * Complete the `AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`_ tutorial
 
 ######################################################################
 # What you will learn
 # ----------------------
 # * How to use AOTInductor for python runtime.
-# * How  to use :func:`torch._export.aot_compile` to generate a shared library
+# * How  to use :func:`torch._inductor.aot_compile` along with :func:`torch.export.export` to generate a shared library
 # * How to run a shared library in Python runtime using :func:`torch._export.aot_load`.
 # * When do you use AOTInductor for python runtime
 
@@ -49,7 +49,7 @@
 # ------------
 #
 # We will use the TorchVision pretrained `ResNet18` model and TorchInductor on the 
-# exported PyTorch program using :func:`torch._export.aot_compile`.
+# exported PyTorch program using :func:`torch._inductor.aot_compile`.
 #
 #  .. note::
 #
@@ -115,7 +115,7 @@ with torch.inference_mode():
 #  .. note::
 #
 #      In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
-#      :func:`torch._export.aot_compile`.
+#      :func:`torch.export.export`.
 
 
 import os
@@ -139,13 +139,13 @@ with torch.inference_mode():
 # model deployment using Python.
 # There are mainly two reasons why you would use AOTInductor Python Runtime:
 #
-# -  ``torch._export.aot_compile`` generates a shared library. This is useful for model
+# -  ``torch._inductor.aot_compile`` generates a shared library. This is useful for model
 #    versioning for deployments and tracking model performance over time.
 # -  With :func:`torch.compile` being a JIT compiler, there is a warmup
 #    cost associated with the first compilation. Your deployment needs to account for the
 #    compilation time taken for the first inference. With AOTInductor, the compilation is
-#    done offline using ``torch._export.aot_compile``. The deployment would only load the
-#    shared library using ``torch._export.aot_load`` and run inference.
+#    done offline using ``torch.export.export`` & ``torch._indutor.aot_compile``. The deployment
+#    would only load the shared library using ``torch._export.aot_load`` and run inference.
 #
 #
 # The section below shows the speedup achieved with AOTInductor for first inference
@@ -218,7 +218,7 @@ with torch.inference_mode():
 # ----------
 #
 # In this recipe, we have learned how to effectively use the AOTInductor for Python runtime by 
-# compiling and loading a pretrained ``ResNet18`` model using the ``torch._export.aot_compile``
+# compiling and loading a pretrained ``ResNet18`` model using the ``torch._inductor.aot_compile``
 # and ``torch._export.aot_load`` APIs. This process demonstrates the practical application of 
 # generating a shared library and running it within a Python environment, even with dynamic shape
 # considerations and device-specific optimizations. We also looked at the advantage of using 
