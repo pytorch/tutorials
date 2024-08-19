@@ -79,11 +79,6 @@ with torch.inference_mode():
         aot_compile_options.update({"max_autotune": True})
     else:
         device = "cpu"
-        # We need to turn off the below optimizations to support batch_size = 16,
-        # which is treated like a special case
-        # https://github.com/pytorch/pytorch/pull/116152
-        torch.backends.mkldnn.set_flags(False)
-        torch.backends.nnpack.set_flags(False)
 
     model = model.to(device=device)
     example_inputs = (torch.randn(2, 3, 224, 224, device=device),)
