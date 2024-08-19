@@ -1,10 +1,10 @@
-Using CommDebugMode
+Getting Started with ``CommDebugMode``
 =====================================================
 
 **Author**: `Anshul Sinha <https://github.com/sinhaanshul>`__
 
 
-In this tutorial, we will explore how to use CommDebugMode with PyTorch's
+In this tutorial, we will explore how to use ``CommDebugMode`` with PyTorch's
 DistributedTensor (DTensor) for debugging by tracking collective operations in distributed training environments.
 
 Prerequisites
@@ -14,7 +14,7 @@ Prerequisites
 * PyTorch 2.2 or later
 
 
-What is CommDebugMode and why is it useful
+What is ``CommDebugMode`` and why is it useful
 ------------------------------------------
 As the size of models continues to increase, users are seeking to leverage various combinations
 of parallel strategies to scale up distributed training. However, the lack of interoperability
@@ -32,7 +32,7 @@ users to view when and why collective operations are happening when using DTenso
 addressing this issue.
 
 
-How to use CommDebugMode
+Using ``CommDebugMode``
 ------------------------
 
 Here is how you can use ``CommDebugMode``:
@@ -56,10 +56,10 @@ Here is how you can use ``CommDebugMode``:
     # used in the visual browser below
     comm_mode.generate_json_dump(noise_level=2)
 
+This is what the output looks like for a MLPModule at noise level 0:
+
 .. code-block:: python
 
-    """
-    This is what the output looks like for a MLPModule at noise level 0
     Expected Output:
         Global
           FORWARD PASS
@@ -72,7 +72,6 @@ Here is how you can use ``CommDebugMode``:
                 MLPModule.net2
                   FORWARD PASS
                     *c10d_functional.all_reduce: 1
-    """
 
 To use ``CommDebugMode``, you must wrap the code running the model in ``CommDebugMode`` and call the API that
 you want to use to display the data. You can also use a ``noise_level`` argument to control the verbosity
