@@ -88,7 +88,7 @@ for it:
     inputs = torch.randn(5, 3, 224, 224)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-80
+.. GENERATED FROM PYTHON SOURCE LINES 63-79
 
 3. Using profiler to analyze execution time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,16 +103,15 @@ a number of parameters, some of the most useful are:
 - ``record_shapes`` - whether to record shapes of the operator inputs;
 - ``profile_memory`` - whether to report amount of memory consumed by
   model's Tensors;
-- ``use_cuda`` - whether to measure execution time of CUDA kernels.
 
 Note: when using CUDA, profiler also shows the runtime CUDA events
 occurring on the host.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-83
+.. GENERATED FROM PYTHON SOURCE LINES 81-82
 
 Let's see how we can use profiler to analyze the execution time:
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-88
+.. GENERATED FROM PYTHON SOURCE LINES 82-87
 
 .. code-block:: default
 
@@ -122,7 +121,7 @@ Let's see how we can use profiler to analyze the execution time:
             model(inputs)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-103
+.. GENERATED FROM PYTHON SOURCE LINES 88-102
 
 Note that we can use ``record_function`` context manager to label
 arbitrary code ranges with user provided names
@@ -139,7 +138,7 @@ the backward pass operators launched with ``backward()`` call.
 
 Let's print out the stats for the execution above:
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-106
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 .. code-block:: default
 
@@ -147,11 +146,11 @@ Let's print out the stats for the execution above:
     print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-108
+.. GENERATED FROM PYTHON SOURCE LINES 106-107
 
 The output will look like (omitting some columns):
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-126
+.. GENERATED FROM PYTHON SOURCE LINES 107-125
 
 .. code-block:: default
 
@@ -174,7 +173,7 @@ The output will look like (omitting some columns):
     #
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-135
+.. GENERATED FROM PYTHON SOURCE LINES 126-134
 
 Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
 for PyTorch compiled with ``MKL-DNN`` support).
@@ -185,7 +184,7 @@ spent in children operator calls, while total cpu time includes it. You can choo
 To get a finer granularity of results and include operator input shapes, pass ``group_by_input_shape=True``
 (note: this requires running the profiler with ``record_shapes=True``):
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-138
+.. GENERATED FROM PYTHON SOURCE LINES 134-137
 
 .. code-block:: default
 
@@ -193,7 +192,7 @@ To get a finer granularity of results and include operator input shapes, pass ``
     print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-159
+.. GENERATED FROM PYTHON SOURCE LINES 138-158
 
 The output might look like this (omitting some columns):
 
@@ -216,15 +215,15 @@ The output might look like this (omitting some columns):
    Self CPU time total: 57.549ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-162
+.. GENERATED FROM PYTHON SOURCE LINES 160-161
 
 Note the occurrence of ``aten::convolution`` twice with different input shapes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-165
+.. GENERATED FROM PYTHON SOURCE LINES 163-164
 
 Profiler can also be used to analyze performance of models executed on GPUs:
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-176
+.. GENERATED FROM PYTHON SOURCE LINES 164-175
 
 .. code-block:: default
 
@@ -240,11 +239,11 @@ Profiler can also be used to analyze performance of models executed on GPUs:
     print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-178
+.. GENERATED FROM PYTHON SOURCE LINES 176-177
 
 (Note: the first use of CUDA profiling may bring an extra overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-201
+.. GENERATED FROM PYTHON SOURCE LINES 179-200
 
 The resulting table output (omitting some columns):
 
@@ -268,11 +267,11 @@ The resulting table output (omitting some columns):
    Self CUDA time total: 11.666ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-204
+.. GENERATED FROM PYTHON SOURCE LINES 202-203
 
 Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-214
+.. GENERATED FROM PYTHON SOURCE LINES 205-213
 
 4. Using profiler to analyze memory consumption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,7 +282,7 @@ In the output below, 'self' memory corresponds to the memory allocated (released
 by the operator, excluding the children calls to the other operators.
 To enable memory profiling functionality pass ``profile_memory=True``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-243
+.. GENERATED FROM PYTHON SOURCE LINES 213-242
 
 .. code-block:: default
 
@@ -317,7 +316,7 @@ To enable memory profiling functionality pass ``profile_memory=True``.
     print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 244-264
+.. GENERATED FROM PYTHON SOURCE LINES 243-263
 
 The output might look like this (omitting some columns):
 
@@ -340,14 +339,14 @@ The output might look like this (omitting some columns):
    Self CPU time total: 53.064ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-270
+.. GENERATED FROM PYTHON SOURCE LINES 265-269
 
 5. Using tracing functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Profiling results can be outputted as a ``.json`` trace file:
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-279
+.. GENERATED FROM PYTHON SOURCE LINES 269-278
 
 .. code-block:: default
 
@@ -361,7 +360,7 @@ Profiling results can be outputted as a ``.json`` trace file:
     prof.export_chrome_trace("trace.json")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-285
+.. GENERATED FROM PYTHON SOURCE LINES 279-284
 
 You can examine the sequence of profiled operators and CUDA kernels
 in Chrome trace viewer (``chrome://tracing``):
@@ -369,14 +368,14 @@ in Chrome trace viewer (``chrome://tracing``):
 .. image:: ../../_static/img/trace_img.png
    :scale: 25 %
 
-.. GENERATED FROM PYTHON SOURCE LINES 287-291
+.. GENERATED FROM PYTHON SOURCE LINES 286-290
 
 6. Examining stack traces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Profiler can be used to analyze Python and TorchScript stack traces:
 
-.. GENERATED FROM PYTHON SOURCE LINES 291-301
+.. GENERATED FROM PYTHON SOURCE LINES 290-300
 
 .. code-block:: default
 
@@ -391,7 +390,7 @@ Profiler can be used to analyze Python and TorchScript stack traces:
     print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total", row_limit=2))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 302-323
+.. GENERATED FROM PYTHON SOURCE LINES 301-322
 
 The output might look like this (omitting some columns):
 
@@ -415,13 +414,13 @@ The output might look like this (omitting some columns):
    Self CUDA time total: 11.659ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 325-328
+.. GENERATED FROM PYTHON SOURCE LINES 324-327
 
 Note the two convolutions and the two call sites in ``torchvision/models/resnet.py`` script.
 
 (Warning: stack tracing adds an extra profiling overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 330-346
+.. GENERATED FROM PYTHON SOURCE LINES 329-345
 
 7. Using profiler to analyze long-running jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -440,7 +439,7 @@ arguments:
 To illustrate how the API works, let's first consider the following example with
 ``torch.profiler.schedule`` helper function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-356
+.. GENERATED FROM PYTHON SOURCE LINES 345-355
 
 .. code-block:: default
 
@@ -455,7 +454,7 @@ To illustrate how the API works, let's first consider the following example with
         repeat=2)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 357-374
+.. GENERATED FROM PYTHON SOURCE LINES 356-373
 
 Profiler assumes that the long-running job is composed of steps, numbered
 starting from zero. The example above defines the following sequence of actions
@@ -475,7 +474,7 @@ for the profiler:
 4. An optional ``repeat`` parameter specifies an upper bound on the number of cycles.
    By default (zero value), profiler will execute cycles as long as the job runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 376-389
+.. GENERATED FROM PYTHON SOURCE LINES 375-388
 
 Thus, in the example above, profiler will skip the first 15 steps, spend the next step on the warm up,
 actively record the next 3 steps, skip another 5 steps, spend the next step on the warm up, actively
@@ -491,7 +490,7 @@ The current profiler step is stored in ``prof.step_num``.
 
 The following example shows how to use all of the concepts above:
 
-.. GENERATED FROM PYTHON SOURCE LINES 389-408
+.. GENERATED FROM PYTHON SOURCE LINES 388-407
 
 .. code-block:: default
 
@@ -515,7 +514,7 @@ The following example shows how to use all of the concepts above:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 409-418
+.. GENERATED FROM PYTHON SOURCE LINES 408-417
 
 Learn More
 ----------
