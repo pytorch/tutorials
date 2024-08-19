@@ -15,7 +15,7 @@ Prerequisites
 
 
 What is ``CommDebugMode`` and why is it useful
-------------------------------------------
+----------------------------------------------------
 As the size of models continues to increase, users are seeking to leverage various combinations
 of parallel strategies to scale up distributed training. However, the lack of interoperability
 between existing solutions poses a significant challenge, primarily due to the absence of a
