@@ -2,7 +2,7 @@
 
 """
 (Beta) ``torch.export`` AOTInductor Tutorial for Python runtime
-===================================================
+===============================================================
 **Author:** Ankith Gunapal, Bin Bao, Angela Yi
 """
 
@@ -46,7 +46,7 @@
 
 ######################################################################
 # Model Compilation
-# ------------
+# -----------------
 #
 # We will use the TorchVision pretrained `ResNet18` model and TorchInductor on the 
 # exported PyTorch program using :func:`torch._inductor.aot_compile`.
@@ -101,7 +101,7 @@ with torch.inference_mode():
 
 ######################################################################
 # Model Inference in Python
-# ------------
+# -------------------------
 #
 # Typically, the shared object generated above is used in a non-Python environment. In PyTorch 2.3, 
 # we added a new API called :func:`torch._export.aot_load` to load the shared library in the Python runtime.
@@ -127,7 +127,7 @@ with torch.inference_mode():
 
 ######################################################################
 # When to use AOTInductor for Python Runtime
-# ---------------------------------------
+# ------------------------------------------
 #
 # One of the requirements for using AOTInductor is that the model shouldn't have any graph breaks.
 # Once this requirement is met, the primary use case for using AOTInductor Python Runtime is for
