@@ -83,8 +83,6 @@ To see how to utilize DeviceMesh to set up multi-dimensional parallelisms, pleas
 
 .. code-block:: python
 
-    # run this via torchrun: torchrun --standalone --nproc_per_node=8 ./tp_tutorial.py
-
     from torch.distributed.device_mesh import init_device_mesh
 
     tp_mesh = init_device_mesh("cuda", (8,))
@@ -360,4 +358,4 @@ Conclusion
 This tutorial demonstrates how to train a large Transformer-like model across hundreds to thousands of GPUs using Tensor Parallel in combination with Fully Sharded Data Parallel.
 It explains how to apply Tensor Parallel to different parts of the model, with **no code changes** to the model itself. Tensor Parallel is a efficient model parallelism technique for large scale training.
 
-To see the complete end to end code example explained in this tutorial, please refer to the `Tensor Parallel examples <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__ in the pytorch/examples repository.
+To see the complete end-to-end code example explained in this tutorial, please refer to the `Tensor Parallel examples <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__ in the pytorch/examples repository.

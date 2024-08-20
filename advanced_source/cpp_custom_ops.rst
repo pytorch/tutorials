@@ -8,14 +8,16 @@ Custom C++ and CUDA Operators
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-      * How to integrate custom operators written in C++/CUDA with PyTorch
-      * How to test custom operators using ``torch.library.opcheck``
+       * How to integrate custom operators written in C++/CUDA with PyTorch
+       * How to test custom operators using ``torch.library.opcheck``
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
 
-      * PyTorch 2.4 or later
-      * Basic understanding of C++ and CUDA programming
+       * PyTorch 2.4 or later
+       * Basic understanding of C++ and CUDA programming
 
 PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc).
 However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the
@@ -415,4 +417,4 @@ Conclusion
 In this tutorial, we went over the recommended approach to integrating Custom C++
 and CUDA operators with PyTorch. The ``TORCH_LIBRARY/torch.library`` APIs are fairly
 low-level. For more information about how to use the API, see
-`The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_.
+`The Custom Operators Manual <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual>`_.

@@ -8,7 +8,7 @@ Prerequisites:
 
 Required:
 
--  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/dynamo/index.html>`__
+-  `Torchdynamo concepts in PyTorch <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__
    
 -  `Quantization concepts in PyTorch <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`__
    

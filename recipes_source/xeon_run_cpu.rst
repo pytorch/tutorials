@@ -1,4 +1,4 @@
-Optimizing PyTorch Inference with Intel® Xeon® Scalable Processors
+Optimizing CPU Performance on Intel® Xeon® with run_cpu Script
 ======================================================================
 
 There are several configuration options that can impact the performance of PyTorch inference when executed on Intel® Xeon® Scalable Processors.
