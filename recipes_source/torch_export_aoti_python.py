@@ -32,9 +32,9 @@
 ######################################################################
 # Prerequisites
 # -------------
-#   * PyTorch 2.4 or later
-#   * Basic understanding of ``torch.export`` and AOTInductor
-#   * Complete the `AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`_ tutorial
+# * PyTorch 2.4 or later
+# * Basic understanding of ``torch.export`` and AOTInductor
+# * Complete the `AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`_ tutorial
 
 ######################################################################
 # What you will learn
