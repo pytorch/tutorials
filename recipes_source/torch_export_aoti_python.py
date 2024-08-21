@@ -51,7 +51,7 @@
 # We will use the TorchVision pretrained `ResNet18` model and TorchInductor on the 
 # exported PyTorch program using :func:`torch._inductor.aot_compile`.
 #
-#  .. note::
+# .. note::
 #
 #       This API also supports :func:`torch.compile` options like ``mode``
 #       This means that if used on a CUDA enabled device, you can, for example, set ``"max_autotune": True``
@@ -107,7 +107,7 @@ with torch.inference_mode():
 # we added a new API called :func:`torch._export.aot_load` to load the shared library in the Python runtime.
 # The API follows a structure similar to the :func:`torch.jit.load` API . You need to specify the path 
 # of the shared library and the device where it should be loaded.
-#  .. note::
+# .. note::
 #
 #      In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
 #      :func:`torch.export.export`.
