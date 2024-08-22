@@ -109,7 +109,6 @@ with torch.inference_mode():
 # of the shared library and the device where it should be loaded.
 #
 # .. note::
-#
 #      In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
 #      :func:`torch.export.export`.
 
