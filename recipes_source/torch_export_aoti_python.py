@@ -107,6 +107,7 @@ with torch.inference_mode():
 # we added a new API called :func:`torch._export.aot_load` to load the shared library in the Python runtime.
 # The API follows a structure similar to the :func:`torch.jit.load` API . You need to specify the path 
 # of the shared library and the device where it should be loaded.
+#
 # .. note::
 #
 #      In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
