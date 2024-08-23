@@ -15,7 +15,7 @@ We accept new tutorials that adhere to one of the following use cases:
 * **Demonstrate New PyTorch Features:** Tutorials that support new features
   for upcoming PyTorch releases are typically authored by the engineers who
   are developing these features. These tutorials are crucial for showcasing
-  the latest advancements in PyTorch. We typically don't require more than
+  the latest advancements in PyTorch. We typically do not require more than
   one tutorial per feature.
 
 * **Tutorials showcasing PyTorch usage with other tools and libraries:** We
@@ -44,9 +44,9 @@ interested in contributing a tutorial, please follow these steps:
      to ensure your content adheres to these guidelines.
      Use the provided [ISSUE_TEMPLATE](https://github.com/pytorch/tutorials/blob/main/.github/ISSUE_TEMPLATE/feature-request.yml) for the new tutorial request - select **Feature request** when submitting an issue. .
 
-     * If there is a tutorial on the existing topic that you would like
-       to significantly refactor, you can just submit a PR. In the
-       description of the PR explain why the changes are needed and
+     * If there is an existing tutorial on the topic that you would
+       like to significantly refactor, you can submit a PR. In the
+       description of the PR, explain why the changes are needed and
        how they improve the tutorial.
 
    * These issues will be triaged by PyTorch maintainers on a case-by-case basis. 
@@ -56,14 +56,14 @@ interested in contributing a tutorial, please follow these steps:
    * Wait for a response from the PyTorch Tutorials maintainers. A PyTorch
      tutorial maintainer will review your proposal and
      determine whether a tutorial on the proposed topic is desirable.
-     A comment and an **approved** label will be added to your tutorial
-     by a maintainer. Review process for new tutorial PRs submitted
-     without the corresponding issue will take longer.
+     A comment and an **approved** label will be added to your issue
+     by a maintainer. The review process for new tutorial PRs submitted
+     without the corresponding issue may take longer.
      
 1. **Adhere to writing and styling guidelines:**
    * Once approved, follow the guidelines outlined in [CONTRIBUTING.md](https://github.com/pytorch/tutorials/blob/main/CONTRIBUTING.md)
      and use the provided [template](https://github.com/pytorch/tutorials/blob/main/beginner_source/template_tutorial.py) for creating your tutorial.
-   * Link the issue in which you received an approval for your tutorial
+   * Link the issue in which you received approval for your tutorial
      in the PR.
    * We accept tutorials in both ``.rst`` (ReStructuredText) and ``.py``
      (Python) formats. However, unless your tutorial involves using
@@ -73,25 +73,26 @@ interested in contributing a tutorial, please follow these steps:
      
 ## Maintaining Tutorials
 
-When you submit a new tutorial, we encourage you to keep it updated
+When you submit a new tutorial, we encourage you to keep it in sync
 with the latest PyTorch updates and features. Additionally, we may
 contact you to review any PRs, issues, and other related matters to
 ensure the tutorial remains a valuable resource.
 
 Please note the following: 
 
-* If a tutorial is broken against the main branch, the tutorial will
-  be excluded from the build and an issue will be filed against it
-  with the author/maintainer notified about the issue. If the issue
-  is not resolved within 90 days, the tutorial might be deleted from
-  the repository.
+* If a tutorial breaks against the main branch, it will
+  be excluded from the build and an issue will be filed against it,
+  with the author/maintainer notified. If the issue is not resolved
+  within 90 days, the tutorial might be deleted from the repository.
 
 * We recommend that each tutorial is reviewed at least once a year to
   ensure its relevance.
 
 ## Deleting Stale Tutorials
 
-A tutorial might be considered stale when it no longer aligns with the latest PyTorch updates, features, or best practices or:
+A tutorial might be considered stale when it no longer aligns with
+the latest PyTorch updates, features, or best practices or best
+practices:
 
 * The tutorial is no longer functional due to changes in PyTorch or
   its dependencies
@@ -100,7 +101,7 @@ A tutorial might be considered stale when it no longer aligns with the latest Py
 * The tutorial does not run successfully in the (CI), indicating
   potential compatibility or dependency issues.
 
-If a tutorial is deemed stale, we will attempt to contact the code owner
+If a tutorial is deemed stale, we will attempt to contact the code owner,
 or someone from the tutorial mainatainers might attempt to update it.
-However, if despite those attempts, we fail to fix it, the tutorial
+However, if despite those attempts we fail to fix it, the tutorial
 might be removed from the repository.
