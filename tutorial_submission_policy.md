@@ -42,7 +42,7 @@ interested in contributing a tutorial, please follow these steps:
      similar topic. A tutorial should not disproportionately endorse
      one technology over another. Please consult with Core Maintainers
      to ensure your content adheres to these guidelines.
-     Use the provided `ISSUE_TEMPLATE` for the new tutorial request.
+     Use the provided [ISSUE_TEMPLATE](https://github.com/pytorch/tutorials/blob/main/.github/ISSUE_TEMPLATE/feature-request.yml) for the new tutorial request - select **Feature request** when submitting an issue. .
 
      * If there is a tutorial on the existing topic that you would like
        to significantly refactor, you can just submit a PR. In the
