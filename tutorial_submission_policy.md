@@ -91,10 +91,7 @@ Please note the following:
 
 ## Deleting Stale Tutorials
 
-A tutorial might be considered stale when it has not been updated for
-a significant period (more than a year) and no longer aligns with the
-latest PyTorch updates, features, or best practices. Other indicators
-of a stale tutorial include:
+A tutorial might be considered stale when it no longer aligns with the latest PyTorch updates, features, or best practices or:
 
 * The tutorial is no longer functional due to changes in PyTorch or
   its dependencies
