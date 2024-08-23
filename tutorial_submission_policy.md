@@ -12,7 +12,7 @@ informative educational environment.
 
 We accept new tutorials that adhere to one of the following use cases:
 
-* **Support for New PyTorch Features:** Tutorials that support new features
+* **Demonstrate New PyTorch Features:** Tutorials that support new features
   for upcoming PyTorch releases are typically authored by the engineers who
   are developing these features. These tutorials are crucial for showcasing
   the latest advancements in PyTorch. We typically don't require more than
