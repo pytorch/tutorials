@@ -53,7 +53,7 @@ interested in contributing a tutorial, please follow these steps:
    * Link any supporting materials including discussions in other repositories.
      
 1. **Await Approval:**
-   * Wait for a response from the PyTorch maintainers. A PyTorch
+   * Wait for a response from the PyTorch Tutorials maintainers. A PyTorch
      tutorial maintainer will review your proposal and
      determine whether a tutorial on the proposed topic is desirable.
      A comment and an **approved** label will be added to your tutorial
