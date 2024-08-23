@@ -71,7 +71,7 @@ interested in contributing a tutorial, please follow these steps:
      execution time (25 minutes or more), we prefer submissions
      in Python file format.
      
-## Maintening Tutorials
+## Maintaining Tutorials
 
 When you submit a new tutorial, we encourage you to keep it updated
 with the latest PyTorch updates and features. Additionally, we may
