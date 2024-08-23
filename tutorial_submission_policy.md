@@ -69,7 +69,7 @@ interested in contributing a tutorial, please follow these steps:
      (Python) formats. However, unless your tutorial involves using
      multiple GPU, parallel/distributed training, or requires extended
      execution time (25 minutes or more), we prefer submissions
-     in Python file format versus ``.rst``.
+     in Python file format.
      
 ## Maintening Tutorials
 
