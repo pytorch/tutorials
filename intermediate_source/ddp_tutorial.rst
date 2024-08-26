@@ -217,7 +217,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
             torch.load(CHECKPOINT_PATH, map_location=map_location, weights_only=True))
 
         loss_fn = nn.MSELoss()
-        optimizer = optim.SGD(ddp_model.parameters(),gr=0.001)
+        optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
         
         optimizer.zero_grad()
         outputs = ddp_model(torch.randn(20, 10))
