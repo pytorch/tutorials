@@ -26,8 +26,8 @@ Export a PyTorch model to ONNX
 # While PyTorch is great for iterating on the development of models, the model can be deployed to production
 # using different formats, including `ONNX <https://onnx.ai/>`_ (Open Neural Network Exchange)!
 #
-# ONNX is a flexible open standard format for representing machine learning models which standardized representations
-# of machine learning allow them to be executed across a gamut of hardware platforms and runtime environments
+# ONNX is a flexible open standard format for representing machine learning models with standardized representations
+# of machine learning allowing them to be executed across a gamut of hardware platforms and runtime environments
 # from large-scale cloud-based supercomputers to resource-constrained edge devices, such as your web browser and phone.
 #
 # In this tutorial, we’ll learn how to:
