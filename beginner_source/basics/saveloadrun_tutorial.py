@@ -34,7 +34,7 @@ torch.save(model.state_dict(), 'model_weights.pth')
 # using ``load_state_dict()`` method.
 
 model = models.vgg16() # we do not specify ``weights``, i.e. create untrained model
-model.load_state_dict(torch.load('model_weights.pth'))
+model.load_state_dict(torch.load('model_weights.pth', weights_only=True))
 model.eval()
 
 ###########################
@@ -52,7 +52,7 @@ torch.save(model, 'model.pth')
 ########################
 # We can then load the model like this:
 
-model = torch.load('model.pth')
+model = torch.load('model.pth', weights_only=False),
 
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.

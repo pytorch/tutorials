@@ -368,7 +368,7 @@ The PatchPredictor class runs a CNN-based classifier written in PyTorch.
 
     # Users can load any PyTorch model architecture instead using the following script
     model = vanilla.CNNModel(backbone="resnet18", num_classes=9) # Importing model from torchvision.models.resnet18
-    model.load_state_dict(torch.load(weights_path, map_location="cpu"), strict=True)
+    model.load_state_dict(torch.load(weights_path, map_location="cpu", weights_only=True), strict=True)
     def preproc_func(img):
         img = PIL.Image.fromarray(img)
         img = transforms.ToTensor()(img)
