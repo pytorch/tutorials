@@ -5,7 +5,8 @@ In this tutorial we will walk through all necessary steps to extend the dispatch
 add a new device living outside ``pytorch/pytorch`` repo and maintain it to keep in
 sync with native PyTorch devices.  Here we'll assume that you're familiar with how
 to `register a dispatched operator in C++ <dispatcher>`_ and how to write a
-`custom autograd function <cpp_autograd>`_.
+`custom autograd function <cpp_autograd>`_. For more details about PrivateUse1 backend registration,
+you can check out `Facilitating New Backend Integration by PrivateUse1 <privateuseone>`_.
 
 
 .. note::

@@ -16,7 +16,7 @@ you are an advanced user of PyTorch.
 What is PrivateUse1?
 --------------------
 
-Prior to Pytorch 2.0, PyTorch provided three reserved dispatch keys (and their corresponding Autograd keys)
+Prior to PyTorch 2.0, PyTorch provided three reserved dispatch keys (and their corresponding Autograd keys)
 for prototyping out-of-tree backend extensions, the three dispatch keys are as follows:
 
 * ``PrivateUse1/AutogradPrivateUse1``
@@ -43,14 +43,14 @@ into the PyTorch via ``PrivateUse1``.
 However, the previous ``PrivateUse1`` mechanism is not fully capable of integrating with the new backend, because it
 lacks some related support in certain modules, such as Storage, AMP, Distributed, and so on.
 
-With the arrival of Pytorch 2.1.0, a series of optimizations and enhancements have been made
+With the arrival of PyTorch 2.1.0, a series of optimizations and enhancements have been made
 for ``PrivateUse1`` in terms of new backend integration, and it is now possible to support the integration
 of new devices rapidly and efficiently.
 
 How to integrate new backend via PrivateUse1
 --------------------------------------------
 
-In this section, we will discuss the details of integrating the new backend into Pytorch via ``PrivateUse1``,
+In this section, we will discuss the details of integrating the new backend into PyTorch via ``PrivateUse1``,
 which mainly consists of the following parts:
 
 1. Register kernels for the new backend.
@@ -98,12 +98,12 @@ several situations:
 
 .. code-block:: cpp
 
-  class CumtomSeluFunction : public torch::autograd::Function<CumtomSeluFunction> {
+  class CustomSeluFunction : public torch::autograd::Function<CustomSeluFunction> {
     // Implementation of selu kernel in new backend
   }
 
-  at::Tensor wrapper_AutogradCumstom__selu(const at::Tensor & self) {
-    return CumtomSeluFunction::apply(self);
+  at::Tensor wrapper_AutogradCustom__selu(const at::Tensor & self) {
+    return CustomSeluFunction::apply(self);
   }
 
   TORCH_LIBRARY_IMPL(aten, AutogradPrivateUse1, m) {
@@ -219,17 +219,17 @@ such as ``distributed collective communication``, ``benchmark timer``, and other
 One example about ``PrivateUse1`` integration is `Ascend NPU <https://github.com/ascend/pytorch>`_.
 
 
-How to Improve User Experience with Privateuse1
+How to Improve User Experience with PrivateUse1
 -----------------------------------------------
 
 The primary goal of integrating new devices through ``PrivateUse1`` is to meet the basic functional requirements,
 and the next thing to do is to improve usability, which mainly involves the following aspects.
 
-1. Register new backend module to Pytorch.
+1. Register new backend module to PyTorch.
 2. Rename PrivateUse1 to a custom name for the new backend.
 3. Generate methods and properties related to the new backend.
 
-Register new backend module to Pytorch
+Register new backend module to PyTorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some CUDA-related interfaces in PyTorch can be called through the following form: ``torch.cuda.xxx``. Therefore, in order to
@@ -239,7 +239,7 @@ For example, using ``Ascend NPU``:
 
 .. code-block:: python
 
-  torch._register_device_module('npu', torch_npu.npu)
+  torch._register_device_module("npu", torch_npu.npu)
 
 After doing the above operations, users can call some exclusive APIs of ``Ascend NPU`` through ``torch.npu.xxx``
 
@@ -253,8 +253,8 @@ Taking the ``Ascend NPU`` as an example, the first usage will be more user-frien
 
 .. code-block:: python
 
-  torch.rand((2,2),device='npu:0')
-  torch.rand((2,2),device='privateuse1:0')
+  torch.rand((2, 2), device="npu:0")
+  torch.rand((2, 2), device="privateuseone:0")
 
 Now, PyTorch provides a new C++/Python API for the self-named ``PrivateUse1`` backend, which is very simple to use.
 
@@ -271,7 +271,7 @@ Now, PyTorch provides a new C++/Python API for the self-named ``PrivateUse1`` ba
 Generate methods and properties related to the new backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After renaming ``PrivateUse1`` to a custome name, automatically generate properties and methods related to the new backend name
+After renaming ``PrivateUse1`` to a custom name, automatically generate properties and methods related to the new backend name
 in the ``Tensor, nn, Storage`` modules for the new backend.
 
 Here is an example for ``Ascend NPU``:
