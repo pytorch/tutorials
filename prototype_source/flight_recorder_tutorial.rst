@@ -1,6 +1,6 @@
 (prototype) Flight Recorder for Debugging
 =========================================
-**Author**: `Chirag Pandya <https://github.com/c-p-i-o>`_
+**Author**: `Chirag Pandya <https://github.com/c-p-i-o>`, `Junjie Wang <https://github.com/fduwjj>`
 
 This tutorial introduces a new tool for debugging stuck jobs during distributed training.
 
@@ -9,7 +9,7 @@ Background and Motivation
 An AI distributed training job refers to the process of training a machine learning model using multiple devices, such
 as GPUs or CPUs, connected in a network. This approach allows for faster and more efficient training of large models
 that require significant computational resources.
-An engineer’s goal is  to complete an AI training job as fast as possible and make continuous improvements such that
+An engineer’s goal is to complete an AI training job as fast as possible and make continuous improvements such that
 subsequent training can be done faster. A trained usable model is the final desired outcome.
 One of the biggest impediment to completing training is the concept of a "stuck job".
 
@@ -37,9 +37,9 @@ cause the underlying issue. There are 2 core parts to flight recorder.
 Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 - An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below). T
 
- Enabling Flight Recorder
- ------------------------
-There are 2 required environment variables to get the initial version of flight recorder working.
+Enabling Flight Recorder
+------------------------
+There are two required environment variables to get the initial version of flight recorder working.
    - TORCH_NCCL_TRACE_BUFFER_SIZE (0, N where N is a postitive number) N = collection enabled. Recommended to set this
      to 2000)
    - TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false) true = write out diagnostic files to disk on job timeout.
@@ -52,10 +52,71 @@ Optional settings:
 Flight Recorder File Formats
 ----------------------------
 Flight recorder files are dumped out in `pickle` format.
-
-
-
+```
+{
+  "version": "2.3",
+  "pg_config": {
+    "0": {
+      "name": "0",
+      "desc": "default_pg",
+      "ranks": "[0, 1]"
+    }
+  },
+  "pg_status": {
+    "0": {
+      "last_enqueued_collective": 2,
+      "last_started_collective": -1,
+      "last_completed_collective": 2
+    }
+  },
+  "entries": [
+    {
+      "frames": [
+        {
+          "name": "test_short_pickle",
+          "filename": "pytorch/test/distributed/test_c10d_nccl.py",
+          "line": 3647
+        },
+        ...
+        {
+          "name": "spawn_main",
+          "filename": ".conda/envs/pytorch-3.10/lib/python3.10/multiprocessing/spawn.py",
+          "line": 116
+        },
+        {
+          "name": "<module>",
+          "filename": "<string>",
+          "line": 1
+        }
+      ],
+      "record_id": 0,
+      "pg_id": 0,
+      "process_group": ("0", "default_pg"),
+      "collective_seq_id": 1,
+      "p2p_seq_id": 0,
+      "op_id": 1,
+      "profiling_name": "nccl:all_reduce",
+      "time_created_ns": 1724779239936775119,
+      "input_sizes": [[3, 4]],
+      "input_dtypes": ["Float"],
+      "output_sizes": [[3, 4]],
+      "output_dtypes": ["Float"],
+      "state": "completed",
+      "time_discovered_started_ns": null,
+      "time_discovered_completed_ns": 1724779239975811724,
+      "retired": true,
+      "timeout_ms": 600000,
+      "is_p2p": false
+    },
+  ...]
+}
+```
 Analyzing Flight Recorder Dumps
 -------------------------------
 We have convenient scripts available in `pytorch/tools/flight_recorder` directory that can be used to analyze captured
 data.
+
+To run it, one can use command line: 
+```
+python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
+```
