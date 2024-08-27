@@ -117,7 +117,7 @@ torch.save(net.state_dict(), PATH)
 
 # Load
 model = Net()
-model.load_state_dict(torch.load(PATH))
+model.load_state_dict(torch.load(PATH, weights_only=True))
 model.eval()
 
 
