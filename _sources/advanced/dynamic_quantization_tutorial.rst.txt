@@ -196,7 +196,7 @@ pretrained weights into this model architecture; these weights were obtained
 by training for five epochs using the default settings in the word language model
 example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-161
+.. GENERATED FROM PYTHON SOURCE LINES 141-162
 
 .. code-block:: default
 
@@ -213,7 +213,8 @@ example.
     model.load_state_dict(
         torch.load(
             model_data_filepath + 'word_language_model_quantize.pth',
-            map_location=torch.device('cpu')
+            map_location=torch.device('cpu'),
+            weights_only=True
             )
         )
 
@@ -228,10 +229,6 @@ example.
 
  .. code-block:: none
 
-    /var/lib/workspace/advanced_source/dynamic_quantization_tutorial.py:152: FutureWarning:
-
-    You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
-
     LSTMModel(
       (drop): Dropout(p=0.5, inplace=False)
       (encoder): Embedding(33278, 512)
@@ -242,13 +239,13 @@ example.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-165
+.. GENERATED FROM PYTHON SOURCE LINES 163-166
 
 Now let's generate some text to ensure that the pretrained model is working
 properly - similarly to before, we follow
 `here <https://github.com/pytorch/examples/blob/master/word_language_model/generate.py>`_
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-190
+.. GENERATED FROM PYTHON SOURCE LINES 166-191
 
 .. code-block:: default
 
@@ -350,7 +347,7 @@ properly - similarly to before, we follow
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-196
+.. GENERATED FROM PYTHON SOURCE LINES 192-197
 
 It's no GPT-2, but it looks like the model has started to learn the structure of
 language!
@@ -358,7 +355,7 @@ language!
 We're almost ready to demonstrate dynamic quantization. We just need to define a few more
 helper functions:
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-241
+.. GENERATED FROM PYTHON SOURCE LINES 197-242
 
 .. code-block:: default
 
@@ -414,7 +411,7 @@ helper functions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-251
+.. GENERATED FROM PYTHON SOURCE LINES 243-252
 
 4. Test dynamic quantization
 ----------------------------
@@ -426,7 +423,7 @@ Specifically,
   model to be quantized
 - We specify that we want weights to be converted to ``int8`` values
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-259
+.. GENERATED FROM PYTHON SOURCE LINES 252-260
 
 .. code-block:: default
 
@@ -456,12 +453,12 @@ Specifically,
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-262
+.. GENERATED FROM PYTHON SOURCE LINES 261-263
 
 The model looks the same; how has this benefited us? First, we see a
 significant reduction in model size:
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-271
+.. GENERATED FROM PYTHON SOURCE LINES 263-272
 
 .. code-block:: default
 
@@ -488,14 +485,14 @@ significant reduction in model size:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 272-276
+.. GENERATED FROM PYTHON SOURCE LINES 273-277
 
 Second, we see faster inference time, with no difference in evaluation loss:
 
 Note: we set the number of threads to one for single threaded comparison, since quantized
 models run single threaded.
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-288
+.. GENERATED FROM PYTHON SOURCE LINES 277-289
 
 .. code-block:: default
 
@@ -520,14 +517,14 @@ models run single threaded.
  .. code-block:: none
 
     loss: 5.167
-    elapsed time (seconds): 206.8
+    elapsed time (seconds): 210.1
     loss: 5.168
-    elapsed time (seconds): 116.6
+    elapsed time (seconds): 117.7
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 289-300
+.. GENERATED FROM PYTHON SOURCE LINES 290-301
 
 Running this locally on a MacBook Pro, without quantization, inference takes about 200 seconds,
 and with quantization it takes just about 100 seconds.
@@ -544,7 +541,7 @@ Thanks for reading! As always, we welcome any feedback, so please create an issu
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 5 minutes  31.910 seconds)
+   **Total running time of the script:** ( 5 minutes  36.001 seconds)
 
 
 .. _sphx_glr_download_advanced_dynamic_quantization_tutorial.py:
