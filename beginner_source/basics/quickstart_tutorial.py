@@ -216,7 +216,7 @@ print("Saved PyTorch Model State to model.pth")
 # the state dictionary into it.
 
 model = NeuralNetwork().to(device)
-model.load_state_dict(torch.load("model.pth"))
+model.load_state_dict(torch.load("model.pth", weights_only=True))
 
 #############################################################
 # This model can now be used to make predictions.
