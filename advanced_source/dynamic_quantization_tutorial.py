@@ -151,7 +151,8 @@ model = LSTMModel(
 model.load_state_dict(
     torch.load(
         model_data_filepath + 'word_language_model_quantize.pth',
-        map_location=torch.device('cpu')
+        map_location=torch.device('cpu'),
+        weights_only=True
         )
     )
 

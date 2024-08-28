@@ -124,7 +124,7 @@ torch.save(netA.state_dict(), PATH)
 # are loading into.
 # 
 
-netB.load_state_dict(torch.load(PATH), strict=False)
+netB.load_state_dict(torch.load(PATH, weights_only=True), strict=False)
 
 
 ######################################################################
