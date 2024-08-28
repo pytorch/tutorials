@@ -79,7 +79,7 @@ Mac:
 
 .. code:: shell
 
-   yes y | pip uninstall torch tochvision
+   yes y | pip uninstall torch torchvision
    yes y | pip install --pre torch -f https://download.pytorch.org/whl/nightly/cu101/torch_nightly.html
 
 
@@ -206,7 +206,7 @@ in `examples <https://github.com/huggingface/transformers/tree/master/examples#m
        --save_steps 100000 \
        --output_dir $OUT_DIR
 
-We provide the fined-tuned BERT model for MRPC task `here <https://download.pytorch.org/tutorial/MRPC.zip>`_.
+We provide the fine-tuned BERT model for MRPC task `here <https://download.pytorch.org/tutorial/MRPC.zip>`_.
 To save time, you can download the model file (~400 MB) directly into your local folder ``$OUT_DIR``.
 
 2.1 Set global configurations
@@ -273,7 +273,7 @@ We load the tokenizer and fine-tuned BERT sequence classifier model
 2.3 Define the tokenize and evaluation function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We reuse the tokenize and evaluation function from `Huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
+We reuse the tokenize and evaluation function from `HuggingFace <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
 
 .. code:: python
 
