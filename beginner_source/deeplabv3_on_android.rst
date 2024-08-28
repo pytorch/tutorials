@@ -5,6 +5,10 @@ Image Segmentation DeepLabV3 on Android
 
 **Reviewed by**: `Jeremiah Chung <https://github.com/jeremiahschung>`_
 
+.. note::
+    PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also review our `end-to-end workflows <https://github.com/pytorch/executorch/tree/main/examples/portable#readme>`_ and review the `source code for DeepLabV3 <https://github.com/pytorch/executorch/tree/main/examples/models/deeplab_v3>`_.
+
+
 Introduction
 ------------
 
