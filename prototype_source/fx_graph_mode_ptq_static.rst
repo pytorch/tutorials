@@ -157,7 +157,7 @@ Download the `torchvision resnet18 model <https://download.pytorch.org/models/re
 
     def load_model(model_file):
         model = resnet18(pretrained=False)
-        state_dict = torch.load(model_file)
+        state_dict = torch.load(model_file, weights_only=True)
         model.load_state_dict(state_dict)
         model.to("cpu")
         return model
@@ -320,7 +320,7 @@ We can now print the size and accuracy of the quantized model.
     # ModuleAttributeError: 'ConvReLU2d' object has no attribute '_modules'
     # save the whole model directly
     # torch.save(quantized_model, fx_graph_mode_model_file_path)
-    # loaded_quantized_model = torch.load(fx_graph_mode_model_file_path)
+    # loaded_quantized_model = torch.load(fx_graph_mode_model_file_path, weights_only=False)
 
     # save with state_dict
     # torch.save(quantized_model.state_dict(), fx_graph_mode_model_file_path)
@@ -328,7 +328,7 @@ We can now print the size and accuracy of the quantized model.
     # model_to_quantize = copy.deepcopy(float_model)
     # prepared_model = prepare_fx(model_to_quantize, {"": qconfig})
     # loaded_quantized_model = convert_fx(prepared_model)
-    # loaded_quantized_model.load_state_dict(torch.load(fx_graph_mode_model_file_path))
+    # loaded_quantized_model.load_state_dict(torch.load(fx_graph_mode_model_file_path), weights_only=True)
 
     # save with script
     torch.jit.save(torch.jit.script(quantized_model), fx_graph_mode_model_file_path)

@@ -66,7 +66,7 @@ display(cropped_img)
 ######################################################################
 # ``crop`` is not handled effectively out-of-the-box by
 # ``torch.compile``: ``torch.compile`` induces a
-# `"graph break" <https://pytorch.org/docs/stable/torch.compiler_faq.html#graph-breaks>`_ 
+# `"graph break" <https://pytorch.org/docs/stable/torch.compiler_faq.html#graph-breaks>`_
 # on functions it is unable to handle and graph breaks are bad for performance.
 # The following code demonstrates this by raising an error
 # (``torch.compile`` with ``fullgraph=True`` raises an error if a
@@ -85,9 +85,9 @@ def f(img):
 #
 # 1. wrap the function into a PyTorch custom operator.
 # 2. add a "``FakeTensor`` kernel" (aka "meta kernel") to the operator.
-#    Given the metadata (e.g. shapes)
-#    of the input Tensors, this function says how to compute the metadata
-#    of the output Tensor(s).
+#    Given some ``FakeTensors`` inputs (dummy Tensors that don't have storage),
+#    this function should return dummy Tensors of your choice with the correct
+#    Tensor metadata (shape/strides/``dtype``/device).
 
 
 from typing import Sequence
@@ -129,6 +129,11 @@ display(cropped_img)
 # Prefer this over directly using ``torch.autograd.Function``; some compositions of
 # ``autograd.Function`` with PyTorch operator registration APIs can lead to (and
 # has led to) silent incorrectness when composed with ``torch.compile``.
+#
+# If you don't need training support, there is no need to use
+# ``torch.library.register_autograd``.
+# If you end up training with a ``custom_op`` that doesn't have an autograd
+# registration, we'll raise an error message.
 #
 # The gradient formula for ``crop`` is essentially ``PIL.paste`` (we'll leave the
 # derivation as an exercise to the reader). Let's first wrap ``paste`` into a
@@ -203,7 +208,7 @@ for example in examples:
 ######################################################################
 # Mutable Python Custom operators
 # -------------------------------
-# You can also wrap a Python function that mutates its inputs into a custom 
+# You can also wrap a Python function that mutates its inputs into a custom
 # operator.
 # Functions that mutate inputs are common because that is how many low-level
 # kernels are written; for example, a kernel that computes ``sin`` may take in

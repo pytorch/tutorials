@@ -97,7 +97,7 @@ torch.save(net.state_dict(), PATH)
 # Load
 device = torch.device('cpu')
 model = Net()
-model.load_state_dict(torch.load(PATH, map_location=device))
+model.load_state_dict(torch.load(PATH, map_location=device, weights_only=True))
 
 
 ######################################################################

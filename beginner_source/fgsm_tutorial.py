@@ -192,7 +192,7 @@ device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu
 model = Net().to(device)
 
 # Load the pretrained model
-model.load_state_dict(torch.load(pretrained_model, map_location=device))
+model.load_state_dict(torch.load(pretrained_model, map_location=device, weights_only=True))
 
 # Set the model in evaluation mode. In this case this is for the Dropout layers
 model.eval()
