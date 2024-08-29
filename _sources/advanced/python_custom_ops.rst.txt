@@ -117,7 +117,7 @@ Let's say that we are using PIL's ``crop`` operation.
 
 ``crop`` is not handled effectively out-of-the-box by
 ``torch.compile``: ``torch.compile`` induces a
-`"graph break" <https://pytorch.org/docs/stable/torch.compiler_faq.html#graph-breaks>`_ 
+`"graph break" <https://pytorch.org/docs/stable/torch.compiler_faq.html#graph-breaks>`_
 on functions it is unable to handle and graph breaks are bad for performance.
 The following code demonstrates this by raising an error
 (``torch.compile`` with ``fullgraph=True`` raises an error if a
@@ -149,9 +149,9 @@ do two things:
 
 1. wrap the function into a PyTorch custom operator.
 2. add a "``FakeTensor`` kernel" (aka "meta kernel") to the operator.
-   Given the metadata (e.g. shapes)
-   of the input Tensors, this function says how to compute the metadata
-   of the output Tensor(s).
+   Given some ``FakeTensors`` inputs (dummy Tensors that don't have storage),
+   this function should return dummy Tensors of your choice with the correct
+   Tensor metadata (shape/strides/``dtype``/device).
 
 .. GENERATED FROM PYTHON SOURCE LINES 91-111
 
@@ -231,7 +231,7 @@ After this, ``crop`` now works without graph breaks:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-136
+.. GENERATED FROM PYTHON SOURCE LINES 126-141
 
 Adding training support for crop
 --------------------------------
@@ -240,11 +240,16 @@ Prefer this over directly using ``torch.autograd.Function``; some compositions o
 ``autograd.Function`` with PyTorch operator registration APIs can lead to (and
 has led to) silent incorrectness when composed with ``torch.compile``.
 
+If you don't need training support, there is no need to use
+``torch.library.register_autograd``.
+If you end up training with a ``custom_op`` that doesn't have an autograd
+registration, we'll raise an error message.
+
 The gradient formula for ``crop`` is essentially ``PIL.paste`` (we'll leave the
 derivation as an exercise to the reader). Let's first wrap ``paste`` into a
 custom operator:
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-152
+.. GENERATED FROM PYTHON SOURCE LINES 141-157
 
 .. code-block:: default
 
@@ -271,11 +276,11 @@ custom operator:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-154
+.. GENERATED FROM PYTHON SOURCE LINES 158-159
 
 And now let's use ``register_autograd`` to specify the gradient formula for ``crop``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-167
+.. GENERATED FROM PYTHON SOURCE LINES 159-172
 
 .. code-block:: default
 
@@ -299,13 +304,13 @@ And now let's use ``register_autograd`` to specify the gradient formula for ``cr
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-171
+.. GENERATED FROM PYTHON SOURCE LINES 173-176
 
 Note that the backward must be a composition of PyTorch-understood operators,
 which is why we wrapped paste into a custom operator instead of directly using
 PIL's paste.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-177
+.. GENERATED FROM PYTHON SOURCE LINES 176-182
 
 .. code-block:: default
 
@@ -327,12 +332,12 @@ PIL's paste.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-180
+.. GENERATED FROM PYTHON SOURCE LINES 183-185
 
 This is the correct gradient, with 1s (white) in the cropped region and 0s
 (black) in the unused region.
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-192
+.. GENERATED FROM PYTHON SOURCE LINES 187-197
 
 Testing Python Custom operators
 -------------------------------
@@ -345,7 +350,7 @@ operator supports training, then the examples should include Tensors that
 require grad. If your operator supports multiple devices, then the examples
 should include Tensors from each device.
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-203
+.. GENERATED FROM PYTHON SOURCE LINES 197-208
 
 .. code-block:: default
 
@@ -367,11 +372,11 @@ should include Tensors from each device.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-214
+.. GENERATED FROM PYTHON SOURCE LINES 209-219
 
 Mutable Python Custom operators
 -------------------------------
-You can also wrap a Python function that mutates its inputs into a custom 
+You can also wrap a Python function that mutates its inputs into a custom
 operator.
 Functions that mutate inputs are common because that is how many low-level
 kernels are written; for example, a kernel that computes ``sin`` may take in
@@ -380,7 +385,7 @@ the input and an output tensor and write ``input.sin()`` to the output tensor.
 We'll use ``numpy.sin`` to demonstrate an example of a mutable Python
 custom operator.
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-225
+.. GENERATED FROM PYTHON SOURCE LINES 219-230
 
 .. code-block:: default
 
@@ -402,12 +407,12 @@ custom operator.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-228
+.. GENERATED FROM PYTHON SOURCE LINES 231-233
 
 Because the operator doesn't return anything, there is no need to register
 a ``FakeTensor`` kernel (meta kernel) to get it to work with ``torch.compile``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-239
+.. GENERATED FROM PYTHON SOURCE LINES 233-244
 
 .. code-block:: default
 
@@ -429,12 +434,12 @@ a ``FakeTensor`` kernel (meta kernel) to get it to work with ``torch.compile``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-242
+.. GENERATED FROM PYTHON SOURCE LINES 245-247
 
 And here's an ``opcheck`` run telling us that we did indeed register the operator correctly.
 ``opcheck`` would error out if we forgot to add the output to ``mutates_args``, for example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-252
+.. GENERATED FROM PYTHON SOURCE LINES 247-257
 
 .. code-block:: default
 
@@ -455,7 +460,7 @@ And here's an ``opcheck`` run telling us that we did indeed register the operato
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-265
+.. GENERATED FROM PYTHON SOURCE LINES 258-270
 
 Conclusion
 ----------
@@ -473,7 +478,7 @@ For more detailed information, see:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  3.227 seconds)
+   **Total running time of the script:** ( 0 minutes  3.192 seconds)
 
 
 .. _sphx_glr_download_advanced_python_custom_ops.py:

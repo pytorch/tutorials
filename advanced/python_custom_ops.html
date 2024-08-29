@@ -572,9 +572,9 @@ do two things:</p>
 <ol class="arabic simple">
 <li><p>wrap the function into a PyTorch custom operator.</p></li>
 <li><p>add a “<code class="docutils literal notranslate"><span class="pre">FakeTensor</span></code> kernel” (aka “meta kernel”) to the operator.
-Given the metadata (e.g. shapes)
-of the input Tensors, this function says how to compute the metadata
-of the output Tensor(s).</p></li>
+Given some <code class="docutils literal notranslate"><span class="pre">FakeTensors</span></code> inputs (dummy Tensors that don’t have storage),
+this function should return dummy Tensors of your choice with the correct
+Tensor metadata (shape/strides/<code class="docutils literal notranslate"><span class="pre">dtype</span></code>/device).</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span>
 
@@ -614,6 +614,10 @@ of the output Tensor(s).</p></li>
 Prefer this over directly using <code class="docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code>; some compositions of
 <code class="docutils literal notranslate"><span class="pre">autograd.Function</span></code> with PyTorch operator registration APIs can lead to (and
 has led to) silent incorrectness when composed with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p>
+<p>If you don’t need training support, there is no need to use
+<code class="docutils literal notranslate"><span class="pre">torch.library.register_autograd</span></code>.
+If you end up training with a <code class="docutils literal notranslate"><span class="pre">custom_op</span></code> that doesn’t have an autograd
+registration, we’ll raise an error message.</p>
 <p>The gradient formula for <code class="docutils literal notranslate"><span class="pre">crop</span></code> is essentially <code class="docutils literal notranslate"><span class="pre">PIL.paste</span></code> (we’ll leave the
 derivation as an exercise to the reader). Let’s first wrap <code class="docutils literal notranslate"><span class="pre">paste</span></code> into a
 custom operator:</p>
@@ -737,7 +741,7 @@ For more detailed information, see:</p>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/library.html">the torch.library documentation</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual">the Custom Operators Manual</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.227 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.192 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-python-custom-ops-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/ce0cb1cce555cead1bcaba8a6d337c6f/python_custom_ops.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">python_custom_ops.py</span></code></a></p>
