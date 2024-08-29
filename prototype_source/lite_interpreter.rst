@@ -3,8 +3,7 @@
 
 This tutorial has been moved to https://pytorch.org/tutorials/recipes/mobile_interpreter.html
 
-It will redirect in 3 seconds.
 
 .. raw:: html
 
-   <meta http-equiv="Refresh" content="3; url='https://pytorch.org/tutorials/recipes/mobile_interpreter.html'" />
+   <meta http-equiv="Refresh" content="0; url='https://pytorch.org/tutorials/recipes/mobile_interpreter.html'" />
