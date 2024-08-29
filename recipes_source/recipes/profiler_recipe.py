@@ -442,34 +442,17 @@ my_schedule = schedule(
 # To send the signal to the profiler that the next step has started, call ``prof.step()`` function.
 # The current profiler step is stored in ``prof.step_num``.
 #
-# The following example shows how to use all of the concepts above for CUDA Kernels:
+# The following example shows how to use all of the concepts above for CUDA and XPU Kernels:
+
+sort_by_keyword = "self_" + device + "_time_total"
 
 def trace_handler(p):
-    output = p.key_averages().table(sort_by="self_cuda_time_total", row_limit=10)
+    output = p.key_averages().table(sort_by=sort_by_keyword, row_limit=10)
     print(output)
     p.export_chrome_trace("/tmp/trace_" + str(p.step_num) + ".json")
 
 with profile(
-    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-    schedule=torch.profiler.schedule(
-        wait=1,
-        warmup=1,
-        active=2),
-    on_trace_ready=trace_handler
-) as p:
-    for idx in range(8):
-        model(inputs)
-        p.step()
-
-# The following example shows how to use all of the concepts above for XPU Kernels:
-
-def trace_handler(p):
-    output = p.key_averages().table(sort_by="self_xpu_time_total", row_limit=10)
-    print(output)
-    p.export_chrome_trace("/tmp/trace_" + str(p.step_num) + ".json")
-
-with profile(
-    activities=[ProfilerActivity.CPU, ProfilerActivity.XPU],
+    activities=activities,
     schedule=torch.profiler.schedule(
         wait=1,
         warmup=1,
