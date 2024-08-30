@@ -1,6 +1,9 @@
 Summary of PyTorch Mobile Recipes
 =====================================
 
+.. warning::
+    Note: PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also review these `ExecuTorch examples <https://github.com/pytorch/executorch/tree/main/examples#readme>`_.
+
 This summary provides a top level overview of recipes for PyTorch Mobile to help developers choose which recipes to follow for their PyTorch-powered mobile app development.
 
 Introduction
