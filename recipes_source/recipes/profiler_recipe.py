@@ -163,7 +163,12 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 ######################################################################
 # Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
 # Users could switch between cpu, cuda and xpu
-device = 'cuda'
+if torch.cuda.is_available():
+    device = 'cuda'
+elif torch.xpu.is_available():
+    device = 'xpu'
+else:
+    device = 'cpu'
 
 activities = [ProfilerActivity.CPU]
 sort_by_keyword = device + "_time_total"
