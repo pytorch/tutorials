@@ -131,7 +131,7 @@ torch.save({
 model = Net()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-checkpoint = torch.load(PATH)
+checkpoint = torch.load(PATH, weights_only=True)
 model.load_state_dict(checkpoint['model_state_dict'])
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 epoch = checkpoint['epoch']

@@ -1,6 +1,9 @@
 Pytorch Mobile Performance Recipes
 ==================================
 
+.. warning::
+    PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also learn more about `quantization <https://pytorch.org/executorch/stable/quantization-overview.html>`_, `Hardware acceleration (op fusion using hw) <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>`_, and `benchmarking <https://pytorch.org/executorch/stable/sdk-profiling.html>`_ on ExecuTorch’s documentation pages.
+
 Introduction
 ----------------
 Performance (aka latency) is crucial to most, if not all,
@@ -245,7 +248,7 @@ For example, using ResNet-50 and running the following script:
 
 
 
-you would get the following result: 
+you would get the following result:
 
 ::
 
