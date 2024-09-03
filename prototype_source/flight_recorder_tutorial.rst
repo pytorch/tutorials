@@ -2,7 +2,10 @@
 =========================================
 **Author**: `Chirag Pandya <https://github.com/c-p-i-o>`, `Junjie Wang <https://github.com/fduwjj>`
 
-This tutorial introduces a new tool for debugging stuck jobs during distributed training.
+What you will learn
+-------------------
+This tutorial introduces a new tool for debugging stuck jobs during distributed training. The tutorial explains how this
+new tool can be enabled and how to use the collected data for analyzing stuck jobs.
 
 Overview, Background and Motivation
 -----------------------------------
