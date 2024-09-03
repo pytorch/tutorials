@@ -54,15 +54,17 @@ There are two required environment variables to get the initial version of fligh
      there will be one file per rank output in the jobs running directory.
 Optional settings:
    - TORCH_NCCL_TRACE_CPP_STACK (true, false) true = enable cpp stack trace captures in flight recorder (for slow
-     addr2line - see additinal settings)
+     addr2line - see additional settings)
    - TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
-     record the ‘duration’ of each collective. May incur some CPU overhead.
+     record the `duration` of each collective. May incur some CPU overhead. In the collected data, we end up with a
+     `duration` field that indicates how long a collective took to execute.
 
 Additional settings
 -------------------
 TORCH_SYMBOLIZE_MODE: {dladdr, addr2line, fast}: This setting controls the program that is used to retrieve C++ traces
 from a running program. The default setting is `addr2line`. `fast` is a new experimental mode that is shown to be much
-faster than the traditional `addr2line`.
+faster than the traditional `addr2line`. Use this setting in conjunction with `TORCH_NCCL_TRACE_CPP_STACK` to collect
+C++ traces in `flight recorder` data.
 
 Retrieving Flight Recorder Data via an API
 ------------------------------------------
