@@ -247,6 +247,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_quant_guide.html
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
+   prototype/flight_recorder_tutorial.html
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/inductor_cpp_wrapper_tutorial.html
    prototype/pt2e_quantizer.html
