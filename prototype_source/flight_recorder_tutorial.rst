@@ -4,8 +4,8 @@
 
 This tutorial introduces a new tool for debugging stuck jobs during distributed training.
 
-Background and Motivation
---------------------------
+Overview, Background and Motivation
+-----------------------------------
 An AI distributed training job refers to the process of training a machine learning model using multiple devices, such
 as GPUs or CPUs, connected in a network. This approach allows for faster and more efficient training of large models
 that require significant computational resources.
@@ -31,23 +31,47 @@ to be synchronized at certain points. If this synchronization fails, the job can
 occur if one or ranks fail to join a collective while the remaining ranks have joined. This results in an
 indefinite wait for the job to progress.
 
-Flight Recorder captures diagnostics information as collectives run. The diagnostic information can be used to help root
-cause the underlying issue. There are 2 core parts to flight recorder.
+Flight Recorder, as the name suggests, captures diagnostics information as collectives run. The captured diagnostic
+information can be used to help root cause the underlying issue when jobs get stuck.
+There are 2 core parts to flight recorder.
 - The collection portion. When enabled, information about collectives are recorded in an in-memory circular buffer.
 Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 - An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below).
 
+Prerequisites
+-------------
+None. This is a new debugging tool that is available in PyTorch version 2.5.
+
 Enabling Flight Recorder
 ------------------------
 There are two required environment variables to get the initial version of flight recorder working.
-   - TORCH_NCCL_TRACE_BUFFER_SIZE (0, N where N is a postitive number) N = collection enabled. Recommended to set this
-     to 2000)
-   - TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false) true = write out diagnostic files to disk on job timeout.
+   - TORCH_NCCL_TRACE_BUFFER_SIZE (0, N where N is a positive number) N = collection enabled. N represents the number of
+     entries that will be kept internally in a circular buffer. Recommended to set this at 2000.
+   - TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false) true = write out diagnostic files to disk on job timeout. If set,
+     there will be one file per rank output in the jobs running directory.
 Optional settings:
    - TORCH_NCCL_TRACE_CPP_STACK (true, false) true = enable cpp stack trace captures in flight recorder (for slow
      addr2line - see additinal settings)
    - TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
      record the ‘duration’ of each collective. May incur some CPU overhead.
+
+Additional settings
+-------------------
+TORCH_SYMBOLIZE_MODE: {dladdr, addr2line, fast}: This setting controls the program that is used to retrieve C++ traces
+from a running program. The default setting is `addr2line`. `fast` is a new experimental mode that is shown to be much
+faster than the traditional `addr2line`.
+
+Retrieving Flight Recorder Data via an API
+------------------------------------------
+Flight recorder data can also be retrieved via an API call.
+The API is shown below with the default arguments.
+.. code:: python
+  torch._C._distributed_c10d._dump_nccl_trace(includeCollectives=True, includeStackTraces=True, onlyActive=False)
+
+To view the data, you can unpickle the data
+.. code:: python
+  t = pickle.loads(torch._C._distributed_c10d._dump_nccl_trace())
+  print(t)
 
 Flight Recorder File Formats
 ----------------------------
@@ -118,13 +142,16 @@ Analyzing Flight Recorder Dumps
 We have convenient scripts available in `pytorch/tools/flight_recorder` directory that can be used to analyze captured
 data.
 
-To run it, one can use command line:
+1. In order to run the convenience script, all files from a rank must first be copied over into a single directory.
+
+2. To run it, one can use command line:
 .. code:: python
   python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
 
 
-Additional settings
--------------------
-TORCH_SYMBOLIZE_MODE: {dladdr, addr2line, fast}: This setting controls the program that is used to retrieve C++ traces
-from a running program. The default setting is `addr2line`. `fast` is a new experimental mode that is shown to be much
-faster than the traditional `addr2line`.
+Conclusion
+----------
+This tutorial introduces a new PyTorch diagnostic tool called `flight recorder`. The tutorial talks about how flight
+recorder can be enabled to collect diagnostic data from a machine.
+Data captured from flight recorder can be analyzed using a convenience script in the `tools/flight_recorder` directory
+in the PyTorch repository.
