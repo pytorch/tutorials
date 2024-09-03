@@ -43,7 +43,7 @@ Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped 
 
 Prerequisites
 -------------
-None. This is a new debugging tool that is available in PyTorch version 2.5.
+PyTorch version 2.5 and later.
 
 Enabling Flight Recorder
 ------------------------
