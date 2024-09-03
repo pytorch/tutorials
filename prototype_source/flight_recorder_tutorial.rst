@@ -35,7 +35,7 @@ Flight Recorder captures diagnostics information as collectives run. The diagnos
 cause the underlying issue. There are 2 core parts to flight recorder.
 - The collection portion. When enabled, information about collectives are recorded in an in-memory circular buffer.
 Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
-- An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below). T
+- An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below).
 
 Enabling Flight Recorder
 ------------------------
@@ -51,72 +51,80 @@ Optional settings:
 
 Flight Recorder File Formats
 ----------------------------
-Flight recorder files are dumped out in `pickle` format.
-```
-{
-  "version": "2.3",
-  "pg_config": {
-    "0": {
-      "name": "0",
-      "desc": "default_pg",
-      "ranks": "[0, 1]"
-    }
-  },
-  "pg_status": {
-    "0": {
-      "last_enqueued_collective": 2,
-      "last_started_collective": -1,
-      "last_completed_collective": 2
-    }
-  },
-  "entries": [
-    {
-      "frames": [
-        {
-          "name": "test_short_pickle",
-          "filename": "pytorch/test/distributed/test_c10d_nccl.py",
-          "line": 3647
-        },
-        ...
-        {
-          "name": "spawn_main",
-          "filename": ".conda/envs/pytorch-3.10/lib/python3.10/multiprocessing/spawn.py",
-          "line": 116
-        },
-        {
-          "name": "<module>",
-          "filename": "<string>",
-          "line": 1
-        }
-      ],
-      "record_id": 0,
-      "pg_id": 0,
-      "process_group": ("0", "default_pg"),
-      "collective_seq_id": 1,
-      "p2p_seq_id": 0,
-      "op_id": 1,
-      "profiling_name": "nccl:all_reduce",
-      "time_created_ns": 1724779239936775119,
-      "input_sizes": [[3, 4]],
-      "input_dtypes": ["Float"],
-      "output_sizes": [[3, 4]],
-      "output_dtypes": ["Float"],
-      "state": "completed",
-      "time_discovered_started_ns": null,
-      "time_discovered_completed_ns": 1724779239975811724,
-      "retired": true,
-      "timeout_ms": 600000,
-      "is_p2p": false
+Flight recorder files are dumped out in `pickle` format. Files are written out to local disks or mounted shared NFS
+folders.
+Contents of a flight recorder `unpickled` file is shown below.
+.. code-block: JSON
+  {
+    "version": "2.3",
+    "pg_config": {
+      "0": {
+        "name": "0",
+        "desc": "default_pg",
+        "ranks": "[0, 1]"
+      }
     },
-  ...]
-}
-```
+    "pg_status": {
+      "0": {
+        "last_enqueued_collective": 2,
+        "last_started_collective": -1,
+        "last_completed_collective": 2
+      }
+    },
+    "entries": [
+      {
+        "frames": [
+          {
+            "name": "test_short_pickle",
+            "filename": "pytorch/test/distributed/test_c10d_nccl.py",
+            "line": 3647
+          },
+          ...
+          {
+            "name": "spawn_main",
+            "filename": ".conda/envs/pytorch-3.10/lib/python3.10/multiprocessing/spawn.py",
+            "line": 116
+          },
+          {
+            "name": "<module>",
+            "filename": "<string>",
+            "line": 1
+          }
+        ],
+        "record_id": 0,
+        "pg_id": 0,
+        "process_group": ("0", "default_pg"),
+        "collective_seq_id": 1,
+        "p2p_seq_id": 0,
+        "op_id": 1,
+        "profiling_name": "nccl:all_reduce",
+        "time_created_ns": 1724779239936775119,
+        "input_sizes": [[3, 4]],
+        "input_dtypes": ["Float"],
+        "output_sizes": [[3, 4]],
+        "output_dtypes": ["Float"],
+        "state": "completed",
+        "time_discovered_started_ns": null,
+        "time_discovered_completed_ns": 1724779239975811724,
+        "retired": true,
+        "timeout_ms": 600000,
+        "is_p2p": false
+      },
+    ...]
+  }
+
 Analyzing Flight Recorder Dumps
 -------------------------------
 We have convenient scripts available in `pytorch/tools/flight_recorder` directory that can be used to analyze captured
 data.
 
-To run it, one can use command line: 
-```
-python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
-```
+To run it, one can use command line:
+.. code:: python
+  python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
+
+
+Additional settings
+-------------------
+TORCH_SYMBOLIZE_MODE: {dladdr, addr2line, fast}: This setting controls the program that is used to retrieve C++ traces
+from a running program. The default setting is `addr2line`. `fast` is a new experimental mode that is shown to be much
+faster than the traditional `addr2line`.
