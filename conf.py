@@ -76,6 +76,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
+    'sphinx_sitemap'
 ]
 
 intersphinx_mapping = {
@@ -113,6 +114,13 @@ sphinx_gallery_conf = {
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
 }
+
+html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+sitemap_locales = [None]
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+]
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
