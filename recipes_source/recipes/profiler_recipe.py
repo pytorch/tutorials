@@ -73,7 +73,6 @@ inputs = torch.randn(5, 3, 224, 224)
 # - ``record_shapes`` - whether to record shapes of the operator inputs;
 # - ``profile_memory`` - whether to report amount of memory consumed by
 #   model's Tensors;
-# - ``use_cuda`` - whether to measure execution time of CUDA kernels.
 #
 # Note: when using CUDA, profiler also shows the runtime CUDA events
 # occurring on the host.

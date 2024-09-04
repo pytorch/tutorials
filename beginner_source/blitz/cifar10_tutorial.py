@@ -221,7 +221,7 @@ print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
 # wasn't necessary here, we only did it to illustrate how to do so):
 
 net = Net()
-net.load_state_dict(torch.load(PATH))
+net.load_state_dict(torch.load(PATH, weights_only=True))
 
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:

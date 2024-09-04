@@ -32,9 +32,14 @@ torch.save(model.state_dict(), 'model_weights.pth')
 ##########################
 # To load model weights, you need to create an instance of the same model first, and then load the parameters
 # using ``load_state_dict()`` method.
+#
+# In the code below, we set ``weights_only=True`` to limit the
+# functions executed during unpickling to only those necessary for
+# loading weights. Using ``weights_only=True`` is considered
+# a best practice when loading weights.
 
 model = models.vgg16() # we do not specify ``weights``, i.e. create untrained model
-model.load_state_dict(torch.load('model_weights.pth'))
+model.load_state_dict(torch.load('model_weights.pth', weights_only=True))
 model.eval()
 
 ###########################
@@ -50,9 +55,14 @@ model.eval()
 torch.save(model, 'model.pth')
 
 ########################
-# We can then load the model like this:
+# We can then load the model as demonstrated below.
+#
+# As described in `Saving and loading torch.nn.Modules <pytorch.org/docs/main/notes/serialization.html#saving-and-loading-torch-nn-modules>`__,
+# saving ``state_dict``s is considered the best practice. However,
+# below we use ``weights_only=False`` because this involves loading the
+# model, which is a legacy use case for ``torch.save``.
 
-model = torch.load('model.pth')
+model = torch.load('model.pth', weights_only=False),
 
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.
