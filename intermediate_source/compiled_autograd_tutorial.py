@@ -16,21 +16,42 @@ Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
 # Doesn't torch.compile already capture the backward graph?
 # ------------
 # Partially. AOTAutograd captures the backward graph ahead-of-time, but with certain limitations:
-# - Graph breaks in the forward lead to graph breaks in the backward
-# - `Backward hooks <https://pytorch.org/docs/stable/notes/autograd.html#backward-hooks-execution>`_ are not captured
+#   - Graph breaks in the forward lead to graph breaks in the backward
+#   - `Backward hooks <https://pytorch.org/docs/stable/notes/autograd.html#backward-hooks-execution>`_ are not captured
 # 
 # Compiled Autograd addresses these limitations by directly integrating with the autograd engine, allowing
 # it to capture the full backward graph at runtime. Models with these two characteristics should try
 # Compiled Autograd, and potentially observe better performance.
 #
 # However, Compiled Autograd has its own limitations:
-# - Dynamic autograd structure leads to recompiles
+#   - Dynamic autograd structure leads to recompiles
 # 
+
+######################################################################
+# Tutorial output cells setup
+# ------------
+#
+
+import os
+
+class ScopedLogging:
+    def __init__(self):
+        assert "TORCH_LOGS" not in os.environ
+        assert "TORCH_LOGS_FORMAT" not in os.environ
+        os.environ["TORCH_LOGS"] = "compiled_autograd_verbose"
+        os.environ["TORCH_LOGS_FORMAT"] = "short"
+    
+    def __del__(self):
+        del os.environ["TORCH_LOGS"]
+        del os.environ["TORCH_LOGS_FORMAT"]
+    
 
 ######################################################################
 # Basic Usage
 # ------------
 #
+
+import torch
 
 # NOTE: Must be enabled before using the decorator
 torch._dynamo.config.compiled_autograd = True
@@ -57,20 +78,11 @@ train(model, x)
 # ------------
 # Run the script with either TORCH_LOGS environment variables
 # 
-"""
-Prints graph:
-TORCH_LOGS="compiled_autograd" python example.py
-
-Performance degrading, prints verbose graph and recompile reasons:
-TORCH_LOGS="compiled_autograd_verbose" python example.py
-"""
-
-######################################################################
-# Or with the set_logs private API:
+# - To only print the compiled autograd graph, use `TORCH_LOGS="compiled_autograd" python example.py`
+# - To sacrifice some performance, in order to print the graph with more tensor medata and recompile reasons, use `TORCH_LOGS="compiled_autograd_verbose" python example.py`
+# 
+# Logs can also be enabled through the private API torch._logging._internal.set_logs.
 #
-
-# flag must be enabled before wrapping using torch.compile
-torch._logging._internal.set_logs(compiled_autograd=True)
 
 @torch.compile
 def train(model, x):
@@ -80,14 +92,15 @@ def train(model, x):
 train(model, x) 
 
 ######################################################################
-# The compiled autograd graph should now be logged to stdout. Certain graph nodes will have names that are prefixed by "aot0_",
+# The compiled autograd graph should now be logged to stdout. Certain graph nodes will have names that are prefixed by aot0_,
 # these correspond to the nodes previously compiled ahead of time in AOTAutograd backward graph 0.
 # 
 # NOTE: This is the graph that we will call torch.compile on, NOT the optimized graph. Compiled Autograd basically
 # generated some python code to represent the entire C++ autograd execution.
 # 
 """
-INFO:torch._dynamo.compiled_autograd.__compiled_autograd:TRACED GRAPH
+DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[]
+DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:TRACED GRAPH
  ===== Compiled autograd graph =====
  <eval_with_key>.4 class CompiledAutograd(torch.nn.Module):
     def forward(self, inputs, sizes, scalars, hooks):
@@ -178,6 +191,7 @@ def fn(x):
     return temp.sum()
 
 x = torch.randn(10, 10, requires_grad=True)
+torch._dynamo.utils.counters.clear()
 loss = fn(x)
 
 # 1. base torch.compile 
@@ -205,7 +219,6 @@ x = torch.randn(10, 10, requires_grad=True)
 x.register_hook(lambda grad: grad+10)
 loss = fn(x)
 
-torch._logging._internal.set_logs(compiled_autograd=True)
 with torch._dynamo.compiled_autograd.enable(torch.compile(backend="aot_eager")):
     loss.backward()
 
@@ -214,22 +227,22 @@ with torch._dynamo.compiled_autograd.enable(torch.compile(backend="aot_eager")):
 # 
 
 """
-INFO:torch._dynamo.compiled_autograd.__compiled_autograd:TRACED GRAPH
+DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[]
+DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:TRACED GRAPH
  ===== Compiled autograd graph =====
  <eval_with_key>.2 class CompiledAutograd(torch.nn.Module):
     def forward(self, inputs, sizes, scalars, hooks):
-    ...
-    getitem_2 = hooks[0];  hooks = None
-    call_hook: "f32[10, 10][0, 0]cpu" = torch__dynamo_external_utils_call_hook(getitem_2, aot0_expand, hook_type = 'tensor_pre_hook');  getitem_2 = aot0_expand = None
-    ...
+        ...
+        getitem_2 = hooks[0];  hooks = None
+        call_hook: "f32[10, 10][0, 0]cpu" = torch__dynamo_external_utils_call_hook(getitem_2, aot0_expand, hook_type = 'tensor_pre_hook');  getitem_2 = aot0_expand = None
+        ...
 """
 
 ######################################################################
-# Understanding recompilation reasons for Compiled Autograd
+# Common recompilation reasons for Compiled Autograd
 # ------------
 # 1. Due to change in autograd structure 
 
-torch._logging._internal.set_logs(compiled_autograd_verbose=True)
 torch._dynamo.config.compiled_autograd = True
 x = torch.randn(10, requires_grad=True)
 for op in [torch.add, torch.sub, torch.mul, torch.div]:
@@ -238,14 +251,18 @@ for op in [torch.add, torch.sub, torch.mul, torch.div]:
 
 ######################################################################
 # You should see some cache miss logs (recompiles):
-# Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[] 
-# ...
-# Cache miss due to new autograd node: SubBackward0 (NodeCall 2) with key size 56, previous key sizes=[]
-# ...
-# Cache miss due to new autograd node: MulBackward0 (NodeCall 2) with key size 71, previous key sizes=[]
-# ...
-# Cache miss due to new autograd node: DivBackward0 (NodeCall 2) with key size 70, previous key sizes=[]
-# ...
+#
+
+"""
+Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[] 
+...
+Cache miss due to new autograd node: SubBackward0 (NodeCall 2) with key size 56, previous key sizes=[]
+...
+Cache miss due to new autograd node: MulBackward0 (NodeCall 2) with key size 71, previous key sizes=[]
+...
+Cache miss due to new autograd node: DivBackward0 (NodeCall 2) with key size 70, previous key sizes=[]
+...
+"""
 
 ######################################################################
 # 2. Due to dynamic shapes
@@ -260,12 +277,16 @@ for i in [10, 100, 10]:
 
 ######################################################################
 # You should see some cache miss logs (recompiles):
-# ...
-# Cache miss due to changed shapes: marking size idx 0 of torch::autograd::GraphRoot (NodeCall 0) as dynamic
-# Cache miss due to changed shapes: marking size idx 1 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
-# Cache miss due to changed shapes: marking size idx 2 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
-# Cache miss due to changed shapes: marking size idx 3 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
-# ...
+#
+
+"""
+...
+Cache miss due to changed shapes: marking size idx 0 of torch::autograd::GraphRoot (NodeCall 0) as dynamic
+Cache miss due to changed shapes: marking size idx 1 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
+Cache miss due to changed shapes: marking size idx 2 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
+Cache miss due to changed shapes: marking size idx 3 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic
+...
+"""
 
 ######################################################################
 # Compatibility and rough edges
