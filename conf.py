@@ -120,6 +120,7 @@ sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
     "genindex.html",
+    "src/*"
 ]
 sitemap_url_scheme = "{link}"
 
