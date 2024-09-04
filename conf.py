@@ -121,6 +121,7 @@ sitemap_excludes = [
     "search.html",
     "genindex.html",
 ]
+sitemap_url_scheme = "{link}"
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
