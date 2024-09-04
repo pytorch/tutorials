@@ -35,7 +35,7 @@ quantization and measure their impact.
 #
 # Segment Anything Model checkpoint setup:
 #
-# 1. Go to the `segment-anything repo <https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can use ``wget`` (for example: ``wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>``).
+# 1. Go to the `segment-anything repo checkpoint <https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can use ``wget`` (for example: ``wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>``).
 # 2. Pass in that directory by editing the code below to say:
 #
 # .. code-block:: bash
