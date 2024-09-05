@@ -60,22 +60,22 @@ This mechanism is implemented based on Python's `Entry points
 <https://packaging.python.org/en/latest/specifications/entry-points/>`_
 mechanism. We discover and load all of the specific entry points
 in ``torch/__init__.py`` that are defined by out-of-tree extensions.
-This feature is enabled by default and can be disabled using
-``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
 Its implementation is in `[RFC] Add support for device extension autoloading
 <https://github.com/pytorch/pytorch/pull/127074>`_.
 
 .. note::
 
+    This feature is enabled by default and can be disabled using
+    ``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
     If you get an error like this: "Failed to load the backend extension",
-    this error has nothing to do with PyTorch, you should ask the extension
-    maintainer for help.
+    this error has nothing to do with PyTorch, you should disable this feature
+    and ask the out-of-tree extension maintainer for help.
 
 How to apply this to out-of-tree extensions?
 --------------------------------------------
 
-For example, if you have a package named ``torch_foo`` and it includes the
-following in its ``__init__.py``:
+For example, if you have a backend named ``foo`` and a package named
+``torch_foo``, and your package includes the following in its ``__init__.py``:
 
 .. code-block:: python
 
