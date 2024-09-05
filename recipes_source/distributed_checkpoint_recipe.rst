@@ -289,7 +289,7 @@ the intent is to save or load in "non-distributed" style, meaning entirely in th
     import os
 
     import torch
-    import torch.distributed.checkpoint as DCP
+    import torch.distributed.checkpoint as dcp
     import torch.nn as nn
 
 
