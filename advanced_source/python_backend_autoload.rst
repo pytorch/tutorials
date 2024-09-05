@@ -56,12 +56,20 @@ How it works
    :alt: Autoloading implementation
    :align: center
 
-This mechanism is implemented based on Python's `Entry point
+This mechanism is implemented based on Python's `Entry points
 <https://packaging.python.org/en/latest/specifications/entry-points/>`_
 mechanism. We discover and load all of the specific entry points
 in ``torch/__init__.py`` that are defined by out-of-tree extensions.
+This feature is enabled by default and can be disabled using
+``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
 Its implementation is in `[RFC] Add support for device extension autoloading
-<https://github.com/pytorch/pytorch/pull/127074>`_
+<https://github.com/pytorch/pytorch/pull/127074>`_.
+
+.. note::
+
+    If you get an error like this: "Failed to load the backend extension",
+    this error has nothing to do with PyTorch, you should ask the extension
+    maintainer for help.
 
 How to apply this to out-of-tree extensions?
 --------------------------------------------
@@ -90,6 +98,13 @@ package.
     )
 
 Now the ``torch_foo`` module can be imported when running import torch.
+
+.. code-block:: python
+
+    >>> import torch
+    No need to import torch_foo anymore! You can run torch.foo.is_available() directly.
+    >>> torch.foo.is_available()
+    True
 
 Conclusion
 ----------
