@@ -4,86 +4,95 @@
 
 What you will learn
 -------------------
-This tutorial introduces a new tool for debugging stuck jobs during distributed training. The tutorial explains how this
-new tool can be enabled and how to use the collected data for analyzing stuck jobs.
+* Learn about a new tool for debugging stuck jobs during distributed training.
+* Learn how you can enable the tool and use the collected data for analyzing stuck jobs.
 
-Overview, Background and Motivation
+Overview
 -----------------------------------
 An AI distributed training job refers to the process of training a machine learning model using multiple devices, such
 as GPUs or CPUs, connected in a network. This approach allows for faster and more efficient training of large models
 that require significant computational resources.
-An engineer’s goal is to complete an AI training job as fast as possible and make continuous improvements such that
-subsequent training can be done faster. A trained usable model is the final desired outcome.
-One of the biggest impediment to completing training is the concept of a "stuck job".
+An engineer’s goal is to complete an AI training job as quickly as possible and make continuous improvements so that
+subsequent training can be done faster. A trained, usable model is the final desired outcome.
+One of the biggest impediment to completing training is the concept of a *stuck job*.
 
-A distributed AI training job is considered "stuck" when it stops making meaningful progress for an extended period of
+A distributed AI training job is considered `stuck` when it stops making meaningful progress for an extended period of
 time.
 
 A job can get stuck for various reasons:
-    - Data Starvation: This happens when the training job is not receiving data at the expected rate. This could be due to
+- **Data Starvation:** This occurs when the training job is not receiving data at the expected rate, possibly due to
 issues with the data pipeline or the data source.
-    - Resource Constraints: If the system running the job does not have enough computational resources (like CPU, GPU, or
+- **Resource Constraints:** If the system running the job does not have enough computational resources (such as CPU, GPU, or
 memory), the job might not be able to proceed.
-    - Network Issues: In a distributed training setup, different parts of the model or data may be processed on different
+- **Network Issues:** In a distributed training setup, different parts of the model or data may be processed on different
 devices. If there are network issues, communication between these devices may be disrupted, causing the job to get
 stuck.
-    - Software Bugs or Errors: Errors in the training code or the underlying libraries and frameworks can also cause a job to
+- **Software Bugs or Errors:** Errors in the training code or the underlying libraries and frameworks can also cause a job to
 get stuck.
-    - Synchronization Issues: In distributed training, different parts of the computation are often run in parallel and need
+- **Synchronization Issues:** In distributed training, different parts of the computation are often run in parallel and need
 to be synchronized at certain points. If this synchronization fails, the job can get stuck. For example, a deadlock can
-occur if one or ranks fail to join a collective while the remaining ranks have joined. This results in an
+occur if one or more ranks fail to join a collective while the remaining ranks have joined. This results in an
 indefinite wait for the job to progress.
 
 Flight Recorder, as the name suggests, captures diagnostics information as collectives run. The captured diagnostic
-information can be used to help root cause the underlying issue when jobs get stuck.
-There are 2 core parts to flight recorder.
-- The collection portion. When enabled, information about collectives are recorded in an in-memory circular buffer.
+information can be used to help identify the root cause of issues when jobs get stuck.
+There are two core parts to Flight Recorder.
+- The collection portion: when enabled, information about collectives is recorded in an in-memory circular buffer.
 Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 - An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below).
 
 Prerequisites
 -------------
-PyTorch version 2.5 and later.
+- PyTorch version 2.5 or later.
 
 Enabling Flight Recorder
 ------------------------
 There are two required environment variables to get the initial version of flight recorder working.
-   - TORCH_NCCL_TRACE_BUFFER_SIZE (0, N where N is a positive number) N = collection enabled. N represents the number of
-     entries that will be kept internally in a circular buffer. Recommended to set this at 2000.
-   - TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false) true = write out diagnostic files to disk on job timeout. If set,
+- ``TORCH_NCCL_TRACE_BUFFER_SIZE`` (``0``, ``N`` where ``N`` is a positive number): Setting ``N`` enables collection. N represents the number of
+     entries that will be kept internally in a circular buffer. We recommended to set this value at 2000.
+- ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout. If enabled,
      there will be one file per rank output in the jobs running directory.
-Optional settings:
-   - TORCH_NCCL_TRACE_CPP_STACK (true, false) true = enable cpp stack trace captures in flight recorder (for slow
-     addr2line - see additional settings)
-   - TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
-     record the `duration` of each collective. May incur some CPU overhead. In the collected data, we end up with a
-     `duration` field that indicates how long a collective took to execute.
+     
+**Optional settings:**
 
-Additional settings
+- ```TORCH_NCCL_TRACE_CPP_STACK (true, false)``: Setting this to true enables C++ stack stack trace captures in Flight Recorder. This is useful for slow
+     ``addr2line`` - for more information, see additional settings.
+   - TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
+     records the `duration` of each collective. This may incur some CPU overhead. In the collected data, the
+     ``duration`` filed indicates how long each collective took to execute..
+
+Additional Settings
 -------------------
-TORCH_SYMBOLIZE_MODE: {dladdr, addr2line, fast}: This setting controls the program that is used to retrieve C++ traces
-from a running program. The default setting is `addr2line`. `fast` is a new experimental mode that is shown to be much
-faster than the traditional `addr2line`. Use this setting in conjunction with `TORCH_NCCL_TRACE_CPP_STACK` to collect
-C++ traces in `flight recorder` data.
+
+``TORCH_SYMBOLIZE_MODE {dladdr, addr2line, fast}:`` This setting determines the program used to retrieve C++ traces
+from a running program. The default setting is ``addr2line``. ``fast`` is a new experimental mode that is shown to be much
+faster than the traditional ``addr2line``. Use this setting in conjunction with ``TORCH_NCCL_TRACE_CPP_STACK`` to collect
+C++ traces in the Flight Recorder` data.
 
 Retrieving Flight Recorder Data via an API
 ------------------------------------------
-Flight recorder data can also be retrieved via an API call.
-The API is shown below with the default arguments.
+
+You can also retrieve Flight Recorder data with an API call.
+Below is the API with the default arguments:
+
 .. code:: python
   torch._C._distributed_c10d._dump_nccl_trace(includeCollectives=True, includeStackTraces=True, onlyActive=False)
 
-To view the data, you can unpickle the data
+To view the data, you can unpickle it as shown below:
+
 .. code:: python
   t = pickle.loads(torch._C._distributed_c10d._dump_nccl_trace())
   print(t)
 
 Flight Recorder File Formats
 ----------------------------
-Flight recorder files are dumped out in `pickle` format. Files are written out to local disks or mounted shared NFS
+
+Flight Recorder files are dumped in ``pickle`` format. Files are written to local disks or mounted shared NFS
 folders.
-Contents of a flight recorder `unpickled` file is shown below.
-.. code-block: JSON
+
+The contents of a Flight Recorder ``unpickled`` file are shown below:
+.. code-block: json
+
   {
     "version": "2.3",
     "pg_config": {
@@ -144,19 +153,23 @@ Contents of a flight recorder `unpickled` file is shown below.
 
 Analyzing Flight Recorder Dumps
 -------------------------------
-We have convenient scripts available in `pytorch/tools/flight_recorder` directory that can be used to analyze captured
+
+We have convenient scripts available in `pytorch/tools/flight_recorder` directory for analyzing captured
 data.
 
-1. In order to run the convenience script, all files from a rank must first be copied over into a single directory.
+To run the convenience script, follow these steps:
 
-2. To run it, one can use command line:
+1. Copy all files from a rank into a single directory.
+
+2. To run the script, use this command:
 .. code:: python
   python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
 
 
 Conclusion
 ----------
-This tutorial introduces a new PyTorch diagnostic tool called `flight recorder`. The tutorial talks about how flight
-recorder can be enabled to collect diagnostic data from a machine.
-Data captured from flight recorder can be analyzed using a convenience script in the `tools/flight_recorder` directory
-in the PyTorch repository.
+In this tutorial, we have learned about a new PyTorch diagnostic tool called  Flight Recorder. 
+We have discussed how to enable Flight Recorder to collect diagnostic data from a machine.
+Additionally, we explored how to analyze the data captured from the flight recorder using a
+convenience script located in the `tools/flight_recorder <https://github.com/pytorch/pytorch/tree/main/tools/flight_recorder>`__
+directory of the PyTorch repository.
