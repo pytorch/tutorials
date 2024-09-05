@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-(Beta) ``torch.export`` AOTInductor Tutorial for Python runtime
+.. meta::
+   :description: An end-to-end example of how to use AOTInductor for Python runtime.
+   :keywords: torch.export, AOTInductor, torch._inductor.aot_compile, torch._export.aot_load
+
+``torch.export`` AOTInductor Tutorial for Python runtime (Beta)
 ===============================================================
 **Author:** Ankith Gunapal, Bin Bao, Angela Yi
 """
@@ -18,7 +22,7 @@
 # a shared library that can be run in a non-Python environment.
 #
 #
-# In this tutorial, you will learn an end-to-end example of how to use AOTInductor for python runtime.
+# In this tutorial, you will learn an end-to-end example of how to use AOTInductor for Python runtime.
 # We will look at how  to use :func:`torch._inductor.aot_compile` along with :func:`torch.export.export` to generate a 
 # shared library. Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
 # You will learn about the speed up seen in the first inference time using AOTInductor, especially when using 
