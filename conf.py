@@ -120,7 +120,15 @@ sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
     "genindex.html",
-    "src/**",
+    "src/pytorch-sphinx-theme/docs/changelog.html",
+    "src/pytorch-sphinx-theme/docs/configuring.html",
+    "src/pytorch-sphinx-theme/docs/demo/api.html",
+    "src/pytorch-sphinx-theme/docs/demo/demo.html",
+    "src/pytorch-sphinx-theme/docs/demo/lists_tables.html",
+    "src/pytorch-sphinx-theme/docs/demo/long.html",
+    "src/pytorch-sphinx-theme/docs/demo/structure.html",
+    "src/pytorch-sphinx-theme/docs/index.html",
+    "src/pytorch-sphinx-theme/docs/installing.html"
 ]
 sitemap_url_scheme = "{link}"
 
