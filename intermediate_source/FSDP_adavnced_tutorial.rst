@@ -502,7 +502,7 @@ layer class (holding MHSA and FFN).
   
 
     model = FSDP(model,
-        fsdp_auto_wrap_policy=t5_auto_wrap_policy)
+        auto_wrap_policy=t5_auto_wrap_policy)
 
 To see the wrapped model, you can easily print the model and visually inspect
 the sharding and FSDP units as well.

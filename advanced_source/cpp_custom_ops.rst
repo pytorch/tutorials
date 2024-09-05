@@ -174,6 +174,8 @@ To add ``torch.compile`` support for an operator, we must add a FakeTensor kerne
 known as a "meta kernel" or "abstract impl"). FakeTensors are Tensors that have
 metadata (such as shape, dtype, device) but no data: the FakeTensor kernel for an
 operator specifies how to compute the metadata of output tensors given the metadata of input tensors.
+The FakeTensor kernel should return dummy Tensors of your choice with
+the correct Tensor metadata (shape/strides/``dtype``/device).
 
 We recommend that this be done from Python via the `torch.library.register_fake` API,
 though it is possible to do this from C++ as well (see
@@ -417,4 +419,4 @@ Conclusion
 In this tutorial, we went over the recommended approach to integrating Custom C++
 and CUDA operators with PyTorch. The ``TORCH_LIBRARY/torch.library`` APIs are fairly
 low-level. For more information about how to use the API, see
-`The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_.
+`The Custom Operators Manual <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual>`_.

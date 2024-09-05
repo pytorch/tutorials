@@ -39,7 +39,7 @@ torch.save(m.state_dict(), 'checkpoint.pth')
 # to ``torch.load``, the ``torch.device()`` context manager and the ``assign``
 # keyword argument to ``nn.Module.load_state_dict()``.
 
-state_dict = torch.load('checkpoint.pth', mmap=True)
+state_dict = torch.load('checkpoint.pth', mmap=True, weights_only=True)
 with torch.device('meta'):
   meta_m = SomeModule(1000)
 meta_m.load_state_dict(state_dict, assign=True)
@@ -47,7 +47,7 @@ meta_m.load_state_dict(state_dict, assign=True)
 #############################################################################
 # Compare the snippet below to the one above:
 
-state_dict = torch.load('checkpoint.pth')
+state_dict = torch.load('checkpoint.pth', weights_only=True)
 m = SomeModule(1000)
 m.load_state_dict(state_dict)
 
@@ -71,7 +71,7 @@ m.load_state_dict(state_dict)
 # * Waiting for the entire checkpoint to be loaded into RAM before performing, for example, some per-tensor processing.
 
 start_time = time.time()
-state_dict = torch.load('checkpoint.pth')
+state_dict = torch.load('checkpoint.pth', weights_only=True)
 end_time = time.time()
 print(f"loading time without mmap={end_time - start_time}")
 
@@ -84,7 +84,7 @@ print(f"loading time without mmap={end_time - start_time}")
 # storages will be memory-mapped.
 
 start_time = time.time()
-state_dict = torch.load('checkpoint.pth', mmap=True)
+state_dict = torch.load('checkpoint.pth', mmap=True, weights_only=True)
 end_time = time.time()
 print(f"loading time with mmap={end_time - start_time}")
 

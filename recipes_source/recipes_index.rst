@@ -150,6 +150,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
+.. customcarditem::
+   :header: torch.export AOTInductor Tutorial for Python runtime
+   :card_description: Learn an end-to-end example of how to use AOTInductor for python runtime.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_export_aoti_python.html
+   :tags: Basics
 
 .. Interpretability
 
@@ -275,10 +281,10 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Model-Optimization
 
 .. customcarditem::
-   :header: CPU launcher script for optimal performance on Intel® Xeon
-   :card_description: How to use launcher script for optimal runtime configurations on Intel® Xeon CPUs.
+   :header: Optimizing CPU Performance on Intel® Xeon® with run_cpu Script
+   :card_description: How to use run_cpu script for optimal runtime configurations on Intel® Xeon CPUs.
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/xeon_run_cpu.html
+   :link: ../recipes/xeon_run_cpu.html
    :tags: Model-Optimization
 
 .. customcarditem::
@@ -388,6 +394,20 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_checkpoint_recipe.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Asynchronous Checkpointing (DCP)
+   :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
+   :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
+   :link: ../recipes/distributed_async_checkpoint_recipe.html
+   :tags: Distributed-Training
+
+.. customcarditem::
+   :header: Getting Started with CommDebugMode
+   :card_description: Learn how to use CommDebugMode for DTensors
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/distributed_comm_debug_mode.html
+   :tags: Distributed-Training
+
 .. TorchServe
 
 .. customcarditem::
@@ -442,3 +462,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
+   /recipes/distributed_comm_debug_mode
