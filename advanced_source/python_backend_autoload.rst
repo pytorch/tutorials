@@ -11,7 +11,10 @@ experience and enables users to adhere to the familiar PyTorch device
 programming model without needing to explicitly load or import device-specific
 extensions. On the other hand, it facilitates effortless
 adoption of existing PyTorch applications with zero-code changes on
-out-of-tree devices.
+out-of-tree devices. For more information,
+see `[RFC] Autoload Device Extension <rfc>`_.
+
+.. _rfc: https://github.com/pytorch/pytorch/issues/122468
 
 Examples
 ^^^^^^^^
@@ -58,8 +61,11 @@ How it works
 This mechanism is implemented based on Python's `entry_points`_ mechanism.
 We discover and load all of the specific entry points in ``torch/__init__.py``
 that are defined by out-of-tree extensions.
+Its implementation is in `[RFC] Add support for device extension autoloading <impl>`_
 
 .. _entry_points: https://packaging.python.org/en/latest/specifications/entry-points/
+
+.. _impl: https://github.com/pytorch/pytorch/pull/127074
 
 How to apply this to out-of-tree extensions?
 --------------------------------------------
