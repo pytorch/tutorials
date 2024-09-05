@@ -12,9 +12,7 @@ programming model without needing to explicitly load or import device-specific
 extensions. On the other hand, it facilitates effortless
 adoption of existing PyTorch applications with zero-code changes on
 out-of-tree devices. For more information,
-see `[RFC] Autoload Device Extension <rfc>`_.
-
-.. _rfc: https://github.com/pytorch/pytorch/issues/122468
+see `[RFC] Autoload Device Extension <https://github.com/pytorch/pytorch/issues/122468>`_.
 
 Examples
 ^^^^^^^^
@@ -31,8 +29,8 @@ is applied.
     import torch
     import torchvision.models as models
     - import habana_frameworks.torch # <-- extra import
-    model = models.resnet50().eval().to(“hpu”)
-    input = torch.rand(128, 3, 224, 224).to(“hpu”)
+    model = models.resnet50().eval().to("hpu")
+    input = torch.rand(128, 3, 224, 224).to("hpu")
     output = model(input)
 
 `torch_npu`_ enables users to run PyTorch program on Huawei Ascend NPU, it
@@ -47,8 +45,8 @@ as ``npu`` to the end users.
     import torch
     import torchvision.models as models
     - import torch_npu # <-- extra import
-    model = models.resnet50().eval().to(“npu”)
-    input = torch.rand(128, 3, 224, 224).to(“npu”)
+    model = models.resnet50().eval().to("npu")
+    input = torch.rand(128, 3, 224, 224).to("npu")
     output = model(input)
 
 How it works
@@ -58,14 +56,12 @@ How it works
    :alt: Autoloading implementation
    :align: center
 
-This mechanism is implemented based on Python's `entry_points`_ mechanism.
-We discover and load all of the specific entry points in ``torch/__init__.py``
-that are defined by out-of-tree extensions.
-Its implementation is in `[RFC] Add support for device extension autoloading <impl>`_
-
-.. _entry_points: https://packaging.python.org/en/latest/specifications/entry-points/
-
-.. _impl: https://github.com/pytorch/pytorch/pull/127074
+This mechanism is implemented based on Python's `Entry point
+<https://packaging.python.org/en/latest/specifications/entry-points/>`_
+mechanism. We discover and load all of the specific entry points
+in ``torch/__init__.py`` that are defined by out-of-tree extensions.
+Its implementation is in `[RFC] Add support for device extension autoloading
+<https://github.com/pytorch/pytorch/pull/127074>`_
 
 How to apply this to out-of-tree extensions?
 --------------------------------------------
@@ -87,8 +83,8 @@ package.
         name="torch_foo",
         version="1.0",
         entry_points={
-            'torch.backends': [
-                'torch_foo = torch_foo:_autoload',
+            "torch.backends": [
+                "torch_foo = torch_foo:_autoload",
             ],
         }
     )
