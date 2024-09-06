@@ -509,6 +509,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Out-of-tree extension autoloading in Python
+   :card_description: Learn how to improve the seamless integration of out-of-tree extension with PyTorch based on the autoloading mechanism.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/python_extension_autoload.html
+   :tags: Extending-PyTorch
+
+.. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -1109,6 +1116,7 @@ Additional Resources
    advanced/dispatcher
    advanced/extend_dispatcher
    advanced/privateuseone
+   advanced/python_extension_autoload
 
 .. toctree::
    :maxdepth: 2
