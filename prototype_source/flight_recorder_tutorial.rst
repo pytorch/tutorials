@@ -1,14 +1,19 @@
 (prototype) Flight Recorder for Debugging
 =========================================
-**Author**: `Chirag Pandya <https://github.com/c-p-i-o>`, `Junjie Wang <https://github.com/fduwjj>`
+**Author**: `Chirag Pandya <https://github.com/c-p-i-o>`_, `Junjie Wang <https://github.com/fduwjj>`_
 
 What you will learn
 -------------------
 * Learn about a new tool for debugging stuck jobs during distributed training.
 * Learn how you can enable the tool and use the collected data for analyzing stuck jobs.
 
+Prerequisites
+-------------
+- PyTorch version 2.5 or later.
+
+
 Overview
------------------------------------
+--------
 An AI distributed training job refers to the process of training a machine learning model using multiple devices, such
 as GPUs or CPUs, connected in a network. This approach allows for faster and more efficient training of large models
 that require significant computational resources.
@@ -41,25 +46,19 @@ There are two core parts to Flight Recorder.
 Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 - An analyzer script is available in the `pytorch/tools/flight_recorder` directory (details below).
 
-Prerequisites
--------------
-- PyTorch version 2.5 or later.
-
 Enabling Flight Recorder
 ------------------------
-There are two required environment variables to get the initial version of flight recorder working.
-- ``TORCH_NCCL_TRACE_BUFFER_SIZE`` (``0``, ``N`` where ``N`` is a positive number): Setting ``N`` enables collection. N represents the number of
-     entries that will be kept internally in a circular buffer. We recommended to set this value at 2000.
-- ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout. If enabled,
-     there will be one file per rank output in the jobs running directory.
-     
+There are two required environment variables to get the initial version of Flight Recorder working.
+- ``TORCH_NCCL_TRACE_BUFFER_SIZE`` (``0``, ``N`` where ``N`` is a positive number): Setting ``N`` enables collection. N represents the number of entries that will be kept internally in a circular buffer. We recommended to set this value at 2000.
+- ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout. If enabled, there will be one file per rank output in the jobs running directory.
+
 **Optional settings:**
 
 - ```TORCH_NCCL_TRACE_CPP_STACK (true, false)``: Setting this to true enables C++ stack stack trace captures in Flight Recorder. This is useful for slow
      ``addr2line`` - for more information, see additional settings.
-   - TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
+- TORCH_NCCL_ENABLE_TIMING (true, false) true = enable additional cuda events at the start of each collective and
      records the `duration` of each collective. This may incur some CPU overhead. In the collected data, the
-     ``duration`` filed indicates how long each collective took to execute..
+     ``duration`` field indicates how long each collective took to execute.
 
 Additional Settings
 -------------------
@@ -76,11 +75,14 @@ You can also retrieve Flight Recorder data with an API call.
 Below is the API with the default arguments:
 
 .. code:: python
+
   torch._C._distributed_c10d._dump_nccl_trace(includeCollectives=True, includeStackTraces=True, onlyActive=False)
+
 
 To view the data, you can unpickle it as shown below:
 
 .. code:: python
+
   t = pickle.loads(torch._C._distributed_c10d._dump_nccl_trace())
   print(t)
 
@@ -96,60 +98,62 @@ The contents of a Flight Recorder ``unpickled`` file are shown below:
   {
     "version": "2.3",
     "pg_config": {
-      "0": {
-        "name": "0",
-        "desc": "default_pg",
-        "ranks": "[0, 1]"
-      }
+    "0": {
+    "name": "0",
+    "desc": "default_pg",
+    "ranks": "[0, 1]"
+    }
     },
     "pg_status": {
-      "0": {
-        "last_enqueued_collective": 2,
-        "last_started_collective": -1,
-        "last_completed_collective": 2
-      }
+    "0": {
+    "last_enqueued_collective": 2,
+    "last_started_collective": -1,
+    "last_completed_collective": 2
+    }
     },
     "entries": [
-      {
-        "frames": [
-          {
-            "name": "test_short_pickle",
-            "filename": "pytorch/test/distributed/test_c10d_nccl.py",
-            "line": 3647
-          },
-          ...
-          {
-            "name": "spawn_main",
-            "filename": ".conda/envs/pytorch-3.10/lib/python3.10/multiprocessing/spawn.py",
-            "line": 116
-          },
-          {
-            "name": "<module>",
-            "filename": "<string>",
-            "line": 1
-          }
-        ],
-        "record_id": 0,
-        "pg_id": 0,
-        "process_group": ("0", "default_pg"),
-        "collective_seq_id": 1,
-        "p2p_seq_id": 0,
-        "op_id": 1,
-        "profiling_name": "nccl:all_reduce",
-        "time_created_ns": 1724779239936775119,
-        "input_sizes": [[3, 4]],
-        "input_dtypes": ["Float"],
-        "output_sizes": [[3, 4]],
-        "output_dtypes": ["Float"],
-        "state": "completed",
-        "time_discovered_started_ns": null,
-        "time_discovered_completed_ns": 1724779239975811724,
-        "retired": true,
-        "timeout_ms": 600000,
-        "is_p2p": false
-      },
+    {
+    "frames": [
+    {
+    "name": "test_short_pickle",
+    "filename": "pytorch/test/distributed/test_c10d_nccl.py",
+    "line": 3647
+    },
+    ...
+    {
+    "name": "spawn_main",
+    "filename": ".conda/envs/pytorch-3.10/lib/python3.10/multiprocessing/spawn.py",
+    "line": 116
+    },
+    {
+    "name": "<module>",
+    "filename": "<string>",
+    "line": 1
+    }
+    ],
+    "record_id": 0,
+    "pg_id": 0,
+    "process_group": ("0", "default_pg"),
+    "collective_seq_id": 1,
+    "p2p_seq_id": 0,
+    "op_id": 1,
+    "profiling_name": "nccl:all_reduce",
+    "time_created_ns": 1724779239936775119,
+    "input_sizes": [[3, 4]],
+    "input_dtypes": ["Float"],
+    "output_sizes": [[3, 4]],
+    "output_dtypes": ["Float"],
+    "state": "completed",
+    "time_discovered_started_ns": null,
+    "time_discovered_completed_ns": 1724779239975811724,
+    "retired": true,
+    "timeout_ms": 600000,
+    "is_p2p": false
+    },
     ...]
+
   }
+
 
 Analyzing Flight Recorder Dumps
 -------------------------------
@@ -163,13 +167,14 @@ To run the convenience script, follow these steps:
 
 2. To run the script, use this command:
 .. code:: python
+
   python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
 
 
 Conclusion
 ----------
-In this tutorial, we have learned about a new PyTorch diagnostic tool called  Flight Recorder. 
+In this tutorial, we have learned about a new PyTorch diagnostic tool called  Flight Recorder.
 We have discussed how to enable Flight Recorder to collect diagnostic data from a machine.
-Additionally, we explored how to analyze the data captured from the flight recorder using a
+Additionally, we explored how to analyze the data captured from the Flight Recorder using a
 convenience script located in the `tools/flight_recorder <https://github.com/pytorch/pytorch/tree/main/tools/flight_recorder>`__
 directory of the PyTorch repository.
