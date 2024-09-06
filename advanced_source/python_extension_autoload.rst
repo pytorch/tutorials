@@ -14,6 +14,50 @@ adoption of existing PyTorch applications with zero-code changes on
 out-of-tree devices. For more information,
 see `[RFC] Autoload Device Extension <https://github.com/pytorch/pytorch/issues/122468>`_.
 
+.. note::
+
+    This feature is enabled by default and can be disabled using
+    ``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
+    If you get an error like this: "Failed to load the backend extension",
+    this error has nothing to do with PyTorch, you should disable this feature
+    and ask the out-of-tree extension maintainer for help.
+
+How to apply this mechanism to out-of-tree extensions?
+--------------------------------------------
+
+For example, if you have a backend named ``foo`` and a package named
+``torch_foo``. Make sure your package is based on PyTorch 2.5+ and includes
+the following in its ``__init__.py``:
+
+.. code-block:: python
+
+    def _autoload():
+        print("No need to import torch_foo anymore! You can run torch.foo.is_available() directly.")
+
+Then the only thing you need to do is add an entry point to your Python
+package:
+
+.. code-block:: python
+
+    setup(
+        name="torch_foo",
+        version="1.0",
+        entry_points={
+            "torch.backends": [
+                "torch_foo = torch_foo:_autoload",
+            ],
+        }
+    )
+
+Now the ``torch_foo`` module can be imported when running import torch:
+
+.. code-block:: python
+
+    >>> import torch
+    No need to import torch_foo anymore! You can run torch.foo.is_available() directly.
+    >>> torch.foo.is_available()
+    True
+
 Examples
 ^^^^^^^^
 
@@ -62,49 +106,6 @@ mechanism. We discover and load all of the specific entry points
 in ``torch/__init__.py`` that are defined by out-of-tree extensions.
 Its implementation is in `[RFC] Add support for device extension autoloading
 <https://github.com/pytorch/pytorch/pull/127074>`_.
-
-.. note::
-
-    This feature is enabled by default and can be disabled using
-    ``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
-    If you get an error like this: "Failed to load the backend extension",
-    this error has nothing to do with PyTorch, you should disable this feature
-    and ask the out-of-tree extension maintainer for help.
-
-How to apply this to out-of-tree extensions?
---------------------------------------------
-
-For example, if you have a backend named ``foo`` and a package named
-``torch_foo``, and your package includes the following in its ``__init__.py``:
-
-.. code-block:: python
-
-    def _autoload():
-        print("No need to import torch_foo anymore! You can run torch.foo.is_available() directly.")
-
-Then the only thing you need to do is add an entry point to your Python
-package.
-
-.. code-block:: python
-
-    setup(
-        name="torch_foo",
-        version="1.0",
-        entry_points={
-            "torch.backends": [
-                "torch_foo = torch_foo:_autoload",
-            ],
-        }
-    )
-
-Now the ``torch_foo`` module can be imported when running import torch.
-
-.. code-block:: python
-
-    >>> import torch
-    No need to import torch_foo anymore! You can run torch.foo.is_available() directly.
-    >>> torch.foo.is_available()
-    True
 
 Conclusion
 ----------
