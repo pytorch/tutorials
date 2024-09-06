@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -* coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # PyTorch Tutorials documentation build configuration file, created by
 # sphinx-quickstart on Wed Mar  8 22:38:10 2017.
