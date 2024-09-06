@@ -67,6 +67,12 @@ rst_epilog ="""
 #
 # needs_sphinx = '1.0'
 
+html_meta = {
+    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
+    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
+    'author': 'PyTorch Contributors'
+}
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
