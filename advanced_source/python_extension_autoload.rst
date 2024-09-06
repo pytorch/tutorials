@@ -61,6 +61,8 @@ Now the ``torch_foo`` module can be imported when running import torch:
 Examples
 ^^^^^^^^
 
+TODO: take HPU and NPU as examples
+
 `habana_frameworks.torch`_ is a Python package that enables users to run
 PyTorch programs on Intel Gaudi via the PyTorch ``HPU`` device key.
 ``import habana_frameworks.torch`` is no longer necessary after this mechanism
@@ -96,7 +98,7 @@ as ``npu`` to the end users.
 How it works
 ------------
 
-.. image:: ../_static/img/python_backend_autoload_impl.png
+.. image:: ../_static/img/python_extension_autoload_impl.png
    :alt: Autoloading implementation
    :align: center
 
