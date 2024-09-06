@@ -50,7 +50,6 @@ Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
 # ------------
 # In this tutorial, we will base our examples on this simple neural network model.
 # It takes a a 10-dimensional input vector, processes it through a single linear layer, and outputs another 10-dimensional vector.
-#
 
 import torch
 
