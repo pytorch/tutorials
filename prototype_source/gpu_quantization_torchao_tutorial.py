@@ -35,14 +35,12 @@ quantization and measure their impact.
 #
 # Segment Anything Model checkpoint setup:
 #
-# 1. Go to the `segment-anything repo <checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can just use ``wget``: `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
+# 1. Go to the `segment-anything repo checkpoint <https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can use ``wget`` (for example, ``wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>``).
 # 2. Pass in that directory by editing the code below to say:
 #
-# .. code-block::
+# .. code-block:: bash
 #
-# {sam_checkpoint_base_path}=<path>
-#
-# This was run on an A100-PG509-200 power limited to 330.00 W
+#   {sam_checkpoint_base_path}=<path>
 #
 
 import torch
@@ -297,7 +295,7 @@ except Exception as e:
 # -----------------
 # In this tutorial, we have learned about the quantization and optimization techniques
 # on the example of the segment anything model.
-
+#
 # In the end, we achieved a full-model apples to apples quantization speedup
 # of about 7.7% on batch size 16 (677.28ms to 729.65ms). We can push this a
 # bit further by increasing the batch size and optimizing other parts of
