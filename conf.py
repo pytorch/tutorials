@@ -191,7 +191,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch_sphinx_theme/docs']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
 exclude_patterns += sphinx_gallery_conf['examples_dirs']
 exclude_patterns += ['*/index.rst']
 
