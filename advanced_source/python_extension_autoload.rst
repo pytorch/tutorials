@@ -32,7 +32,7 @@ the following in its ``__init__.py``:
 .. code-block:: python
 
     def _autoload():
-        print("No need to import torch_foo anymore! You can run torch.foo.is_available() directly.")
+        print("No need to import torch_foo anymore! Check things are working with `torch.foo.is_available()`.")
 
 Then the only thing you need to do is add an entry point to your Python
 package:
