@@ -54,7 +54,7 @@ Now the ``torch_foo`` module can be imported when running import torch:
 .. code-block:: python
 
     >>> import torch
-    No need to import torch_foo anymore! You can run torch.foo.is_available() directly.
+    No need to import torch_foo anymore! Check things are working with `torch.foo.is_available()`.
     >>> torch.foo.is_available()
     True
 
