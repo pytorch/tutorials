@@ -62,7 +62,7 @@ There are two required environment variables to get the initial version of Fligh
      C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
 - ``TORCH_NCCL_ENABLE_TIMING = (true, false)``: Setting this to ``true`` will enable additional cuda events at the start of each collective and
   records the *duration* of each collective. This may incur some CPU overhead. In the collected data, the
-     *duration* field indicates how long each collective took to execute.
+  *duration* field indicates how long each collective took to execute.
 
 Additional Settings
 -------------------
