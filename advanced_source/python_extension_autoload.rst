@@ -96,11 +96,11 @@ Define an entry point in `torch_npu/setup.py`_:
     setup(
         name="torch_npu",
         version="2.5",
-        + entry_points={
-        +     'torch.backends': [
-        +         'torch_npu = torch_npu:_autoload',
-        +     ],
-        + }
+        +    entry_points={
+        +        'torch.backends': [
+        +            'torch_npu = torch_npu:_autoload',
+        +        ],
+        +    }
     )
 
 ``import torch_npu`` is also no longer needed after applying this mechanism:
