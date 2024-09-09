@@ -1,5 +1,5 @@
-(prototype) Flight Recorder for Debugging
-=========================================
+(prototype) Flight Recorder for Debugging Stuck Jobs
+====================================================
 **Author**: `Chirag Pandya <https://github.com/c-p-i-o>`_, `Junjie Wang <https://github.com/fduwjj>`_
 
 What you will learn
@@ -10,7 +10,6 @@ What you will learn
 Prerequisites
 -------------
 - PyTorch version 2.5 or later.
-
 
 Overview
 --------
@@ -38,7 +37,7 @@ A job can get stuck for various reasons:
 
 Flight Recorder, as the name suggests, captures diagnostics information as collectives run. The captured diagnostic
 information is used to help identify the root causes of issues when jobs become stuck.
-Flight Recorder consists of two core parts: 
+Flight Recorder consists of two core parts:
 
 - The collection portion: when enabled, information about collectives is recorded in an in-memory circular buffer. Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 
@@ -82,7 +81,6 @@ The API with the default arguments is shown below:
 .. code:: python
 
   torch._C._distributed_c10d._dump_nccl_trace(includeCollectives=True, includeStackTraces=True, onlyActive=False)
-
 
 To view the data, you can ``unpickle`` it as shown below:
 
@@ -159,7 +157,6 @@ The contents of a Flight Recorder ``unpickled`` file are shown below:
       ]
   }
 
-
 Analyzing Flight Recorder Dumps
 -------------------------------
 
@@ -175,7 +172,6 @@ To run the convenience script, follow these steps:
 .. code:: python
 
   python fr_trace.py -d <dump dir containing trace files> [-o <output file>]
-
 
 Conclusion
 ----------
