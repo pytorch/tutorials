@@ -87,18 +87,20 @@ as ``npu`` to the end users.
 
 .. _torch_npu: https://github.com/Ascend/pytorch
 
-Define an entry point in `torch_npu/setup.py <https://github.com/Ascend/pytorch/blob/c164fbd5bb74790191ff8496b77d620fddf806d8/setup.py#L618>`_:
+Define an entry point in `torch_npu/setup.py`_:
+
+.. _torch_npu/setup.py: https://github.com/Ascend/pytorch/blob/c164fbd5bb74790191ff8496b77d620fddf806d8/setup.py#L618
 
 .. code-block:: diff
 
     setup(
         name="torch_npu",
         version="2.5",
-        +    entry_points={
-        +        'torch.backends': [
-        +            'torch_npu = torch_npu:_autoload',
-        +        ],
-        +    }
+    +   entry_points={
+    +       'torch.backends': [
+    +           'torch_npu = torch_npu:_autoload',
+    +       ],
+    +   }
     )
 
 ``import torch_npu`` is also no longer needed after applying this mechanism:
