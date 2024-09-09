@@ -407,7 +407,7 @@ functions to be familiar with:
 # .. code:: python
 #
 #    modelB = TheModelBClass(*args, **kwargs)
-#    modelB.load_state_dict(torch.load(PATH), strict=False, weights_only=True)
+#    modelB.load_state_dict(torch.load(PATH, weights_only=True), strict=False)
 #
 # Partially loading a model or loading a partial model are common
 # scenarios when transfer learning or training a new complex model.
