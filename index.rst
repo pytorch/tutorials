@@ -514,7 +514,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to improve the seamless integration of out-of-tree extension with PyTorch based on the autoloading mechanism.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/python_extension_autoload.html
-   :tags: Extending-PyTorch
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
    :header: Custom Function Tutorial: Double Backward

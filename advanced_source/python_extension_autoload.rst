@@ -23,7 +23,7 @@ see `[RFC] Autoload Device Extension <https://github.com/pytorch/pytorch/issues/
     and ask the out-of-tree extension maintainer for help.
 
 How to apply this mechanism to out-of-tree extensions?
---------------------------------------------
+------------------------------------------------------
 
 For example, if you have a backend named ``foo`` and a package named
 ``torch_foo``. Make sure your package is based on PyTorch 2.5+ and includes
@@ -61,7 +61,9 @@ Now the ``torch_foo`` module can be imported when running import torch:
 Examples
 ^^^^^^^^
 
-TODO: take HPU and NPU as examples
+Here we take Intel HPU and Huawei Ascend NPU as examples to determine how to
+integrate your out-of-tree extension with PyTorch based on the autoloading
+mechanism.
 
 `habana_frameworks.torch`_ is a Python package that enables users to run
 PyTorch programs on Intel Gaudi via the PyTorch ``HPU`` device key.
@@ -79,12 +81,29 @@ is applied.
     input = torch.rand(128, 3, 224, 224).to("hpu")
     output = model(input)
 
-`torch_npu`_ enables users to run PyTorch program on Huawei Ascend NPU, it
+`torch_npu`_ enables users to run PyTorch programs on Huawei Ascend NPU, it
 leverages the ``PrivateUse1`` device key and exposes the device name
 as ``npu`` to the end users.
-``import torch_npu`` is also no longer needed after applying this mechanism.
 
 .. _torch_npu: https://github.com/Ascend/pytorch
+
+Define an entry point in `torch_npu/setup.py`_:
+
+.. _torch_npu/setup.py: https://github.com/Ascend/pytorch/blob/c164fbd5bb74790191ff8496b77d620fddf806d8/setup.py#L618
+
+.. code-block:: diff
+
+    setup(
+        name="torch_npu",
+        version="2.5",
+        + entry_points={
+        +     'torch.backends': [
+        +         'torch_npu = torch_npu:_autoload',
+        +     ],
+        + }
+    )
+
+``import torch_npu`` is also no longer needed after applying this mechanism:
 
 .. code-block:: diff
 
