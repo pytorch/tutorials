@@ -152,7 +152,7 @@ else:
 # * **Tensor Subclasses:** Currently, there is no support for
 #   tensor subclasses and other advanced features.
 # * **Triton Features:** While ``triton.heuristics`` can be used either standalone or
-#   before ``triton.autotune``, it cannot be used after ```triton.autotune``. This
+#   before ``triton.autotune``, it cannot be used after ``triton.autotune``. This
 #   implies that if ``triton.heuristics`` and ``triton.autotune`` are to be used
 #   together, ``triton.heuristics`` must be used first.
 #
