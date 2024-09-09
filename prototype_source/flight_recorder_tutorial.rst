@@ -61,7 +61,7 @@ There are two required environment variables to get the initial version of Fligh
      C++ stack traces can be useful in providing the exact code path from a PyTorch Python call down to the primitive
      C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
 - ``TORCH_NCCL_ENABLE_TIMING = (true, false)``: Setting this to ``true`` will enable additional cuda events at the start of each collective and
-     records the *duration* of each collective. This may incur some CPU overhead. In the collected data, the
+  records the *duration* of each collective. This may incur some CPU overhead. In the collected data, the
      *duration* field indicates how long each collective took to execute.
 
 Additional Settings
