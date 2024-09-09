@@ -61,7 +61,7 @@ Now the ``torch_foo`` module can be imported when running import torch:
 Examples
 ^^^^^^^^
 
-Here we take Intel HPU and Huawei Ascend NPU as examples to determine how to
+Here we take Intel Gaudi HPU and Huawei Ascend NPU as examples to determine how to
 integrate your out-of-tree extension with PyTorch based on the autoloading
 mechanism.
 
