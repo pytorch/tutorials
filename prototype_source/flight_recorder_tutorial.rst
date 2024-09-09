@@ -49,16 +49,16 @@ Enabling Flight Recorder
 There are two required environment variables to get the initial version of Flight Recorder working.
 
 - ``TORCH_NCCL_TRACE_BUFFER_SIZE = (0, N)``: Setting ``N`` to a positive number enables collection.
-     ``N`` represents the number of entries that will be kept internally in a circular buffer.
-     We recommended to set this value at *2000*.
+  ``N`` represents the number of entries that will be kept internally in a circular buffer.
+  We recommended to set this value at *2000*.
 - ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout.
-     If enabled, there will be one file per rank output in the job's running directory.
+  If enabled, there will be one file per rank output in the job's running directory.
 
 **Optional settings:**
 
 - ``TORCH_NCCL_TRACE_CPP_STACK = (true, false)``: Setting this to true enables C++ stack traces to be captured in Flight Recorder.
-     C++ stack traces can be useful in providing the exact code path from a PyTorch Python call down to the primitive
-     C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
+  C++ stack traces can be useful in providing the exact code path from a PyTorch Python call down to the primitive
+  C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
 - ``TORCH_NCCL_ENABLE_TIMING = (true, false)``: Setting this to ``true`` will enable additional cuda events at the start of each collective and
   records the *duration* of each collective. This may incur some CPU overhead. In the collected data, the
   *duration* field indicates how long each collective took to execute.
