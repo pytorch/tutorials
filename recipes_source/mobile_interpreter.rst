@@ -3,6 +3,9 @@
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
 
+.. warning::
+    PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also review our new documentation to learn more about how to build `iOS <https://pytorch.org/executorch/stable/demo-apps-ios.html>`_ and `Android <https://pytorch.org/executorch/stable/demo-apps-android.html>`_ apps with ExecuTorch.
+
 Introduction
 ------------
 

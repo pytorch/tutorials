@@ -153,7 +153,7 @@ functions to be familiar with:
 # .. code:: python
 #
 #    model = TheModelClass(*args, **kwargs)
-#    model.load_state_dict(torch.load(PATH))
+#    model.load_state_dict(torch.load(PATH), weights_only=True)
 #    model.eval()
 #
 # .. note::
@@ -206,7 +206,7 @@ functions to be familiar with:
 # .. code:: python
 #
 #    # Model class must be defined somewhere
-#    model = torch.load(PATH)
+#    model = torch.load(PATH, weights_only=False)
 #    model.eval()
 #
 # This save/load process uses the most intuitive syntax and involves the
@@ -290,7 +290,7 @@ functions to be familiar with:
 #    model = TheModelClass(*args, **kwargs)
 #    optimizer = TheOptimizerClass(*args, **kwargs)
 #
-#    checkpoint = torch.load(PATH)
+#    checkpoint = torch.load(PATH, weights_only=True)
 #    model.load_state_dict(checkpoint['model_state_dict'])
 #    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 #    epoch = checkpoint['epoch']
@@ -354,7 +354,7 @@ functions to be familiar with:
 #    optimizerA = TheOptimizerAClass(*args, **kwargs)
 #    optimizerB = TheOptimizerBClass(*args, **kwargs)
 #
-#    checkpoint = torch.load(PATH)
+#    checkpoint = torch.load(PATH, weights_only=True)
 #    modelA.load_state_dict(checkpoint['modelA_state_dict'])
 #    modelB.load_state_dict(checkpoint['modelB_state_dict'])
 #    optimizerA.load_state_dict(checkpoint['optimizerA_state_dict'])
@@ -407,7 +407,7 @@ functions to be familiar with:
 # .. code:: python
 #
 #    modelB = TheModelBClass(*args, **kwargs)
-#    modelB.load_state_dict(torch.load(PATH), strict=False)
+#    modelB.load_state_dict(torch.load(PATH), strict=False, weights_only=True)
 #
 # Partially loading a model or loading a partial model are common
 # scenarios when transfer learning or training a new complex model.
@@ -446,7 +446,7 @@ functions to be familiar with:
 #
 #    device = torch.device('cpu')
 #    model = TheModelClass(*args, **kwargs)
-#    model.load_state_dict(torch.load(PATH, map_location=device))
+#    model.load_state_dict(torch.load(PATH, map_location=device, weights_only=True))
 #
 # When loading a model on a CPU that was trained with a GPU, pass
 # ``torch.device('cpu')`` to the ``map_location`` argument in the
@@ -469,7 +469,7 @@ functions to be familiar with:
 #
 #    device = torch.device("cuda")
 #    model = TheModelClass(*args, **kwargs)
-#    model.load_state_dict(torch.load(PATH))
+#    model.load_state_dict(torch.load(PATH, weights_only=True))
 #    model.to(device)
 #    # Make sure to call input = input.to(device) on any input tensors that you feed to the model
 #
@@ -497,7 +497,7 @@ functions to be familiar with:
 #
 #    device = torch.device("cuda")
 #    model = TheModelClass(*args, **kwargs)
-#    model.load_state_dict(torch.load(PATH, map_location="cuda:0"))  # Choose whatever GPU device number you want
+#    model.load_state_dict(torch.load(PATH, weights_only=True, map_location="cuda:0"))  # Choose whatever GPU device number you want
 #    model.to(device)
 #    # Make sure to call input = input.to(device) on any input tensors that you feed to the model
 #
