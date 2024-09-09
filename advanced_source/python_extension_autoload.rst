@@ -87,9 +87,7 @@ as ``npu`` to the end users.
 
 .. _torch_npu: https://github.com/Ascend/pytorch
 
-Define an entry point in `torch_npu/setup.py`_:
-
-.. _torch_npu/setup.py: https://github.com/Ascend/pytorch/blob/c164fbd5bb74790191ff8496b77d620fddf806d8/setup.py#L618
+Define an entry point in `torch_npu/setup.py <https://github.com/Ascend/pytorch/blob/c164fbd5bb74790191ff8496b77d620fddf806d8/setup.py#L618>`_:
 
 .. code-block:: diff
 
