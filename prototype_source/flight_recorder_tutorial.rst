@@ -37,8 +37,8 @@ A job can get stuck for various reasons:
 - **Synchronization Issues:** In distributed training, different parts of the computation are often run in parallel and need to be synchronized at certain points. If this synchronization fails, the job can get stuck. For example, a deadlock can occur if one or more ranks fail to join a collective while the remaining ranks have joined. This results in an indefinite wait for the job to progress.
 
 Flight Recorder, as the name suggests, captures diagnostics information as collectives run. The captured diagnostic
-information is used to help root cause issues when jobs get stuck.
-There are two core parts to Flight Recorder.
+information is used to help identify the root causes of issues when jobs become stuck.
+Flight Recorder consists of two core parts: 
 
 - The collection portion: when enabled, information about collectives is recorded in an in-memory circular buffer. Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 
