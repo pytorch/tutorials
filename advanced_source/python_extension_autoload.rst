@@ -66,8 +66,6 @@ integrate your out-of-tree extension with PyTorch using the autoloading mechanis
 
 `habana_frameworks.torch`_ is a Python package that enables users to run
 PyTorch programs on Intel Gaudi via the PyTorch ``HPU`` device key.
-``import habana_frameworks.torch`` is no longer necessary after this mechanism
-is applied.
 
 .. _habana_frameworks.torch: https://docs.habana.ai/en/latest/PyTorch/Getting_Started_with_PyTorch_and_Gaudi/Getting_Started_with_PyTorch.html
 
@@ -137,7 +135,7 @@ We define an entry point in `torch_npu/setup.py`_:
     )
 
 Unlike ``habana_frameworks``, ``torch_npu`` uses the environment variable ``TORCH_DEVICE_BACKEND_AUTOLOAD``
-to control the autoloading process. For example, we set it to `0` to disable autoloading to prevent circular imports:
+to control the autoloading process. For example, we set it to ``0`` to disable autoloading to prevent circular imports:
 
 .. code-block:: python
 
