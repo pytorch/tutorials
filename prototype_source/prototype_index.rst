@@ -80,8 +80,8 @@ Prototype features are not available as part of binary distributions like PyPI o
    :card_description: Learn how to use Post Training Quantization in PyTorch 2 Export.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/pt2e_quant_ptq.html
-   :tags: Quantization          
-   
+   :tags: Quantization
+
 .. customcarditem::
    :header: PyTorch 2 Export Quantization-Aware Training
    :card_description: Learn how to use Quantization-Aware-Training in PyTorch 2 Export.
@@ -203,11 +203,11 @@ Prototype features are not available as part of binary distributions like PyPI o
 
 .. customcarditem::
    :header: MaskedTensor: Simplifying Adagrad Sparse Semantics
-   :card_description: See a showcase on how masked tensors can enable sparse semantics and provide for a cleaner dev experience 
+   :card_description: See a showcase on how masked tensors can enable sparse semantics and provide for a cleaner dev experience
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/maskedtensor_adagrad.html
    :tags: MaskedTensor
-   
+
 .. Model-Optimization
 
 .. customcarditem::
@@ -216,6 +216,14 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/inductor_cpp_wrapper_tutorial.html
    :tags: Model-Optimization
+
+.. Distributed
+.. customcarditem::
+   :header: Flight Recorder Tutorial
+   :card_description: Debug stuck jobs easily with Flight Recorder
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/flight_recorder_tutorial.html
+   :tags: Distributed, Debugging, FlightRecorder
 
 .. End of tutorial card section
 
@@ -238,6 +246,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/fx_graph_mode_quant_guide.html
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
+   prototype/flight_recorder_tutorial.html
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/inductor_cpp_wrapper_tutorial.html
    prototype/pt2e_quantizer.html
