@@ -56,6 +56,8 @@ Now the ``torch_foo`` module can be imported when running import torch:
     >>> torch.foo.is_available()
     True
 
+You may encounter issues with circular imports, the following examples are intended to help you address them.
+
 Examples
 ^^^^^^^^
 
@@ -138,6 +140,7 @@ Unlike ``habana_frameworks``, ``torch_npu`` uses the environment variable ``TORC
 to control the autoloading process. For example, we set it to `0` to disable autoloading to prevent circular imports:
 
 .. code-block:: python
+
     # Disable autoloading before running 'import torch'
     os.environ['TORCH_DEVICE_BACKEND_AUTOLOAD'] = '0'
 
