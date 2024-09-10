@@ -155,7 +155,12 @@ This mechanism is implemented based on Python's `Entry points
 <https://packaging.python.org/en/latest/specifications/entry-points/>`_
 mechanism. We discover and load all of the specific entry points
 in ``torch/__init__.py`` that are defined by out-of-tree extensions.
-Its implementation is in `[RFC] Add support for device extension autoloading
+
+As shown above, after installing ``torch_foo``, your Python module can be imported
+when loading the entry point you defined, and then you can do some necessary work when
+calling it.
+
+See the implementation in this pull request: `[RFC] Add support for device extension autoloading
 <https://github.com/pytorch/pytorch/pull/127074>`_.
 
 Conclusion
