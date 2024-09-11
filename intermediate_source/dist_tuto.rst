@@ -156,7 +156,7 @@ we should not modify the sent tensor nor access the received tensor before ``req
 In other words,
 
 -  writing to ``tensor`` after ``dist.isend()`` will result in undefined behaviour.
--  reading from ``tensor`` after ``dist.irecv()`` will result in undefined behaviour.
+-  reading from ``tensor`` before ``dist.irecv()`` will result in undefined behaviour.
 
 However, after ``req.wait()``
 has been executed we are guaranteed that the communication took place,
