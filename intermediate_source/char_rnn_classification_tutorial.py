@@ -287,26 +287,16 @@ print(label_from_output(output, alldata.labels_uniq))
 #
 # Now all it takes to train this network is show it a bunch of examples,
 # have it make guesses, and tell it if it's wrong.
-# 
-# We start by defining a function learn_single() which learns from a single
-# piece of input data. 
 #
-# -  Create input and target tensors
-# -  Create a zeroed initial hidden state
-# -  Read each letter in and
-#
-#    -  Keep hidden state for next letter
-#
-# -  Compare final output to target
-# -  Back-propagate
-# -  Return the output and loss
-#
-# We do this by defining a learn() function which trains on a given dataset with minibatches
+# We do this by defining a train() function which trains on a given dataset with minibatches. RNNs 
+# train similar to other networks so for completeness we include a batched training method here.
+# The loop (for i in batch) computes the losses for each of the items in the batch before adjusting the 
+# weights. This is repeated until the number of epochs is reached. 
 
 import random 
 import numpy as np 
 
-def train(rnn, training_data, n_epoch = 250, n_batch_size = 64, report_every = 50, learning_rate = 0.005, criterion = nn.NLLLoss()):
+def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50, learning_rate = 0.2, criterion = nn.NLLLoss()):
     """
     Learn on a batch of training_data for a specified number of iterations and reporting thresholds
     """
