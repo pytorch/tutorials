@@ -16,6 +16,7 @@ Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
 
        * PyTorch 2.4
        * Complete the `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
+       * Read through the TorchDynamo and AOTAutograd sections of `Get Started with PyTorch 2.x <https://pytorch.org/get-started/pytorch-2.0/>`_
 
 Overview
 --------
@@ -41,7 +42,7 @@ However, Compiled Autograd introduces its own limitations:
 Setup
 -----
 In this tutorial, we will base our examples on this simple neural network model.
-It takes a a 10-dimensional input vector, processes it through a single linear layer, and outputs another 10-dimensional vector.
+It takes a 10-dimensional input vector, processes it through a single linear layer, and outputs another 10-dimensional vector.
 
 .. code:: python
 
@@ -57,7 +58,7 @@ It takes a a 10-dimensional input vector, processes it through a single linear l
 
 Basic usage
 ------------
-Before calling the torch.compile API, make sure to set ``torch._dynamo.config.compiled_autograd`` to ``True``:
+Before calling the ``torch.compile`` API, make sure to set ``torch._dynamo.config.compiled_autograd`` to ``True``:
 
 .. code:: python
 
@@ -72,19 +73,19 @@ Before calling the torch.compile API, make sure to set ``torch._dynamo.config.co
 
    train(model, x) 
 
-In the code above, we create an instance of the ``Model`` class and generate a random 10-dimensional tensor ``x`` by using torch.randn(10).
+In the code above, we create an instance of the ``Model`` class and generate a random 10-dimensional tensor ``x`` by using ``torch.randn(10)``.
 We define the training loop function ``train`` and decorate it with @torch.compile to optimize its execution.
 When ``train(model, x)`` is called:
 
-* Python Interpreter calls Dynamo, since this call was decorated with ``@torch.compile``
-* Dynamo intercepts the python bytecode, simulates their execution and records the operations into a graph
-* AOTDispatcher disables hooks and calls the autograd engine to compute gradients for ``model.linear.weight`` and ``model.linear.bias``, and records the operations into a graph. Using ``torch.autograd.Function``, AOTDispatcher rewrites the forward and backward implementation of ``train``.
-* Inductor generates a function corresponding to an optimized implementation of the AOTDispatcher forward and backward
-* Dynamo sets the optimized function to be evaluated next by Python Interpreter
-* Python Interpreter executes the optimized function, which basically executes ``loss = model(x).sum()``
-* Python Interpreter executes ``loss.backward()``, calling into the autograd engine, which routes to the Compiled Autograd engine since we enabled the config: ``torch._dynamo.config.compiled_autograd = True``
-* Compiled Autograd computes the gradients for ``model.linear.weight`` and ``model.linear.bias``, and records the operations into a graph, including any hooks it encounters. During this, it will record the backward previously rewritten by AOTDispatcher. Compiled Autograd then generates a new function which corresponds to a fully traced implementation of ``loss.backward()``, and executes it with ``torch.compile`` in inference mode
-* The same steps recursively apply to the Compiled Autograd graph, but this time AOTDispatcher does not need to partition this graph into a forward and backward
+* Python Interpreter calls Dynamo, since this call was decorated with ``@torch.compile``.
+* Dynamo intercepts the Python bytecode, simulates their execution and records the operations into a graph.
+* ``AOTDispatcher`` disables hooks and calls the autograd engine to compute gradients for ``model.linear.weight`` and ``model.linear.bias``, and records the operations into a graph. Using ``torch.autograd.Function``, AOTDispatcher rewrites the forward and backward implementation of ``train``.
+* Inductor generates a function corresponding to an optimized implementation of the AOTDispatcher forward and backward.
+* Dynamo sets the optimized function to be evaluated next by Python Interpreter.
+* Python Interpreter executes the optimized function, which executes ``loss = model(x).sum()``.
+* Python Interpreter executes ``loss.backward()``, calling into the autograd engine, which routes to the Compiled Autograd engine since we set ``torch._dynamo.config.compiled_autograd = True``.
+* Compiled Autograd computes the gradients for ``model.linear.weight`` and ``model.linear.bias``, and records the operations into a graph, including any hooks it encounters. During this process, it will record the backward previously rewritten by AOTDispatcher. Compiled Autograd then generates a new function which corresponds to a fully-traced implementation of ``loss.backward()``, and executes it with ``torch.compile`` in inference mode.
+* The same steps recursively apply to the Compiled Autograd graph, but this time AOTDispatcher will not need to partition the graph.
 
 Inspecting the compiled autograd logs
 -------------------------------------
@@ -180,7 +181,7 @@ Or you can use the context manager, which will apply to all autograd calls withi
 
 Compiled Autograd addresses certain limitations of AOTAutograd
 --------------------------------------------------------------
-1. Graph breaks in the forward lead to graph breaks in the backward
+1. Graph breaks in the forward pass lead to graph breaks in the backward pass:
 
 .. code:: python
 
@@ -248,7 +249,7 @@ There should be a ``call_hook`` node in the graph, which dynamo will later inlin
 
 Common recompilation reasons for Compiled Autograd
 --------------------------------------------------
-1. Due to change in autograd structure 
+1. Due to changes in the autograd structure of the loss value
 
 .. code:: python
 
@@ -258,7 +259,7 @@ Common recompilation reasons for Compiled Autograd
       loss = op(x, x).sum()
       torch.compile(lambda: loss.backward(), backend="eager")()
 
-You should see some recompile messages: **Cache miss due to new autograd node**.
+In the example above, we call a different operator on each iteration, leading to ``loss`` tracking a different autograd history each time. You should see some recompile messages: **Cache miss due to new autograd node**.
 
 .. code:: python
 
@@ -273,7 +274,7 @@ You should see some recompile messages: **Cache miss due to new autograd node**.
    ...
    """
 
-2. Due to dynamic shapes
+2. Due to tensors changing shapes
 
 .. code:: python
 
@@ -283,7 +284,7 @@ You should see some recompile messages: **Cache miss due to new autograd node**.
       loss = x.sum()
       torch.compile(lambda: loss.backward(), backend="eager")()
 
-You should see some recompiles messages: **Cache miss due to changed shapes**.
+In the example above, ``x`` changes shapes, and compiled autograd will mark ``x`` as a dynamic shape tensor after the first change. You should see recompiles messages: **Cache miss due to changed shapes**.
 
 .. code:: python
 
@@ -298,4 +299,4 @@ You should see some recompiles messages: **Cache miss due to changed shapes**.
 
 Conclusion
 ----------
-In this tutorial, we went over the high-level ecosystem of ``torch.compile`` with compiled autograd, the basics of compiled autograd and a few common recompilation reasons.
+In this tutorial, we went over the high-level ecosystem of ``torch.compile`` with compiled autograd, the basics of compiled autograd and a few common recompilation reasons. Stay tuned for deep dives on `dev-discuss <https://dev-discuss.pytorch.org/>`_.
