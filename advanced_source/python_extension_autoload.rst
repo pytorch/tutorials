@@ -1,11 +1,11 @@
 Autoloading Out-of-Tree Extension
-===========================================
+=================================
 
-**Author:** `Yuanhao Ji <www.github.com/shink>`__  
+**Author:** `Yuanhao Ji <https://github.com/shink>`__
 
 The extension autoloading mechanism enables PyTorch to automatically
 load out-of-tree backend extensions without explicit import statements. This
-feature is beneficial for users as it enhances their 
+feature is beneficial for users as it enhances their
 experience and enables them to follow the familiar PyTorch device
 programming model without having to explicitly load or import device-specific
 extensions. Additionally, it facilitates effortless
@@ -25,6 +25,7 @@ out-of-tree devices. For further details, refer to the
        :class-card: card-prerequisites
 
        * PyTorch v2.5 or later
+
 .. note::
 
     This feature is enabled by default and can be disabled by using
@@ -42,7 +43,7 @@ your package is compatible with PyTorch 2.5 or later and includes the following 
 .. code-block:: python
 
     def _autoload():
-        print("No need to import torch_foo anymore! Check things are working with `torch.foo.is_available()`.")
+        print("Check things are working with `torch.foo.is_available()`.")
 
 Then, the only thing you need to do is define an entry point within your Python package:
 
@@ -177,5 +178,7 @@ See the implementation in this pull request: `[RFC] Add support for device exten
 Conclusion
 ----------
 
-This tutorial has guided you through the out-of-tree extension autoloading
-mechanism, including its usage and implementation.
+In this tutorial, we learned about the out-of-tree extension autoloading mechanism in PyTorch, which automatically
+loads backend extensions eliminating the need to add additional import statements. We also learned how to apply
+this mechanism to out-of-tree extensions by defining an entry point and how to prevent circular imports.
+We also reviewed an example on how to use the autoloading mechanism with Intel Gaudi HPU and Huawei Ascend NPU.
