@@ -569,7 +569,7 @@ finally handshake with them.
 -  ``WORLD_SIZE``: The total number of processes, so that the master
    knows how many workers to wait for.
 -  ``RANK``: Rank of each process, so they will know whether it is the
-   master of a worker.
+   master or a worker.
 
 **Shared File System**
 
