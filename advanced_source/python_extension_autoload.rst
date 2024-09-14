@@ -34,7 +34,7 @@ your package is compatible with PyTorch 2.5 or later and includes the following 
     def _autoload():
         print("No need to import torch_foo anymore! Check things are working with `torch.foo.is_available()`.")
 
-Then the only thing you need to do is define an entry point within your Python package:
+Then, the only thing you need to do is define an entry point within your Python package:
 
 .. code-block:: python
 
