@@ -62,8 +62,8 @@ In some cases, you might encounter issues with circular imports. The examples be
 Examples
 ^^^^^^^^
 
-Here we take Intel Gaudi HPU and Huawei Ascend NPU as examples to determine how to
-integrate your out-of-tree extension with PyTorch using the autoloading mechanism.
+In this example, we will be using Intel Gaudi HPU and Huawei Ascend NPU to determine how to
+integrate your out-of-tree extension with PyTorch using the autoloading feature.
 
 `habana_frameworks.torch`_ is a Python package that enables users to run
 PyTorch programs on Intel Gaudi by using the PyTorch ``HPU`` device key.
