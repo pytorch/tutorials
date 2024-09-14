@@ -102,7 +102,7 @@ In ``habana_frameworks/init.py``, we use a global variable to track if our modul
             return
         import habana_frameworks.torch
 
-In ``habana_frameworks/torch/init.py``, We prevent circular imports by updating the state of the global variable:
+In ``habana_frameworks/torch/init.py``, we prevent circular imports by updating the state of the global variable:
 
 .. code-block:: python
 
