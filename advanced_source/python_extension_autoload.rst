@@ -17,7 +17,7 @@ out-of-tree devices. For further details, refer to the
 
 .. note::
 
-    This feature is enabled by default and can be disabled using
+    This feature is enabled by default and can be disabled by using
     ``export TORCH_DEVICE_BACKEND_AUTOLOAD=0``.
     If you get an error like this: "Failed to load the backend extension",
     this error is independent with PyTorch, you should disable this feature
