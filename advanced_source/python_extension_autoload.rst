@@ -2,8 +2,6 @@ Out-of-tree extension autoloading in Python
 ===========================================
 
 **Author:** `Yuanhao Ji <www.github.com/shink>`__  
-What is it?
------------
 
 The extension autoloading mechanism enables PyTorch to automatically
 load out-of-tree backend extensions without explicit import statements. This
