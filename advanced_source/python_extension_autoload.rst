@@ -57,7 +57,7 @@ Now you can import the ``torch_foo`` module by simply adding the ``import torch`
     >>> torch.foo.is_available()
     True
 
-You may encounter issues with circular imports, the following examples are intended to help you address them.
+In some cases, you might encounter issues with circular imports. The examples below demonstrate how you can address them.
 
 Examples
 ^^^^^^^^
