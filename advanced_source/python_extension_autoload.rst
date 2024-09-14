@@ -13,6 +13,18 @@ adoption of existing PyTorch applications with zero-code changes on
 out-of-tree devices. For further details, refer to the
 `[RFC] Autoload Device Extension <https://github.com/pytorch/pytorch/issues/122468>`_.
 
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to use out-of-tree extension autoloading in PyTorch
+       * Review examples with Intel Gaudi HPU, Huawei Ascend NPU
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.5 or later
 .. note::
 
     This feature is enabled by default and can be disabled by using
