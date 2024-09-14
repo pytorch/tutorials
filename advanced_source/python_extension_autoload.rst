@@ -7,7 +7,7 @@ What is it?
 
 The extension autoloading mechanism enables PyTorch to automatically
 load out-of-tree backend extensions without explicit import statements. This
-mechanism is very useful for users. On the one hand, it improves the user
+feature is beneficial for users as it enhances their 
 experience and enables users to adhere to the familiar PyTorch device
 programming model without needing to explicitly load or import device-specific
 extensions. On the other hand, it facilitates effortless
