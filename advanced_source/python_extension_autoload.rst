@@ -63,7 +63,7 @@ Now you can import the ``torch_foo`` module by simply adding the ``import torch`
 .. code-block:: python
 
     >>> import torch
-    No need to import torch_foo anymore! Check things are working with `torch.foo.is_available()`.
+    Check things are working with `torch.foo.is_available()`.
     >>> torch.foo.is_available()
     True
 
