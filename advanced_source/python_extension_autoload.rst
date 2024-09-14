@@ -66,7 +66,7 @@ Here we take Intel Gaudi HPU and Huawei Ascend NPU as examples to determine how 
 integrate your out-of-tree extension with PyTorch using the autoloading mechanism.
 
 `habana_frameworks.torch`_ is a Python package that enables users to run
-PyTorch programs on Intel Gaudi via the PyTorch ``HPU`` device key.
+PyTorch programs on Intel Gaudi by using the PyTorch ``HPU`` device key.
 
 .. _habana_frameworks.torch: https://docs.habana.ai/en/latest/PyTorch/Getting_Started_with_PyTorch_and_Gaudi/Getting_Started_with_PyTorch.html
 
