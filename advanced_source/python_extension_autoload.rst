@@ -152,7 +152,7 @@ How it works
    :alt: Autoloading implementation
    :align: center
 
-This mechanism is implemented based on Python's `Entry points
+Autoloading is implemented based on Python's `Entrypoints
 <https://packaging.python.org/en/latest/specifications/entry-points/>`_
 mechanism. We discover and load all of the specific entry points
 in ``torch/__init__.py`` that are defined by out-of-tree extensions.
