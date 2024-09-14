@@ -1,4 +1,4 @@
-Out-of-tree extension autoloading in Python
+Autoloading Out-of-Tree Extension
 ===========================================
 
 **Author:** `Yuanhao Ji <www.github.com/shink>`__  
