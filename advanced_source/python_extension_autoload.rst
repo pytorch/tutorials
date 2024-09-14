@@ -48,7 +48,7 @@ Then, the only thing you need to do is define an entry point within your Python 
         }
     )
 
-Now the ``torch_foo`` module can be imported when running import torch:
+Now you can import the ``torch_foo`` module by simply adding the ``import torch`` statement without the need to add ``import torch_foo``:
 
 .. code-block:: python
 
