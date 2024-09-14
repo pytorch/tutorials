@@ -27,7 +27,7 @@ How to apply this mechanism to out-of-tree extensions?
 ------------------------------------------------------
 
 For instance, suppose you have a backend named ``foo`` and a corresponding package named ``torch_foo``. Ensure that
-your package is compatible with PyTorch 2.5+ and includes the following snippet in its ``__init__.py`` file:
+your package is compatible with PyTorch 2.5 or later and includes the following snippet in its ``__init__.py`` file:
 
 .. code-block:: python
 
