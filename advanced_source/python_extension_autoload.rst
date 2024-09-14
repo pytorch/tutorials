@@ -10,7 +10,7 @@ load out-of-tree backend extensions without explicit import statements. This
 feature is beneficial for users as it enhances their 
 experience and enables them to follow the familiar PyTorch device
 programming model without having to explicitly load or import device-specific
-extensions. On the other hand, it facilitates effortless
+extensions. Additionally, it facilitates effortless
 adoption of existing PyTorch applications with zero-code changes on
 out-of-tree devices. For further details, refer to the
 `[RFC] Autoload Device Extension <https://github.com/pytorch/pytorch/issues/122468>`_.
