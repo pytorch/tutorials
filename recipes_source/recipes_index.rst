@@ -150,6 +150,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/swap_tensors.html
    :tags: Basics
 
+.. customcarditem::
+   :header: torch.export AOTInductor Tutorial for Python runtime
+   :card_description: Learn an end-to-end example of how to use AOTInductor for python runtime.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_export_aoti_python.html
+   :tags: Basics
 
 .. Interpretability
 

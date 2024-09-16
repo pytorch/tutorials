@@ -84,8 +84,7 @@ Chatbot Tutorial
 # Preparations
 # ------------
 #
-# To start, Download the data ZIP file
-# `here <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__
+# To get started, `download <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__ the Movie-Dialogs Corpus zip file.
 
 # and put in a ``data/`` directory under the current directory.
 #

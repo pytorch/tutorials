@@ -214,7 +214,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         # configure map_location properly
         map_location = {'cuda:%d' % 0: 'cuda:%d' % rank}
         ddp_model.load_state_dict(
-            torch.load(CHECKPOINT_PATH, map_location=map_location))
+            torch.load(CHECKPOINT_PATH, map_location=map_location, weights_only=True))
 
         loss_fn = nn.MSELoss()
         optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
