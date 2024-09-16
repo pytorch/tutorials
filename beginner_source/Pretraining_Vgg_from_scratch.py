@@ -449,103 +449,103 @@ if DatasetName == 'Cifar' :
     train_loader = torch.utils.data.DataLoader(train_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
     val_loader = torch.utils.data.DataLoader(val_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
 
-model = model.to(device)
+    model = model.to(device)
 
-grad_clip = 1.0 # setting gradient clipping to 1.0
+    grad_clip = 1.0 # setting gradient clipping to 1.0
 
-for e in range(epoch) :
-    print(f'Training Epoch : {e}')
-    total_loss = 0
-    val_iter = iter(val_loader)
-    train_acc=[0,0]
-    train_num = 0
-
-    total_acc = [0,0]
-    count= 0
-    for i , data in enumerate(train_loader) :
-
-
-        model.train()
-        img,label= data
-        img,label =img.to(device, non_blocking=True) ,label.to(device, non_blocking=True)
-
-        output = model(img)
-
-        loss = criterion(output,label) /accum_step
-
-        temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
-        temp_acc = accuracy(temp_output,temp_label,(1,5))
-        train_acc=[train_acc[0]+temp_acc[0] , train_acc[1]+temp_acc[1]]
-        train_num+=batch_size
-        temp_output,temp_label,temp_acc = None,None,None
-
-        loss.backward()
-        total_loss += loss.detach().to('cpu')
-        img,label=None,None
-        torch.cuda.empty_cache()
-        if i> 0 and i%update_count == 0 :
-            print(f'Training steps : {i}  parameter update loss :{total_loss} ')
-            if grad_clip is not None:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-            optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
-
-            if total_loss < 7.0 :
-                # print(f"train loss {total_loss}less than 7.0  ,set grad clip to {clip}")
-                grad_clip = clip
-            if i % eval_step != 0 :
-                total_loss = 0
-
-            output,loss = None,None
+    for e in range(epoch) :
+        print(f'Training Epoch : {e}')
+        total_loss = 0
+        val_iter = iter(val_loader)
+        train_acc=[0,0]
+        train_num = 0
+    
+        total_acc = [0,0]
+        count= 0
+        for i , data in enumerate(train_loader) :
+    
+    
+            model.train()
+            img,label= data
+            img,label =img.to(device, non_blocking=True) ,label.to(device, non_blocking=True)
+    
+            output = model(img)
+    
+            loss = criterion(output,label) /accum_step
+    
+            temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
+            temp_acc = accuracy(temp_output,temp_label,(1,5))
+            train_acc=[train_acc[0]+temp_acc[0] , train_acc[1]+temp_acc[1]]
+            train_num+=batch_size
+            temp_output,temp_label,temp_acc = None,None,None
+    
+            loss.backward()
+            total_loss += loss.detach().to('cpu')
+            img,label=None,None
             torch.cuda.empty_cache()
-        if i>0 and i % eval_step == 0 :
-
-            print(f'train losss :{total_loss}')
-            temp_loss = total_loss
-            total_loss= 0
-
-            val_loss = 0
-            torch.cuda.empty_cache()
-
-            for j   in range(update_count) :
-                loss = None
-                print(f'Evaluation Steps Start')
-                try :
-                    img,label = next(val_iter)
-                except StopIteration :
-                    val_iter= iter(val_loader)
-                    img,label = next(val_iter)
-                with torch.no_grad():
-                    model.eval()
-
-                    img , label = img.to(device, non_blocking=True) , label.to(device, non_blocking=True)
-                    output = model(img)
-                    temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
-                    temp_acc = accuracy(temp_output,temp_label,(1,5))
-                    total_acc=[total_acc[0]+temp_acc[0] , total_acc[1]+temp_acc[1]]
-                    count+=batch_size
-
-                    loss = criterion(output,label)/accum_step
-                    val_loss += loss.detach().to('cpu')
-                    # loss.backward()
-                    torch.cuda.empty_cache()
-
-
-                    img,label,output ,loss= None,None,None,None
-
-
-
+            if i> 0 and i%update_count == 0 :
+                print(f'Training steps : {i}  parameter update loss :{total_loss} ')
+                if grad_clip is not None:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+    
+                if total_loss < 7.0 :
+                    # print(f"train loss {total_loss}less than 7.0  ,set grad clip to {clip}")
+                    grad_clip = clip
+                if i % eval_step != 0 :
+                    total_loss = 0
+    
+                output,loss = None,None
                 torch.cuda.empty_cache()
-
-            if abs(val_loss-temp_loss) > 0.03 :
-                grad_clip=clip
-                # print(f"val_loss {val_loss} - train_loss {temp_loss} = {abs(val_loss-temp_loss)} > 0.3")
-                # print(f"set grad clip to {grad_clip}")
-
-                best_val_loss = val_loss
-
-            val_loss = None
-        img,label,output = None,None,None
+            if i>0 and i % eval_step == 0 :
+    
+                print(f'train losss :{total_loss}')
+                temp_loss = total_loss
+                total_loss= 0
+    
+                val_loss = 0
+                torch.cuda.empty_cache()
+    
+                for j   in range(update_count) :
+                    loss = None
+                    print(f'Evaluation Steps Start')
+                    try :
+                        img,label = next(val_iter)
+                    except StopIteration :
+                        val_iter= iter(val_loader)
+                        img,label = next(val_iter)
+                    with torch.no_grad():
+                        model.eval()
+    
+                        img , label = img.to(device, non_blocking=True) , label.to(device, non_blocking=True)
+                        output = model(img)
+                        temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
+                        temp_acc = accuracy(temp_output,temp_label,(1,5))
+                        total_acc=[total_acc[0]+temp_acc[0] , total_acc[1]+temp_acc[1]]
+                        count+=batch_size
+    
+                        loss = criterion(output,label)/accum_step
+                        val_loss += loss.detach().to('cpu')
+                        # loss.backward()
+                        torch.cuda.empty_cache()
+    
+    
+                        img,label,output ,loss= None,None,None,None
+    
+    
+    
+                    torch.cuda.empty_cache()
+    
+                if abs(val_loss-temp_loss) > 0.03 :
+                    grad_clip=clip
+                    # print(f"val_loss {val_loss} - train_loss {temp_loss} = {abs(val_loss-temp_loss)} > 0.3")
+                    # print(f"set grad clip to {grad_clip}")
+    
+                    best_val_loss = val_loss
+    
+                val_loss = None
+            img,label,output = None,None,None
 
 
 
