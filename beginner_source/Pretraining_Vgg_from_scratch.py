@@ -11,7 +11,7 @@ and training a VGG network from scratch using Python and PyTorch. We will dive i
 architecture, understanding its components and the rationale behind its
 design.
 
-Our tutorial is designed for both beginners who are new to deep learning
+This tutorial is designed for both beginners who are new to deep learning
 and seasoned practitioners looking to deepen their understanding of CNN
 architectures.
 
