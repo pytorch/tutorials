@@ -1,5 +1,5 @@
 """
-``Pretraining`` VGG from scratch 
+Pretraining VGG from scratch
 ============================
 
 
