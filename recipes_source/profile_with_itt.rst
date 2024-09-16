@@ -84,7 +84,7 @@ The right side of the windows is split into 3 parts: `WHERE` (top left), `WHAT` 
 
 Configure Profiling for XPU
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Pick GPU Offline Profiling Type instead of HopSpot, and follow the same instructions as CPU to Launch the Application. 
+Pick GPU Offload Profiling Type instead of Hotspots, and follow the same instructions as CPU to Launch the Application. 
 
 .. figure:: /_static/img/itt_tutorial/vtune_xpu_config.png
    :width: 100%
