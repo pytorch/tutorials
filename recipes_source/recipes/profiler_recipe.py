@@ -168,7 +168,9 @@ if torch.cuda.is_available():
 elif torch.xpu.is_available():
     device = 'xpu'
 else:
-    device = 'cpu'
+    print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
+    import sys
+    sys.exit(0)
 
 activities = [ProfilerActivity.CPU]
 sort_by_keyword = device + "_time_total"
