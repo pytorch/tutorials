@@ -5,9 +5,9 @@
 
 **Author:** `WoongJoon Choi <https://github.com/woongjoonchoi>`_
 
-In this tutorial, we will embark on an exciting journey to build and
-train a VGG network from scratch using Python and popular deep learning
-libraries such as PyTorch. We will dive into the details of the VGG
+VGG (Visual Geometry Group) is a convolutional neural network architecture that is particularly
+efficient in image classification tasks. In this tutorial, we will guide you through building
+and training a VGG network from scratch using Python and PyTorch. We will dive into the details of the VGG
 architecture, understanding its components and the rationale behind its
 design.
 
@@ -15,11 +15,23 @@ Our tutorial is designed for both beginners who are new to deep learning
 and seasoned practitioners looking to deepen their understanding of CNN
 architectures.
 
-Before you start 
+.. grid:: 2
 
-.. code-block:: sh
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-    pip install albumentations
+       * Understand the VGG architecture and train it from scratch using PyTorch.
+       * Use PyTorch tools to evaluate the VGG model's performance
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * Complete the `Learn the Basics tutorials <https://pytorch.org/tutorials/beginner/basics/intro.html>`__
+       * Familiarity with basic machine learning concepts and terms 
+
+If you are running this in Google Colab, install albumentations
+
+
 """
 import subprocess
 import sys
@@ -55,7 +67,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
-# Worth point of this tutorial
+# Purpose point of this tutorial
 # ----------------------------
 # 
 
@@ -77,7 +89,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
-# Why VGG is so popular ?
+# Background
 # -----------------------
 # 
 
@@ -85,9 +97,15 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 ######################################################################
 # VGG became a model that attracted attention because it succeeded in
 # building deeper layers and dramatically shortening the training time
-# compared to ``alexnet``, which was the SOTA model at the time.:
+# compared to ``AlexNet``, which was the SOTA model at the time.
 # 
-
+# Unlike ``AlexNet``'s 5x5 9x9 filters, VGG only uses 3x3 filters. 
+# Using multiple 3x3 filters can obtain the same receptive field as using a 5x5 filter, but it is effective in reducing the number of parameters. 
+# In addition, since it passes through multiple nonlinear functions, the nonlinearity increases even more.
+# 
+# VGG applied a max pooling layer after multiple convolutional layers to reduce the spatial size. 
+# This allowed the feature map to be downsampled while preserving important information. 
+# Thanks to this, the network could learn high-dimensional features in deeper layers and prevent overfitting.
 
 ######################################################################
 # VGG Configuration
@@ -96,11 +114,11 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
-# We define some configurations suggested in VGG paper . Details about
+# We define some configurations suggested in VGG paper. Details of
 # this configuration will be explained below section.
 # 
 
-DatasetName = 'Cifar' # CIFAR ,CIFAR10, MNIST , ImageNet
+DatasetName = 'CIFAR' # CIFAR, CIFAR10, MNIST, ImageNet
 
 ## model configuration
 
@@ -143,8 +161,8 @@ model_layers =None
 
 
 ######################################################################
-# | If your GPU memory is 24GB ,The maximum batch size is 128. But, if you
-#   use Colab , We recommend using 32 .
+# | If your GPU memory is 24GB, the maximum batch size is 128. But if you
+#   use Colab, we recommend using 32GB.
 # | You can modify the batch size according to your preference.
 # 
 
@@ -156,10 +174,15 @@ model_layers =None
 
 
 ######################################################################
-# We use ``CIFAR100`` Dataset in this tutorial. In VGG paper , the authors
-# scales image ``isotropically`` . Then , they apply
-# ``Normalization``,``RandomCrop``,``HorizontalFlip`` . So , we need to override
-# CIFAR100 class to apply preprocessing.
+# We use the ``CIFAR100`` dataset in this tutorial. In VGG paper, the authors scales image ``isotropically`` . 
+# ``Isotropiclay scale up``  is a method of increasing the size of an image while maintaining its proportions, preventing distortion and maintaining the consistency of the object.
+# Then they apply ``Normalization``,``RandomCrop``,``HorizontalFlip`` .
+# Normalizing input data to a range of 0 to 1 tends to lead to faster convergence of the model. This is because the weight updates are more uniform. In particular, neural network models can have significantly different weight updates depending on the range of input values.
+# Neural network models generally work best when the input data is within a certain range (e.g. 0 to 1). If RGB values ​​are not normalized, the model is fed input values ​​of different ranges, which makes it difficult for the model to process the data in a consistent manner. Normalization allows all data to be scaled to the same scale, which allows the model to treat each feature more evenly, improving performance.
+# If the training and test data have different ranges, the model may have difficulty generalizing. Therefore, it is important to fit the values ​​to the same range across all data. This allows the model to perform well on both test data and real data.
+# Using normalized images as input allows the neural network to learn more effectively and show stable performance.
+# Data augmentation, such as ``RandomCrop`` and ``HorizontalFlip``, is a very useful technique for improving the performance of deep learning models, preventing overfitting, and helping models to work robustly in various environments. In particular, when the dataset is small or limited, data augmentation can secure more data, and the model can show better generalization performance by learning various transformed data.
+# So we need to override CIFAR100 class to apply preprocessing.
 # 
 
 class Custom_Cifar(CIFAR100) :
@@ -224,10 +247,8 @@ class Custom_Cifar(CIFAR100) :
 
 
 ######################################################################
-# | In VGG paper, they do experiment over 6 models. model A is 11 layers,
-#   model B is 13 layers, model C is 16 layers , model D is 16 layers and
-#   model D is 19 layers . you can train all version of models to
-#   reproduce VGG .
+# | The VGG paper experiments over 6 models of varying layer depth. The various configurations
+# | are enumerated below for full reproduction of the results.
 # | ``Config_Channels`` means output channels and ``Config_kernels`` means
 #   kernel size.
 # 
@@ -236,26 +257,26 @@ import torch
 from torch import nn
 
 
-Config_channels = {
-"A" : [64,"M" , 128,  "M"  , 256,256,"M" ,512,512 ,"M" , 512,512,"M"] ,
-"A_lrn" : [64,"LRN","M" , 128,  "M"  , 256,256,"M" ,512,512 ,"M" , 512,512,"M"] ,
-"B" :[64,64,"M" , 128,128,  "M"  , 256,256,"M" ,512,512 ,"M" , 512,512,"M"]  ,
-"C" : [64,64,"M" , 128,128,  "M"  , 256,256,256,"M" ,512,512 ,512,"M" , 512,512,512,"M"] ,
-"D" :[64,64,"M" , 128,128,  "M"  , 256,256,256,"M" ,512,512 ,512,"M" , 512,512,512,"M"] ,
-"E" :[64,64,"M" , 128,128,  "M"  , 256,256,256,256,"M" ,512,512 ,512,512,"M" , 512,512,512,512,"M"]         ,
+# Config_channels -> number : output_channels , "M": max_pooling layer
 
+Config_channels = {
+"A":[64,"M",128,"M",256,256,"M",512,512,"M",512,512,"M"],
+"A_lrn":[64,"LRN","M",128,"M",256,256,"M",512,512,"M",512,512,"M"],
+"B":[64,64,"M",128,128,"M",256,256,"M",512,512,"M",512,512,"M"],
+"C":[64,64,"M",128,128,"M",256,256,256,"M",512,512,512,"M",512,512,512,"M"],
+"D":[64,64,"M",128,128,"M",256,256,256,"M",512,512,512,"M",512,512,512,"M"],
+"E":[64,64,"M",128,128,"M",256,256,256,256,"M",512,512,512,512,"M",512,512,512,512,"M"],
 }
 
 
-
+# Config_kernel ->  kernel_size
 Config_kernel = {
-"A" : [3,2 , 3,  2  , 3,3,2 ,3,3 ,2 , 3,3,2] ,
-"A_lrn" : [3,2,2 , 3,  2  , 3,3,2 ,3,3 ,2 , 3,3,2] ,
-"B" :[3,3,2 , 3,3,  2  , 3,3,2 ,3,3 ,2 , 3,3,2]  ,
-"C" : [3,3,2 , 3,3,  2  , 3,3,1,2 ,3,3 ,1,2 , 3,3,1,2] ,
-"D" :[3,3,2 , 3,3,  2  , 3,3,3,2 ,3,3 ,3,2 , 3,3,3,2] ,
-"E" :[3,3,2 , 3,3,  2  , 3,3,3,3,2 ,3,3 ,3,3,2 , 3,3,3,3,2]         ,
-
+"A":[3,2,3,2,3,3,2,3,3,2,3,3,2],
+"A_lrn":[3,2,2,3,2,3,3,2,3,3,2,3,3,2],
+"B":[3,3,2,3,3,2,3,3,2,3,3,2,3,3,2],
+"C":[3,3,2,3,3,2,3,3,1,2,3,3,1,2,3,3,1,2],
+"D":[3,3,2,3,3,2,3,3,3,2,3,3,3,2,3,3,3,2],
+"E":[3,3,2,3,3,2,3,3,3,3,2,3,3,3,3,2,3,3,3,3,2],
 }
 
 
@@ -284,7 +305,8 @@ def make_feature_extractor(cfg_c,cfg_k):
 
 
 class Model_vgg(nn.Module) :
-    def __init__(self,version , num_classes):
+    # def __init__(self,version , num_classes):
+    def __init__(self,conf_channels,conf_kernels , num_classes):
         conv_5_out_w ,conv_5_out_h = 7,7
         conv_5_out_dim =512
         conv_1_by_1_1_outchannel = 4096
@@ -296,7 +318,7 @@ class Model_vgg(nn.Module) :
         self.except_xavier  = except_xavier
 
         super().__init__()
-        self.feature_extractor = make_feature_extractor(Config_channels[version] , Config_kernel[version])
+        self.feature_extractor = make_feature_extractor(conf_channels, conf_kernels)
         self.avgpool = nn.AdaptiveAvgPool2d((1,1))
         self.output_layer = nn.Sequential(
                              nn.Conv2d(conv_5_out_dim  ,conv_1_by_1_1_outchannel ,7) ,
@@ -354,17 +376,12 @@ class Model_vgg(nn.Module) :
             nn.init.constant_(m.bias, 0)
 
 
-######################################################################
-# Parameter Initialization
-# ~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-
 
 ######################################################################
-# When training VGG , the authors first train model A , then initialized
-# the weights of other models with the weights of model A. Waiting for
+# When training VGG, the authors first train model A, then continue training from
+# the resultant weights for other variants. Waiting for
 # Model A to be trained takes a long time . The authors mention how to
-# train with ``xavier`` initialization rather than initializing with the
+# train with ``Xavier`` initialization rather than initializing with the
 # weights of model A. But, they do not mention how to initialize .
 # 
 # | To Reproduce VGG , we use ``xavier`` initialization method to initialize
@@ -418,7 +435,7 @@ def accuracy(output, target, topk=(1,)):
 # 
 
 model_version='B'
-model = Model_vgg(model_version,num_classes)
+model = Model_vgg(Config_channels[model_version],Config_kernel[model_version],num_classes)
 criterion = nn.CrossEntropyLoss()
 
 optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay,momentum=momentum)
@@ -575,7 +592,7 @@ for e in range(epoch) :
 # -------------------
 # 
 
-class Cusotm_ImageNet(ImageNet) :
+class Custom_ImageNet(ImageNet) :
     def __init__(self,root,transform = None,multi=False,s_max=None,s_min=256,split=None,val=False):
 
         self.multi = multi
@@ -615,7 +632,6 @@ class Cusotm_ImageNet(ImageNet) :
         if img.mode == 'L' : img = img.convert('RGB')
         img=np.array(img,dtype=np.float32)
 
-        # print(self.transform)
 
         if self.transform is not None:
             img = self.transform(image=img)
@@ -631,8 +647,8 @@ class Cusotm_ImageNet(ImageNet) :
         return img, target
 
 if DatasetName == 'ImageNet' :
-    train_data= Cusotm_ImageNet(root='ImageNet',split='train')
-    val_data= Cusotm_ImageNet('ImageNet',split='val',val=True)
+    train_data= Custom_ImageNet(root='ImageNet',split='train')
+    val_data= Custom_ImageNet('ImageNet',split='val',val=True)
     val_data.val= True
     val_data.s_min = test_min
     val_data.transform=    A.Compose(
@@ -647,14 +663,15 @@ if DatasetName == 'ImageNet' :
 ######################################################################
 # Conclusion
 # ----------
-# We have seen how ``pretraining`` VGG from scratch . This Tutorial will be helpful to reproduce another Foundation Model .
+# We have seen how ``pretraining`` VGG from scratch . 
+# This Tutorial will be helpful to reproduce another Foundation Model .
 
 ######################################################################
 # More things to try
 # ------------------
-# - Trying On ImageNet
-# - Try All version of Model
-# - Try All evaluation method in VGG paper
+# - Apply model to ImageNet
+# - Try all model variants
+# - Try additional evaluation method
 
 
 ######################################################################
