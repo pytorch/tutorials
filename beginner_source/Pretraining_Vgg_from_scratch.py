@@ -1,9 +1,5 @@
 """
-<<<<<<< HEAD
-Pretraining VGG from scratch 
-=======
-Pretraining VGG from scratch
->>>>>>> origin/master
+Pre-training VGG from scratch
 ============================
 
 
@@ -37,26 +33,17 @@ architectures.
 Overview
 ------------
 
-<<<<<<< HEAD
-If you are running this in Google Colab, install ``albumentations`` by running the following command:
-
-.. code-block:: py
-
-
-    !pip install albumentations
-=======
 ​​VGG is a model that attracted attention due to its ability to build deeper layers and dramatically
-shorten the training time compared to AlexNet, which was the state-of-the-art model at the time of the publishing
+shorten the training time compared to ``AlexNet``, which was the state-of-the-art model at the time of the publishing
 of the `original paper <https://arxiv.org/abs/1409.1556>`__.
->>>>>>> origin/master
 
-Unlike AlexNet's 5x5 and 9x9 filters, VGG uses only 3x3 filters. Using multiple 3x3 filters can
+Unlike ``AlexNet``'s 5x5 and 9x9 filters, VGG uses only 3x3 filters. Using multiple 3x3 filters can
 obtain the same receptive field as using a 5x5 filter, but it is effective in reducing the number
-of parameters. In addition, since it passes through multiple nonlinear functions, the
-nonlinearity increases even more.
+of parameters. In addition, since it passes through multiple non-linear functions, the
+non-linearity increases even more.
 
 VGG applies a max pooling layer after multiple convolutional layers to reduce the spatial size.
-This allows the feature map to be downsampled while preserving important information. Thanks
+This allows the feature map to be down-sampled while preserving important information. Thanks
 to this, the network can learn high-dimensional features in deeper layers and prevent overfitting.
 
 In this tutorial, we will train the VGG model from scratch using only the configuration presented
@@ -103,55 +90,11 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
-<<<<<<< HEAD
-# Purpose point of this tutorial
-# ----------------------------
-# 
-
-
-######################################################################
-# -  We train the model from scratch using only the configuration
-#    presented in the paper.
-# 
-#    -  we do not use future method, like ``Batch normalization``,Adam , He
-#       initialization.
-# 
-# -  You can apply to ImageNet Data.
-# 
-#    -  If you can download the ImageNet Data(140GB), you can apply this
-#       tutorial to reproduce Original VGG.
-# 
-# -  You can learn VGG within the training time suggested in the paper.
-# 
-
-
-######################################################################
-# Background
-# -----------------------
-# 
-
-
-######################################################################
-# VGG became a model that attracted attention because it succeeded in
-# building deeper layers and dramatically shortening the training time
-# compared to ``AlexNet``, which was the SOTA model at the time.
-# 
-# Unlike ``AlexNet``'s 5x5 9x9 filters, VGG only uses 3x3 filters. 
-# Using multiple 3x3 filters can obtain the same receptive field as using a 5x5 filter, but it is effective in reducing the number of parameters. 
-# In addition, since it passes through multiple nonlinear functions, the ``nonlinearity`` increases even more.
-# 
-# VGG applied a max pooling layer after multiple convolutional layers to reduce the spatial size. 
-# This allowed the feature map to be ``downsampled`` while preserving important information. 
-# Thanks to this, the network could learn high-dimensional features in deeper layers and prevent overfitting.
-
-######################################################################
-=======
->>>>>>> origin/master
 # VGG Configuration
 # -----------------
 #
 # In this section, we will define configurations suggested in the VGG paper. 
-# We use the CIFAR100 dataset. The authors of the VGG paper scale images isotropically,
+# We use the CIFAR100 dataset. The authors of the VGG paper scale images ``isotropically``,
 # which means increasing the size of an image while maintaining its proportions,
 # preventing distortion and maintaining the consistency of the object.
 
@@ -207,7 +150,7 @@ model_layers =None
 # --------------------
 # 
 # As mentioned above we use the CIFAR100 dataset in this tutorial. According to the VGG paper,
-# the authors scale the images isotropically to maintain their proportions. This method, known
+# the authors scale the images ``isotropically`` to maintain their proportions. This method, known
 # as isotropic scaling, increases the size of an image while preserving its aspect ratio,
 # thus avoiding distortion and maintaining object consistency. 
 #
@@ -421,7 +364,7 @@ class Model_vgg(nn.Module) :
 # Initializing Model Weights
 # ----------------------------
 #
-# ggIn the original VGG paper, the authors trained model A first and then
+# In the original VGG paper, the authors trained model A first and then
 # used its weights as a starting point for training other variants. However,
 # this approach can be time-consuming. The authors also mentioned using Xavier
 # initialization as an alternative to initializing with model A's weights,
@@ -702,7 +645,7 @@ if DatasetName == 'ImageNet' :
 # Conclusion
 # ----------
 # 
-# In this tutorial, we have successfully demonstrated how to pretrain the VGG model
+# In this tutorial, we have successfully demonstrated how to pre-train the VGG model
 # from scratch. The techniques and insights provided in this tutorial can serve as
 # a basis for reproducing and adapting other foundational models.
 # 
