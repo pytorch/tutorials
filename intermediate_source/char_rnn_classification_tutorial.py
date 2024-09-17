@@ -218,51 +218,42 @@ print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}
 # held hidden state and gradients which are now entirely handled by the
 # graph itself. This means you can implement a RNN in a very "pure" way,
 # as regular feed-forward layers.
+# 
+# This CharRNN class implements an RNN with three components. 
+# First, we use the `nn.RNN implemnentation <https://pytorch.org/docs/stable/generated/torch.nn.RNN.html>`__ 
+# , next we define a layer that maps the RNN hidden layers to our output and finally we apply a softmax. Using nn.RNN 
+# leads to a significant improvement in performance (e.g. cuDNN-accelerated kernals) versus implementing 
+# each layer as a nn.Linear. It also simplifies the implementation in forward().
 #
-# This RNN module implements a "vanilla RNN" an is just 3 linear layers 
-# which operate on an input and hidden state, with a ``LogSoftmax`` layer 
-# after the output.s
-#
-# forward() loops through each of the characters in the given tensor, computes each
-# layer and then passes the hidden layer onto to the next iteration.
 
 import torch.nn as nn
 import torch.nn.functional as F
 
-class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_labels):
-        super(RNN, self).__init__()
+class CharRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(CharRNN, self).__init__()
 
-        self.hidden_size = hidden_size
-        self.output_labels = output_labels
-
-        self.i2h = nn.Linear(input_size, hidden_size)
-        self.h2h = nn.Linear(hidden_size, hidden_size)
-        self.h2o = nn.Linear(hidden_size, len(output_labels))
+        self.rnn = nn.RNN(input_size, hidden_size)
+        self.h2o = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
     
     def forward(self, line_tensor):
-        hidden = torch.zeros(1, rnn.hidden_size)
-        output = torch.zeros(1, len(self.output_labels))
-
-        for i in range(line_tensor.size()[0]):
-            input = line_tensor[i]
-            hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
-            output = self.h2o(hidden)
-            output = self.softmax(output)
+        rnn_out, hidden = self.rnn(line_tensor)
+        output = self.h2o(hidden[0])
+        output = self.softmax(output)
 
         return output
 
 
 ###########################
-#We can then create a RNN with 128 hidden nodes and given our datasets
+#We can then create a RNN with 57 input nodes, 128 hidden nodes and 18 outputs.
 
 n_hidden = 128
-rnn = RNN(n_letters, n_hidden, alldata.labels_uniq)
+rnn = CharRNN(n_letters, n_hidden, len(alldata.labels_uniq))
 print(rnn) 
 
 ######################################################################
-# We can then pass our Tensor to the runn to get a predicted output and 
+# We can then pass our Tensor to the RNN to get a predicted output and 
 # use a helper function, label_from_output, to get a text label for the class.
 
 def label_from_output(output, output_labels):
@@ -345,7 +336,7 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
 # We can now train a dataset with mini batches for a specified number of epochs
 
 start = time.time()
-all_losses = train(rnn, train_set, n_epoch=10, learning_rate=0.2, report_every=1)
+all_losses = train(rnn, train_set, n_epoch=13, learning_rate=0.2, report_every=1)
 end = time.time()
 print(f"training took {end-start}s")
 
@@ -429,9 +420,9 @@ evaluate(rnn, test_set, classes=alldata.labels_uniq)
 #
 # -  Get better results with a bigger and/or better shaped network
 #
-#    -  Vary the hyperparameters to improve performance (e.g. 250 epochs, batch size, learning rate ) 
-#    -  Add more linear layers
+#    -  Vary the hyperparameters to improve performance (e.g. change epochs, batch size, learning rate ) 
 #    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
+#    -  Change the size of the layers (e.g. fewer or more hidden nodes, additional linear layers)
 #    -  Combine multiple of these RNNs as a higher level network
 # 
 # -  Try with a different dataset of line -> label, for example:
