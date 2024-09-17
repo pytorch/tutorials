@@ -1,5 +1,9 @@
 """
+<<<<<<< HEAD
 Pretraining VGG from scratch 
+=======
+Pretraining VGG from scratch
+>>>>>>> origin/master
 ============================
 
 
@@ -11,7 +15,7 @@ and training a VGG network from scratch using Python and PyTorch. We will dive i
 architecture, understanding its components and the rationale behind its
 design.
 
-Our tutorial is designed for both beginners who are new to deep learning
+This tutorial is designed for both beginners who are new to deep learning
 and seasoned practitioners looking to deepen their understanding of CNN
 architectures.
 
@@ -27,15 +31,50 @@ architectures.
        :class-card: card-prerequisites
 
        * Complete the `Learn the Basics tutorials <https://pytorch.org/tutorials/beginner/basics/intro.html>`__
-       * Familiarity with basic machine learning concepts and terms 
+       * PyTorch 2.4 or later
+       * We recommend to run this tutorial on GPU
+       
+Overview
+------------
 
+<<<<<<< HEAD
 If you are running this in Google Colab, install ``albumentations`` by running the following command:
 
 .. code-block:: py
 
 
     !pip install albumentations
+=======
+​​VGG is a model that attracted attention due to its ability to build deeper layers and dramatically
+shorten the training time compared to AlexNet, which was the state-of-the-art model at the time of the publishing
+of the `original paper <https://arxiv.org/abs/1409.1556>`__.
+>>>>>>> origin/master
 
+Unlike AlexNet's 5x5 and 9x9 filters, VGG uses only 3x3 filters. Using multiple 3x3 filters can
+obtain the same receptive field as using a 5x5 filter, but it is effective in reducing the number
+of parameters. In addition, since it passes through multiple nonlinear functions, the
+nonlinearity increases even more.
+
+VGG applies a max pooling layer after multiple convolutional layers to reduce the spatial size.
+This allows the feature map to be downsampled while preserving important information. Thanks
+to this, the network can learn high-dimensional features in deeper layers and prevent overfitting.
+
+In this tutorial, we will train the VGG model from scratch using only the configuration presented
+in the original VGG paper. We will not use future methods such as batch normalization, Adam optimization, or
+He initialization. The trained model can be applied to ImageNet data, and you can learn
+VGG within the training time suggested in the paper.
+
+Setup
+--------
+
+.. note:: if you are running this in Google Colab, install ``albumentations`` by running:
+
+   .. code-block:: python
+   
+      !pip3 install albumentations``
+
+
+First, let's import the required dependencies:
 
 """
 import subprocess
@@ -60,18 +99,11 @@ from torchvision.datasets import CIFAR100,CIFAR10,MNIST,ImageNet
 import os
 from PIL import Image
 
-
-
-
-
-######################################################################
-# We recommend using GPU for this tutorial.
-# 
-
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 ######################################################################
+<<<<<<< HEAD
 # Purpose point of this tutorial
 # ----------------------------
 # 
@@ -113,15 +145,15 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Thanks to this, the network could learn high-dimensional features in deeper layers and prevent overfitting.
 
 ######################################################################
+=======
+>>>>>>> origin/master
 # VGG Configuration
 # -----------------
-# 
-
-
-######################################################################
-# We define some configurations suggested in VGG paper. Details of
-# this configuration will be explained below section.
-# 
+#
+# In this section, we will define configurations suggested in the VGG paper. 
+# We use the CIFAR100 dataset. The authors of the VGG paper scale images isotropically,
+# which means increasing the size of an image while maintaining its proportions,
+# preventing distortion and maintaining the consistency of the object.
 
 DatasetName = 'CIFAR' # CIFAR, CIFAR10, MNIST, ImageNet
 
@@ -148,11 +180,9 @@ lr_factor = 0.1
 epoch = 10
 clip= None # model D grad clip 0.7
 
-
 update_count = int(256/batch_size)
 accum_step = int(256/batch_size)
 eval_step =26 * accum_step  ## ``Caltech`` 5 CIFAR 5 MNIST 6 , CIFAR10 5 ImageNet  26
-
 
 ## model configuration
 xavier_count= 4
@@ -164,30 +194,39 @@ except_xavier = None
 model_layers =None
 
 
-
 ######################################################################
-# | If your GPU memory is 24GB, the maximum batch size is 128. But if you
-#   use Colab, we recommend using 32GB.
-# | You can modify the batch size according to your preference.
+# .. note:: In the code above, we have defined the batch size as 32,
+#    which is recommended for Google Colab. However, if you are
+#    running this code on a machine with 24GB of GPU memory,
+#    you can set the batch size to 128. You can modify the batch
+#    size according to your preference and hardware capabilities.
 # 
 
-
 ######################################################################
-# Define dataset
-# --------------
+# Defining the dataset
+# --------------------
 # 
-
-
-######################################################################
-# We use the ``CIFAR100`` dataset in this tutorial. In VGG paper, the authors scales image ``isotropically`` . 
-# ``Isotropiclay scale up``  is a method of increasing the size of an image while maintaining its proportions, preventing distortion and maintaining the consistency of the object.
-# Then they apply ``Normalization``,``RandomCrop``,``HorizontalFlip`` .
-# Normalizing input data to a range of 0 to 1 tends to lead to faster convergence of the model. This is because the weight updates are more uniform. In particular, neural network models can have significantly different weight updates depending on the range of input values.
-# Neural network models generally work best when the input data is within a certain range (e.g. 0 to 1). If RGB values ​​are not normalized, the model is fed input values ​​of different ranges, which makes it difficult for the model to process the data in a consistent manner. Normalization allows all data to be scaled to the same scale, which allows the model to treat each feature more evenly, improving performance.
-# If the training and test data have different ranges, the model may have difficulty generalizing. Therefore, it is important to fit the values ​​to the same range across all data. This allows the model to perform well on both test data and real data.
-# Using normalized images as input allows the neural network to learn more effectively and show stable performance.
-# Data augmentation, such as ``RandomCrop`` and ``HorizontalFlip``, is a very useful technique for improving the performance of deep learning models, preventing overfitting, and helping models to work robustly in various environments. In particular, when the dataset is small or limited, data augmentation can secure more data, and the model can show better generalization performance by learning various transformed data.
-# So we need to override CIFAR100 class to apply preprocessing.
+# As mentioned above we use the CIFAR100 dataset in this tutorial. According to the VGG paper,
+# the authors scale the images isotropically to maintain their proportions. This method, known
+# as isotropic scaling, increases the size of an image while preserving its aspect ratio,
+# thus avoiding distortion and maintaining object consistency. 
+#
+# After scaling the images, several preprocessing techniques are applied including normalization,
+# random crop, and horizontal flip. Normalization adjusts the input data to a range of 0 to 1,
+# which typically leads to faster convergence during model training. It ensures that all features
+# are scaled to the same range, allowing the model to process each feature more evenly and
+# improve overall performance. It is crucial to normalize both training and test data to the
+# same range to ensure the model generalizes well to new, unseen data.
+#
+# Data augmentation techniques like random crop and horizontal flip are crucial for enhancing
+# the performance of deep learning models. They help prevent overfitting and ensure that the
+# model performs robustly under various conditions. Particularly in scenarios where the dataset
+# is small or limited, these techniques effectively increase the amount of training data.
+# By exposing the model to various transformations of the data, it learns to generalize better,
+# thus improving its performance on both test data and in real-world applications.
+#
+# To apply preprocessing, we need to override the CIFAR100 class that we have imported from the
+# ``torchvision.datasets`` with a custom class:
 # 
 
 class Custom_Cifar(CIFAR100) :
@@ -239,24 +278,20 @@ class Custom_Cifar(CIFAR100) :
 
         if self.target_transform is not None:
             target = self.target_transform(target)
-
         img=img.transpose((2,0,1))
-
         return img, target
-
 
 ######################################################################
 # Define Model
 # ------------
 # 
-
-
-######################################################################
-# | The VGG paper experiments over 6 models of varying layer depth. The various configurations
-# | are enumerated below for full reproduction of the results.
-# | ``Config_Channels`` means output channels and ``Config_kernels`` means
-#   kernel size.
-# 
+# The VGG paper explores six different model configurations, each with varying layer depths.
+# To fully reproduce the results, we will define these configurations below.
+#
+# We will use two main components to define the model:
+#
+# * ``Config_channels``: This refers to the number of output channels for each layer.
+# * ``Config_kernels``: This refers to the kernel size (or filter size) for each layer.
 
 import torch
 from torch import nn
@@ -286,7 +321,7 @@ Config_kernel = {
 
 
 ######################################################################
-# We define model class that generate model in choice of 6 versions.
+# Next, we define a model class that generates a model with a choice of six versions.
 # 
 
 def make_feature_extractor(cfg_c,cfg_k):
@@ -383,38 +418,46 @@ class Model_vgg(nn.Module) :
 
 
 ######################################################################
-# When training VGG, the authors first train model A, then continue training from
-# the resultant weights for other variants. Waiting for
-# Model A to be trained takes a long time . The authors mention how to
-# train with ``Xavier`` initialization rather than initializing with the
-# weights of model A. But, they do not mention how to initialize .
+# Initializing Model Weights
+# ----------------------------
+#
+# ggIn the original VGG paper, the authors trained model A first and then
+# used its weights as a starting point for training other variants. However,
+# this approach can be time-consuming. The authors also mentioned using Xavier
+# initialization as an alternative to initializing with model A's weights,
+# but they did not provide specific details on how to implement it.
 # 
-# | To Reproduce VGG , we use ``xavier`` initialization method to initialize
-#   weights. We apply initialization to few first layers and last layers.
-#   Then , we apply random initialization to other layers.
-# | **we must fix standard deviation to 0.1**. If standard deviation is
-#   larger than 0.1, the weight get NAN values. For stability, we use 0.1
-#   for standard deviation.
-# | The ``front_xavier`` means how many layers we initialize with ``xavier``
-#   initialization in front of layers and The ``last_xavier`` means how
-#   many layers we initialize with ``xavier`` initialization in last of
-#   layers.
-# 
-# In My experiment, we can use ``front_xavier`` = 4 , ``last_xavier``\ =5
-# in model A, ``front_xavier`` =4 ``last_xavier``\ =7 in model B,C , D and
-# ``front_xavier`` =5\ ``last_xavier``\ = 9 in model E . These values work
-# fine.
-# 
+# To reproduce the VGG results, we will use the Xavier initialization method
+# to initialize the model weights. Specifically, we will apply Xavier
+# initialization to the first few layers and the last few layers, while using
+# random initialization for the remaining layers.
 
+# .. note::
+#    To ensure stability, we must set the standard deviation of the initialization
+#    to 0.1. Using a larger standard deviation can result in NaN (Not a Number)
+#    values in the weights.
+#
+# We introduce two hyperparameters to control the Xavier initialization:
+
+# * ``front_xavier:`` The number of layers at the beginning of the network that are
+# initialized using Xavier initialization.
+#
+# * ``last_xavier:`` The number of layers at the end of the network that are initialized
+#   using Xavier initialization.
+# 
+# Based on our experiments, we recommend the following settings:
+#
+# * For model A: ``front_xavier`` = 4, ``last_xavier`` = 5
+# * For models B, C, and D: ``front_xavier`` = 4, ``last_xavier`` = 7
+# * For model E: ``front_xavier`` = 5, ``last_xavier`` = 9
+# 
+# These values have been found to work well in practice.
 
 ######################################################################
-# Training Model
-# --------------
+# Training the Model
+# ------------------
 # 
-
-
-######################################################################
-# We will define top-k error.
+# First, let's define top-k error.
 # 
 
 def accuracy(output, target, topk=(1,)):
@@ -434,9 +477,8 @@ def accuracy(output, target, topk=(1,)):
 
 
 ######################################################################
-# we initiate model and loss function and optimizer and schedulers. In
-# VGG, they use softmax output ,Momentum Optimizer , and Scheduling based
-# on accuracy.
+# Next, we initiate the model and loss function, optimizer and schedulers. In the VGG model,
+# they use a softmax output, Momentum Optimizer, and scheduling based on accuracy.
 # 
 
 model_version='B'
@@ -446,131 +488,121 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay,momentum=momentum)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max',patience=10,threshold=1e-3,eps = 1e-5)
 
-
-
 ######################################################################
-# we use ``CIFAR100`` .
-# 
+# As mentioned above, we are using the ``CIFAR100`` dataset and set gradient
+# clipping to 1.0 to prevent gradient exploding.
+
 
 if DatasetName == 'CIFAR' :
     train_data = Custom_Cifar(root=os.getcwd(),download=True)
     val_data  = Custom_Cifar(root=os.getcwd(),train=False,download=True)
     val_data.val= True
     val_data.s_min = test_min
-    val_data.transform=    A.Compose(
-                    [
+    val_data.transform=    A.Compose([
                         A.Normalize(mean =(0.5071, 0.4867, 0.4408) , std = (0.2675, 0.2565, 0.2761)),
                         A.SmallestMaxSize(max_size=val_data.S),
                         A.CenterCrop(height =224,width=224)
-                    ]
+                    ])
+    train_loader = torch.utils.data.DataLoader(train_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
+    val_loader = torch.utils.data.DataLoader(val_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
 
-                )
+    model = model.to(device)
 
-train_loader = torch.utils.data.DataLoader(train_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
-val_loader = torch.utils.data.DataLoader(val_data,batch_size= batch_size,shuffle = True , num_workers=4,pin_memory = True,prefetch_factor = 2,drop_last = True)
+    grad_clip = 1.0 # setting gradient clipping to 1.0
 
-
-######################################################################
-# we set grad_clip to 1.0 for prevent gradient exploding.
-# 
-
-model = model.to(device)
-
-grad_clip = 1.0
-
-for e in range(epoch) :
-    print(f'Training Epoch : {e}')
-    total_loss = 0
-    val_iter = iter(val_loader)
-    train_acc=[0,0]
-    train_num = 0
-
-    total_acc = [0,0]
-    count= 0
-    for i , data in enumerate(train_loader) :
-
-
-        model.train()
-        img,label= data
-        img,label =img.to(device, non_blocking=True) ,label.to(device, non_blocking=True)
-
-        output = model(img)
-
-        loss = criterion(output,label) /accum_step
-
-        temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
-        temp_acc = accuracy(temp_output,temp_label,(1,5))
-        train_acc=[train_acc[0]+temp_acc[0] , train_acc[1]+temp_acc[1]]
-        train_num+=batch_size
-        temp_output,temp_label,temp_acc = None,None,None
-
-        loss.backward()
-        total_loss += loss.detach().to('cpu')
-        img,label=None,None
-        torch.cuda.empty_cache()
-        if i> 0 and i%update_count == 0 :
-            print(f'Training steps : {i}  parameter update loss :{total_loss} ')
-            if grad_clip is not None:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-            optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
-
-            if total_loss < 7.0 :
-                # print(f"train loss {total_loss}less than 7.0  ,set grad clip to {clip}")
-                grad_clip = clip
-            if i % eval_step != 0 :
-                total_loss = 0
-
-            output,loss = None,None
+    for e in range(epoch) :
+        print(f'Training Epoch : {e}')
+        total_loss = 0
+        val_iter = iter(val_loader)
+        train_acc=[0,0]
+        train_num = 0
+    
+        total_acc = [0,0]
+        count= 0
+        for i , data in enumerate(train_loader) :
+    
+    
+            model.train()
+            img,label= data
+            img,label =img.to(device, non_blocking=True) ,label.to(device, non_blocking=True)
+    
+            output = model(img)
+    
+            loss = criterion(output,label) /accum_step
+    
+            temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
+            temp_acc = accuracy(temp_output,temp_label,(1,5))
+            train_acc=[train_acc[0]+temp_acc[0] , train_acc[1]+temp_acc[1]]
+            train_num+=batch_size
+            temp_output,temp_label,temp_acc = None,None,None
+    
+            loss.backward()
+            total_loss += loss.detach().to('cpu')
+            img,label=None,None
             torch.cuda.empty_cache()
-        if i>0 and i % eval_step == 0 :
-
-            print(f'train losss :{total_loss}')
-            temp_loss = total_loss
-            total_loss= 0
-
-            val_loss = 0
-            torch.cuda.empty_cache()
-
-            for j   in range(update_count) :
-                loss = None
-                print(f'Evaluation Steps Start')
-                try :
-                    img,label = next(val_iter)
-                except StopIteration :
-                    val_iter= iter(val_loader)
-                    img,label = next(val_iter)
-                with torch.no_grad():
-                    model.eval()
-
-                    img , label = img.to(device, non_blocking=True) , label.to(device, non_blocking=True)
-                    output = model(img)
-                    temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
-                    temp_acc = accuracy(temp_output,temp_label,(1,5))
-                    total_acc=[total_acc[0]+temp_acc[0] , total_acc[1]+temp_acc[1]]
-                    count+=batch_size
-
-                    loss = criterion(output,label)/accum_step
-                    val_loss += loss.detach().to('cpu')
-                    # loss.backward()
-                    torch.cuda.empty_cache()
-
-
-                    img,label,output ,loss= None,None,None,None
-
-
-
+            if i> 0 and i%update_count == 0 :
+                print(f'Training steps : {i}  parameter update loss :{total_loss} ')
+                if grad_clip is not None:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+    
+                if total_loss < 7.0 :
+                    # print(f"train loss {total_loss}less than 7.0  ,set grad clip to {clip}")
+                    grad_clip = clip
+                if i % eval_step != 0 :
+                    total_loss = 0
+    
+                output,loss = None,None
                 torch.cuda.empty_cache()
-
-            if abs(val_loss-temp_loss) > 0.03 :
-                grad_clip=clip
-                # print(f"val_loss {val_loss} - train_loss {temp_loss} = {abs(val_loss-temp_loss)} > 0.3")
-                # print(f"set grad clip to {grad_clip}")
-
-                best_val_loss = val_loss
-
-            val_loss = None
-        img,label,output = None,None,None
+            if i>0 and i % eval_step == 0 :
+    
+                print(f'train losss :{total_loss}')
+                temp_loss = total_loss
+                total_loss= 0
+    
+                val_loss = 0
+                torch.cuda.empty_cache()
+    
+                for j   in range(update_count) :
+                    loss = None
+                    print(f'Evaluation Steps Start')
+                    try :
+                        img,label = next(val_iter)
+                    except StopIteration :
+                        val_iter= iter(val_loader)
+                        img,label = next(val_iter)
+                    with torch.no_grad():
+                        model.eval()
+    
+                        img , label = img.to(device, non_blocking=True) , label.to(device, non_blocking=True)
+                        output = model(img)
+                        temp_output ,temp_label = output.detach().to('cpu') , label.detach().to('cpu')
+                        temp_acc = accuracy(temp_output,temp_label,(1,5))
+                        total_acc=[total_acc[0]+temp_acc[0] , total_acc[1]+temp_acc[1]]
+                        count+=batch_size
+    
+                        loss = criterion(output,label)/accum_step
+                        val_loss += loss.detach().to('cpu')
+                        # loss.backward()
+                        torch.cuda.empty_cache()
+    
+    
+                        img,label,output ,loss= None,None,None,None
+    
+    
+    
+                    torch.cuda.empty_cache()
+    
+                if abs(val_loss-temp_loss) > 0.03 :
+                    grad_clip=clip
+                    # print(f"val_loss {val_loss} - train_loss {temp_loss} = {abs(val_loss-temp_loss)} > 0.3")
+                    # print(f"set grad clip to {grad_clip}")
+    
+                    best_val_loss = val_loss
+    
+                val_loss = None
+            img,label,output = None,None,None
 
 
 
@@ -593,9 +625,10 @@ for e in range(epoch) :
 
 
 ######################################################################
-# (Optional) ImageNet
-# -------------------
-# 
+# (Optional) Additional Exercise: ImageNet
+# --------------------------------------------
+#
+# You can apply the same model that we have trained above with another popular dataset called ImageNet:  
 
 class Custom_ImageNet(ImageNet) :
     def __init__(self,root,transform = None,multi=False,s_max=None,s_min=256,split=None,val=False):
@@ -668,20 +701,16 @@ if DatasetName == 'ImageNet' :
 ######################################################################
 # Conclusion
 # ----------
-# We have seen how ``pretraining`` VGG from scratch . 
-# This Tutorial will be helpful to reproduce another Foundation Model .
-
-######################################################################
-# More things to try
-# ------------------
-# - Apply model to ImageNet
-# - Try all model variants
-# - Try additional evaluation method
-
-
-######################################################################
-# Further Reading
-# ---------------
-
-# - `VGG training using python script <https://github.com/woongjoonchoi/DeepLearningPaper-Reproducing/tree/master/VGG>`__
-# - `VGG paper <https://arxiv.org/abs/1409.1556>`__
+# 
+# In this tutorial, we have successfully demonstrated how to pretrain the VGG model
+# from scratch. The techniques and insights provided in this tutorial can serve as
+# a basis for reproducing and adapting other foundational models.
+# 
+# If you are looking to expand your knowledge and application of the VGG model,
+# consider exploring further by applying the model to the ImageNet dataset, experimenting
+# with different model variants, and incorporating additional evaluation methods to
+# enhance model robustness and performance.
+# 
+# For more information, see: 
+#
+# - `Very Deep Convolutional Networks for Large-Scale Image Recognition <https://arxiv.org/abs/1409.1556>`__

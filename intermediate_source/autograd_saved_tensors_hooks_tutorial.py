@@ -397,7 +397,7 @@ def pack_hook(tensor):
     return name
 
 def unpack_hook(name):
-    return torch.load(name)
+    return torch.load(name, weights_only=True)
 
 
 ######################################################################
@@ -420,7 +420,7 @@ def pack_hook(tensor):
     return name
 
 def unpack_hook(name):
-    tensor = torch.load(name)
+    tensor = torch.load(name, weights_only=True)
     os.remove(name)
     return tensor
 
@@ -462,7 +462,7 @@ def pack_hook(tensor):
     return temp_file
 
 def unpack_hook(temp_file):
-    return torch.load(temp_file.name)
+    return torch.load(temp_file.name, weights_only=True)
 
 
 ######################################################################
