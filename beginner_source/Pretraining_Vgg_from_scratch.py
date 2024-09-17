@@ -1,5 +1,5 @@
 """
-``Pretraining`` VGG from scratch 
+Pretraining VGG from scratch 
 ============================
 
 
@@ -29,7 +29,12 @@ architectures.
        * Complete the `Learn the Basics tutorials <https://pytorch.org/tutorials/beginner/basics/intro.html>`__
        * Familiarity with basic machine learning concepts and terms 
 
-If you are running this in Google Colab, install albumentations
+If you are running this in Google Colab, install ``albumentations`` by running the following command:
+
+.. code-block:: py
+
+
+    !pip install albumentations
 
 
 """
@@ -101,10 +106,10 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # 
 # Unlike ``AlexNet``'s 5x5 9x9 filters, VGG only uses 3x3 filters. 
 # Using multiple 3x3 filters can obtain the same receptive field as using a 5x5 filter, but it is effective in reducing the number of parameters. 
-# In addition, since it passes through multiple nonlinear functions, the nonlinearity increases even more.
+# In addition, since it passes through multiple nonlinear functions, the ``nonlinearity`` increases even more.
 # 
 # VGG applied a max pooling layer after multiple convolutional layers to reduce the spatial size. 
-# This allowed the feature map to be downsampled while preserving important information. 
+# This allowed the feature map to be ``downsampled`` while preserving important information. 
 # Thanks to this, the network could learn high-dimensional features in deeper layers and prevent overfitting.
 
 ######################################################################
@@ -447,7 +452,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max',patience=10,th
 # we use ``CIFAR100`` .
 # 
 
-if DatasetName == 'Cifar' :
+if DatasetName == 'CIFAR' :
     train_data = Custom_Cifar(root=os.getcwd(),download=True)
     val_data  = Custom_Cifar(root=os.getcwd(),train=False,download=True)
     val_data.val= True
