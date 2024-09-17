@@ -67,6 +67,12 @@ rst_epilog ="""
 #
 # needs_sphinx = '1.0'
 
+html_meta = {
+    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
+    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
+    'author': 'PyTorch Contributors'
+}
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -76,6 +82,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
+    'sphinx_sitemap'
 ]
 
 intersphinx_mapping = {
@@ -113,6 +120,14 @@ sphinx_gallery_conf = {
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
 }
+
+html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+sitemap_locales = [None]
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+]
+sitemap_url_scheme = "{link}"
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
@@ -176,7 +191,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
 exclude_patterns += sphinx_gallery_conf['examples_dirs']
 exclude_patterns += ['*/index.rst']
 
