@@ -70,7 +70,7 @@ When deciding what parallelism techniques to choose for your model, use these co
 #. Use `DistributedDataParallel (DDP) <https://pytorch.org/docs/stable/notes/ddp.html>`__,
    if your model fits in a single GPU but you want to easily scale up training using multiple GPUs.
 
-   * Use `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__, to launch multiple pytorch processes if you are you using more than one node.
+   * Use `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__, to launch multiple pytorch processes if you are using more than one node.
 
    * See also: `Getting Started with Distributed Data Parallel <../intermediate/ddp_tutorial.html>`__
 
