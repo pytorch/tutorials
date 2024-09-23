@@ -48,8 +48,6 @@ Enabling Flight Recorder
 ------------------------
 There are two required environment variables to get the initial version of Flight Recorder working.
 
-- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
-  rank. The default value is ``/tmp/nccl_trace_rank_``.
 - ``TORCH_NCCL_TRACE_BUFFER_SIZE = (0, N)``: Setting ``N`` to a positive number enables collection.
   ``N`` represents the number of entries that will be kept internally in a circular buffer.
   We recommended to set this value at *2000*.
@@ -58,6 +56,8 @@ There are two required environment variables to get the initial version of Fligh
 
 **Optional settings:**
 
+- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
+  rank. The default value is ``/tmp/nccl_trace_rank_``.
 - ``TORCH_NCCL_TRACE_CPP_STACK = (true, false)``: Setting this to true enables C++ stack traces to be captured in Flight Recorder.
   C++ stack traces can be useful in providing the exact code path from a PyTorch Python call down to the primitive
   C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
@@ -74,7 +74,7 @@ Additional Settings
      ``fast`` is a new experimental mode that is shown to be much faster than the traditional ``addr2line``.
      Use this setting in conjunction with ``TORCH_NCCL_TRACE_CPP_STACK`` to collect C++ traces in the Flight Recorder data.
 - If you prefer not to have the flight recorder data dumped into the local disk but rather onto your own storage, you can define your own writer class.
-  This class should inherit from class ``::c10d::DebugInfoWriter`` and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter``
+  This class should inherit from class ``::c10d::DebugInfoWriter`` `(code) <https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L237>`__ and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter``
   before we initiate PyTorch distributed.
 
 Retrieving Flight Recorder Data via an API
@@ -189,7 +189,7 @@ command directly:
 Currently, we support two modes for the analyzer script. The first mode allows the script to apply some heuristics to the parsed flight
 recorder dumps to generate a report identifying potential culprits for the timeout. The second mode is simply outputs the raw dumps.
 By default, the script prints flight recoder dumps for all ranks and all ``ProcessGroups``(PGs). This can be narrowed down to certain
-ranks and PGs. An example command is:
+ranks and PGs using the *--selected-ranks* argument. An example command is:
 
 Caveat: tabulate module is needed, so you might need pip install it first.
 
