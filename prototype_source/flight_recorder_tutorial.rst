@@ -48,8 +48,8 @@ Enabling Flight Recorder
 ------------------------
 There are two required environment variables to get the initial version of Flight Recorder working.
 
-- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. The dump is one
-  file per rank. The default value is ``/tmp/nccl_trace_rank_``.
+- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
+  rank. The default value is ``/tmp/nccl_trace_rank_``.
 - ``TORCH_NCCL_TRACE_BUFFER_SIZE = (0, N)``: Setting ``N`` to a positive number enables collection.
   ``N`` represents the number of entries that will be kept internally in a circular buffer.
   We recommended to set this value at *2000*.
@@ -73,9 +73,9 @@ Additional Settings
 
      ``fast`` is a new experimental mode that is shown to be much faster than the traditional ``addr2line``.
      Use this setting in conjunction with ``TORCH_NCCL_TRACE_CPP_STACK`` to collect C++ traces in the Flight Recorder data.
-- If you don't want the flight recorder to be dumped into the local disk but instead onto your own storage, users can define your own writer class
-  which inherits from class ``::c10d::DebugInfoWriter`` and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter`` before
-  we initiate c10d distributed.
+- If you prefer not to have the flight recorder data dumped into the local disk but rather onto your own storage, you can define your own writer class.
+  This class should inherit from class ``::c10d::DebugInfoWriter`` and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter``
+  before we initiate PyTorch distributed.
 
 Retrieving Flight Recorder Data via an API
 ------------------------------------------
@@ -178,17 +178,18 @@ To run the convenience script, follow these steps:
 
   python fr_trace.py <dump dir containing trace files> [-o <output file>]
 
-Or if you install PyTorch nightly build or build from scratch (with ``USE_DISTRIBUTED=1``), you can directly use the following command:
+If you install the PyTorch nightly build or build from scratch with ``USE_DISTRIBUTED=1``, you can directly use the following
+command directly:
 
 .. code:: shell
 
   torchfrtrace <dump dir containing trace files> [-o <output file>]
 
 
-For now, we support two modes for the analyzer script, one is to let the script to apply some heuristics to the parsed flight recorder
-dumps to generate a report on potential culprit for the timeout/hang; the other one is to just print out raw dumps. For the latter, by
-default the script prints for all ranks and all ProcessGroups(PGs), and this can be narrowed down to certain ranks and PGs. Example
-command is:
+Currently, we support two modes for the analyzer script. The first mode allows the script to apply some heuristics to the parsed flight
+recorder dumps to generate a report identifying potential culprits for the timeout. The second mode is simply outputs the raw dumps.
+By default, the script prints flight recoder dumps for all ranks and all ``ProcessGroups``(PGs). This can be narrowed down to certain
+ranks and PGs. An example command is:
 
 Caveat: tabulate module is needed, so you might need pip install it first.
 
