@@ -627,6 +627,8 @@ Flight Recorder consists of two core parts:</p>
 <h2>Enabling Flight Recorder<a class="headerlink" href="#enabling-flight-recorder" title="Permalink to this heading">¶</a></h2>
 <p>There are two required environment variables to get the initial version of Flight Recorder working.</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_DEBUG_INFO_TEMP_FILE</span></code>: Setting the path where the flight recorder will be dumped with file prefix. One file per
+rank. The default value is <code class="docutils literal notranslate"><span class="pre">/tmp/nccl_trace_rank_</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_TRACE_BUFFER_SIZE</span> <span class="pre">=</span> <span class="pre">(0,</span> <span class="pre">N)</span></code>: Setting <code class="docutils literal notranslate"><span class="pre">N</span></code> to a positive number enables collection.
 <code class="docutils literal notranslate"><span class="pre">N</span></code> represents the number of entries that will be kept internally in a circular buffer.
 We recommended to set this value at <em>2000</em>.</p></li>
@@ -653,6 +655,9 @@ Use this setting in conjunction with <code class="docutils literal notranslate">
 </dd>
 </dl>
 </li>
+<li><p>If you prefer not to have the flight recorder data dumped into the local disk but rather onto your own storage, you can define your own writer class.
+This class should inherit from class <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter</span></code> and then register the new writer using <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter::registerWriter</span></code>
+before we initiate PyTorch distributed.</p></li>
 </ul>
 </div>
 <div class="section" id="retrieving-flight-recorder-data-via-an-api">
@@ -742,7 +747,21 @@ data.</p>
 <li><p>Copy all files from a rank into a single directory.</p></li>
 <li><p>To run the script, use this command:</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">fr_trace</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="o">&lt;</span><span class="n">dump</span> <span class="nb">dir</span> <span class="n">containing</span> <span class="n">trace</span> <span class="n">files</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">file</span><span class="o">&gt;</span><span class="p">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>fr_trace.py<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span><span class="o">[</span>-o<span class="w"> </span>&lt;output<span class="w"> </span>file&gt;<span class="o">]</span>
+</pre></div>
+</div>
+<p>If you install the PyTorch nightly build or build from scratch with <code class="docutils literal notranslate"><span class="pre">USE_DISTRIBUTED=1</span></code>, you can directly use the following
+command directly:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>torchfrtrace<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span><span class="o">[</span>-o<span class="w"> </span>&lt;output<span class="w"> </span>file&gt;<span class="o">]</span>
+</pre></div>
+</div>
+<p>Currently, we support two modes for the analyzer script. The first mode allows the script to apply some heuristics to the parsed flight
+recorder dumps to generate a report identifying potential culprits for the timeout. The second mode is simply outputs the raw dumps.
+By default, the script prints flight recoder dumps for all ranks and all <a href="#id1"><span class="problematic" id="id2">``</span></a>ProcessGroups``(PGs). This can be narrowed down to certain
+ranks and PGs. An example command is:</p>
+<p>Caveat: tabulate module is needed, so you might need pip install it first.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>fr_trace.py<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span>-j<span class="w"> </span><span class="o">[</span>--selected-ranks<span class="w"> </span>i<span class="w"> </span>j<span class="w"> </span>k<span class="w"> </span>...<span class="o">]</span>
+torchfrtrace<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span>-j<span class="w"> </span><span class="o">[</span>--selected-ranks<span class="w"> </span>i<span class="w"> </span>j<span class="w"> </span>k<span class="w"> </span>...<span class="o">]</span>
 </pre></div>
 </div>
 </div>
