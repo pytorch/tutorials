@@ -1001,6 +1001,7 @@ Additional Resources
    intermediate/tiatoolbox_tutorial
 
    beginner/Pretrainig_VGG_from_scratch
+   
 .. toctree::
    :maxdepth: 2
    :includehidden:
