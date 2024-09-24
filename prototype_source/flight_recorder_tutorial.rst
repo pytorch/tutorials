@@ -46,18 +46,18 @@ Flight Recorder consists of two core parts:
 
 Enabling Flight Recorder
 ------------------------
-There are two required environment variables to get the initial version of Flight Recorder working.
+There are three required environment variables to get the initial version of Flight Recorder working.
 
 - ``TORCH_NCCL_TRACE_BUFFER_SIZE = (0, N)``: Setting ``N`` to a positive number enables collection.
   ``N`` represents the number of entries that will be kept internally in a circular buffer.
-  We recommended to set this value at *2000*.
+  We recommended to set this value at *2000*. The default value is ``2000``.
 - ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout.
-  If enabled, there will be one file per rank output in the job's running directory.
+  If enabled, there will be one file per rank output in the job's running directory. The default value is ``false``.
+- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
+  rank. The default value is ``/tmp/nccl_trace_rank_``.
 
 **Optional settings:**
 
-- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
-  rank. The default value is ``/tmp/nccl_trace_rank_``.
 - ``TORCH_NCCL_TRACE_CPP_STACK = (true, false)``: Setting this to true enables C++ stack traces to be captured in Flight Recorder.
   C++ stack traces can be useful in providing the exact code path from a PyTorch Python call down to the primitive
   C++ implementation. Also see ``TORCH_SYMBOLIZE_MODE`` in additional settings.
@@ -74,7 +74,8 @@ Additional Settings
      ``fast`` is a new experimental mode that is shown to be much faster than the traditional ``addr2line``.
      Use this setting in conjunction with ``TORCH_NCCL_TRACE_CPP_STACK`` to collect C++ traces in the Flight Recorder data.
 - If you prefer not to have the flight recorder data dumped into the local disk but rather onto your own storage, you can define your own writer class.
-  This class should inherit from class ``::c10d::DebugInfoWriter`` `(code) <https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L237>`__ and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter``
+  This class should inherit from class ``::c10d::DebugInfoWriter`` `(code) <https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L237>`__
+  and then register the new writer using ``::c10d::DebugInfoWriter::registerWriter`` `(code) <https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L242>`__
   before we initiate PyTorch distributed.
 
 Retrieving Flight Recorder Data via an API
