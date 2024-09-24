@@ -625,15 +625,15 @@ Flight Recorder consists of two core parts:</p>
 </div>
 <div class="section" id="enabling-flight-recorder">
 <h2>Enabling Flight Recorder<a class="headerlink" href="#enabling-flight-recorder" title="Permalink to this heading">¶</a></h2>
-<p>There are two required environment variables to get the initial version of Flight Recorder working.</p>
+<p>There are three required environment variables to get the initial version of Flight Recorder working.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_DEBUG_INFO_TEMP_FILE</span></code>: Setting the path where the flight recorder will be dumped with file prefix. One file per
-rank. The default value is <code class="docutils literal notranslate"><span class="pre">/tmp/nccl_trace_rank_</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_TRACE_BUFFER_SIZE</span> <span class="pre">=</span> <span class="pre">(0,</span> <span class="pre">N)</span></code>: Setting <code class="docutils literal notranslate"><span class="pre">N</span></code> to a positive number enables collection.
 <code class="docutils literal notranslate"><span class="pre">N</span></code> represents the number of entries that will be kept internally in a circular buffer.
-We recommended to set this value at <em>2000</em>.</p></li>
+We recommended to set this value at <em>2000</em>. The default value is <code class="docutils literal notranslate"><span class="pre">2000</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_DUMP_ON_TIMEOUT</span> <span class="pre">=</span> <span class="pre">(true,</span> <span class="pre">false)</span></code>: Setting this to <code class="docutils literal notranslate"><span class="pre">true</span></code> will write out diagnostic files to disk on job timeout.
-If enabled, there will be one file per rank output in the job’s running directory.</p></li>
+If enabled, there will be one file per rank output in the job’s running directory. The default value is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TORCH_NCCL_DEBUG_INFO_TEMP_FILE</span></code>: Setting the path where the flight recorder will be dumped with file prefix. One file per
+rank. The default value is <code class="docutils literal notranslate"><span class="pre">/tmp/nccl_trace_rank_</span></code>.</p></li>
 </ul>
 <p><strong>Optional settings:</strong></p>
 <ul class="simple">
@@ -656,7 +656,8 @@ Use this setting in conjunction with <code class="docutils literal notranslate">
 </dl>
 </li>
 <li><p>If you prefer not to have the flight recorder data dumped into the local disk but rather onto your own storage, you can define your own writer class.
-This class should inherit from class <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter</span></code> and then register the new writer using <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter::registerWriter</span></code>
+This class should inherit from class <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter</span></code> <a class="reference external" href="https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L237">(code)</a>
+and then register the new writer using <code class="docutils literal notranslate"><span class="pre">::c10d::DebugInfoWriter::registerWriter</span></code> <a class="reference external" href="https://github.com/pytorch/pytorch/blob/release/2.5/torch/csrc/distributed/c10d/NCCLUtils.hpp#L242">(code)</a>
 before we initiate PyTorch distributed.</p></li>
 </ul>
 </div>
@@ -758,7 +759,7 @@ command directly:</p>
 <p>Currently, we support two modes for the analyzer script. The first mode allows the script to apply some heuristics to the parsed flight
 recorder dumps to generate a report identifying potential culprits for the timeout. The second mode is simply outputs the raw dumps.
 By default, the script prints flight recoder dumps for all ranks and all <a href="#id1"><span class="problematic" id="id2">``</span></a>ProcessGroups``(PGs). This can be narrowed down to certain
-ranks and PGs. An example command is:</p>
+ranks and PGs using the <em>–selected-ranks</em> argument. An example command is:</p>
 <p>Caveat: tabulate module is needed, so you might need pip install it first.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>fr_trace.py<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span>-j<span class="w"> </span><span class="o">[</span>--selected-ranks<span class="w"> </span>i<span class="w"> </span>j<span class="w"> </span>k<span class="w"> </span>...<span class="o">]</span>
 torchfrtrace<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span class="w"> </span>containing<span class="w"> </span>trace<span class="w"> </span>files&gt;<span class="w"> </span>-j<span class="w"> </span><span class="o">[</span>--selected-ranks<span class="w"> </span>i<span class="w"> </span>j<span class="w"> </span>k<span class="w"> </span>...<span class="o">]</span>
