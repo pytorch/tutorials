@@ -999,6 +999,7 @@ Additional Resources
    intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
    intermediate/tiatoolbox_tutorial
+
    beginner/Pretrainig_VGG_from_scratch
 .. toctree::
    :maxdepth: 2
