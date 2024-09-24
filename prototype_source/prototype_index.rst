@@ -225,6 +225,14 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/flight_recorder_tutorial.html
    :tags: Distributed, Debugging, FlightRecorder
 
+.. Integration
+.. customcarditem::
+   :header: Out-of-tree extension autoloading in Python
+   :card_description: Learn how to improve the seamless integration of out-of-tree extension with PyTorch based on the autoloading mechanism.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/python_extension_autoload.html
+   :tags: Extending-PyTorch, Frontend-APIs
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -265,3 +273,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/maskedtensor_sparsity.html
    prototype/maskedtensor_advanced_semantics.html
    prototype/maskedtensor_adagrad.html
+   prototype/python_extension_autoload.html
