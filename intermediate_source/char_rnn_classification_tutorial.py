@@ -200,7 +200,7 @@ print(f"example = {alldata[0]}")
 #split but the torch.utils.data has more useful utilities. Here we specify a generator since we need to use the 
 #same device as torch defaults to above. 
 
-train_set, test_set = torch.utils.data.random_split(alldata, [.8, .2], generator=torch.Generator(device=device).manual_seed(1))
+train_set, test_set = torch.utils.data.random_split(alldata, [.85, .15], generator=torch.Generator(device=device).manual_seed(2024))
 
 print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}")
 
@@ -336,7 +336,7 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
 # We can now train a dataset with mini batches for a specified number of epochs
 
 start = time.time()
-all_losses = train(rnn, train_set, n_epoch=13, learning_rate=0.2, report_every=1)
+all_losses = train(rnn, train_set, n_epoch=55, learning_rate=0.15, report_every=5)
 end = time.time()
 print(f"training took {end-start}s")
 
