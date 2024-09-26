@@ -1,5 +1,6 @@
 # PyTorch Tutorials
 
+English | [简体中文](README_zh-CN.md)
 
 All the tutorials are now presented as sphinx style documentation at:
 
