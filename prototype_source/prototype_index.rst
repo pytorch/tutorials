@@ -217,6 +217,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/inductor_cpp_wrapper_tutorial.html
    :tags: Model-Optimization
 
+.. customcarditem::
+   :header: Max-autotune Support on CPU with GEMM Template Tutorial
+   :card_description: Tutorial for max-autotune mode support for torch.compile with GEMM template
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/max_autotune_CPU_with_gemm_template_tutorial.html
+   :tags: Model-Optimization
+
 .. Distributed
 .. customcarditem::
    :header: Flight Recorder Tutorial
@@ -265,3 +272,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/maskedtensor_sparsity.html
    prototype/maskedtensor_advanced_semantics.html
    prototype/maskedtensor_adagrad.html
+   prototype/max_autotune_CPU_with_gemm_template_tutorial.html
