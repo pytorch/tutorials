@@ -289,8 +289,8 @@ def make_feature_extractor(cfg_c,cfg_k):
 
 class Model_vgg(nn.Module) :
     # def __init__(self,version , num_classes):
-    def __init__(self,conf_channels,conf_kernels , num_classes):
-        conv_5_out_w ,conv_5_out_h = 7,7
+    def __init__(self, conf_channels, conf_kernels, num_classes):
+        conv_5_out_w, conv_5_out_h = 7, 7
         conv_5_out_dim =512
         conv_1_by_1_1_outchannel = 4096
         conv_1_by_1_2_outchannel = 4096
