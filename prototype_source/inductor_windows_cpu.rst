@@ -53,7 +53,8 @@ Set Up Environment
     conda create -n inductor_cpu_windows python=3.10 -y 
     conda activate inductor_cpu_windows
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
-#. Try `torchinductor` on Windows CPU::
+#. Use torchinductor on Windows CPU::
+    
     import torch
     def foo(x, y):
         a = torch.sin(x)
