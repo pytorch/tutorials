@@ -24,7 +24,7 @@ This tutorial will guide you through the process of using TorchInductor on a Win
        * Miniforge for Windows
 
 Install the Required Software
----------------------
+-------------------------------------------
 
 First, let's install the required software. C++ compiler is required for TorchInductor optimization.
 We will use Microsoft Visual C++ (MSVC) for this example. 
@@ -40,8 +40,8 @@ We will use Microsoft Visual C++ (MSVC) for this example.
 
 1. Download and install `Miniforge3-Windows-x86_64.exe <https://github.com/conda-forge/miniforge/releases/latest/>`__.
 
-Set Up Environment
-^^^^^^^^^^^^^^^^^^
+Set Up the Environment
+------------------------------
 
 #. Open the command line environment via ``cmd.exe``.
 #. Activate `MSVC` with the following command::
