@@ -21,7 +21,7 @@ Now, we will walk you through a step-by-step tutorial for how to use torchinduct
 Install a Compiler
 ^^^^^^^^^^^^^^^^^^
 
-TorchInductor Optimization need a compiler, let's take MSVC as an example.
+C++ compiler is required for torchinductor optimization, let's take Microsoft Visual C++ (MSVC) as an example.
 
 Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
@@ -54,8 +54,7 @@ Set Up Environment
 
     conda create -n inductor_cpu_windows python=3.10 -y 
     conda activate inductor_cpu_windows
-
-5. `Install PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
+5. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
 6. Try `torchinductor` on Windows CPU:
 ::
 
@@ -70,4 +69,4 @@ Set Up Environment
 Conclusion
 ----------
 
-With this tutorial, we introduce how to use Inductor with X86 CPU in PyTorch 2.5 on Windows.  
+With this tutorial, we introduce how to use Inductor on Windows CPU with PyTorch 2.5 or later.  
