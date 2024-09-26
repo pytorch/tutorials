@@ -29,8 +29,8 @@ During Installation, chosse `Desktop Development with C++` in the `Desktop & Mob
 
 .. note::
 
-    We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler<https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
-    Intel compiler setup guide(TODO: Intel will provide URL for this guide recently)
+    We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
+    Please follow `Intel compiler setup guide <empty link>`_. (TODO: Intel will provide URL for this guide recently)
 
 
 Install Miniforge
@@ -41,29 +41,19 @@ Download and install `Miniforge <https://github.com/conda-forge/miniforge/releas
 Set Up Environment
 ^^^^^^^^^^^^^^^^^^
 
-1. Open a command line environment via cmd.exe.
-   
-2. Activate `MSVC` via below command:
-::
+#. Open a command line environment via cmd.exe.
+#. Activate `MSVC` via below command::
 
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
-
-1. Activate `conda` via below command:
-::
+#. Activate `conda` via below command::
 
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
-    
-1. Create and activate customer conda environment:
-::
+#. Create and activate customer conda environment::
 
     conda create -n inductor_cpu_windows python=3.10 -y 
     conda activate inductor_cpu_windows
-
-1. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
-   
-2. Try `torchinductor` on Windows CPU:
-::
-
+#. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
+#. Try `torchinductor` on Windows CPU::
     import torch
     def foo(x, y):
         a = torch.sin(x)
@@ -72,8 +62,7 @@ Set Up Environment
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 
-output of the above example.
-::
+#. Output of the above example::
 
     tensor([[-3.9074e-02,  1.3994e+00,  1.3894e+00,  3.2630e-01,  8.3060e-01,
             1.1833e+00,  1.4016e+00,  7.1905e-01,  9.0637e-01, -1.3648e+00],
