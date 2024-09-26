@@ -1,7 +1,7 @@
 How to use TorchInductor on Windows CPU
 =======================================
 
-**Author**: `Xu, Han <https://github.com/xuhancn>`_, `Zhaoqiong Zheng <https://github.com/ZhaoqiongZ>`_
+**Author**: `Zhaoqiong Zheng <https://github.com/ZhaoqiongZ>`_, `Xu, Han <https://github.com/xuhancn>`_
 
 
 Introduction
@@ -29,7 +29,8 @@ During Installation, chosse `Desktop Development with C++` in the `Desktop & Mob
 
 .. note::
 
-    You can also choose other compiler like Clang & Intel Compiler.
+    We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler<https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
+    Intel compiler setup guide(TODO: Intel will provide URL for this guide recently)
 
 
 Install Miniforge
@@ -41,21 +42,26 @@ Set Up Environment
 ^^^^^^^^^^^^^^^^^^
 
 1. Open a command line environment via cmd.exe.
+   
 2. Activate `MSVC` via below command:
 ::
 
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
-3. Activate `conda` via below command:
+
+1. Activate `conda` via below command:
 ::
 
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
-4. Create and activate customer conda environment:
+    
+1. Create and activate customer conda environment:
 ::
 
     conda create -n inductor_cpu_windows python=3.10 -y 
     conda activate inductor_cpu_windows
-5. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
-6. Try `torchinductor` on Windows CPU:
+
+1. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
+   
+2. Try `torchinductor` on Windows CPU:
 ::
 
     import torch
@@ -65,6 +71,30 @@ Set Up Environment
         return a + b
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
+
+output of the above example.
+::
+
+    tensor([[-3.9074e-02,  1.3994e+00,  1.3894e+00,  3.2630e-01,  8.3060e-01,
+            1.1833e+00,  1.4016e+00,  7.1905e-01,  9.0637e-01, -1.3648e+00],
+            [ 1.3728e+00,  7.2863e-01,  8.6888e-01, -6.5442e-01,  5.6790e-01,
+            5.2025e-01, -1.2647e+00,  1.2684e+00, -1.2483e+00, -7.2845e-01],
+            [-6.7747e-01,  1.2028e+00,  1.1431e+00,  2.7196e-02,  5.5304e-01,
+            6.1945e-01,  4.6654e-01, -3.7376e-01,  9.3644e-01,  1.3600e+00],
+            [-1.0157e-01,  7.7200e-02,  1.0146e+00,  8.8175e-02, -1.4057e+00,
+            8.8119e-01,  6.2853e-01,  3.2773e-01,  8.5082e-01,  8.4615e-01],
+            [ 1.4140e+00,  1.2130e+00, -2.0762e-01,  3.3914e-01,  4.1122e-01,
+            8.6895e-01,  5.8852e-01,  9.3310e-01,  1.4101e+00,  9.8318e-01],
+            [ 1.2355e+00,  7.9290e-02,  1.3707e+00,  1.3754e+00,  1.3768e+00,
+            9.8970e-01,  1.1171e+00, -5.9944e-01,  1.2553e+00,  1.3394e+00],
+            [-1.3428e+00,  1.8400e-01,  1.1756e+00, -3.0654e-01,  9.7973e-01,
+            1.4019e+00,  1.1886e+00, -1.9194e-01,  1.3632e+00,  1.1811e+00],
+            [-7.1615e-01,  4.6622e-01,  1.2089e+00,  9.2011e-01,  1.0659e+00,
+            9.0892e-01,  1.1932e+00,  1.3888e+00,  1.3898e+00,  1.3218e+00],
+            [ 1.4139e+00, -1.4000e-01,  9.1192e-01,  3.0175e-01, -9.6432e-01,
+            -1.0498e+00,  1.4115e+00, -9.3212e-01, -9.0964e-01,  1.0127e+00],
+            [ 5.7244e-04,  1.2799e+00,  1.3595e+00,  1.0907e+00,  3.7191e-01,
+            1.4062e+00,  1.3672e+00,  6.8502e-02,  8.5216e-01,  8.6046e-01]])
 
 Conclusion
 ----------
