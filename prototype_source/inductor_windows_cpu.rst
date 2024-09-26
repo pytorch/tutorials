@@ -31,14 +31,14 @@ We will use Microsoft Visual C++ (MSVC) for this example.
 
 1. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
-1. During the installation, choose **Desktop Development with C++** in the **Desktop & Mobile** section. Then install the software
+2. During the installation, choose **Desktop Development with C++** in the **Desktop & Mobile** section. Then install the software
 
-  .. note::
+.. note::
 
      We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
 
 
-1. Download and install `Miniforge3-Windows-x86_64.exe <https://github.com/conda-forge/miniforge/releases/latest/>`__.
+3. Download and install `Miniforge3-Windows-x86_64.exe <https://github.com/conda-forge/miniforge/releases/latest/>`__.
 
 Set Up the Environment
 ------------------------------
@@ -54,10 +54,10 @@ Set Up the Environment
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
 #. Create and activate a customer conda environment:
  
-     .. code-block:: sh
+    .. code-block:: sh
 
-    conda create -n inductor_cpu_windows python=3.10 -y 
-    conda activate inductor_cpu_windows
+      conda create -n inductor_cpu_windows python=3.10 -y 
+      conda activate inductor_cpu_windows
 
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
 
