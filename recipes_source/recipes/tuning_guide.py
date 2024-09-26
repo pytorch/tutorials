@@ -68,8 +68,9 @@ General optimizations
 # already implement this optimization.
 
 ###############################################################################
-# Use parameter.grad = None instead of model.zero_grad() or optimizer.zero_grad()
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# You can use 
+parameter.grad = None 
+###############################################################################
 # Instead of calling:
 model.zero_grad()
 # or

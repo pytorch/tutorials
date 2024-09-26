@@ -284,12 +284,12 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
         l = criterion(output, target_line_tensor[i])
         loss += l
 
-    loss.backward()
+    l.backward()
 
     for p in rnn.parameters():
         p.data.add_(p.grad.data, alpha=-learning_rate)
 
-    return output, loss.item() / input_line_tensor.size(0)
+    return output, l.item() / input_line_tensor.size(0)
 
 
 ######################################################################
