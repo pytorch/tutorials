@@ -30,8 +30,6 @@ During Installation, chosse `Desktop Development with C++` in the `Desktop & Mob
 .. note::
 
     We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
-    Please follow `Intel compiler setup guide <empty link>`_. (TODO: Intel will provide URL for this guide recently)
-
 
 Install Miniforge
 ^^^^^^^^^^^^^^^^^
@@ -54,7 +52,7 @@ Set Up Environment
     conda activate inductor_cpu_windows
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
 #. Use torchinductor on Windows CPU::
-    
+
     import torch
     def foo(x, y):
         a = torch.sin(x)
