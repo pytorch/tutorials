@@ -3,6 +3,9 @@
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
 
+.. warning::
+    PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also review our new documentation to learn more about how to build `iOS <https://pytorch.org/executorch/stable/demo-apps-ios.html>`_ and `Android <https://pytorch.org/executorch/stable/demo-apps-android.html>`_ apps with ExecuTorch.
+
 Introduction
 ------------
 
@@ -148,7 +151,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 4. Build and test the app in Xcode.
 
 How to use mobile interpreter + custom build
-------------------------------------------
+---------------------------------------------
 A custom PyTorch interpreter library can be created to reduce binary size, by only containing the operators needed by the model. In order to do that follow these steps:
 
 1. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:

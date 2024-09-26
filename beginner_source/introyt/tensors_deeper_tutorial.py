@@ -228,18 +228,7 @@ print(c)
 # integer with the ``.to()`` method. Note that ``c`` contains all the same
 # values as ``b``, but truncated to integers.
 # 
-# Available data types include:
-# 
-# -  ``torch.bool``
-# -  ``torch.int8``
-# -  ``torch.uint8``
-# -  ``torch.int16``
-# -  ``torch.int32``
-# -  ``torch.int64``
-# -  ``torch.half``
-# -  ``torch.float``
-# -  ``torch.double``
-# -  ``torch.bfloat``
+# For more information, see the `data types documentation <https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype>`__.
 # 
 # Math & Logic with PyTorch Tensors
 # ---------------------------------
@@ -292,14 +281,14 @@ print(dozens)
 # binary operation on tensors if dissimilar shape?
 # 
 # .. note::
-#      The following cell throws a run-time error. This is intentional.
+#    The following cell throws a run-time error. This is intentional.
 #
-# ::
+#    .. code-block:: sh
 #
-#    a = torch.rand(2, 3)
-#    b = torch.rand(3, 2)
+#       a = torch.rand(2, 3)
+#       b = torch.rand(3, 2)
 #
-#    print(a * b)
+#       print(a * b)
 #
 
 
@@ -378,7 +367,7 @@ print(d)
 #
 # -  The multiplication operation that created ``b`` was 
 #    broadcast over every “layer” of ``a``.
-# -  For ``c``, the operation was broadcast over ever layer and row of
+# -  For ``c``, the operation was broadcast over every layer and row of
 #    ``a`` - every 3-element column is identical. 
 # -  For ``d``, we switched it around - now every *row* is identical,
 #    across layers and columns.
@@ -390,17 +379,17 @@ print(d)
 # Here are some examples of attempts at broadcasting that will fail:
 # 
 # .. note::
-#       The following cell throws a run-time error. This is intentional.
+#    The following cell throws a run-time error. This is intentional.
 #
-# ::
+#    .. code-block:: python
 #
-#    a =     torch.ones(4, 3, 2)
+#       a =     torch.ones(4, 3, 2)
 #
-#    b = a * torch.rand(4, 3)    # dimensions must match last-to-first
+#       b = a * torch.rand(4, 3)    # dimensions must match last-to-first
 #
-#    c = a * torch.rand(   2, 3) # both 3rd & 2nd dims different
+#       c = a * torch.rand(   2, 3) # both 3rd & 2nd dims different
 #
-#    d = a * torch.rand((0, ))   # can't broadcast with an empty tensor
+#       d = a * torch.rand((0, ))   # can't broadcast with an empty tensor
 #
 
 
@@ -459,17 +448,19 @@ m1 = torch.rand(2, 2)                   # random matrix
 m2 = torch.tensor([[3., 0.], [0., 3.]]) # three times identity matrix
 
 print('\nVectors & Matrices:')
-print(torch.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
+print(torch.linalg.cross(v2, v1)) # negative of z unit vector (v1 x v2 == -v2 x v1)
 print(m1)
-m3 = torch.matmul(m1, m2)
+m3 = torch.linalg.matmul(m1, m2)
 print(m3)                  # 3 times m1
-print(torch.svd(m3))       # singular value decomposition
+print(torch.linalg.svd(m3))       # singular value decomposition
 
 
 ##################################################################################
 # This is a small sample of operations. For more details and the full inventory of
 # math functions, have a look at the
 # `documentation <https://pytorch.org/docs/stable/torch.html#math-operations>`__.
+# For more details and the full inventory of linear algebra operations, have a
+# look at this `documentation <https://pytorch.org/docs/stable/linalg.html>`__.
 # 
 # Altering Tensors in Place
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -544,11 +535,11 @@ d = torch.matmul(a, b, out=c)
 print(c)                # contents of c have changed
 
 assert c is d           # test c & d are same object, not just containing equal values
-assert id(c), old_id    # make sure that our new c is the same object as the old one
+assert id(c) == old_id  # make sure that our new c is the same object as the old one
 
 torch.rand(2, 2, out=c) # works for creation too!
 print(c)                # c has changed again
-assert id(c), old_id    # still the same object!
+assert id(c) == old_id  # still the same object!
 
 
 ##########################################################################
@@ -729,7 +720,7 @@ y = y.to(my_device)
 # following code will throw a runtime error, regardless of whether you
 # have a GPU device available:
 # 
-# ::
+# .. code-block:: python
 # 
 #    x = torch.rand(2, 2)
 #    y = torch.rand(2, 2, device='gpu')
@@ -820,9 +811,9 @@ print(d.shape)
 # Another place you might use ``unsqueeze()`` is to ease broadcasting.
 # Recall the example above where we had the following code:
 # 
-# ::
+# .. code-block:: python
 # 
-#    a =     torch.ones(4, 3, 2)
+#    a = torch.ones(4, 3, 2)
 # 
 #    c = a * torch.rand(   3, 1) # 3rd dim = 1, 2nd dim identical to a
 #    print(c)

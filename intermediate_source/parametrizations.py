@@ -19,7 +19,7 @@ Another way to regularize recurrent models is via
 This approach proposes to decouple the learning of the parameters from the
 learning of their norms.  To do so, the parameter is divided by its
 `Frobenius norm <https://en.wikipedia.org/wiki/Matrix_norm#Frobenius_norm>`_
-and a separate parameter encoding its norm is learnt.
+and a separate parameter encoding its norm is learned.
 A similar regularization was proposed for GANs under the name of
 "`spectral normalization <https://pytorch.org/docs/stable/generated/torch.nn.utils.spectral_norm.html>`_". This method
 controls the Lipschitz constant of the network by dividing its parameters by
@@ -84,7 +84,7 @@ out = layer(torch.rand(8, 3))
 # 2) It does not separate the layer and the parametrization.  If the parametrization were
 #    more difficult, we would have to rewrite its code for each layer that we want to use it
 #    in.
-# 3) It recomputes the parametrization everytime we use the layer. If we use the layer
+# 3) It recomputes the parametrization every time we use the layer. If we use the layer
 #    several times during the forward pass, (imagine the recurrent kernel of an RNN), it
 #    would compute the same ``A`` every time that the layer is called.
 #
@@ -227,7 +227,7 @@ class CayleyMap(nn.Module):
 
     def forward(self, X):
         # (I + X)(I - X)^{-1}
-        return torch.solve(self.Id + X, self.Id - X).solution
+        return torch.linalg.solve(self.Id - X, self.Id + X)
 
 layer = nn.Linear(3, 3)
 parametrize.register_parametrization(layer, "weight", Skew())
@@ -255,11 +255,11 @@ parametrize.register_parametrization(layer_spd, "weight", Symmetric())
 parametrize.register_parametrization(layer_spd, "weight", MatrixExponential())
 X = layer_spd.weight
 print(torch.dist(X, X.T))                        # X is symmetric
-print((torch.symeig(X).eigenvalues > 0.).all())  # X is positive definite
+print((torch.linalg.eigvalsh(X) > 0.).all())  # X is positive definite
 
 ###############################################################################
-# Intializing parametrizations
-# ----------------------------
+# Initializing parametrizations
+# -----------------------------
 #
 # Parametrizations come with a mechanism to initialize them. If we implement a method
 # ``right_inverse`` with signature
@@ -301,13 +301,13 @@ class CayleyMap(nn.Module):
     def forward(self, X):
         # Assume X skew-symmetric
         # (I + X)(I - X)^{-1}
-        return torch.solve(self.Id + X, self.Id - X).solution
+        return torch.linalg.solve(self.Id - X, self.Id + X)
 
     def right_inverse(self, A):
         # Assume A orthogonal
         # See https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map
-        # (X - I)(X + I)^{-1}
-        return torch.solve(X - self.Id, self.Id + X).solution
+        # (A - I)(A + I)^{-1}
+        return torch.linalg.solve(A + self.Id, self.Id - A)
 
 layer_orthogonal = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
@@ -327,7 +327,7 @@ layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
 ###############################################################################
 # The name of this method comes from the fact that we would often expect
 # that ``forward(right_inverse(X)) == X``. This is a direct way of rewriting that
-# the forward afer the initalization with value ``X`` should return the value ``X``.
+# the forward after the initialization with value ``X`` should return the value ``X``.
 # This constraint is not strongly enforced in practice. In fact, at times, it might be of
 # interest to relax this relation. For example, consider the following implementation
 # of a randomized pruning method:

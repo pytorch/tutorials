@@ -44,7 +44,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Initialize the optimizer
 # 4. Save and load the model via ``state_dict``
 # 5. Save and load the entire model
@@ -62,7 +62,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -117,7 +117,7 @@ torch.save(net.state_dict(), PATH)
 
 # Load
 model = Net()
-model.load_state_dict(torch.load(PATH))
+model.load_state_dict(torch.load(PATH, weights_only=True))
 model.eval()
 
 
@@ -153,7 +153,7 @@ model.eval()
 
 
 ######################################################################
-# Again here, remember that you must call model.eval() to set dropout and
+# Again here, remember that you must call ``model.eval()`` to set dropout and
 # batch normalization layers to evaluation mode before running inference.
 # 
 # Congratulations! You have successfully saved and load models for

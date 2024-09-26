@@ -10,7 +10,7 @@
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Build the Neural Network
-===================
+========================
 
 Neural networks comprise of layers/modules that perform operations on data.
 The `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides all the building blocks you need to
@@ -32,12 +32,17 @@ from torchvision import datasets, transforms
 #############################################
 # Get Device for Training
 # -----------------------
-# We want to be able to train our model on a hardware accelerator like the GPU,
-# if it is available. Let's check to see if
-# `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we
-# continue to use the CPU.
+# We want to be able to train our model on a hardware accelerator like the GPU or MPS,
+# if available. Let's check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_
+# or `torch.backends.mps <https://pytorch.org/docs/stable/notes/mps.html>`_ are available, otherwise we use the CPU.
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 print(f"Using {device} device")
 
 ##############################################
@@ -49,7 +54,7 @@ print(f"Using {device} device")
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
-        super(NeuralNetwork, self).__init__()
+        super().__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(28*28, 512),
@@ -192,5 +197,5 @@ for name, param in model.named_parameters():
 
 #################################################################
 # Further Reading
-# --------------
+# -----------------
 # - `torch.nn API <https://pytorch.org/docs/stable/nn.html>`_

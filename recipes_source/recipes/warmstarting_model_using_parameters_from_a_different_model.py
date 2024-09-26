@@ -21,7 +21,7 @@ Setup
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-::
+.. code-block:: sh
 
    pip install torch
    
@@ -34,7 +34,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network A and B
+# 2. Define and initialize the neural network A and B
 # 3. Save model A
 # 4. Load into model B
 # 
@@ -51,7 +51,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# 2. Define and intialize the neural network A and B
+# 2. Define and initialize the neural network A and B
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -124,7 +124,7 @@ torch.save(netA.state_dict(), PATH)
 # are loading into.
 # 
 
-netB.load_state_dict(torch.load(PATH), strict=False)
+netB.load_state_dict(torch.load(PATH, weights_only=True), strict=False)
 
 
 ######################################################################

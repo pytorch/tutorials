@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 (beta) Building a Simple CPU Performance Profiler with FX
-*******************************************************
+*********************************************************
 **Author**: `James Reed <https://github.com/jamesr66a>`_
 
 In this tutorial, we are going to use FX to do the following:
@@ -117,7 +117,7 @@ class ProfilingInterpreter(Interpreter):
 
     ######################################################################
     # Next, let's override our first method: ``run()``. ``Interpreter``'s ``run``
-    # method is the top-level entrypoint for execution of the model. We will
+    # method is the top-level entry point for execution of the model. We will
     # want to intercept this so that we can record the total runtime of the
     # model.
 
@@ -129,7 +129,7 @@ class ProfilingInterpreter(Interpreter):
         # Record the time we finished running the model
         t_end = time.time()
         # Store the total elapsed time this model execution took in the
-        # ProfilingInterpreter
+        # ``ProfilingInterpreter``
         self.total_runtime_sec.append(t_end - t_start)
         return return_val
 
@@ -176,7 +176,7 @@ class ProfilingInterpreter(Interpreter):
             # time each node took with respect to the whole network.
             pct_total = mean_runtime / mean_total_runtime * 100
             # Record the node's type, name of the node, mean runtime, and
-            # percent runtim
+            # percent runtime.
             node_summaries.append(
                 [node.op, str(node), mean_runtime, pct_total])
 
@@ -214,7 +214,7 @@ print(interp.summary(True))
 ######################################################################
 # There are two things we should call out here:
 #
-# * MaxPool2d takes up the most time. This is a known issue:
+# * ``MaxPool2d`` takes up the most time. This is a known issue:
 #   https://github.com/pytorch/pytorch/issues/51393
 # * BatchNorm2d also takes up significant time. We can continue this
 #   line of thinking and optimize this in the Conv-BN Fusion with FX
@@ -226,7 +226,7 @@ print(interp.summary(True))
 # As we can see, using FX we can easily capture PyTorch programs (even
 # ones we don't have the source code for!) in a machine-interpretable
 # format and use that for analysis, such as the performance analysis
-# we've done here. FX opens up an exiciting world of possibilities for
+# we've done here. FX opens up an exciting world of possibilities for
 # working with PyTorch programs.
 #
 # Finally, since FX is still in beta, we would be happy to hear any

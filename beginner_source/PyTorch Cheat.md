@@ -102,7 +102,7 @@ See [math operations](https://pytorch.org/docs/stable/torch.html?highlight=mm#ma
 ### GPU Usage
 
 ```
-torch.cuda.is_available                                 # check for cuda
+torch.cuda.is_available()                                 # check for cuda
 x.cuda()                                                # move x's data from CPU to GPU and return new object
 x.cpu()                                                 # move x's data from GPU to CPU and return new object
 

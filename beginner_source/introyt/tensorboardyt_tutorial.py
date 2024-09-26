@@ -26,12 +26,16 @@ Matplotlib, and TensorBoard.
 
 With ``conda``:
 
-``conda install pytorch torchvision -c pytorch``
-``conda install matplotlib tensorboard``
+.. code-block:: sh
+
+    conda install pytorch torchvision -c pytorch
+    conda install matplotlib tensorboard
 
 With ``pip``:
 
-``pip install torch torchvision matplotlib tensorboard``
+.. code-block:: sh
+
+    pip install torch torchvision matplotlib tensorboard
 
 Once the dependencies are installed, restart this notebook in the Python
 environment where you installed them.
@@ -64,6 +68,13 @@ import numpy as np
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
 
+# In case you are using an environment that has TensorFlow installed,
+# such as Google Colab, uncomment the following code to avoid
+# a bug with saving embeddings to your TensorBoard directory
+
+# import tensorflow as tf
+# import tensorboard as tb
+# tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
 
 ######################################################################
 # Showing Images in TensorBoard
@@ -207,13 +218,14 @@ for epoch in range(1):  # loop over the dataset multiple times
             # Check against the validation set
             running_vloss = 0.0
             
-            net.train(False) # Don't need to track gradents for validation
+            # In evaluation mode some model specific operations can be omitted eg. dropout layer
+            net.train(False) # Switching to evaluation mode, eg. turning off regularisation
             for j, vdata in enumerate(validation_loader, 0):
                 vinputs, vlabels = vdata
                 voutputs = net(vinputs)
                 vloss = criterion(voutputs, vlabels)
                 running_vloss += vloss.item()
-            net.train(True) # Turn gradients back on for training
+            net.train(True) # Switching back to training mode, eg. turning on regularisation
             
             avg_loss = running_loss / 1000
             avg_vloss = running_vloss / len(validation_loader)
@@ -237,7 +249,7 @@ writer.flush()
 # 
 # TensorBoard can also be used to examine the data flow within your model.
 # To do this, call the ``add_graph()`` method with a model and sample
-# input. When you open
+# input:
 # 
 
 # Again, grab a single mini-batch of images

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Single-Machine Model Parallel Best Practices
-================================
+============================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 Model parallel is widely-used in distributed training
@@ -259,11 +259,11 @@ class PipelineParallelResNet50(ModelParallelResNet50):
         ret = []
 
         for s_next in splits:
-            # A. s_prev runs on cuda:1
+            # A. ``s_prev`` runs on ``cuda:1``
             s_prev = self.seq2(s_prev)
             ret.append(self.fc(s_prev.view(s_prev.size(0), -1)))
 
-            # B. s_next runs on cuda:0, which can run concurrently with A
+            # B. ``s_next`` runs on ``cuda:0``, which can run concurrently with A
             s_prev = self.seq1(s_next).to('cuda:1')
 
         s_prev = self.seq2(s_prev)
@@ -339,7 +339,7 @@ plt.close(fig)
 # still opportunities to further accelerate the training process. For example,
 # all operations on ``cuda:0`` is placed on its default stream. It means that
 # computations on the next split cannot overlap with the copy operation of the
-# prev split. However, as prev and next splits are different tensors, there is
+# ``prev`` split. However, as ``prev`` and next splits are different tensors, there is
 # no problem to overlap one's computation with the other one's copy. The
 # implementation need to use multiple streams on both GPUs, and different
 # sub-network structures require different stream management strategies. As no

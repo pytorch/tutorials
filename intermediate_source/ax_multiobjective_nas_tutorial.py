@@ -48,7 +48,7 @@ This tutorial makes use of the following PyTorch libraries:
 # Our goal is to optimize the PyTorch Lightning training job defined in
 # `mnist_train_nas.py <https://github.com/pytorch/tutorials/tree/main/intermediate_source/mnist_train_nas.py>`__.
 # To do this using TorchX, we write a helper function that takes in
-# the values of the architcture and hyperparameters of the training
+# the values of the architecture and hyperparameters of the training
 # job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
 # with the appropriate settings.
 #
@@ -72,12 +72,12 @@ def trainer(
     trial_idx: int = -1,
 ) -> specs.AppDef:
 
-    # define the log path so we can pass it to the TorchX AppDef
+    # define the log path so we can pass it to the TorchX ``AppDef``
     if trial_idx >= 0:
         log_path = Path(log_path).joinpath(str(trial_idx)).absolute().as_posix()
 
     return utils.python(
-        # command line args to the training script
+        # command line arguments to the training script
         "--log_path",
         log_path,
         "--hidden_size_1",
@@ -126,15 +126,15 @@ ax_runner = TorchXRunner(
     tracker_base="/tmp/",
     component=trainer,
     # NOTE: To launch this job on a cluster instead of locally you can
-    # specify a different scheduler and adjust args appropriately.
+    # specify a different scheduler and adjust arguments appropriately.
     scheduler="local_cwd",
     component_const_params={"log_path": log_dir},
     cfg={},
 )
 
 ######################################################################
-# Setting up the SearchSpace
-# --------------------------
+# Setting up the ``SearchSpace``
+# ------------------------------
 #
 # First, we define our search space. Ax supports both range parameters
 # of type integer and float as well as choice parameters which can have
@@ -154,7 +154,7 @@ from ax.core import (
 parameters = [
     # NOTE: In a real-world setting, hidden_size_1 and hidden_size_2
     # should probably be powers of 2, but in our simple example this
-    # would mean that num_params can't take on that many values, which
+    # would mean that ``num_params`` can't take on that many values, which
     # in turn makes the Pareto frontier look pretty weird.
     RangeParameter(
         name="hidden_size_1",
@@ -189,7 +189,7 @@ parameters = [
         upper=0.5,
         parameter_type=ParameterType.FLOAT,
     ),
-    ChoiceParameter(  # NOTE: ChoiceParameters don't require log-scale
+    ChoiceParameter(  # NOTE: ``ChoiceParameters`` don't require log-scale
         name="batch_size",
         values=[32, 64, 128, 256],
         parameter_type=ParameterType.INT,
@@ -212,7 +212,7 @@ search_space = SearchSpace(
 #
 # Ax has the concept of a `Metric <https://ax.dev/api/core.html#metric>`__
 # that defines properties of outcomes and how observations are obtained
-# for these outcomes. This allows e.g. encodig how data is fetched from
+# for these outcomes. This allows e.g. encoding how data is fetched from
 # some distributed execution backend and post-processed before being
 # passed as input to Ax.
 #
@@ -229,24 +229,24 @@ search_space = SearchSpace(
 # index (see the ``trainer()`` function above). We will define a metric
 # class that is aware of that logging directory. By subclassing
 # `TensorboardCurveMetric <https://ax.dev/api/metrics.html?highlight=tensorboardcurvemetric#ax.metrics.tensorboard.TensorboardCurveMetric>`__
-# we get the logic to read and parse the Tensorboard logs for free.
+# we get the logic to read and parse the TensorBoard logs for free.
 #
 
-from ax.metrics.tensorboard import TensorboardCurveMetric
+from ax.metrics.tensorboard import TensorboardMetric
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 
+class MyTensorboardMetric(TensorboardMetric):
 
-class MyTensorboardMetric(TensorboardCurveMetric):
-
-    # NOTE: We need to tell the new Tensorboard metric how to get the id /
-    # file handle for the tensorboard logs from a trial. In this case
+    # NOTE: We need to tell the new TensorBoard metric how to get the id /
+    # file handle for the TensorBoard logs from a trial. In this case
     # our convention is to just save a separate file per trial in
-    # the pre-specified log dir.
-    @classmethod
-    def get_ids_from_trials(cls, trials):
-        return {
-            trial.index: Path(log_dir).joinpath(str(trial.index)).as_posix()
-            for trial in trials
-        }
+    # the prespecified log dir.
+    def _get_event_multiplexer_for_trial(self, trial):
+        mul = event_multiplexer.EventMultiplexer(max_reload_threads=20)
+        mul.AddRunsFromDirectory(Path(log_dir).joinpath(str(trial.index)).as_posix(), None)
+        mul.Reload()
+    
+        return mul
 
     # This indicates whether the metric is queryable while the trial is
     # still running. We don't use this in the current tutorial, but Ax
@@ -257,28 +257,28 @@ class MyTensorboardMetric(TensorboardCurveMetric):
 
 
 ######################################################################
-# Now we can instatiate the metrics for accuracy and the number of
+# Now we can instantiate the metrics for accuracy and the number of
 # model parameters. Here `curve_name` is the name of the metric in the
-# Tensorboard logs, while `name` is the metric name used internally
+# TensorBoard logs, while `name` is the metric name used internally
 # by Ax. We also specify `lower_is_better` to indicate the favorable
 # direction of the two metrics.
 #
 
 val_acc = MyTensorboardMetric(
     name="val_acc",
-    curve_name="val_acc",
+    tag="val_acc",
     lower_is_better=False,
 )
 model_num_params = MyTensorboardMetric(
     name="num_params",
-    curve_name="num_params",
+    tag="num_params",
     lower_is_better=True,
 )
 
 
 ######################################################################
-# Setting up the OptimizationConfig
-# ----------------------------------
+# Setting up the ``OptimizationConfig``
+# -------------------------------------
 #
 # The way to tell Ax what it should optimize is by means of an
 # `OptimizationConfig <https://ax.dev/api/core.html#module-ax.core.optimization_config>`__.
@@ -335,8 +335,8 @@ experiment = Experiment(
 )
 
 ######################################################################
-# Choosing the GenerationStrategy
-# -------------------------------
+# Choosing the Generation Strategy
+# --------------------------------
 #
 # A `GenerationStrategy <https://ax.dev/api/modelbridge.html#ax.modelbridge.generation_strategy.GenerationStrategy>`__
 # is the abstract representation of how we would like to perform the
@@ -366,7 +366,7 @@ gs = choose_generation_strategy(
 # Configuring the Scheduler
 # -------------------------
 #
-# The `Scheduler` (TODO: link) acts as the loop control for the optimization.
+# The ``Scheduler`` acts as the loop control for the optimization.
 # It communicates with the backend to launch trials, check their status,
 # and retrieve results. In the case of this tutorial, it is simply reading
 # and parsing the locally saved logs. In a remote execution setting,
@@ -404,7 +404,7 @@ scheduler = Scheduler(
 # ------------------------
 #
 # Now that everything is configured, we can let Ax run the optimization
-# in a fully automated fashion. The Scheduler will periodially check
+# in a fully automated fashion. The Scheduler will periodically check
 # the logs for the status of all currently running trials, and if a
 # trial completes the scheduler will update its status on the
 # experiment and fetch the observations needed for the Bayesian
@@ -479,7 +479,7 @@ from ax.modelbridge.cross_validation import compute_diagnostics, cross_validate
 from ax.plot.diagnostic import interact_cross_validation_plotly
 from ax.utils.notebook.plotting import init_notebook_plotting, render
 
-cv = cross_validate(model=gs.model)  # The surrogate model is stored on the GenerationStrategy
+cv = cross_validate(model=gs.model)  # The surrogate model is stored on the ``GenerationStrategy``
 compute_diagnostics(cv)
 
 interact_cross_validation_plotly(cv)
@@ -508,7 +508,7 @@ interact_contour_plotly(model=gs.model, metric_name="num_params")
 
 
 ######################################################################
-# Acknowledgements
+# Acknowledgments
 # ----------------
 #
 # We thank the TorchX team (in particular Kiuk Chung and Tristan Rice)

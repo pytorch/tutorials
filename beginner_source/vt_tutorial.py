@@ -1,6 +1,6 @@
 """
 Optimizing Vision Transformer Model for Deployment
-===========================
+==================================================
 
 `Jeff Tang <https://github.com/jeffxtang>`_,
 `Geeta Chauhan <https://github.com/gchauhan/>`_
@@ -30,7 +30,7 @@ to the model along the steps.
 # Convolutional Neural Networks (CNNs) have been the main models for image
 # classification since deep learning took off in 2012, but CNNs typically
 # require hundreds of millions of images for training to achieve the
-# SOTAresults. DeiT is a vision transformer model that requires a lot less
+# SOTA results. DeiT is a vision transformer model that requires a lot less
 # data and computing resources for training to compete with the leading
 # CNNs in performing image classification, which is made possible by two
 # key components of of DeiT:
@@ -50,16 +50,20 @@ to the model along the steps.
 # Classifying Images with DeiT
 # -------------------------------
 #
-# Follow the README at the DeiT repo for detailed information on how to
+# Follow the ``README.md`` at the DeiT repository for detailed information on how to
 # classify images using DeiT, or for a quick test, first install the
-# required packages:
-
-# pip install torch torchvision timm pandas requests
+# required packages: 
+#
+# .. code-block:: python
+#
+#    pip install torch torchvision timm pandas requests
 
 #######################################################
-# To run in Google Colab, uncomment the following line:
-
-# !pip install timm pandas requests
+# To run in Google Colab, install dependencies by running the following command:
+#
+# .. code-block:: python
+#
+#    !pip install timm pandas requests
 
 #############################
 # then run the script below:
@@ -94,8 +98,8 @@ print(clsidx.item())
 
 ######################################################################
 # The output should be 269, which, according to the ImageNet list of class
-# index to `labels file <https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a>`_, maps to ‘timber
-# wolf, grey wolf, gray wolf, Canis lupus’.
+# index to `labels file <https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a>`_, maps to ``timber
+# wolf, grey wolf, gray wolf, Canis lupus``.
 #
 # Now that we have verified that we can use the DeiT model to classify
 # images, let’s see how to modify the model so it can run on iOS and
@@ -120,7 +124,7 @@ scripted_model.save("fbdeit_scripted.pt")
 
 
 ######################################################################
-# The scripted model file fbdeit_scripted.pt of size about 346MB is
+# The scripted model file ``fbdeit_scripted.pt`` of size about 346MB is
 # generated.
 #
 
@@ -138,8 +142,8 @@ scripted_model.save("fbdeit_scripted.pt")
 # Now run the code below:
 #
 
-# Use 'fbgemm' for server inference and 'qnnpack' for mobile inference
-backend = "fbgemm" # replaced with qnnpack causing much worse inference speed for quantized model on this notebook
+# Use 'x86' for server inference (the old 'fbgemm' is still available but 'x86' is the recommended default) and ``qnnpack`` for mobile inference.
+backend = "x86" # replaced with ``qnnpack`` causing much worse inference speed for quantized model on this notebook
 model.qconfig = torch.quantization.get_default_qconfig(backend)
 torch.backends.quantized.engine = backend
 
@@ -150,7 +154,7 @@ scripted_quantized_model.save("fbdeit_scripted_quantized.pt")
 
 ######################################################################
 # This generates the scripted and quantized version of the model
-# fbdeit_quantized_scripted.pt, with size about 89MB, a 74% reduction of
+# ``fbdeit_quantized_scripted.pt``, with size about 89MB, a 74% reduction of
 # the non-quantized model size of 346MB!
 #
 
@@ -177,7 +181,7 @@ optimized_scripted_quantized_model.save("fbdeit_optimized_scripted_quantized.pt"
 
 
 ######################################################################
-# The generated fbdeit_optimized_scripted_quantized.pt file has about the
+# The generated ``fbdeit_optimized_scripted_quantized.pt`` file has about the
 # same size as the quantized, scripted, but non-optimized model. The
 # inference result remains the same.
 #
@@ -237,7 +241,7 @@ print("lite model: {:.2f}ms".format(prof5.self_cpu_time_total/1000))
 ######################################################################
 # The results running on a Google Colab are:
 #
-# ::
+# .. code-block:: sh
 #
 #    original model: 1236.69ms
 #    scripted model: 1226.72ms

@@ -1,6 +1,6 @@
 """
 (prototype) FX Graph Mode Post Training Dynamic Quantization
-===========================================================
+============================================================
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
@@ -18,7 +18,8 @@ tldr; The FX Graph Mode API for dynamic quantization looks like the following:
     from torch.quantization.quantize_fx import prepare_fx, convert_fx
 
     float_model.eval()
-    qconfig = get_default_qconfig("fbgemm")
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    qconfig = get_default_qconfig("x86")
     qconfig_mapping = QConfigMapping().set_global(qconfig)
     prepared_model = prepare_fx(float_model, qconfig_mapping, example_inputs)  # fuse modules and insert observers
     # no calibration is required for dynamic quantization
@@ -170,7 +171,8 @@ model = LSTMModel(
 model.load_state_dict(
     torch.load(
         model_data_filepath + 'word_language_model_quantize.pth',
-        map_location=torch.device('cpu')
+        map_location=torch.device('cpu'),
+        weights_only=True
         )
     )
 
@@ -238,9 +240,27 @@ qconfig_mapping = (QConfigMapping()
     .set_object_type(nn.LSTM, default_dynamic_qconfig)
     .set_object_type(nn.Linear, default_dynamic_qconfig)
 )
-# Deepcopying the original model because quantization api changes the model inplace and we want
+# Load model to create the original model because quantization api changes the model inplace and we want
 # to keep the original model for future comparison
-model_to_quantize = copy.deepcopy(model)
+
+
+model_to_quantize = LSTMModel(
+    ntoken = ntokens,
+    ninp = 512,
+    nhid = 256,
+    nlayers = 5,
+)
+
+model_to_quantize.load_state_dict(
+    torch.load(
+        model_data_filepath + 'word_language_model_quantize.pth',
+        map_location=torch.device('cpu')
+        )
+    )
+
+model_to_quantize.eval()
+
+
 prepared_model = prepare_fx(model_to_quantize, qconfig_mapping, example_inputs)
 print("prepared model:", prepared_model)
 quantized_model = convert_fx(prepared_model)

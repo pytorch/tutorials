@@ -80,7 +80,7 @@ print(f"Zeros Tensor: \n {zeros_tensor}")
 
 ######################################################################
 # Attributes of a Tensor
-# ~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~
 #
 # Tensor attributes describe their shape, datatype, and the device on which they are stored.
 
@@ -97,7 +97,7 @@ print(f"Device tensor is stored on: {tensor.device}")
 
 ######################################################################
 # Operations on Tensors
-# ~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Over 100 tensor operations, including arithmetic, linear algebra, matrix manipulation (transposing,
 # indexing, slicing), sampling and more are
@@ -133,7 +133,7 @@ print(tensor)
 ######################################################################
 # **Joining tensors** You can use ``torch.cat`` to concatenate a sequence of tensors along a given dimension.
 # See also `torch.stack <https://pytorch.org/docs/stable/generated/torch.stack.html>`__,
-# another tensor joining op that is subtly different from ``torch.cat``.
+# another tensor joining operator that is subtly different from ``torch.cat``.
 t1 = torch.cat([tensor, tensor, tensor], dim=1)
 print(t1)
 

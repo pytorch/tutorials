@@ -7,7 +7,9 @@ Reinforcement Learning (DQN) Tutorial
 
 
 This tutorial shows how to use PyTorch to train a Deep Q Learning (DQN) agent
-on the CartPole-v1 task from `Gymnasium <https://www.gymnasium.farama.org>`__.
+on the CartPole-v1 task from `Gymnasium <https://gymnasium.farama.org>`__.
+
+You might find it helpful to read the original `Deep Q Learning (DQN) <https://arxiv.org/abs/1312.5602>`__ paper
 
 **Task**
 
@@ -17,9 +19,9 @@ information about the environment and other more challenging environments at
 `Gymnasium's website <https://gymnasium.farama.org/environments/classic_control/cart_pole/>`__.
 
 .. figure:: /_static/img/cartpole.gif
-   :alt: cartpole
+   :alt: CartPole
 
-   cartpole
+   CartPole
 
 As the agent observes the current state of the environment and chooses
 an action, the environment *transitions* to a new state, and also
@@ -45,7 +47,7 @@ First, let's import needed packages. Firstly, we need
 `gymnasium <https://gymnasium.farama.org/>`__ for the environment,
 installed by using `pip`. This is a fork of the original OpenAI
 Gym project and maintained by the same team since Gym v0.19.
-If you are running this in Google colab, run:
+If you are running this in Google Colab, run:
 
 .. code-block:: bash
 
@@ -82,8 +84,12 @@ if is_ipython:
 
 plt.ion()
 
-# if gpu is to be used
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# if GPU is to be used
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else
+    "mps" if torch.backends.mps.is_available() else
+    "cpu"
+)
 
 
 ######################################################################
@@ -96,7 +102,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # batch are decorrelated. It has been shown that this greatly stabilizes
 # and improves the DQN training procedure.
 #
-# For this, we're going to need two classses:
+# For this, we're going to need two classes:
 #
 # -  ``Transition`` - a named tuple representing a single transition in
 #    our environment. It essentially maps (state, action) pairs
@@ -172,7 +178,7 @@ class ReplayMemory(object):
 #
 # .. math:: \delta = Q(s, a) - (r + \gamma \max_a' Q(s', a))
 #
-# To minimise this error, we will use the `Huber
+# To minimize this error, we will use the `Huber
 # loss <https://en.wikipedia.org/wiki/Huber_loss>`__. The Huber loss acts
 # like the mean squared error when the error is small, but like the mean
 # absolute error when the error is large - this makes it more robust to
@@ -194,7 +200,7 @@ class ReplayMemory(object):
 # Q-network
 # ^^^^^^^^^
 #
-# Our model will be a convolutional neural network that takes in the
+# Our model will be a feed forward  neural network that takes in the
 # difference between the current and previous screen patches. It has two
 # outputs, representing :math:`Q(s, \mathrm{left})` and
 # :math:`Q(s, \mathrm{right})` (where :math:`s` is the input to the
@@ -227,13 +233,13 @@ class DQN(nn.Module):
 # This cell instantiates our model and its optimizer, and defines some
 # utilities:
 #
-# -  ``select_action`` - will select an action accordingly to an epsilon
+# -  ``select_action`` - will select an action according to an epsilon
 #    greedy policy. Simply put, we'll sometimes use our model for choosing
 #    the action, and sometimes we'll just sample one uniformly. The
 #    probability of choosing a random action will start at ``EPS_START``
 #    and will decay exponentially towards ``EPS_END``. ``EPS_DECAY``
 #    controls the rate of the decay.
-# -  ``plot_durations`` - a helper for plotting the durations of episodes,
+# -  ``plot_durations`` - a helper for plotting the duration of episodes,
 #    along with an average over the last 100 episodes (the measure used in
 #    the official evaluations). The plot will be underneath the cell
 #    containing the main training loop, and will update after every
@@ -246,7 +252,7 @@ class DQN(nn.Module):
 # EPS_END is the final value of epsilon
 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
 # TAU is the update rate of the target network
-# LR is the learning rate of the AdamW optimizer
+# LR is the learning rate of the ``AdamW`` optimizer
 BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
@@ -283,7 +289,7 @@ def select_action(state):
             # t.max(1) will return the largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            return policy_net(state).max(1)[1].view(1, 1)
+            return policy_net(state).max(1).indices.view(1, 1)
     else:
         return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
 
@@ -360,12 +366,12 @@ def optimize_model():
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
-    # on the "older" target_net; selecting their best reward with max(1)[0].
+    # on the "older" target_net; selecting their best reward with max(1).values
     # This is merged based on the mask, such that we'll have either the expected
     # state value or 0 in case the state was final.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
+        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1).values
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
@@ -391,19 +397,19 @@ def optimize_model():
 #
 # Below, `num_episodes` is set to 600 if a GPU is available, otherwise 50 
 # episodes are scheduled so training does not take too long. However, 50 
-# episodes is insufficient for to observe good performance on cartpole.
+# episodes is insufficient for to observe good performance on CartPole.
 # You should see the model constantly achieve 500 steps within 600 training 
 # episodes. Training RL agents can be a noisy process, so restarting training
 # can produce better results if convergence is not observed.
 #
 
-if torch.cuda.is_available():
+if torch.cuda.is_available() or torch.backends.mps.is_available():
     num_episodes = 600
 else:
     num_episodes = 50
 
 for i_episode in range(num_episodes):
-    # Initialize the environment and get it's state
+    # Initialize the environment and get its state
     state, info = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():

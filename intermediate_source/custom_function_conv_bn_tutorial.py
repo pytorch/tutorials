@@ -35,7 +35,7 @@ may not actually be reduced. See the final section for more details.
 For simplicity, in this tutorial we hardcode `bias=False`, `stride=1`, `padding=0`, `dilation=1`,
 and `groups=1` for Conv2D. For BatchNorm2D, we hardcode `eps=1e-3`, `momentum=0.1`,
 `affine=False`, and `track_running_statistics=False`. Another small difference
-is that we add epsilon in the denomator outside of the square root in the computation
+is that we add epsilon in the denominator outside of the square root in the computation
 of batch norm.
 
 [0] https://nenadmarkus.com/p/fusing-batchnorm-and-conv/
@@ -72,7 +72,7 @@ class Conv2D(torch.autograd.Function):
         return convolution_backward(grad_out, X, weight)
 
 ######################################################################
-# When testing with gradcheck, it is important to use double precision
+# When testing with ``gradcheck``, it is important to use double precision
 weight = torch.rand(5, 3, 3, 3, requires_grad=True, dtype=torch.double)
 X = torch.rand(10, 3, 7, 7, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(Conv2D.apply, (X, weight))
@@ -80,38 +80,38 @@ torch.autograd.gradcheck(Conv2D.apply, (X, weight))
 ######################################################################
 # Backward Formula Implementation for Batch Norm
 # -------------------------------------------------------------------
-# Batch Norm has two modes: training and eval mode. In training mode
-# the sample statistics are a function of the inputs. In eval mode,
+# Batch Norm has two modes: training and ``eval`` mode. In training mode
+# the sample statistics are a function of the inputs. In ``eval`` mode,
 # we use the saved running statistics, which are not a function of the inputs.
 # This makes non-training mode's backward significantly simpler. Below
 # we implement and test only the training mode case.
 def unsqueeze_all(t):
-    # Helper function to unsqueeze all the dimensions that we reduce over
+    # Helper function to ``unsqueeze`` all the dimensions that we reduce over
     return t[None, :, None, None]
 
 def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps):
-    # We use the formula: out = (X - mean(X)) / (sqrt(var(X)) + eps)
-    # in batch norm 2d's forward. To simplify our derivation, we follow the
+    # We use the formula: ``out = (X - mean(X)) / (sqrt(var(X)) + eps)``
+    # in batch norm 2D forward. To simplify our derivation, we follow the
     # chain rule and compute the gradients as follows before accumulating
     # them all into a final grad_input.
-    #  1) 'grad of out wrt var(X)' * 'grad of var(X) wrt X'
-    #  2) 'grad of out wrt mean(X)' * 'grad of mean(X) wrt X'
-    #  3) 'grad of out wrt X in the numerator' * 'grad of X wrt X'
+    #  1) ``grad of out wrt var(X)`` * ``grad of var(X) wrt X``
+    #  2) ``grad of out wrt mean(X)`` * ``grad of mean(X) wrt X``
+    #  3) ``grad of out wrt X in the numerator`` * ``grad of X wrt X``
     # We then rewrite the formulas to use as few extra buffers as possible
     tmp = ((X - unsqueeze_all(sum) / N) * grad_out).sum(dim=(0, 2, 3))
     tmp *= -1
-    d_denom = tmp / (sqrt_var + eps)**2  # d_denom = -num / denom**2
-    # It is useful to delete tensors when you no longer need them with `del`
-    # For example, we could've done `del tmp` here because we won't use it later
-    # In this case, it's not a big difference because tmp only has size of (C,)
+    d_denom = tmp / (sqrt_var + eps)**2  # ``d_denom = -num / denom**2``
+    # It is useful to delete tensors when you no longer need them with ``del``
+    # For example, we could've done ``del tmp`` here because we won't use it later
+    # In this case, it's not a big difference because ``tmp`` only has size of (C,)
     # The important thing is avoid allocating NCHW-sized tensors unnecessarily
-    d_var = d_denom / (2 * sqrt_var)  # denom = torch.sqrt(var) + eps
-    # Compute d_mean_dx before allocating the final NCHW-sized grad_input buffer
+    d_var = d_denom / (2 * sqrt_var)  # ``denom = torch.sqrt(var) + eps``
+    # Compute ``d_mean_dx`` before allocating the final NCHW-sized grad_input buffer
     d_mean_dx = grad_out / unsqueeze_all(sqrt_var + eps)
     d_mean_dx = unsqueeze_all(-d_mean_dx.sum(dim=(0, 2, 3)) / N)
-    # d_mean_dx has already been reassigned to a C-sized buffer so no need to worry
+    # ``d_mean_dx`` has already been reassigned to a C-sized buffer so no need to worry
 
-    # (1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)
+    # ``(1) unbiased_var(x) = ((X - unsqueeze_all(mean))**2).sum(dim=(0, 2, 3)) / (N - 1)``
     grad_input = X * unsqueeze_all(d_var * N)
     grad_input += unsqueeze_all(-d_var * sum)
     grad_input *= 2 / ((N - 1) * N)
@@ -120,13 +120,13 @@ def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps):
     # (3) Add 'grad_out / <factor>' without allocating an extra buffer
     grad_input *= unsqueeze_all(sqrt_var + eps)
     grad_input += grad_out
-    grad_input /= unsqueeze_all(sqrt_var + eps)  # sqrt_var + eps > 0!
+    grad_input /= unsqueeze_all(sqrt_var + eps)  # ``sqrt_var + eps > 0!``
     return grad_input
 
 class BatchNorm(torch.autograd.Function):
     @staticmethod
     def forward(ctx, X, eps=1e-3):
-        # Don't save keepdim'd values for backward
+        # Don't save ``keepdim`` values for backward
         sum = X.sum(dim=(0, 2, 3))
         var = X.var(unbiased=True, dim=(0, 2, 3))
         N = X.numel() / X.size(1)
@@ -149,7 +149,7 @@ class BatchNorm(torch.autograd.Function):
         return batch_norm_backward(grad_out, X, ctx.sum, ctx.sqrt_var, ctx.N, ctx.eps)
 
 ######################################################################
-# Testing with gradcheck
+# Testing with ``gradcheck``
 a = torch.rand(1, 2, 3, 4, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(BatchNorm.apply, (a,), fast_mode=False)
 
@@ -228,7 +228,7 @@ class FusedConvBN(nn.Module):
         nn.init.kaiming_uniform_(self.conv_weight, a=math.sqrt(5))
 
 ######################################################################
-# Use gradcheck to validate the correctness of our backward formula
+# Use ``gradcheck`` to validate the correctness of our backward formula
 weight = torch.rand(5, 3, 3, 3, requires_grad=True, dtype=torch.double)
 X = torch.rand(2, 3, 4, 4, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(FusedConvBN2DFunction.apply, (X, weight))
@@ -236,7 +236,7 @@ torch.autograd.gradcheck(FusedConvBN2DFunction.apply, (X, weight))
 ######################################################################
 # Testing out our new Layer
 # -------------------------------------------------------------------
-# Use FusedConvBN to train a basic network
+# Use ``FusedConvBN`` to train a basic network
 # The code below is after some light modifications to the example here:
 # https://github.com/pytorch/examples/tree/master/mnist
 import torch.optim as optim
@@ -350,20 +350,20 @@ test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 ######################################################################
 # A Comparison of Memory Usage
 # -------------------------------------------------------------------
-# If cuda is enabled, print out memory usage for both `fused=True` and `fused=False`
-# For an example run on RTX 3070, CuDNN 8.0.5: fused peak memory: 1.56GB,
+# If CUDA is enabled, print out memory usage for both `fused=True` and `fused=False`
+# For an example run on NVIDIA GeForce RTX 3070, NVIDIA CUDA® Deep Neural Network library (cuDNN) 8.0.5: fused peak memory: 1.56GB,
 # unfused peak memory: 2.68GB
 #
 # It is important to note that the *peak* memory usage for this model may vary depending
-# the specific CuDNN convolution algorithm used. For shallower models, it
+# the specific cuDNN convolution algorithm used. For shallower models, it
 # may be possible for the peak memory allocated of the fused model to exceed
 # that of the unfused model! This is because the memory allocated to compute
-# certain CuDNN convolution algorithms can be high enough to "hide" the typical peak
+# certain cuDNN convolution algorithms can be high enough to "hide" the typical peak
 # you would expect to be near the start of the backward pass.
 #
 # For this reason, we also record and display the memory allocated at the end
 # of the forward pass as an approximation, and to demonstrate that we indeed
-# allocate one fewer buffer per fused conv-bn pair.
+# allocate one fewer buffer per fused ``conv-bn`` pair.
 from statistics import mean
 
 torch.backends.cudnn.enabled = True
@@ -384,7 +384,7 @@ if use_cuda:
             scheduler.step()
         peak_memory_allocated.append(torch.cuda.max_memory_allocated())
         torch.cuda.reset_peak_memory_stats()
-    print("CuDNN version:", torch.backends.cudnn.version())
+    print("cuDNN version:", torch.backends.cudnn.version())
     print()
     print("Peak memory allocated:")
     print(f"fused: {peak_memory_allocated[0]/1024**3:.2f}GB, unfused: {peak_memory_allocated[1]/1024**3:.2f}GB")

@@ -204,7 +204,7 @@ We'll compare the following three configurations:
 
 (2) `torch.set_num_threads <https://pytorch.org/docs/stable/generated/torch.set_num_threads.html>`_ = ``number of physical cores / number of workers`` (no core pinning)
 
-(3) core pinning via the launch script 
+(3) core pinning via the launch script (Required Torchserve>=0.6.1)
 
 After this exercise, we'll have verified that we prefer avoiding logical cores and prefer local memory access via core pinning with a real TorchServe use case. 
 
@@ -265,7 +265,7 @@ Additionally, notice that thread (TID:97097) was executing on a large number of 
 Compare local vs. remote memory access over time. We observe that about half, 51.09%, of the memory accesses were remote accesses, indicating sub-optimal NUMA configuration. 
 
 2. torch.set_num_threads = ``number of physical cores / number of workers`` (no core pinning) 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For an apple-to-apple comparison with launcher's core pinning, we'll set the number of threads to the number of cores divided by the number of workers (launcher does this internally). Add the following code snippet in the `base_handler <https://github.com/pytorch/serve/blob/master/ts/torch_handler/base_handler.py>`_:
 

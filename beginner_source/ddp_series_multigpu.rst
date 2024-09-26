@@ -1,6 +1,9 @@
-`Introduction <ddp_series_intro.html>`__ \|\| `What is DDP <ddp_series_theory.html>`__ \|\| **Single-Node Multi-GPU Training** \|\| `Fault
-Tolerance <ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
-training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\|
+`What is DDP <ddp_series_theory.html>`__ \|\|
+**Single-Node Multi-GPU Training** \|\|
+`Fault Tolerance <ddp_series_fault_tolerance.html>`__ \|\|
+`Multi-Node training <../intermediate/ddp_series_multinode.html>`__ \|\|
+`minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 
 Multi GPU training with DDP
@@ -11,6 +14,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       -  How to migrate a single-GPU training script to multi-GPU via DDP
       -  Setting up the distributed process group
@@ -23,6 +27,7 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
             :octicon:`code-square;1.0em;` View the code used in this tutorial on `GitHub <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
       
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       * High-level overview of `how DDP works  <ddp_series_theory.html>`__
       * A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance)
@@ -49,7 +54,6 @@ Along the way, we will talk through important concepts in distributed training w
 
 
 Diff for `single_gpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/single_gpu.py>`__ v/s `multigpu.py <https://github.com/pytorch/examples/blob/main/distributed/ddp-tutorial-series/multigpu.py>`__
-----------------------------------------------------
 
 These are the changes you typically make to a single-GPU training script to enable DDP.
 
@@ -60,22 +64,24 @@ Imports
 -  The distributed process group contains all the processes that can
    communicate and synchronize with each other.
 
-.. code:: diff
+.. code-block:: diff
 
-   import torch
-   import torch.nn.functional as F
-   from utils import MyTrainDataset
-    
-   + import torch.multiprocessing as mp
-   + from torch.utils.data.distributed import DistributedSampler
-   + from torch.nn.parallel import DistributedDataParallel as DDP
-   + from torch.distributed import init_process_group, destroy_process_group
-   + import os
+    import torch
+    import torch.nn.functional as F
+    from utils import MyTrainDataset
+
+    + import torch.multiprocessing as mp
+    + from torch.utils.data.distributed import DistributedSampler
+    + from torch.nn.parallel import DistributedDataParallel as DDP
+    + from torch.distributed import init_process_group, destroy_process_group
+    + import os
 
 
 Constructing the process group
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+-  First, before initializing the group process, call `set_device <https://pytorch.org/docs/stable/generated/torch.cuda.set_device.html?highlight=set_device#torch.cuda.set_device>`__,
+   which sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on `GPU:0`
 -  The process group can be initialized by TCP (default) or from a
    shared file-system. Read more on `process group
    initialization <https://pytorch.org/docs/stable/distributed.html#tcp-initialization>`__
@@ -84,26 +90,28 @@ Constructing the process group
 -  Read more about `choosing a DDP
    backend <https://pytorch.org/docs/stable/distributed.html#which-backend-to-use>`__
 
-.. code:: diff
+.. code-block:: diff
 
-   + def ddp_setup(rank: int, world_size: int):
-   +   """
-   +   Args:
-   +       rank: Unique identifier of each process
-   +      world_size: Total number of processes
-   +   """
-   +   os.environ["MASTER_ADDR"] = "localhost"
-   +   os.environ["MASTER_PORT"] = "12355"
-   +   init_process_group(backend="nccl", rank=rank, world_size=world_size)
+    + def ddp_setup(rank: int, world_size: int):
+    +   """
+    +   Args:
+    +       rank: Unique identifier of each process
+    +      world_size: Total number of processes
+    +   """
+    +   os.environ["MASTER_ADDR"] = "localhost"
+    +   os.environ["MASTER_PORT"] = "12355"
+    +   torch.cuda.set_device(rank)
+    +   init_process_group(backend="nccl", rank=rank, world_size=world_size)
+
 
 
 Constructing the DDP model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: diff
+.. code-block:: diff
 
-   - self.model = model.to(gpu_id)
-   + self.model = DDP(model, device_ids=[gpu_id])
+    - self.model = model.to(gpu_id)
+    + self.model = DDP(model, device_ids=[gpu_id])
 
 Distributing input data
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,27 +121,27 @@ Distributing input data
 -  Each process will receive an input batch of 32 samples; the effective
    batch size is ``32 * nprocs``, or 128 when using 4 GPUs.
 
-.. code:: diff
+.. code-block:: diff
 
-   train_data = torch.utils.data.DataLoader(
-       dataset=train_dataset,
-       batch_size=32,
-   -   shuffle=True,
-   +   shuffle=False,
-   +   sampler=DistributedSampler(train_dataset),
-   )
+    train_data = torch.utils.data.DataLoader(
+        dataset=train_dataset,
+        batch_size=32,
+    -   shuffle=True,
+    +   shuffle=False,
+    +   sampler=DistributedSampler(train_dataset),
+    )
 
 -  Calling the ``set_epoch()`` method on the ``DistributedSampler`` at the beginning of each epoch is necessary to make shuffling work 
    properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.
 
-.. code:: diff
+.. code-block:: diff
 
-   def _run_epoch(self, epoch):
-       b_sz = len(next(iter(self.train_data))[0])
-   +   self.train_data.sampler.set_epoch(epoch)
-       for source, targets in self.train_data:
-         ...
-         self._run_batch(source, targets)
+    def _run_epoch(self, epoch):
+        b_sz = len(next(iter(self.train_data))[0])
+    +   self.train_data.sampler.set_epoch(epoch)
+        for source, targets in self.train_data:
+          ...
+          self._run_batch(source, targets)
 
 
 Saving model checkpoints
@@ -143,14 +151,14 @@ Saving model checkpoints
    more on saving and loading models with
    DDP `here <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#save-and-load-checkpoints>`__  
 
-.. code:: diff
+.. code-block:: diff
 
-   - ckp = self.model.state_dict()
-   + ckp = self.model.module.state_dict()
-   ...
-   ...
-   - if epoch % self.save_every == 0:
-   + if self.gpu_id == 0 and epoch % self.save_every == 0:
+    - ckp = self.model.state_dict()
+    + ckp = self.model.module.state_dict()
+    ...
+    ...
+    - if epoch % self.save_every == 0:
+    + if self.gpu_id == 0 and epoch % self.save_every == 0:
       self._save_checkpoint(epoch)
 
 .. warning::
@@ -170,15 +178,15 @@ Running the distributed training job
 -  ``world_size`` is the number of processes across the training job. For GPU training, 
    this corresponds to the number of GPUs in use, and each process works on a dedicated GPU.
 
-.. code:: diff
+.. code-block:: diff
 
    - def main(device, total_epochs, save_every):
    + def main(rank, world_size, total_epochs, save_every):
    +  ddp_setup(rank, world_size)
       dataset, model, optimizer = load_train_objs()
       train_data = prepare_dataloader(dataset, batch_size=32)
-   -  trainer = Trainer(model, dataset, optimizer, device, save_every)
-   +  trainer = Trainer(model, dataset, optimizer, rank, save_every)
+   -  trainer = Trainer(model, train_data, optimizer, device, save_every)
+   +  trainer = Trainer(model, train_data, optimizer, rank, save_every)
       trainer.train(total_epochs)
    +  destroy_process_group()
     

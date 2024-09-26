@@ -12,8 +12,8 @@ easy GPU acceleration for Intel discrete GPUs with PyTorch*.
 Intel® Extension for PyTorch* has been released as an open–source project
 at `Github <https://github.com/intel/intel-extension-for-pytorch>`_.
 
-- Source code for CPU is available at `master branch <https://github.com/intel/intel-extension-for-pytorch/tree/master>`_.
-- Source code for GPU is available at `xpu-master branch <https://github.com/intel/intel-extension-for-pytorch/tree/xpu-master>`_.
+- Source code for CPU is available at `main branch <https://github.com/intel/intel-extension-for-pytorch/tree/main>`_.
+- Source code for GPU is available at `xpu-main branch <https://github.com/intel/intel-extension-for-pytorch/tree/xpu-main>`_.
 
 Features
 --------

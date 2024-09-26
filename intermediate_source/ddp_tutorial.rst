@@ -14,7 +14,7 @@ Prerequisites:
 -  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
 
 
-`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
+`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and
 create a single DDP instance per process. DDP uses collective communications in the
@@ -214,7 +214,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         # configure map_location properly
         map_location = {'cuda:%d' % 0: 'cuda:%d' % rank}
         ddp_model.load_state_dict(
-            torch.load(CHECKPOINT_PATH, map_location=map_location))
+            torch.load(CHECKPOINT_PATH, map_location=map_location, weights_only=True))
 
         loss_fn = nn.MSELoss()
         optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
@@ -236,7 +236,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         cleanup()
 
 Combining DDP with Model Parallelism
-----------------------------------
+------------------------------------
 
 DDP also works with multi-GPU models. DDP wrapping multi-GPU models is especially
 helpful when training large models with a huge amount of data.
@@ -269,8 +269,8 @@ either the application or the model ``forward()`` method.
         setup(rank, world_size)
 
         # setup mp_model and devices for this process
-        dev0 = (rank * 2) % world_size
-        dev1 = (rank * 2 + 1) % world_size
+        dev0 = rank * 2
+        dev1 = rank * 2 + 1
         mp_model = ToyMpModel(dev0, dev1)
         ddp_mp_model = DDP(mp_model)
 
@@ -293,10 +293,11 @@ either the application or the model ``forward()`` method.
         world_size = n_gpus
         run_demo(demo_basic, world_size)
         run_demo(demo_checkpoint, world_size)
+        world_size = n_gpus//2
         run_demo(demo_model_parallel, world_size)
 
 Initialize DDP with torch.distributed.run/torchrun
-----------------------------------
+---------------------------------------------------
 
 We can leverage PyTorch Elastic to simplify the DDP code and initialize the job more easily.
 Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
@@ -339,11 +340,12 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
         labels = torch.randn(20, 5).to(device_id)
         loss_fn(outputs, labels).backward()
         optimizer.step()
+        dist.destroy_process_group()
         
     if __name__ == "__main__":
         demo_basic()
 
-One can then run a `torch elastic/torchrun<https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
+One can then run a `torch elastic/torchrun <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
 on all nodes to initialize the DDP job created above:
 
 .. code:: bash

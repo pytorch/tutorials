@@ -2,13 +2,16 @@
 """
 NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
-We will be building and training a basic character-level RNN to classify
-words. This tutorial, along with the following two, show how to do
-preprocess data for NLP modeling "from scratch", in particular not using
-many of the convenience functions of `torchtext`, so you can see how
-preprocessing for NLP modeling works at a low level.
+We will be building and training a basic character-level Recurrent Neural
+Network (RNN) to classify words. This tutorial, along with two other
+Natural Language Processing (NLP) "from scratch" tutorials
+:doc:`/intermediate/char_rnn_generation_tutorial` and
+:doc:`/intermediate/seq2seq_translation_tutorial`, show how to
+preprocess data to model NLP. In particular these tutorials do not
+use many of the convenience functions of `torchtext`, so you can see how
+preprocessing to model NLP works at a low level.
 
 A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
@@ -19,7 +22,7 @@ Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
 spelling:
 
-::
+.. code-block:: sh
 
     $ python predict.py Hinton
     (-0.47) Scottish
@@ -32,13 +35,15 @@ spelling:
     (-2.68) Dutch
 
 
-**Recommended Reading:**
+Recommended Preparation
+=======================
 
-I assume you have at least installed PyTorch, know Python, and
-understand Tensors:
+Before starting this tutorial it is recommended that you have installed PyTorch,
+and have a basic understanding of Python programming language and Tensors:
 
 -  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
+   and learn the basics of Tensors
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
 
@@ -55,13 +60,13 @@ It would also be useful to know about RNNs and how they work:
 Preparing the Data
 ==================
 
-.. Note::
+.. note::
    Download the data from
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
 
 Included in the ``data/names`` directory are 18 text files named as
-"[Language].txt". Each file contains a bunch of names, one name per
+``[Language].txt``. Each file contains a bunch of names, one name per
 line, mostly romanized (but we still need to convert from Unicode to
 ASCII).
 
@@ -69,7 +74,6 @@ We'll end up with a dictionary of lists of names per language,
 ``{language: [names ...]}``. The generic variables "category" and "line"
 (for language and name in our case) are used for later extensibility.
 """
-from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
 import os
@@ -175,18 +179,13 @@ print(lineToTensor('Jones').size())
 # graph itself. This means you can implement a RNN in a very "pure" way,
 # as regular feed-forward layers.
 #
-# This RNN module (mostly copied from `the PyTorch for Torch users
-# tutorial <https://pytorch.org/tutorials/beginner/former_torchies/
-# nn_tutorial.html#example-2-recurrent-net>`__)
-# is just 2 linear layers which operate on an input and hidden state, with
-# a LogSoftmax layer after the output.
-#
-# .. figure:: https://i.imgur.com/Z2xbySO.png
-#    :alt:
-#
+# This RNN module implements a "vanilla RNN" an is just 3 linear layers 
+# which operate on an input and hidden state, with a ``LogSoftmax`` layer 
+# after the output.
 #
 
 import torch.nn as nn
+import torch.nn.functional as F
 
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -194,14 +193,14 @@ class RNN(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.i2o = nn.Linear(input_size + hidden_size, output_size)
+        self.i2h = nn.Linear(input_size, hidden_size)
+        self.h2h = nn.Linear(hidden_size, hidden_size)
+        self.h2o = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
-        combined = torch.cat((input, hidden), 1)
-        hidden = self.i2h(combined)
-        output = self.i2o(combined)
+        hidden = F.tanh(self.i2h(input) + self.h2h(hidden))
+        output = self.h2o(hidden)
         output = self.softmax(output)
         return output, hidden
 
@@ -230,7 +229,7 @@ output, next_hidden = rnn(input, hidden)
 # For the sake of efficiency we don't want to be creating a new Tensor for
 # every step, so we will use ``lineToTensor`` instead of
 # ``letterToTensor`` and use slices. This could be further optimized by
-# pre-computing batches of Tensors.
+# precomputing batches of Tensors.
 #
 
 input = lineToTensor('Albert')
@@ -372,7 +371,7 @@ for iter in range(1, n_iters + 1):
     output, loss = train(category_tensor, line_tensor)
     current_loss += loss
 
-    # Print iter number, loss, name and guess
+    # Print ``iter`` number, loss, name and guess
     if iter % print_every == 0:
         guess, guess_i = categoryFromOutput(output)
         correct = '✓' if guess == category else '✗ (%s)' % category
@@ -495,13 +494,13 @@ predict('Satoshi')
 # -  ``model.py`` (defines the RNN)
 # -  ``train.py`` (runs training)
 # -  ``predict.py`` (runs ``predict()`` with command line arguments)
-# -  ``server.py`` (serve prediction as a JSON API with bottle.py)
+# -  ``server.py`` (serve prediction as a JSON API with ``bottle.py``)
 #
 # Run ``train.py`` to train and save the network.
 #
 # Run ``predict.py`` with a name to view predictions:
 #
-# ::
+# .. code-block:: sh
 #
 #     $ python predict.py Hazaki
 #     (-0.42) Japanese

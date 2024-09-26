@@ -24,7 +24,7 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 ######################################################################
 # Installation
 # -----------------
-# We will use TextVQA dataset and bert tokenizer from HuggingFace for this
+# We will use TextVQA dataset and ``bert tokenizer`` from Hugging Face for this
 # tutorial. So you need to install datasets and transformers in addition to TorchMultimodal.
 #
 # .. note::
@@ -40,21 +40,21 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 #
 
 ######################################################################
-# Steps 
+# Steps
 # -----
-# 
-# 1. Download the HuggingFace dataset to a directory on your computer by running the following command:
-# 
+#
+# 1. Download the Hugging Face dataset to a directory on your computer by running the following command:
+#
 #    .. code-block::
-# 
+#
 #       wget http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz 
 #       tar xf vocab.tar.gz
-# 
+#
 #    .. note:: 
 #       If you are running this tutorial in Google Colab, run these commands
 #       in a new cell and prepend these commands with an exclamation mark (!)
 #
-#  
+#
 # 2. For this tutorial, we treat VQA as a classification task where
 #    the inputs are images and question (text) and the output is an answer class. 
 #    So we need to download the vocab file with answer classes and create the answer to
@@ -62,7 +62,7 @@ TorchMultimodal Tutorial: Finetuning FLAVA
 #
 #    We also load the `textvqa
 #    dataset <https://arxiv.org/pdf/1904.08920.pdf>`__ containing 34602 training samples
-#    (images,questions and answers) from HuggingFace
+#    (images,questions and answers) from Hugging Face
 #
 # We see there are 3997 answer classes including a class representing
 # unknown answers.
@@ -98,8 +98,8 @@ plt.show()
 # 3. Next, we write the transform function to convert the image and text into
 # Tensors consumable by our model - For images, we use the transforms from
 # torchvision to convert to Tensor and resize to uniform sizes - For text,
-# we tokenize (and pad) them using the BertTokenizer from HuggingFace -
-# For answers (i.e. labels), we take the most frequently occuring answer
+# we tokenize (and pad) them using the ``BertTokenizer`` from Hugging Face -
+# For answers (i.e. labels), we take the most frequently occurring answer
 # as the label to train with:
 #
 
@@ -133,8 +133,8 @@ dataset.set_transform(transform)
 
 
 ######################################################################
-# 4. Finally, we import the flava_model_for_classification from
-# torchmultimodal. It loads the pretrained flava checkpoint by default and
+# 4. Finally, we import the ``flava_model_for_classification`` from
+# ``torchmultimodal``. It loads the pretrained FLAVA checkpoint by default and
 # includes a classification head.
 #
 # The model forward function passes the image through the visual encoder
@@ -172,7 +172,7 @@ for _ in range(epochs):
     loss.backward()
     optimizer.step()
     print(f"Loss at step {idx} = {loss}")
-    if idx > MAX_STEPS-1:
+    if idx >= MAX_STEPS-1:
       break
 
 

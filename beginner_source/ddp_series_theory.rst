@@ -1,7 +1,8 @@
-`Introduction <ddp_series_intro.html>`__ \|\| **What is DDP** \|\| `Single-Node
-Multi-GPU Training <ddp_series_multigpu.html>`__ \|\| `Fault
-Tolerance <ddp_series_fault_tolerance.html>`__ \|\| `Multi-Node
-training <../intermediate/ddp_series_multinode.html>`__ \|\| `minGPT Training <../intermediate/ddp_series_minGPT.html>`__
+`Introduction <ddp_series_intro.html>`__ \|\| **What is DDP** \|\|
+`Single-Node Multi-GPU Training <ddp_series_multigpu.html>`__ \|\|
+`Fault Tolerance <ddp_series_fault_tolerance.html>`__ \|\|
+`Multi-Node training <../intermediate/ddp_series_multinode.html>`__ \|\|
+`minGPT Training <../intermediate/ddp_series_minGPT.html>`__
 
 What is Distributed Data Parallel (DDP)
 =======================================
@@ -11,13 +12,15 @@ Authors: `Suraj Subramanian <https://github.com/suraj813>`__
 .. grid:: 2
 
    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+      :class-card: card-prerequisites
 
       *  How DDP works under the hood
-      *  What is the DistributedSampler
+      *  What is ``DistributedSampler``
       *  How gradients are synchronized across GPUs
 
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+      :class-card: card-prerequisites
 
       * Familiarity with `basic non-distributed training  <https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html>`__ in PyTorch
 
@@ -37,15 +40,17 @@ ensures each device gets a non-overlapping input batch. The model is replicated 
 each replica calculates gradients and simultaneously synchronizes with the others using the `ring all-reduce
 algorithm <https://tech.preferred.jp/en/blog/technologies-behind-distributed-deep-learning-allreduce/>`__.
 
-Why you should prefer DDP over DataParallel (DP)
--------------------------------------------------
+This `illustrative tutorial <https://pytorch.org/tutorials/intermediate/dist_tuto.html#>`__ provides a more in-depth python view of the mechanics of DDP.
+
+Why you should prefer DDP over ``DataParallel`` (DP)
+----------------------------------------------------
 
 `DataParallel <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html>`__ 
 is an older approach to data parallelism. DP is trivially simple (with just one extra line of code) but it is much less performant.
 DDP improves upon the architecture in a few ways:
 
 +---------------------------------------+------------------------------+
-| DataParallel                          | DistributedDataParallel      |
+| ``DataParallel``                      | ``DistributedDataParallel``  |
 +=======================================+==============================+
 | More overhead; model is replicated    | Model is replicated only     |
 | and destroyed at each forward pass    | once                         |
@@ -66,3 +71,4 @@ Further Reading
    API <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
 -  `DDP Internal
    Design <https://pytorch.org/docs/master/notes/ddp.html#internal-design>`__
+-  `DDP Mechanics Tutorial <https://pytorch.org/tutorials/intermediate/dist_tuto.html#>`__

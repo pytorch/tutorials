@@ -1,12 +1,13 @@
 """
 Profiling your PyTorch Module
-------------
+-----------------------------
+
 **Author:** `Suraj Subramanian <https://github.com/suraj813>`_
 
 PyTorch includes a profiler API that is useful to identify the time and
 memory costs of various PyTorch operations in your code. Profiler can be
 easily integrated in your code, and the results can be printed as a table
-or retured in a JSON trace file.
+or returned in a JSON trace file.
 
 .. note::
     Profiler supports multithreaded models. Profiler runs in the
@@ -81,7 +82,7 @@ class MyModule(nn.Module):
 # ``profiler.profile`` context manager. The ``with_stack=True`` parameter appends the
 # file and line number of the operation in the trace.
 #
-# .. WARNING::
+# .. warning::
 #     ``with_stack=True`` incurs an additional overhead, and is better suited for investigating code.
 #     Remember to remove it if you are benchmarking performance.
 #
@@ -114,7 +115,7 @@ with profiler.profile(with_stack=True, profile_memory=True) as prof:
 # `docs <https://pytorch.org/docs/stable/autograd.html#profiler>`__ for
 # valid sorting keys).
 #
-# .. Note::
+# .. note::
 #   When running profiler in a notebook, you might see entries like ``<ipython-input-18-193a910735e8>(13): forward``
 #   instead of filenames in the stacktrace. These correspond to ``<notebook-cell>(line number): calling-function``.
 

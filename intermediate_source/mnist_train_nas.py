@@ -1,5 +1,5 @@
 """
-Example training code for ax_multiobjective_nas_tutorial.py
+Example training code for ``ax_multiobjective_nas_tutorial.py``
 """
 
 import argparse
@@ -44,7 +44,6 @@ def parse_args():
 args = parse_args()
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
-AVAIL_GPUS = min(1, torch.cuda.device_count())
 
 
 class MnistModel(LightningModule):
@@ -136,7 +135,6 @@ def run_training_job():
     # Initialize a trainer (don't log anything since things get so slow...)
     trainer = Trainer(
         logger=False,
-        gpus=AVAIL_GPUS,
         max_epochs=args.epochs,
         enable_progress_bar=False,
         deterministic=True,  # Do we want a bit of noise?

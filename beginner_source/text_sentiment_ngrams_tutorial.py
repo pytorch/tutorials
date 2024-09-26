@@ -1,12 +1,24 @@
 """
 Text classification with the torchtext library
-==================================
+==============================================
 
 In this tutorial, we will show how to use the torchtext library to build the dataset for the text classification analysis. Users will have the flexibility to
 
    - Access to the raw data as an iterator
    - Build data processing pipeline to convert the raw text strings into ``torch.Tensor`` that can be used to train the model
    - Shuffle and iterate the data with `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
+
+
+Prerequisites
+~~~~~~~~~~~~~~~~
+
+A recent 2.x version of the ``portalocker`` package needs to be installed prior to running the tutorial.
+For example, in the Colab environment, this can be done by adding the following line at the top of the script:
+
+.. code-block:: bash 
+     
+    !pip install -U portalocker>=2.0.0`
+
 """
 
 
@@ -16,15 +28,16 @@ In this tutorial, we will show how to use the torchtext library to build the dat
 #
 # The torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the ``AG_NEWS`` dataset iterators yield the raw data as a tuple of label and text.
 #
-# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data. 
+# To access torchtext datasets, please install torchdata following instructions at https://github.com/pytorch/data.
 #
 
 import torch
 from torchtext.datasets import AG_NEWS
-train_iter = iter(AG_NEWS(split='train'))
+
+train_iter = iter(AG_NEWS(split="train"))
 
 ######################################################################
-# ::
+# .. code-block:: sh
 #
 #     next(train_iter)
 #     >>> (3, "Fears for T N pension after talks Unions representing workers at Turner
@@ -60,12 +73,14 @@ train_iter = iter(AG_NEWS(split='train'))
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 
-tokenizer = get_tokenizer('basic_english')
-train_iter = AG_NEWS(split='train')
+tokenizer = get_tokenizer("basic_english")
+train_iter = AG_NEWS(split="train")
+
 
 def yield_tokens(data_iter):
     for _, text in data_iter:
         yield tokenizer(text)
+
 
 vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
 vocab.set_default_index(vocab["<unk>"])
@@ -73,7 +88,7 @@ vocab.set_default_index(vocab["<unk>"])
 ######################################################################
 # The vocabulary block converts a list of tokens into integers.
 #
-# ::
+# .. code-block:: sh
 #
 #     vocab(['here', 'is', 'an', 'example'])
 #     >>> [475, 21, 30, 5297]
@@ -87,14 +102,13 @@ label_pipeline = lambda x: int(x) - 1
 ######################################################################
 # The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,
 #
-# ::
+# .. code-block:: sh
 #
 #     text_pipeline('here is the an example')
 #     >>> [475, 21, 2, 30, 5297]
 #     label_pipeline('10')
 #     >>> 9
 #
-
 
 
 ######################################################################
@@ -111,29 +125,34 @@ label_pipeline = lambda x: int(x) - 1
 
 
 from torch.utils.data import DataLoader
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def collate_batch(batch):
     label_list, text_list, offsets = [], [], [0]
-    for (_label, _text) in batch:
-         label_list.append(label_pipeline(_label))
-         processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
-         text_list.append(processed_text)
-         offsets.append(processed_text.size(0))
+    for _label, _text in batch:
+        label_list.append(label_pipeline(_label))
+        processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+        text_list.append(processed_text)
+        offsets.append(processed_text.size(0))
     label_list = torch.tensor(label_list, dtype=torch.int64)
     offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
     text_list = torch.cat(text_list)
     return label_list.to(device), text_list.to(device), offsets.to(device)
 
-train_iter = AG_NEWS(split='train')
-dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch)
+
+train_iter = AG_NEWS(split="train")
+dataloader = DataLoader(
+    train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch
+)
 
 
 ######################################################################
 # Define the model
 # ----------------
 #
-# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` with the default mode of "mean" computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, nn.EmbeddingBag module requires no padding here since the text lengths are saved in offsets.
+# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` with the default mode of "mean" computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, ``nn.EmbeddingBag`` module requires no padding here since the text lengths are saved in offsets.
 #
 # Additionally, since ``nn.EmbeddingBag`` accumulates the average across
 # the embeddings on the fly, ``nn.EmbeddingBag`` can enhance the
@@ -144,11 +163,11 @@ dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=coll
 
 from torch import nn
 
-class TextClassificationModel(nn.Module):
 
+class TextClassificationModel(nn.Module):
     def __init__(self, vocab_size, embed_dim, num_class):
         super(TextClassificationModel, self).__init__()
-        self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=True)
+        self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=False)
         self.fc = nn.Linear(embed_dim, num_class)
         self.init_weights()
 
@@ -169,7 +188,7 @@ class TextClassificationModel(nn.Module):
 #
 # The ``AG_NEWS`` dataset has four labels and therefore the number of classes is four.
 #
-# ::
+# .. code-block:: sh
 #
 #    1 : World
 #    2 : Sports
@@ -179,7 +198,7 @@ class TextClassificationModel(nn.Module):
 # We build a model with the embedding dimension of 64. The vocab size is equal to the length of the vocabulary instance. The number of classes is equal to the number of labels,
 #
 
-train_iter = AG_NEWS(split='train')
+train_iter = AG_NEWS(split="train")
 num_class = len(set([label for (label, text) in train_iter]))
 vocab_size = len(vocab)
 emsize = 64
@@ -193,6 +212,7 @@ model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
 
 
 import time
+
 
 def train(dataloader):
     model.train()
@@ -211,11 +231,15 @@ def train(dataloader):
         total_count += label.size(0)
         if idx % log_interval == 0 and idx > 0:
             elapsed = time.time() - start_time
-            print('| epoch {:3d} | {:5d}/{:5d} batches '
-                  '| accuracy {:8.3f}'.format(epoch, idx, len(dataloader),
-                                              total_acc/total_count))
+            print(
+                "| epoch {:3d} | {:5d}/{:5d} batches "
+                "| accuracy {:8.3f}".format(
+                    epoch, idx, len(dataloader), total_acc / total_count
+                )
+            )
             total_acc, total_count = 0, 0
             start_time = time.time()
+
 
 def evaluate(dataloader):
     model.eval()
@@ -227,7 +251,7 @@ def evaluate(dataloader):
             loss = criterion(predicted_label, label)
             total_acc += (predicted_label.argmax(1) == label).sum().item()
             total_count += label.size(0)
-    return total_acc/total_count
+    return total_acc / total_count
 
 
 ######################################################################
@@ -253,10 +277,11 @@ def evaluate(dataloader):
 
 from torch.utils.data.dataset import random_split
 from torchtext.data.functional import to_map_style_dataset
+
 # Hyperparameters
-EPOCHS = 10 # epoch
+EPOCHS = 10  # epoch
 LR = 5  # learning rate
-BATCH_SIZE = 64 # batch size for training
+BATCH_SIZE = 64  # batch size for training
 
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=LR)
@@ -266,31 +291,36 @@ train_iter, test_iter = AG_NEWS()
 train_dataset = to_map_style_dataset(train_iter)
 test_dataset = to_map_style_dataset(test_iter)
 num_train = int(len(train_dataset) * 0.95)
-split_train_, split_valid_ = \
-    random_split(train_dataset, [num_train, len(train_dataset) - num_train])
+split_train_, split_valid_ = random_split(
+    train_dataset, [num_train, len(train_dataset) - num_train]
+)
 
-train_dataloader = DataLoader(split_train_, batch_size=BATCH_SIZE,
-                              shuffle=True, collate_fn=collate_batch)
-valid_dataloader = DataLoader(split_valid_, batch_size=BATCH_SIZE,
-                              shuffle=True, collate_fn=collate_batch)
-test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
-                             shuffle=True, collate_fn=collate_batch)
+train_dataloader = DataLoader(
+    split_train_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+)
+valid_dataloader = DataLoader(
+    split_valid_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+)
+test_dataloader = DataLoader(
+    test_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch
+)
 
 for epoch in range(1, EPOCHS + 1):
     epoch_start_time = time.time()
     train(train_dataloader)
     accu_val = evaluate(valid_dataloader)
     if total_accu is not None and total_accu > accu_val:
-      scheduler.step()
+        scheduler.step()
     else:
-       total_accu = accu_val
-    print('-' * 59)
-    print('| end of epoch {:3d} | time: {:5.2f}s | '
-          'valid accuracy {:8.3f} '.format(epoch,
-                                           time.time() - epoch_start_time,
-                                           accu_val))
-    print('-' * 59)
-
+        total_accu = accu_val
+    print("-" * 59)
+    print(
+        "| end of epoch {:3d} | time: {:5.2f}s | "
+        "valid accuracy {:8.3f} ".format(
+            epoch, time.time() - epoch_start_time, accu_val
+        )
+    )
+    print("-" * 59)
 
 
 ######################################################################
@@ -299,15 +329,12 @@ for epoch in range(1, EPOCHS + 1):
 #
 
 
-
 ######################################################################
 # Checking the results of the test dataset…
 
-print('Checking the results of test dataset.')
+print("Checking the results of test dataset.")
 accu_test = evaluate(test_dataloader)
-print('test accuracy {:8.3f}'.format(accu_test))
-
-
+print("test accuracy {:8.3f}".format(accu_test))
 
 
 ######################################################################
@@ -318,16 +345,15 @@ print('test accuracy {:8.3f}'.format(accu_test))
 #
 
 
-ag_news_label = {1: "World",
-                 2: "Sports",
-                 3: "Business",
-                 4: "Sci/Tec"}
+ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
+
 
 def predict(text, text_pipeline):
     with torch.no_grad():
         text = torch.tensor(text_pipeline(text))
         output = model(text, torch.tensor([0]))
         return output.argmax(1).item() + 1
+
 
 ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
     enduring the season’s worst weather conditions on Sunday at The \
@@ -343,4 +369,4 @@ ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
 
 model = model.to("cpu")
 
-print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
+print("This is a %s news" % ag_news_label[predict(ex_text_str, text_pipeline)])

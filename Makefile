@@ -38,20 +38,8 @@ download:
 	# Step2-2. UNTAR: tar -xzf $(DATADIR)/[SOURCE_FILE] -C [*_source/data/]
 	# Step2-3. AS-IS: cp $(DATADIR)/[SOURCE_FILE] [*_source/data/]
 
-	# make data directories
-	mkdir -p $(DATADIR)
-	mkdir -p advanced_source/data
-	mkdir -p beginner_source/data
-	mkdir -p intermediate_source/data
-	mkdir -p prototype_source/data
-
-	# transfer learning tutorial data
-	wget -nv -N https://download.pytorch.org/tutorial/hymenoptera_data.zip -P $(DATADIR)
-	unzip $(ZIPOPTS) $(DATADIR)/hymenoptera_data.zip -d beginner_source/data/
-
-	# nlp tutorial data
-	wget -nv -N https://download.pytorch.org/tutorial/data.zip -P $(DATADIR)
-	unzip $(ZIPOPTS) $(DATADIR)/data.zip -d intermediate_source/  # This will unzip all files in data.zip to intermediate_source/data/ folder
+	# Run structured downloads first (will also make directories
+	python3 .jenkins/download_data.py
 
 	# data loader tutorial
 	wget -nv -N https://download.pytorch.org/tutorial/faces.zip -P $(DATADIR)
@@ -65,10 +53,6 @@ download:
 	mkdir -p advanced_source/data/images/
 	cp -r _static/img/neural-style/ advanced_source/data/images/
 
-	# Download dataset for beginner_source/dcgan_faces_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/img_align_celeba.zip -P $(DATADIR)
-	unzip $(ZIPOPTS) $(DATADIR)/img_align_celeba.zip -d beginner_source/data/celeba
-
 	# Download dataset for beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data -P $(DATADIR)
 	cp $(DATADIR)/iris.data beginner_source/data/
@@ -76,14 +60,6 @@ download:
 	# Download dataset for beginner_source/chatbot_tutorial.py
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus_v2.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/cornell_movie_dialogs_corpus_v2.zip -d beginner_source/data/
-
-	# Download dataset for beginner_source/audio_classifier_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz -P $(DATADIR)
-	tar $(TAROPTS) -xzf $(DATADIR)/UrbanSound8K.tar.gz -C ./beginner_source/data/
-
-	# Download model for beginner_source/fgsm_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth -P $(DATADIR)
-	cp $(DATADIR)/lenet_mnist_model.pth ./beginner_source/data/lenet_mnist_model.pth
 
 	# Download model for advanced_source/dynamic_quantization_tutorial.py
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth -P $(DATADIR)
@@ -106,6 +82,13 @@ download:
 	wget -nv -N http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz -P $(DATADIR)
 	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
 
+	# Download dataset for beginner_source/torchtext_custom_dataset_tutorial.py
+	wget -nv -N https://www.manythings.org/anki/deu-eng.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/deu-eng.zip -d beginner_source/data/
+
+	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
+	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
 docs:
 	make download
@@ -123,3 +106,5 @@ html-noplot:
 clean-cache:
 	make clean
 	rm -rf advanced beginner intermediate recipes
+	# remove additional python files downloaded for torchvision_tutorial.py
+	rm -rf intermediate_source/engine.py intermediate_source/utils.py intermediate_source/transforms.py intermediate_source/coco_eval.py intermediate_source/coco_utils.py

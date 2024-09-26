@@ -31,28 +31,28 @@ Chatbot Tutorial
 #    :align: center
 #    :alt: bot
 #
-# .. code:: python
+# .. code-block:: python
 #
-#   > hello?
-#   Bot: hello .
-#   > where am I?
-#   Bot: you re in a hospital .
-#   > who are you?
-#   Bot: i m a lawyer .
-#   > how are you doing?
-#   Bot: i m fine .
-#   > are you my friend?
-#   Bot: no .
-#   > you're under arrest
-#   Bot: i m trying to help you !
-#   > i'm just kidding
-#   Bot: i m sorry .
-#   > where are you from?
-#   Bot: san francisco .
-#   > it's time for me to leave
-#   Bot: i know .
-#   > goodbye
-#   Bot: goodbye .
+#    > hello?
+#    Bot: hello .
+#    > where am I?
+#    Bot: you re in a hospital .
+#    > who are you?
+#    Bot: i m a lawyer .
+#    > how are you doing?
+#    Bot: i m fine .
+#    > are you my friend?
+#    Bot: no .
+#    > you're under arrest
+#    Bot: i m trying to help you !
+#    > i'm just kidding
+#    Bot: i m sorry .
+#    > where are you from?
+#    Bot: san francisco .
+#    > it's time for me to leave
+#    Bot: i know .
+#    > goodbye
+#    Bot: goodbye .
 #
 # **Tutorial Highlights**
 #
@@ -65,7 +65,7 @@ Chatbot Tutorial
 # -  Implement greedy-search decoding module
 # -  Interact with trained chatbot
 #
-# **Acknowledgements**
+# **Acknowledgments**
 #
 # This tutorial borrows code from the following sources:
 #
@@ -75,7 +75,7 @@ Chatbot Tutorial
 # 2) Sean Robertson’s practical-pytorch seq2seq-translation example:
 #    https://github.com/spro/practical-pytorch/tree/master/seq2seq-translation
 #
-# 3) FloydHub’s Cornell Movie Corpus preprocessing code:
+# 3) FloydHub Cornell Movie Corpus preprocessing code:
 #    https://github.com/floydhub/textutil-preprocess-cornell-movie-corpus
 #
 
@@ -84,18 +84,12 @@ Chatbot Tutorial
 # Preparations
 # ------------
 #
-# To start, Download the data ZIP file
-# `here <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__
+# To get started, `download <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__ the Movie-Dialogs Corpus zip file.
 
 # and put in a ``data/`` directory under the current directory.
 #
 # After that, let’s import some necessities.
 #
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import torch
 from torch.jit import script, trace
@@ -162,11 +156,11 @@ printLines(os.path.join(corpus, "utterances.jsonl"))
 # contains a tab-separated *query sentence* and a *response sentence* pair.
 #
 # The following functions facilitate the parsing of the raw
-# *utterances.jsonl* data file.
+# ``utterances.jsonl`` data file.
 #
 # -  ``loadLinesAndConversations`` splits each line of the file into a dictionary of
-#    lines with fields: lineID, characterID, and text and then groups them
-#    into conversations with fields: conversationID, movieID, and lines.
+#    lines with fields: ``lineID``, ``characterID``, and text and then groups them
+#    into conversations with fields: ``conversationID``, ``movieID``, and lines.
 # -  ``extractSentencePairs`` extracts pairs of sentences from
 #    conversations
 #
@@ -215,7 +209,7 @@ def extractSentencePairs(conversations):
 
 ######################################################################
 # Now we’ll call these functions and create the file. We’ll call it
-# *formatted_movie_lines.txt*.
+# ``formatted_movie_lines.txt``.
 #
 
 # Define path to new file
@@ -359,12 +353,12 @@ def readVocs(datafile, corpus_name):
     voc = Voc(corpus_name)
     return voc, pairs
 
-# Returns True iff both sentences in a pair 'p' are under the MAX_LENGTH threshold
+# Returns True if both sentences in a pair 'p' are under the MAX_LENGTH threshold
 def filterPair(p):
     # Input sequences need to preserve the last word for EOS token
     return len(p[0].split(' ')) < MAX_LENGTH and len(p[1].split(' ')) < MAX_LENGTH
 
-# Filter pairs using filterPair condition
+# Filter pairs using the ``filterPair`` condition
 def filterPairs(pairs):
     return [pair for pair in pairs if filterPair(pair)]
 
@@ -659,7 +653,7 @@ class EncoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = embedding
 
-        # Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'
+        # Initialize GRU; the input_size and hidden_size parameters are both set to 'hidden_size'
         #   because our input size is a word embedding with number of features == hidden_size
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers,
                           dropout=(0 if n_layers == 1 else dropout), bidirectional=True)
@@ -958,7 +952,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     input_variable = input_variable.to(device)
     target_variable = target_variable.to(device)
     mask = mask.to(device)
-    # Lengths for rnn packing should always be on the cpu
+    # Lengths for RNN packing should always be on the CPU
     lengths = lengths.to("cpu")
 
     # Initialize variables
@@ -1007,7 +1001,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
             print_losses.append(mask_loss.item() * nTotal)
             n_totals += nTotal
 
-    # Perform backpropatation
+    # Perform backpropagation
     loss.backward()
 
     # Clip gradients: gradients are modified in place
@@ -1032,8 +1026,8 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 # lifting with the ``train`` function.
 #
 # One thing to note is that when we save our model, we save a tarball
-# containing the encoder and decoder state_dicts (parameters), the
-# optimizers’ state_dicts, the loss, the iteration, etc. Saving the model
+# containing the encoder and decoder ``state_dicts`` (parameters), the
+# optimizers’ ``state_dicts``, the loss, the iteration, etc. Saving the model
 # in this way will give us the ultimate flexibility with the checkpoint.
 # After loading a checkpoint, we will be able to use the model parameters
 # to run inference, or we can continue training right where we left off.
@@ -1240,8 +1234,8 @@ def evaluateInput(encoder, decoder, searcher, voc):
 # Configure models
 model_name = 'cb_model'
 attn_model = 'dot'
-#attn_model = 'general'
-#attn_model = 'concat'
+#``attn_model = 'general'``
+#``attn_model = 'concat'``
 hidden_size = 500
 encoder_n_layers = 2
 decoder_n_layers = 2
@@ -1251,12 +1245,17 @@ batch_size = 64
 # Set checkpoint to load from; set to None if starting from scratch
 loadFilename = None
 checkpoint_iter = 4000
-#loadFilename = os.path.join(save_dir, model_name, corpus_name,
-#                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-#                            '{}_checkpoint.tar'.format(checkpoint_iter))
 
+#############################################################
+# Sample code to load from a checkpoint:
+#
+# .. code-block:: python
+#
+#    loadFilename = os.path.join(save_dir, model_name, corpus_name,
+#                        '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+#                        '{}_checkpoint.tar'.format(checkpoint_iter))
 
-# Load model if a loadFilename is provided
+# Load model if a ``loadFilename`` is provided
 if loadFilename:
     # If loading on same machine the model was trained on
     checkpoint = torch.load(loadFilename)
@@ -1319,7 +1318,7 @@ if loadFilename:
     encoder_optimizer.load_state_dict(encoder_optimizer_sd)
     decoder_optimizer.load_state_dict(decoder_optimizer_sd)
 
-# If you have cuda, configure cuda to call
+# If you have CUDA, configure CUDA to call
 for state in encoder_optimizer.state.values():
     for k, v in state.items():
         if isinstance(v, torch.Tensor):
@@ -1344,7 +1343,7 @@ trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_
 # To chat with your model, run the following block.
 #
 
-# Set dropout layers to eval mode
+# Set dropout layers to ``eval`` mode
 encoder.eval()
 decoder.eval()
 

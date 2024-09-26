@@ -1,13 +1,13 @@
 Prototype Tutorials
 ------------------
 1. distributed_rpc_profiling.rst
-     Profiling PyTorch RPC-Based Workloads
-     https://github.com/pytorch/tutorials/blob/release/1.6/prototype_source/distributed_rpc_profiling.rst
+           Profiling PyTorch RPC-Based Workloads
+           https://github.com/pytorch/tutorials/blob/main/prototype_source/distributed_rpc_profiling.rst
 
 2. graph_mode_static_quantization_tutorial.py
 	   Graph Mode Post Training Static Quantization in PyTorch
 	   https://pytorch.org/tutorials/prototype/graph_mode_static_quantization_tutorial.html
-	   
+
 3. graph_mode_dynamic_bert_tutorial.rst
 	   Graph Mode Dynamic Quantization on BERT
 	   https://github.com/pytorch/tutorials/blob/main/prototype_source/graph_mode_dynamic_bert_tutorial.rst
@@ -21,8 +21,8 @@ Prototype Tutorials
 	   https://github.com/pytorch/tutorials/blob/main/prototype_source/torchscript_freezing.py
 
 6. vulkan_workflow.rst
-     Vulkan Backend User Workflow
-     https://pytorch.org/tutorials/intermediate/vulkan_workflow.html
+           Vulkan Backend User Workflow
+           https://pytorch.org/tutorials/intermediate/vulkan_workflow.html
 
 7. fx_graph_mode_ptq_static.rst
 	   FX Graph Mode Post Training Static Quantization
@@ -30,9 +30,12 @@ Prototype Tutorials
 
 8. fx_graph_mode_ptq_dynamic.py
 	   FX Graph Mode Post Training Dynamic Quantization
-	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html	   
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html
 
 9. fx_graph_mode_quant_guide.py
 	   FX Graph Mode Quantization User Guide
-	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html	   
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html
 
+10 flight_recorder_tutorial.rst
+	   Flight Recorder User Guide
+	   https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html

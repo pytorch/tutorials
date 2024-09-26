@@ -1,6 +1,9 @@
 Pytorch Mobile Performance Recipes
 ==================================
 
+.. warning::
+    PyTorch Mobile is no longer actively supported. Please check out `ExecuTorch <https://pytorch.org/executorch-overview>`_, PyTorch’s all-new on-device inference library. You can also learn more about `quantization <https://pytorch.org/executorch/stable/quantization-overview.html>`_, `Hardware acceleration (op fusion using hw) <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>`_, and `benchmarking <https://pytorch.org/executorch/stable/sdk-profiling.html>`_ on ExecuTorch’s documentation pages.
+
 Introduction
 ----------------
 Performance (aka latency) is crucial to most, if not all,
@@ -198,6 +201,73 @@ You can check how it looks in code in `pytorch android application example <http
 
 Member fields ``mModule``, ``mInputTensorBuffer`` and ``mInputTensor`` are initialized only once
 and buffer is refilled using ``org.pytorch.torchvision.TensorImageUtils.imageYUV420CenterCropToFloatBuffer``.
+
+6. Load time optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Available since Pytorch 1.13**
+
+PyTorch Mobile also supports a FlatBuffer-based file format that is faster
+to load. Both flatbuffer and pickle-based model file can be load with the
+same ``_load_for_lite_interpreter`` (Python) or ``_load_for_mobile``(C++) API.
+
+To use the FlatBuffer format, instead of creating the model file with
+``model._save_for_lite_interpreter('path/to/file.ptl')``, you can run the following command:
+
+
+One can save using
+
+::
+
+  model._save_for_lite_interpreter('path/to/file.ptl', _use_flatbuffer=True)
+
+
+The extra argument ``_use_flatbuffer`` makes a FlatBuffer file instead of a
+zip file. The created file will be faster to load.
+
+For example, using ResNet-50 and running the following script:
+
+::
+
+  import torch
+  from torch.jit import mobile
+  import time
+  model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_resnet50', pretrained=True)
+  model.eval()
+  jit_model = torch.jit.script(model)
+
+  jit_model._save_for_lite_interpreter('/tmp/jit_model.ptl')
+  jit_model._save_for_lite_interpreter('/tmp/jit_model.ff', _use_flatbuffer=True)
+
+  import timeit
+  print('Load ptl file:')
+  print(timeit.timeit('from torch.jit import mobile; mobile._load_for_lite_interpreter("/tmp/jit_model.ptl")',
+                         number=20))
+  print('Load flatbuffer file:')
+  print(timeit.timeit('from torch.jit import mobile; mobile._load_for_lite_interpreter("/tmp/jit_model.ff")',
+                         number=20))
+
+
+
+you would get the following result:
+
+::
+
+  Load ptl file:
+  0.5387594579999999
+  Load flatbuffer file:
+  0.038842832999999466
+
+While speed ups on actual mobile devices will be smaller, you can still expect
+3x - 6x load time reductions.
+
+### Reasons to avoid using a FlatBuffer-based mobile model
+
+However, FlatBuffer format also has some limitations that you might want to consider:
+
+* It is only available in PyTorch 1.13 or later. Therefore, client devices compiled
+  with earlier PyTorch versions might not be able to load it.
+* The Flatbuffer library imposes a 4GB limit for file sizes. So it is not suitable
+  for large models.
 
 Benchmarking
 ------------

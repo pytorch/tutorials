@@ -23,10 +23,10 @@ Setup
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-::
+.. code-block:: sh
 
    pip install torch
-   
+
 """
 
 
@@ -36,7 +36,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Initialize the optimizer
 # 4. Save multiple models
 # 5. Load multiple models
@@ -128,7 +128,7 @@ modelB = Net()
 optimModelA = optim.SGD(modelA.parameters(), lr=0.001, momentum=0.9)
 optimModelB = optim.SGD(modelB.parameters(), lr=0.001, momentum=0.9)
 
-checkpoint = torch.load(PATH)
+checkpoint = torch.load(PATH, weights_only=True)
 modelA.load_state_dict(checkpoint['modelA_state_dict'])
 modelB.load_state_dict(checkpoint['modelB_state_dict'])
 optimizerA.load_state_dict(checkpoint['optimizerA_state_dict'])
@@ -151,12 +151,4 @@ modelB.train()
 # 
 # Congratulations! You have successfully saved and loaded multiple models
 # in PyTorch.
-# 
-# Learn More
-# ----------
-# 
-# Take a look at these other recipes to continue your learning:
-# 
-# -  TBD
-# -  TBD
-#  
+#

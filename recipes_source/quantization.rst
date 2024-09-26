@@ -81,7 +81,7 @@ The full documentation of the `quantize_dynamic` API call is `here <https://pyto
 3. Post Training Static Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This method converts both the weights and the activations to 8-bit integers beforehand so there won't be on-the-fly conversion on the activations during the inference, as the dynamic quantization does, hence improving the performance significantly.
+This method converts both the weights and the activations to 8-bit integers beforehand so there won’t be on-the-fly conversion on the activations during the inference, as the dynamic quantization does. While post-training static quantization can significantly enhance inference speed and reduce model size, this method may degrade the original model's accuracy more compared to post training dynamic quantization.
 
 To apply static quantization on a model, run the following code:
 
@@ -98,7 +98,7 @@ After this, running `print_model_size(model_static_quantized)` shows the static 
 A complete model definition and static quantization example is `here <https://pytorch.org/docs/stable/quantization.html#quantization-api-summary>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
 .. note::
-  To make the model run on mobile devices which normally have arm architecture, you need to use `qnnpack` for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.
+  To make the model run on mobile devices which normally have arm architecture, you need to use `qnnpack` for `backend`; to run the model on computer with x86 architecture, use `x86`` (the old `fbgemm` is still available but 'x86' is the recommended default).
 
 4. Quantization Aware Training
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

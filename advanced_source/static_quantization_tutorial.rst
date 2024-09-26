@@ -59,7 +59,7 @@ to enable quantization:
 - Replace ReLU6 with ReLU 
  
 Note: this code is taken from 
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.  
+`here <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv2.py>`_.
 
 .. code:: python
 
@@ -206,14 +206,15 @@ Note: this code is taken from
 
         # Fuse Conv+BN and Conv+BN+Relu modules prior to quantization 
         # This operation does not change the numerics 
-        def fuse_model(self): 
+        def fuse_model(self, is_qat=False): 
+            fuse_modules = torch.ao.quantization.fuse_modules_qat if is_qat else torch.ao.quantization.fuse_modules
             for m in self.modules():  
                 if type(m) == ConvBNReLU: 
-                    torch.ao.quantization.fuse_modules(m, ['0', '1', '2'], inplace=True)
+                    fuse_modules(m, ['0', '1', '2'], inplace=True)
                 if type(m) == InvertedResidual: 
                     for idx in range(len(m.conv)):  
                         if type(m.conv[idx]) == nn.Conv2d:  
-                            torch.ao.quantization.fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
+                            fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
 
 2. Helper functions 
 ------------------- 
@@ -285,7 +286,7 @@ We next define several helper functions to help with model evaluation. These mos
 
     def load_model(model_file): 
         model = MobileNetV2() 
-        state_dict = torch.load(model_file) 
+        state_dict = torch.load(model_file, weights_only=True) 
         model.load_state_dict(state_dict) 
         model.to('cpu') 
         return model  
@@ -434,6 +435,9 @@ values to floats - and then back to ints - between every operation, resulting in
 
     # Convert to quantized model  
     torch.ao.quantization.convert(myModel, inplace=True)
+    # You may see a user warning about needing to calibrate the model. This warning can be safely ignored.
+    # This warning occurs because not all modules are run in each model runs, so some
+    # modules may not be calibrated.
     print('Post Training Quantization: Convert done') 
     print('\n Inverted Residual Block: After fusion and quantization, note fused modules: \n\n',myModel.features[1].conv) 
 
@@ -458,7 +462,8 @@ quantizing for x86 architectures. This configuration does the following:
     per_channel_quantized_model = load_model(saved_model_dir + float_model_file)  
     per_channel_quantized_model.eval()  
     per_channel_quantized_model.fuse_model()  
-    per_channel_quantized_model.qconfig = torch.ao.quantization.get_default_qconfig('fbgemm')
+    # The old 'fbgemm' is still available but 'x86' is the recommended default.
+    per_channel_quantized_model.qconfig = torch.ao.quantization.get_default_qconfig('x86')
     print(per_channel_quantized_model.qconfig)  
 
     torch.ao.quantization.prepare(per_channel_quantized_model, inplace=True)
@@ -532,10 +537,11 @@ We fuse modules as before
 .. code:: python
 
     qat_model = load_model(saved_model_dir + float_model_file)  
-    qat_model.fuse_model()  
+    qat_model.fuse_model(is_qat=True)  
 
-    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001)  
-    qat_model.qconfig = torch.ao.quantization.get_default_qat_qconfig('fbgemm')
+    optimizer = torch.optim.SGD(qat_model.parameters(), lr = 0.0001) 
+    # The old 'fbgemm' is still available but 'x86' is the recommended default. 
+    qat_model.qconfig = torch.ao.quantization.get_default_qat_qconfig('x86')
   
 Finally, ``prepare_qat`` performs the "fake quantization", preparing the model for quantization-aware training
 

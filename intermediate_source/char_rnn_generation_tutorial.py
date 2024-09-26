@@ -2,14 +2,14 @@
 """
 NLP From Scratch: Generating Names with a Character-Level RNN
 *************************************************************
-**Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+**Author**: `Sean Robertson <https://github.com/spro>`_
 
 This is our second of three tutorials on "NLP From Scratch".
-In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
+In the `first tutorial </tutorials/intermediate/char_rnn_classification_tutorial>`_
 we used a RNN to classify names into their language of origin. This time
 we'll turn around and generate names from languages.
 
-::
+.. code-block:: sh
 
     > python sample.py Russian RUS
     Rovakov
@@ -64,7 +64,7 @@ I also suggest the previous tutorial, :doc:`/intermediate/char_rnn_classificatio
 Preparing the Data
 ==================
 
-.. Note::
+.. note::
    Download the data from
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
@@ -75,7 +75,6 @@ name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary ``{language: [names ...]}``.
 
 """
-from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
 import os
@@ -234,7 +233,7 @@ def inputTensor(line):
         tensor[li][0][all_letters.find(letter)] = 1
     return tensor
 
-# LongTensor of second letter to end (EOS) for target
+# ``LongTensor`` of second letter to end (EOS) for target
 def targetTensor(line):
     letter_indexes = [all_letters.find(line[li]) for li in range(1, len(line))]
     letter_indexes.append(n_letters - 1) # EOS
@@ -278,7 +277,7 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
 
     rnn.zero_grad()
 
-    loss = 0
+    loss = torch.Tensor([0]) # you can also just simply use ``loss = 0``
 
     for i in range(input_line_tensor.size(0)):
         output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
@@ -322,7 +321,7 @@ n_iters = 100000
 print_every = 5000
 plot_every = 500
 all_losses = []
-total_loss = 0 # Reset every plot_every iters
+total_loss = 0 # Reset every ``plot_every`` ``iters``
 
 start = time.time()
 
@@ -371,7 +370,7 @@ plt.plot(all_losses)
 #
 # -  Return the final name
 #
-# .. Note::
+# .. note::
 #    Rather than having to give it a starting letter, another
 #    strategy would have been to include a "start of string" token in
 #    training and have the network choose its own starting letter.
@@ -429,6 +428,6 @@ samples('Chinese', 'CHI')
 #    choosing a start letter
 # -  Get better results with a bigger and/or better shaped network
 #
-#    -  Try the nn.LSTM and nn.GRU layers
+#    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
 #    -  Combine multiple of these RNNs as a higher level network
 #

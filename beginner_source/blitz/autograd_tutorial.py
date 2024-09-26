@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 A Gentle Introduction to ``torch.autograd``
----------------------------------
+===========================================
 
 ``torch.autograd`` is PyTorch’s automatic differentiation engine that powers
 neural network training. In this section, you will get a conceptual
@@ -40,7 +40,7 @@ and its corresponding ``label`` initialized to some random values. Label in pret
 shape (1,1000).
 
 .. note::
-    This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
+    This tutorial works only on the CPU and will not work on GPU devices (even if tensors are moved to CUDA).
 
 """
 import torch
@@ -149,7 +149,7 @@ print(-2*b == b.grad)
 
 ######################################################################
 # Optional Reading - Vector Calculus using ``autograd``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Mathematically, if you have a vector valued function
 # :math:`\vec{y}=f(\vec{x})`, then the gradient of :math:`\vec{y}` with
@@ -266,7 +266,7 @@ y = torch.rand(5, 5)
 z = torch.rand((5, 5), requires_grad=True)
 
 a = x + y
-print(f"Does `a` require gradients? : {a.requires_grad}")
+print(f"Does `a` require gradients?: {a.requires_grad}")
 b = x + z
 print(f"Does `b` require gradients?: {b.requires_grad}")
 
@@ -275,9 +275,6 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 # In a NN, parameters that don't compute gradients are usually called **frozen parameters**.
 # It is useful to "freeze" part of your model if you know in advance that you won't need the gradients of those parameters
 # (this offers some performance benefits by reducing autograd computations).
-#
-# Another common usecase where exclusion from the DAG is important is for
-# `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #
 # In finetuning, we freeze most of the model and typically only modify the classifier layers to make predictions on new labels.
 # Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
@@ -324,3 +321,4 @@ optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 #
 # -  `In-place operations & Multithreaded Autograd <https://pytorch.org/docs/stable/notes/autograd.html>`__
 # -  `Example implementation of reverse-mode autodiff <https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC>`__
+# -  `Video: PyTorch Autograd Explained - In-depth Tutorial <https://www.youtube.com/watch?v=MswxJw-8PvE>`__

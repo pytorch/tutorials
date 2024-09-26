@@ -15,7 +15,7 @@ DCGAN Tutorial
 # This tutorial will give an introduction to DCGANs through an example. We
 # will train a generative adversarial network (GAN) to generate new
 # celebrities after showing it pictures of many real celebrities. Most of
-# the code here is from the dcgan implementation in
+# the code here is from the DCGAN implementation in
 # `pytorch/examples <https://github.com/pytorch/examples>`__, and this
 # document will give a thorough explanation of the implementation and shed
 # light on how and why this model works. But don’t worry, no prior
@@ -30,8 +30,8 @@ DCGAN Tutorial
 # What is a GAN?
 # ~~~~~~~~~~~~~~
 # 
-# GANs are a framework for teaching a DL model to capture the training
-# data’s distribution so we can generate new data from that same
+# GANs are a framework for teaching a deep learning model to capture the training
+# data distribution so we can generate new data from that same
 # distribution. GANs were invented by Ian Goodfellow in 2014 and first
 # described in the paper `Generative Adversarial
 # Nets <https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf>`__.
@@ -112,7 +112,6 @@ DCGAN Tutorial
 # will be explained in the coming sections.
 # 
 
-from __future__ import print_function
 #%matplotlib inline
 import argparse
 import os
@@ -120,7 +119,6 @@ import random
 import torch
 import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
 import torchvision.datasets as dset
@@ -137,6 +135,7 @@ manualSeed = 999
 print("Random Seed: ", manualSeed)
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
+torch.use_deterministic_algorithms(True) # Needed for reproducible results
 
 
 ######################################################################
@@ -145,35 +144,35 @@ torch.manual_seed(manualSeed)
 # 
 # Let’s define some inputs for the run:
 # 
-# -  **dataroot** - the path to the root of the dataset folder. We will
-#    talk more about the dataset in the next section
-# -  **workers** - the number of worker threads for loading the data with
-#    the DataLoader
-# -  **batch_size** - the batch size used in training. The DCGAN paper
-#    uses a batch size of 128
-# -  **image_size** - the spatial size of the images used for training.
+# -  ``dataroot`` - the path to the root of the dataset folder. We will
+#    talk more about the dataset in the next section.
+# -  ``workers`` - the number of worker threads for loading the data with
+#    the ``DataLoader``.
+# -  ``batch_size`` - the batch size used in training. The DCGAN paper
+#    uses a batch size of 128.
+# -  ``image_size`` - the spatial size of the images used for training.
 #    This implementation defaults to 64x64. If another size is desired,
 #    the structures of D and G must be changed. See
 #    `here <https://github.com/pytorch/examples/issues/70>`__ for more
-#    details
-# -  **nc** - number of color channels in the input images. For color
-#    images this is 3
-# -  **nz** - length of latent vector
-# -  **ngf** - relates to the depth of feature maps carried through the
-#    generator
-# -  **ndf** - sets the depth of feature maps propagated through the
-#    discriminator
-# -  **num_epochs** - number of training epochs to run. Training for
+#    details.
+# -  ``nc`` - number of color channels in the input images. For color
+#    images this is 3.
+# -  ``nz`` - length of latent vector.
+# -  ``ngf`` - relates to the depth of feature maps carried through the
+#    generator.
+# -  ``ndf`` - sets the depth of feature maps propagated through the
+#    discriminator.
+# -  ``num_epochs`` - number of training epochs to run. Training for
 #    longer will probably lead to better results but will also take much
-#    longer
-# -  **lr** - learning rate for training. As described in the DCGAN paper,
-#    this number should be 0.0002
-# -  **beta1** - beta1 hyperparameter for Adam optimizers. As described in
-#    paper, this number should be 0.5
-# -  **ngpu** - number of GPUs available. If this is 0, code will run in
+#    longer.
+# -  ``lr`` - learning rate for training. As described in the DCGAN paper,
+#    this number should be 0.0002.
+# -  ``beta1`` - beta1 hyperparameter for Adam optimizers. As described in
+#    paper, this number should be 0.5.
+# -  ``ngpu`` - number of GPUs available. If this is 0, code will run in
 #    CPU mode. If this number is greater than 0 it will run on that number
-#    of GPUs
-# 
+#    of GPUs.
+#
 
 # Root directory for dataset
 dataroot = "data/celeba"
@@ -206,7 +205,7 @@ num_epochs = 5
 # Learning rate for optimizers
 lr = 0.0002
 
-# Beta1 hyperparam for Adam optimizers
+# Beta1 hyperparameter for Adam optimizers
 beta1 = 0.5
 
 # Number of GPUs available. Use 0 for CPU mode.
@@ -221,13 +220,13 @@ ngpu = 1
 # dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
-# The dataset will download as a file named *img_align_celeba.zip*. Once
-# downloaded, create a directory named *celeba* and extract the zip file
-# into that directory. Then, set the *dataroot* input for this notebook to
-# the *celeba* directory you just created. The resulting directory
+# The dataset will download as a file named ``img_align_celeba.zip``. Once
+# downloaded, create a directory named ``celeba`` and extract the zip file
+# into that directory. Then, set the ``dataroot`` input for this notebook to
+# the ``celeba`` directory you just created. The resulting directory
 # structure should be:
 # 
-# ::
+# .. code-block:: sh
 # 
 #    /path/to/celeba
 #        -> img_align_celeba  
@@ -237,9 +236,9 @@ ngpu = 1
 #            -> 537394.jpg
 #               ...
 # 
-# This is an important step because we will be using the ImageFolder
+# This is an important step because we will be using the ``ImageFolder``
 # dataset class, which requires there to be subdirectories in the
-# dataset’s root folder. Now, we can create the dataset, create the
+# dataset root folder. Now, we can create the dataset, create the
 # dataloader, set the device to run on, and finally visualize some of the
 # training data.
 # 
@@ -266,7 +265,7 @@ plt.figure(figsize=(8,8))
 plt.axis("off")
 plt.title("Training Images")
 plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
-
+plt.show()
 
 
 ######################################################################
@@ -282,14 +281,14 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # ~~~~~~~~~~~~~~~~~~~~~
 # 
 # From the DCGAN paper, the authors specify that all model weights shall
-# be randomly initialized from a Normal distribution with mean=0,
-# stdev=0.02. The ``weights_init`` function takes an initialized model as
+# be randomly initialized from a Normal distribution with ``mean=0``,
+# ``stdev=0.02``. The ``weights_init`` function takes an initialized model as
 # input and reinitializes all convolutional, convolutional-transpose, and
 # batch normalization layers to meet this criteria. This function is
 # applied to the models immediately after initialization.
 # 
 
-# custom weights initialization called on netG and netD
+# custom weights initialization called on ``netG`` and ``netD``
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -319,10 +318,10 @@ def weights_init(m):
 # .. figure:: /_static/img/dcgan_generator.png
 #    :alt: dcgan_generator
 #
-# Notice, how the inputs we set in the input section (*nz*, *ngf*, and
-# *nc*) influence the generator architecture in code. *nz* is the length
-# of the z input vector, *ngf* relates to the size of the feature maps
-# that are propagated through the generator, and *nc* is the number of
+# Notice, how the inputs we set in the input section (``nz``, ``ngf``, and
+# ``nc``) influence the generator architecture in code. ``nz`` is the length
+# of the z input vector, ``ngf`` relates to the size of the feature maps
+# that are propagated through the generator, and ``nc`` is the number of
 # channels in the output image (set to 3 for RGB images). Below is the
 # code for the generator.
 # 
@@ -338,22 +337,22 @@ class Generator(nn.Module):
             nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(ngf * 8),
             nn.ReLU(True),
-            # state size. (ngf*8) x 4 x 4
+            # state size. ``(ngf*8) x 4 x 4``
             nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 4),
             nn.ReLU(True),
-            # state size. (ngf*4) x 8 x 8
+            # state size. ``(ngf*4) x 8 x 8``
             nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 2),
             nn.ReLU(True),
-            # state size. (ngf*2) x 16 x 16
+            # state size. ``(ngf*2) x 16 x 16``
             nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(True),
-            # state size. (ngf) x 32 x 32
+            # state size. ``(ngf) x 32 x 32``
             nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
             nn.Tanh()
-            # state size. (nc) x 64 x 64
+            # state size. ``(nc) x 64 x 64``
         )
 
     def forward(self, input):
@@ -369,12 +368,12 @@ class Generator(nn.Module):
 # Create the generator
 netG = Generator(ngpu).to(device)
 
-# Handle multi-gpu if desired
+# Handle multi-GPU if desired
 if (device.type == 'cuda') and (ngpu > 1):
     netG = nn.DataParallel(netG, list(range(ngpu)))
 
-# Apply the weights_init function to randomly initialize all weights
-#  to mean=0, stdev=0.02.
+# Apply the ``weights_init`` function to randomly initialize all weights
+#  to ``mean=0``, ``stdev=0.02``.
 netG.apply(weights_init)
 
 # Print the model
@@ -408,22 +407,22 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.ngpu = ngpu
         self.main = nn.Sequential(
-            # input is (nc) x 64 x 64
+            # input is ``(nc) x 64 x 64``
             nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf) x 32 x 32
+            # state size. ``(ndf) x 32 x 32``
             nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*2) x 16 x 16
+            # state size. ``(ndf*2) x 16 x 16``
             nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*4) x 8 x 8
+            # state size. ``(ndf*4) x 8 x 8``
             nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*8) x 4 x 4
+            # state size. ``(ndf*8) x 4 x 4``
             nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
             nn.Sigmoid()
         )
@@ -440,12 +439,12 @@ class Discriminator(nn.Module):
 # Create the Discriminator
 netD = Discriminator(ngpu).to(device)
 
-# Handle multi-gpu if desired
+# Handle multi-GPU if desired
 if (device.type == 'cuda') and (ngpu > 1):
     netD = nn.DataParallel(netD, list(range(ngpu)))
     
-# Apply the weights_init function to randomly initialize all weights
-#  to mean=0, stdev=0.2.
+# Apply the ``weights_init`` function to randomly initialize all weights
+# like this: ``to mean=0, stdev=0.2``.
 netD.apply(weights_init)
 
 # Print the model
@@ -459,7 +458,7 @@ print(netD)
 # With :math:`D` and :math:`G` setup, we can specify how they learn
 # through the loss functions and optimizers. We will use the Binary Cross
 # Entropy loss
-# (`BCELoss <https://pytorch.org/docs/stable/nn.html#torch.nn.BCELoss>`__)
+# (`BCELoss <https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss>`__)
 # function which is defined in PyTorch as:
 # 
 # .. math:: \ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad l_n = - \left[ y_n \cdot \log x_n + (1 - y_n) \cdot \log (1 - x_n) \right]
@@ -485,7 +484,7 @@ print(netD)
 # images form out of the noise.
 # 
 
-# Initialize BCELoss function
+# Initialize the ``BCELoss`` function
 criterion = nn.BCELoss()
 
 # Create batch of latent vectors that we will use to visualize
@@ -509,11 +508,12 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # we can train it. Be mindful that training GANs is somewhat of an art
 # form, as incorrect hyperparameter settings lead to mode collapse with
 # little explanation of what went wrong. Here, we will closely follow
-# Algorithm 1 from Goodfellow’s paper, while abiding by some of the best
+# Algorithm 1 from the `Goodfellow’s paper <https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf>`__, 
+# while abiding by some of the best
 # practices shown in `ganhacks <https://github.com/soumith/ganhacks>`__.
 # Namely, we will “construct different mini-batches for real and fake”
 # images, and also adjust G’s objective function to maximize
-# :math:`logD(G(z))`. Training is split up into two main parts. Part 1
+# :math:`log(D(G(z)))`. Training is split up into two main parts. Part 1
 # updates the Discriminator and Part 2 updates the Generator.
 # 
 # **Part 1 - Train the Discriminator**
@@ -523,7 +523,8 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # terms of Goodfellow, we wish to “update the discriminator by ascending
 # its stochastic gradient”. Practically, we want to maximize
 # :math:`log(D(x)) + log(1-D(G(z)))`. Due to the separate mini-batch
-# suggestion from ganhacks, we will calculate this in two steps. First, we
+# suggestion from `ganhacks <https://github.com/soumith/ganhacks>`__,
+# we will calculate this in two steps. First, we
 # will construct a batch of real samples from the training set, forward
 # pass through :math:`D`, calculate the loss (:math:`log(D(x))`), then
 # calculate the gradients in a backward pass. Secondly, we will construct
@@ -545,7 +546,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # G’s gradients in a backward pass, and finally updating G’s parameters
 # with an optimizer step. It may seem counter-intuitive to use the real
 # labels as GT labels for the loss function, but this allows us to use the
-# :math:`log(x)` part of the BCELoss (rather than the :math:`log(1-x)`
+# :math:`log(x)` part of the ``BCELoss`` (rather than the :math:`log(1-x)`
 # part) which is exactly what we want.
 # 
 # Finally, we will do some statistic reporting and at the end of each

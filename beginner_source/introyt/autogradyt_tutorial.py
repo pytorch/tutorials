@@ -153,7 +153,7 @@ print(b)
 #######################################################################
 # This ``grad_fn`` gives us a hint that when we execute the
 # backpropagation step and compute gradients, we’ll need to compute the
-# derivative of :math:`sin(x)` for all this tensor’s inputs.
+# derivative of :math:`\sin(x)` for all this tensor’s inputs.
 # 
 # Let’s perform some more computations:
 # 
@@ -213,7 +213,7 @@ plt.plot(a.detach(), a.grad.detach())
 #########################################################################
 # Recall the computation steps we took to get here:
 # 
-# ::
+# .. code-block:: python
 # 
 #    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
 #    b = torch.sin(a)
@@ -222,8 +222,8 @@ plt.plot(a.detach(), a.grad.detach())
 #    out = d.sum()
 # 
 # Adding a constant, as we did to compute ``d``, does not change the
-# derivative. That leaves :math:`c = 2 * b = 2 * sin(a)`, the derivative
-# of which should be :math:`2 * cos(a)`. Looking at the graph above,
+# derivative. That leaves :math:`c = 2 * b = 2 * \sin(a)`, the derivative
+# of which should be :math:`2 * \cos(a)`. Looking at the graph above,
 # that’s just what we see.
 # 
 # Be aware that only *leaf nodes* of the computation have their gradients
@@ -250,9 +250,9 @@ class TinyModel(torch.nn.Module):
     def __init__(self):
         super(TinyModel, self).__init__()
         
-        self.layer1 = torch.nn.Linear(1000, 100)
+        self.layer1 = torch.nn.Linear(DIM_IN, HIDDEN_SIZE)
         self.relu = torch.nn.ReLU()
-        self.layer2 = torch.nn.Linear(100, 10)
+        self.layer2 = torch.nn.Linear(HIDDEN_SIZE, DIM_OUT)
     
     def forward(self, x):
         x = self.layer1(x)
@@ -334,7 +334,7 @@ for i in range(0, 5):
     
 print(model.layer2.weight.grad[0][0:10])
 
-optimizer.zero_grad()
+optimizer.zero_grad(set_to_none=False)
 
 print(model.layer2.weight.grad[0][0:10])
 
@@ -456,10 +456,10 @@ print(y)
 # .. note::
 #     The following code cell throws a runtime error. This is expected.
 # 
-# ::
+#    .. code-block:: python
 #
-#    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
-#    torch.sin_(a)
+#       a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
+#       torch.sin_(a)
 #
 
 #########################################################################

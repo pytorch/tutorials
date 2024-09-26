@@ -18,7 +18,6 @@ installed:
 
 """
 
-from __future__ import print_function, division
 import os
 import torch
 import pandas as pd
@@ -51,9 +50,9 @@ plt.ion()   # interactive mode
 #     estimation <https://blog.dlib.net/2014/08/real-time-face-pose-estimation.html>`__
 #     on a few images from imagenet tagged as 'face'.
 #
-# Dataset comes with a csv file with annotations which looks like this:
+# Dataset comes with a ``.csv`` file with annotations which looks like this:
 #
-# ::
+# .. code-block:: sh
 #
 #     image_name,part_0_x,part_0_y,part_1_x,part_1_y,part_2_x, ... ,part_67_x,part_67_y
 #     0805personali01.jpg,27,83,27,98, ... 84,134
@@ -69,8 +68,7 @@ landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
 n = 65
 img_name = landmarks_frame.iloc[n, 0]
 landmarks = landmarks_frame.iloc[n, 1:]
-landmarks = np.asarray(landmarks)
-landmarks = landmarks.astype('float').reshape(-1, 2)
+landmarks = np.asarray(landmarks, dtype=float).reshape(-1, 2)
 
 print('Image name: {}'.format(img_name))
 print('Landmarks shape: {}'.format(landmarks.shape))
@@ -124,7 +122,7 @@ class FaceLandmarksDataset(Dataset):
 
     def __init__(self, csv_file, root_dir, transform=None):
         """
-        Args:
+        Arguments:
             csv_file (string): Path to the csv file with annotations.
             root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
@@ -145,8 +143,7 @@ class FaceLandmarksDataset(Dataset):
                                 self.landmarks_frame.iloc[idx, 0])
         image = io.imread(img_name)
         landmarks = self.landmarks_frame.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
+        landmarks = np.array([landmarks], dtype=float).reshape(-1, 2)
         sample = {'image': image, 'landmarks': landmarks}
 
         if self.transform:
@@ -165,9 +162,7 @@ face_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.csv',
 
 fig = plt.figure()
 
-for i in range(len(face_dataset)):
-    sample = face_dataset[i]
-
+for i, sample in enumerate(face_dataset):
     print(i, sample['image'].shape, sample['landmarks'].shape)
 
     ax = plt.subplot(1, 4, i + 1)
@@ -197,11 +192,11 @@ for i in range(len(face_dataset)):
 #    swap axes).
 #
 # We will write them as callable classes instead of simple functions so
-# that parameters of the transform need not be passed everytime it's
+# that parameters of the transform need not be passed every time it's
 # called. For this, we just need to implement ``__call__`` method and
 # if required, ``__init__`` method. We can then use a transform like this:
 #
-# ::
+# .. code-block:: python
 #
 #     tsfm = Transform(params)
 #     transformed_sample = tsfm(sample)
@@ -268,8 +263,8 @@ class RandomCrop(object):
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
 
-        top = np.random.randint(0, h - new_h)
-        left = np.random.randint(0, w - new_w)
+        top = np.random.randint(0, h - new_h + 1)
+        left = np.random.randint(0, w - new_w + 1)
 
         image = image[top: top + new_h,
                       left: left + new_w]
@@ -291,12 +286,12 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-    
+
 ######################################################################
 # .. note::
-#     In the example above, `RandomCrop` uses an external library's random number generator 
-#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
-#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     In the example above, `RandomCrop` uses an external library's random number generator
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader`
+#     (see `here <https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers>`_).
 #     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
@@ -356,9 +351,7 @@ transformed_dataset = FaceLandmarksDataset(csv_file='data/faces/face_landmarks.c
                                                ToTensor()
                                            ]))
 
-for i in range(len(transformed_dataset)):
-    sample = transformed_dataset[i]
-
+for i, sample in enumerate(transformed_dataset):
     print(i, sample['image'].size(), sample['landmarks'].size())
 
     if i == 3:
@@ -404,7 +397,7 @@ def show_landmarks_batch(sample_batched):
         plt.title('Batch from dataloader')
 
 # if you are using Windows, uncomment the next line and indent the for loop.
-# you might need to go back and change "num_workers" to 0. 
+# you might need to go back and change ``num_workers`` to 0.
 
 # if __name__ == '__main__':
 for i_batch, sample_batched in enumerate(dataloader):
@@ -428,7 +421,9 @@ for i_batch, sample_batched in enumerate(dataloader):
 # and dataloader. ``torchvision`` package provides some common datasets and
 # transforms. You might not even have to write custom classes. One of the
 # more generic datasets available in torchvision is ``ImageFolder``.
-# It assumes that images are organized in the following way: ::
+# It assumes that images are organized in the following way:
+#
+# .. code-block:: sh
 #
 #     root/ants/xxx.png
 #     root/ants/xxy.jpeg
@@ -442,23 +437,25 @@ for i_batch, sample_batched in enumerate(dataloader):
 #
 # where 'ants', 'bees' etc. are class labels. Similarly generic transforms
 # which operate on ``PIL.Image`` like  ``RandomHorizontalFlip``, ``Scale``,
-# are also available. You can use these to write a dataloader like this: ::
+# are also available. You can use these to write a dataloader like this:
 #
-#   import torch
-#   from torchvision import transforms, datasets
+# .. code-block:: pytorch
 #
-#   data_transform = transforms.Compose([
-#           transforms.RandomSizedCrop(224),
-#           transforms.RandomHorizontalFlip(),
-#           transforms.ToTensor(),
-#           transforms.Normalize(mean=[0.485, 0.456, 0.406],
-#                                std=[0.229, 0.224, 0.225])
-#       ])
-#   hymenoptera_dataset = datasets.ImageFolder(root='hymenoptera_data/train',
-#                                              transform=data_transform)
-#   dataset_loader = torch.utils.data.DataLoader(hymenoptera_dataset,
-#                                                batch_size=4, shuffle=True,
-#                                                num_workers=4)
+#    import torch
+#    from torchvision import transforms, datasets
+#
+#    data_transform = transforms.Compose([
+#            transforms.RandomSizedCrop(224),
+#            transforms.RandomHorizontalFlip(),
+#            transforms.ToTensor(),
+#            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                 std=[0.229, 0.224, 0.225])
+#        ])
+#    hymenoptera_dataset = datasets.ImageFolder(root='hymenoptera_data/train',
+#                                               transform=data_transform)
+#    dataset_loader = torch.utils.data.DataLoader(hymenoptera_dataset,
+#                                                 batch_size=4, shuffle=True,
+#                                                 num_workers=4)
 #
 # For an example with training code, please see
 # :doc:`transfer_learning_tutorial`.

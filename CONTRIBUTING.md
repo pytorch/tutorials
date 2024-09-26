@@ -65,7 +65,7 @@ There are three types of tutorial content that we host on
   code in these tutorials is run every time they are built. To keep
   these tutorials up and running all their package dependencies need to
   be resolved--which makes it more challenging to maintain this type of
-  tutorial. 
+  tutorial.
 
 * **Non-interactive tutorials** are authored and submitted as
   reStructuredText files. The build system only converts them into HTML;
@@ -80,18 +80,16 @@ There are three types of tutorial content that we host on
   non-interactive.
 
 
-# Managing data that is used by your tutorial 
+# Managing data that is used by your tutorial
 
 Your tutorial might depend on external data, such as pre-trained models,
 training data, or test data. We recommend storing this data in a
 commonly-used storage service, such as Amazon S3, and instructing your
-users to download the data at the beginning of your tutorial. 
+users to download the data at the beginning of your tutorial.
 
-The
-[Makefile](https://github.com/pytorch/tutorials/blob/main/Makefile)
-that we use to build the tutorials contains automation that downloads
-required data files.
-
+To download your data add a function to the [download.py](https://github.com/pytorch/tutorials/blob/main/.jenkins/download_data.py)
+script. Follow the same pattern as other download functions.
+Please do not add download logic to `Makefile` as it will incur download overhead for all CI shards.
 
 # Python packages used by your tutorial
 
@@ -104,7 +102,7 @@ tutorial fails to build in our Continuous Integration (CI) system, we
 might contact you in order to resolve the issue.
 
 
-# Deprecation of tutorials 
+# Deprecation of tutorials
 
 Under some circumstances, we might deprecate--and subsequently
 archive--a tutorial removing it from the site. For example, if the
@@ -137,7 +135,7 @@ end-to-end understanding of how to use PyTorch. Recipes are scoped
 examples of how to use specific features; the goal of a recipe is to
 teach readers how to easily leverage features of PyTorch for their
 needs. Tutorials and recipes are always _actionable_. If the material is
-purely informative, consider adding it to the API docs instead. 
+purely informative, consider adding it to the API docs instead.
 
 View our current [full-length tutorials](https://pytorch.org/tutorials/).
 
@@ -165,11 +163,11 @@ Write for a global audience with an instructive and directive voice.
 - PyTorch has a global audience; use clear, easy to understand
   language. Avoid idioms or other figures of speech.
 - To keep your instructions concise, use 
-  [active voice](https://writing.wisc.edu/handbook/style/ccs_activevoice/) as much as possible. 
-- For a short guide on the essentials of writing style, 
+  [active voice](https://writing.wisc.edu/handbook/style/ccs_activevoice/) as much as possible.
+- For a short guide on the essentials of writing style,
   [The Elements of Style](https://www.gutenberg.org/files/37134/37134-h/37134-h.htm)
   is invaluable.
-- For extensive guidance on technical-writing style, the Google developer documentation 
+- For extensive guidance on technical-writing style, the Google developer documentation
   [google style](https://developers.google.com/style)
   is a great resource.
 - Think of the process as similar to creating a (really practical)
@@ -195,7 +193,7 @@ We recommend that tutorials use the following structure which guides users throu
 1. Step-by-step instructions. Ideally, the steps in the tutorial should
    map back to the learning objectives. Consider adding comments in the
    code that correspond to these steps and that help to clarify what
-   each section of the code is doing. 
+   each section of the code is doing.
 1. Link to relevant [PyTorch
    documentation](https://pytorch.org/docs/stable/index.html). This
    helps readers have context for the tutorial source code and better
@@ -230,7 +228,7 @@ as a guide.
 Submit your tutorial as either a Python (`.py`) file or a
 reStructuredText (`.rst`) file. For Python files, the filename for your
 tutorial should end in "`_tutorial.py`"; for example,
-"`cool_pytorch_feature_tutorial.py`". 
+"`cool_pytorch_feature_tutorial.py`".
 
 Do not submit a Jupyter notebook. If you develop your tutorial in
 Jupyter, you'll need to convert it to Python. This
@@ -276,8 +274,8 @@ search, you need to include it in `index.rst`, or for recipes, in
    :header: Learn the Basics # Tutorial title
    :card_description: A step-by-step guide to building a complete ML workflow with PyTorch.  # Short description
    :image: _static/img/thumbnails/cropped/60-min-blitz.png  # Image that appears with the card
-   :link: beginner/basics/intro.html 
-   :tags: Getting-Started 
+   :link: beginner/basics/intro.html
+   :tags: Getting-Started
 ```
 
 
@@ -328,9 +326,9 @@ example](https://github.com/pytorch/tutorials/blob/main/_static/img/thumbnails/c
 
 The following command builds an HTML version of the tutorial website.
 
-    ```
-    make html-noplot
-    ```
+```
+make html-noplot
+```
 
 This command does not run your tutorial code. To build the tutorial in a
 way that executes the code, use `make docs`. However, unless you have a
@@ -340,7 +338,7 @@ test your tutorial when you submit your PR.
 
 
 ## Submit the PR ##
- 
+
 NOTE: Please do not use [ghstack](https://github.com/ezyang/ghstack). We
 do not support ghstack in the [`pytorch/tutorials`](https://github.com/pytorch/tutorials) repo.
 
@@ -368,5 +366,5 @@ build. You can see an example Netlify preview at the following URL:
 
 ## Do not merge the PR yourself ##
 
-Please **DO NOT MERGE** your own PR; the tutorial won't be published. In order to avoid potential build breaks with the tutorials site, only certain maintainers can authorize publishing. 
+Please **DO NOT MERGE** your own PR; the tutorial won't be published. In order to avoid potential build breaks with the tutorials site, only certain maintainers can authorize publishing.
 

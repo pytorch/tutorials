@@ -1,6 +1,6 @@
 """
-Language Translation with nn.Transformer and torchtext
-======================================================
+Language Translation with ``nn.Transformer`` and torchtext
+==========================================================
 
 This tutorial shows:
     - How to train a translation model from scratch using Transformer.
@@ -40,12 +40,16 @@ TGT_LANGUAGE = 'en'
 token_transform = {}
 vocab_transform = {}
 
-
+###################################################################################
 # Create source and target language tokenizer. Make sure to install the dependencies.
-# pip install -U torchdata
-# pip install -U spacy
-# python -m spacy download en_core_web_sm
-# python -m spacy download de_core_news_sm
+#
+# .. code-block:: python
+#
+#    pip install -U torchdata
+#    pip install -U spacy
+#    python -m spacy download en_core_web_sm
+#    python -m spacy download de_core_news_sm
+
 token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
@@ -71,8 +75,8 @@ for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
                                                     specials=special_symbols,
                                                     special_first=True)
 
-# Set UNK_IDX as the default index. This index is returned when the token is not found.
-# If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.
+# Set ``UNK_IDX`` as the default index. This index is returned when the token is not found.
+# If not set, it throws ``RuntimeError`` when the queried token is not found in the Vocabulary.
 for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
   vocab_transform[ln].set_default_index(UNK_IDX)
 
@@ -89,7 +93,7 @@ for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
 # encodings to provide position information of input tokens to the model. The second part is the
 # actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model.
 # Finally, the output of the Transformer model is passed through linear layer
-# that gives un-normalized probabilities for each token in the target language.
+# that gives unnormalized probabilities for each token in the target language.
 #
 
 
@@ -205,7 +209,7 @@ def create_mask(src, tgt):
 
 ######################################################################
 # Let's now define the parameters of our model and instantiate the same. Below, we also
-# define our loss function which is the cross-entropy loss and the optmizer used for training.
+# define our loss function which is the cross-entropy loss and the optimizer used for training.
 #
 torch.manual_seed(0)
 
@@ -258,7 +262,7 @@ def tensor_transform(token_ids: List[int]):
                       torch.tensor(token_ids),
                       torch.tensor([EOS_IDX])))
 
-# src and tgt language text transforms to convert raw strings into tensors indices
+# ``src`` and ``tgt`` language text transforms to convert raw strings into tensors indices
 text_transform = {}
 for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
     text_transform[ln] = sequential_transforms(token_transform[ln], #Tokenization

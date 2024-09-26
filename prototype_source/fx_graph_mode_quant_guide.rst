@@ -4,7 +4,7 @@
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
 FX Graph Mode Quantization requires a symbolically traceable model.
-We use the FX framework (TODO: link) to convert a symbolically traceable nn.Module instance to IR,
+We use the FX framework to convert a symbolically traceable nn.Module instance to IR,
 and we operate on the IR to execute the quantization passes.
 Please post your question about symbolically tracing your model in `PyTorch Discussion Forum <https://discuss.pytorch.org/c/quantization/17>`_
 
@@ -22,16 +22,19 @@ You can use any combination of these options:
     b. Write your own observed and quantized submodule
 
 
-####################################################################
 If the code that is not symbolically traceable does not need to be quantized, we have the following two options
 to run FX Graph Mode Quantization:
-1.a. Symbolically trace only the code that needs to be quantized
+
+
+Symbolically trace only the code that needs to be quantized
 -----------------------------------------------------------------
 When the whole model is not symbolically traceable but the submodule we want to quantize is
 symbolically traceable, we can run quantization only on that submodule.
+
 before:
 
 .. code:: python
+
   class M(nn.Module):
       def forward(self, x):
           x = non_traceable_code_1(x)
@@ -42,6 +45,7 @@ before:
 after:
 
 .. code:: python
+    
   class FP32Traceable(nn.Module):
       def forward(self, x):
           x = traceable_code(x)
@@ -69,8 +73,7 @@ Note if original model needs to be preserved, you will have to
 copy it yourself before calling the quantization APIs.
 
 
-#####################################################
-1.b. Skip symbolically trace the non-traceable code
+Skip symbolically trace the non-traceable code
 ---------------------------------------------------
 When we have some non-traceable code in the module, and this part of code doesn’t need to be quantized,
 we can factor out this part of the code into a submodule and skip symbolically trace that submodule.
@@ -134,13 +137,12 @@ quantization code:
 
 If the code that is not symbolically traceable needs to be quantized, we have the following two options:
 
-##########################################################
-2.a Refactor your code to make it symbolically traceable
+Refactor your code to make it symbolically traceable
 --------------------------------------------------------
 If it is easy to refactor the code and make the code symbolically traceable,
 we can refactor the code and remove the use of non-traceable constructs in python.
 
-More information about symbolic tracing support can be found in: (TODO: link)
+More information about symbolic tracing support can be found `here <https://pytorch.org/docs/stable/fx.html#limitations-of-symbolic-tracing>`_.
 
 before:
 
@@ -167,15 +169,10 @@ after:
       return x.permute(0, 2, 1, 3)
 
 
-quantization code:
-
 This can be combined with other approaches and the quantization code
 depends on the model.
 
-
-
-#######################################################
-2.b. Write your own observed and quantized submodule
+Write your own observed and quantized submodule
 -----------------------------------------------------
 
 If the non-traceable code can’t be refactored to be symbolically traceable,
@@ -207,8 +204,8 @@ non-traceable logic, wrapped in a module
   class FP32NonTraceable:
       ...
 
-
-2. Define observed version of FP32NonTraceable
+2. Define observed version of
+FP32NonTraceable
 
 .. code:: python
 

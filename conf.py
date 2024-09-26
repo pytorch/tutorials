@@ -33,13 +33,17 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
+import numpy
+import gc
 import glob
+import random
 import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
 import re
-from validate_tutorials_built import NOT_RUN
-
+from get_sphinx_filenames import SPHINX_SHOULD_RUN
+import pandocfilters
+import pypandoc
 import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
 
@@ -63,6 +67,12 @@ rst_epilog ="""
 #
 # needs_sphinx = '1.0'
 
+html_meta = {
+    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
+    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
+    'author': 'PyTorch Contributors'
+}
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -71,11 +81,14 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
-    'sphinx_design'
+    'sphinx_design',
+    'sphinx_sitemap'
 ]
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
+    "tensordict": ("https://pytorch.github.io/tensordict/", None),
+    "torchrl": ("https://pytorch.org/rl/", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
     "torchtext": ("https://pytorch.org/text/stable/", None),
     "torchvision": ("https://pytorch.org/vision/stable/", None),
@@ -83,15 +96,38 @@ intersphinx_mapping = {
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
+def reset_seeds(gallery_conf, fname):
+    torch.cuda.empty_cache()
+    torch.manual_seed(42)
+    torch.set_default_device(None)
+    random.seed(10)
+    numpy.random.seed(10)
+    gc.collect()
+
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': '.py',
-    'ignore_pattern': re.compile(f"({'|'.join(NOT_RUN)}).py$"),
+    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
     'promote_jupyter_magic': True,
-    'backreferences_dir': None
+    'backreferences_dir': None,
+    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
+                            "# https://pytorch.org/tutorials/beginner/colab\n"
+                            "%matplotlib inline"),
+    'reset_modules': (reset_seeds),
+    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
+    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
+                 'filters': ['.jenkins/custom_pandoc_filter.py'],
+    },
 }
+
+html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+sitemap_locales = [None]
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+]
+sitemap_url_scheme = "{link}"
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
@@ -133,7 +169,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'PyTorch Tutorials'
-copyright = '2022, PyTorch'
+copyright = '2024, PyTorch'
 author = 'PyTorch contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -155,7 +191,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
 exclude_patterns += sphinx_gallery_conf['examples_dirs']
 exclude_patterns += ['*/index.rst']
 
@@ -204,8 +240,9 @@ html_theme_options = {
     'pytorch_project': 'tutorials',
     'collapse_navigation': False,
     'display_version': True,
+    'navigation_with_keys': True,
     'logo_only': False,
-    'analytics_id': 'UA-117752657-2',
+    'analytics_id': 'GTM-T8XT4PS',
 }
 
 
@@ -267,7 +304,8 @@ texinfo_documents = [
 
 html_css_files = [
         'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css'
+        'css/custom.css',
+        'css/custom2.css'
     ]
 
 def setup(app):

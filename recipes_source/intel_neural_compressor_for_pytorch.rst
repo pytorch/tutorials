@@ -115,7 +115,7 @@ In this tutorial, the LeNet model is used to demonstrate how to deal with *Intel
             return F.log_softmax(x, dim=1)
 
     model = Net()
-    model.load_state_dict(torch.load('./lenet_mnist_model.pth'))
+    model.load_state_dict(torch.load('./lenet_mnist_model.pth', weights_only=True))
 
 The pretrained model weight `lenet_mnist_model.pth` comes from
 `here <https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing>`_.

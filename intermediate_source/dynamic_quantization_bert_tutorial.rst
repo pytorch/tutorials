@@ -68,7 +68,7 @@ built-in F1 score calculation helper function.
 .. code:: shell
 
    pip install sklearn
-   pip install transformers
+   pip install transformers==4.29.2
 
 
 Because we will be using the beta parts of the PyTorch, it is
@@ -79,7 +79,7 @@ Mac:
 
 .. code:: shell
 
-   yes y | pip uninstall torch tochvision
+   yes y | pip uninstall torch torchvision
    yes y | pip install --pre torch -f https://download.pytorch.org/whl/nightly/cu101/torch_nightly.html
 
 
@@ -91,8 +91,6 @@ Mac:
 In this step we import the necessary Python modules for the tutorial.
 
 .. code:: python
-
-    from __future__ import absolute_import, division, print_function
 
     import logging
     import numpy as np
@@ -208,7 +206,7 @@ in `examples <https://github.com/huggingface/transformers/tree/master/examples#m
        --save_steps 100000 \
        --output_dir $OUT_DIR
 
-We provide the fined-tuned BERT model for MRPC task `here <https://download.pytorch.org/tutorial/MRPC.zip>`_.
+We provide the fine-tuned BERT model for MRPC task `here <https://download.pytorch.org/tutorial/MRPC.zip>`_.
 To save time, you can download the model file (~400 MB) directly into your local folder ``$OUT_DIR``.
 
 2.1 Set global configurations
@@ -256,6 +254,7 @@ model before and after the dynamic quantization.
     set_seed(42)
 
 
+
 2.2 Load the fine-tuned BERT model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -274,7 +273,7 @@ We load the tokenizer and fine-tuned BERT sequence classifier model
 2.3 Define the tokenize and evaluation function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We reuse the tokenize and evaluation function from `Huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
+We reuse the tokenize and evaluation function from `HuggingFace <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
 
 .. code:: python
 
@@ -415,7 +414,7 @@ We reuse the tokenize and evaluation function from `Huggingface <https://github.
 
 
 3. Apply the dynamic quantization
--------------------------------
+---------------------------------
 
 We call ``torch.quantization.quantize_dynamic`` on the model to apply
 the dynamic quantization on the HuggingFace BERT model. Specifically,
@@ -524,6 +523,10 @@ We can serialize and save the quantized model for the future use using
 `torch.jit.save` after tracing the model.
 
 .. code:: python
+
+    def ids_tensor(shape, vocab_size):
+        #  Creates a random int32 tensor of the shape within the vocab size
+        return torch.randint(0, vocab_size, shape=shape, dtype=torch.int, device='cpu')
 
     input_ids = ids_tensor([8, 128], 2)
     token_type_ids = ids_tensor([8, 128], 2)

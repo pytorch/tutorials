@@ -1,6 +1,11 @@
 Registering a Dispatched Operator in C++
 ========================================
 
+.. warning::
+
+    This tutorial is deprecated as of PyTorch 2.4. Please see :ref:`custom-ops-landing-page`
+    for the newest up-to-date guides on extending PyTorch with Custom Operators.
+
 The dispatcher is an internal component of PyTorch which is responsible for
 figuring out what code should actually get run when you call a function like
 ``torch::add``.  This can be nontrivial, because PyTorch operations need
@@ -129,7 +134,7 @@ for debugging in larger models where previously it can be hard to pin-point
 exactly where the ``requires_grad``-ness is lost during the forward pass.
 
 In-place or view ops
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 To ensure correctness and best possible performance, if your op mutates an input
 in-place or returns a tensor that aliases with one of the inputs, two additional

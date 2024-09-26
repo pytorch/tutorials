@@ -1,6 +1,6 @@
 Combining Distributed DataParallel with Distributed RPC Framework
 =================================================================
-**Authors**: `Pritam Damania <https://github.com/pritamdamania87>`_ and `Yi Wang <https://github.com/SciPioneer>`_
+**Authors**: `Pritam Damania <https://github.com/pritamdamania87>`_ and `Yi Wang <https://github.com/wayi1>`_
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/advanced_source/rpc_ddp_tutorial.rst>`__.
