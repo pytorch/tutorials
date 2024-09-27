@@ -1,6 +1,6 @@
 """
-**Open Source Installation** (For Reference)
---------------------------------------------
+Introduction to TorchRec
+==================================
 
 Requirements: - python >= 3.9
 
@@ -13,18 +13,20 @@ kernels and GPU enabled operations to run
 
 """
 
-# Install stable versions for best reliability
+###############################################
+# If you do not have the following components in your environment, please install them by running:
 
-!pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
-!pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
-!pip3 install torchmetrics==1.0.3
-!pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
+# 
+# .. code-block:: sh
+
+#   !pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
+#   !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
+#   !pip3 install torchmetrics==1.0.3
+#   !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
+
 
 
 ######################################################################
-# Intro to TorchRec
-# =================
-# 
 # Embeddings
 # ~~~~~~~~~~
 # 
