@@ -27,8 +27,10 @@ If you prefer to bypass the tuning process and always use the CPP template imple
 Example code
 ------------
 The below code is an example of using the ``max-autotune`` mode on a simple neural network with a linear layer followed by a ReLU activation.
-You could run the example code by setting this environment variable ``export TORCHINDUCTOR_FREEZING=1``.
 
+We only support frozen model with ``torch.no_grad`` or the inference mode
+Therefore, you need to set the environment variable ``export TORCHINDUCTOR_FREEZING=1``
+and ensure that both the compilation and inference steps are executed within the ``torch.no_grad`` context.
 
 .. code:: python
 
@@ -86,6 +88,7 @@ We could check the generated output code by setting ``export TORCH_LOGS="+output
 When CPP template is selected, we won't have ``torch.ops.mkldnn._linear_pointwise.default`` (for bfloat16) or ``torch.ops.mkl._mkl_linear.default`` (for float32)
 in the generated code anymore, instead, we'll find kernel based on CPP GEMM template ``cpp_fused__to_copy_relu_1``
 (only part of the code is demonstrated below for simplicity) with the bias and relu epilogues fused inside the CPP GEMM template kernel.
+
 The generated code differs by CPU architecture and is implementation-specific, which is subject to change.
 
 .. code:: python
