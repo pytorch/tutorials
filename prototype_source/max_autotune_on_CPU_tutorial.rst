@@ -1,4 +1,4 @@
-Use max-autotune compilation on CPU to gain further performance boost
+Use max-autotune compilation on CPU to gain additional performance boost
 ==============================================================
 
 **Author**: `Jiong Gong <https://github.com/jgong5>`__, `Leslie Fang <https://github.com/leslie-fang-intel>`__, `Chunyuan Wu <https://github.com/chunyuan-w>`__

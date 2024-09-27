@@ -218,8 +218,8 @@ Prototype features are not available as part of binary distributions like PyPI o
    :tags: Model-Optimization
 
 .. customcarditem::
-   :header: Use max-autotune compilation on CPU to gain further performance boost
-   :card_description: Tutorial for max-autotune mode on CPU to gain further performance boost
+   :header: Use max-autotune compilation on CPU to gain additional performance boost
+   :card_description: Tutorial for max-autotune mode on CPU to gain additional performance boost
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../prototype/max_autotune_on_CPU_tutorial.html
    :tags: Model-Optimization
