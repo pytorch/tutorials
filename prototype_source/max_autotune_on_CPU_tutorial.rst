@@ -9,7 +9,8 @@ Prerequisites:
 
 Introduction
 ------------
-``max-autotune`` mode for the Inductor CPU backend in ``torch.compile`` profiles multiple implementations of operations at compile time and selects the best-performing one,
+``max-autotune`` mode for the Inductor CPU backend in ``torch.compile`` (`RFC link <https://github.com/pytorch/pytorch/issues/125683>`)
+profiles multiple implementations of operations at compile time and selects the best-performing one,
 trading longer compilation times for improved runtime performance. This enhancement is particularly beneficial for GEMM-related operations.
 In the Inductor CPU backend, we’ve introduced a C++ template-based GEMM implementation as an alternative to the ATen-based approach that relies on oneDNN and MKL libraries.
 This is similar to the max-autotune mode on CUDA, where implementations from ATen, Triton, and CUTLASS are considered.
@@ -85,6 +86,7 @@ We could check the generated output code by setting ``export TORCH_LOGS="+output
 When CPP template is selected, we won't have ``torch.ops.mkldnn._linear_pointwise.default`` (for bfloat16) or ``torch.ops.mkl._mkl_linear.default`` (for float32)
 in the generated code anymore, instead, we'll find kernel based on CPP GEMM template ``cpp_fused__to_copy_relu_1``
 (only part of the code is demonstrated below for simplicity) with the bias and relu epilogues fused inside the CPP GEMM template kernel.
+The generated code differs by CPU architecture and is implementation-specific, which is subject to change.
 
 .. code:: python
 
