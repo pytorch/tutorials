@@ -17,6 +17,8 @@ This is similar to the max-autotune mode on CUDA, where implementations from ATe
 
 We have covered most popular data types, including FP32, BF16, FP16, and INT8, with epilogue fusions for x86 CPUs.
 
+While the development is still in progress, we have already seen promising speedups over pure ATen-based GEMMs as measured by the three benchmark suites and the inference of LLMs. 
+
 How to activate ``max-autotune`` mode
 ------------
 To activate the ``max-autotune`` mode in PyTorch, set the ``mode`` argument to ``max-autotune`` when compiling your model using ``torch.compile``.
