@@ -44,7 +44,9 @@ Set Up the Environment
 ----------------------
 
 #. Open the command line environment via ``cmd.exe``.
-#. Activate ``MSVC`` with the following command::
+#. Activate ``MSVC`` with the following command:
+
+   .. code-block:: sh
 
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
 #. Activate ``conda`` with the following command:
@@ -54,10 +56,10 @@ Set Up the Environment
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
 #. Create and activate a customer conda environment:
  
-    .. code-block:: sh
+   .. code-block:: sh
 
-      conda create -n inductor_cpu_windows python=3.10 -y 
-      conda activate inductor_cpu_windows
+    conda create -n inductor_cpu_windows python=3.10 -y 
+    conda activate inductor_cpu_windows
 
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
 
