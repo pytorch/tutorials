@@ -218,10 +218,10 @@ Prototype features are not available as part of binary distributions like PyPI o
    :tags: Model-Optimization
 
 .. customcarditem::
-   :header: Max-autotune Support on CPU with GEMM Template Tutorial
-   :card_description: Tutorial for max-autotune mode support for torch.compile with GEMM template
+   :header: Use max-autotune compilation on CPU to gain further performance boost
+   :card_description: Tutorial for max-autotune mode on CPU to gain further performance boost
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/max_autotune_CPU_with_gemm_template_tutorial.html
+   :link: ../prototype/max_autotune_on_CPU_tutorial.html
    :tags: Model-Optimization
 
 .. Distributed
