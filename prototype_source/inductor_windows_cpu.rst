@@ -24,30 +24,30 @@ This tutorial will guide you through the process of using TorchInductor on a Win
        * Miniforge for Windows
 
 Install the Required Software
--------------------------------------------
+-----------------------------
 
 First, let's install the required software. C++ compiler is required for TorchInductor optimization.
 We will use Microsoft Visual C++ (MSVC) for this example. 
 
 1. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
-2. During the installation, choose **Desktop Development with C++** in the **Desktop & Mobile** section. Then install the software
+2. During the installation, choose **Desktop Development with C++** in the **Desktop & Mobile** section in **Workloads** table. Then install the software
 
 .. note::
 
      We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
-
+     Please check `Alternative Compiler for better performance <#alternative-compiler-for-better-performance>`_.
 
 3. Download and install `Miniforge3-Windows-x86_64.exe <https://github.com/conda-forge/miniforge/releases/latest/>`__.
 
 Set Up the Environment
-------------------------------
+----------------------
 
 #. Open the command line environment via ``cmd.exe``.
-#. Activate `MSVC` with the following command::
+#. Activate ``MSVC`` with the following command::
 
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
-#. Activate `conda` with the following command:
+#. Activate ``conda`` with the following command:
 
    .. code-block:: sh
 
@@ -62,7 +62,7 @@ Set Up the Environment
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
 
 Using TorchInductor on Windows CPU
-----------------------------------------
+----------------------------------
 
 Here’s a simple example to demonstrate how to use TorchInductor:
 
@@ -102,7 +102,24 @@ The code above returns the following output:
             [ 5.7244e-04,  1.2799e+00,  1.3595e+00,  1.0907e+00,  3.7191e-01,
             1.4062e+00,  1.3672e+00,  6.8502e-02,  8.5216e-01,  8.6046e-01]])
 
+Alternative Compiler for better performance
+-------------------------------------------
+
+To enhance performance on Windows inductor, you can use the Intel Compiler or LLVM Compiler. However, they rely on the runtime libraries from Microsoft Visual C++ (MSVC). Therefore, your first step should be to install MSVC.
+
+Intel Compiler
+^^^^^^^^^^^^^^
+
+#. Download and install `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler-download.html>`_ with Windows version.
+#. Set Windows Inductor Compiler via environment variable ``set CXX=icx-cl``
+
+LLVM Compiler
+^^^^^^^^^^^^^
+
+#. Download and install `LLVM Compiler <https://github.com/llvm/llvm-project/releases>`_ and choose win64 version.
+#. Set Windows Inductor Compiler via environment variable ``set CXX=clang-cl`` 
+
 Conclusion
 ----------
 
-In this tutorial, we have learned how to use Inductor on Windows CPU with PyTorch 2.5 or later.
+With this tutorial, we introduce how to use Inductor on Windows CPU with PyTorch 2.5 or later. We can use Intel Compiler or LLVM Compiler to get better performance.
