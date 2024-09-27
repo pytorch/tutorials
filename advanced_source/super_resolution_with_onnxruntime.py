@@ -280,8 +280,9 @@ print(f"Inference of ONNX model used {end - start} seconds")
 
 from PIL import Image
 import torchvision.transforms as transforms
+import os
 
-img = Image.open("./_static/img/cat.jpg")
+img = Image.open(os.cwd() + "../_static/img/cat.jpg")
 
 resize = transforms.Resize([224, 224])
 img = resize(img)
