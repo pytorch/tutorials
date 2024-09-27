@@ -2,21 +2,33 @@
 Introduction to TorchRec
 ==================================
 
-Requirements: - python >= 3.9
+**TorchRec** is a PyTorch library tailored for building scalable and efficient recommendation systems using embeddings. 
+This tutorial guides you through the installation process, introduces the concept of embeddings, and highlights their importance in
+recommendation systems. It offers practical demonstrations on implementing embeddings with PyTorch
+and TorchRec, focusing on handling large embedding tables through distributed training and advanced optimizations.
 
-We highly recommend CUDA when using TorchRec. If using CUDA: - cuda >=
-11.8
+.. grid:: 2
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+       * Fundamentals of embeddings and their role in recommendation systems
+       * How to set up TorchRec to manage and implement embeddings in PyTorch environments
+       * Explore advanced techniques for distributing large embedding tables across multiple GPUs
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+       * PyTorch v2.5 or later with CUDA 11.8 or later
+       * Python 3.9 or later
+       * FBGEMM <https://github.com/pytorch/fbgemm>
 
-Installing TorchRec will also install
-`FBGEMM <https://github.com/pytorch/fbgemm>`__, a collection of CUDA
-kernels and GPU enabled operations to run
 
 """
 
 ###############################################
-# If you do not have the following components in your environment, please install them by running:
-
-# 
+# Install Dependencies
+# ================
+#
+# Before running this tutorial in Google Colab or other environment, install the
+# following dependencies:
+#
 # .. code-block:: sh
 
 #   !pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
