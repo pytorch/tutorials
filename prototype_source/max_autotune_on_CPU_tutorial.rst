@@ -30,8 +30,12 @@ Example code
 ------------
 The below code is an example of using the ``max-autotune`` mode on a simple neural network with a linear layer followed by a ReLU activation.
 
-We only support frozen model with ``torch.no_grad`` or the inference mode
-Therefore, you need to set the environment variable ``export TORCHINDUCTOR_FREEZING=1``
+In the C++ template-based GEMM implementation, we will pre-pack the weight for good cache usage.
+In the case of inference which is the primary scenario of CPU AI workloads,
+model weights are constant and we pack them upfront during compilation
+so that the data accesses are contiguous within the cache blocks.
+Thus, We only support frozen model with ``torch.no_grad`` or the inference mode.
+You need to set the environment variable ``export TORCHINDUCTOR_FREEZING=1``
 and ensure that both the compilation and inference steps are executed within the ``torch.no_grad`` context.
 
 .. code:: python
