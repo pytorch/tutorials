@@ -124,4 +124,5 @@ LLVM Compiler
 Conclusion
 ----------
 
-With this tutorial, we introduce how to use Inductor on Windows CPU with PyTorch 2.5 or later. We can use Intel Compiler or LLVM Compiler to get better performance.
+In this tutorial, we have learned how to use Inductor on Windows CPU with PyTorch. In addition, we discussed
+further performance improvements with Intel Compiler and LLVM Compiler.
