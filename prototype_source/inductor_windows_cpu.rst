@@ -119,7 +119,7 @@ LLVM Compiler
 ^^^^^^^^^^^^^
 
 #. Download and install `LLVM Compiler <https://github.com/llvm/llvm-project/releases>`_ and choose win64 version.
-#. Set Windows Inductor Compiler via environment variable ``set CXX=clang-cl`` 
+#. Set Windows Inductor Compiler with the CXX environment variable ``set CXX=clang-cl``.
 
 Conclusion
 ----------
