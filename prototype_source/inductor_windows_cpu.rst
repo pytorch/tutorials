@@ -104,7 +104,7 @@ The code above returns the following output:
             [ 5.7244e-04,  1.2799e+00,  1.3595e+00,  1.0907e+00,  3.7191e-01,
             1.4062e+00,  1.3672e+00,  6.8502e-02,  8.5216e-01,  8.6046e-01]])
 
-Alternative Compiler for better performance
+Using an Alternative Compiler for Better Performance
 -------------------------------------------
 
 To enhance performance on Windows inductor, you can use the Intel Compiler or LLVM Compiler. However, they rely on the runtime libraries from Microsoft Visual C++ (MSVC). Therefore, your first step should be to install MSVC.
