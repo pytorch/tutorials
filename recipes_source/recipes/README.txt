@@ -56,3 +56,7 @@ PyTorch Recipes
 14. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+15. regional_compilation.py
+	Reducing torch.compile cold start compilation time with regional compilation
+         https://pytorch.org/tutorials/recipes/regional_compilation.html

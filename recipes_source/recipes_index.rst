@@ -339,6 +339,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/torch_compile_caching_tutorial.html
    :tags: Model-Optimization
 
+.. Reducing Cold Start Compilation Time with Regional Compilation
+
+.. customcarditem::
+   :header: Reducing torch.compile cold start compilation time with regional compilation
+   :card_description: Learn how to use regional compilation to control cold start compile time
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/recipes/regional_compilation.html
+   :tags: Model-Optimization
+
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
@@ -452,6 +461,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
    /recipes/recipes/xeon_run_cpu
+   /recipes/recipes/regional_compilation
    /recipes/recipes/intel_extension_for_pytorch
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
