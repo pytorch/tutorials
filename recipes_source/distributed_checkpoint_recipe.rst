@@ -82,7 +82,7 @@ Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input
 
         def state_dict(self):
             # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
-            model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+            model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
                 "optim": optimizer_state_dict
@@ -202,7 +202,7 @@ The reason that we need the ``state_dict`` prior to loading is:
 
         def state_dict(self):
             # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
-            model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+            model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
                 "optim": optimizer_state_dict
