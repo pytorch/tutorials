@@ -178,6 +178,7 @@ The reason that we need the ``state_dict`` prior to loading is:
     import torch
     import torch.distributed as dist
     import torch.distributed.checkpoint as dcp
+    from torch.distributed.checkpoint.stateful import Stateful
     from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict
     import torch.multiprocessing as mp
     import torch.nn as nn
