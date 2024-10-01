@@ -227,9 +227,7 @@ import torchrec
 # 
 # TorchRec extends these modules by creating collections of embeddings, in
 # other words modules that can have multiple embedding tables, with
-# `EmbeddingCollection <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingCollection>`__
-# and
-# `EmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__.
+# ``EmbeddingCollection`` and ``EmbeddingBagCollection``
 # We will use ``EmbeddingBagCollection`` to represent a group of
 # embedding bags.
 # 
