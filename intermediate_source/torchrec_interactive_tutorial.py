@@ -106,11 +106,11 @@ import torch
 # Embeddings in PyTorch
 # ---------------------
 # 
-# `torch.nn.Embedding <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__:
+# :class:`torch.nn.Embedding`:
 # Embedding table where forward pass returns the embeddings themselves as
 # is.
 # 
-# `torch.nn.EmbeddingBag <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__:
+# :class:`torch.nn.EmbeddingBag`:
 # Embedding table where forward pass returns embeddings that are then
 # pooled, for example, sum or mean, otherwise known as **Pooled Embeddings**
 # 
