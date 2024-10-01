@@ -225,6 +225,9 @@ model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
 torch._inductor.config.force_fuse_int_mm_with_mul = True
 quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the fused quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -256,7 +259,9 @@ torch._inductor.config.coordinate_descent_tuning = True
 torch._inductor.config.coordinate_descent_check_all_directions = True
 torch._inductor.config.force_fuse_int_mm_with_mul = True
 quantize_(model, int8_dynamic_activation_int8_weight())
-model =
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the final quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -286,6 +291,9 @@ try:
     model = model.to(torch.bfloat16)
     image = image.to(torch.bfloat16)
     quantize_(model, int8_dynamic_activation_int8_weight())
+    if not TORCH_VERSION_AT_LEAST_2_5:
+        # needed for subclass + compile to work on older versions of pytorch
+        unwrap_tensor_subclass(model)
     model_c = torch.compile(model, mode='max-autotune')
     quant_res = benchmark(model_c, image)
     print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
