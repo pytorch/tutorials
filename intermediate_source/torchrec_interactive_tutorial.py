@@ -95,7 +95,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 # about the technical details of using embedding tables in RecSys.
 # 
 # This tutorial will introduce the concept of embeddings, showcase
-# TorchRec specific modules and datatypes, and depict how distributed training
+# TorchRec specific modules and data types, and depict how distributed training
 # works with TorchRec.
 # 
 
@@ -125,7 +125,7 @@ num_embeddings, embedding_dim = 10, 4
 weights = torch.rand(num_embeddings, embedding_dim)
 print("Weights:", weights)
 
-# Pass in pregenerated weights just for example, typically weights are randomly initialized
+# Pass in pre-generated weights just for example, typically weights are randomly initialized
 embedding_collection = torch.nn.Embedding(
     num_embeddings, embedding_dim, _weight=weights
 )
@@ -193,14 +193,14 @@ print("Mean: ", torch.mean(embedding_collection(ids), dim=1))
 # primitives for large scale distributed embeddings**.
 # 
 # From here on out, we will explore the major features of the TorchRec
-# library. We will start with torch.nn.Embedding and will extend that to
+# library. We will start with ``torch.nn.Embedding`` and will extend that to
 # custom TorchRec modules, explore distributed training environment with
 # generating a sharding plan for embeddings, look at inherent TorchRec
 # optimizations, and extend the model to be ready for inference in C++.
 # Below is a quick outline of what the journey will consist of - buckle
 # in!
 # 
-# 1. TorchRec Modules and DataTypes
+# 1. TorchRec Modules and Data Types
 # 2. Distributed Training, Sharding, and Optimizations
 # 3. Inference
 # 
@@ -210,7 +210,7 @@ import torchrec
 
 
 ######################################################################
-# TorchRec Modules and Datatypes
+# TorchRec Modules and Data Types
 # ------------------------------
 # 
 # 
@@ -231,7 +231,7 @@ import torchrec
 # and
 # ```EmbeddingBagCollection`` <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__.
 # We will use ``EmbeddingBagCollection`` to represent a group of
-# EmbeddingBags.
+# embedding bags.
 # 
 # Here, we create an ``EmbeddingBagCollection`` (EBC) with two embedding bags,
 # 1 representing **products** and 1 representing **users**. Each table,
@@ -262,7 +262,7 @@ print(ebc.embedding_bags)
 
 
 ######################################################################
-# Let’s inspect the forward method for EmbeddingBagcollection and the
+# Let’s inspect the forward method for ``EmbeddingBagCollection`` and the
 # module’s inputs and outputs.
 # 
 
@@ -323,7 +323,7 @@ print(
 
 from torchrec import JaggedTensor
 
-# JaggedTensor is just a wrapper around lengths/offsets and values tensors!
+# ``JaggedTensor`` is just a wrapper around lengths/offsets and values tensors!
 jt = JaggedTensor(values=id_list_feature_values, lengths=id_list_feature_lengths)
 
 # Automatically compute offsets from lengths
@@ -332,7 +332,7 @@ print("Offsets: ", jt.offsets())
 # Convert to list of values
 print("List of Values: ", jt.to_dense())
 
-# __str__ representation
+# ``__str__`` representation
 print(jt)
 
 from torchrec import KeyedJaggedTensor
@@ -358,15 +358,15 @@ print("Lengths: ", kjt.lengths())
 # Look at all values for ``KeyedJaggedTensor``
 print("Values: ", kjt.values())
 
-# Can convert KJT to dictionary representation
+# Can convert ``KeyedJaggedTensor`` to dictionary representation
 print("to_dict: ", kjt.to_dict())
 
-# ``KeyedJaggedTensor`` (KJT) string representation
+# ``KeyedJaggedTensor`` string representation
 print(kjt)
 
 # Q2: What are the offsets for the ``KeyedJaggedTensor``?
 
-# Now we can run a forward pass on our ebc from before
+# Now we can run a forward pass on our ``EmbeddingBagCollection``` from before
 result = ebc(kjt)
 result
 
@@ -375,7 +375,7 @@ print(result.keys())
 
 # The results shape is [2, 128], as batch size of 2. Reread previous section if you need a refresher on how the batch size is determined
 # 128 for dimension of embedding. If you look at where we initialized the ``EmbeddingBagCollection``, we have two tables "product" and "user" of dimension 64 each
-# meaning emebddings for both features are of size 64. 64 + 64 = 128
+# meaning embeddings for both features are of size 64. 64 + 64 = 128
 print(result.values().shape)
 
 # Nice to_dict method to determine the embeddings that belong to each feature
@@ -406,7 +406,7 @@ for key, embedding in result_dict.items():
 # 
 # In this section, we will explore setting up a distributed environment,
 # exactly how actual production training is done, and explore sharding
-# embedding tables, all with Torchrec.
+# embedding tables, all with TorchRec.
 # 
 # **This section will also only use 1 GPU, though it will be treated in a
 # distributed fashion. This is only a limitation for training, as training
@@ -646,8 +646,8 @@ output = sharded_ebc(kjt)
 print(output)
 
 kt = output.wait()
-# Now we have out KeyedTensor after calling .wait()
-# If you are confused as to why we have a KeyedTensor output,
+# Now we have our ``KeyedTensor`` after calling ``.wait()``
+# If you are confused as to why we have a ``KeyedTensor ``output,
 # give yourself a refresher on the unsharded ``EmbeddingBagCollection`` module
 print(type(kt))
 
