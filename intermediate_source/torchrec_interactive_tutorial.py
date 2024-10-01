@@ -27,7 +27,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 
 ###############################################
 # Install Dependencies
-# ================
+# ^^^^^^^^^^^^^^^^^^^^
 #
 # Before running this tutorial in Google Colab or other environment, install the
 # following dependencies:
@@ -106,11 +106,11 @@ import torch
 # Embeddings in PyTorch
 # ---------------------
 # 
-# ```torch.nn.Embedding`` <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__:
+# `torch.nn.Embedding <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__:
 # Embedding table where forward pass returns the embeddings themselves as
 # is.
 # 
-# ```torch.nn.EmbeddingBag`` <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__:
+# `torch.nn.EmbeddingBag <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__:
 # Embedding table where forward pass returns embeddings that are then
 # pooled, for example, sum or mean, otherwise known as **Pooled Embeddings**
 # 
@@ -173,7 +173,7 @@ print("Mean: ", torch.mean(embedding_collection(ids), dim=1))
 
 ######################################################################
 # TorchRec
-# ========
+# ^^^^^^^^
 # 
 # Now you know how to use embedding tables, one of the foundations of
 # modern recommendation systems! These tables represent entities and
@@ -218,18 +218,18 @@ import torchrec
 
 ######################################################################
 # From ``EmbeddingBag`` to ``EmbeddingBagCollection``
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We have already explored
-# ```torch.nn.Embedding`` <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__
+# `torch.nn.Embedding <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__
 # and
-# ```torch.nn.EmbeddingBag`` <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__.
+# `torch.nn.EmbeddingBag <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__.
 # 
 # TorchRec extends these modules by creating collections of embeddings, in
 # other words modules that can have multiple embedding tables, with
-# ```EmbeddingCollection`` <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingCollection>`__
+# `EmbeddingCollection <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingCollection>`__
 # and
-# ```EmbeddingBagCollection`` <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__.
+# `EmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__.
 # We will use ``EmbeddingBagCollection`` to represent a group of
 # embedding bags.
 # 
@@ -346,7 +346,7 @@ product_jt = JaggedTensor(
 )
 user_jt = JaggedTensor(values=torch.tensor([2, 3, 4, 1]), lengths=torch.tensor([2, 2]))
 
-# Q1: How many batches are there, and which values are in the first batch for product_jt and user_jt?
+# Q1: How many batches are there, and which values are in the first batch for ``product_jt`` and ``user_jt``?
 kjt = KeyedJaggedTensor.from_jt_dict({"product": product_jt, "user": user_jt})
 
 # Look at our feature keys for the ``KeyedJaggedTensor``
@@ -366,7 +366,7 @@ print(kjt)
 
 # Q2: What are the offsets for the ``KeyedJaggedTensor``?
 
-# Now we can run a forward pass on our ``EmbeddingBagCollection``` from before
+# Now we can run a forward pass on our ``EmbeddingBagCollection`` from before
 result = ebc(kjt)
 result
 
@@ -488,12 +488,12 @@ print(f"Distributed environment initialized: {dist}")
 # 1. **The module sharder**: This class exposes a ``shard`` API
 # that handles sharding a TorchRec Module, producing a sharded module.
 #   * For ``EmbeddingBagCollection``, the sharder is
-# ```EmbeddingBagCollectionSharder`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder>`__
+# `EmbeddingBagCollectionSharder <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder>`__
 # 2. **Sharded module**: This class is a sharded variant of a TorchRec module.
 # It has the same input/output as a the regular TorchRec module, but much
 # more optimized and works in a distributed environment.
 #   * For ``EmbeddingBagCollection``, the sharded variant is
-# ```ShardedEmbeddingBagCollection`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection>`__
+# `ShardedEmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection>`__
 # 
 # Every TorchRec module has an unsharded and sharded variant. \* The
 # unsharded version is meant to be prototyped and experimented with \* The
@@ -590,7 +590,7 @@ print(f"Sharding Plan generated: {plan}")
 # The result of running the planner is a static plan, which can be reused
 # for sharding! This allows sharding to be static for production models
 # instead of determining a new sharding plan everytime. Below, we use the
-# sharding plan to finally generate our ``ShardedEmbeddingBagCollection.``
+# sharding plan to finally generate our ``ShardedEmbeddingBagCollection``.
 # 
 
 # The static plan that was generated
@@ -616,7 +616,7 @@ print(f"Sharded EBC Module: {sharded_ebc}")
 # Remember that TorchRec is a highly optimized library for distributed
 # embeddings. A concept that TorchRec introduces to enable higher
 # performance for training on GPU is a
-# ```LazyAwaitable`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.types.LazyAwaitable>`__.
+# `LazyAwaitable <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.types.LazyAwaitable>`__.
 # You will see ``LazyAwaitable`` types as outputs of various sharded
 # TorchRec modules. All a ``LazyAwaitable`` does is delay calculating some
 # result as long as possible, and it does it by acting like an async type.
@@ -741,7 +741,7 @@ sharded_ebc._lookups
 # ``EmbeddingBagCollection`` to generate a
 # ``ShardedEmbeddingBagCollection`` module. This workflow is fine, but
 # typically when doing model parallel,
-# ```DistributedModelParallel`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
+# `DistributedModelParallel <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
 # (DMP) is used as the standard interface. When wrapping your model (in
 # our case ``ebc``), with DMP, the following will occur:
 # 
@@ -826,22 +826,20 @@ model
 # still need to manage an optimizer for the other parameters not
 # associated with TorchRec embedding modules. To find the other
 # parameters,
-# use\ ``in_backward_optimizer_filter(model.named_parameters())``.
-# 
+# use ``in_backward_optimizer_filter(model.named_parameters())``. 
 # Apply an optimizer to those parameters as you would a normal Torch
 # optimizer and combine this and the ``model.fused_optimizer`` into one
 # ``CombinedOptimizer`` that you can use in your training loop to
 # ``zero_grad`` and ``step`` through.
 # 
 # Let's add an optimizer to our ``EmbeddingBagCollection``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # We will do this in two ways, which are equivalent, but give you options
-# depending on your preferences: 1. Passing optimizer kwargs through fused
-# parameters (fused\_params) in sharder 2. Through
-# ``apply_optimizer_in_backward`` Note: ``apply_optimizer_in_backward``
-# converts the optimizer parameters to ``fused_params`` to pass to the
-# ``TBE`` in the ``EmbeddingBagCollection``/``EmbeddingCollection``.
+# depending on your preferences:
+# 1. Passing optimizer kwargs through ``fused_params`` in sharder
+# 2. Through ``apply_optimizer_in_backward``, which converts the optimizer
+# parameters to ``fused_params`` to pass to the `TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
 # 
 
 # Approach 1: passing optimizer kwargs through fused parameters
@@ -856,7 +854,7 @@ fused_params = {
     "eps": 0.002,
 }
 
-# Initialize sharder with fused_params
+# Initialize sharder with ``fused_params``
 sharder_with_fused_params = EmbeddingBagCollectionSharder(fused_params=fused_params)
 
 # We'll use same plan and unsharded EBC as before but this time with our new sharder
