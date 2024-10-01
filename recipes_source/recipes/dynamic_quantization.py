@@ -162,7 +162,7 @@ hidden = (torch.randn(lstm_depth,batch_size,model_dimension), torch.randn(lstm_d
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Now we get to the fun part. First we create an instance of the model
-# called ``float\_lstm`` then we are going to quantize it. We're going to use
+# called ``float_lstm`` then we are going to quantize it. We're going to use
 # the `torch.quantization.quantize_dynamic <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`__ function, which takes the model, then a list of the submodules
 # which we want to
 # have quantized if they appear, then the datatype we are targeting. This
