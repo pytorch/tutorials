@@ -13,6 +13,7 @@ Prerequisites
 ----------------
 
 * Pytorch 2.5 or later
+
 Setup
 -----
 Before we begin, we need to install ``torch`` if it is not already
@@ -116,6 +117,7 @@ full_compiled_model = torch.compile(model)
 
 regional_compiled_model = Model(apply_regional_compilation=True).cuda()
 
+#####################################################
 # Applying compilation to a repeated region, instead of full model, leads to
 # large savings in compile time. Here, we will just compile a layer instance and
 # then reuse it 64 times in the ``Model`` object.
@@ -165,7 +167,3 @@ print(f"Regional compilation time = {regional_compilation_latency:.2f} seconds")
 # the repeated regions instead of more commonly used full model compilation. We
 # are continually working on reducing cold start compilation time.
 # 
-# This feature is available with 2.5 release. If you are on 2.4, you can use a
-# config flag - `torch._dynamo.config.inline_inbuilt_nn_modules=True` to avoid
-# recompilations on the regional compilation. In 2.5, this flag is turned on by
-# default.
