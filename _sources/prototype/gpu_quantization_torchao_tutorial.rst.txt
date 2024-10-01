@@ -60,7 +60,7 @@ Segment Anything Model checkpoint setup:
   {sam_checkpoint_base_path}=<path>
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-92
+.. GENERATED FROM PYTHON SOURCE LINES 86-93
 
 In this tutorial, we focus on quantizing the ``image_encoder`` because the
 inputs to it are statically sized while the prompt encoder and mask
@@ -70,7 +70,7 @@ We’ll focus on just a single block at first to make the analysis easier.
 
 Let's start by measuring the baseline runtime.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-110
+.. GENERATED FROM PYTHON SOURCE LINES 105-111
 
 We can achieve an instant performance boost by converting the model to bfloat16.
 The reason we opt for bfloat16 over fp16 is due to its dynamic range, which is comparable to
@@ -79,7 +79,7 @@ larger dynamic range helps protect us from overflow errors and other issues that
 when scaling and rescaling tensors due to quantization.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-119
+.. GENERATED FROM PYTHON SOURCE LINES 111-120
 
 .. code-block:: default
 
@@ -99,7 +99,7 @@ when scaling and rescaling tensors due to quantization.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-126
+.. GENERATED FROM PYTHON SOURCE LINES 121-127
 
 Just this quick change improves runtime by a factor of ~7x in the tests we have
 conducted (186.16ms to 25.43ms).
@@ -108,7 +108,7 @@ Next, let's use ``torch.compile`` with our model to see how much the performance
 improves.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-133
+.. GENERATED FROM PYTHON SOURCE LINES 127-134
 
 .. code-block:: default
 
@@ -126,7 +126,7 @@ improves.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-183
+.. GENERATED FROM PYTHON SOURCE LINES 135-184
 
 The first time this is run, you should see a sequence of ``AUTOTUNE``
 outputs which occurs when inductor compares the performance between
@@ -153,9 +153,9 @@ matmul ops with integer versions. Weight-only quantization works better
 in memory bound situations where the benefit comes from loading less
 weight data, rather than doing less computation. The torchao APIs:
 
-``change_linear_weights_to_int8_dqtensors``,
-``change_linear_weights_to_int8_woqtensors`` or
-``change_linear_weights_to_int4_woqtensors``
+``int8_dynamic_activation_int8_weight()``,
+``int8_weight_only()`` or
+``int4_weight_only()``
 
 can be used to easily apply the desired quantization technique and then
 once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
@@ -167,7 +167,7 @@ complete and we can see our speedup.
    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
    above (no replacement for int4).
 
- The difference between the two APIs is that ``change_linear_weights`` API
+The difference between the two APIs is that ``int8_dynamic_activation`` API
 alters the weight tensor of the linear module so instead of doing a
 normal linear, it does a quantized operation. This is helpful when you
 have non-standard linear ops that do more than one thing. The ``apply``
@@ -178,9 +178,12 @@ modules.
 In this case Segment Anything is compute-bound so we’ll use dynamic quantization:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-195
+.. GENERATED FROM PYTHON SOURCE LINES 184-199
 
 .. code-block:: default
+
+
+
 
 
 
@@ -201,7 +204,7 @@ In this case Segment Anything is compute-bound so we’ll use dynamic quantizati
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-217
+.. GENERATED FROM PYTHON SOURCE LINES 200-221
 
 With quantization, we have improved performance a bit more but memory usage increased
 significantly.
@@ -225,9 +228,12 @@ The way to do this, is to enable the option
 ``force_fuse_int_mm_with_mul`` in the inductor config.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-230
+.. GENERATED FROM PYTHON SOURCE LINES 221-237
 
 .. code-block:: default
+
+
+
 
 
 
@@ -249,7 +255,7 @@ The way to do this, is to enable the option
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-245
+.. GENERATED FROM PYTHON SOURCE LINES 238-252
 
 The fusion improves performance by another small bit (about 6% over the
 baseline in total) and removes almost all the memory increase, the
@@ -266,9 +272,12 @@ optimizations to get our final best-case performance.
    the search area for kernel parameters.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-261
+.. GENERATED FROM PYTHON SOURCE LINES 252-271
 
 .. code-block:: default
+
+
+
 
 
 
@@ -293,7 +302,7 @@ optimizations to get our final best-case performance.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-268
+.. GENERATED FROM PYTHON SOURCE LINES 272-278
 
 As you can see, we’ve squeezed another small improvement from the model,
 taking our total improvement to over 10x compared to our original. To
@@ -302,7 +311,7 @@ apples comparison on the full model since the actual improvement will
 differ block by block depending on the shapes involved.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 294-308
+.. GENERATED FROM PYTHON SOURCE LINES 307-321
 
 Conclusion
 -----------------
@@ -319,7 +328,7 @@ For more information visit
 models.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-309
+.. GENERATED FROM PYTHON SOURCE LINES 321-322
 
 .. code-block:: default
 

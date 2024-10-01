@@ -614,7 +614,8 @@ are using a different hardware, you might see different performance numbers.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torchao.quantization</span> <span class="kn">import</span> <span class="n">change_linear_weights_to_int8_dqtensors</span>
+<span class="kn">from</span> <span class="nn">torchao.quantization.quant_api</span> <span class="kn">import</span> <span class="n">quantize_</span><span class="p">,</span> <span class="n">int8_dynamic_activation_int8_weight</span>
+<span class="kn">from</span> <span class="nn">torchao.utils</span> <span class="kn">import</span> <span class="n">unwrap_tensor_subclass</span><span class="p">,</span> <span class="n">TORCH_VERSION_AT_LEAST_2_5</span>
 <span class="kn">from</span> <span class="nn">segment_anything</span> <span class="kn">import</span> <span class="n">sam_model_registry</span>
 <span class="kn">from</span> <span class="nn">torch.utils.benchmark</span> <span class="kn">import</span> <a href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer" class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class"><span class="n">Timer</span></a>
 
@@ -665,7 +666,7 @@ decoder have variable sizes which makes them harder to quantize.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;unable to run fp32 model: &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>base fp32 runtime of the model is 197.75ms and peak memory 8.54GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>base fp32 runtime of the model is 198.07ms and peak memory 8.54GB
 </pre></div>
 </div>
 <p>We can achieve an instant performance boost by converting the model to bfloat16.
@@ -681,7 +682,7 @@ when scaling and rescaling tensors due to quantization.</p>
 <span class="c1"># bf16 runtime of the block is 25.43ms and peak memory  3.17GB</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>bf16 runtime of the block is 70.53ms and peak memory  5.38GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>bf16 runtime of the block is 70.50ms and peak memory  5.38GB
 </pre></div>
 </div>
 <p>Just this quick change improves runtime by a factor of ~7x in the tests we have
@@ -695,102 +696,102 @@ improves.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE mm(65536x1280, 1280x5120)
-  triton_mm_280 12.5012 ms 100.0%
-  triton_mm_273 12.5282 ms 99.8%
-  triton_mm_277 12.5327 ms 99.7%
-  triton_mm_275 12.6715 ms 98.7%
-  triton_mm_278 12.9523 ms 96.5%
-  triton_mm_274 13.0361 ms 95.9%
-  mm 13.0523 ms 95.8%
-  triton_mm_270 13.0699 ms 95.6%
-  triton_mm_271 13.1357 ms 95.2%
-  triton_mm_281 13.7843 ms 90.7%
-SingleProcess AUTOTUNE benchmarking takes 3.5399 seconds and 0.0082 seconds precompiling
+  triton_mm_280 12.5071 ms 100.0%
+  triton_mm_277 12.5225 ms 99.9%
+  triton_mm_273 12.6301 ms 99.0%
+  triton_mm_275 12.6798 ms 98.6%
+  triton_mm_278 13.0586 ms 95.8%
+  mm 13.0693 ms 95.7%
+  triton_mm_270 13.0716 ms 95.7%
+  triton_mm_274 13.1211 ms 95.3%
+  triton_mm_271 13.1425 ms 95.2%
+  triton_mm_281 13.7711 ms 90.8%
+SingleProcess AUTOTUNE benchmarking takes 3.5487 seconds and 0.0031 seconds precompiling
 AUTOTUNE mm(65536x5120, 5120x1280)
-  triton_mm_299 12.3800 ms 100.0%
-  triton_mm_294 12.5169 ms 98.9%
-  triton_mm_292 12.6563 ms 97.8%
-  mm 12.6712 ms 97.7%
-  triton_mm_297 12.7218 ms 97.3%
-  triton_mm_296 12.7851 ms 96.8%
-  triton_mm_293 12.8494 ms 96.3%
-  triton_mm_300 13.2501 ms 93.4%
-  triton_mm_290 13.2983 ms 93.1%
-  triton_mm_289 13.8654 ms 89.3%
-SingleProcess AUTOTUNE benchmarking takes 3.5938 seconds and 0.0011 seconds precompiling
+  triton_mm_299 12.3686 ms 100.0%
+  triton_mm_294 12.5027 ms 98.9%
+  mm 12.6648 ms 97.7%
+  triton_mm_297 12.7124 ms 97.3%
+  triton_mm_296 12.7717 ms 96.8%
+  triton_mm_293 12.8366 ms 96.4%
+  triton_mm_292 13.0099 ms 95.1%
+  triton_mm_300 13.2334 ms 93.5%
+  triton_mm_289 13.2363 ms 93.4%
+  triton_mm_290 13.3206 ms 92.9%
+SingleProcess AUTOTUNE benchmarking takes 3.5850 seconds and 0.0013 seconds precompiling
 AUTOTUNE mm(78400x1280, 1280x3840)
-  triton_mm_172 11.2286 ms 100.0%
-  triton_mm_165 11.3367 ms 99.0%
-  triton_mm_169 11.3503 ms 98.9%
-  triton_mm_167 11.3850 ms 98.6%
-  triton_mm_170 11.7269 ms 95.8%
-  triton_mm_166 11.7774 ms 95.3%
-  mm 11.8140 ms 95.0%
-  triton_mm_162 11.8397 ms 94.8%
-  triton_mm_163 11.9156 ms 94.2%
-  triton_mm_173 12.3784 ms 90.7%
-SingleProcess AUTOTUNE benchmarking takes 3.4693 seconds and 0.0013 seconds precompiling
+  triton_mm_169 11.1520 ms 100.0%
+  triton_mm_172 11.2223 ms 99.4%
+  triton_mm_165 11.3361 ms 98.4%
+  triton_mm_167 11.3824 ms 98.0%
+  triton_mm_166 11.6945 ms 95.4%
+  triton_mm_170 11.7153 ms 95.2%
+  triton_mm_163 11.8065 ms 94.5%
+  mm 11.8153 ms 94.4%
+  triton_mm_162 11.8398 ms 94.2%
+  triton_mm_173 12.3694 ms 90.2%
+SingleProcess AUTOTUNE benchmarking takes 3.4677 seconds and 0.0012 seconds precompiling
 AUTOTUNE bmm(6400x196x80, 6400x80x196)
-  triton_bmm_185 1.8266 ms 100.0%
-  triton_bmm_189 1.8284 ms 99.9%
-  triton_bmm_186 1.9038 ms 95.9%
-  triton_bmm_181 1.9100 ms 95.6%
-  triton_bmm_184 1.9206 ms 95.1%
-  triton_bmm_183 1.9312 ms 94.6%
-  triton_bmm_191 1.9565 ms 93.4%
-  triton_bmm_188 1.9687 ms 92.8%
-  triton_bmm_182 2.0037 ms 91.2%
-  triton_bmm_190 2.0469 ms 89.2%
-SingleProcess AUTOTUNE benchmarking takes 2.5867 seconds and 0.0013 seconds precompiling
+  triton_bmm_185 1.8265 ms 100.0%
+  triton_bmm_189 1.8285 ms 99.9%
+  triton_bmm_186 1.9027 ms 96.0%
+  triton_bmm_181 1.9098 ms 95.6%
+  triton_bmm_184 1.9210 ms 95.1%
+  triton_bmm_183 1.9336 ms 94.5%
+  triton_bmm_191 1.9569 ms 93.3%
+  triton_bmm_188 1.9697 ms 92.7%
+  triton_bmm_182 1.9839 ms 92.1%
+  triton_bmm_190 2.0479 ms 89.2%
+SingleProcess AUTOTUNE benchmarking takes 2.5840 seconds and 0.0011 seconds precompiling
 AUTOTUNE bmm(14x89600x80, 14x80x16)
-  triton_bmm_209 0.4649 ms 100.0%
-  triton_bmm_195 0.4704 ms 98.8%
-  triton_bmm_198 0.4755 ms 97.8%
-  triton_bmm_204 0.4757 ms 97.7%
-  triton_bmm_208 0.4761 ms 97.6%
-  triton_bmm_201 0.4772 ms 97.4%
-  bmm 0.4856 ms 95.7%
-  triton_bmm_197 0.5074 ms 91.6%
-  triton_bmm_196 0.5199 ms 89.4%
-  triton_bmm_203 0.5294 ms 87.8%
-SingleProcess AUTOTUNE benchmarking takes 2.0224 seconds and 0.0010 seconds precompiling
+  triton_bmm_209 0.4651 ms 100.0%
+  triton_bmm_195 0.4699 ms 99.0%
+  triton_bmm_204 0.4752 ms 97.9%
+  triton_bmm_198 0.4756 ms 97.8%
+  triton_bmm_208 0.4760 ms 97.7%
+  triton_bmm_201 0.4774 ms 97.4%
+  bmm 0.4862 ms 95.7%
+  triton_bmm_197 0.5065 ms 91.8%
+  triton_bmm_196 0.5197 ms 89.5%
+  triton_bmm_203 0.5297 ms 87.8%
+SingleProcess AUTOTUNE benchmarking takes 2.0217 seconds and 0.0010 seconds precompiling
 AUTOTUNE bmm(14x89600x80, 14x80x16)
-  triton_bmm_211 0.5541 ms 100.0%
-  triton_bmm_214 0.5548 ms 99.9%
-  triton_bmm_220 0.5551 ms 99.8%
-  triton_bmm_212 0.5766 ms 96.1%
-  triton_bmm_213 0.5952 ms 93.1%
-  triton_bmm_219 0.6553 ms 84.6%
-  triton_bmm_222 0.6980 ms 79.4%
-  triton_bmm_218 0.7006 ms 79.1%
-  triton_bmm_221 0.7261 ms 76.3%
-  triton_bmm_223 0.7407 ms 74.8%
-SingleProcess AUTOTUNE benchmarking takes 2.0732 seconds and 0.0010 seconds precompiling
+  triton_bmm_211 0.5535 ms 100.0%
+  triton_bmm_220 0.5546 ms 99.8%
+  triton_bmm_214 0.5549 ms 99.8%
+  triton_bmm_212 0.5773 ms 95.9%
+  triton_bmm_213 0.5942 ms 93.2%
+  triton_bmm_219 0.6545 ms 84.6%
+  triton_bmm_222 0.6970 ms 79.4%
+  triton_bmm_218 0.7040 ms 78.6%
+  triton_bmm_221 0.7273 ms 76.1%
+  triton_bmm_223 0.7405 ms 74.8%
+SingleProcess AUTOTUNE benchmarking takes 2.0736 seconds and 0.0010 seconds precompiling
 AUTOTUNE bmm(6400x196x196, 6400x196x80)
-  triton_bmm_227 1.8339 ms 100.0%
-  triton_bmm_237 1.8694 ms 98.1%
-  triton_bmm_233 1.9558 ms 93.8%
-  triton_bmm_228 1.9679 ms 93.2%
-  triton_bmm_236 1.9727 ms 93.0%
-  triton_bmm_239 1.9880 ms 92.2%
-  triton_bmm_232 2.0408 ms 89.9%
-  triton_bmm_235 2.0480 ms 89.5%
-  triton_bmm_242 2.1101 ms 86.9%
-  triton_bmm_240 2.1306 ms 86.1%
-SingleProcess AUTOTUNE benchmarking takes 2.3165 seconds and 0.0012 seconds precompiling
+  triton_bmm_227 1.8269 ms 100.0%
+  triton_bmm_237 1.8692 ms 97.7%
+  triton_bmm_228 1.9648 ms 93.0%
+  triton_bmm_233 1.9684 ms 92.8%
+  triton_bmm_236 1.9723 ms 92.6%
+  triton_bmm_239 1.9881 ms 91.9%
+  triton_bmm_232 2.0400 ms 89.6%
+  triton_bmm_235 2.0471 ms 89.2%
+  triton_bmm_242 2.1097 ms 86.6%
+  triton_bmm_240 2.1308 ms 85.7%
+SingleProcess AUTOTUNE benchmarking takes 2.3152 seconds and 0.0012 seconds precompiling
 AUTOTUNE mm(78400x1280, 1280x1280)
-  triton_mm_258 3.7372 ms 100.0%
-  triton_mm_261 3.7625 ms 99.3%
-  triton_mm_254 3.7647 ms 99.3%
-  triton_mm_256 3.8152 ms 98.0%
-  triton_mm_255 3.8421 ms 97.3%
-  triton_mm_251 3.8544 ms 97.0%
-  triton_mm_252 3.8725 ms 96.5%
-  triton_mm_259 3.8964 ms 95.9%
-  mm 3.9601 ms 94.4%
-  triton_mm_250 4.0962 ms 91.2%
-SingleProcess AUTOTUNE benchmarking takes 2.5473 seconds and 0.0012 seconds precompiling
-bf16 compiled runtime of the block is 58.90ms and peak memory  4.45GB
+  triton_mm_258 3.7363 ms 100.0%
+  triton_mm_261 3.7620 ms 99.3%
+  triton_mm_254 3.7669 ms 99.2%
+  triton_mm_256 3.8155 ms 97.9%
+  triton_mm_255 3.8418 ms 97.3%
+  triton_mm_251 3.8512 ms 97.0%
+  triton_mm_259 3.8960 ms 95.9%
+  triton_mm_252 3.9163 ms 95.4%
+  mm 3.9574 ms 94.4%
+  triton_mm_250 4.1416 ms 90.2%
+SingleProcess AUTOTUNE benchmarking takes 2.5567 seconds and 0.0012 seconds precompiling
+bf16 compiled runtime of the block is 59.08ms and peak memory  4.45GB
 </pre></div>
 </div>
 <p>The first time this is run, you should see a sequence of <code class="docutils literal notranslate"><span class="pre">AUTOTUNE</span></code>
@@ -815,23 +816,21 @@ to work the best since it swaps the normal expensive floating point
 matmul ops with integer versions. Weight-only quantization works better
 in memory bound situations where the benefit comes from loading less
 weight data, rather than doing less computation. The torchao APIs:</p>
-<p><code class="docutils literal notranslate"><span class="pre">change_linear_weights_to_int8_dqtensors</span></code>,
-<code class="docutils literal notranslate"><span class="pre">change_linear_weights_to_int8_woqtensors</span></code> or
-<code class="docutils literal notranslate"><span class="pre">change_linear_weights_to_int4_woqtensors</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">int8_dynamic_activation_int8_weight()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">int8_weight_only()</span></code> or
+<code class="docutils literal notranslate"><span class="pre">int4_weight_only()</span></code></p>
 <p>can be used to easily apply the desired quantization technique and then
 once the model is compiled with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> with <code class="docutils literal notranslate"><span class="pre">max-autotune</span></code>, quantization is
 complete and we can see our speedup.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<blockquote>
-<div><p>You might experience issues with these on older versions of PyTorch. If you run
+<p>You might experience issues with these on older versions of PyTorch. If you run
 into an issue, you can use <code class="docutils literal notranslate"><span class="pre">apply_dynamic_quant</span></code> and
 <code class="docutils literal notranslate"><span class="pre">apply_weight_only_int8_quant</span></code> instead as drop in replacement for the two
 above (no replacement for int4).</p>
-</div></blockquote>
-<p>The difference between the two APIs is that <code class="docutils literal notranslate"><span class="pre">change_linear_weights</span></code> API</p>
 </div>
-<p>alters the weight tensor of the linear module so instead of doing a
+<p>The difference between the two APIs is that <code class="docutils literal notranslate"><span class="pre">int8_dynamic_activation</span></code> API
+alters the weight tensor of the linear module so instead of doing a
 normal linear, it does a quantized operation. This is helpful when you
 have non-standard linear ops that do more than one thing. The <code class="docutils literal notranslate"><span class="pre">apply</span></code>
 APIs directly swap the linear modules for a quantized module which
@@ -842,62 +841,113 @@ modules.</p>
 <span class="n">model</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a> <span class="o">=</span> <span class="n">get_sam_model</span><span class="p">(</span><span class="n">only_one_block</span><span class="p">,</span> <span class="n">batchsize</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.to" title="torch.nn.Module.to" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">model</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
 <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="o">.</span><span class="n">to</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
-<span class="n">change_linear_weights_to_int8_dqtensors</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">quantize_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">int8_dynamic_activation_int8_weight</span><span class="p">())</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">TORCH_VERSION_AT_LEAST_2_5</span><span class="p">:</span>
+    <span class="c1"># needed for subclass + compile to work on older versions of pytorch</span>
+    <span class="n">unwrap_tensor_subclass</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="n">model_c</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max-autotune&#39;</span><span class="p">)</span>
 <span class="n">quant_res</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">model_c</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bf16 compiled runtime of the quantized block is </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">ms and peak memory </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2"> 0.2f</span><span class="si">}</span><span class="s2">GB&quot;</span><span class="p">)</span>
 <span class="c1"># bf16 compiled runtime of the quantized block is 19.04ms and peak memory  3.58GB</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE int_mm(65536x5120, 5120x1280)
-  triton_mm_559 6.3340 ms 100.0%
-  triton_mm_560 6.4570 ms 98.1%
-  triton_mm_561 6.4840 ms 97.7%
-  triton_mm_554 6.8127 ms 93.0%
-  triton_mm_555 6.8578 ms 92.4%
-  triton_mm_552 6.8953 ms 91.9%
-  triton_mm_553 6.9210 ms 91.5%
-  triton_mm_551 7.6424 ms 82.9%
-  triton_mm_558 8.1666 ms 77.6%
-  triton_mm_556 14.6515 ms 43.2%
-SingleProcess AUTOTUNE benchmarking takes 1.8679 seconds and 0.0008 seconds precompiling
-AUTOTUNE int_mm(78400x1280, 1280x3840)
-  triton_mm_456 5.9657 ms 100.0%
-  triton_mm_457 6.3599 ms 93.8%
-  triton_mm_458 6.3837 ms 93.5%
-  triton_mm_450 6.9450 ms 85.9%
-  triton_mm_448 7.2448 ms 82.3%
-  triton_mm_449 7.2878 ms 81.9%
-  triton_mm_452 7.8025 ms 76.5%
-  triton_mm_451 7.9177 ms 75.3%
-  triton_mm_455 9.2502 ms 64.5%
-  triton_mm_453 13.8318 ms 43.1%
-SingleProcess AUTOTUNE benchmarking takes 1.8862 seconds and 0.0007 seconds precompiling
-AUTOTUNE int_mm(78400x1280, 1280x1280)
-  triton_mm_537 2.0001 ms 100.0%
-  triton_mm_538 2.1795 ms 91.8%
-  triton_mm_539 2.1873 ms 91.4%
-  triton_mm_530 2.3354 ms 85.6%
-  triton_mm_531 2.3680 ms 84.5%
-  triton_mm_529 2.3816 ms 84.0%
-  triton_mm_532 2.5458 ms 78.6%
-  triton_mm_533 2.5767 ms 77.6%
-  triton_mm_536 3.0620 ms 65.3%
-  triton_mm_534 4.5236 ms 44.2%
-SingleProcess AUTOTUNE benchmarking takes 1.5259 seconds and 0.0007 seconds precompiling
-AUTOTUNE int_mm(65536x1280, 1280x5120)
-  triton_mm_548 6.6390 ms 100.0%
-  triton_mm_549 7.0785 ms 93.8%
-  triton_mm_550 7.0895 ms 93.6%
-  triton_mm_542 7.4648 ms 88.9%
-  triton_mm_540 7.9173 ms 83.9%
-  triton_mm_541 7.9693 ms 83.3%
-  triton_mm_544 8.5658 ms 77.5%
-  triton_mm_543 8.7483 ms 75.9%
-  triton_mm_547 10.1874 ms 65.2%
-  triton_mm_545 15.3255 ms 43.3%
-SingleProcess AUTOTUNE benchmarking takes 1.9437 seconds and 0.0007 seconds precompiling
-bf16 compiled runtime of the quantized block is 46.49ms and peak memory  4.67GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE int_mm(78400x1280, 1280x3840, 78400x3840)
+  triton_mm_456 6.1401 ms 100.0%
+  triton_mm_449 6.3085 ms 97.3%
+  triton_mm_448 6.7123 ms 91.5%
+  triton_mm_451 6.8233 ms 90.0%
+  triton_mm_457 6.9078 ms 88.9%
+  triton_mm_450 6.9848 ms 87.9%
+  triton_mm_452 7.5000 ms 81.9%
+  triton_mm_455 8.1978 ms 74.9%
+  triton_mm_458 8.5527 ms 71.8%
+  triton_mm_453 13.7277 ms 44.7%
+SingleProcess AUTOTUNE benchmarking takes 1.8742 seconds and 0.0007 seconds precompiling
+AUTOTUNE bmm(6400x196x80, 6400x80x196)
+  triton_bmm_469 1.8238 ms 100.0%
+  triton_bmm_473 1.8335 ms 99.5%
+  triton_bmm_470 1.8961 ms 96.2%
+  triton_bmm_465 1.9069 ms 95.6%
+  triton_bmm_468 1.9147 ms 95.3%
+  triton_bmm_467 1.9362 ms 94.2%
+  triton_bmm_475 1.9522 ms 93.4%
+  triton_bmm_472 1.9641 ms 92.9%
+  triton_bmm_466 2.0030 ms 91.1%
+  triton_bmm_474 2.0476 ms 89.1%
+SingleProcess AUTOTUNE benchmarking takes 2.5865 seconds and 0.0012 seconds precompiling
+AUTOTUNE bmm(14x89600x80, 14x80x16)
+  triton_bmm_493 0.4651 ms 100.0%
+  triton_bmm_479 0.4699 ms 99.0%
+  triton_bmm_488 0.4751 ms 97.9%
+  triton_bmm_482 0.4754 ms 97.8%
+  triton_bmm_492 0.4755 ms 97.8%
+  triton_bmm_485 0.4773 ms 97.4%
+  bmm 0.4866 ms 95.6%
+  triton_bmm_481 0.5063 ms 91.9%
+  triton_bmm_480 0.5198 ms 89.5%
+  triton_bmm_487 0.5294 ms 87.8%
+SingleProcess AUTOTUNE benchmarking takes 2.0231 seconds and 0.0009 seconds precompiling
+AUTOTUNE bmm(14x89600x80, 14x80x16)
+  triton_bmm_495 0.5545 ms 100.0%
+  triton_bmm_504 0.5549 ms 99.9%
+  triton_bmm_498 0.5553 ms 99.9%
+  triton_bmm_496 0.5765 ms 96.2%
+  triton_bmm_497 0.5929 ms 93.5%
+  triton_bmm_503 0.6542 ms 84.8%
+  triton_bmm_506 0.6998 ms 79.2%
+  triton_bmm_502 0.7026 ms 78.9%
+  triton_bmm_505 0.7251 ms 76.5%
+  triton_bmm_507 0.7401 ms 74.9%
+SingleProcess AUTOTUNE benchmarking takes 2.0766 seconds and 0.0010 seconds precompiling
+AUTOTUNE bmm(6400x196x196, 6400x196x80)
+  triton_bmm_511 1.8346 ms 100.0%
+  triton_bmm_521 1.8685 ms 98.2%
+  triton_bmm_512 1.9686 ms 93.2%
+  triton_bmm_520 1.9722 ms 93.0%
+  triton_bmm_517 1.9769 ms 92.8%
+  triton_bmm_523 1.9878 ms 92.3%
+  triton_bmm_516 2.0416 ms 89.9%
+  triton_bmm_519 2.0472 ms 89.6%
+  triton_bmm_526 2.1097 ms 87.0%
+  triton_bmm_524 2.1306 ms 86.1%
+SingleProcess AUTOTUNE benchmarking takes 2.3175 seconds and 0.0012 seconds precompiling
+AUTOTUNE int_mm(78400x1280, 1280x1280, 78400x1280)
+  triton_mm_537 2.0375 ms 100.0%
+  triton_mm_530 2.1268 ms 95.8%
+  triton_mm_529 2.1957 ms 92.8%
+  triton_mm_531 2.3019 ms 88.5%
+  triton_mm_532 2.3452 ms 86.9%
+  triton_mm_538 2.3482 ms 86.8%
+  triton_mm_533 2.5454 ms 80.0%
+  triton_mm_536 2.6909 ms 75.7%
+  triton_mm_539 2.8935 ms 70.4%
+  triton_mm_535 4.5407 ms 44.9%
+SingleProcess AUTOTUNE benchmarking takes 1.5197 seconds and 0.0008 seconds precompiling
+AUTOTUNE int_mm(65536x1280, 1280x5120, 65536x5120)
+  triton_mm_548 6.7761 ms 100.0%
+  triton_mm_541 6.8727 ms 98.6%
+  triton_mm_540 7.4217 ms 91.3%
+  triton_mm_543 7.6004 ms 89.2%
+  triton_mm_549 7.6818 ms 88.2%
+  triton_mm_542 7.7473 ms 87.5%
+  triton_mm_544 8.3538 ms 81.1%
+  triton_mm_547 8.9668 ms 75.6%
+  triton_mm_550 9.4520 ms 71.7%
+  triton_mm_545 15.2207 ms 44.5%
+SingleProcess AUTOTUNE benchmarking takes 1.9419 seconds and 0.0007 seconds precompiling
+AUTOTUNE int_mm(65536x5120, 5120x1280, 65536x1280)
+  triton_mm_559 6.3388 ms 100.0%
+  triton_mm_552 6.5239 ms 97.2%
+  triton_mm_560 6.5651 ms 96.6%
+  triton_mm_553 6.7316 ms 94.2%
+  triton_mm_554 6.8582 ms 92.4%
+  triton_mm_558 6.9613 ms 91.1%
+  triton_mm_561 7.0024 ms 90.5%
+  triton_mm_555 7.1501 ms 88.7%
+  triton_mm_551 7.3310 ms 86.5%
+  triton_mm_556 14.5901 ms 43.4%
+SingleProcess AUTOTUNE benchmarking takes 1.8758 seconds and 0.0008 seconds precompiling
+bf16 compiled runtime of the quantized block is 42.23ms and peak memory  4.53GB
 </pre></div>
 </div>
 <p>With quantization, we have improved performance a bit more but memory usage increased
@@ -923,62 +973,17 @@ performance in terms of both runtime and memory.</p>
 <span class="n">model</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.to" title="torch.nn.Module.to" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">model</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
 <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="o">.</span><span class="n">to</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">force_fuse_int_mm_with_mul</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">change_linear_weights_to_int8_dqtensors</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">quantize_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">int8_dynamic_activation_int8_weight</span><span class="p">())</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">TORCH_VERSION_AT_LEAST_2_5</span><span class="p">:</span>
+    <span class="c1"># needed for subclass + compile to work on older versions of pytorch</span>
+    <span class="n">unwrap_tensor_subclass</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="n">model_c</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max-autotune&#39;</span><span class="p">)</span>
 <span class="n">quant_res</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">model_c</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bf16 compiled runtime of the fused quantized block is </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">ms and peak memory </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2"> 0.2f</span><span class="si">}</span><span class="s2">GB&quot;</span><span class="p">)</span>
 <span class="c1"># bf16 compiled runtime of the fused quantized block is 18.78ms and peak memory  2.37GB</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE int_mm(78400x1280, 1280x3840, 78400x3840)
-  triton_mm_684 6.1422 ms 100.0%
-  triton_mm_677 6.2869 ms 97.7%
-  triton_mm_676 6.7078 ms 91.6%
-  triton_mm_679 6.8241 ms 90.0%
-  triton_mm_685 6.9060 ms 88.9%
-  triton_mm_678 6.9833 ms 88.0%
-  triton_mm_680 7.5006 ms 81.9%
-  triton_mm_683 8.1986 ms 74.9%
-  triton_mm_686 8.5540 ms 71.8%
-  triton_mm_681 13.7750 ms 44.6%
-SingleProcess AUTOTUNE benchmarking takes 1.8634 seconds and 0.0015 seconds precompiling
-AUTOTUNE int_mm(78400x1280, 1280x1280, 78400x1280)
-  triton_mm_765 2.0381 ms 100.0%
-  triton_mm_758 2.1278 ms 95.8%
-  triton_mm_757 2.1938 ms 92.9%
-  triton_mm_759 2.3027 ms 88.5%
-  triton_mm_766 2.3472 ms 86.8%
-  triton_mm_760 2.3478 ms 86.8%
-  triton_mm_761 2.5405 ms 80.2%
-  triton_mm_764 2.6906 ms 75.7%
-  triton_mm_767 2.8924 ms 70.5%
-  triton_mm_763 4.5559 ms 44.7%
-SingleProcess AUTOTUNE benchmarking takes 1.5211 seconds and 0.0007 seconds precompiling
-AUTOTUNE int_mm(65536x1280, 1280x5120, 65536x5120)
-  triton_mm_776 6.7776 ms 100.0%
-  triton_mm_769 6.8655 ms 98.7%
-  triton_mm_768 7.4204 ms 91.3%
-  triton_mm_771 7.6032 ms 89.1%
-  triton_mm_777 7.6797 ms 88.3%
-  triton_mm_770 7.7402 ms 87.6%
-  triton_mm_772 8.3539 ms 81.1%
-  triton_mm_775 8.9840 ms 75.4%
-  triton_mm_778 9.4525 ms 71.7%
-  triton_mm_773 15.2681 ms 44.4%
-SingleProcess AUTOTUNE benchmarking takes 1.9431 seconds and 0.0008 seconds precompiling
-AUTOTUNE int_mm(65536x5120, 5120x1280, 65536x1280)
-  triton_mm_787 6.3370 ms 100.0%
-  triton_mm_780 6.5136 ms 97.3%
-  triton_mm_788 6.5667 ms 96.5%
-  triton_mm_781 6.7174 ms 94.3%
-  triton_mm_782 6.8561 ms 92.4%
-  triton_mm_786 6.9548 ms 91.1%
-  triton_mm_789 7.0036 ms 90.5%
-  triton_mm_783 7.1429 ms 88.7%
-  triton_mm_779 7.2972 ms 86.8%
-  triton_mm_784 14.5502 ms 43.6%
-SingleProcess AUTOTUNE benchmarking takes 1.8723 seconds and 0.0007 seconds precompiling
-bf16 compiled runtime of the fused quantized block is 42.98ms and peak memory  4.53GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>bf16 compiled runtime of the fused quantized block is 42.11ms and peak memory  4.55GB
 </pre></div>
 </div>
 <p>The fusion improves performance by another small bit (about 6% over the
@@ -1002,110 +1007,17 @@ the search area for kernel parameters.</p></li>
 <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">coordinate_descent_tuning</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">coordinate_descent_check_all_directions</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">force_fuse_int_mm_with_mul</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">change_linear_weights_to_int8_dqtensors</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">quantize_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">int8_dynamic_activation_int8_weight</span><span class="p">())</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">TORCH_VERSION_AT_LEAST_2_5</span><span class="p">:</span>
+    <span class="c1"># needed for subclass + compile to work on older versions of pytorch</span>
+    <span class="n">unwrap_tensor_subclass</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="n">model_c</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max-autotune&#39;</span><span class="p">)</span>
 <span class="n">quant_res</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">model_c</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bf16 compiled runtime of the final quantized block is </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">ms and peak memory </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2"> 0.2f</span><span class="si">}</span><span class="s2">GB&quot;</span><span class="p">)</span>
 <span class="c1"># bf16 compiled runtime of the final quantized block is 18.16ms and peak memory  2.39GB</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE int_mm(78400x1280, 1280x3840, 78400x3840)
-  triton_mm_912 6.1409 ms 100.0%
-  triton_mm_905 6.2631 ms 98.0%
-  triton_mm_904 6.7063 ms 91.6%
-  triton_mm_907 6.8244 ms 90.0%
-  triton_mm_913 6.9055 ms 88.9%
-  triton_mm_906 6.9791 ms 88.0%
-  triton_mm_908 7.5020 ms 81.9%
-  triton_mm_911 8.1908 ms 75.0%
-  triton_mm_914 8.5511 ms 71.8%
-  triton_mm_909 13.7455 ms 44.7%
-SingleProcess AUTOTUNE benchmarking takes 1.9231 seconds and 0.0000 seconds precompiling
-AUTOTUNE bmm(6400x196x80, 6400x80x196)
-  triton_bmm_925 1.8290 ms 100.0%
-  triton_bmm_929 1.8345 ms 99.7%
-  triton_bmm_921 1.9020 ms 96.2%
-  triton_bmm_926 1.9099 ms 95.8%
-  triton_bmm_924 1.9148 ms 95.5%
-  triton_bmm_923 1.9373 ms 94.4%
-  triton_bmm_931 1.9499 ms 93.8%
-  triton_bmm_928 1.9617 ms 93.2%
-  triton_bmm_922 1.9857 ms 92.1%
-  triton_bmm_919 2.0369 ms 89.8%
-SingleProcess AUTOTUNE benchmarking takes 2.6614 seconds and 0.0000 seconds precompiling
-AUTOTUNE bmm(14x89600x80, 14x80x16)
-  triton_bmm_949 0.4649 ms 100.0%
-  triton_bmm_935 0.4702 ms 98.9%
-  triton_bmm_938 0.4755 ms 97.8%
-  triton_bmm_944 0.4756 ms 97.7%
-  triton_bmm_948 0.4757 ms 97.7%
-  triton_bmm_941 0.4769 ms 97.5%
-  bmm 0.4863 ms 95.6%
-  triton_bmm_937 0.5078 ms 91.5%
-  triton_bmm_936 0.5200 ms 89.4%
-  triton_bmm_943 0.5293 ms 87.8%
-SingleProcess AUTOTUNE benchmarking takes 2.0924 seconds and 0.0000 seconds precompiling
-AUTOTUNE bmm(14x89600x80, 14x80x16)
-  triton_bmm_951 0.5549 ms 100.0%
-  triton_bmm_954 0.5550 ms 100.0%
-  triton_bmm_960 0.5553 ms 99.9%
-  triton_bmm_952 0.5769 ms 96.2%
-  triton_bmm_953 0.5931 ms 93.6%
-  triton_bmm_959 0.6541 ms 84.8%
-  triton_bmm_962 0.6989 ms 79.4%
-  triton_bmm_958 0.7029 ms 78.9%
-  triton_bmm_961 0.7252 ms 76.5%
-  triton_bmm_963 0.7404 ms 74.9%
-SingleProcess AUTOTUNE benchmarking takes 2.1436 seconds and 0.0000 seconds precompiling
-AUTOTUNE bmm(6400x196x196, 6400x196x80)
-  triton_bmm_967 1.8258 ms 100.0%
-  triton_bmm_977 1.8690 ms 97.7%
-  triton_bmm_968 1.9653 ms 92.9%
-  triton_bmm_976 1.9728 ms 92.5%
-  triton_bmm_973 1.9785 ms 92.3%
-  triton_bmm_979 1.9883 ms 91.8%
-  triton_bmm_972 2.0423 ms 89.4%
-  triton_bmm_975 2.0477 ms 89.2%
-  triton_bmm_982 2.1103 ms 86.5%
-  triton_bmm_980 2.1304 ms 85.7%
-SingleProcess AUTOTUNE benchmarking takes 2.3873 seconds and 0.0000 seconds precompiling
-AUTOTUNE int_mm(78400x1280, 1280x1280, 78400x1280)
-  triton_mm_993 2.0381 ms 100.0%
-  triton_mm_986 2.1276 ms 95.8%
-  triton_mm_985 2.1965 ms 92.8%
-  triton_mm_987 2.3027 ms 88.5%
-  triton_mm_994 2.3467 ms 86.8%
-  triton_mm_988 2.3480 ms 86.8%
-  triton_mm_989 2.5403 ms 80.2%
-  triton_mm_992 2.6912 ms 75.7%
-  triton_mm_995 2.8934 ms 70.4%
-  triton_mm_991 4.5582 ms 44.7%
-SingleProcess AUTOTUNE benchmarking takes 1.5710 seconds and 0.0000 seconds precompiling
-AUTOTUNE int_mm(65536x1280, 1280x5120, 65536x5120)
-  triton_mm_1004 6.7792 ms 100.0%
-  triton_mm_997 6.8608 ms 98.8%
-  triton_mm_996 7.4035 ms 91.6%
-  triton_mm_999 7.6021 ms 89.2%
-  triton_mm_1005 7.6822 ms 88.2%
-  triton_mm_998 7.7410 ms 87.6%
-  triton_mm_1000 8.3550 ms 81.1%
-  triton_mm_1003 8.9694 ms 75.6%
-  triton_mm_1006 9.4526 ms 71.7%
-  triton_mm_1001 15.2674 ms 44.4%
-SingleProcess AUTOTUNE benchmarking takes 1.9915 seconds and 0.0000 seconds precompiling
-AUTOTUNE int_mm(65536x5120, 5120x1280, 65536x1280)
-  triton_mm_1015 6.3375 ms 100.0%
-  triton_mm_1008 6.5133 ms 97.3%
-  triton_mm_1016 6.5662 ms 96.5%
-  triton_mm_1009 6.7167 ms 94.4%
-  triton_mm_1010 6.8571 ms 92.4%
-  triton_mm_1014 6.9550 ms 91.1%
-  triton_mm_1017 7.0042 ms 90.5%
-  triton_mm_1011 7.1426 ms 88.7%
-  triton_mm_1007 7.2935 ms 86.9%
-  triton_mm_1012 14.5520 ms 43.6%
-SingleProcess AUTOTUNE benchmarking takes 1.9211 seconds and 0.0000 seconds precompiling
-bf16 compiled runtime of the final quantized block is 42.15ms and peak memory  4.53GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>bf16 compiled runtime of the final quantized block is 41.83ms and peak memory  4.55GB
 </pre></div>
 </div>
 <p>As you can see, we’ve squeezed another small improvement from the model,
@@ -1127,7 +1039,10 @@ differ block by block depending on the shapes involved.</p>
     <span class="n">model</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a> <span class="o">=</span> <span class="n">get_sam_model</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">batchsize</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.to" title="torch.nn.Module.to" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method"><span class="n">model</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
     <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="o">.</span><span class="n">to</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">)</span>
-    <span class="n">change_linear_weights_to_int8_dqtensors</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">quantize_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">int8_dynamic_activation_int8_weight</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">TORCH_VERSION_AT_LEAST_2_5</span><span class="p">:</span>
+        <span class="c1"># needed for subclass + compile to work on older versions of pytorch</span>
+        <span class="n">unwrap_tensor_subclass</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="n">model_c</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max-autotune&#39;</span><span class="p">)</span>
     <span class="n">quant_res</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">model_c</span><span class="p">,</span> <a href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">image</span></a><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bf16 compiled runtime of the quantized full model is </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">ms and peak memory </span><span class="si">{</span><span class="n">quant_res</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2"> 0.2f</span><span class="si">}</span><span class="s2">GB&quot;</span><span class="p">)</span>
@@ -1137,133 +1052,133 @@ differ block by block depending on the shapes involved.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>AUTOTUNE convolution(16x3x1024x1024, 1280x3x16x16)
-  triton_convolution_1133 13.9045 ms 100.0%
-  triton_convolution_1138 17.5810 ms 79.1%
-  triton_convolution_1135 18.3374 ms 75.8%
-  convolution 23.1589 ms 60.0%
-  triton_convolution_1132 23.6795 ms 58.7%
-  triton_convolution_1137 24.0488 ms 57.8%
-  triton_convolution_1136 26.7108 ms 52.1%
-  triton_convolution_1134 379.5443 ms 3.7%
-SingleProcess AUTOTUNE benchmarking takes 4.7759 seconds and 0.0005 seconds precompiling
+  triton_convolution_677 13.8830 ms 100.0%
+  triton_convolution_682 17.3733 ms 79.9%
+  triton_convolution_679 18.2992 ms 75.9%
+  convolution 23.1427 ms 60.0%
+  triton_convolution_676 23.4732 ms 59.1%
+  triton_convolution_681 23.7144 ms 58.5%
+  triton_convolution_680 25.8019 ms 53.8%
+  triton_convolution_678 379.5990 ms 3.7%
+SingleProcess AUTOTUNE benchmarking takes 4.7539 seconds and 0.0005 seconds precompiling
 AUTOTUNE mm(78400x1280, 1280x3840)
-  triton_mm_1155 11.2286 ms 100.0%
-  triton_mm_1152 11.2878 ms 99.5%
-  triton_mm_1148 11.3375 ms 99.0%
-  triton_mm_1150 11.3744 ms 98.7%
-  triton_mm_1149 11.6775 ms 96.2%
-  mm 11.7070 ms 95.9%
-  triton_mm_1153 11.7339 ms 95.7%
-  triton_mm_1145 11.7531 ms 95.5%
-  triton_mm_1146 11.9169 ms 94.2%
-  triton_mm_1156 12.3778 ms 90.7%
-SingleProcess AUTOTUNE benchmarking takes 3.5329 seconds and 0.0000 seconds precompiling
+  triton_mm_699 11.2212 ms 100.0%
+  triton_mm_694 11.3821 ms 98.6%
+  triton_mm_696 11.3847 ms 98.6%
+  triton_mm_692 11.4342 ms 98.1%
+  mm 11.7167 ms 95.8%
+  triton_mm_697 11.7400 ms 95.6%
+  triton_mm_689 11.8308 ms 94.8%
+  triton_mm_693 11.8331 ms 94.8%
+  triton_mm_690 11.9023 ms 94.3%
+  triton_mm_700 12.3710 ms 90.7%
+SingleProcess AUTOTUNE benchmarking takes 3.4735 seconds and 0.0016 seconds precompiling
 AUTOTUNE mm(78400x1280, 1280x1280)
-  triton_mm_1241 3.7376 ms 100.0%
-  triton_mm_1244 3.7629 ms 99.3%
-  triton_mm_1237 3.7651 ms 99.3%
-  triton_mm_1239 3.7818 ms 98.8%
-  triton_mm_1238 3.8442 ms 97.2%
-  triton_mm_1234 3.8543 ms 97.0%
-  triton_mm_1242 3.8957 ms 95.9%
-  triton_mm_1235 3.9109 ms 95.6%
-  mm 3.9619 ms 94.3%
-  triton_mm_1233 4.0904 ms 91.4%
-SingleProcess AUTOTUNE benchmarking takes 2.6269 seconds and 0.0000 seconds precompiling
+  triton_mm_781 3.7664 ms 100.0%
+  triton_mm_785 3.7694 ms 99.9%
+  triton_mm_788 3.7953 ms 99.2%
+  triton_mm_783 3.8137 ms 98.8%
+  triton_mm_782 3.8448 ms 98.0%
+  triton_mm_778 3.8889 ms 96.9%
+  triton_mm_786 3.9270 ms 95.9%
+  triton_mm_779 3.9424 ms 95.5%
+  mm 3.9600 ms 95.1%
+  triton_mm_789 4.1619 ms 90.5%
+SingleProcess AUTOTUNE benchmarking takes 2.5651 seconds and 0.0012 seconds precompiling
 AUTOTUNE mm(65536x1280, 1280x5120)
-  triton_mm_1260 12.4202 ms 100.0%
-  triton_mm_1263 12.4985 ms 99.4%
-  triton_mm_1256 12.5013 ms 99.4%
-  triton_mm_1258 12.6767 ms 98.0%
-  triton_mm_1261 12.8400 ms 96.7%
-  triton_mm_1257 12.8877 ms 96.4%
-  triton_mm_1253 12.9378 ms 96.0%
-  mm 13.0491 ms 95.2%
-  triton_mm_1254 13.1459 ms 94.5%
-  triton_mm_1264 13.7808 ms 90.1%
-SingleProcess AUTOTUNE benchmarking takes 3.6029 seconds and 0.0000 seconds precompiling
+  triton_mm_807 12.4884 ms 100.0%
+  triton_mm_804 12.6242 ms 98.9%
+  triton_mm_802 12.6691 ms 98.6%
+  triton_mm_800 12.7420 ms 98.0%
+  mm 13.0534 ms 95.7%
+  triton_mm_805 13.1717 ms 94.8%
+  triton_mm_797 13.1800 ms 94.8%
+  triton_mm_798 13.2577 ms 94.2%
+  triton_mm_801 13.2709 ms 94.1%
+  triton_mm_808 13.7704 ms 90.7%
+SingleProcess AUTOTUNE benchmarking takes 3.5538 seconds and 0.0012 seconds precompiling
 AUTOTUNE mm(65536x5120, 5120x1280)
-  triton_mm_1282 12.3780 ms 100.0%
-  triton_mm_1277 12.5017 ms 99.0%
-  triton_mm_1279 12.5489 ms 98.6%
-  mm 12.5542 ms 98.6%
-  triton_mm_1280 12.5918 ms 98.3%
-  triton_mm_1275 12.6720 ms 97.7%
-  triton_mm_1276 12.7288 ms 97.2%
-  triton_mm_1272 13.0328 ms 95.0%
-  triton_mm_1273 13.1115 ms 94.4%
-  triton_mm_1283 13.2428 ms 93.5%
-SingleProcess AUTOTUNE benchmarking takes 3.6130 seconds and 0.0000 seconds precompiling
+  triton_mm_826 12.3880 ms 100.0%
+  triton_mm_821 12.5103 ms 99.0%
+  mm 12.5508 ms 98.7%
+  triton_mm_824 12.5979 ms 98.3%
+  triton_mm_823 12.6703 ms 97.8%
+  triton_mm_820 12.7229 ms 97.4%
+  triton_mm_819 13.0113 ms 95.2%
+  triton_mm_816 13.1500 ms 94.2%
+  triton_mm_827 13.2268 ms 93.7%
+  triton_mm_817 13.4559 ms 92.1%
+SingleProcess AUTOTUNE benchmarking takes 3.5437 seconds and 0.0013 seconds precompiling
 AUTOTUNE mm(65536x1280, 1280x3840)
-  triton_mm_2177 9.3761 ms 100.0%
-  triton_mm_2170 9.3767 ms 100.0%
-  triton_mm_2174 9.3922 ms 99.8%
-  triton_mm_2172 9.5127 ms 98.6%
-  triton_mm_2171 9.6802 ms 96.9%
-  triton_mm_2175 9.7088 ms 96.6%
-  triton_mm_2167 9.7220 ms 96.4%
-  mm 9.7968 ms 95.7%
-  triton_mm_2168 9.8666 ms 95.0%
-  triton_mm_2178 10.3428 ms 90.7%
-SingleProcess AUTOTUNE benchmarking takes 3.2145 seconds and 0.0012 seconds precompiling
+  triton_mm_1721 9.3706 ms 100.0%
+  triton_mm_1718 9.3910 ms 99.8%
+  triton_mm_1714 9.4658 ms 99.0%
+  triton_mm_1716 9.5164 ms 98.5%
+  triton_mm_1715 9.6795 ms 96.8%
+  mm 9.7909 ms 95.7%
+  triton_mm_1719 9.7944 ms 95.7%
+  triton_mm_1711 9.8070 ms 95.5%
+  triton_mm_1712 9.8700 ms 94.9%
+  triton_mm_1722 10.3358 ms 90.7%
+SingleProcess AUTOTUNE benchmarking takes 3.2270 seconds and 0.0012 seconds precompiling
 AUTOTUNE bmm(64x16384x80, 64x80x64)
-  triton_bmm_2181 0.6100 ms 100.0%
-  triton_bmm_2184 0.6143 ms 99.3%
-  triton_bmm_2197 0.6174 ms 98.8%
-  triton_bmm_2187 0.6182 ms 98.7%
-  triton_bmm_2191 0.6187 ms 98.6%
-  triton_bmm_2196 0.6216 ms 98.1%
-  triton_bmm_2188 0.6258 ms 97.5%
-  triton_bmm_2192 0.6267 ms 97.3%
-  triton_bmm_2183 0.6319 ms 96.5%
-  triton_bmm_2182 0.6419 ms 95.0%
-SingleProcess AUTOTUNE benchmarking takes 2.3112 seconds and 0.0009 seconds precompiling
+  triton_bmm_1725 0.6094 ms 100.0%
+  triton_bmm_1728 0.6145 ms 99.2%
+  triton_bmm_1741 0.6168 ms 98.8%
+  triton_bmm_1731 0.6182 ms 98.6%
+  triton_bmm_1735 0.6191 ms 98.4%
+  triton_bmm_1740 0.6215 ms 98.1%
+  triton_bmm_1732 0.6262 ms 97.3%
+  triton_bmm_1736 0.6264 ms 97.3%
+  triton_bmm_1727 0.6319 ms 96.4%
+  triton_bmm_1726 0.6418 ms 95.0%
+SingleProcess AUTOTUNE benchmarking takes 2.3128 seconds and 0.0011 seconds precompiling
 AUTOTUNE bmm(64x16384x80, 64x80x64)
-  triton_bmm_2202 0.6874 ms 100.0%
-  triton_bmm_2199 0.6917 ms 99.4%
-  triton_bmm_2206 0.6937 ms 99.1%
-  triton_bmm_2210 0.6937 ms 99.1%
-  triton_bmm_2201 0.7408 ms 92.8%
-  triton_bmm_2200 0.7550 ms 91.0%
-  triton_bmm_2214 0.8351 ms 82.3%
-  triton_bmm_2209 0.8376 ms 82.1%
-  triton_bmm_2205 0.8382 ms 82.0%
-  triton_bmm_2215 0.8542 ms 80.5%
-SingleProcess AUTOTUNE benchmarking takes 2.3467 seconds and 0.0011 seconds precompiling
+  triton_bmm_1746 0.6880 ms 100.0%
+  triton_bmm_1743 0.6924 ms 99.4%
+  triton_bmm_1750 0.6935 ms 99.2%
+  triton_bmm_1754 0.6940 ms 99.1%
+  triton_bmm_1745 0.7408 ms 92.9%
+  triton_bmm_1744 0.7544 ms 91.2%
+  triton_bmm_1758 0.8347 ms 82.4%
+  triton_bmm_1749 0.8376 ms 82.1%
+  triton_bmm_1753 0.8380 ms 82.1%
+  triton_bmm_1759 0.8547 ms 80.5%
+SingleProcess AUTOTUNE benchmarking takes 2.3458 seconds and 0.0011 seconds precompiling
 AUTOTUNE mm(65536x1280, 1280x1280)
-  triton_mm_2229 3.1121 ms 100.0%
-  triton_mm_2232 3.1334 ms 99.3%
-  triton_mm_2225 3.1370 ms 99.2%
-  triton_mm_2222 3.1928 ms 97.5%
-  triton_mm_2227 3.1954 ms 97.4%
-  triton_mm_2226 3.2092 ms 97.0%
-  triton_mm_2223 3.2396 ms 96.1%
-  triton_mm_2230 3.2530 ms 95.7%
-  mm 3.2851 ms 94.7%
-  triton_mm_2221 3.3828 ms 92.0%
-SingleProcess AUTOTUNE benchmarking takes 2.4804 seconds and 0.0011 seconds precompiling
+  triton_mm_1773 3.1093 ms 100.0%
+  triton_mm_1776 3.1288 ms 99.4%
+  triton_mm_1769 3.1456 ms 98.8%
+  triton_mm_1771 3.1934 ms 97.4%
+  triton_mm_1766 3.1950 ms 97.3%
+  triton_mm_1770 3.2071 ms 97.0%
+  triton_mm_1774 3.2518 ms 95.6%
+  triton_mm_1767 3.2692 ms 95.1%
+  mm 3.2841 ms 94.7%
+  triton_mm_1765 3.4492 ms 90.1%
+SingleProcess AUTOTUNE benchmarking takes 2.4747 seconds and 0.0011 seconds precompiling
 AUTOTUNE convolution(16x1280x64x64, 256x1280x1x1)
-  convolution 0.7849 ms 100.0%
-  triton_convolution_5675 0.8024 ms 97.8%
-  triton_convolution_5680 0.8627 ms 91.0%
-  triton_convolution_5678 0.8754 ms 89.7%
-  triton_convolution_5681 1.3769 ms 57.0%
-  triton_convolution_5676 1.4218 ms 55.2%
-  triton_convolution_5679 1.4413 ms 54.5%
-  conv1x1_via_mm 2.2573 ms 34.8%
-  triton_convolution_5677 2.3677 ms 33.2%
-SingleProcess AUTOTUNE benchmarking takes 1.1624 seconds and 0.0005 seconds precompiling
+  convolution 0.7857 ms 100.0%
+  triton_convolution_5219 0.8006 ms 98.1%
+  triton_convolution_5224 0.8506 ms 92.4%
+  triton_convolution_5222 0.8727 ms 90.0%
+  triton_convolution_5225 1.3767 ms 57.1%
+  triton_convolution_5220 1.4231 ms 55.2%
+  triton_convolution_5223 1.4417 ms 54.5%
+  conv1x1_via_mm 2.2587 ms 34.8%
+  triton_convolution_5221 2.3718 ms 33.1%
+SingleProcess AUTOTUNE benchmarking takes 1.1571 seconds and 0.0005 seconds precompiling
 AUTOTUNE convolution(16x256x64x64, 256x256x3x3)
-  convolution 1.4452 ms 100.0%
-  triton_convolution_5683 2.9764 ms 48.6%
-  triton_convolution_5688 3.0555 ms 47.3%
-  triton_convolution_5686 3.1246 ms 46.3%
-  triton_convolution_5685 3.6752 ms 39.3%
-  triton_convolution_5687 6.1455 ms 23.5%
-  triton_convolution_5682 8.3524 ms 17.3%
-  triton_convolution_5684 9.2745 ms 15.6%
-SingleProcess AUTOTUNE benchmarking takes 1.1902 seconds and 0.0004 seconds precompiling
-unable to run full model:  CUDA out of memory. Tried to allocate 8.00 GiB. GPU 0 has a total capacity of 21.98 GiB of which 4.44 GiB is free. Process 174083 has 17.52 GiB memory in use. Of the allocated memory 16.79 GiB is allocated by PyTorch, with 511.96 MiB allocated in private pools (e.g., CUDA Graphs), and 341.80 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+  convolution 1.4450 ms 100.0%
+  triton_convolution_5227 2.9724 ms 48.6%
+  triton_convolution_5232 3.0566 ms 47.3%
+  triton_convolution_5230 3.1556 ms 45.8%
+  triton_convolution_5229 3.6729 ms 39.3%
+  triton_convolution_5231 6.1083 ms 23.7%
+  triton_convolution_5226 8.3254 ms 17.4%
+  triton_convolution_5228 9.1451 ms 15.8%
+SingleProcess AUTOTUNE benchmarking takes 1.1873 seconds and 0.0005 seconds precompiling
+unable to run full model:  CUDA out of memory. Tried to allocate 8.00 GiB. GPU 0 has a total capacity of 21.98 GiB of which 4.51 GiB is free. Process 56154 has 17.46 GiB memory in use. Of the allocated memory 16.82 GiB is allocated by PyTorch, with 511.96 MiB allocated in private pools (e.g., CUDA Graphs), and 242.72 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
 </pre></div>
 </div>
 </div>
@@ -1278,7 +1193,7 @@ the model. For example, this can be done with some form of flash attention.</p>
 <p>For more information visit
 <a class="reference external" href="https://github.com/pytorch-labs/ao">torchao</a> and try it on your own
 models.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  37.710 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 8 minutes  31.723 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-prototype-gpu-quantization-torchao-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0a0adb045e37300c70e9f07380224243/gpu_quantization_torchao_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">gpu_quantization_torchao_tutorial.py</span></code></a></p>
