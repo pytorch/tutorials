@@ -837,7 +837,7 @@ model
 # depending on your preferences:
 # 1. Passing optimizer kwargs through ``fused_params`` in sharder
 # 2. Through ``apply_optimizer_in_backward``, which converts the optimizer
-# parameters to ``fused_params`` to pass to the `TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
+# parameters to ``fused_params`` to pass to the ``TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
 # 
 
 # Approach 1: passing optimizer kwargs through fused parameters
