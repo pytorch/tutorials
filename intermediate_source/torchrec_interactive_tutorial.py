@@ -43,7 +43,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 # ~~~~~~~~~~
 # 
 # When building recommendation systems, categorical features typically
-# have massive cardinalities, posts, users, ads, etc.
+# have massive cardinality, posts, users, ads, etc.
 # 
 # In order to represent these entities and model these relationships,
 # **embeddings** are used. In machine learning, **embeddings are a vectors
@@ -213,7 +213,7 @@ import torchrec
 
 
 ######################################################################
-# From EmbeddingBag to EmbeddingBagCollection
+# From ``EmbeddingBag`` to ``EmbeddingBagCollection``
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We have already explored
@@ -229,7 +229,7 @@ import torchrec
 # We will use ``EmbeddingBagCollection`` to represent a group of
 # EmbeddingBags.
 # 
-# Here, we create an EmbeddingBagCollection (EBC) with two embedding bags,
+# Here, we create an ``EmbeddingBagCollection`` (EBC) with two embedding bags,
 # 1 representing **products** and 1 representing **users**. Each table,
 # ``product_table`` and ``user_table``, is represented by 64 dimension
 # embedding of size 4096.
@@ -264,8 +264,8 @@ print(ebc.embedding_bags)
 
 import inspect
 
-# Let's look at the EmbeddingBagCollection forward method
-# What is a KeyedJaggedTensor and KeyedTensor?
+# Let's look at the ``EmbeddingBagCollection`` forward method
+# What is a ``KeyedJaggedTensor`` and ``KeyedTensor``?
 print(inspect.getsource(ebc.forward))
 
 
@@ -333,9 +333,9 @@ print(jt)
 
 from torchrec import KeyedJaggedTensor
 
-# JaggedTensor represents IDs for 1 feature, but we have multiple features in an EmbeddingBagCollection
-# That's where KeyedJaggedTensor comes in! KeyedJaggedTensor is just multiple JaggedTensors for multiple id_list_feature_offsets
-# From before, we have our two features "product" and "user". Let's create JaggedTensors for both!
+# ``JaggedTensor`` represents IDs for 1 feature, but we have multiple features in an ``EmbeddingBagCollection``
+# That's where ``KeyedJaggedTensor`` comes in! ``KeyedJaggedTensor`` is just multiple ``JaggedTensors`` for multiple id_list_feature_offsets
+# From before, we have our two features "product" and "user". Let's create ``JaggedTensors`` for both!
 
 product_jt = JaggedTensor(
     values=torch.tensor([1, 2, 1, 5]), lengths=torch.tensor([3, 1])
@@ -345,32 +345,32 @@ user_jt = JaggedTensor(values=torch.tensor([2, 3, 4, 1]), lengths=torch.tensor([
 # Q1: How many batches are there, and which values are in the first batch for product_jt and user_jt?
 kjt = KeyedJaggedTensor.from_jt_dict({"product": product_jt, "user": user_jt})
 
-# Look at our feature keys for the KeyedJaggedTensor
+# Look at our feature keys for the ``KeyedJaggedTensor``
 print("Keys: ", kjt.keys())
 
-# Look at the overall lengths for the KeyedJaggedTensor
+# Look at the overall lengths for the ``KeyedJaggedTensor``
 print("Lengths: ", kjt.lengths())
 
-# Look at all values for KeyedJaggedTensor
+# Look at all values for ``KeyedJaggedTensor``
 print("Values: ", kjt.values())
 
 # Can convert KJT to dictionary representation
 print("to_dict: ", kjt.to_dict())
 
-# KeyedJaggedTensor(KJT) string representation
+# ``KeyedJaggedTensor`` (KJT) string representation
 print(kjt)
 
-# Q2: What are the offsets for the KeyedJaggedTensor?
+# Q2: What are the offsets for the ``KeyedJaggedTensor``?
 
 # Now we can run a forward pass on our ebc from before
 result = ebc(kjt)
 result
 
-# Result is a KeyedTensor, which contains a list of the feature names and the embedding results
+# Result is a ``KeyedTensor``, which contains a list of the feature names and the embedding results
 print(result.keys())
 
 # The results shape is [2, 128], as batch size of 2. Reread previous section if you need a refresher on how the batch size is determined
-# 128 for dimension of embedding. If you look at where we initialized the EmbeddingBagCollection, we have two tables "product" and "user" of dimension 64 each
+# 128 for dimension of embedding. If you look at where we initialized the ``EmbeddingBagCollection``, we have two tables "product" and "user" of dimension 64 each
 # meaning emebddings for both features are of size 64. 64 + 64 = 128
 print(result.values().shape)
 
@@ -392,7 +392,7 @@ for key, embedding in result_dict.items():
 # Now that we have a grasp on TorchRec modules and data types, it's time
 # to take it to the next level.
 # 
-# Remember, TorchRec's main purpose is to provide primitives for
+# Remember, the main purpose of TorchRec is to provide primitives for
 # distributed embeddings. So far, we've only worked with embedding tables
 # on 1 device. This has been possible given how small the embedding tables
 # have been, but in a production setting this isn't generally the case.
@@ -420,7 +420,7 @@ import torch.distributed as dist
 # Set up environment variables for distributed training
 # RANK is which GPU we are on, default 0
 os.environ["RANK"] = "0"
-# How many devices in our "world", since Bento can only handle 1 process, 1 GPU
+# How many devices in our "world", notebook can only handle 1 process
 os.environ["WORLD_SIZE"] = "1"
 # Localhost as we are training locally
 os.environ["MASTER_ADDR"] = "localhost"
@@ -447,7 +447,7 @@ print(f"Distributed environment initialized: {dist}")
 # are able to do magnitudes more floating point operations/s
 # (`FLOPs <https://en.wikipedia.org/wiki/FLOPS>`__) than CPU. However,
 # GPUs come with the limitation of scarce fast memory (HBM which is
-# analgous to RAM for CPU), typically ~10s of GBs.
+# analogous to RAM for CPU), typically ~10s of GBs.
 # 
 # A RecSys model can contain embedding tables that far exceed the memory
 # limit for 1 GPU, hence the need for distribution of the embedding tables
@@ -496,22 +496,22 @@ print(f"Distributed environment initialized: {dist}")
 # distributed training/inference.
 # 
 # The sharded versions of TorchRec modules, for example
-# EmbeddingBagCollection, will handle everything that is needed for Model
+# ``EmbeddingBagCollection``, will handle everything that is needed for Model
 # Parallelism, such as communication between GPUs for distributing
 # embeddings to the correct GPUs.
 # 
 
-# Refresher of our EmbeddingBagCollection module
+# Refresher of our ``EmbeddingBagCollection`` module
 ebc
 
 from torchrec.distributed.embeddingbag import EmbeddingBagCollectionSharder
 from torchrec.distributed.planner import EmbeddingShardingPlanner, Topology
 from torchrec.distributed.types import ShardingEnv
 
-# Corresponding sharder for EmbeddingBagCollection module
+# Corresponding sharder for ``EmbeddingBagCollection`` module
 sharder = EmbeddingBagCollectionSharder()
 
-# ProcessGroup from torch.distributed initialized 2 cells above
+# ``ProcessGroup`` from torch.distributed initialized 2 cells above
 pg = dist.GroupMember.WORLD
 assert pg is not None, "Process group is not initialized"
 
@@ -589,7 +589,7 @@ plan
 
 env = ShardingEnv.from_process_group(pg)
 
-# Shard the EmbeddingBagCollection module using the EmbeddingBagCollectionSharder
+# Shard the ``EmbeddingBagCollection`` module using the ``EmbeddingBagCollectionSharder``
 sharded_ebc = sharder.shard(ebc, plan.plan[""], env, torch.device("cuda"))
 
 print(f"Sharded EBC Module: {sharded_ebc}")
@@ -601,7 +601,7 @@ print(f"Sharded EBC Module: {sharded_ebc}")
 
 
 ######################################################################
-# Awaitable
+# ``Awaitable``
 # ^^^^^^^^^
 # 
 # Remember that TorchRec is a highly optimized library for distributed
@@ -618,7 +618,7 @@ from typing import List
 from torchrec.distributed.types import LazyAwaitable
 
 
-# Demonstrate a LazyAwaitable type
+# Demonstrate a ``LazyAwaitable`` type
 class ExampleAwaitable(LazyAwaitable[torch.Tensor]):
     def __init__(self, size: List[int]) -> None:
         super().__init__()
@@ -633,20 +633,20 @@ awaitable.wait()
 
 kjt = kjt.to("cuda")
 output = sharded_ebc(kjt)
-# The output of our sharded EmbeddingBagCollection module is a an Awaitable?
+# The output of our sharded ``EmbeddingBagCollection`` module is an `Awaitable`?
 print(output)
 
 kt = output.wait()
 # Now we have out KeyedTensor after calling .wait()
 # If you are confused as to why we have a KeyedTensor output,
-# give yourself a refresher on the unsharded EmbeddingBagCollection module
+# give yourself a refresher on the unsharded ``EmbeddingBagCollection`` module
 print(type(kt))
 
 print(kt.keys())
 
 print(kt.values().shape)
 
-# Same output format as unsharded EmbeddingBagCollection
+# Same output format as unsharded ``EmbeddingBagCollection``
 result_dict = kt.to_dict()
 for key, embedding in result_dict.items():
     print(key, embedding.shape)
@@ -656,7 +656,7 @@ for key, embedding in result_dict.items():
 # Anatomy of Sharded TorchRec modules
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
-# We have now successfully sharded an EmbeddingBagCollection given a
+# We have now successfully sharded an ``EmbeddingBagCollection`` given a
 # sharding plan that we generated! The sharded module has common APIs from
 # TorchRec which abstract away distributed communication/compute amongst
 # multiple GPUs. In fact, these APIs are highly optimized for performance
@@ -691,7 +691,7 @@ sharded_ebc
 # Distribute input KJTs to all other GPUs and receive KJTs
 sharded_ebc._input_dists
 
-# Distribute output embeddingts to all other GPUs and receive embeddings
+# Distribute output embeddings to all other GPUs and receive embeddings
 sharded_ebc._output_dists
 
 
@@ -702,11 +702,11 @@ sharded_ebc._output_dists
 # In performing lookups for a collection of embedding tables, a trivial
 # solution would be to iterate through all the ``nn.EmbeddingBags`` and do
 # a lookup per table. This is exactly what the standard, unsharded
-# TorchRec's ``EmbeddingBagCollection`` does. However, while this solution
+# ``EmbeddingBagCollection`` does. However, while this solution
 # is simple, it is extremely slow.
 # 
 # `FBGEMM <https://github.com/pytorch/FBGEMM/tree/main/fbgemm_gpu>`__ is a
-# library that provides GPU operators (otherewise known as kernels) that
+# library that provides GPU operators (otherwise known as kernels) that
 # are very optimized. One of these operators is known as **Table Batched
 # Embedding** (TBE), provides two major optimizations:
 # 
@@ -724,10 +724,10 @@ sharded_ebc._lookups
 
 
 ######################################################################
-# DistributedModelParallel
+# ``DistributedModelParallel``
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # 
-# We have now explored sharding a single EmbeddingBagCollection! We were
+# We have now explored sharding a single ``EmbeddingBagCollection``! We were
 # able to take the ``EmbeddingBagCollectionSharder`` and use the unsharded
 # ``EmbeddingBagCollection`` to generate a
 # ``ShardedEmbeddingBagCollection`` module. This workflow is fine, but
@@ -738,14 +738,14 @@ sharded_ebc._lookups
 # 
 # 1. Decide how to shard the model. DMP will collect the available
 #    ‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
-#    embedding table(s) (i.e, the EmbeddingBagCollection)
+#    embedding table(s) (i.e, the ``EmbeddingBagCollection``)
 # 2. Actually shard the model. This includes allocating memory for each
 #    embedding table on the appropriate device(s).
 # 
 # DMP takes in everything that we've just experimented with, like a static
 # sharding plan, a list of sharders, etc. However, it also has some nice
 # defaults to seamlessly shard a TorchRec model. In this toy example,
-# since we have two EmbeddingTables and one GPU, TorchRec will place both
+# since we have two embedding tables and one GPU, TorchRec will place both
 # on the single GPU.
 # 
 
@@ -824,7 +824,7 @@ model
 # ``CombinedOptimizer`` that you can use in your training loop to
 # ``zero_grad`` and ``step`` through.
 # 
-# Let's add an optimizer to our EmbeddingBagCollection
+# Let's add an optimizer to our ``EmbeddingBagCollection``
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # We will do this in two ways, which are equivalent, but give you options
@@ -847,13 +847,13 @@ fused_params = {
     "eps": 0.002,
 }
 
-# Init sharder with fused_params
+# Initialize sharder with fused_params
 sharder_with_fused_params = EmbeddingBagCollectionSharder(fused_params=fused_params)
 
 # We'll use same plan and unsharded EBC as before but this time with our new sharder
 sharded_ebc_fused_params = sharder_with_fused_params.shard(ebc, plan.plan[""], env, torch.device("cuda"))
 
-# Looking at the optimizer of each, we can see that the learning rate changed, which indicates our optimizer has been applied correclty.
+# Looking at the optimizer of each, we can see that the learning rate changed, which indicates our optimizer has been applied correctly.
 # If seen, we can also look at the TBE logs of the cell to see that our new optimizer is indeed being applied
 print(f"Original Sharded EBC fused optimizer: {sharded_ebc.fused_optimizer}")
 print(f"Sharded EBC with fused parameters fused optimizer: {sharded_ebc_fused_params.fused_optimizer}")
@@ -880,7 +880,7 @@ print(sharded_ebc_apply_opt.fused_optimizer)
 print(type(sharded_ebc_apply_opt.fused_optimizer))
 
 # We can also check through the filter other parameters that aren't associated with the "fused" optimizer(s)
-# Pratically, just non TorchRec module parameters. Since our module is just a TorchRec EBC
+# Practically, just non TorchRec module parameters. Since our module is just a TorchRec EBC
 # there are no other parameters that aren't associated with TorchRec
 print("Non Fused Model Parameters:")
 print(dict(in_backward_optimizer_filter(sharded_ebc_fused_params.named_parameters())).keys())
@@ -972,7 +972,7 @@ quant_dtype = torch.int8
 
 qconfig = QuantConfig(
     # dtype of the result of the embedding lookup, post activation
-    # torch.float generally for compatability with rest of the model
+    # torch.float generally for compatibility with rest of the model
     # as rest of the model here usually isn't quantized
     activation=quant.PlaceholderObserver.with_args(dtype=torch.float),
     # quantized type for embedding weights, aka parameters to actually quantize
