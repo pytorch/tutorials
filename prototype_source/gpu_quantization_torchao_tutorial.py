@@ -157,8 +157,8 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # weight data, rather than doing less computation. The torchao APIs:
 #
 # ``int8_dynamic_activation_int8_weight()``,
-# ``int8_dynamic_activation_int8_semi_sparse_weight`` or
-# ``int8_dynamic_activation_int4_weight``
+# ``int8_weight_only()`` or
+# ``int4_weight_only()``
 #
 # can be used to easily apply the desired quantization technique and then
 # once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
