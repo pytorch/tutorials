@@ -79,7 +79,7 @@ Here’s a simple example to demonstrate how to use TorchInductor:
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 
-The code above returns the following output: 
+Here is the sample output that this code might return: 
 
 .. code-block:: sh
 
