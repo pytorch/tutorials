@@ -54,7 +54,7 @@ Set Up the Environment
    .. code-block:: sh
 
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
-#. Create and activate a customer conda environment:
+#. Create and activate a custom conda environment:
  
    .. code-block:: sh
 
