@@ -27,7 +27,7 @@ While the development is still in progress, we have already seen promising speed
 Activating the ``max-autotune`` mode
 -------------------------------------
 To activate the ``max-autotune`` mode in PyTorch, set the ``mode`` argument to ``max-autotune`` when compiling your model using ``torch.compile``.
-If you prefer to bypass the tuning process and always use the CPP template implementations, you can configure this via an environment variable: 
+If you prefer to bypass the tuning process and always use the C++ template implementations, you can configure this via an environment variable: 
 ``export TORCHINDUCTOR_MAX_AUTOTUNE_GEMM_BACKENDS=CPP``.
 
 
