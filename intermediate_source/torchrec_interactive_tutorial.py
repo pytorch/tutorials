@@ -78,8 +78,8 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 # Embeddings are trained in RecSys through the following process:
 #
 # * **Input/lookup indices are fed into the model, as unique IDs**. IDs are
-# hashed to the total size of the embedding table to prevent issues when
-# the ID > number of rows
+#   hashed to the total size of the embedding table to prevent issues when
+#   the ID > number of rows
 # 
 # * Embeddings are then retrieved and **pooled, such as taking the sum or 
 #   mean of the embeddings**. This is required as there can be a variable number of
@@ -220,7 +220,7 @@ import torchrec
 # ------------------------------
 # 
 # This section goes over TorchRec Modules and data types including such
-# entities as ``EmbeddingCollection``and ``EmbeddingBagCollection``,
+# entities as ``EmbeddingCollection`` and ``EmbeddingBagCollection``,
 # ``JaggedTensor``, ``KeyedJaggedTensor``, ``KeyedTensor`` and more.
 #
 # From ``EmbeddingBag`` to ``EmbeddingBagCollection``
@@ -918,17 +918,18 @@ print(f"Second Iteration Loss: {loss}")
 # very sensitive to **performance and size of the model**. Running just
 # the trained model in a Python environment is incredibly inefficient.
 # There are two key differences between inference and training
-# environments: \* **Quantization**: Inference models are typically
-# quantized, where model parameters lose precision for lower latency in
-# predictions and reduced model size. For example FP32 (4 bytes) in
-# trained model to INT8 (1 byte) for each embedding weight. This is also
-# necessary given the vast scale of embedding tables, as we want to use as
-# few devices as possible for inference to minimize latency.
+# environments:
+# * **Quantization**: Inference models are typically
+#   quantized, where model parameters lose precision for lower latency in
+#   predictions and reduced model size. For example FP32 (4 bytes) in
+#   trained model to INT8 (1 byte) for each embedding weight. This is also
+#   necessary given the vast scale of embedding tables, as we want to use as
+#   few devices as possible for inference to minimize latency.
 #
 # * **C++ environment**: Inference latency is very important, so in order to ensure
-# ample performance, the model is typically ran in a C++ environment,
-# along with the situations where we don't have a Python runtime, like on
-# device.
+#   ample performance, the model is typically ran in a C++ environment,
+#   along with the situations where we don't have a Python runtime, like on
+#   device.
 # 
 # TorchRec provides primitives for converting a TorchRec model into being
 # inference ready with:
