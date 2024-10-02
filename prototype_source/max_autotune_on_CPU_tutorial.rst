@@ -31,7 +31,7 @@ If you prefer to bypass the tuning process and always use the CPP template imple
 ``export TORCHINDUCTOR_MAX_AUTOTUNE_GEMM_BACKENDS=CPP``.
 
 
-Example code
+Example
 ------------
 The below code is an example of using the ``max-autotune`` mode on a simple neural network with a linear layer followed by a ReLU activation.
 
