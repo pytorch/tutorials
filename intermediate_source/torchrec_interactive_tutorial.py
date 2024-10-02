@@ -923,11 +923,12 @@ print(f"Second Iteration Loss: {loss}")
 # predictions and reduced model size. For example FP32 (4 bytes) in
 # trained model to INT8 (1 byte) for each embedding weight. This is also
 # necessary given the vast scale of embedding tables, as we want to use as
-# few devices as possible for inference to minimize latency. \* **C++
-# environment**: Inference latency is a big deal, so in order to ensure
-# ample performance, the model is typically ran in a C++ environment
-# (along with situations where we don't have a Python runtime, like on
-# device)
+# few devices as possible for inference to minimize latency.
+#
+# * **C++ environment**: Inference latency is very important, so in order to ensure
+# ample performance, the model is typically ran in a C++ environment,
+# along with the situations where we don't have a Python runtime, like on
+# device.
 # 
 # TorchRec provides primitives for converting a TorchRec model into being
 # inference ready with:
