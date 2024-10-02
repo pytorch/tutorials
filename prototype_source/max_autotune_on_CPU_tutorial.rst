@@ -209,6 +209,6 @@ The generated code differs by CPU architecture and is implementation-specific, w
 Conclusion
 ------------
 In this tutorial, we introduced max-autotune support on CPU with GEMM template. We explained the API to activate this feature, and demonstrated
-the generated code of GEMM template.
+the generated code of the GEMM template.
 
 This feature is in prototype stage. If you have any feature requests or run into any issues, please file a bug report at `GitHub issues <https://github.com/pytorch/pytorch/issues>`_.
