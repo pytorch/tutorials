@@ -9,7 +9,6 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 
 .. grid:: 2
 
-
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
        :class-card: card-prerequisites
        
