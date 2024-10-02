@@ -34,6 +34,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 # following dependencies:
 #
 # .. code-block:: sh
+#
 #   !pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
 #   !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
 #   !pip3 install torchmetrics==1.0.3
