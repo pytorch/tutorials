@@ -182,7 +182,7 @@ print("Mean: ", torch.mean(embedding_collection(ids), dim=1))
 # TorchRec Features Overview
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
-# In the secion above we've learned how to use embedding tables, one of the foundations of
+# In the section above we've learned how to use embedding tables, one of the foundations of
 # modern recommendation systems! These tables represent entities and
 # relationships, such as users, pages, posts, etc. Given that these
 # entities are always increasing, a **hash** function is typically applied
