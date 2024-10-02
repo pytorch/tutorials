@@ -86,7 +86,7 @@ and ensure that both the compilation and inference steps are executed within the
 
 
 When running the above code snippet, you will see the autotuning result (the performance numbers are for demonstration purposes).
-In this case, CPP template outperforms ATen kernel so that it will be selected.
+In this example, C++ template outperforms ATen kernel so that it will be selected.
 
 .. code:: shell
 
