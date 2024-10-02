@@ -35,10 +35,10 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 #
 # .. code-block:: sh
 #
-#   !pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
-#   !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
-#   !pip3 install torchmetrics==1.0.3
-#   !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
+#    !pip3 install --pre torch --index-url https://download.pytorch.org/whl/cu121 -U
+#    !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
+#    !pip3 install torchmetrics==1.0.3
+#    !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
 
 
 
@@ -60,43 +60,48 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 # Now you might wonder, how are these embeddings generated in the first
 # place? Well, embeddings are represented as individual rows in an
 # **Embedding Table**, also referred to as embedding weights. The reason
-# for this is that embeddings/embedding table weights are trained just
+# for this is that embeddings or embedding table weights are trained just
 # like all of the other weights of the model via gradient descent!
 # 
 # Embedding tables are simply a large matrix for storing embeddings, with
-# two dimensions (B, N), where \* B is the number of embeddings stored by
-# the table \* N is the number of dimensions per embedding (N-dimensional
-# embedding).
+# two dimensions (B, N), where:
+# 
+# * B is the number of embeddings stored by the table
+# * N is the number of dimensions per embedding (N-dimensional embedding).
 # 
 # The inputs to embedding tables represent embedding lookups to retrieve
-# the embedding for a specific index/row. In recommendation systems, such
-# as those used in Meta, unique IDs are not only used for specific users,
-# but also across entities like posts and ads to serve as lookup indices to
-# respective embedding tables!
+# the embedding for a specific index or row. In recommendation systems, such
+# as those used in many large systems, unique IDs are not only used for
+# specific users, but also across entities like posts and ads to serve as
+# lookup indices to respective embedding tables!
 # 
 # Embeddings are trained in RecSys through the following process:
-# 1. **Input/lookup indices are fed into the model, as unique IDs**. IDs are
+#
+# * **Input/lookup indices are fed into the model, as unique IDs**. IDs are
 # hashed to the total size of the embedding table to prevent issues when
-# the ID > # of rows
-# 2. Embeddings are then retrieved and **pooled, such as taking the sum or 
-# mean of the embeddings**. This is required as there can be a variable # of
-# embeddings per example while the model expects consistent shapes.
-# 3. The **embeddings are used in conjunction with the rest of the model to
-# produce a prediction**, such as `Click-Through Rate
-# (CTR) <https://support.google.com/google-ads/answer/2615875?hl=en>`__
-# for an Ad.
-# 4. The loss is calculated with the prediction and the label
-# for an example, and **all weights of the model are updated through
-# gradient descent and backpropagation, including the embedding weights**
-# that were associated with the example.
+# the ID > number of rows
+# 
+# * Embeddings are then retrieved and **pooled, such as taking the sum or 
+#   mean of the embeddings**. This is required as there can be a variable number of
+#   embeddings per example while the model expects consistent shapes.
+#
+# * The **embeddings are used in conjunction with the rest of the model to
+#   produce a prediction**, such as `Click-Through Rate
+#   (CTR) <https://support.google.com/google-ads/answer/2615875?hl=en>`__
+#   for an ad.
+#
+# * The loss is calculated with the prediction and the label
+#   for an example, and **all weights of the model are updated through
+#   gradient descent and backpropagation, including the embedding weights**
+#   that were associated with the example.
 # 
 # These embeddings are crucial for representing categorical features, such
 # as users, posts, and ads, in order to capture relationships and make
-# good recommendations. Meta AI's `Deep learning recommendation
+# good recommendations. The `Deep learning recommendation
 # model <https://arxiv.org/abs/1906.00091>`__ (DLRM) paper talks more
 # about the technical details of using embedding tables in RecSys.
 # 
-# This tutorial will introduce the concept of embeddings, showcase
+# This tutorial introduces the concept of embeddings, showcase
 # TorchRec specific modules and data types, and depict how distributed training
 # works with TorchRec.
 # 
@@ -108,17 +113,17 @@ import torch
 # Embeddings in PyTorch
 # ---------------------
 # 
-# :class:`torch.nn.Embedding`:
-# Embedding table where forward pass returns the embeddings themselves as
-# is.
+# In PyTorch, we have the following types of embeddings:  
+#
+# * :class:`torch.nn.Embedding`: An embedding table where forward pass returns the
+#   embeddings themselves as is.
 # 
-# :class:`torch.nn.EmbeddingBag`:
-# Embedding table where forward pass returns embeddings that are then
-# pooled, for example, sum or mean, otherwise known as **Pooled Embeddings**
+# * :class:`torch.nn.EmbeddingBag`: Embedding table where forward pass returns
+#   embeddings that are then pooled, for example, sum or mean, otherwise known
+#   as **Pooled Embeddings**.
 # 
-# In this section, we will go over a very brief introduction with doing
-# embedding lookups through passing in indices into the table. Check out
-# the links for each for more sophisticated use cases and experiments!
+# In this section, we will go over a very brief introduction to performing
+# embedding lookups by passing in indices into the table. 
 # 
 
 num_embeddings, embedding_dim = 10, 4
@@ -165,48 +170,47 @@ print("Mean: ", torch.mean(embedding_collection(ids), dim=1))
 
 
 ######################################################################
-# Congratulations! Now you have a basic understanding on how to use
+# Congratulations! Now you have a basic understanding of how to use
 # embedding tables --- one of the foundations of modern recommendation
 # systems! These tables represent entities and their relationships. For
-# example, the relationship between a given user and the pages & posts
+# example, the relationship between a given user and the pages and posts
 # they have liked.
 # 
 
 
 ######################################################################
-# TorchRec
-# ^^^^^^^^
+# TorchRec Features Overview
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
-# Now you know how to use embedding tables, one of the foundations of
+# In the secion above we've learned how to use embedding tables, one of the foundations of
 # modern recommendation systems! These tables represent entities and
 # relationships, such as users, pages, posts, etc. Given that these
 # entities are always increasing, a **hash** function is typically applied
-# to make sure the ids are within the bounds of a certain embedding table.
+# to make sure the IDs are within the bounds of a certain embedding table.
 # However, in order to represent a vast amount of entities and reduce hash
-# collisions, these tables can become quite massive (think about # of ads
+# collisions, these tables can become quite massive (think about the number of ads
 # for example). In fact, these tables can become so massive that they
-# won't be able to fit on 1 GPU, even with 80G of memory!
+# won't be able to fit on 1 GPU, even with 80G of memory.
 # 
 # In order to train models with massive embedding tables, sharding these
 # tables across GPUs is required, which then introduces a whole new set of
-# problems/opportunities in parallelism and optimization. Luckily, we have
+# problems and opportunities in parallelism and optimization. Luckily, we have
 # the TorchRec library that has encountered, consolidated, and addressed
 # many of these concerns. TorchRec serves as a **library that provides
 # primitives for large scale distributed embeddings**.
 # 
-# From here on out, we will explore the major features of the TorchRec
+# Next, we will explore the major features of the TorchRec
 # library. We will start with ``torch.nn.Embedding`` and will extend that to
 # custom TorchRec modules, explore distributed training environment with
 # generating a sharding plan for embeddings, look at inherent TorchRec
 # optimizations, and extend the model to be ready for inference in C++.
-# Below is a quick outline of what the journey will consist of - buckle
-# in!
+# Below is a quick outline of what this section consists of:
 # 
-# 1. TorchRec Modules and Data Types
-# 2. Distributed Training, Sharding, and Optimizations
-# 3. Inference
+# * TorchRec Modules and Data Types
+# * Distributed Training, Sharding, and Optimizations
+# * Inference
 # 
-# 
+# Let's begin with importing TorchRec: 
 
 import torchrec
 
@@ -215,27 +219,23 @@ import torchrec
 # TorchRec Modules and Data Types
 # ------------------------------
 # 
-# 
-
-
-######################################################################
+# This section goes over TorchRec Modules and data types including such
+# entities as ``EmbeddingCollection``and ``EmbeddingBagCollection``,
+# ``JaggedTensor``, ``KeyedJaggedTensor``, ``KeyedTensor`` and more.
+#
 # From ``EmbeddingBag`` to ``EmbeddingBagCollection``
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
-# We have already explored
-# `torch.nn.Embedding <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__
-# and
-# `torch.nn.EmbeddingBag <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__.
-# 
+# We have already explored :class:`torch.nn.Embedding` and :class:`torch.nn.EmbeddingBag`.
 # TorchRec extends these modules by creating collections of embeddings, in
 # other words modules that can have multiple embedding tables, with
 # ``EmbeddingCollection`` and ``EmbeddingBagCollection``
 # We will use ``EmbeddingBagCollection`` to represent a group of
 # embedding bags.
 # 
-# Here, we create an ``EmbeddingBagCollection`` (EBC) with two embedding bags,
-# 1 representing **products** and 1 representing **users**. Each table,
-# ``product_table`` and ``user_table``, is represented by 64 dimension
+# In the example code below, we create an ``EmbeddingBagCollection`` (EBC)
+# with two embedding bags, 1 representing **products** and 1 representing **users**. 
+# Each table, ``product_table`` and ``user_table``, is represented by a 64 dimension
 # embedding of size 4096.
 # 
 
@@ -263,7 +263,7 @@ print(ebc.embedding_bags)
 
 ######################################################################
 # Let’s inspect the forward method for ``EmbeddingBagCollection`` and the
-# module’s inputs and outputs.
+# module’s inputs and outputs:
 # 
 
 import inspect
@@ -291,8 +291,8 @@ print(inspect.getsource(ebc.forward))
 # that a user interacted with, and the embeddings retrieved would be a
 # semantic representation of those Ads. The tricky part of representing
 # these features in code is that in each input example, **the number of
-# IDs is variable**. One day a user might have interacted with only 1 ad
-# while the next day they interact with 3.
+# IDs is variable**. One day a user might have interacted with only one ad
+# while the next day they interact with three.
 # 
 # A simple representation is shown below, where we have a ``lengths``
 # tensor denoting how many indices are in an example for a batch and a
@@ -385,13 +385,15 @@ for key, embedding in result_dict.items():
 
 
 ######################################################################
-# Congrats! Give yourself a pat on the back for making it this far.
+# Congrats! You now understand TorchRec modules and data types.
+# Give yourself a pat on the back for making it this far. Next, we will
+# learn about distributed training and sharding.
 # 
 
 
 ######################################################################
 # Distributed Training and Sharding
-# ---------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Now that we have a grasp on TorchRec modules and data types, it's time
 # to take it to the next level.
@@ -402,7 +404,7 @@ for key, embedding in result_dict.items():
 # have been, but in a production setting this isn't generally the case.
 # Embedding tables often get massive, where one table can't fit on a single
 # GPU, creating the requirement for multiple devices and a distributed
-# environment
+# environment.
 # 
 # In this section, we will explore setting up a distributed environment,
 # exactly how actual production training is done, and explore sharding
@@ -412,10 +414,12 @@ for key, embedding in result_dict.items():
 # distributed fashion. This is only a limitation for training, as training
 # has a process per GPU. Inference does not run into this requirement**
 # 
-
-# Here we set up our PyTorch distributed environment.
-# .. warning:: In Colab, you can only call this cell once, calling it again will cause an error
-#   as you can only initialize the process group once
+# In the example code below, we set up our PyTorch distributed environment.
+#
+# .. warning:: 
+#    If you are running this in Google Colab, you can only call this cell once,
+#    calling it again will cause an error as you can only initialize the process
+#    group once.
 
 import os
 
@@ -485,20 +489,20 @@ print(f"Distributed environment initialized: {dist}")
 # training and inference**! In fact, TorchRec modules have two corresponding
 # classes for working with any TorchRec module in a distributed
 # environment:
-# 1. **The module sharder**: This class exposes a ``shard`` API
-# that handles sharding a TorchRec Module, producing a sharded module.
-#   * For ``EmbeddingBagCollection``, the sharder is
-# `EmbeddingBagCollectionSharder <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder>`__
-# 2. **Sharded module**: This class is a sharded variant of a TorchRec module.
-# It has the same input/output as a the regular TorchRec module, but much
-# more optimized and works in a distributed environment.
-#   * For ``EmbeddingBagCollection``, the sharded variant is
-# `ShardedEmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection>`__
+#
+# * **The module sharder**: This class exposes a ``shard`` API
+#   that handles sharding a TorchRec Module, producing a sharded module.
+#   * For ``EmbeddingBagCollection``, the sharder is `EmbeddingBagCollectionSharder <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder>`__
+# * **Sharded module**: This class is a sharded variant of a TorchRec module.
+#   It has the same input/output as a the regular TorchRec module, but much
+#   more optimized and works in a distributed environment.
+#   * For ``EmbeddingBagCollection``, the sharded variant is `ShardedEmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection>`__
 # 
-# Every TorchRec module has an unsharded and sharded variant. \* The
-# unsharded version is meant to be prototyped and experimented with \* The
-# sharded version is meant to be used in a distributed environment for
-# distributed training/inference.
+# Every TorchRec module has an unsharded and sharded variant.
+# 
+# * The unsharded version is meant to be prototyped and experimented with.
+# * The sharded version is meant to be used in a distributed environment for
+#   distributed training and inference.
 # 
 # The sharded versions of TorchRec modules, for example
 # ``EmbeddingBagCollection``, will handle everything that is needed for Model
@@ -605,20 +609,15 @@ print(f"Sharded EBC Module: {sharded_ebc}")
 
 
 ######################################################################
-# 
-# 
-
-
-######################################################################
-# ``Awaitable``
-# ^^^^^^^^^^^^^^^^^^^^^^
+# GPU Training with ``LazyAwaitable``
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # Remember that TorchRec is a highly optimized library for distributed
 # embeddings. A concept that TorchRec introduces to enable higher
 # performance for training on GPU is a
 # `LazyAwaitable <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.types.LazyAwaitable>`__.
 # You will see ``LazyAwaitable`` types as outputs of various sharded
-# TorchRec modules. All a ``LazyAwaitable`` does is delay calculating some
+# TorchRec modules. All a ``LazyAwaitable`` type does is delay calculating some
 # result as long as possible, and it does it by acting like an async type.
 # 
 
@@ -672,12 +671,10 @@ for key, embedding in result_dict.items():
 # in training and inference. **Below are the three common APIs for
 # distributed training/inference** that are provided by TorchRec:
 # 
-# * ``input_dist``: Handles distributing inputs from GPU to GPU
-# 
+# * ``input_dist``: Handles distributing inputs from GPU to GPU.
 # * ``lookups``: Does the actual embedding lookup in an optimized,
-#    batched manner using FBGEMM TBE (more on this later).
-# 
-# * ``output_dist``: Handles distributing outputs from GPU to GPU
+#   batched manner using FBGEMM TBE (more on this later).
+# * ``output_dist``: Handles distributing outputs from GPU to GPU.
 # 
 # The distribution of inputs and outputs is done through `NCCL
 # Collectives <https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/overview.html>`__,
@@ -734,20 +731,20 @@ sharded_ebc._lookups
 
 ######################################################################
 # ``DistributedModelParallel``
-# ~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We have now explored sharding a single ``EmbeddingBagCollection``! We were
 # able to take the ``EmbeddingBagCollectionSharder`` and use the unsharded
 # ``EmbeddingBagCollection`` to generate a
 # ``ShardedEmbeddingBagCollection`` module. This workflow is fine, but
-# typically when doing model parallel,
+# typically when implementing model parallel,
 # `DistributedModelParallel <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
 # (DMP) is used as the standard interface. When wrapping your model (in
 # our case ``ebc``), with DMP, the following will occur:
 # 
 # 1. Decide how to shard the model. DMP will collect the available
-#    ‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
-#    embedding table(s) (i.e, the ``EmbeddingBagCollection``)
+#    sharders and come up with a plan of the optimal way to shard the
+#    embedding table(s) (for example, ``EmbeddingBagCollection``)
 # 2. Actually shard the model. This includes allocating memory for each
 #    embedding table on the appropriate device(s).
 # 
@@ -789,11 +786,13 @@ model
 # 
 # Remember that TorchRec modules are hyperoptimized for large scale
 # distributed training. An important optimization is in regards to the
-# optimizer. **TorchRec modules provide a seamless API to fuse the
+# optimizer. 
+#
+# TorchRec modules provide a seamless API to fuse the
 # backwards pass and optimize step in training, providing a significant
 # optimization in performance and decreasing the memory used, alongside
 # granularity in assigning distinct optimizers to distinct model
-# parameters.**
+# parameters.
 # 
 # Optimizer Classes
 # ^^^^^^^^^^^^^^^^^
@@ -832,17 +831,18 @@ model
 # ``CombinedOptimizer`` that you can use in your training loop to
 # ``zero_grad`` and ``step`` through.
 # 
-# Let's add an optimizer to our ``EmbeddingBagCollection``
+# Adding an Optimizer to ``EmbeddingBagCollection``
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # We will do this in two ways, which are equivalent, but give you options
 # depending on your preferences:
-# 1. Passing optimizer kwargs through ``fused_params`` in sharder
+#
+# 1. Passing optimizer kwargs through ``fused_params`` in sharder.
 # 2. Through ``apply_optimizer_in_backward``, which converts the optimizer
-# parameters to ``fused_params`` to pass to the ``TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
+#    parameters to ``fused_params`` to pass to the ``TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
 # 
 
-# Approach 1: passing optimizer kwargs through fused parameters
+# Option 1: Passing optimizer kwargs through fused parameters
 from torchrec.optim.optimizers import in_backward_optimizer_filter
 from fbgemm_gpu.split_embedding_configs import EmbOptimType
 
@@ -869,7 +869,7 @@ print(f"Type of optimizer: {type(sharded_ebc_fused_params.fused_optimizer)}")
 
 from torch.distributed.optim import _apply_optimizer_in_backward as apply_optimizer_in_backward
 import copy
-# Approach 2: applying optimizer through apply_optimizer_in_backward
+# Option 2: Applying optimizer through apply_optimizer_in_backward
 # Note: we need to call apply_optimizer_in_backward on unsharded model first and then shard it
 
 # We can achieve the same result as we did in the previous
@@ -911,7 +911,7 @@ print(f"Second Iteration Loss: {loss}")
 
 ######################################################################
 # Inference
-# ---------
+# ~~~~~~~~~~~~
 # 
 # Now that we are able to train distributed embeddings, how can we take
 # the trained model and optimize it for inference? Inference is typically
@@ -930,15 +930,19 @@ print(f"Second Iteration Loss: {loss}")
 # device)
 # 
 # TorchRec provides primitives for converting a TorchRec model into being
-# inference ready with: \* APIs for quantizing the model, introducing
-# optimizations automatically with FBGEMM TBE \* sharding embeddings for
-# distributed inference \* compiling the model to
-# `TorchScript <https://pytorch.org/docs/stable/jit.html>`__ (compatible
-# in C++)
+# inference ready with:
 # 
-# In this section, we will go over this entire workflow of: \* Quantizing
-# the model \* Sharding the quantized model \* Compiling the sharded
-# quantized model into TorchScript
+# * APIs for quantizing the model, introducing
+#   optimizations automatically with FBGEMM TBE
+# * Sharding embeddings for distributed inference
+# * Compiling the model to `TorchScript <https://pytorch.org/docs/stable/jit.html>`__
+#   (compatible in C++)
+# 
+# In this section, we will go over this entire workflow of:
+# 
+# * Quantizing the model
+# * Sharding the quantized model
+# * Compiling the sharded quantized model into TorchScript
 # 
 
 ebc
@@ -1081,7 +1085,7 @@ print(scripted_gm.code)
 
 ######################################################################
 # Conclusion
-# ---------
+# ^^^^^^^^^^
 # 
 # In this tutorial, you have gone from training a distributed RecSys model all the way
 # to making it inference ready. The `TorchRec repo
@@ -1092,7 +1096,7 @@ print(scripted_gm.code)
 
 
 ######################################################################
-# More resources
+# See Also
 # --------------
 # 
 # For more information, please see our
