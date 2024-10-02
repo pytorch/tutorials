@@ -21,7 +21,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 
        * PyTorch v2.5 or later with CUDA 11.8 or later
        * Python 3.9 or later
-       * FBGEMM <https://github.com/pytorch/fbgemm>
+       * `FBGEMM <https://github.com/pytorch/fbgemm>`__
 
 
 """
