@@ -9,8 +9,10 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 
 .. grid:: 2
 
+
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
        :class-card: card-prerequisites
+       
        * Fundamentals of embeddings and their role in recommendation systems
        * How to set up TorchRec to manage and implement embeddings in PyTorch environments
        * Explore advanced techniques for distributing large embedding tables across multiple GPUs
