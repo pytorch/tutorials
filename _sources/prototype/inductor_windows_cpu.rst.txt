@@ -54,7 +54,7 @@ Set Up the Environment
    .. code-block:: sh
 
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
-#. Create and activate a customer conda environment:
+#. Create and activate a custom conda environment:
  
    .. code-block:: sh
 
@@ -74,12 +74,12 @@ Here’s a simple example to demonstrate how to use TorchInductor:
     import torch
     def foo(x, y):
         a = torch.sin(x)
-        b = torch.cos(x)
+        b = torch.cos(y)
         return a + b
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 
-The code above returns the following output: 
+Here is the sample output that this code might return: 
 
 .. code-block:: sh
 
