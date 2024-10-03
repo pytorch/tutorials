@@ -39,6 +39,12 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 #    !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
 #    !pip3 install torchmetrics==1.0.3
 #    !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
+#
+# .. note:: 
+#    If you are running this in Google Colab, make sure to switch to a GPU runtime type.
+#    For more information,
+#    see `Enabling CUDA <https://pytorch.org/tutorials/beginner/colab#enabling-cuda>`__
+#
 
 
 
@@ -217,7 +223,7 @@ import torchrec
 
 ######################################################################
 # TorchRec Modules and Data Types
-# ------------------------------
+# ----------------------------------
 # 
 # This section goes over TorchRec Modules and data types including such
 # entities as ``EmbeddingCollection`` and ``EmbeddingBagCollection``,
