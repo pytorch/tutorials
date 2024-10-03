@@ -852,7 +852,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to TorchRec
    :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
    :image: _static/img/thumbnails/torchrec.png
-   :link: intermediate/torchrec_tutorial.html
+   :link: intermediate/torchrec_intro_tutorial.html
    :tags: TorchRec,Recommender
 
 .. customcarditem::
@@ -1188,7 +1188,7 @@ Additional Resources
    :hidden:
    :caption: Recommendation Systems
 
-   intermediate/torchrec_tutorial
+   intermediate/torchrec_intro_tutorial
    advanced/sharding
 
 .. toctree::
