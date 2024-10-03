@@ -919,6 +919,7 @@ print(f"Second Iteration Loss: {loss}")
 # the trained model in a Python environment is incredibly inefficient.
 # There are two key differences between inference and training
 # environments:
+# 
 # * **Quantization**: Inference models are typically
 #   quantized, where model parameters lose precision for lower latency in
 #   predictions and reduced model size. For example FP32 (4 bytes) in
