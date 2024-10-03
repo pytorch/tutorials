@@ -217,7 +217,7 @@ import torchrec
 
 ######################################################################
 # TorchRec Modules and Data Types
-# ------------------------------
+# ----------------------------------
 # 
 # This section goes over TorchRec Modules and data types including such
 # entities as ``EmbeddingCollection`` and ``EmbeddingBagCollection``,
