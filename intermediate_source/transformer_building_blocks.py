@@ -112,7 +112,10 @@ series of ops. In a compiler world, one can do the former, compile and profit.
 # Recall that `nn.MultiheadAttention` requires ``query```, ``key`` and
 # ``value`` to be dense ``torch.Tensor``s. It also provides a
 # ``key_padding_mask`` that is used to mask out padding tokens in the ``key``
-# that arise due to different sequence lengths within a batch.
+# that arise due to different sequence lengths within a batch. Since there is
+# no ``query_padding_mask`` in ``nn.MHA``, users have to take care to mask/slice
+# the outputs appropriately to account for query sequence lengths. Nested tensor
+# cleanly removes the need for this sort of error-prone padding masks. 
 #
 # * Memory
 # Instead of materializing a dense ``[B, S, D]`` tensor with a ``[B, S]``
@@ -123,8 +126,10 @@ series of ops. In a compiler world, one can do the former, compile and profit.
 #
 # * Performance
 # Since unnecessary computation on padding is skipped, performance improves.
-# We'll demonstrate this by building off the ``MultiheadAttention`` layer in the
+#
+# We'll demonstrate the above by building off the ``MultiheadAttention`` layer in the
 # `Nested Tensor tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
+# and comparing it to the ``nn.MultiheadAttention`` layer.
 
 import torch
 import torch.nn as nn
@@ -142,6 +147,7 @@ class MultiHeadAttention(nn.Module):
             has dim E_total // nheads
         nheads (int): Number of heads
         dropout (float, optional): Dropout probability. Default: 0.0
+        bias (bool, optional): Whether to add bias to input projection. Default: True
     """
     def __init__(
         self,
@@ -151,7 +157,7 @@ class MultiHeadAttention(nn.Module):
         E_total: int,
         nheads: int,
         dropout: float = 0.0,
-        bias=False,
+        bias=True,
         device=None,
         dtype=None,
     ):
@@ -163,15 +169,21 @@ class MultiHeadAttention(nn.Module):
         if self._qkv_same_embed_dim:
           self.packed_proj = nn.Linear(E_q, E_total * 3, bias=bias, **factory_kwargs)
         else:
-          self.query_proj = nn.Linear(E_q, E_total, bias=bias, **factory_kwargs)
-          self.key_proj = nn.Linear(E_k, E_total, bias=bias, **factory_kwargs)
-          self.value_proj = nn.Linear(E_v, E_total, bias=bias, **factory_kwargs)
+          self.q_proj = nn.Linear(E_q, E_total, bias=bias, **factory_kwargs)
+          self.k_proj = nn.Linear(E_k, E_total, bias=bias, **factory_kwargs)
+          self.v_proj = nn.Linear(E_v, E_total, bias=bias, **factory_kwargs)
         E_out = E_q
         self.out_proj = nn.Linear(E_total, E_out, bias=bias, **factory_kwargs)
         assert E_total % nheads == 0, "Embedding dim is not divisible by nheads"
         self.E_head = E_total // nheads
+        self.bias = bias
 
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, attn_mask=None, is_causal=False) -> torch.Tensor:
+    def forward(self,
+                query: torch.Tensor,
+                key: torch.Tensor,
+                value: torch.Tensor,
+                attn_mask=None,
+                is_causal=False) -> torch.Tensor:
         """
         Forward pass; runs the following process:
             1. Apply input projection
@@ -196,16 +208,16 @@ class MultiHeadAttention(nn.Module):
                 query, key, value = torch.chunk(result, 3, dim=-1)
             else:
                 q_weight, k_weight, v_weight = torch.chunk(self.packed_proj.weight, 3, dim=0)
-                if bias:
+                if self.bias:
                     q_bias, k_bias, v_bias = torch.chunk(self.packed_proj.bias, 3, dim=0)
                 else:
                     q_bias, k_bias, v_bias = None, None, None
                 query, key, value = F.linear(query, q_weight, q_bias), F.linear(key, k_weight, k_bias), F.linear(value, v_weight, v_bias)
 
         else:
-            query = self.query_proj(query)
-            key = self.key_proj(key)
-            value = self.value_proj(value)
+            query = self.q_proj(query)
+            key = self.k_proj(key)
+            value = self.v_proj(value)
 
         # Step 2. Split heads and prepare for SDPA
         # reshape query, key, value to separate by head
@@ -219,7 +231,7 @@ class MultiHeadAttention(nn.Module):
         # Step 3. Run SDPA
         # (N, nheads, L_t, E_head)
         attn_output = F.scaled_dot_product_attention(
-            query, key, value, attn_mask=attn_mask, dropout=self.dropout, is_causal=is_causal)
+            query, key, value, dropout_p=self.dropout, is_causal=is_causal)
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_total)
         attn_output = attn_output.transpose(1, 2).flatten(-2)
 
@@ -395,11 +407,10 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # followed by a feed-forward network (FFN) with skip connections. Implementing
 # this is fairly straightforward using the ``MultiheadAttention`` layer above and
 # is actually the same as an ``nn.TransformerEncoderLayer`` with ``is_causal=True``.
-# 
 
-# We will demonstrate examples of implementing the rest of the nn layers but will
-# omit that from this tutorial for brevity. The full code is available
-# `here <https://github.com/mikaylagawarecki/temp>`_. 
+# We  demonstrate examples of implementing the rest of the nn layers
+# `here <https://github.com/mikaylagawarecki/temp>`_ but omit that from this
+# tutorial for brevity.
 
 ###############################################################################
 # Going one step further
