@@ -664,6 +664,14 @@ Welcome to PyTorch Tutorials
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
 
+
+.. customcarditem::
+   :header: [Title TBD] Unbundling nn.Transformer modules for gains and profits
+   :card_description: This tutorial goes over recommended best practices for implementing Transformers.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/transformer_building_blocks.html
+   :tags: Transformer
+
 .. Parallel-and-Distributed-Training
 
 
