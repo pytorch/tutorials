@@ -190,14 +190,14 @@ command directly:
 Currently, we support two modes for the analyzer script. The first mode allows the script to apply some heuristics to the parsed flight
 recorder dumps to generate a report identifying potential culprits for the timeout. The second mode is simply outputs the raw dumps.
 By default, the script prints flight recoder dumps for all ranks and all ``ProcessGroups``(PGs). This can be narrowed down to certain
-ranks and PGs using the *--selected-ranks* argument. An example command is:
+ranks and PGs using the *--selected-ranks* argument for ranks and *--pg-filters* argument for PGs. An example command is:
 
 Caveat: tabulate module is needed, so you might need pip install it first.
 
 .. code:: shell
 
-  python fr_trace.py <dump dir containing trace files> -j [--selected-ranks i j k ...]
-  torchfrtrace <dump dir containing trace files> -j [--selected-ranks i j k ...]
+  python fr_trace.py <dump dir containing trace files> -j [--selected-ranks i j k ...] [--pg-filters tp dp]
+  torchfrtrace <dump dir containing trace files> -j [--selected-ranks i j k ...] [--pg-filters 0 2]
 
 Conclusion
 ----------
