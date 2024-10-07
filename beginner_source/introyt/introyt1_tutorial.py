@@ -120,7 +120,7 @@ print('\nSingular value decomposition of r:')
 print(torch.svd(r))
 
 # ...and statistical and aggregate operations:
-print('\nAverage and standard deviation of r:')
+print('\nStandard deviation and Average of r:')
 print(torch.std_mean(r))
 print('\nMaximum value of r:')
 print(torch.max(r))
