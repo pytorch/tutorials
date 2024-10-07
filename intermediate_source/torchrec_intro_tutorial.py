@@ -39,6 +39,12 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 #    !pip3 install fbgemm_gpu --index-url https://download.pytorch.org/whl/cu121
 #    !pip3 install torchmetrics==1.0.3
 #    !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
+#
+# .. note:: 
+#    If you are running this in Google Colab, make sure to switch to a GPU runtime type.
+#    For more information,
+#    see `Enabling CUDA <https://pytorch.org/tutorials/beginner/colab#enabling-cuda>`__
+#
 
 
 
@@ -217,7 +223,7 @@ import torchrec
 
 ######################################################################
 # TorchRec Modules and Data Types
-# ------------------------------
+# ----------------------------------
 # 
 # This section goes over TorchRec Modules and data types including such
 # entities as ``EmbeddingCollection`` and ``EmbeddingBagCollection``,
@@ -919,6 +925,7 @@ print(f"Second Iteration Loss: {loss}")
 # the trained model in a Python environment is incredibly inefficient.
 # There are two key differences between inference and training
 # environments:
+# 
 # * **Quantization**: Inference models are typically
 #   quantized, where model parameters lose precision for lower latency in
 #   predictions and reduced model size. For example FP32 (4 bytes) in
