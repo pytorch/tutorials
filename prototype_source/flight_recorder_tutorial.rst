@@ -11,6 +11,13 @@ Prerequisites
 -------------
 - PyTorch version 2.5 or later.
 
+Install the `tabulate` python module.
+
+.. code:: shell
+
+  pip install tabulate
+
+
 Overview
 --------
 An AI distributed training job refers to the process of training a machine learning model using multiple devices, such
