@@ -21,7 +21,7 @@ of parallel strategies to scale up distributed training. However, the lack of in
 between existing solutions poses a significant challenge, primarily due to the absence of a
 unified abstraction that can bridge these different parallelism strategies. To address this
 issue, PyTorch has proposed `DistributedTensor(DTensor)
-<https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/examples/comm_mode_features_example.py>`_
+<https://github.com/pytorch/pytorch/blob/main/torch/distributed/tensor/examples/comm_mode_features_example.py>`_
 which abstracts away the complexities of tensor communication in distributed training,
 providing a seamless user experience. However, when dealing with existing parallelism solutions and
 developing parallelism solutions using the unified abstraction like DTensor, the lack of transparency
@@ -194,7 +194,7 @@ Below is the interactive module tree visualization that you can use to upload yo
             <input type="file" id="file-input" accept=".json">
           </div>
         <div id="tree-container"></div>
-        <script src="https://cdn.jsdelivr.net/gh/pytorch/pytorch@main/torch/distributed/_tensor/debug/comm_mode_broswer_visual.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/pytorch/pytorch@main/torch/distributed/tensor/debug/comm_mode_broswer_visual.js"></script>
     </body>
     </html>
 
@@ -207,4 +207,4 @@ JSON outputs in the embedded visual browser.
 
 For more detailed information about ``CommDebugMode``, see
 `comm_mode_features_example.py
-<https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/examples/comm_mode_features_example.py>`_
+<https://github.com/pytorch/pytorch/blob/main/torch/distributed/tensor/examples/comm_mode_features_example.py>`_
