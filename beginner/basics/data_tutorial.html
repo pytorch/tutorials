@@ -382,9 +382,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -545,46 +542,39 @@ Each example comprises a 28×28 grayscale image and an associated label from one
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:12, 363659.09it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 683035.77it/s]
-  4%|3         | 950272/26421880 [00:00&lt;00:11, 2192452.88it/s]
- 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 7619449.88it/s]
- 36%|###6      | 9633792/26421880 [00:00&lt;00:01, 16422480.84it/s]
- 58%|#####8    | 15368192/26421880 [00:01&lt;00:00, 21601610.39it/s]
- 80%|#######9  | 21102592/26421880 [00:01&lt;00:00, 24887795.13it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 19387460.02it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:12, 363003.07it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:38, 683083.94it/s]
+  4%|3         | 950272/26421880 [00:00&lt;00:11, 2193026.99it/s]
+ 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 7622183.50it/s]
+ 38%|###7      | 9961472/26421880 [00:00&lt;00:00, 17082580.89it/s]
+ 60%|######    | 15859712/26421880 [00:01&lt;00:00, 22363417.11it/s]
+ 83%|########3 | 22052864/26421880 [00:01&lt;00:00, 26242248.84it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 19423822.75it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 329088.54it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 329736.31it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:12, 360781.88it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 678203.54it/s]
- 12%|#1        | 524288/4422102 [00:00&lt;00:03, 1108321.20it/s]
- 19%|#9        | 851968/4422102 [00:00&lt;00:02, 1381354.83it/s]
- 27%|##7       | 1212416/4422102 [00:00&lt;00:02, 1596015.06it/s]
- 36%|###5      | 1572864/4422102 [00:01&lt;00:01, 1728759.47it/s]
- 46%|####5     | 2031616/4422102 [00:01&lt;00:01, 1985185.82it/s]
- 56%|#####6    | 2490368/4422102 [00:01&lt;00:00, 2156024.56it/s]
- 68%|######8   | 3014656/4422102 [00:01&lt;00:00, 2382380.54it/s]
- 82%|########1 | 3604480/4422102 [00:01&lt;00:00, 2644051.75it/s]
- 96%|#########5| 4227072/4422102 [00:02&lt;00:00, 2883664.92it/s]
-100%|##########| 4422102/4422102 [00:02&lt;00:00, 2205697.02it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:11, 363435.03it/s]
+  4%|4         | 196608/4422102 [00:00&lt;00:07, 578218.24it/s]
+ 16%|#6        | 720896/4422102 [00:00&lt;00:01, 2052252.20it/s]
+ 36%|###6      | 1605632/4422102 [00:00&lt;00:00, 3433189.45it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6117035.29it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 35052397.71it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 38420421.69it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -741,7 +731,7 @@ Label: 5
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html">torch.utils.data API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.353 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.007 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-data-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/56e3f440fc204e02856f8889c226d2d1/data_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_tutorial.py</span></code></a></p>

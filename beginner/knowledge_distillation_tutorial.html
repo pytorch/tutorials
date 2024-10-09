@@ -382,9 +382,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Knowledge Distillation Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -553,24 +550,28 @@ This is done to avoid selecting a model based on the greedy and biased optimizat
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 458752/170498071 [00:00&lt;00:37, 4577015.67it/s]
-  5%|4         | 8028160/170498071 [00:00&lt;00:03, 46336184.41it/s]
- 11%|#1        | 19333120/170498071 [00:00&lt;00:01, 76748245.73it/s]
- 18%|#7        | 30244864/170498071 [00:00&lt;00:01, 89498754.47it/s]
- 25%|##4       | 41811968/170498071 [00:00&lt;00:01, 98821354.04it/s]
- 31%|###       | 52723712/170498071 [00:00&lt;00:01, 102282406.15it/s]
- 37%|###7      | 63832064/170498071 [00:00&lt;00:01, 105154897.20it/s]
- 44%|####4     | 75071488/170498071 [00:00&lt;00:00, 107433469.03it/s]
- 50%|#####     | 85917696/170498071 [00:00&lt;00:00, 107690605.23it/s]
- 57%|#####6    | 97091584/170498071 [00:01&lt;00:00, 108914451.07it/s]
- 63%|######3   | 108003328/170498071 [00:01&lt;00:00, 105688275.34it/s]
- 70%|######9   | 118620160/170498071 [00:01&lt;00:00, 98276886.41it/s]
- 75%|#######5  | 128581632/170498071 [00:01&lt;00:00, 92753136.84it/s]
- 81%|########  | 137986048/170498071 [00:01&lt;00:00, 88069534.22it/s]
- 86%|########6 | 146898944/170498071 [00:01&lt;00:00, 86050491.48it/s]
- 91%|#########1| 155582464/170498071 [00:01&lt;00:00, 85710941.78it/s]
- 96%|#########6| 164200448/170498071 [00:01&lt;00:00, 84891650.46it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 91036244.15it/s]
+  0%|          | 688128/170498071 [00:00&lt;00:24, 6852906.38it/s]
+  5%|4         | 7995392/170498071 [00:00&lt;00:03, 45721816.56it/s]
+ 11%|#         | 17989632/170498071 [00:00&lt;00:02, 70447882.87it/s]
+ 16%|#6        | 27754496/170498071 [00:00&lt;00:01, 81103040.16it/s]
+ 22%|##2       | 37781504/170498071 [00:00&lt;00:01, 87873348.60it/s]
+ 28%|##7       | 47480832/170498071 [00:00&lt;00:01, 90951285.19it/s]
+ 34%|###3      | 57475072/170498071 [00:00&lt;00:01, 93852919.76it/s]
+ 39%|###9      | 67108864/170498071 [00:00&lt;00:01, 94634344.51it/s]
+ 45%|####4     | 76578816/170498071 [00:00&lt;00:01, 91670591.10it/s]
+ 50%|#####     | 85786624/170498071 [00:01&lt;00:00, 86392218.62it/s]
+ 55%|#####5    | 94502912/170498071 [00:01&lt;00:00, 80430929.02it/s]
+ 60%|######    | 102662144/170498071 [00:01&lt;00:00, 76565293.65it/s]
+ 65%|######4   | 110428160/170498071 [00:01&lt;00:00, 73514150.50it/s]
+ 69%|######9   | 117866496/170498071 [00:01&lt;00:00, 72602265.24it/s]
+ 73%|#######3  | 125173760/170498071 [00:01&lt;00:00, 70992444.68it/s]
+ 78%|#######7  | 132317184/170498071 [00:01&lt;00:00, 69100137.90it/s]
+ 82%|########1 | 139264000/170498071 [00:01&lt;00:00, 68983280.01it/s]
+ 86%|########5 | 146178048/170498071 [00:01&lt;00:00, 68350132.02it/s]
+ 90%|########9 | 153026560/170498071 [00:02&lt;00:00, 66959791.55it/s]
+ 94%|#########3| 159744000/170498071 [00:02&lt;00:00, 64470000.05it/s]
+ 97%|#########7| 166232064/170498071 [00:02&lt;00:00, 60931289.11it/s]
+100%|##########| 170498071/170498071 [00:02&lt;00:00, 73050197.15it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -729,17 +730,17 @@ Start by training the teacher network using cross-entropy:</p>
 <span class="n">nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3318566399462082
-Epoch 2/10, Loss: 0.8714612615687768
-Epoch 3/10, Loss: 0.6794054191130812
-Epoch 4/10, Loss: 0.5351496968427887
-Epoch 5/10, Loss: 0.41218665493723683
-Epoch 6/10, Loss: 0.30481935298198937
-Epoch 7/10, Loss: 0.22362559858490438
-Epoch 8/10, Loss: 0.167433700559999
-Epoch 9/10, Loss: 0.133507063255057
-Epoch 10/10, Loss: 0.11808988274268024
-Test Accuracy: 74.74%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3250749990763262
+Epoch 2/10, Loss: 0.8606715903562658
+Epoch 3/10, Loss: 0.6787667865948299
+Epoch 4/10, Loss: 0.5388464267601443
+Epoch 5/10, Loss: 0.4225230887722786
+Epoch 6/10, Loss: 0.31595893261377767
+Epoch 7/10, Loss: 0.22956463505926034
+Epoch 8/10, Loss: 0.17477682191888086
+Epoch 9/10, Loss: 0.14501048369175942
+Epoch 10/10, Loss: 0.12357555644210343
+Test Accuracy: 74.97%
 </pre></div>
 </div>
 <p>We instantiate one more lightweight network model to compare their performances.
@@ -777,17 +778,17 @@ LightNN parameters: 267,738
 <span class="n">test_accuracy_light_ce</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.466841182440443
-Epoch 2/10, Loss: 1.1534134565716814
-Epoch 3/10, Loss: 1.0228667314095266
-Epoch 4/10, Loss: 0.9225760591609399
-Epoch 5/10, Loss: 0.8456758742442216
-Epoch 6/10, Loss: 0.7788185259265363
-Epoch 7/10, Loss: 0.7133917804721677
-Epoch 8/10, Loss: 0.6563889922388374
-Epoch 9/10, Loss: 0.6018389509919354
-Epoch 10/10, Loss: 0.5529736197360641
-Test Accuracy: 70.54%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.4690716470903753
+Epoch 2/10, Loss: 1.1565876333304987
+Epoch 3/10, Loss: 1.0225795539443756
+Epoch 4/10, Loss: 0.9198549662709541
+Epoch 5/10, Loss: 0.8441137326952747
+Epoch 6/10, Loss: 0.77722141062817
+Epoch 7/10, Loss: 0.713182702698671
+Epoch 8/10, Loss: 0.655916319173925
+Epoch 9/10, Loss: 0.6029133975048504
+Epoch 10/10, Loss: 0.5506447209116748
+Test Accuracy: 70.34%
 </pre></div>
 </div>
 <p>As we can see, based on test accuracy, we can now compare the deeper network that is to be used as a teacher with the lightweight network that is our supposed student. So far, our student has not intervened with the teacher, therefore this performance is achieved by the student itself.
@@ -796,8 +797,8 @@ The metrics so far can be seen with the following lines:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy: </span><span class="si">{</span><span class="n">test_accuracy_light_ce</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.74%
-Student accuracy: 70.54%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.97%
+Student accuracy: 70.34%
 </pre></div>
 </div>
 </div>
@@ -878,20 +879,20 @@ tend to be so small that propagated gradients do not meaningfully change the wei
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + KD: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_kd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.373889762422313
-Epoch 2/10, Loss: 1.8565316880145646
-Epoch 3/10, Loss: 1.6341035701429751
-Epoch 4/10, Loss: 1.4786368352372934
-Epoch 5/10, Loss: 1.3512877067336646
-Epoch 6/10, Loss: 1.2373943528555849
-Epoch 7/10, Loss: 1.1476875051208164
-Epoch 8/10, Loss: 1.0567519879706986
-Epoch 9/10, Loss: 0.9870684677377686
-Epoch 10/10, Loss: 0.9157591564271151
-Test Accuracy: 70.39%
-Teacher accuracy: 74.74%
-Student accuracy without teacher: 70.54%
-Student accuracy with CE + KD: 70.39%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.389725102488037
+Epoch 2/10, Loss: 1.8754139538006405
+Epoch 3/10, Loss: 1.6503712338254886
+Epoch 4/10, Loss: 1.4918947427169136
+Epoch 5/10, Loss: 1.3645463753539278
+Epoch 6/10, Loss: 1.2503049286735026
+Epoch 7/10, Loss: 1.155467961145484
+Epoch 8/10, Loss: 1.0703896552400516
+Epoch 9/10, Loss: 0.9914572211482641
+Epoch 10/10, Loss: 0.9216946235398198
+Test Accuracy: 70.30%
+Teacher accuracy: 74.97%
+Student accuracy without teacher: 70.34%
+Student accuracy with CE + KD: 70.30%
 </pre></div>
 </div>
 </div>
@@ -991,8 +992,8 @@ Now, the forward function returns not only the logits of the network but also th
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Norm of 1st layer:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.norm.html#torch.norm" title="torch.norm"><span class="n">torch</span><span class="o">.</span><span class="n">norm</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">modified_nn_light</span><span class="o">.</span><span class="n">features</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.494645118713379
-Norm of 1st layer for modified_deep_nn: 7.494645118713379
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.502037048339844
+Norm of 1st layer for modified_deep_nn: 7.502037048339844
 Norm of 1st layer: 2.327361822128296
 </pre></div>
 </div>
@@ -1101,17 +1102,17 @@ For now, we can run a simple train-test session.</p>
 <span class="n">test_accuracy_light_ce_and_cosine_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3058189543921623
-Epoch 2/10, Loss: 1.0714898338098355
-Epoch 3/10, Loss: 0.97139666528653
-Epoch 4/10, Loss: 0.8954992231810489
-Epoch 5/10, Loss: 0.8415971756591212
-Epoch 6/10, Loss: 0.7967452170598842
-Epoch 7/10, Loss: 0.7547541428405
-Epoch 8/10, Loss: 0.7194418591611526
-Epoch 9/10, Loss: 0.6848295698385409
-Epoch 10/10, Loss: 0.6566394436389894
-Test Accuracy: 71.15%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3019937712823033
+Epoch 2/10, Loss: 1.0701078822850572
+Epoch 3/10, Loss: 0.9711575471531705
+Epoch 4/10, Loss: 0.8966650406417944
+Epoch 5/10, Loss: 0.841881162827582
+Epoch 6/10, Loss: 0.7979120901783409
+Epoch 7/10, Loss: 0.7575866897087877
+Epoch 8/10, Loss: 0.7193132675517245
+Epoch 9/10, Loss: 0.6825240765081342
+Epoch 10/10, Loss: 0.6551425631546304
+Test Accuracy: 70.46%
 </pre></div>
 </div>
 </div>
@@ -1268,17 +1269,17 @@ in addition to the regular cross entropy loss of the classification task.</p>
 <span class="n">test_accuracy_light_ce_and_mse_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.6988197485809131
-Epoch 2/10, Loss: 1.3258188706834604
-Epoch 3/10, Loss: 1.1832969803029618
-Epoch 4/10, Loss: 1.0884592758725062
-Epoch 5/10, Loss: 1.0121793817071354
-Epoch 6/10, Loss: 0.949359428699669
-Epoch 7/10, Loss: 0.8979239578137312
-Epoch 8/10, Loss: 0.8485308888623172
-Epoch 9/10, Loss: 0.8082433304823268
-Epoch 10/10, Loss: 0.7689229498433945
-Test Accuracy: 70.77%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.7476683431269262
+Epoch 2/10, Loss: 1.3637840766126237
+Epoch 3/10, Loss: 1.2169380191037111
+Epoch 4/10, Loss: 1.1193052844318283
+Epoch 5/10, Loss: 1.0389519707321206
+Epoch 6/10, Loss: 0.9745493790377742
+Epoch 7/10, Loss: 0.9183027067452746
+Epoch 8/10, Loss: 0.8690495414807059
+Epoch 9/10, Loss: 0.8286701222819746
+Epoch 10/10, Loss: 0.7902383493340533
+Test Accuracy: 71.23%
 </pre></div>
 </div>
 <p>It is expected that the final method will work better than <code class="docutils literal notranslate"><span class="pre">CosineLoss</span></code> because now we have allowed a trainable layer between the teacher and the student,
@@ -1291,11 +1292,11 @@ Including the extra network is the idea behind hint-based distillation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + RegressorMSE: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_mse_loss</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.74%
-Student accuracy without teacher: 70.54%
-Student accuracy with CE + KD: 70.39%
-Student accuracy with CE + CosineLoss: 71.15%
-Student accuracy with CE + RegressorMSE: 70.77%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.97%
+Student accuracy without teacher: 70.34%
+Student accuracy with CE + KD: 70.30%
+Student accuracy with CE + CosineLoss: 70.46%
+Student accuracy with CE + RegressorMSE: 71.23%
 </pre></div>
 </div>
 </div>
@@ -1313,7 +1314,7 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
 <li><p><a class="reference external" href="https://arxiv.org/abs/1503.02531">Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015)</a></p></li>
 <li><p><a class="reference external" href="https://arxiv.org/abs/1412.6550">Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015)</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 7 minutes  53.425 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 7 minutes  48.472 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-knowledge-distillation-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/19879e6777280194639314bd79851483/knowledge_distillation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">knowledge_distillation_tutorial.py</span></code></a></p>
