@@ -224,6 +224,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/inductor_windows_cpu.html
    :tags: Model-Optimization
 
+.. customcarditem::
+   :header: Use max-autotune compilation on CPU to gain additional performance boost
+   :card_description: Tutorial for max-autotune mode on CPU to gain additional performance boost
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/max_autotune_on_CPU_tutorial.html
+   :tags: Model-Optimization
+
 .. Distributed
 .. customcarditem::
    :header: Flight Recorder Tutorial
@@ -273,3 +280,4 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/maskedtensor_sparsity.html
    prototype/maskedtensor_advanced_semantics.html
    prototype/maskedtensor_adagrad.html
+   prototype/max_autotune_CPU_with_gemm_template_tutorial.html
