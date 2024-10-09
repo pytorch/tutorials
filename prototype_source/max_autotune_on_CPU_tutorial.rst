@@ -1,7 +1,8 @@
-Use max-autotune compilation on CPU to gain additional performance boost
-==============================================================
+Using Max-Autotune Compilation on CPU for Better Performance
+================================================================================
 
 **Author**: `Jiong Gong <https://github.com/jgong5>`__, `Leslie Fang <https://github.com/leslie-fang-intel>`__, `Chunyuan Wu <https://github.com/chunyuan-w>`__
+
 In this tutorial, you will learn how to boost your PyTorch models' performance on CPU by 
 leveraging the max-autotune mode in the Inductor CPU backend. Explore the activation
 process, understand the differences from traditional methods, and integrate max-autotune
