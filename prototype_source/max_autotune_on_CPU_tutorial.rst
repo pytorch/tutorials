@@ -15,7 +15,7 @@ Prerequisites:
 
 Introduction
 ------------
-``max-autotune`` mode for the Inductor CPU backend in ``torch.compile`` (`RFC link <https://github.com/pytorch/pytorch/issues/125683>`_)
+The ``max-autotune`` mode for the Inductor CPU backend in ``torch.compile`` (`RFC link <https://github.com/pytorch/pytorch/issues/125683>`_)
 profiles multiple implementations of operations at compile time and selects the best-performing one,
 trading longer compilation times for improved runtime performance. This enhancement is particularly beneficial for GEMM-related operations.
 In the Inductor CPU backend, we’ve introduced a C++ template-based GEMM implementation as an alternative to the ATen-based approach that relies on oneDNN and MKL libraries.
