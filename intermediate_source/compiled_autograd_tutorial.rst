@@ -162,11 +162,11 @@ You can use different compiler configs for the two compilations, for example, th
 
 .. code:: python
 
-def train(model, x):
-    model = torch.compile(model)
-    loss = model(x).sum()
-    torch._dynamo.config.compiled_autograd = True
-    torch.compile(lambda: loss.backward(), fullgraph=True)()
+   def train(model, x):
+       model = torch.compile(model)
+       loss = model(x).sum()
+       torch._dynamo.config.compiled_autograd = True
+       torch.compile(lambda: loss.backward(), fullgraph=True)()
 
 Or you can use the context manager, which will apply to all autograd calls within its scope.
 
@@ -213,8 +213,8 @@ Compiled Autograd addresses certain limitations of AOTAutograd
    assert(torch._dynamo.utils.counters["stats"]["unique_graphs"] == 1)
 
 
-In the ``1. base torch.compile`` case, we see that 3 backward graphs were produced due to the 2 graph breaks in the compiled function ``fn``. 
-Whereas in ``2. torch.compile with compiled autograd``, we see that a full backward graph was traced despite the graph breaks.
+In the first ``torch.compile`` case, we see that 3 backward graphs were produced due to the 2 graph breaks in the compiled function ``fn``. 
+Whereas in the second ``torch.compile`` with compiled autograd case, we see that a full backward graph was traced despite the graph breaks.
 
 2. Backward hooks are not captured
 
@@ -231,7 +231,7 @@ Whereas in ``2. torch.compile with compiled autograd``, we see that a full backw
    with torch._dynamo.compiled_autograd.enable(torch.compile(backend="aot_eager")):
       loss.backward()
 
-There should be a ``call_hook`` node in the graph, which dynamo will later inline into
+There should be a ``call_hook`` node in the graph, which dynamo will later inline into the following:
 
 .. code:: python
 
@@ -249,7 +249,7 @@ There should be a ``call_hook`` node in the graph, which dynamo will later inlin
 
 Common recompilation reasons for Compiled Autograd
 --------------------------------------------------
-1. Due to changes in the autograd structure of the loss value
+1. Due to changes in the autograd structure of the loss value:
 
 .. code:: python
 
@@ -274,7 +274,7 @@ In the example above, we call a different operator on each iteration, leading to
    ...
    """
 
-2. Due to tensors changing shapes
+2. Due to tensors changing shapes:
 
 .. code:: python
 
