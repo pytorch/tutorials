@@ -35,7 +35,7 @@ Sharding primitives
 
 ``DTensor`` and ``DeviceMesh`` are primitives used to build parallelism in terms of sharded or replicated tensors on N-dimensional process groups.
 
-- `DTensor <https://github.com/pytorch/pytorch/blob/main/torch/distributed/_tensor/README.md>`__ represents a tensor that is sharded and/or replicated, and communicates automatically to reshard tensors as needed by operations.
+- `DTensor <https://github.com/pytorch/pytorch/blob/main/torch/distributed/tensor/README.md>`__ represents a tensor that is sharded and/or replicated, and communicates automatically to reshard tensors as needed by operations.
 - `DeviceMesh <https://pytorch.org/docs/stable/distributed.html#devicemesh>`__ abstracts the accelerator device communicators into a multi-dimensional array, which manages the underlying ``ProcessGroup`` instances for collective communications in multi-dimensional parallelisms.  Try out our `Device Mesh Recipe <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__ to learn more.
 
 Communications APIs
