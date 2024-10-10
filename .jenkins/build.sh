@@ -24,6 +24,7 @@ sudo apt-get install -y pandoc
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 pip uninstall -y torch torchvision torchaudio torchtext torchdata
 pip3 install torch==2.5.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
+pip3 install torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
