@@ -917,7 +917,7 @@ print(f"Second Iteration Loss: {loss}")
 
 ######################################################################
 # Inference
-# ~~~~~~~~~~~~
+# ~~~~~~~~~
 # 
 # Now that we are able to train distributed embeddings, how can we take
 # the trained model and optimize it for inference? Inference is typically
