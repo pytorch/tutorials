@@ -380,6 +380,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
@@ -559,24 +560,36 @@ the num_worker of torch.utils.data.DataLoader() to 0.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
 
   0%|          | 0/170498071 [00:00&lt;?, ?it/s]
-  0%|          | 655360/170498071 [00:00&lt;00:26, 6487712.88it/s]
-  5%|5         | 8716288/170498071 [00:00&lt;00:03, 49886470.65it/s]
- 11%|#         | 18710528/170498071 [00:00&lt;00:02, 72618485.50it/s]
- 17%|#7        | 29097984/170498071 [00:00&lt;00:01, 84859401.47it/s]
- 23%|##3       | 39387136/170498071 [00:00&lt;00:01, 91180970.73it/s]
- 29%|##9       | 49479680/170498071 [00:00&lt;00:01, 94485449.38it/s]
- 35%|###5      | 60030976/170498071 [00:00&lt;00:01, 97880601.56it/s]
- 41%|####1     | 69992448/170498071 [00:00&lt;00:01, 98276898.10it/s]
- 47%|####7     | 80707584/170498071 [00:00&lt;00:00, 101002077.34it/s]
- 53%|#####3    | 90832896/170498071 [00:01&lt;00:00, 99531343.29it/s]
- 60%|#####9    | 101777408/170498071 [00:01&lt;00:00, 102510306.54it/s]
- 66%|######5   | 112066560/170498071 [00:01&lt;00:00, 100329992.59it/s]
- 72%|#######2  | 123076608/170498071 [00:01&lt;00:00, 103172927.00it/s]
- 78%|#######8  | 133431296/170498071 [00:01&lt;00:00, 101190209.96it/s]
- 85%|########4 | 144244736/170498071 [00:01&lt;00:00, 103076050.28it/s]
- 91%|######### | 154599424/170498071 [00:01&lt;00:00, 101457266.44it/s]
- 97%|#########6| 165281792/170498071 [00:01&lt;00:00, 103000898.23it/s]
-100%|##########| 170498071/170498071 [00:01&lt;00:00, 95117358.49it/s]
+  0%|          | 425984/170498071 [00:00&lt;00:41, 4125504.27it/s]
+  3%|3         | 5308416/170498071 [00:00&lt;00:05, 29982518.27it/s]
+  7%|6         | 11862016/170498071 [00:00&lt;00:03, 46045138.43it/s]
+ 11%|#         | 18284544/170498071 [00:00&lt;00:02, 53151648.02it/s]
+ 15%|#4        | 25296896/170498071 [00:00&lt;00:02, 59222780.65it/s]
+ 19%|#8        | 31981568/170498071 [00:00&lt;00:02, 61779922.16it/s]
+ 23%|##2       | 39026688/170498071 [00:00&lt;00:02, 64582821.24it/s]
+ 27%|##6       | 45776896/170498071 [00:00&lt;00:01, 65458180.77it/s]
+ 31%|###1      | 52887552/170498071 [00:00&lt;00:01, 67124853.96it/s]
+ 35%|###5      | 59703296/170498071 [00:01&lt;00:01, 67422641.48it/s]
+ 39%|###9      | 67108864/170498071 [00:01&lt;00:01, 69430432.23it/s]
+ 43%|####3     | 74055680/170498071 [00:01&lt;00:01, 67434931.24it/s]
+ 47%|####7     | 80838656/170498071 [00:01&lt;00:01, 65884820.97it/s]
+ 51%|#####1    | 87457792/170498071 [00:01&lt;00:01, 64343405.55it/s]
+ 55%|#####5    | 93913088/170498071 [00:01&lt;00:01, 61824485.44it/s]
+ 59%|#####8    | 100139008/170498071 [00:01&lt;00:01, 60299816.30it/s]
+ 62%|######2   | 106201088/170498071 [00:01&lt;00:01, 58960967.51it/s]
+ 66%|######5   | 112132096/170498071 [00:01&lt;00:01, 56898941.09it/s]
+ 69%|######9   | 117866496/170498071 [00:01&lt;00:00, 54899976.05it/s]
+ 72%|#######2  | 123371520/170498071 [00:02&lt;00:00, 53174654.32it/s]
+ 75%|#######5  | 128712704/170498071 [00:02&lt;00:00, 50762805.38it/s]
+ 78%|#######8  | 133824512/170498071 [00:02&lt;00:00, 49685224.39it/s]
+ 81%|########1 | 138805248/170498071 [00:02&lt;00:00, 46797090.78it/s]
+ 84%|########4 | 143523840/170498071 [00:02&lt;00:00, 46721148.29it/s]
+ 87%|########6 | 148275200/170498071 [00:02&lt;00:00, 46842688.99it/s]
+ 90%|########9 | 152993792/170498071 [00:02&lt;00:00, 45192870.12it/s]
+ 92%|#########2| 157548544/170498071 [00:02&lt;00:00, 44116757.31it/s]
+ 95%|#########5| 162299904/170498071 [00:02&lt;00:00, 44999032.58it/s]
+ 98%|#########8| 167116800/170498071 [00:03&lt;00:00, 45889140.71it/s]
+100%|##########| 170498071/170498071 [00:03&lt;00:00, 54100568.85it/s]
 Extracting ./data/cifar-10-python.tar.gz to ./data
 Files already downloaded and verified
 </pre></div>
@@ -872,7 +885,7 @@ please check out <a class="reference internal" href="data_parallel_tutorial.html
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">dataiter</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  56.374 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  4.976 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-cifar10-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c51fcdf96d93a8e4b3f2943cb36bab19/cifar10_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></p>

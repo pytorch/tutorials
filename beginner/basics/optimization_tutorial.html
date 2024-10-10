@@ -380,6 +380,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
@@ -546,43 +547,39 @@ and <a class="reference external" href="buildmodel_tutorial.html">Build Model</a
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
 
   0%|          | 0/26421880 [00:00&lt;?, ?it/s]
-  0%|          | 65536/26421880 [00:00&lt;01:12, 365261.50it/s]
-  1%|          | 229376/26421880 [00:00&lt;00:38, 686071.49it/s]
-  4%|3         | 950272/26421880 [00:00&lt;00:11, 2201937.01it/s]
- 14%|#4        | 3735552/26421880 [00:00&lt;00:02, 9026242.01it/s]
- 25%|##4       | 6553600/26421880 [00:00&lt;00:01, 11980361.88it/s]
- 42%|####2     | 11108352/26421880 [00:00&lt;00:00, 20294499.94it/s]
- 55%|#####4    | 14417920/26421880 [00:01&lt;00:00, 19976079.18it/s]
- 71%|#######1  | 18874368/26421880 [00:01&lt;00:00, 25872897.91it/s]
- 85%|########5 | 22577152/26421880 [00:01&lt;00:00, 24319349.89it/s]
-100%|##########| 26421880/26421880 [00:01&lt;00:00, 18300269.08it/s]
+  0%|          | 65536/26421880 [00:00&lt;01:12, 364295.76it/s]
+  1%|          | 229376/26421880 [00:00&lt;00:38, 684510.10it/s]
+  4%|3         | 950272/26421880 [00:00&lt;00:11, 2196557.09it/s]
+ 15%|#4        | 3833856/26421880 [00:00&lt;00:02, 7633770.95it/s]
+ 38%|###7      | 9994240/26421880 [00:00&lt;00:00, 17186090.50it/s]
+ 60%|######    | 15859712/26421880 [00:01&lt;00:00, 22382480.00it/s]
+ 83%|########2 | 21921792/26421880 [00:01&lt;00:00, 26041198.68it/s]
+100%|##########| 26421880/26421880 [00:01&lt;00:00, 19459081.74it/s]
 Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
 
   0%|          | 0/29515 [00:00&lt;?, ?it/s]
-100%|##########| 29515/29515 [00:00&lt;00:00, 329820.65it/s]
+100%|##########| 29515/29515 [00:00&lt;00:00, 328384.94it/s]
 Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
 
   0%|          | 0/4422102 [00:00&lt;?, ?it/s]
-  1%|1         | 65536/4422102 [00:00&lt;00:12, 361082.34it/s]
-  5%|5         | 229376/4422102 [00:00&lt;00:06, 678856.13it/s]
- 21%|##        | 917504/4422102 [00:00&lt;00:01, 2093145.09it/s]
- 43%|####2     | 1900544/4422102 [00:00&lt;00:00, 3400823.97it/s]
- 68%|######8   | 3014656/4422102 [00:00&lt;00:00, 4380128.14it/s]
- 95%|#########4| 4194304/4422102 [00:01&lt;00:00, 5102447.07it/s]
-100%|##########| 4422102/4422102 [00:01&lt;00:00, 4045658.31it/s]
+  1%|1         | 65536/4422102 [00:00&lt;00:12, 362871.29it/s]
+  5%|5         | 229376/4422102 [00:00&lt;00:06, 682265.61it/s]
+ 21%|##1       | 950272/4422102 [00:00&lt;00:01, 2190508.31it/s]
+ 87%|########6 | 3833856/4422102 [00:00&lt;00:00, 7614332.50it/s]
+100%|##########| 4422102/4422102 [00:00&lt;00:00, 6098653.62it/s]
 Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
 
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
 Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
 
   0%|          | 0/5148 [00:00&lt;?, ?it/s]
-100%|##########| 5148/5148 [00:00&lt;00:00, 38352179.38it/s]
+100%|##########| 5148/5148 [00:00&lt;00:00, 43976124.22it/s]
 Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
 </pre></div>
 </div>
@@ -872,7 +869,7 @@ Done!
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html">torch.optim</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">Warmstart Training a Model</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  6.091 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  4.538 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-optimization-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0662a149d54bd776924742c96eb6282d/optimization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">optimization_tutorial.py</span></code></a></p>

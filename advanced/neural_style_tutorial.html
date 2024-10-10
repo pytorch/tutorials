@@ -378,6 +378,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
@@ -733,34 +734,33 @@ network to evaluation mode using <code class="docutils literal notranslate"><spa
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vgg19-dcbb9e9d.pth
 
   0%|          | 0.00/548M [00:00&lt;?, ?B/s]
-  4%|3         | 19.4M/548M [00:00&lt;00:02, 203MB/s]
-  7%|7         | 39.1M/548M [00:00&lt;00:02, 205MB/s]
- 11%|#         | 58.9M/548M [00:00&lt;00:02, 206MB/s]
- 14%|#4        | 78.6M/548M [00:00&lt;00:02, 206MB/s]
- 18%|#7        | 98.5M/548M [00:00&lt;00:02, 207MB/s]
- 22%|##1       | 118M/548M [00:00&lt;00:02, 207MB/s]
- 25%|##5       | 138M/548M [00:00&lt;00:02, 207MB/s]
- 29%|##8       | 158M/548M [00:00&lt;00:01, 207MB/s]
- 32%|###2      | 178M/548M [00:00&lt;00:01, 207MB/s]
- 36%|###6      | 198M/548M [00:01&lt;00:01, 207MB/s]
- 40%|###9      | 218M/548M [00:01&lt;00:01, 207MB/s]
- 43%|####3     | 237M/548M [00:01&lt;00:01, 207MB/s]
- 47%|####6     | 257M/548M [00:01&lt;00:01, 207MB/s]
- 51%|#####     | 277M/548M [00:01&lt;00:01, 207MB/s]
- 54%|#####4    | 297M/548M [00:01&lt;00:01, 207MB/s]
- 58%|#####7    | 316M/548M [00:01&lt;00:01, 207MB/s]
- 61%|######1   | 336M/548M [00:01&lt;00:01, 207MB/s]
- 65%|######4   | 356M/548M [00:01&lt;00:00, 207MB/s]
- 69%|######8   | 376M/548M [00:01&lt;00:00, 207MB/s]
- 72%|#######2  | 395M/548M [00:02&lt;00:00, 206MB/s]
- 76%|#######5  | 415M/548M [00:02&lt;00:00, 207MB/s]
- 79%|#######9  | 435M/548M [00:02&lt;00:00, 207MB/s]
- 83%|########2 | 455M/548M [00:02&lt;00:00, 207MB/s]
- 87%|########6 | 475M/548M [00:02&lt;00:00, 207MB/s]
- 90%|######### | 494M/548M [00:02&lt;00:00, 207MB/s]
- 94%|#########3| 514M/548M [00:02&lt;00:00, 207MB/s]
- 97%|#########7| 534M/548M [00:02&lt;00:00, 207MB/s]
-100%|##########| 548M/548M [00:02&lt;00:00, 207MB/s]
+  4%|3         | 20.1M/548M [00:00&lt;00:02, 210MB/s]
+  7%|7         | 40.4M/548M [00:00&lt;00:02, 211MB/s]
+ 11%|#1        | 61.1M/548M [00:00&lt;00:02, 214MB/s]
+ 15%|#4        | 82.1M/548M [00:00&lt;00:02, 216MB/s]
+ 19%|#8        | 103M/548M [00:00&lt;00:02, 217MB/s]
+ 23%|##2       | 124M/548M [00:00&lt;00:02, 218MB/s]
+ 27%|##6       | 145M/548M [00:00&lt;00:01, 219MB/s]
+ 30%|###       | 166M/548M [00:00&lt;00:01, 219MB/s]
+ 34%|###4      | 187M/548M [00:00&lt;00:01, 219MB/s]
+ 38%|###7      | 208M/548M [00:01&lt;00:01, 219MB/s]
+ 42%|####1     | 229M/548M [00:01&lt;00:01, 219MB/s]
+ 46%|####5     | 250M/548M [00:01&lt;00:01, 220MB/s]
+ 50%|####9     | 271M/548M [00:01&lt;00:01, 220MB/s]
+ 53%|#####3    | 292M/548M [00:01&lt;00:01, 220MB/s]
+ 57%|#####7    | 314M/548M [00:01&lt;00:01, 220MB/s]
+ 61%|######1   | 335M/548M [00:01&lt;00:01, 220MB/s]
+ 65%|######4   | 356M/548M [00:01&lt;00:00, 220MB/s]
+ 69%|######8   | 377M/548M [00:01&lt;00:00, 220MB/s]
+ 73%|#######2  | 398M/548M [00:01&lt;00:00, 220MB/s]
+ 76%|#######6  | 419M/548M [00:02&lt;00:00, 220MB/s]
+ 80%|########  | 440M/548M [00:02&lt;00:00, 220MB/s]
+ 84%|########4 | 461M/548M [00:02&lt;00:00, 220MB/s]
+ 88%|########7 | 482M/548M [00:02&lt;00:00, 220MB/s]
+ 92%|#########1| 503M/548M [00:02&lt;00:00, 220MB/s]
+ 96%|#########5| 524M/548M [00:02&lt;00:00, 220MB/s]
+ 99%|#########9| 545M/548M [00:02&lt;00:00, 220MB/s]
+100%|##########| 548M/548M [00:02&lt;00:00, 219MB/s]
 </pre></div>
 </div>
 <p>Additionally, VGG networks are trained on images with each channel
@@ -972,25 +972,25 @@ To copy construct from a tensor, it is recommended to use sourceTensor.clone().d
 
 Optimizing..
 run [50]:
-Style Loss : 4.124351 Content Loss: 4.169887
+Style Loss : 4.076129 Content Loss: 4.169087
 
 run [100]:
-Style Loss : 1.139569 Content Loss: 3.017847
+Style Loss : 1.144681 Content Loss: 3.033320
 
 run [150]:
-Style Loss : 0.714787 Content Loss: 2.656598
+Style Loss : 0.724149 Content Loss: 2.661275
 
 run [200]:
-Style Loss : 0.473256 Content Loss: 2.490052
+Style Loss : 0.483574 Content Loss: 2.500702
 
 run [250]:
-Style Loss : 0.341932 Content Loss: 2.399796
+Style Loss : 0.348765 Content Loss: 2.405411
 
 run [300]:
-Style Loss : 0.262279 Content Loss: 2.345805
+Style Loss : 0.266623 Content Loss: 2.350419
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.705 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  36.574 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b3bcd49c4dd9be3a44c6c5d2e2a8b0cd/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></p>
