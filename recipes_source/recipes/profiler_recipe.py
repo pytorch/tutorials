@@ -323,7 +323,7 @@ with profile(activities=activities) as prof:
 prof.export_chrome_trace("trace.json")
 
 ######################################################################
-# You can examine the sequence of profiled operators and CUDA kernels
+# You can examine the sequence of profiled operators and CUDA/XPU kernels
 # in Chrome trace viewer (``chrome://tracing``):
 #
 # .. image:: ../../_static/img/trace_img.png
