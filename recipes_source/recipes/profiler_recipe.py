@@ -172,13 +172,8 @@ else:
     import sys
     sys.exit(0)
 
-activities = [ProfilerActivity.CPU]
+activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
 sort_by_keyword = device + "_time_total"
-
-if device == 'cuda':
-   activities.append(ProfilerActivity.CUDA)
-elif device == 'xpu':
-   activities.append(ProfilerActivity.XPU)
 
 model = models.resnet18().to(device)
 inputs = torch.randn(5, 3, 224, 224).to(device)
