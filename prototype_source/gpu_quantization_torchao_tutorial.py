@@ -44,7 +44,8 @@ quantization and measure their impact.
 #
 
 import torch
-from torchao.quantization import change_linear_weights_to_int8_dqtensors
+from torchao.quantization.quant_api import quantize_, int8_dynamic_activation_int8_weight
+from torchao.utils import unwrap_tensor_subclass, TORCH_VERSION_AT_LEAST_2_5
 from segment_anything import sam_model_registry
 from torch.utils.benchmark import Timer
 
@@ -156,9 +157,9 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # in memory bound situations where the benefit comes from loading less
 # weight data, rather than doing less computation. The torchao APIs:
 #
-# ``change_linear_weights_to_int8_dqtensors``,
-# ``change_linear_weights_to_int8_woqtensors`` or
-# ``change_linear_weights_to_int4_woqtensors``
+# ``int8_dynamic_activation_int8_weight()``,
+# ``int8_weight_only()`` or
+# ``int4_weight_only()``
 #
 # can be used to easily apply the desired quantization technique and then
 # once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
@@ -170,7 +171,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 #    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
 #    above (no replacement for int4).
 #
-#  The difference between the two APIs is that ``change_linear_weights`` API
+# The difference between the two APIs is that ``int8_dynamic_activation`` API
 # alters the weight tensor of the linear module so instead of doing a
 # normal linear, it does a quantized operation. This is helpful when you
 # have non-standard linear ops that do more than one thing. The ``apply``
@@ -185,7 +186,10 @@ del model_c, model, image
 model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -220,7 +224,10 @@ model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the fused quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -251,7 +258,10 @@ torch._inductor.config.epilogue_fusion = False
 torch._inductor.config.coordinate_descent_tuning = True
 torch._inductor.config.coordinate_descent_check_all_directions = True
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the final quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -280,7 +290,10 @@ try:
     model, image = get_sam_model(False, batchsize)
     model = model.to(torch.bfloat16)
     image = image.to(torch.bfloat16)
-    change_linear_weights_to_int8_dqtensors(model)
+    quantize_(model, int8_dynamic_activation_int8_weight())
+    if not TORCH_VERSION_AT_LEAST_2_5:
+        # needed for subclass + compile to work on older versions of pytorch
+        unwrap_tensor_subclass(model)
     model_c = torch.compile(model, mode='max-autotune')
     quant_res = benchmark(model_c, image)
     print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
