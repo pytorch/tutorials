@@ -646,7 +646,7 @@ generalized to other environments.</p>
 
     <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
-        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
             <span class="s2">&quot;optim&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
@@ -737,6 +737,7 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
 <span class="kn">import</span> <span class="nn">torch.distributed.checkpoint</span> <span class="k">as</span> <span class="nn">dcp</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.checkpoint.stateful</span> <span class="kn">import</span> <span class="n">Stateful</span>
 <span class="kn">from</span> <span class="nn">torch.distributed.checkpoint.state_dict</span> <span class="kn">import</span> <span class="n">get_state_dict</span><span class="p">,</span> <span class="n">set_state_dict</span>
 <span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -761,7 +762,7 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
 
     <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
-        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
             <span class="s2">&quot;optim&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
@@ -811,13 +812,6 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
     <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;app&quot;</span><span class="p">:</span> <span class="n">AppState</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)}</span>
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-    <span class="c1"># generates the state dict we will load into</span>
-    <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-    <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
-    <span class="p">}</span>
     <span class="n">dcp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
         <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span>
         <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">CHECKPOINT_DIR</span><span class="p">,</span>
