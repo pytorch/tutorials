@@ -311,9 +311,7 @@ class LSTMTagger(torch.nn.Module):
 # ``TransformerDecoder``) and subcomponents (``TransformerEncoderLayer``,
 # ``TransformerDecoderLayer``). For details, check out the
 # `documentation <https://pytorch.org/docs/stable/nn.html#transformer-layers>`__
-# on transformer classes, and the relevant
-# `tutorial <https://pytorch.org/tutorials/beginner/transformer_tutorial.html>`__
-# on pytorch.org.
+# on transformer classes.
 # 
 # Other Layers and Functions
 # --------------------------
