@@ -440,6 +440,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
+   :header: Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
+   :card_description: Learn how to use compiled autograd to capture a larger backward graph.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/compiled_autograd_tutorial
+   :tags: Model-Optimization,CUDA
+
+.. customcarditem::
    :header: Custom C++ and CUDA Operators
    :card_description: How to extend PyTorch with custom C++ and CUDA operators.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
@@ -846,7 +853,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to TorchRec
    :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
    :image: _static/img/thumbnails/torchrec.png
-   :link: intermediate/torchrec_tutorial.html
+   :link: intermediate/torchrec_intro_tutorial.html
    :tags: TorchRec,Recommender
 
 .. customcarditem::
@@ -1132,6 +1139,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
@@ -1180,7 +1188,7 @@ Additional Resources
    :hidden:
    :caption: Recommendation Systems
 
-   intermediate/torchrec_tutorial
+   intermediate/torchrec_intro_tutorial
    advanced/sharding
 
 .. toctree::
