@@ -330,14 +330,6 @@ prof.export_chrome_trace("trace.json")
 #    :scale: 25 %
 
 ######################################################################
-# You can examine the sequence of profiled operators and XPU kernels
-# in Chrome trace viewer (``chrome://tracing``):
-#
-# .. image:: ../../_static/img/trace_xpu_img.png
-#    :scale: 25 %
-
-
-######################################################################
 # 6. Examining stack traces
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
