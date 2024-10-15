@@ -312,11 +312,7 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 # Users could switch between cpu, cuda and xpu
 device = 'cuda'
 
-activities = [ProfilerActivity.CPU]
-if device == 'cuda':
-   activities.append(ProfilerActivity.CUDA)
-elif device == 'xpu':
-   activities.append(ProfilerActivity.XPU)
+activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
 
 model = models.resnet18().to(device)
 inputs = torch.randn(5, 3, 224, 224).to(device)
