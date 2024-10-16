@@ -417,14 +417,14 @@ module’s inputs and outputs:
 
         def forward(self, features: KeyedJaggedTensor) -> KeyedTensor:
             """
-            Args:
-                features (KeyedJaggedTensor): KJT of form [F X B X L].
+            Run the EmbeddingBagCollection forward pass. This method takes in a `KeyedJaggedTensor`
+            and returns a `KeyedTensor`, which is the result of pooling the embeddings for each feature.
 
+            Args:
+                features (KeyedJaggedTensor): Input KJT
             Returns:
                 KeyedTensor
             """
-            if is_non_strict_exporting() and not torch.jit.is_scripting():
-                return self._non_strict_exporting_forward(features)
             flat_feature_names: List[str] = []
             for names in self._feature_names:
                 flat_feature_names.extend(names)
@@ -606,7 +606,7 @@ Next, let's look at the offsets as well as what is contained in each batch
     Keys:  ['product', 'user']
     Lengths:  tensor([3, 1, 2, 2])
     Values:  tensor([1, 2, 1, 5, 2, 3, 4, 1])
-    to_dict:  {'product': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7fce6f9703a0>, 'user': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7fce6f972980>}
+    to_dict:  {'product': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f73f263ba30>, 'user': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f73f263b730>}
     KeyedJaggedTensor({
         "product": [[1, 2, 1], [5]],
         "user": [[2, 3], [4, 1]]
@@ -795,7 +795,7 @@ Refresher of our ``EmbeddingBagCollection`` module
 
  .. code-block:: none
 
-    Process Group: <torch.distributed.distributed_c10d.ProcessGroup object at 0x7fce698cc9f0>
+    Process Group: <torch.distributed.distributed_c10d.ProcessGroup object at 0x7f73ad5287b0>
 
 
 
@@ -1011,7 +1011,7 @@ result as long as possible, and it does it by acting like an async type.
 
  .. code-block:: none
 
-    <torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7fce6b2afdf0>
+    <torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7f73aba3e9e0>
     <class 'torchrec.sparse.jagged_tensor.KeyedTensor'>
     ['product', 'user']
     torch.Size([2, 128])
@@ -1623,7 +1623,7 @@ are using one device to be consistent with training (1 TBE).
       )
     )
 
-    <torchrec.sparse.jagged_tensor.KeyedTensor object at 0x7fce6e67bdf0>
+    <torchrec.sparse.jagged_tensor.KeyedTensor object at 0x7f73a8f2f5e0>
 
 
 
@@ -1682,18 +1682,18 @@ TorchScript, where TorchScript is C++ compatible.
 
     def forward(self, kjt : torchrec_sparse_jagged_tensor_KeyedJaggedTensor):
         flatten_feature_lengths = torchrec_distributed_quant_embeddingbag_flatten_feature_lengths(kjt);  kjt = None
-        _fx_marker = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_BEGIN', flatten_feature_lengths)
+        _fx_marker = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_BEGIN', flatten_feature_lengths);  _fx_marker = None
         split = flatten_feature_lengths.split([2])
         getitem = split[0];  split = None
         to = getitem.to(device(type='cuda', index=0), non_blocking = True);  getitem = None
-        _fx_marker_1 = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_END', flatten_feature_lengths);  flatten_feature_lengths = None
+        _fx_marker_1 = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_END', flatten_feature_lengths);  flatten_feature_lengths = _fx_marker_1 = None
         _unwrap_kjt = torchrec_distributed_quant_embedding_kernel__unwrap_kjt(to);  to = None
         getitem_1 = _unwrap_kjt[0]
         getitem_2 = _unwrap_kjt[1]
-        getitem_3 = _unwrap_kjt[2];  _unwrap_kjt = None
+        getitem_3 = _unwrap_kjt[2];  _unwrap_kjt = getitem_3 = None
         _tensor_constant0 = self._tensor_constant0
         _tensor_constant1 = self._tensor_constant1
-        bounds_check_indices = torch.ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_1, getitem_2, 1, _tensor_constant1, None);  _tensor_constant0 = _tensor_constant1 = None
+        bounds_check_indices = torch.ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_1, getitem_2, 1, _tensor_constant1, None);  _tensor_constant0 = _tensor_constant1 = bounds_check_indices = None
         _tensor_constant2 = self._tensor_constant2
         _tensor_constant3 = self._tensor_constant3
         _tensor_constant4 = self._tensor_constant4
@@ -1780,7 +1780,7 @@ for Personalization and Recommendation Systems <https://arxiv.org/abs/1906.00091
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.698 seconds)
+   **Total running time of the script:** ( 0 minutes  0.816 seconds)
 
 
 .. _sphx_glr_download_intermediate_torchrec_intro_tutorial.py:

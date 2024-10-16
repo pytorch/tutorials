@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Introduction to TorchRec — PyTorch Tutorials 2.4.0+cu121 documentation</title>
+<title>Introduction to TorchRec — PyTorch Tutorials 2.5.0+cu124 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -231,7 +231,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-            2.4.0+cu121
+            2.5.0+cu124
         </div>
 <div class="searchbox">
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
@@ -779,14 +779,14 @@ module’s inputs and outputs:</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>def forward(self, features: KeyedJaggedTensor) -&gt; KeyedTensor:
     """
-    Args:
-        features (KeyedJaggedTensor): KJT of form [F X B X L].
+    Run the EmbeddingBagCollection forward pass. This method takes in a `KeyedJaggedTensor`
+    and returns a `KeyedTensor`, which is the result of pooling the embeddings for each feature.
 
+    Args:
+        features (KeyedJaggedTensor): Input KJT
     Returns:
         KeyedTensor
     """
-    if is_non_strict_exporting() and not torch.jit.is_scripting():
-        return self._non_strict_exporting_forward(features)
     flat_feature_names: List[str] = []
     for names in self._feature_names:
         flat_feature_names.extend(names)
@@ -930,7 +930,7 @@ JaggedTensor({
 Keys:  ['product', 'user']
 Lengths:  tensor([3, 1, 2, 2])
 Values:  tensor([1, 2, 1, 5, 2, 3, 4, 1])
-to_dict:  {'product': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7fce6f9703a0&gt;, 'user': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7fce6f972980&gt;}
+to_dict:  {'product': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f73f263ba30&gt;, 'user': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f73f263b730&gt;}
 KeyedJaggedTensor({
     "product": [[1, 2, 1], [5]],
     "user": [[2, 3], [4, 1]]
@@ -1071,7 +1071,7 @@ embeddings to the correct GPUs.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Process Group: </span><span class="si">{</span><span class="n">pg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Process Group: &lt;torch.distributed.distributed_c10d.ProcessGroup object at 0x7fce698cc9f0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Process Group: &lt;torch.distributed.distributed_c10d.ProcessGroup object at 0x7f73ad5287b0&gt;
 </pre></div>
 </div>
 </div>
@@ -1226,7 +1226,7 @@ result as long as possible, and it does it by acting like an async type.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/size.html#torch.Size" title="torch.Size"><span class="n">embedding</span><span class="o">.</span><span class="n">shape</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7fce6b2afdf0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7f73aba3e9e0&gt;
 &lt;class 'torchrec.sparse.jagged_tensor.KeyedTensor'&gt;
 ['product', 'user']
 torch.Size([2, 128])
@@ -1694,7 +1694,7 @@ Sharded Quantized EBC: InferenceModule(
   )
 )
 
-&lt;torchrec.sparse.jagged_tensor.KeyedTensor object at 0x7fce6e67bdf0&gt;
+&lt;torchrec.sparse.jagged_tensor.KeyedTensor object at 0x7f73a8f2f5e0&gt;
 </pre></div>
 </div>
 </div>
@@ -1734,18 +1734,18 @@ torch.fx._symbolic_trace.wrap("torchrec_distributed_embedding_lookup_embeddings_
 
 def forward(self, kjt : torchrec_sparse_jagged_tensor_KeyedJaggedTensor):
     flatten_feature_lengths = torchrec_distributed_quant_embeddingbag_flatten_feature_lengths(kjt);  kjt = None
-    _fx_marker = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_BEGIN', flatten_feature_lengths)
+    _fx_marker = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_BEGIN', flatten_feature_lengths);  _fx_marker = None
     split = flatten_feature_lengths.split([2])
     getitem = split[0];  split = None
     to = getitem.to(device(type='cuda', index=0), non_blocking = True);  getitem = None
-    _fx_marker_1 = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_END', flatten_feature_lengths);  flatten_feature_lengths = None
+    _fx_marker_1 = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_END', flatten_feature_lengths);  flatten_feature_lengths = _fx_marker_1 = None
     _unwrap_kjt = torchrec_distributed_quant_embedding_kernel__unwrap_kjt(to);  to = None
     getitem_1 = _unwrap_kjt[0]
     getitem_2 = _unwrap_kjt[1]
-    getitem_3 = _unwrap_kjt[2];  _unwrap_kjt = None
+    getitem_3 = _unwrap_kjt[2];  _unwrap_kjt = getitem_3 = None
     _tensor_constant0 = self._tensor_constant0
     _tensor_constant1 = self._tensor_constant1
-    bounds_check_indices = torch.ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_1, getitem_2, 1, _tensor_constant1, None);  _tensor_constant0 = _tensor_constant1 = None
+    bounds_check_indices = torch.ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_1, getitem_2, 1, _tensor_constant1, None);  _tensor_constant0 = _tensor_constant1 = bounds_check_indices = None
     _tensor_constant2 = self._tensor_constant2
     _tensor_constant3 = self._tensor_constant3
     _tensor_constant4 = self._tensor_constant4
@@ -1815,7 +1815,7 @@ inference.</p>
 example, which includes multinode training on the Criteo 1TB
 dataset using the methods described in <a class="reference external" href="https://arxiv.org/abs/1906.00091">Deep Learning Recommendation Model
 for Personalization and Recommendation Systems</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.698 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.816 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torchrec-intro-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/b07b6a647a3bf9e6882df8ca2cc20e8b/torchrec_intro_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torchrec_intro_tutorial.py</span></code></a></p>
