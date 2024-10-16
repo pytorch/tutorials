@@ -4,11 +4,15 @@ NLP From Scratch: Translation with a Sequence to Sequence Network and Attention
 *******************************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
-This is the third and final tutorial on doing "NLP From Scratch", where we
+This tutorials is part of a three-part series:
+
+* `NLP From Scratch: Classifying Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html>`__
+* `NLP From Scratch: Generating Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html>`__
+* `NLP From Scratch: Translation with a Sequence to Sequence Network and Attention <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`__
+
+This is the third and final tutorial on doing **NLP From Scratch**, where we
 write our own classes and functions to preprocess the data to do our NLP
-modeling tasks. We hope after you complete this tutorial that you'll proceed to
-learn how `torchtext` can handle much of this preprocessing for you in the
-three tutorials immediately following this one.
+modeling tasks.
 
 In this project we will be teaching a neural network to translate from
 French to English.

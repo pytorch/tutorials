@@ -1,5 +1,5 @@
-Fast Transformer Inference with Better Transformer
-==================================================
+Language Translation with ``nn.Transformer`` and torchtext
+==========================================================
 
 This tutorial has been deprecated.
 
