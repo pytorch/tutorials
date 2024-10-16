@@ -9,7 +9,10 @@ What you will learn
 
 Prerequisites
 -------------
+
 - PyTorch version 2.5 or later.
+- `tabulate <https://pypi.org/project/tabulate/>`__. You can install by running ``pip install tabulate``.
+
 
 Overview
 --------
