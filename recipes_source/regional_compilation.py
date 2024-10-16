@@ -3,6 +3,7 @@ Reducing torch.compile cold start compilation time with regional compilation
 ============================================================================
 
 **Author:** `Animesh Jain <https://github.com/anijain2305>`_
+
 As deep learning models get larger, the compilation time of these models also
 increases. This extended compilation time can result in a large startup time in
 inference services or wasted resources in large-scale training. This recipe
@@ -23,7 +24,7 @@ available.
 
    pip install torch
 
-.. note:: 
+.. note::
    This feature is available starting with the 2.5 release. If you are using version 2.4,
    you can enable the configuration flag ``torch._dynamo.config.inline_inbuilt_nn_modules=True``
    to prevent recompilations during regional compilation. In version 2.5, this flag is enabled by default.
