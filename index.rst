@@ -6,7 +6,7 @@ Welcome to PyTorch Tutorials
 * `torch.export AOTInductor Tutorial for Python runtime (Beta) <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
 * `A guide on good usage of non_blocking and pin_memory() in PyTorch <https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`__
 * `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
-* `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
+* `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__
 * `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
 * `Python Custom Operators <https://pytorch.org/tutorials/advanced/python_custom_ops.html>`__
 * Updated `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
@@ -692,6 +692,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/knowledge_distillation_pytorch_logo.png
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
+
+
+.. customcarditem::
+   :header: [Title TBD] Unbundling nn.Transformer modules for gains and profits
+   :card_description: This tutorial goes over recommended best practices for implementing Transformers.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/transformer_building_blocks.html
+   :tags: Transformer
 
 .. Parallel-and-Distributed-Training
 
