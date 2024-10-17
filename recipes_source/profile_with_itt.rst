@@ -58,6 +58,10 @@ Launch Intel® VTune™ Profiler
 
 To verify the functionality, you need to start an Intel® VTune™ Profiler instance. Please check the `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/launch.html>`__ for steps to launch Intel® VTune™ Profiler.
 
+.. note:: 
+        Users can also use web-server-ui by following  `Intel® VTune™ Profiler Web Server UI Guide <https://www.intel.com/content/www/us/en/docs/vtune-profiler/user-guide/2024-1/web-server-ui.html>`__
+        ex :  vtune-backend --web-port=8080  --allow-remote-access --enable-server-profiling
+
 Once you get the Intel® VTune™ Profiler GUI launched, you should see a user interface as below:
 
 .. figure:: /_static/img/itt_tutorial/vtune_start.png
@@ -66,8 +70,8 @@ Once you get the Intel® VTune™ Profiler GUI launched, you should see a user i
 
 Three sample results are available on the left side navigation bar under `sample (matrix)` project. If you do not want profiling results appear in this default sample project, you can create a new project via the button `New Project...` under the blue `Configure Analysis...` button. To start a new profiling, click the blue `Configure Analysis...` button to initiate configuration of the profiling.
 
-Configure Profiling
-~~~~~~~~~~~~~~~~~~~
+Configure Profiling for CPU
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once you click the `Configure Analysis...` button, you should see the screen below:
 
@@ -76,6 +80,16 @@ Once you click the `Configure Analysis...` button, you should see the screen bel
    :align: center
 
 The right side of the windows is split into 3 parts: `WHERE` (top left), `WHAT` (bottom left), and `HOW` (right). With `WHERE`, you can assign a machine where you want to run the profiling on. With `WHAT`, you can set the path of the application that you want to profile. To profile a PyTorch script, it is recommended to wrap all manual steps, including activating a Python environment and setting required environment variables, into a bash script, then profile this bash script. In the screenshot above, we wrapped all steps into the `launch.sh` bash script and profile `bash` with the parameter to be `<path_of_launch.sh>`. On the right side `HOW`, you can choose whatever type that you would like to profile. Intel® VTune™ Profiler provides a bunch of profiling types that you can choose from. Details can be found at `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html>`__.
+
+
+Configure Profiling for XPU
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Pick GPU Offload Profiling Type instead of Hotspots, and follow the same instructions as CPU to Launch the Application. 
+
+.. figure:: /_static/img/itt_tutorial/vtune_xpu_config.png
+   :width: 100%
+   :align: center
+
 
 Read Profiling Result
 ~~~~~~~~~~~~~~~~~~~~~
@@ -100,6 +114,18 @@ As illustrated on the right side navigation bar, brown portions in the timeline 
 3. How well OpenMP threads are synchronized. Are there jitters when starting OpenMP threads or OpenMP threads finish.
 
 Of course there are much more enriched sets of profiling features that Intel® VTune™ Profiler provides to help you understand a performance issue. When you understand the root cause of a performance issue, you can get it fixed. More detailed usage instructions are available at `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html>`__.
+
+Read XPU Profiling Result
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With a successful profiling with ITT, you can open `Platform` tab of the profiling result to see labels in the Intel® VTune™ Profiler timeline.
+
+.. figure:: /_static/img/itt_tutorial/vtune_xpu_timeline.png
+   :width: 100%
+   :align: center
+
+
+The timeline shows the main thread as a `python` thread on the top. Labeled PyTorch operators and customized regions are shown in the main thread row. All operators starting with `aten::` are operators labeled implicitly by the ITT feature in PyTorch. The timeline also shows the GPU Computing Queue on the top, and users could see different XPU Kernels dispatched into GPU Queue.
 
 A short sample code showcasing how to use PyTorch ITT APIs
 ----------------------------------------------------------
@@ -128,8 +154,12 @@ The topology is formed by two operators, `Conv2d` and `Linear`. Three iterations
        return x
    
    def main():
-     m = ITTSample()
+     m = ITTSample
+     # unmark below code for XPU
+     # m = m.to("xpu")
      x = torch.rand(10, 3, 244, 244)
+     # unmark below code for XPU
+     # x = x.to("xpu")
      with torch.autograd.profiler.emit_itt():
        for i in range(3)
          # Labeling a region with pair of range_push and range_pop
