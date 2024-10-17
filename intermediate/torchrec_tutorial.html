@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Introduction to TorchRec — PyTorch Tutorials 2.4.0+cu121 documentation</title>
+<title>Introduction to TorchRec — PyTorch Tutorials 2.5.0+cu124 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -24,8 +24,6 @@
 <link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="../advanced/sharding.html" rel="next" title="Exploring TorchRec sharding"/>
-<link href="../advanced/generic_join.html" rel="prev" title="Distributed Training with Uneven Inputs Using the Join Context Manager"/>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -231,7 +229,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-            2.4.0+cu121
+            2.5.0+cu124
         </div>
 <div class="searchbox">
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
@@ -380,11 +378,9 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-torch-compile">Using SDPA with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#using-sdpa-with-attn-bias-subclasses">Using SDPA with attn_bias subclasses`</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html#conclusion">Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
@@ -417,8 +413,8 @@
 <li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html">Lowering a Model as a Delegate</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to TorchRec</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchrec_intro_tutorial.html">Introduction to TorchRec</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
@@ -479,197 +475,12 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="introduction-to-torchrec">
 <h1>Introduction to TorchRec<a class="headerlink" href="#introduction-to-torchrec" title="Permalink to this heading">¶</a></h1>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>To get the most of this tutorial, we suggest using this
-<a class="reference external" href="https://colab.research.google.com/github/pytorch/torchrec/blob/main/Torchrec_Introduction.ipynb">Colab Version</a>.
-This will allow you to experiment with the information presented below.</p>
-</div>
-<p>Follow along with the video below or on <a class="reference external" href="https://www.youtube.com/watch?v=cjgj41dvSeQ">youtube</a>.</p>
-<div style="margin-top:10px; margin-bottom:10px;">
-<iframe allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/cjgj41dvSeQ" width="560"></iframe>
-</div><p>When building recommendation systems, we frequently want to represent
-entities like products or pages with embeddings. For example, see Meta
-AI’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">Deep learning recommendation
-model</a>, or DLRM. As the number of
-entities grow, the size of the embedding tables can exceed a single
-GPU’s memory. A common practice is to shard the embedding table across
-devices, a type of model parallelism. To that end, TorchRec introduces
-its primary API
-called <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a>,
-or DMP. Like PyTorch’s DistributedDataParallel, DMP wraps a model to
-enable distributed training.</p>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
-<p>Requirements: python &gt;= 3.7</p>
-<p>We highly recommend CUDA when using TorchRec (If using CUDA: cuda &gt;= 11.0).</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pytorch with cudatoolkit 11.3</span>
-conda<span class="w"> </span>install<span class="w"> </span>pytorch<span class="w"> </span><span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">11</span>.3<span class="w"> </span>-c<span class="w"> </span>pytorch-nightly<span class="w"> </span>-y
-<span class="c1"># install TorchRec</span>
-pip3<span class="w"> </span>install<span class="w"> </span>torchrec-nightly
-</pre></div>
-</div>
-</div>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
-<p>This tutorial will cover three pieces of TorchRec: the <code class="docutils literal notranslate"><span class="pre">nn.module</span></code> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a>, the <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> API, and
-the datastructure <a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a>.</p>
-<div class="section" id="distributed-setup">
-<h3>Distributed Setup<a class="headerlink" href="#distributed-setup" title="Permalink to this heading">¶</a></h3>
-<p>We setup our environment with torch.distributed. For more info on
-distributed, see this
-<a class="reference external" href="https://pytorch.org/tutorials/beginner/dist_overview.html">tutorial</a>.</p>
-<p>Here, we use one rank (the colab process) corresponding to our 1 colab
-GPU.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchrec</span>
-<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
-
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"RANK"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"0"</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"WORLD_SIZE"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_ADDR"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"localhost"</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_PORT"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"29500"</span>
-
-<span class="c1"># Note - you will need a V100 or A100 to run tutorial as as!</span>
-<span class="c1"># If using an older GPU (such as colab free K80),</span>
-<span class="c1"># you will need to compile fbgemm with the appripriate CUDA architecture</span>
-<span class="c1"># or run with "gloo" on CPUs</span>
-<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"nccl"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="from-embeddingbag-to-embeddingbagcollection">
-<h3>From EmbeddingBag to EmbeddingBagCollection<a class="headerlink" href="#from-embeddingbag-to-embeddingbagcollection" title="Permalink to this heading">¶</a></h3>
-<p>PyTorch represents embeddings through <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.Embedding</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.EmbeddingBag</span></code></a>.
-EmbeddingBag is a pooled version of Embedding.</p>
-<p>TorchRec extends these modules by creating collections of embeddings. We
-will use <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a> to represent a group of EmbeddingBags.</p>
-<p>Here, we create an EmbeddingBagCollection (EBC) with two embedding bags.
-Each table, <code class="docutils literal notranslate"><span class="pre">product_table</span></code> and <code class="docutils literal notranslate"><span class="pre">user_table</span></code>, is represented by a 64
-dimension embedding of size 4096. Note how we initially allocate the EBC
-on device “meta”. This will tell EBC to not allocate memory yet.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">(</span>
-    <span class="n">device</span><span class="o">=</span><span class="s2">"meta"</span><span class="p">,</span>
-    <span class="n">tables</span><span class="o">=</span><span class="p">[</span>
-        <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagConfig</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">"product_table"</span><span class="p">,</span>
-            <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
-            <span class="n">num_embeddings</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
-            <span class="n">feature_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"product"</span><span class="p">],</span>
-            <span class="n">pooling</span><span class="o">=</span><span class="n">torchrec</span><span class="o">.</span><span class="n">PoolingType</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagConfig</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">"user_table"</span><span class="p">,</span>
-            <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
-            <span class="n">num_embeddings</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
-            <span class="n">feature_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"user"</span><span class="p">],</span>
-            <span class="n">pooling</span><span class="o">=</span><span class="n">torchrec</span><span class="o">.</span><span class="n">PoolingType</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">]</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="distributedmodelparallel">
-<h3>DistributedModelParallel<a class="headerlink" href="#distributedmodelparallel" title="Permalink to this heading">¶</a></h3>
-<p>Now, we’re ready to wrap our model with <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> (DMP). Instantiating DMP will:</p>
-<ol class="arabic simple">
-<li><p>Decide how to shard the model. DMP will collect the available
-‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
-embedding table(s) (i.e., the EmbeddingBagCollection).</p></li>
-<li><p>Actually shard the model. This includes allocating memory for each
-embedding table on the appropriate device(s).</p></li>
-</ol>
-<p>In this toy example, since we have two EmbeddingTables and one GPU,
-TorchRec will place both on the single GPU.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedModelParallel</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">plan</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="query-vanilla-nn-embeddingbag-with-input-and-offsets">
-<h3>Query vanilla nn.EmbeddingBag with input and offsets<a class="headerlink" href="#query-vanilla-nn-embeddingbag-with-input-and-offsets" title="Permalink to this heading">¶</a></h3>
-<p>We query <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html"><code class="docutils literal notranslate"><span class="pre">nn.Embedding</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html"><code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code></a>
-with <code class="docutils literal notranslate"><span class="pre">input</span></code> and <code class="docutils literal notranslate"><span class="pre">offsets</span></code>. Input is a 1-D tensor containing the
-lookup values. Offsets is a 1-D tensor where the sequence is a
-cumulative sum of the number of values to pool per example.</p>
-<p>Let’s look at an example, recreating the product EmbeddingBag above:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|------------|</span>
-<span class="o">|</span> <span class="n">product</span> <span class="n">ID</span> <span class="o">|</span>
-<span class="o">|------------|</span>
-<span class="o">|</span> <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">202</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="p">[]</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="mi">303</span><span class="p">]</span>      <span class="o">|</span>
-<span class="o">|------------|</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">product_eb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span><span class="p">(</span><span class="mi">4096</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
-<span class="n">product_eb</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">101</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">303</span><span class="p">]),</span> <span class="n">offsets</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="representing-minibatches-with-keyedjaggedtensor">
-<h3>Representing minibatches with KeyedJaggedTensor<a class="headerlink" href="#representing-minibatches-with-keyedjaggedtensor" title="Permalink to this heading">¶</a></h3>
-<p>We need an efficient representation of multiple examples of an arbitrary
-number of entity IDs per feature per example. In order to enable this
-“jagged” representation, we use the TorchRec datastructure
-<a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a> (KJT).</p>
-<p>Let’s take a look at how to lookup a collection of two embedding
-bags, “product” and “user”. Assume the minibatch is made up of three
-examples for three users. The first of which has two product IDs, the
-second with none, and the third with one product ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|------------|------------|</span>
-<span class="o">|</span> <span class="n">product</span> <span class="n">ID</span> <span class="o">|</span> <span class="n">user</span> <span class="n">ID</span>    <span class="o">|</span>
-<span class="o">|------------|------------|</span>
-<span class="o">|</span> <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">202</span><span class="p">]</span> <span class="o">|</span> <span class="p">[</span><span class="mi">404</span><span class="p">]</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="p">[]</span>         <span class="o">|</span> <span class="p">[</span><span class="mi">505</span><span class="p">]</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="mi">303</span><span class="p">]</span>      <span class="o">|</span> <span class="p">[</span><span class="mi">606</span><span class="p">]</span>      <span class="o">|</span>
-<span class="o">|------------|------------|</span>
-</pre></div>
-</div>
-<p>The query should be:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mb</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">KeyedJaggedTensor</span><span class="p">(</span>
-    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"product"</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">],</span>
-    <span class="n">values</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">101</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">303</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">505</span><span class="p">,</span> <span class="mi">606</span><span class="p">])</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span>
-    <span class="n">lengths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)))</span>
-</pre></div>
-</div>
-<p>Note that the KJT batch size is
-<code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">len(lengths)//len(keys)</span></code>. In the above example,
-batch_size is 3.</p>
-</div>
-<div class="section" id="putting-it-all-together-querying-our-distributed-model-with-a-kjt-minibatch">
-<h3>Putting it all together, querying our distributed model with a KJT minibatch<a class="headerlink" href="#putting-it-all-together-querying-our-distributed-model-with-a-kjt-minibatch" title="Permalink to this heading">¶</a></h3>
-<p>Finally, we can query our model using our minibatch of products and
-users.</p>
-<p>The resulting lookup will contain a KeyedTensor, where each key (or
-feature) contains a 2D tensor of size 3x64 (batch_size x embedding_dim).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pooled_embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">mb</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pooled_embeddings</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="more-resources">
-<h2>More resources<a class="headerlink" href="#more-resources" title="Permalink to this heading">¶</a></h2>
-<p>For more information, please see our
-<a class="reference external" href="https://github.com/pytorch/torchrec/tree/main/examples/dlrm">dlrm</a>
-example, which includes multinode training on the criteo terabyte
-dataset, using Meta’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">DLRM</a>.</p>
-</div>
-</div>
+<p>There is a newer tutorial on this topic.</p>
+<p>Redirecting…</p>
+<meta content="0; url='https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
-<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="../advanced/sharding.html" rel="next" title="Exploring TorchRec sharding">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../advanced/generic_join.html" rel="prev" title="Distributed Training with Uneven Inputs Using the Join Context Manager"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
-</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -705,20 +516,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Introduction to TorchRec</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#overview">Overview</a><ul>
-<li><a class="reference internal" href="#distributed-setup">Distributed Setup</a></li>
-<li><a class="reference internal" href="#from-embeddingbag-to-embeddingbagcollection">From EmbeddingBag to EmbeddingBagCollection</a></li>
-<li><a class="reference internal" href="#distributedmodelparallel">DistributedModelParallel</a></li>
-<li><a class="reference internal" href="#query-vanilla-nn-embeddingbag-with-input-and-offsets">Query vanilla nn.EmbeddingBag with input and offsets</a></li>
-<li><a class="reference internal" href="#representing-minibatches-with-keyedjaggedtensor">Representing minibatches with KeyedJaggedTensor</a></li>
-<li><a class="reference internal" href="#putting-it-all-together-querying-our-distributed-model-with-a-kjt-minibatch">Putting it all together, querying our distributed model with a KJT minibatch</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#more-resources">More resources</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Introduction to TorchRec</a></li>
 </ul>
 </div>
 </div>
@@ -834,12 +632,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1">
-</img></noscript>
+  &amp;noscript=1" width="1"/>
+</noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Backends', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Profiling PyTorch', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Edge with ExecuTorch', 'Recommendation Systems', 'Multimodality'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -1059,5 +857,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</img></body>
+</body>
 </html>
