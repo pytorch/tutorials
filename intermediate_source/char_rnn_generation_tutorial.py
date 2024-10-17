@@ -4,6 +4,12 @@ NLP From Scratch: Generating Names with a Character-Level RNN
 *************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
+This tutorials is part of a three-part series:
+
+* `NLP From Scratch: Classifying Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html>`__
+* `NLP From Scratch: Generating Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html>`__
+* `NLP From Scratch: Translation with a Sequence to Sequence Network and Attention <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`__
+
 This is our second of three tutorials on "NLP From Scratch".
 In the `first tutorial </tutorials/intermediate/char_rnn_classification_tutorial>`_
 we used a RNN to classify names into their language of origin. This time
