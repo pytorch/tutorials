@@ -1,0 +1,63 @@
+#Checks links in a PR to ensure they are valid. If link is valid but failing, it can be added to the .lycheeignore file
+#Code source: https://github.com/lycheeverse/lychee-action/issues/238
+
+name: link check on PR
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
+      - name: Check out main branch
+        run: git checkout main
+
+      - name: Dump all links from main
+        id: dump_links_from_main
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: |
+            --dump
+            --include-fragments
+            .
+          output: ./links-main.txt
+
+      - name: Stash untracked files
+        run: git stash push --include-untracked
+
+      - name: Check out feature branch
+        run: git checkout ${{ github.head_ref }}
+
+      - name: Apply stashed changes
+        # Apply stashed changes, ignore errors if stash is empty
+        run: git stash pop || true
+
+      - name: Append links-main.txt to .lycheeignore
+        run: cat links-main.txt >> .lycheeignore
+
+      - name: Check links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: |
+            --no-progress
+            --include-fragments
+            .
+          # Fail action on broken links
+          fail: true
+
+      - name: Suggestions
+        if: failure()
+        run: |
+          echo -e "\nPlease review the links reported in the Check links step above."
+          echo -e "If a link is valid but fails due to a CAPTCHA challenge, IP blocking, login requirements, etc.,
+          consider adding such links to .lycheeignore file to bypass future checks.\n"
+          exit 1
