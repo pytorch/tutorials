@@ -607,6 +607,9 @@ available.</p>
 you can enable the configuration flag <code class="docutils literal notranslate"><span class="pre">torch._dynamo.config.inline_inbuilt_nn_modules=True</span></code>
 to prevent recompilations during regional compilation. In version 2.5, this flag is enabled by default.</p>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="steps">
 <h2>Steps<a class="headerlink" href="#steps" title="Permalink to this heading">¶</a></h2>
@@ -620,7 +623,6 @@ to prevent recompilations during regional compilation. In version 2.5, this flag
 <p>First, let’s import the necessary libraries for loading our data:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
 </pre></div>
 </div>
 <p>Next, let’s define and initialize a neural network with repeated regions.</p>
@@ -645,13 +647,16 @@ We will then create a <code class="docutils literal notranslate"><span class="pr
         <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu2</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">b</span>
 
+
 <span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apply_regional_compilation</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
         <span class="c1"># Apply compile only to the repeated layers.</span>
         <span class="k">if</span> <span class="n">apply_regional_compilation</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html#torch.nn.ModuleList" title="torch.nn.ModuleList" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span></a><span class="p">([</span><a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">Layer</span></a><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html#torch.nn.ModuleList" title="torch.nn.ModuleList" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span></a><span class="p">(</span>
+                <span class="p">[</span><a href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">Layer</span></a><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)]</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html#torch.nn.ModuleList" title="torch.nn.ModuleList" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span></a><span class="p">([</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">Layer</span></a><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">)])</span>
 
@@ -706,16 +711,19 @@ compilation.</p>
         <span class="n">end</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
 
+
 <span class="nb">input</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">full_model_compilation_latency</span> <span class="o">=</span> <span class="n">measure_latency</span><span class="p">(</span><span class="n">full_compiled_model</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full model compilation time = </span><span class="si">{</span><span class="n">full_model_compilation_latency</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
 
 <span class="n">regional_compilation_latency</span> <span class="o">=</span> <span class="n">measure_latency</span><span class="p">(</span><span class="n">regional_compiled_model</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regional compilation time = </span><span class="si">{</span><span class="n">regional_compilation_latency</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">regional_compilation_latency</span> <span class="o">&lt;</span> <span class="n">full_model_compilation_latency</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Full model compilation time = 29.41 seconds
-Regional compilation time = 1.75 seconds
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Full model compilation time = 30.03 seconds
+Regional compilation time = 1.76 seconds
 </pre></div>
 </div>
 </div>
@@ -725,7 +733,7 @@ Regional compilation time = 1.75 seconds
 has repeated regions. This approach requires user modifications to apply <cite>torch.compile</cite> to
 the repeated regions instead of more commonly used full model compilation. We
 are continually working on reducing cold start compilation time.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  31.243 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  31.872 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-regional-compilation-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/1ac8a049de0513cb49a0e834e4c27a20/regional_compilation.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">regional_compilation.py</span></code></a></p>
