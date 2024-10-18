@@ -3,13 +3,13 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `torch.export AOTInductor Tutorial for Python runtime (Beta) <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
-* `A guide on good usage of non_blocking and pin_memory() in PyTorch <https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`__
-* `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
-* `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
-* `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
-* `Python Custom Operators <https://pytorch.org/tutorials/advanced/python_custom_ops.html>`__
-* Updated `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
+* `Compiled Autograd: Capturing a larger backward graph for torch.compile <https://pytorch.org/tutorials/intermediate/compiled_autograd_tutorial>`__
+* `Reducing torch.compile cold start compilation time with regional compilation <https://pytorch.org/tutorials/recipes/regional_compilation.html>`__
+* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html>`__
+* `(prototype) Flight Recorder for Debugging Stuck Jobs <https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html>`__
+* `(prototype) How to use TorchInductor on Windows CPU <https://pytorch.org/tutorials/prototype/inductor_windows_cpu.html>`__
+* `(prototype) Using Max-Autotune Compilation on CPU for Better Performance <https://pytorch.org/tutorials/prototype/max_autotune_on_CPU_tutorial.html>`__
+* `(prototype) Autoloading Out-of-Tree Extension <https://pytorch.org/tutorials/prototype/python_extension_autoload.html>`__
 
 .. raw:: html
 
@@ -440,6 +440,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
+   :header: Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
+   :card_description: Learn how to use compiled autograd to capture a larger backward graph.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/compiled_autograd_tutorial
+   :tags: Model-Optimization,CUDA
+
+.. customcarditem::
    :header: Custom C++ and CUDA Operators
    :card_description: How to extend PyTorch with custom C++ and CUDA operators.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
@@ -846,7 +853,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to TorchRec
    :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
    :image: _static/img/thumbnails/torchrec.png
-   :link: intermediate/torchrec_tutorial.html
+   :link: intermediate/torchrec_intro_tutorial.html
    :tags: TorchRec,Recommender
 
 .. customcarditem::
@@ -1132,6 +1139,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
@@ -1180,7 +1188,7 @@ Additional Resources
    :hidden:
    :caption: Recommendation Systems
 
-   intermediate/torchrec_tutorial
+   intermediate/torchrec_intro_tutorial
    advanced/sharding
 
 .. toctree::
