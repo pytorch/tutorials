@@ -955,6 +955,7 @@ Additional Resources
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
+   intermediate/nlp_from_scratch_index
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
 
@@ -988,16 +989,6 @@ Additional Resources
    intermediate/speech_command_classification_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
    intermediate/forced_alignment_with_torchaudio_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: NLP
-
-   intermediate/char_rnn_classification_tutorial
-   intermediate/char_rnn_generation_tutorial
-   intermediate/seq2seq_translation_tutorial
 
 .. toctree::
    :maxdepth: 2
