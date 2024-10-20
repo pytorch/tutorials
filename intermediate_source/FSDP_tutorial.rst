@@ -208,10 +208,12 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             transforms.Normalize((0.1307,), (0.3081,))
         ])
 
-        dataset1 = datasets.MNIST('../data', train=True, download=True,
-                            transform=transform)
-        dataset2 = datasets.MNIST('../data', train=False,
-                            transform=transform)
+        #if dataset not exists, download it on rank 0
+        dataset_dir = '../data'
+        if rank == 0:
+            print(f"Preparing MNIST dataset on {rank=} ...")
+            datasets.MNIST(dataset_dir, train=True, download=True)
+        dist.barrier()
 
         sampler1 = DistributedSampler(dataset1, rank=rank, num_replicas=world_size, shuffle=True)
         sampler2 = DistributedSampler(dataset2, rank=rank, num_replicas=world_size)
