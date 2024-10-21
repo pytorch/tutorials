@@ -24,8 +24,6 @@
 <link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="translation_transformer.html" rel="next" title="Language Translation with nn.Transformer and torchtext"/>
-<link href="../intermediate/seq2seq_translation_tutorial.html" rel="prev" title="NLP From Scratch: Translation with a Sequence to Sequence Network and Attention"/>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -272,6 +270,7 @@
 <li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/nlp_from_scratch_index.html">NLP from Scratch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
 </ul>
@@ -296,16 +295,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Text</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Text classification with the torchtext library</a></li>
-<li class="toctree-l1"><a class="reference internal" href="translation_transformer.html">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
-<li class="toctree-l1"><a class="reference internal" href="torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Backends</span></p>
 <ul>
@@ -454,10 +443,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/text_sentiment_ngrams_tutorial</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -475,346 +464,14 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-text-sentiment-ngrams-tutorial-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="text-classification-with-the-torchtext-library">
-<span id="sphx-glr-beginner-text-sentiment-ngrams-tutorial-py"></span><h1>Text classification with the torchtext library<a class="headerlink" href="#text-classification-with-the-torchtext-library" title="Permalink to this heading">¶</a></h1>
-<p>In this tutorial, we will show how to use the torchtext library to build the dataset for the text classification analysis. Users will have the flexibility to</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Access to the raw data as an iterator</p></li>
-<li><p>Build data processing pipeline to convert the raw text strings into <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> that can be used to train the model</p></li>
-<li><p>Shuffle and iterate the data with <a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a></p></li>
-</ul>
-</div></blockquote>
-<div class="section" id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h2>
-<p>A recent 2.x version of the <code class="docutils literal notranslate"><span class="pre">portalocker</span></code> package needs to be installed prior to running the tutorial.
-For example, in the Colab environment, this can be done by adding the following line at the top of the script:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>!pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>portalocker&gt;<span class="o">=</span><span class="m">2</span>.0.0<span class="sb">`</span>
-</pre></div>
-</div>
-<div class="section" id="access-to-the-raw-dataset-iterators">
-<h3>Access to the raw dataset iterators<a class="headerlink" href="#access-to-the-raw-dataset-iterators" title="Permalink to this heading">¶</a></h3>
-<p>The torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> dataset iterators yield the raw data as a tuple of label and text.</p>
-<p>To access torchtext datasets, please install torchdata following instructions at <a class="reference external" href="https://github.com/pytorch/data">https://github.com/pytorch/data</a>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a>
-
-<span class="n">train_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>next<span class="o">(</span>train_iter<span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="o">(</span><span class="m">3</span>,<span class="w"> </span><span class="s2">"Fears for T N pension after talks Unions representing workers at Turner</span>
-<span class="s2">Newall say they are 'disappointed' after talks with stricken parent firm Federal</span>
-<span class="s2">Mogul."</span><span class="o">)</span>
-
-next<span class="o">(</span>train_iter<span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="o">(</span><span class="m">4</span>,<span class="w"> </span><span class="s2">"The Race is On: Second Private Team Sets Launch Date for Human</span>
-<span class="s2">Spaceflight (SPACE.com) SPACE.com - TORONTO, Canada -- A second\\team of</span>
-<span class="s2">rocketeers competing for the  #36;10 million Ansari X Prize, a contest</span>
-<span class="s2">for\\privately funded suborbital space flight, has officially announced</span>
-<span class="s2">the first\\launch date for its manned rocket."</span><span class="o">)</span>
-
-next<span class="o">(</span>train_iter<span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="o">(</span><span class="m">4</span>,<span class="w"> </span><span class="s1">'Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded</span>
-<span class="s1">by a chemistry researcher at the University of Louisville won a grant to develop</span>
-<span class="s1">a method of producing better peptides, which are short chains of amino acids, the</span>
-<span class="s1">building blocks of proteins.'</span><span class="o">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="prepare-data-processing-pipelines">
-<h3>Prepare data processing pipelines<a class="headerlink" href="#prepare-data-processing-pipelines" title="Permalink to this heading">¶</a></h3>
-<p>We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer. Those are the basic data processing building blocks for raw text string.</p>
-<p>Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. Here we use built in
-factory function <cite>build_vocab_from_iterator</cite> which accepts iterator that yield list or iterator of tokens. Users can also pass any special symbols to be added to the
-vocabulary.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-data-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_utils.html#torchtext.data.utils.get_tokenizer" title="torchtext.data.utils.get_tokenizer"><span class="n">get_tokenizer</span></a>
-<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-vocab sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/vocab.html#torchtext.vocab.build_vocab_from_iterator" title="torchtext.vocab.build_vocab_from_iterator"><span class="n">build_vocab_from_iterator</span></a>
-
-<span class="n">tokenizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-data-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_utils.html#torchtext.data.utils.get_tokenizer" title="torchtext.data.utils.get_tokenizer"><span class="n">get_tokenizer</span></a><span class="p">(</span><span class="s2">"basic_english"</span><span class="p">)</span>
-<span class="n">train_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">yield_tokens</span><span class="p">(</span><span class="n">data_iter</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">data_iter</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-
-
-<span class="n">vocab</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-vocab sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/vocab.html#torchtext.vocab.build_vocab_from_iterator" title="torchtext.vocab.build_vocab_from_iterator"><span class="n">build_vocab_from_iterator</span></a><span class="p">(</span><span class="n">yield_tokens</span><span class="p">(</span><span class="n">train_iter</span><span class="p">),</span> <span class="n">specials</span><span class="o">=</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
-<span class="n">vocab</span><span class="o">.</span><span class="n">set_default_index</span><span class="p">(</span><span class="n">vocab</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>The vocabulary block converts a list of tokens into integers.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>vocab<span class="o">([</span><span class="s1">'here'</span>,<span class="w"> </span><span class="s1">'is'</span>,<span class="w"> </span><span class="s1">'an'</span>,<span class="w"> </span><span class="s1">'example'</span><span class="o">])</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="o">[</span><span class="m">475</span>,<span class="w"> </span><span class="m">21</span>,<span class="w"> </span><span class="m">30</span>,<span class="w"> </span><span class="m">5297</span><span class="o">]</span>
-</pre></div>
-</div>
-<p>Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">text_pipeline</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">vocab</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-<span class="n">label_pipeline</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>text_pipeline<span class="o">(</span><span class="s1">'here is the an example'</span><span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="o">[</span><span class="m">475</span>,<span class="w"> </span><span class="m">21</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">30</span>,<span class="w"> </span><span class="m">5297</span><span class="o">]</span>
-label_pipeline<span class="o">(</span><span class="s1">'10'</span><span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span><span class="m">9</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="generate-data-batch-and-iterator">
-<h3>Generate data batch and iterator<a class="headerlink" href="#generate-data-batch-and-iterator" title="Permalink to this heading">¶</a></h3>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a>
-is recommended for PyTorch users (a tutorial is <a class="reference external" href="https://pytorch.org/tutorials/beginner/data_loading_tutorial.html">here</a>).
-It works with a map-style dataset that implements the <code class="docutils literal notranslate"><span class="pre">getitem()</span></code> and <code class="docutils literal notranslate"><span class="pre">len()</span></code> protocols, and represents a map from indices/keys to data samples. It also works with an iterable dataset with the shuffle argument of <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-<p>Before sending to the model, <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> function works on a batch of samples generated from <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>. The input to <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is a batch of data with the batch size in <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>, and <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> processes them according to the data processing pipelines declared previously. Pay attention here and make sure that <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is declared as a top level def. This ensures that the function is available in each worker.</p>
-<p>In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code>. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of individual text entries.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a>
-
-<span class="n">device</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">collate_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
-    <span class="n">label_list</span><span class="p">,</span> <span class="n">text_list</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">_label</span><span class="p">,</span> <span class="n">_text</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
-        <span class="n">label_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label_pipeline</span><span class="p">(</span><span class="n">_label</span><span class="p">))</span>
-        <span class="n">processed_text</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">text_pipeline</span><span class="p">(</span><span class="n">_text</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-        <span class="n">text_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed_text</span><span class="p">)</span>
-        <span class="n">offsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed_text</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="n">label_list</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">label_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-    <span class="n">offsets</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">offsets</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">text_list</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">(</span><span class="n">text_list</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">label_list</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">text_list</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">offsets</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
-
-<span class="n">train_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
-<span class="n">dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span>
-    <span class="n">train_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="define-the-model">
-<h3>Define the model<a class="headerlink" href="#define-the-model" title="Permalink to this heading">¶</a></h3>
-<p>The model is composed of the <a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag">nn.EmbeddingBag</a> layer plus a linear layer for the classification purpose. <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> with the default mode of “mean” computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> module requires no padding here since the text lengths are saved in offsets.</p>
-<p>Additionally, since <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> accumulates the average across
-the embeddings on the fly, <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> can enhance the
-performance and memory efficiency to process a sequence of tensors.</p>
-<img alt="../_images/text_sentiment_ngrams_model.png" src="../_images/text_sentiment_ngrams_model.png"/>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
-
-
-<span class="k">class</span> <span class="nc">TextClassificationModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TextClassificationModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag" title="torch.nn.EmbeddingBag"><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span></a><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">initrange</span> <span class="o">=</span> <span class="mf">0.5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">):</span>
-        <span class="n">embedded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">embedded</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="initiate-an-instance">
-<h3>Initiate an instance<a class="headerlink" href="#initiate-an-instance" title="Permalink to this heading">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> dataset has four labels and therefore the number of classes is four.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="m">1</span><span class="w"> </span>:<span class="w"> </span>World
-<span class="m">2</span><span class="w"> </span>:<span class="w"> </span>Sports
-<span class="m">3</span><span class="w"> </span>:<span class="w"> </span>Business
-<span class="m">4</span><span class="w"> </span>:<span class="w"> </span>Sci/Tec
-</pre></div>
-</div>
-<p>We build a model with the embedding dimension of 64. The vocab size is equal to the length of the vocabulary instance. The number of classes is equal to the number of labels,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">)</span>
-<span class="n">num_class</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">label</span> <span class="k">for</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="ow">in</span> <span class="n">train_iter</span><span class="p">]))</span>
-<span class="n">vocab_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>
-<span class="n">emsize</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">TextClassificationModel</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">emsize</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="define-functions-to-train-the-model-and-evaluate-results">
-<h3>Define functions to train the model and evaluate results.<a class="headerlink" href="#define-functions-to-train-the-model-and-evaluate-results" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
-
-
-<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="n">log_interval</span> <span class="o">=</span> <span class="mi">500</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">predicted_label</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">predicted_label</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <a class="sphx-glr-backref-module-torch-nn-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html#torch.nn.utils.clip_grad_norm_" title="torch.nn.utils.clip_grad_norm_"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span></a><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="mf">0.1</span><span class="p">)</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="n">total_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">predicted_label</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-        <span class="n">total_count</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="s2">"| epoch </span><span class="si">{:3d}</span><span class="s2"> | </span><span class="si">{:5d}</span><span class="s2">/</span><span class="si">{:5d}</span><span class="s2"> batches "</span>
-                <span class="s2">"| accuracy </span><span class="si">{:8.3f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">epoch</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">),</span> <span class="n">total_acc</span> <span class="o">/</span> <span class="n">total_count</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-            <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-
-<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-
-    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-            <span class="n">predicted_label</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">predicted_label</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-            <span class="n">total_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">predicted_label</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            <span class="n">total_count</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">total_acc</span> <span class="o">/</span> <span class="n">total_count</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="split-the-dataset-and-run-the-model">
-<h3>Split the dataset and run the model<a class="headerlink" href="#split-the-dataset-and-run-the-model" title="Permalink to this heading">¶</a></h3>
-<p>Since the original <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> has no valid dataset, we split the training
-dataset into train/valid sets with a split ratio of 0.95 (train) and
-0.05 (valid). Here we use
-<a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=random_split#torch.utils.data.random_split">torch.utils.data.dataset.random_split</a>
-function in PyTorch core library.</p>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss">CrossEntropyLoss</a>
-criterion combines <code class="docutils literal notranslate"><span class="pre">nn.LogSoftmax()</span></code> and <code class="docutils literal notranslate"><span class="pre">nn.NLLLoss()</span></code> in a single class.
-It is useful when training a classification problem with C classes.
-<a class="reference external" href="https://pytorch.org/docs/stable/_modules/torch/optim/sgd.html">SGD</a>
-implements stochastic gradient descent method as the optimizer. The initial
-learning rate is set to 5.0.
-<a class="reference external" href="https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR">StepLR</a>
-is used here to adjust the learning rate through epochs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data.dataset</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.random_split" title="torch.utils.data.random_split"><span class="n">random_split</span></a>
-<span class="kn">from</span> <span class="nn">torchtext.data.functional</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-data-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_functional.html#torchtext.data.functional.to_map_style_dataset" title="torchtext.data.functional.to_map_style_dataset"><span class="n">to_map_style_dataset</span></a>
-
-<span class="c1"># Hyperparameters</span>
-<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># epoch</span>
-<span class="n">LR</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># learning rate</span>
-<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># batch size for training</span>
-
-<span class="n">criterion</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">LR</span><span class="p">)</span>
-<span class="n">scheduler</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim-lr_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html#torch.optim.lr_scheduler.StepLR" title="torch.optim.lr_scheduler.StepLR"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span></a><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-<span class="n">total_accu</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">train_iter</span><span class="p">,</span> <span class="n">test_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.AG_NEWS" title="torchtext.datasets.AG_NEWS"><span class="n">AG_NEWS</span></a><span class="p">()</span>
-<span class="n">train_dataset</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-data-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_functional.html#torchtext.data.functional.to_map_style_dataset" title="torchtext.data.functional.to_map_style_dataset"><span class="n">to_map_style_dataset</span></a><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
-<span class="n">test_dataset</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-data-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_functional.html#torchtext.data.functional.to_map_style_dataset" title="torchtext.data.functional.to_map_style_dataset"><span class="n">to_map_style_dataset</span></a><span class="p">(</span><span class="n">test_iter</span><span class="p">)</span>
-<span class="n">num_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">)</span>
-<span class="n">split_train_</span><span class="p">,</span> <span class="n">split_valid_</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.random_split" title="torch.utils.data.random_split"><span class="n">random_split</span></a><span class="p">(</span>
-    <span class="n">train_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">num_train</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">-</span> <span class="n">num_train</span><span class="p">]</span>
-<span class="p">)</span>
-
-<span class="n">train_dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span>
-    <span class="n">split_train_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span>
-<span class="p">)</span>
-<span class="n">valid_dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span>
-    <span class="n">split_valid_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span>
-<span class="p">)</span>
-<span class="n">test_dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span>
-    <span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span>
-<span class="p">)</span>
-
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">EPOCHS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-    <span class="n">epoch_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">train</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">)</span>
-    <span class="n">accu_val</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">valid_dataloader</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">total_accu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">total_accu</span> <span class="o">&gt;</span> <span class="n">accu_val</span><span class="p">:</span>
-        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">total_accu</span> <span class="o">=</span> <span class="n">accu_val</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">59</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="s2">"| end of epoch </span><span class="si">{:3d}</span><span class="s2"> | time: </span><span class="si">{:5.2f}</span><span class="s2">s | "</span>
-        <span class="s2">"valid accuracy </span><span class="si">{:8.3f}</span><span class="s2"> "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">epoch</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">epoch_start_time</span><span class="p">,</span> <span class="n">accu_val</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">59</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="evaluate-the-model-with-test-dataset">
-<h3>Evaluate the model with test dataset<a class="headerlink" href="#evaluate-the-model-with-test-dataset" title="Permalink to this heading">¶</a></h3>
-<p>Checking the results of the test dataset…</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Checking the results of test dataset."</span><span class="p">)</span>
-<span class="n">accu_test</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"test accuracy </span><span class="si">{:8.3f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accu_test</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="test-on-a-random-news">
-<h3>Test on a random news<a class="headerlink" href="#test-on-a-random-news" title="Permalink to this heading">¶</a></h3>
-<p>Use the best model so far and test a golf news.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ag_news_label</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">"World"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"Sports"</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"Business"</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s2">"Sci/Tec"</span><span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">text_pipeline</span><span class="p">):</span>
-    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
-        <span class="n">text</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">text_pipeline</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
-
-
-<span class="n">ex_text_str</span> <span class="o">=</span> <span class="s2">"MEMPHIS, Tenn. – Four days ago, Jon Rahm was </span><span class="se">\</span>
-<span class="s2">    enduring the season’s worst weather conditions on Sunday at The </span><span class="se">\</span>
-<span class="s2">    Open on his way to a closing 75 at Royal Portrush, which </span><span class="se">\</span>
-<span class="s2">    considering the wind and the rain was a respectable showing. </span><span class="se">\</span>
-<span class="s2">    Thursday’s first round at the WGC-FedEx St. Jude Invitational </span><span class="se">\</span>
-<span class="s2">    was another story. With temperatures in the mid-80s and hardly any </span><span class="se">\</span>
-<span class="s2">    wind, the Spaniard was 13 strokes better in a flawless round. </span><span class="se">\</span>
-<span class="s2">    Thanks to his best putting performance on the PGA Tour, Rahm </span><span class="se">\</span>
-<span class="s2">    finished with an 8-under 62 for a three-stroke lead, which </span><span class="se">\</span>
-<span class="s2">    was even more impressive considering he’d never played the </span><span class="se">\</span>
-<span class="s2">    front nine at TPC Southwind."</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"This is a </span><span class="si">%s</span><span class="s2"> news"</span> <span class="o">%</span> <span class="n">ag_news_label</span><span class="p">[</span><span class="n">predict</span><span class="p">(</span><span class="n">ex_text_str</span><span class="p">,</span> <span class="n">text_pipeline</span><span class="p">)])</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-text-sentiment-ngrams-tutorial-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/f003f262713c341f497ab4d8dd9be880/text_sentiment_ngrams_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">text_sentiment_ngrams_tutorial.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/b5fa995b1432ebc93ea7bfe7ec9daed1/text_sentiment_ngrams_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">text_sentiment_ngrams_tutorial.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
-</div>
+<div class="section" id="text-classification-with-the-torchtext-library">
+<h1>Text classification with the torchtext library<a class="headerlink" href="#text-classification-with-the-torchtext-library" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial has been deprecated.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta content="3; url='https://pytorch.org/tutorials'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
-<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="translation_transformer.html" rel="next" title="Language Translation with nn.Transformer and torchtext">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../intermediate/seq2seq_translation_tutorial.html" rel="prev" title="NLP From Scratch: Translation with a Sequence to Sequence Network and Attention"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
-</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -826,7 +483,7 @@ is used here to adjust the learning rate through epochs.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -836,7 +493,7 @@ is used here to adjust the learning rate through epochs.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -850,21 +507,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Text classification with the torchtext library</a><ul>
-<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#access-to-the-raw-dataset-iterators">Access to the raw dataset iterators</a></li>
-<li><a class="reference internal" href="#prepare-data-processing-pipelines">Prepare data processing pipelines</a></li>
-<li><a class="reference internal" href="#generate-data-batch-and-iterator">Generate data batch and iterator</a></li>
-<li><a class="reference internal" href="#define-the-model">Define the model</a></li>
-<li><a class="reference internal" href="#initiate-an-instance">Initiate an instance</a></li>
-<li><a class="reference internal" href="#define-functions-to-train-the-model-and-evaluate-results">Define functions to train the model and evaluate results.</a></li>
-<li><a class="reference internal" href="#split-the-dataset-and-run-the-model">Split the dataset and run the model</a></li>
-<li><a class="reference internal" href="#evaluate-the-model-with-test-dataset">Evaluate the model with test dataset</a></li>
-<li><a class="reference internal" href="#test-on-a-random-news">Test on a random news</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Text classification with the torchtext library</a></li>
 </ul>
 </div>
 </div>
@@ -1072,8 +715,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->

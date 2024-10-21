@@ -24,8 +24,6 @@
 <link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="torchtext_custom_dataset_tutorial.html" rel="next" title="Preprocess custom text dataset using Torchtext"/>
-<link href="text_sentiment_ngrams_tutorial.html" rel="prev" title="Text classification with the torchtext library"/>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -272,6 +270,7 @@
 <li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/nlp_from_scratch_index.html">NLP from Scratch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
 </ul>
@@ -296,16 +295,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Text</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
-<li class="toctree-l1"><a class="reference internal" href="torchtext_custom_dataset_tutorial.html">Preprocess custom text dataset using Torchtext</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Backends</span></p>
 <ul>
@@ -454,10 +443,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/translation_transformer</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -475,408 +464,14 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-translation-transformer-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="language-translation-with-nn-transformer-and-torchtext">
-<span id="sphx-glr-beginner-translation-transformer-py"></span><h1>Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext<a class="headerlink" href="#language-translation-with-nn-transformer-and-torchtext" title="Permalink to this heading">¶</a></h1>
-<dl class="simple">
-<dt>This tutorial shows:</dt><dd><ul class="simple">
-<li><p>How to train a translation model from scratch using Transformer.</p></li>
-<li><p>Use torchtext library to access  <a class="reference external" href="http://www.statmt.org/wmt16/multimodal-task.html#task1">Multi30k</a> dataset to train a German to English translation model.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="section" id="data-sourcing-and-processing">
-<h2>Data Sourcing and Processing<a class="headerlink" href="#data-sourcing-and-processing" title="Permalink to this heading">¶</a></h2>
-<p><a class="reference external" href="https://pytorch.org/text/stable/">torchtext library</a> has utilities for creating datasets that can be easily
-iterated through for the purposes of creating a language translation
-model. In this example, we show how to use torchtext’s inbuilt datasets,
-tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor. We will use
-<a class="reference external" href="https://pytorch.org/text/stable/datasets.html#multi30k">Multi30k dataset from torchtext library</a>
-that yields a pair of source-target raw sentences.</p>
-<p>To access torchtext datasets, please install torchdata following instructions at <a class="reference external" href="https://github.com/pytorch/data">https://github.com/pytorch/data</a>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-data-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_utils.html#torchtext.data.utils.get_tokenizer" title="torchtext.data.utils.get_tokenizer"><span class="n">get_tokenizer</span></a>
-<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torchtext-vocab sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/vocab.html#torchtext.vocab.build_vocab_from_iterator" title="torchtext.vocab.build_vocab_from_iterator"><span class="n">build_vocab_from_iterator</span></a>
-<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">multi30k</span><span class="p">,</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.Multi30k" title="torchtext.datasets.Multi30k"><span class="n">Multi30k</span></a>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span>
-
-
-<span class="c1"># We need to modify the URLs for the dataset since the links to the original dataset are broken</span>
-<span class="c1"># Refer to https://github.com/pytorch/text/issues/1756#issuecomment-1163664163 for more info</span>
-<span class="n">multi30k</span><span class="o">.</span><span class="n">URL</span><span class="p">[</span><span class="s2">"train"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/training.tar.gz"</span>
-<span class="n">multi30k</span><span class="o">.</span><span class="n">URL</span><span class="p">[</span><span class="s2">"valid"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/neychev/small_DL_repo/master/datasets/Multi30k/validation.tar.gz"</span>
-
-<span class="n">SRC_LANGUAGE</span> <span class="o">=</span> <span class="s1">'de'</span>
-<span class="n">TGT_LANGUAGE</span> <span class="o">=</span> <span class="s1">'en'</span>
-
-<span class="c1"># Place-holders</span>
-<span class="n">token_transform</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">vocab_transform</span> <span class="o">=</span> <span class="p">{}</span>
-</pre></div>
-</div>
-<p>Create source and target language tokenizer. Make sure to install the dependencies.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">torchdata</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">spacy</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">spacy</span> <span class="n">download</span> <span class="n">en_core_web_sm</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">spacy</span> <span class="n">download</span> <span class="n">de_core_news_sm</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">token_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-data-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_utils.html#torchtext.data.utils.get_tokenizer" title="torchtext.data.utils.get_tokenizer"><span class="n">get_tokenizer</span></a><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'de_core_news_sm'</span><span class="p">)</span>
-<span class="n">token_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-data-utils sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/data_utils.html#torchtext.data.utils.get_tokenizer" title="torchtext.data.utils.get_tokenizer"><span class="n">get_tokenizer</span></a><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'en_core_web_sm'</span><span class="p">)</span>
-
-
-<span class="c1"># helper function to yield list of tokens</span>
-<span class="k">def</span> <span class="nf">yield_tokens</span><span class="p">(</span><span class="n">data_iter</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">language</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-    <span class="n">language_index</span> <span class="o">=</span> <span class="p">{</span><span class="n">SRC_LANGUAGE</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-
-    <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_iter</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">token_transform</span><span class="p">[</span><span class="n">language</span><span class="p">](</span><span class="n">data_sample</span><span class="p">[</span><span class="n">language_index</span><span class="p">[</span><span class="n">language</span><span class="p">]])</span>
-
-<span class="c1"># Define special symbols and indices</span>
-<span class="n">UNK_IDX</span><span class="p">,</span> <span class="n">PAD_IDX</span><span class="p">,</span> <span class="n">BOS_IDX</span><span class="p">,</span> <span class="n">EOS_IDX</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
-<span class="c1"># Make sure the tokens are in order of their indices to properly insert them in vocab</span>
-<span class="n">special_symbols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'&lt;unk&gt;'</span><span class="p">,</span> <span class="s1">'&lt;pad&gt;'</span><span class="p">,</span> <span class="s1">'&lt;bos&gt;'</span><span class="p">,</span> <span class="s1">'&lt;eos&gt;'</span><span class="p">]</span>
-
-<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
-    <span class="c1"># Training data Iterator</span>
-    <span class="n">train_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.Multi30k" title="torchtext.datasets.Multi30k"><span class="n">Multi30k</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
-    <span class="c1"># Create torchtext's Vocab object</span>
-    <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-vocab sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/vocab.html#torchtext.vocab.build_vocab_from_iterator" title="torchtext.vocab.build_vocab_from_iterator"><span class="n">build_vocab_from_iterator</span></a><span class="p">(</span><span class="n">yield_tokens</span><span class="p">(</span><span class="n">train_iter</span><span class="p">,</span> <span class="n">ln</span><span class="p">),</span>
-                                                    <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                                    <span class="n">specials</span><span class="o">=</span><span class="n">special_symbols</span><span class="p">,</span>
-                                                    <span class="n">special_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># Set ``UNK_IDX`` as the default index. This index is returned when the token is not found.</span>
-<span class="c1"># If not set, it throws ``RuntimeError`` when the queried token is not found in the Vocabulary.</span>
-<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
-  <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span><span class="o">.</span><span class="n">set_default_index</span><span class="p">(</span><span class="n">UNK_IDX</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="seq2seq-network-using-transformer">
-<h2>Seq2Seq Network using Transformer<a class="headerlink" href="#seq2seq-network-using-transformer" title="Permalink to this heading">¶</a></h2>
-<p>Transformer is a Seq2Seq model introduced in <a class="reference external" href="https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf">“Attention is all you
-need”</a>
-paper for solving machine translation tasks.
-Below, we will create a Seq2Seq network that uses Transformer. The network
-consists of three parts. First part is the embedding layer. This layer converts tensor of input indices
-into corresponding tensor of input embeddings. These embedding are further augmented with positional
-encodings to provide position information of input tokens to the model. The second part is the
-actual <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html">Transformer</a> model.
-Finally, the output of the Transformer model is passed through linear layer
-that gives unnormalized probabilities for each token in the target language.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html#torch.nn.Transformer" title="torch.nn.Transformer"><span class="n">Transformer</span></a>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="n">DEVICE</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
-
-<span class="c1"># helper Module that adds positional encoding to the token embedding to introduce a notion of word order.</span>
-<span class="k">class</span> <span class="nc">PositionalEncoding</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-                 <span class="n">maxlen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PositionalEncoding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="n">den</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.exp.html#torch.exp" title="torch.exp"><span class="n">torch</span><span class="o">.</span><span class="n">exp</span></a><span class="p">(</span><span class="o">-</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.arange.html#torch.arange" title="torch.arange"><span class="n">torch</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="n">pos</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.arange.html#torch.arange" title="torch.arange"><span class="n">torch</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxlen</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">maxlen</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">pos_embedding</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="torch.zeros"><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">maxlen</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">))</span>
-        <span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.sin.html#torch.sin" title="torch.sin"><span class="n">torch</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">pos</span> <span class="o">*</span> <span class="n">den</span><span class="p">)</span>
-        <span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cos.html#torch.cos" title="torch.cos"><span class="n">torch</span><span class="o">.</span><span class="n">cos</span></a><span class="p">(</span><span class="n">pos</span> <span class="o">*</span> <span class="n">den</span><span class="p">)</span>
-        <span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">pos_embedding</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="torch.nn.Dropout"><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span></a><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">'pos_embedding'</span><span class="p">,</span> <span class="n">pos_embedding</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_embedding</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">token_embedding</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_embedding</span><span class="p">[:</span><span class="n">token_embedding</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">:])</span>
-
-<span class="c1"># helper Module to convert tensor of input indices into corresponding tensor of token embeddings</span>
-<span class="k">class</span> <span class="nc">TokenEmbedding</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TokenEmbedding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span></a><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">emb_size</span> <span class="o">=</span> <span class="n">emb_size</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">long</span><span class="p">())</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">emb_size</span><span class="p">)</span>
-
-<span class="c1"># Seq2Seq Network</span>
-<span class="k">class</span> <span class="nc">Seq2SeqTransformer</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">num_encoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">num_decoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">nhead</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">src_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">tgt_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
-                 <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Seq2SeqTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html#torch.nn.Transformer" title="torch.nn.Transformer"><span class="n">Transformer</span></a><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">emb_size</span><span class="p">,</span>
-                                       <span class="n">nhead</span><span class="o">=</span><span class="n">nhead</span><span class="p">,</span>
-                                       <span class="n">num_encoder_layers</span><span class="o">=</span><span class="n">num_encoder_layers</span><span class="p">,</span>
-                                       <span class="n">num_decoder_layers</span><span class="o">=</span><span class="n">num_decoder_layers</span><span class="p">,</span>
-                                       <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">,</span>
-                                       <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">tgt_vocab_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">src_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">tgt_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span>
-            <span class="n">emb_size</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                <span class="n">src</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">trg</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">src_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">tgt_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">src_padding_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">tgt_padding_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span>
-                <span class="n">memory_key_padding_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">):</span>
-        <span class="n">src_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
-        <span class="n">tgt_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">trg</span><span class="p">))</span>
-        <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">src_emb</span><span class="p">,</span> <span class="n">tgt_emb</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                                <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">memory_key_padding_mask</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span> <span class="n">src_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">)),</span> <span class="n">src_mask</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tgt</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span> <span class="n">memory</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">Tensor</span></a><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">tgt</span><span class="p">)),</span> <span class="n">memory</span><span class="p">,</span>
-                          <span class="n">tgt_mask</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>During training, we need a subsequent word mask that will prevent the model from looking into
-the future words when making predictions. We will also need masks to hide
-source and target padding tokens. Below, let’s define a function that will take care of both.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">sz</span><span class="p">):</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.triu.html#torch.triu" title="torch.triu"><span class="n">torch</span><span class="o">.</span><span class="n">triu</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">((</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">mask</span>
-
-
-<span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">):</span>
-    <span class="n">src_seq_len</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">tgt_seq_len</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">tgt_mask</span> <span class="o">=</span> <span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">tgt_seq_len</span><span class="p">)</span>
-    <span class="n">src_mask</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="torch.zeros"><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">src_seq_len</span><span class="p">,</span> <span class="n">src_seq_len</span><span class="p">),</span><span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-
-    <span class="n">src_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">src</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">tgt</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span>
-</pre></div>
-</div>
-<p>Let’s now define the parameters of our model and instantiate the same. Below, we also
-define our loss function which is the cross-entropy loss and the optimizer used for training.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="n">SRC_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">])</span>
-<span class="n">TGT_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">])</span>
-<span class="n">EMB_SIZE</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">NHEAD</span> <span class="o">=</span> <span class="mi">8</span>
-<span class="n">FFN_HID_DIM</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
-<span class="n">NUM_ENCODER_LAYERS</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">NUM_DECODER_LAYERS</span> <span class="o">=</span> <span class="mi">3</span>
-
-<span class="n">transformer</span> <span class="o">=</span> <span class="n">Seq2SeqTransformer</span><span class="p">(</span><span class="n">NUM_ENCODER_LAYERS</span><span class="p">,</span> <span class="n">NUM_DECODER_LAYERS</span><span class="p">,</span> <span class="n">EMB_SIZE</span><span class="p">,</span>
-                                 <span class="n">NHEAD</span><span class="p">,</span> <span class="n">SRC_VOCAB_SIZE</span><span class="p">,</span> <span class="n">TGT_VOCAB_SIZE</span><span class="p">,</span> <span class="n">FFN_HID_DIM</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <a class="sphx-glr-backref-module-torch-nn-init sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.xavier_uniform_" title="torch.nn.init.xavier_uniform_"><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span></a><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-
-<span class="n">transformer</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-
-<span class="n">loss_fn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
-
-<span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">),</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="collation">
-<h2>Collation<a class="headerlink" href="#collation" title="Permalink to this heading">¶</a></h2>
-<p>As seen in the <code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">Sourcing</span> <span class="pre">and</span> <span class="pre">Processing</span></code> section, our data iterator yields a pair of raw strings.
-We need to convert these string pairs into the batched tensors that can be processed by our <code class="docutils literal notranslate"><span class="pre">Seq2Seq</span></code> network
-defined previously. Below we define our collate function that converts a batch of raw strings into batch tensors that
-can be fed directly into our model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-utils-rnn sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html#torch.nn.utils.rnn.pad_sequence" title="torch.nn.utils.rnn.pad_sequence"><span class="n">pad_sequence</span></a>
-
-<span class="c1"># helper function to club together sequential operations</span>
-<span class="k">def</span> <span class="nf">sequential_transforms</span><span class="p">(</span><span class="o">*</span><span class="n">transforms</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">txt_input</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">transforms</span><span class="p">:</span>
-            <span class="n">txt_input</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">txt_input</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">txt_input</span>
-    <span class="k">return</span> <span class="n">func</span>
-
-<span class="c1"># function to add BOS/EOS and create tensor for input sequence indices</span>
-<span class="k">def</span> <span class="nf">tensor_transform</span><span class="p">(</span><span class="n">token_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
-    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">((</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="n">BOS_IDX</span><span class="p">]),</span>
-                      <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">token_ids</span><span class="p">),</span>
-                      <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="n">EOS_IDX</span><span class="p">])))</span>
-
-<span class="c1"># ``src`` and ``tgt`` language text transforms to convert raw strings into tensors indices</span>
-<span class="n">text_transform</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
-    <span class="n">text_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequential_transforms</span><span class="p">(</span><span class="n">token_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">],</span> <span class="c1">#Tokenization</span>
-                                               <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">],</span> <span class="c1">#Numericalization</span>
-                                               <span class="n">tensor_transform</span><span class="p">)</span> <span class="c1"># Add BOS/EOS and create tensor</span>
-
-
-<span class="c1"># function to collate data samples into batch tensors</span>
-<span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
-    <span class="n">src_batch</span><span class="p">,</span> <span class="n">tgt_batch</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">src_sample</span><span class="p">,</span> <span class="n">tgt_sample</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
-        <span class="n">src_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">](</span><span class="n">src_sample</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)))</span>
-        <span class="n">tgt_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">](</span><span class="n">tgt_sample</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)))</span>
-
-    <span class="n">src_batch</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-utils-rnn sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html#torch.nn.utils.rnn.pad_sequence" title="torch.nn.utils.rnn.pad_sequence"><span class="n">pad_sequence</span></a><span class="p">(</span><span class="n">src_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
-    <span class="n">tgt_batch</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-utils-rnn sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html#torch.nn.utils.rnn.pad_sequence" title="torch.nn.utils.rnn.pad_sequence"><span class="n">pad_sequence</span></a><span class="p">(</span><span class="n">tgt_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">src_batch</span><span class="p">,</span> <span class="n">tgt_batch</span>
-</pre></div>
-</div>
-<p>Let’s define training and evaluation loop that will be called for each
-epoch.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a>
-
-<span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">train_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.Multi30k" title="torchtext.datasets.Multi30k"><span class="n">Multi30k</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
-    <span class="n">train_dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span><span class="n">train_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">train_dataloader</span><span class="p">:</span>
-        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-        <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-
-        <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
-
-        <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
-
-        <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span><span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
-
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-
-        <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">))</span>
-
-
-<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">val_iter</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchtext-datasets sphx-glr-backref-type-py-function" href="https://pytorch.org/text/stable/datasets.html#torchtext.datasets.Multi30k" title="torchtext.datasets.Multi30k"><span class="n">Multi30k</span></a><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'valid'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
-    <span class="n">val_dataloader</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">DataLoader</span></a><span class="p">(</span><span class="n">val_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">val_dataloader</span><span class="p">:</span>
-        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-        <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-
-        <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
-
-        <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
-
-        <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span><span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
-
-        <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>Now we have all the ingredients to train our model. Let’s do it!</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
-<span class="n">NUM_EPOCHS</span> <span class="o">=</span> <span class="mi">18</span>
-
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_EPOCHS</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
-    <span class="n">train_loss</span> <span class="o">=</span> <span class="n">train_epoch</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-    <span class="n">end_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
-    <span class="n">val_loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">transformer</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">((</span><span class="sa">f</span><span class="s2">"Epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">, Train loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, Val loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, "</span><span class="sa">f</span><span class="s2">"Epoch time = </span><span class="si">{</span><span class="p">(</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s"</span><span class="p">))</span>
-
-
-<span class="c1"># function to generate output sequence using greedy algorithm</span>
-<span class="k">def</span> <span class="nf">greedy_decode</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">start_symbol</span><span class="p">):</span>
-    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-
-    <span class="n">memory</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">)</span>
-    <span class="n">ys</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">start_symbol</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_len</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-        <span class="n">tgt_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">ys</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-                    <span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">prob</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">out</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">next_word</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.max.html#torch.max" title="torch.max"><span class="n">torch</span><span class="o">.</span><span class="n">max</span></a><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">next_word</span> <span class="o">=</span> <span class="n">next_word</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-        <span class="n">ys</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cat.html#torch.cat" title="torch.cat"><span class="n">torch</span><span class="o">.</span><span class="n">cat</span></a><span class="p">([</span><span class="n">ys</span><span class="p">,</span>
-                        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">next_word</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">next_word</span> <span class="o">==</span> <span class="n">EOS_IDX</span><span class="p">:</span>
-            <span class="k">break</span>
-    <span class="k">return</span> <span class="n">ys</span>
-
-
-<span class="c1"># actual function to translate input sentence into target language</span>
-<span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">,</span> <span class="n">src_sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">src</span> <span class="o">=</span> <span class="n">text_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">](</span><span class="n">src_sentence</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">src_mask</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="torch.zeros"><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><span class="n">num_tokens</span><span class="p">,</span> <span class="n">num_tokens</span><span class="p">))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-    <span class="n">tgt_tokens</span> <span class="o">=</span> <span class="n">greedy_decode</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">,</span>  <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="n">num_tokens</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span> <span class="n">start_symbol</span><span class="o">=</span><span class="n">BOS_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-    <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">]</span><span class="o">.</span><span class="n">lookup_tokens</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tgt_tokens</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;bos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;eos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">translate</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="s2">"Eine Gruppe von Menschen steht vor einem Iglu ."</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Attention is all you need paper.
-<a class="reference external" href="https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf">https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf</a></p></li>
-<li><p>The annotated transformer. <a class="reference external" href="https://nlp.seas.harvard.edu/2018/04/03/attention.html#positional-encoding">https://nlp.seas.harvard.edu/2018/04/03/attention.html#positional-encoding</a></p></li>
-</ol>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-translation-transformer-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/65562063b0d7441578a041b5a568eaf2/translation_transformer.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">translation_transformer.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/c64c91cf87c13c0e83586b8e66e4d74e/translation_transformer.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">translation_transformer.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+<div class="section" id="language-translation-with-nn-transformer-and-torchtext">
+<h1>Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext<a class="headerlink" href="#language-translation-with-nn-transformer-and-torchtext" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial has been deprecated.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta content="3; url='https://pytorch.org/tutorials/'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
-<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="torchtext_custom_dataset_tutorial.html" rel="next" title="Preprocess custom text dataset using Torchtext">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="text_sentiment_ngrams_tutorial.html" rel="prev" title="Text classification with the torchtext library"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
-</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -888,7 +483,7 @@ epoch.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -898,7 +493,7 @@ epoch.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -912,13 +507,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a><ul>
-<li><a class="reference internal" href="#data-sourcing-and-processing">Data Sourcing and Processing</a></li>
-<li><a class="reference internal" href="#seq2seq-network-using-transformer">Seq2Seq Network using Transformer</a></li>
-<li><a class="reference internal" href="#collation">Collation</a></li>
-<li><a class="reference internal" href="#references">References</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Language Translation with <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> and torchtext</a></li>
 </ul>
 </div>
 </div>
@@ -1126,8 +715,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->

@@ -49,19 +49,19 @@ Preparation
 .. code-block:: default
 
 
-    import torch
-    import warnings
+
+
 
     # Disable prototype warnings and such
-    warnings.filterwarnings(action='ignore', category=UserWarning)
+
 
     # Some hyperparameters
-    eps = 1e-10
-    clr = 0.1
 
-    i = torch.tensor([[0, 1, 1], [2, 0, 2]])
-    v = torch.tensor([3, 4, 5], dtype=torch.float32)
-    grad = torch.sparse_coo_tensor(i, v, [2, 4])
+
+
+
+
+
 
 
 
@@ -133,47 +133,40 @@ Now, let's break down the code with some inline comments:
 .. code-block:: default
 
 
-    def _make_sparse(grad, grad_indices, values):
-        size = grad.size()
-        if grad_indices.numel() == 0 or values.numel() == 0:
-            return torch.empty_like(grad)
-        return torch.sparse_coo_tensor(grad_indices, values, size)
+
+
+
+
+
 
     # We don't support sparse gradients
-    param = torch.arange(8).reshape(2, 4).float()
-    state_sum = torch.full_like(param, 0.5)  # initial value for state sum
 
-    grad = grad.coalesce()  # the update is non-linear so indices must be unique
-    grad_indices = grad._indices()
-    grad_values = grad._values()
+
+
+
+
+
     # pow(2) has the same semantics for both sparse and dense memory layouts since 0^2 is zero
-    state_sum.add_(_make_sparse(grad, grad_indices, grad_values.pow(2)))
+
 
     # We take care to make std sparse, even though state_sum clearly is not.
     # This means that we're only applying the gradient to parts of the state_sum
     # for which it is specified. This further drives the point home that the passed gradient is not sparse, but masked.
     # We currently dodge all these concerns using the private method `_values`.
-    std = state_sum.sparse_mask(grad)
-    std_values = std._values().sqrt_().add_(eps)
+
+
 
     # Note here that we currently don't support div for sparse Tensors because zero / zero is not well defined,
     # so we're forced to perform `grad_values / std_values` outside the sparse semantic and then convert back to a
     # sparse tensor with `make_sparse`.
     # We'll later see that MaskedTensor will actually handle these operations for us as well as properly denote
     # undefined / undefined = undefined!
-    param.add_(_make_sparse(grad, grad_indices, grad_values / std_values), alpha=-clr)
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
 
- .. code-block:: none
-
-
-    tensor([[0.0000, 1.0000, 1.9027, 3.0000],
-            [3.9015, 5.0000, 5.9010, 7.0000]])
 
 
 
@@ -213,23 +206,23 @@ Consider the above example using a masked gradient:
 
 
     # Let's now import MaskedTensor!
-    from torch.masked import masked_tensor
+
 
     # Create an entirely new set of parameters to avoid errors
-    param2 = torch.arange(8).reshape(2, 4).float()
-    state_sum2 = torch.full_like(param, 0.5)  # initial value for state sum
 
-    mask = (grad.to_dense() != 0).to_sparse()
-    masked_grad = masked_tensor(grad, mask)
 
-    state_sum2 = state_sum2 + masked_grad.pow(2).get_data()
-    std2 = masked_tensor(state_sum2.to_sparse(), mask)
+
+
+
+
+
+
 
     # We can add support for in-place operations later. Notice how this doesn't
     # need to access any storage internals and is in general a lot shorter
-    std2 = std2.sqrt().add(eps)
 
-    param2 = param2.add((masked_grad / std2).get_data(), alpha=-clr)
+
+
 
 
 
@@ -245,90 +238,6 @@ In particular, much of the boilerplate code around ``_make_sparse``
 (and needing to have a separate implementation per layout) is handled for the user with :class:`MaskedTensor`.
 
 At this point, let's print both this version and original version for easier comparison:
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 185-189
-
-.. code-block:: default
-
-
-    print("state_sum:\n", state_sum)
-    print("state_sum2:\n", state_sum2)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    state_sum:
-     tensor([[ 0.5000,  0.5000,  9.5000,  0.5000],
-            [16.5000,  0.5000, 25.5000,  0.5000]])
-    state_sum2:
-     tensor([[ 0.5000,  0.5000,  9.5000,  0.5000],
-            [16.5000,  0.5000, 25.5000,  0.5000]])
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 191-195
-
-.. code-block:: default
-
-
-    print("std:\n", std)
-    print("std2:\n", std2)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    std:
-     tensor(indices=tensor([[0, 1, 1],
-                           [2, 0, 2]]),
-           values=tensor([3.0822, 4.0620, 5.0498]),
-           size=(2, 4), nnz=3, layout=torch.sparse_coo)
-    std2:
-     MaskedTensor(
-      [
-        [      --,       --,   3.0822,       --],
-        [  4.0620,       --,   5.0498,       --]
-      ]
-    )
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 197-201
-
-.. code-block:: default
-
-
-    print("param:\n", param)
-    print("param2:\n", param2)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    param:
-     tensor([[0.0000, 1.0000, 1.9027, 3.0000],
-            [3.9015, 5.0000, 5.9010, 7.0000]])
-    param2:
-     tensor([[0.0000, 1.0000, 1.9027, 3.0000],
-            [3.9015, 5.0000, 5.9010, 7.0000]])
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 202-219
@@ -351,10 +260,22 @@ to see some of the differences in design decisions between :class:`MaskedTensor`
 as reduction semantics.
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 219-220
+
+.. code-block:: default
+
+
+    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+
+
+
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.019 seconds)
+   **Total running time of the script:** ( 0 minutes  0.001 seconds)
 
 
 .. _sphx_glr_download_prototype_maskedtensor_adagrad.py:

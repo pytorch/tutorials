@@ -22,11 +22,15 @@ NLP From Scratch: Translation with a Sequence to Sequence Network and Attention
 *******************************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
-This is the third and final tutorial on doing "NLP From Scratch", where we
+This tutorials is part of a three-part series:
+
+* `NLP From Scratch: Classifying Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html>`__
+* `NLP From Scratch: Generating Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html>`__
+* `NLP From Scratch: Translation with a Sequence to Sequence Network and Attention <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`__
+
+This is the third and final tutorial on doing **NLP From Scratch**, where we
 write our own classes and functions to preprocess the data to do our NLP
-modeling tasks. We hope after you complete this tutorial that you'll proceed to
-learn how `torchtext` can handle much of this preprocessing for you in the
-three tutorials immediately following this one.
+modeling tasks.
 
 In this project we will be teaching a neural network to translate from
 French to English.
@@ -96,7 +100,7 @@ models, respectively.
 
 **Requirements**
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-97
+.. GENERATED FROM PYTHON SOURCE LINES 85-101
 
 .. code-block:: default
 
@@ -123,7 +127,7 @@ models, respectively.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-123
+.. GENERATED FROM PYTHON SOURCE LINES 102-127
 
 Loading data files
 ==================
@@ -151,7 +155,7 @@ separated list of translation pairs:
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-137
+.. GENERATED FROM PYTHON SOURCE LINES 129-141
 
 Similar to the character encoding used in the character-level RNN
 tutorials, we will be representing each word in a language as a one-hot
@@ -166,7 +170,7 @@ thousand words per language.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-146
+.. GENERATED FROM PYTHON SOURCE LINES 144-150
 
 We'll need a unique index per word to use as the inputs and targets of
 the networks later. To keep track of all this we will use a helper class
@@ -175,7 +179,7 @@ called ``Lang`` which has word → index (``word2index``) and index → word
 ``word2count`` which will be used to replace rare words later.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-172
+.. GENERATED FROM PYTHON SOURCE LINES 150-176
 
 .. code-block:: default
 
@@ -212,14 +216,14 @@ called ``Lang`` which has word → index (``word2index``) and index → word
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-177
+.. GENERATED FROM PYTHON SOURCE LINES 177-181
 
 The files are all in Unicode, to simplify we will turn Unicode
 characters to ASCII, make everything lowercase, and trim most
 punctuation.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-194
+.. GENERATED FROM PYTHON SOURCE LINES 181-198
 
 .. code-block:: default
 
@@ -247,7 +251,7 @@ punctuation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-200
+.. GENERATED FROM PYTHON SOURCE LINES 199-204
 
 To read the data file we will split the file into lines, and then split
 lines into pairs. The files are all English → Other Language, so if we
@@ -255,7 +259,7 @@ want to translate from Other Language → English I added the ``reverse``
 flag to reverse the pairs.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-223
+.. GENERATED FROM PYTHON SOURCE LINES 204-227
 
 .. code-block:: default
 
@@ -289,7 +293,7 @@ flag to reverse the pairs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-231
+.. GENERATED FROM PYTHON SOURCE LINES 228-235
 
 Since there are a *lot* of example sentences and we want to train
 something quickly, we'll trim the data set to only relatively short and
@@ -299,7 +303,7 @@ the form "I am" or "He is" etc. (accounting for apostrophes replaced
 earlier).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-253
+.. GENERATED FROM PYTHON SOURCE LINES 235-257
 
 .. code-block:: default
 
@@ -332,7 +336,7 @@ earlier).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-260
+.. GENERATED FROM PYTHON SOURCE LINES 258-264
 
 The full process for preparing the data is:
 
@@ -341,7 +345,7 @@ The full process for preparing the data is:
 -  Make word lists from sentences in pairs
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-279
+.. GENERATED FROM PYTHON SOURCE LINES 264-283
 
 .. code-block:: default
 
@@ -384,7 +388,7 @@ The full process for preparing the data is:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-313
+.. GENERATED FROM PYTHON SOURCE LINES 284-317
 
 The Seq2Seq Model
 =================
@@ -420,7 +424,7 @@ ideal case, encodes the "meaning" of the input sequence into a single
 vector — a single point in some N dimensional space of sentences.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-328
+.. GENERATED FROM PYTHON SOURCE LINES 320-332
 
 The Encoder
 -----------
@@ -435,7 +439,7 @@ next input word.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 328-343
+.. GENERATED FROM PYTHON SOURCE LINES 332-347
 
 .. code-block:: default
 
@@ -461,7 +465,7 @@ next input word.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 344-350
+.. GENERATED FROM PYTHON SOURCE LINES 348-354
 
 The Decoder
 -----------
@@ -470,7 +474,7 @@ The decoder is another RNN that takes the encoder output vector(s) and
 outputs a sequence of words to create the translation.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 353-370
+.. GENERATED FROM PYTHON SOURCE LINES 357-374
 
 Simple Decoder
 ^^^^^^^^^^^^^^
@@ -490,7 +494,7 @@ last hidden state).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 370-407
+.. GENERATED FROM PYTHON SOURCE LINES 374-411
 
 .. code-block:: default
 
@@ -538,14 +542,14 @@ last hidden state).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 408-412
+.. GENERATED FROM PYTHON SOURCE LINES 412-416
 
 I encourage you to train and observe the results of this model, but to
 save space we'll be going straight for the gold and introducing the
 Attention Mechanism.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 415-459
+.. GENERATED FROM PYTHON SOURCE LINES 419-463
 
 Attention Decoder
 ^^^^^^^^^^^^^^^^^
@@ -592,7 +596,7 @@ used in Bahdanau attention.
 In this tutorial, we will be using Bahdanau attention. However, it would be a valuable
 exercise to explore modifying the attention mechanism to use Luong attention.
 
-.. GENERATED FROM PYTHON SOURCE LINES 459-527
+.. GENERATED FROM PYTHON SOURCE LINES 463-531
 
 .. code-block:: default
 
@@ -671,7 +675,7 @@ exercise to explore modifying the attention mechanism to use Luong attention.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 528-544
+.. GENERATED FROM PYTHON SOURCE LINES 532-548
 
 .. note:: There are other forms of attention that work around the length
   limitation by using a relative position approach. Read about "local
@@ -690,7 +694,7 @@ the target sentence). While creating these vectors we will append the
 EOS token to both sequences.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 544-581
+.. GENERATED FROM PYTHON SOURCE LINES 548-585
 
 .. code-block:: default
 
@@ -738,7 +742,7 @@ EOS token to both sequences.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 582-607
+.. GENERATED FROM PYTHON SOURCE LINES 586-611
 
 Training the Model
 ------------------
@@ -766,7 +770,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 ``teacher_forcing_ratio`` up to use more of it.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 607-635
+.. GENERATED FROM PYTHON SOURCE LINES 611-639
 
 .. code-block:: default
 
@@ -805,13 +809,13 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 636-639
+.. GENERATED FROM PYTHON SOURCE LINES 640-643
 
 This is a helper function to print time elapsed and estimated time
 remaining given the current time and progress %.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 639-656
+.. GENERATED FROM PYTHON SOURCE LINES 643-660
 
 .. code-block:: default
 
@@ -839,7 +843,7 @@ remaining given the current time and progress %.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 657-667
+.. GENERATED FROM PYTHON SOURCE LINES 661-671
 
 The whole training process looks like this:
 
@@ -852,7 +856,7 @@ Then we call ``train`` many times and occasionally print the progress (%
 of examples, time so far, estimated time) and average loss.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 667-697
+.. GENERATED FROM PYTHON SOURCE LINES 671-701
 
 .. code-block:: default
 
@@ -893,7 +897,7 @@ of examples, time so far, estimated time) and average loss.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 698-704
+.. GENERATED FROM PYTHON SOURCE LINES 702-708
 
 Plotting results
 ----------------
@@ -902,7 +906,7 @@ Plotting is done with matplotlib, using the array of loss values
 ``plot_losses`` saved while training.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 704-719
+.. GENERATED FROM PYTHON SOURCE LINES 708-723
 
 .. code-block:: default
 
@@ -928,7 +932,7 @@ Plotting is done with matplotlib, using the array of loss values
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 720-729
+.. GENERATED FROM PYTHON SOURCE LINES 724-733
 
 Evaluation
 ==========
@@ -940,7 +944,7 @@ predicts the EOS token we stop there. We also store the decoder's
 attention outputs for display later.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 729-749
+.. GENERATED FROM PYTHON SOURCE LINES 733-753
 
 .. code-block:: default
 
@@ -971,13 +975,13 @@ attention outputs for display later.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 750-753
+.. GENERATED FROM PYTHON SOURCE LINES 754-757
 
 We can evaluate random sentences from the training set and print out the
 input, target, and output to make some subjective quality judgements:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 753-765
+.. GENERATED FROM PYTHON SOURCE LINES 757-769
 
 .. code-block:: default
 
@@ -1000,7 +1004,7 @@ input, target, and output to make some subjective quality judgements:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 766-783
+.. GENERATED FROM PYTHON SOURCE LINES 770-787
 
 Training and Evaluating
 =======================
@@ -1020,7 +1024,7 @@ reasonable results.
    encoder and decoder are initialized and run ``trainIters`` again.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 783-794
+.. GENERATED FROM PYTHON SOURCE LINES 787-798
 
 .. code-block:: default
 
@@ -1067,31 +1071,31 @@ reasonable results.
     Counted words:
     fra 4601
     eng 2991
-    0m 31s (- 7m 48s) (5 6%) 1.5304
-    1m 2s (- 7m 15s) (10 12%) 0.6776
-    1m 33s (- 6m 43s) (15 18%) 0.3528
-    2m 4s (- 6m 12s) (20 25%) 0.1948
-    2m 34s (- 5m 40s) (25 31%) 0.1203
-    3m 5s (- 5m 9s) (30 37%) 0.0834
-    3m 36s (- 4m 38s) (35 43%) 0.0637
-    4m 7s (- 4m 7s) (40 50%) 0.0521
-    4m 38s (- 3m 36s) (45 56%) 0.0452
-    5m 8s (- 3m 5s) (50 62%) 0.0404
-    5m 38s (- 2m 34s) (55 68%) 0.0374
-    6m 8s (- 2m 2s) (60 75%) 0.0346
-    6m 38s (- 1m 32s) (65 81%) 0.0326
-    7m 8s (- 1m 1s) (70 87%) 0.0314
-    7m 38s (- 0m 30s) (75 93%) 0.0299
-    8m 8s (- 0m 0s) (80 100%) 0.0291
+    0m 30s (- 7m 40s) (5 6%) 1.5304
+    1m 1s (- 7m 7s) (10 12%) 0.6776
+    1m 31s (- 6m 35s) (15 18%) 0.3528
+    2m 1s (- 6m 5s) (20 25%) 0.1948
+    2m 32s (- 5m 34s) (25 31%) 0.1203
+    3m 2s (- 5m 3s) (30 37%) 0.0834
+    3m 32s (- 4m 33s) (35 43%) 0.0637
+    4m 2s (- 4m 2s) (40 50%) 0.0521
+    4m 32s (- 3m 32s) (45 56%) 0.0452
+    5m 3s (- 3m 1s) (50 62%) 0.0404
+    5m 33s (- 2m 31s) (55 68%) 0.0374
+    6m 2s (- 2m 0s) (60 75%) 0.0346
+    6m 32s (- 1m 30s) (65 81%) 0.0326
+    7m 1s (- 1m 0s) (70 87%) 0.0314
+    7m 31s (- 0m 30s) (75 93%) 0.0299
+    8m 0s (- 0m 0s) (80 100%) 0.0291
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 795-796
+.. GENERATED FROM PYTHON SOURCE LINES 799-800
 
 Set dropout layers to ``eval`` mode
 
-.. GENERATED FROM PYTHON SOURCE LINES 797-802
+.. GENERATED FROM PYTHON SOURCE LINES 801-806
 
 .. code-block:: default
 
@@ -1152,7 +1156,7 @@ Set dropout layers to ``eval`` mode
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 803-815
+.. GENERATED FROM PYTHON SOURCE LINES 807-819
 
 Visualizing Attention
 ---------------------
@@ -1167,7 +1171,7 @@ displayed as a matrix. For a better viewing experience we will do the
 extra work of adding axes and labels:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 815-850
+.. GENERATED FROM PYTHON SOURCE LINES 819-854
 
 .. code-block:: default
 
@@ -1247,41 +1251,41 @@ extra work of adding axes and labels:
 
     input = il n est pas aussi grand que son pere
     output = he is not as tall as his father <EOS>
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:823: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:827: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:825: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:829: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
     input = je suis trop fatigue pour conduire
     output = i m too tired to drive <EOS>
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:823: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:827: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:825: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:829: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
     input = je suis desole si c est une question idiote
     output = i m sorry if this is a stupid question <EOS>
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:823: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:827: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:825: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:829: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
     input = je suis reellement fiere de vous
     output = i m really proud of you guys <EOS>
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:823: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:827: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
-    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:825: UserWarning:
+    /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:829: UserWarning:
 
     set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
@@ -1289,7 +1293,7 @@ extra work of adding axes and labels:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 851-873
+.. GENERATED FROM PYTHON SOURCE LINES 855-877
 
 Exercises
 =========
@@ -1317,7 +1321,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 8 minutes  16.721 seconds)
+   **Total running time of the script:** ( 8 minutes  8.409 seconds)
 
 
 .. _sphx_glr_download_intermediate_seq2seq_translation_tutorial.py:
