@@ -115,6 +115,8 @@ Intel Compiler
 #. Download and install `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler-download.html>`_ with Windows version.
 #. Set Windows Inductor Compiler with the CXX environment variable ``set CXX=icx-cl``.
 
+Here is a comprehensive step-by-step `guide <https://www.intel.com/content/www/us/en/developer/articles/technical/boost-pytorch-inductor-performance-on-windows.html>`_, complete with performance data.
+
 LLVM Compiler
 ^^^^^^^^^^^^^
 
