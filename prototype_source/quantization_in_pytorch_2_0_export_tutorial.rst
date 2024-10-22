@@ -1,7 +1,7 @@
 Quantization in PyTorch 2.0 Export Tutorial
 ===========================================
 
-This tutorial has been deprecated.
+This tutorial has been moved.
 
 Redirecting in 3 seconds...
 
