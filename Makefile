@@ -82,10 +82,6 @@ download:
 	wget -nv -N http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz -P $(DATADIR)
 	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
 
-	# Download dataset for beginner_source/torchtext_custom_dataset_tutorial.py
-	wget -nv -N https://www.manythings.org/anki/deu-eng.zip -P $(DATADIR)
-	unzip -o $(DATADIR)/deu-eng.zip -d beginner_source/data/
-
 	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
