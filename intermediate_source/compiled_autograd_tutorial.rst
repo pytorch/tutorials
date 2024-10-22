@@ -97,7 +97,7 @@ Run the script with the ``TORCH_LOGS`` environment variables:
 Rerun the snippet above, the compiled autograd graph should now be logged to ``stderr``. Certain graph nodes will have names that are prefixed by ``aot0_``,
 these correspond to the nodes previously compiled ahead of time in AOTAutograd backward graph 0, for example, ``aot0_view_2`` corresponds to ``view_2`` of the AOT backward graph with id=0.
 
-In the image below, the red box encapsulates the AOT backward graph that is captured by torch.compile without Compiled Autograd.
+In the image below, the red box encapsulates the AOT backward graph that is captured by ``torch.compile`` without Compiled Autograd.
 
 
 .. image:: ../_static/img/compiled_autograd/entire_verbose_log.png
@@ -129,7 +129,7 @@ Or you can use the context manager, which will apply to all autograd calls withi
 
 Compiled Autograd addresses certain limitations of AOTAutograd
 --------------------------------------------------------------
-1. Graph breaks in the forward pass no longer always lead to graph breaks in the backward pass:
+1. Graph breaks in the forward pass no longer necessarily lead to graph breaks in the backward pass:
 
 .. code:: python
 
