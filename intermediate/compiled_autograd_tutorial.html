@@ -576,61 +576,8 @@ When <code class="docutils literal notranslate"><span class="pre">train(model,</
 </ul>
 <p>Rerun the snippet above, the compiled autograd graph should now be logged to <code class="docutils literal notranslate"><span class="pre">stderr</span></code>. Certain graph nodes will have names that are prefixed by <code class="docutils literal notranslate"><span class="pre">aot0_</span></code>,
 these correspond to the nodes previously compiled ahead of time in AOTAutograd backward graph 0, for example, <code class="docutils literal notranslate"><span class="pre">aot0_view_2</span></code> corresponds to <code class="docutils literal notranslate"><span class="pre">view_2</span></code> of the AOT backward graph with id=0.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stderr_output</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[]</span>
-<span class="s2">DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:TRACED GRAPH</span>
-<span class="s2">===== Compiled autograd graph =====</span>
-<span class="s2">&lt;eval_with_key&gt;.4 class CompiledAutograd(torch.nn.Module):</span>
-<span class="s2">   def forward(self, inputs, sizes, scalars, hooks):</span>
-<span class="s2">      # No stacktrace found for following nodes</span>
-<span class="s2">      aot0_tangents_1: "f32[][]cpu" = inputs[0]</span>
-<span class="s2">      aot0_primals_3: "f32[10][1]cpu" = inputs[1]</span>
-<span class="s2">      getitem_2: "f32[10][1]cpu" = inputs[2]</span>
-<span class="s2">      getitem_3: "f32[10, 10][10, 1]cpu" = inputs[3];  inputs = None</span>
-
-<span class="s2">         # File: /data/users/xmfan/a/pytorch/torch/_dynamo/compiled_autograd.py:483 in set_node_origin, code: CompiledFunctionBackward0 (NodeCall 1)</span>
-<span class="s2">      aot0_expand: "f32[10][0]cpu" = torch.ops.aten.expand.default(aot0_tangents_1, [10]);  aot0_tangents_1 = None</span>
-<span class="s2">      aot0_view_2: "f32[1, 10][0, 0]cpu" = torch.ops.aten.view.default(aot0_expand, [1, 10]);  aot0_expand = None</span>
-<span class="s2">      aot0_permute_2: "f32[10, 1][0, 0]cpu" = torch.ops.aten.permute.default(aot0_view_2, [1, 0])</span>
-<span class="s2">      aot0_select: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 0)</span>
-<span class="s2">      aot0_view: "f32[1, 10][10, 1]cpu" = torch.ops.aten.view.default(aot0_primals_3, [1, 10]);  aot0_primals_3 = None</span>
-<span class="s2">      aot0_mul_3: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select, aot0_view);  aot0_select = None</span>
-<span class="s2">      aot0_select_1: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 1)</span>
-<span class="s2">      aot0_mul_4: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_1, aot0_view);  aot0_select_1 = None</span>
-<span class="s2">      aot0_select_2: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 2)</span>
-<span class="s2">      aot0_mul_5: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_2, aot0_view);  aot0_select_2 = None</span>
-<span class="s2">      aot0_select_3: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 3)</span>
-<span class="s2">      aot0_mul_6: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_3, aot0_view);  aot0_select_3 = None</span>
-<span class="s2">      aot0_select_4: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 4)</span>
-<span class="s2">      aot0_mul_7: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_4, aot0_view);  aot0_select_4 = None</span>
-<span class="s2">      aot0_select_5: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 5)</span>
-<span class="s2">      aot0_mul_8: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_5, aot0_view);  aot0_select_5 = None</span>
-<span class="s2">      aot0_select_6: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 6)</span>
-<span class="s2">      aot0_mul_9: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_6, aot0_view);  aot0_select_6 = None</span>
-<span class="s2">      aot0_select_7: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 7)</span>
-<span class="s2">      aot0_mul_10: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_7, aot0_view);  aot0_select_7 = None</span>
-<span class="s2">      aot0_select_8: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 8)</span>
-<span class="s2">      aot0_mul_11: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_8, aot0_view);  aot0_select_8 = None</span>
-<span class="s2">      aot0_select_9: "f32[1][0]cpu" = torch.ops.aten.select.int(aot0_permute_2, 0, 9);  aot0_permute_2 = None</span>
-<span class="s2">      aot0_mul_12: "f32[1, 10][10, 1]cpu" = torch.ops.aten.mul.Tensor(aot0_select_9, aot0_view);  aot0_select_9 = aot0_view = None</span>
-<span class="s2">      aot0_cat: "f32[10, 10][10, 1]cpu" = torch.ops.aten.cat.default([aot0_mul_3, aot0_mul_4, aot0_mul_5, aot0_mul_6, aot0_mul_7, aot0_mul_8, aot0_mul_9, aot0_mul_10, aot0_mul_11, aot0_mul_12]);  aot0_mul_3 = aot0_mul_4 = aot0_mul_5 = aot0_mul_6 = aot0_mul_7 = aot0_mul_8 = aot0_mul_9 = aot0_mul_10 = aot0_mul_11 = aot0_mul_12 = None</span>
-<span class="s2">      aot0_permute_3: "f32[10, 10][1, 10]cpu" = torch.ops.aten.permute.default(aot0_cat, [1, 0]);  aot0_cat = None</span>
-<span class="s2">      aot0_sum_3: "f32[1, 10][10, 1]cpu" = torch.ops.aten.sum.dim_IntList(aot0_view_2, [0], True);  aot0_view_2 = None</span>
-<span class="s2">      aot0_view_3: "f32[10][1]cpu" = torch.ops.aten.view.default(aot0_sum_3, [10]);  aot0_sum_3 = None</span>
-
-<span class="s2">         # File: /data/users/xmfan/a/pytorch/torch/_dynamo/compiled_autograd.py:483 in set_node_origin, code: torch::autograd::AccumulateGrad (NodeCall 2)</span>
-<span class="s2">      accumulate_grad_ = torch.ops.inductor.accumulate_grad_.default(getitem_2, aot0_view_3);  getitem_2 = aot0_view_3 = accumulate_grad_ = None</span>
-
-<span class="s2">         # File: /data/users/xmfan/a/pytorch/torch/_dynamo/compiled_autograd.py:483 in set_node_origin, code: CompiledFunctionBackward0 (NodeCall 1)</span>
-<span class="s2">      aot0_permute_4: "f32[10, 10][10, 1]cpu" = torch.ops.aten.permute.default(aot0_permute_3, [1, 0]);  aot0_permute_3 = None</span>
-
-<span class="s2">         # File: /data/users/xmfan/a/pytorch/torch/_dynamo/compiled_autograd.py:483 in set_node_origin, code: torch::autograd::AccumulateGrad (NodeCall 3)</span>
-<span class="s2">      accumulate_grad__1 = torch.ops.inductor.accumulate_grad_.default(getitem_3, aot0_permute_4);  getitem_3 = aot0_permute_4 = accumulate_grad__1 = None</span>
-<span class="s2">      _exec_final_callbacks_stub = torch__dynamo_external_utils__exec_final_callbacks_stub();  _exec_final_callbacks_stub = None</span>
-<span class="s2">      return []</span>
-<span class="s2">"""</span>
-</pre></div>
-</div>
+<p>In the image below, the red box encapsulates the AOT backward graph that is captured by <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> without Compiled Autograd.</p>
+<img alt="../_images/entire_verbose_log.png" src="../_images/entire_verbose_log.png"/>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is the graph on which we will call <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, <strong>NOT</strong> the optimized graph. Compiled Autograd essentially generates some unoptimized Python code to represent the entire C++ autograd execution.</p>
@@ -658,7 +605,7 @@ these correspond to the nodes previously compiled ahead of time in AOTAutograd b
 <div class="section" id="compiled-autograd-addresses-certain-limitations-of-aotautograd">
 <h2>Compiled Autograd addresses certain limitations of AOTAutograd<a class="headerlink" href="#compiled-autograd-addresses-certain-limitations-of-aotautograd" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
-<li><p>Graph breaks in the forward pass lead to graph breaks in the backward pass:</p></li>
+<li><p>Graph breaks in the forward pass no longer necessarily lead to graph breaks in the backward pass:</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"aot_eager"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -690,8 +637,12 @@ these correspond to the nodes previously compiled ahead of time in AOTAutograd b
 </div>
 <p>In the first <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> case, we see that 3 backward graphs were produced due to the 2 graph breaks in the compiled function <code class="docutils literal notranslate"><span class="pre">fn</span></code>.
 Whereas in the second <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> with compiled autograd case, we see that a full backward graph was traced despite the graph breaks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is still possible for the Dynamo to graph break when tracing backward hooks captured by Compiled Autograd.</p>
+</div>
 <ol class="arabic simple" start="2">
-<li><p>Backward hooks are not captured</p></li>
+<li><p>Backward hooks can now be captured</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"aot_eager"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -706,19 +657,7 @@ Whereas in the second <code class="docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <p>There should be a <code class="docutils literal notranslate"><span class="pre">call_hook</span></code> node in the graph, which dynamo will later inline into the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stderr_output</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[]</span>
-<span class="s2">DEBUG:torch._dynamo.compiled_autograd.__compiled_autograd_verbose:TRACED GRAPH</span>
-<span class="s2">===== Compiled autograd graph =====</span>
-<span class="s2">&lt;eval_with_key&gt;.2 class CompiledAutograd(torch.nn.Module):</span>
-<span class="s2">   def forward(self, inputs, sizes, scalars, hooks):</span>
-<span class="s2">      ...</span>
-<span class="s2">      getitem_2 = hooks[0];  hooks = None</span>
-<span class="s2">      call_hook: "f32[10, 10][0, 0]cpu" = torch__dynamo_external_utils_call_hook(getitem_2, aot0_expand, hook_type = 'tensor_pre_hook');  getitem_2 = aot0_expand = None</span>
-<span class="s2">      ...</span>
-<span class="s2">"""</span>
-</pre></div>
-</div>
+<img alt="../_images/call_hook_node.png" src="../_images/call_hook_node.png"/>
 </div>
 <div class="section" id="common-recompilation-reasons-for-compiled-autograd">
 <h2>Common recompilation reasons for Compiled Autograd<a class="headerlink" href="#common-recompilation-reasons-for-compiled-autograd" title="Permalink to this heading">¶</a></h2>
@@ -733,18 +672,7 @@ Whereas in the second <code class="docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <p>In the example above, we call a different operator on each iteration, leading to <code class="docutils literal notranslate"><span class="pre">loss</span></code> tracking a different autograd history each time. You should see some recompile messages: <strong>Cache miss due to new autograd node</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stderr_output</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">Cache miss due to new autograd node: torch::autograd::GraphRoot (NodeCall 0) with key size 39, previous key sizes=[]</span>
-<span class="s2">...</span>
-<span class="s2">Cache miss due to new autograd node: SubBackward0 (NodeCall 2) with key size 56, previous key sizes=[]</span>
-<span class="s2">...</span>
-<span class="s2">Cache miss due to new autograd node: MulBackward0 (NodeCall 2) with key size 71, previous key sizes=[]</span>
-<span class="s2">...</span>
-<span class="s2">Cache miss due to new autograd node: DivBackward0 (NodeCall 2) with key size 70, previous key sizes=[]</span>
-<span class="s2">...</span>
-<span class="s2">"""</span>
-</pre></div>
-</div>
+<img alt="../_images/recompile_due_to_node.png" src="../_images/recompile_due_to_node.png"/>
 <ol class="arabic simple" start="2">
 <li><p>Due to tensors changing shapes:</p></li>
 </ol>
@@ -756,16 +684,7 @@ Whereas in the second <code class="docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <p>In the example above, <code class="docutils literal notranslate"><span class="pre">x</span></code> changes shapes, and compiled autograd will mark <code class="docutils literal notranslate"><span class="pre">x</span></code> as a dynamic shape tensor after the first change. You should see recompiles messages: <strong>Cache miss due to changed shapes</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stderr_output</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">...</span>
-<span class="s2">Cache miss due to changed shapes: marking size idx 0 of torch::autograd::GraphRoot (NodeCall 0) as dynamic</span>
-<span class="s2">Cache miss due to changed shapes: marking size idx 1 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic</span>
-<span class="s2">Cache miss due to changed shapes: marking size idx 2 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic</span>
-<span class="s2">Cache miss due to changed shapes: marking size idx 3 of torch::autograd::AccumulateGrad (NodeCall 2) as dynamic</span>
-<span class="s2">...</span>
-<span class="s2">"""</span>
-</pre></div>
-</div>
+<img alt="../_images/recompile_due_to_dynamic.png" src="../_images/recompile_due_to_dynamic.png"/>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
