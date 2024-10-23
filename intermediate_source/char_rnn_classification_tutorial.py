@@ -4,13 +4,18 @@ NLP From Scratch: Classifying Names with a Character-Level RNN
 **************************************************************
 **Author**: `Sean Robertson <https://github.com/spro>`_
 
+This tutorials is part of a three-part series:
+
+* `NLP From Scratch: Classifying Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html>`__
+* `NLP From Scratch: Generating Names with a Character-Level RNN <https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html>`__
+* `NLP From Scratch: Translation with a Sequence to Sequence Network and Attention <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`__
+
 We will be building and training a basic character-level Recurrent Neural
 Network (RNN) to classify words. This tutorial, along with two other
 Natural Language Processing (NLP) "from scratch" tutorials
 :doc:`/intermediate/char_rnn_generation_tutorial` and
 :doc:`/intermediate/seq2seq_translation_tutorial`, show how to
-preprocess data to model NLP. In particular these tutorials do not
-use many of the convenience functions of `torchtext`, so you can see how
+preprocess data to model NLP. In particular, these tutorials show how
 preprocessing to model NLP works at a low level.
 
 A character-level RNN reads words as a series of characters -
