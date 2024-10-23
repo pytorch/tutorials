@@ -1,3 +1,6 @@
+.. note::
+    PyTorch Vulkan Backend is no longer maintained. Please review the `ExecuTorch Vulkan Delegate <https://pytorch.org/executorch/stable/native-delegates-executorch-vulkan-delegate.html>`_ implementation instead.
+
 PyTorch Vulkan Backend User Workflow
 ====================================
 
