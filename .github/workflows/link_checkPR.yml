@@ -1,59 +1,26 @@
 #Checks links in a PR to ensure they are valid. If link is valid but failing, it can be added to the .lycheeignore file
-#Code source: https://github.com/lycheeverse/lychee-action/issues/238
 
 name: link check on PR
 
 on:
   pull_request:
     branches: [main]
-
 jobs:
-  check-links:
+  linkChecker:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{github.event.pull_request.head.ref}}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
-
-      - name: Check out main branch
-        run: git checkout main
-
-      - name: Dump all links from main
-        id: dump_links_from_main
+          fetch-depth: 1
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v34
+      - name: Check Links
         uses: lycheeverse/lychee-action@v1
         with:
-          args: |
-            --dump
-            --include-fragments
-            .
-          output: ./links-main.txt
-
-      - name: Stash untracked files
-        run: git stash push --include-untracked
-
-      - name: Check out feature branch
-        run: git checkout ${{ github.head_ref }}
-
-      - name: Apply stashed changes
-        # Apply stashed changes, ignore errors if stash is empty
-        run: git stash pop || true
-
-      - name: Append links-main.txt to .lycheeignore
-        run: cat links-main.txt >> .lycheeignore
-
-      - name: Check links
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: |
-            --no-progress
-            --include-fragments
-            .
-          # Fail action on broken links
+          args: --accept=200,403,429 --base . --verbose --no-progress ${{ steps.changed-files.outputs.all_changed_files }}
+          token: ${{ secrets.CUSTOM_TOKEN }}
           fail: true
-
       - name: Suggestions
         if: failure()
         run: |
