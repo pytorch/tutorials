@@ -581,7 +581,7 @@ to the post training quantization (PTQ) flow for the most part:</p>
   <span class="n">prepare_qat_pt2e</span><span class="p">,</span>
   <span class="n">convert_pt2e</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">torch.ao.quantization.quantizer</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">torch.ao.quantization.quantizer.xnnpack_quantizer</span> <span class="kn">import</span> <span class="p">(</span>
   <span class="n">XNNPACKQuantizer</span><span class="p">,</span>
   <span class="n">get_symmetric_quantization_config</span><span class="p">,</span>
 <span class="p">)</span>
@@ -599,9 +599,9 @@ to the post training quantization (PTQ) flow for the most part:</p>
 <span class="n">m</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span>
 
 <span class="c1"># Step 1. program capture</span>
-<span class="c1"># NOTE: this API will be updated to torch.export API in the future, but the captured</span>
-<span class="c1"># result shoud mostly stay the same</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
+<span class="c1"># This is available for pytorch 2.5+, for more details on lower pytorch versions</span>
+<span class="c1"># please check `Export the model with torch.export` section</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export_for_training</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span><span class="o">.</span><span class="n">module</span><span class="p">()</span>
 <span class="c1"># we get a model with aten ops</span>
 
 <span class="c1"># Step 2. quantization-aware training</span>
@@ -825,23 +825,33 @@ prepare the data. These steps are very similar to the ones defined in the
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">capture_pre_autograd_graph</span>
 
 <span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),)</span>
-<span class="n">exported_model</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span>
+<span class="c1"># for pytorch 2.5+</span>
+<span class="n">exported_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export_for_training</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">)</span><span class="o">.</span><span class="n">module</span><span class="p">()</span>
+<span class="c1"># for pytorch 2.4 and before</span>
+<span class="c1"># from torch._export import capture_pre_autograd_graph</span>
+<span class="c1"># exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs)</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># or, to capture with dynamic dimensions:</span>
-<span class="kn">from</span> <span class="nn">torch._export</span> <span class="kn">import</span> <span class="n">dynamic_dim</span>
 
-<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),)</span>
-<span class="n">exported_model</span> <span class="o">=</span> <span class="n">capture_pre_autograd_graph</span><span class="p">(</span>
-    <span class="n">float_model</span><span class="p">,</span>
-    <span class="n">example_inputs</span><span class="p">,</span>
-    <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">dynamic_dim</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)],</span>
+<span class="c1"># for pytorch 2.5+</span>
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+  <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">Dim</span><span class="p">(</span><span class="s2">&quot;dim&quot;</span><span class="p">)}</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">example_inputs</span><span class="p">))</span>
 <span class="p">)</span>
+<span class="n">exported_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export_for_training</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span><span class="o">.</span><span class="n">module</span><span class="p">()</span>
+
+<span class="c1"># for pytorch 2.4 and before</span>
+<span class="c1"># dynamic_shape API may vary as well</span>
+<span class="c1"># from torch._export import dynamic_dim</span>
+
+<span class="c1"># example_inputs = (torch.rand(2, 3, 224, 224),)</span>
+<span class="c1"># exported_model = capture_pre_autograd_graph(</span>
+<span class="c1">#     float_model,</span>
+<span class="c1">#     example_inputs,</span>
+<span class="c1">#     constraints=[dynamic_dim(example_inputs[0], 0)],</span>
+<span class="c1"># )</span>
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">capture_pre_autograd_graph</span></code> is a short term API, it will be updated to use the offical <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> API when that is ready.</p>
 </div>
 </div>
 <div class="section" id="import-the-backend-specific-quantizer-and-configure-how-to-quantize-the-model">
