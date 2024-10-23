@@ -19,6 +19,8 @@ meta-learning, and optimization research.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch._dynamo import config
+config.inline_inbuilt_nn_modules = 1
 torch.manual_seed(0)
 
 # Here's a simple CNN and loss function:
@@ -52,7 +54,7 @@ def loss_fn(predictions, targets):
 # Let’s generate a batch of dummy data and pretend that we’re working with an MNIST dataset.
 # The dummy images are 28 by 28 and we use a minibatch of size 64.
 
-device = 'cuda'
+device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
 
 num_models = 10
 batch_size = 64
@@ -162,7 +164,12 @@ ft_compute_sample_grad = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
 ######################################################################
 # Finally, let's used our transformed function to compute per-sample-gradients:
 
-ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
+@torch.compile
+def vmap_ft_compute_grad(params, buffers, data, targets):
+    ft_compute_sample_grad_ = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
+    return ft_compute_sample_grad_(params, buffers, data, targets)
+
+ft_per_sample_grads = vmap_ft_compute_grad(params, buffers, data, targets)
 
 ######################################################################
 # we can double check that the results using ``grad`` and ``vmap`` match the
@@ -194,7 +201,7 @@ def get_perf(first, first_descriptor, second, second_descriptor):
     first_res = first.times[0]
 
     gain = (first_res-second_res)/first_res
-    if gain < 0: gain *=-1 
+    if gain < 0: gain *=-1
     final_gain = gain*100
 
     print(f"Performance delta: {final_gain:.4f} percent improvement with {first_descriptor} ")
