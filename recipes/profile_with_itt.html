@@ -612,19 +612,31 @@
 <div class="section" id="launch-intel-vtune-profiler">
 <h3>Launch Intel® VTune™ Profiler<a class="headerlink" href="#launch-intel-vtune-profiler" title="Permalink to this heading">¶</a></h3>
 <p>To verify the functionality, you need to start an Intel® VTune™ Profiler instance. Please check the <a class="reference external" href="https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/launch.html">Intel® VTune™ Profiler User Guide</a> for steps to launch Intel® VTune™ Profiler.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Users can also use web-server-ui by following  <a class="reference external" href="https://www.intel.com/content/www/us/en/docs/vtune-profiler/user-guide/2024-1/web-server-ui.html">Intel® VTune™ Profiler Web Server UI Guide</a>
+ex :  vtune-backend –web-port=8080  –allow-remote-access –enable-server-profiling</p>
+</div>
 <p>Once you get the Intel® VTune™ Profiler GUI launched, you should see a user interface as below:</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/vtune_start.png"><img alt="../_images/vtune_start.png" src="../_images/vtune_start.png" style="width: 100%;" /></a>
 </div>
 <p>Three sample results are available on the left side navigation bar under <cite>sample (matrix)</cite> project. If you do not want profiling results appear in this default sample project, you can create a new project via the button <cite>New Project…</cite> under the blue <cite>Configure Analysis…</cite> button. To start a new profiling, click the blue <cite>Configure Analysis…</cite> button to initiate configuration of the profiling.</p>
 </div>
-<div class="section" id="configure-profiling">
-<h3>Configure Profiling<a class="headerlink" href="#configure-profiling" title="Permalink to this heading">¶</a></h3>
+<div class="section" id="configure-profiling-for-cpu">
+<h3>Configure Profiling for CPU<a class="headerlink" href="#configure-profiling-for-cpu" title="Permalink to this heading">¶</a></h3>
 <p>Once you click the <cite>Configure Analysis…</cite> button, you should see the screen below:</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/vtune_config.png"><img alt="../_images/vtune_config.png" src="../_images/vtune_config.png" style="width: 100%;" /></a>
 </div>
 <p>The right side of the windows is split into 3 parts: <cite>WHERE</cite> (top left), <cite>WHAT</cite> (bottom left), and <cite>HOW</cite> (right). With <cite>WHERE</cite>, you can assign a machine where you want to run the profiling on. With <cite>WHAT</cite>, you can set the path of the application that you want to profile. To profile a PyTorch script, it is recommended to wrap all manual steps, including activating a Python environment and setting required environment variables, into a bash script, then profile this bash script. In the screenshot above, we wrapped all steps into the <cite>launch.sh</cite> bash script and profile <cite>bash</cite> with the parameter to be <cite>&lt;path_of_launch.sh&gt;</cite>. On the right side <cite>HOW</cite>, you can choose whatever type that you would like to profile. Intel® VTune™ Profiler provides a bunch of profiling types that you can choose from. Details can be found at <a class="reference external" href="https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html">Intel® VTune™ Profiler User Guide</a>.</p>
+</div>
+<div class="section" id="configure-profiling-for-xpu">
+<h3>Configure Profiling for XPU<a class="headerlink" href="#configure-profiling-for-xpu" title="Permalink to this heading">¶</a></h3>
+<p>Pick GPU Offload Profiling Type instead of Hotspots, and follow the same instructions as CPU to Launch the Application.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/vtune_xpu_config.png"><img alt="../_images/vtune_xpu_config.png" src="../_images/vtune_xpu_config.png" style="width: 100%;" /></a>
+</div>
 </div>
 <div class="section" id="read-profiling-result">
 <h3>Read Profiling Result<a class="headerlink" href="#read-profiling-result" title="Permalink to this heading">¶</a></h3>
@@ -644,6 +656,14 @@
 <li><p>How well OpenMP threads are synchronized. Are there jitters when starting OpenMP threads or OpenMP threads finish.</p></li>
 </ol>
 <p>Of course there are much more enriched sets of profiling features that Intel® VTune™ Profiler provides to help you understand a performance issue. When you understand the root cause of a performance issue, you can get it fixed. More detailed usage instructions are available at <a class="reference external" href="https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance.html">Intel® VTune™ Profiler User Guide</a>.</p>
+</div>
+<div class="section" id="read-xpu-profiling-result">
+<h3>Read XPU Profiling Result<a class="headerlink" href="#read-xpu-profiling-result" title="Permalink to this heading">¶</a></h3>
+<p>With a successful profiling with ITT, you can open <cite>Platform</cite> tab of the profiling result to see labels in the Intel® VTune™ Profiler timeline.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/vtune_xpu_timeline.png"><img alt="../_images/vtune_xpu_timeline.png" src="../_images/vtune_xpu_timeline.png" style="width: 100%;" /></a>
+</div>
+<p>The timeline shows the main thread as a <cite>python</cite> thread on the top. Labeled PyTorch operators and customized regions are shown in the main thread row. All operators starting with <cite>aten::</cite> are operators labeled implicitly by the ITT feature in PyTorch. The timeline also shows the GPU Computing Queue on the top, and users could see different XPU Kernels dispatched into GPU Queue.</p>
 </div>
 </div>
 <div class="section" id="a-short-sample-code-showcasing-how-to-use-pytorch-itt-apis">
@@ -668,8 +688,12 @@
     <span class="k">return</span> <span class="n">x</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-  <span class="n">m</span> <span class="o">=</span> <span class="n">ITTSample</span><span class="p">()</span>
+  <span class="n">m</span> <span class="o">=</span> <span class="n">ITTSample</span>
+  <span class="c1"># unmark below code for XPU</span>
+  <span class="c1"># m = m.to(&quot;xpu&quot;)</span>
   <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">244</span><span class="p">,</span> <span class="mi">244</span><span class="p">)</span>
+  <span class="c1"># unmark below code for XPU</span>
+  <span class="c1"># x = x.to(&quot;xpu&quot;)</span>
   <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">emit_itt</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
       <span class="c1"># Labeling a region with pair of range_push and range_pop</span>
@@ -758,8 +782,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#what-is-instrumentation-and-tracing-technology-itt-api">What is Instrumentation and Tracing Technology (ITT) API</a></li>
 <li><a class="reference internal" href="#how-to-visualize-pytorch-model-hierarchy-in-intel-vtune-profiler">How to visualize PyTorch model hierarchy in Intel® VTune™ Profiler</a><ul>
 <li><a class="reference internal" href="#launch-intel-vtune-profiler">Launch Intel® VTune™ Profiler</a></li>
-<li><a class="reference internal" href="#configure-profiling">Configure Profiling</a></li>
+<li><a class="reference internal" href="#configure-profiling-for-cpu">Configure Profiling for CPU</a></li>
+<li><a class="reference internal" href="#configure-profiling-for-xpu">Configure Profiling for XPU</a></li>
 <li><a class="reference internal" href="#read-profiling-result">Read Profiling Result</a></li>
+<li><a class="reference internal" href="#read-xpu-profiling-result">Read XPU Profiling Result</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#a-short-sample-code-showcasing-how-to-use-pytorch-itt-apis">A short sample code showcasing how to use PyTorch ITT APIs</a></li>
