@@ -3,7 +3,6 @@
 `Tensors <tensors_deeper_tutorial.html>`_ ||
 `Autograd <autogradyt_tutorial.html>`_ ||
 `Building Models <modelsyt_tutorial.html>`_ ||
-`TensorBoard Support <tensorboardyt_tutorial.html>`_ ||
 **Training Models** ||
 `Model Understanding <captumyt.html>`_
 
@@ -26,7 +25,6 @@ In past videos, we’ve discussed and demonstrated:
 - Building models with the neural network layers and functions of the torch.nn module
 - The mechanics of automated gradient computation, which is central to
   gradient-based model training 
-- Using TensorBoard to visualize training progress and other activities
 
 In this video, we’ll be adding some new tools to your inventory:
 

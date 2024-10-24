@@ -1,5 +1,5 @@
-Visualizing Models, Data, and Training with TensorBoard
-=======================================================
+PyTorch Profiler With TensorBoard
+====================================
 
 This tutorial has been deprecated.
 

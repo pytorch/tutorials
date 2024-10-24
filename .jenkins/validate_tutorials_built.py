@@ -32,7 +32,6 @@ NOT_RUN = [
     "prototype_source/nestedtensor",
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
-    "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
     "recipes_source/recipes/save_load_across_devices",
@@ -47,8 +46,6 @@ NOT_RUN = [
     "recipes_source/recipes/amp_recipe",
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/flask_rest_api_tutorial",
-    "intermediate_source/text_to_speech_with_torchaudio",
-    "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "intermediate_source/torch_export_tutorial" # reenable after 2940 is fixed.
 ]
 

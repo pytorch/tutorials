@@ -1,5 +1,5 @@
-Visualizing Models, Data, and Training with TensorBoard
-=======================================================
+How to use TensorBoard with PyTorch
+===================================
 
 This tutorial has been deprecated.
 
