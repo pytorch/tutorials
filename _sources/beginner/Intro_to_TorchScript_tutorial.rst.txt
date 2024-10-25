@@ -23,6 +23,8 @@ Introduction to TorchScript
 
 **Authors:** James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com), rev2
 
+.. note:: TorchScript is no longer in active development.
+
 This tutorial is an introduction to TorchScript, an intermediate
 representation of a PyTorch model (subclass of ``nn.Module``) that
 can then be run in a high-performance environment such as C++.
@@ -48,7 +50,7 @@ We hope that after you complete this tutorial, you will proceed to go through
 which will walk you through an example of actually calling a TorchScript
 model from C++.
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-39
+.. GENERATED FROM PYTHON SOURCE LINES 35-41
 
 .. code-block:: default
 
@@ -68,11 +70,11 @@ model from C++.
 
     2.5.0+cu124
 
-    <torch._C.Generator object at 0x7f6a4e2639d0>
+    <torch._C.Generator object at 0x7ff2df0af9d0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-54
+.. GENERATED FROM PYTHON SOURCE LINES 42-56
 
 Basics of PyTorch Model Authoring
 ---------------------------------
@@ -89,7 +91,7 @@ basic unit of composition in PyTorch. It contains:
 Let’s examine a small example:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-69
+.. GENERATED FROM PYTHON SOURCE LINES 56-71
 
 .. code-block:: default
 
@@ -125,7 +127,7 @@ Let’s examine a small example:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-87
+.. GENERATED FROM PYTHON SOURCE LINES 72-89
 
 So we’ve:
 
@@ -145,7 +147,7 @@ matrices of random values. Then we invoked the cell with
 Let’s do something a little more interesting:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-102
+.. GENERATED FROM PYTHON SOURCE LINES 89-104
 
 .. code-block:: default
 
@@ -184,7 +186,7 @@ Let’s do something a little more interesting:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-127
+.. GENERATED FROM PYTHON SOURCE LINES 105-129
 
 We’ve redefined our module ``MyCell``, but this time we’ve added a
 ``self.linear`` attribute, and we invoke ``self.linear`` in the forward
@@ -211,7 +213,7 @@ flexibility in model authoring.
 Now let’s examine said flexibility:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-150
+.. GENERATED FROM PYTHON SOURCE LINES 129-152
 
 .. code-block:: default
 
@@ -259,7 +261,7 @@ Now let’s examine said flexibility:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-167
+.. GENERATED FROM PYTHON SOURCE LINES 153-169
 
 We’ve once again redefined our ``MyCell`` class, but here we’ve defined
 ``MyDecisionGate``. This module utilizes **control flow**. Control flow
@@ -278,7 +280,7 @@ language.
    How autograd works
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-182
+.. GENERATED FROM PYTHON SOURCE LINES 172-184
 
 Basics of TorchScript
 ---------------------
@@ -293,7 +295,7 @@ Tracing ``Modules``
 ~~~~~~~~~~~~~~~~~~~
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-199
+.. GENERATED FROM PYTHON SOURCE LINES 184-201
 
 .. code-block:: default
 
@@ -335,7 +337,7 @@ Tracing ``Modules``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-214
+.. GENERATED FROM PYTHON SOURCE LINES 202-216
 
 We’ve rewinded a bit and taken the second version of our ``MyCell``
 class. As before, we’ve instantiated it, but this time, we’ve called
@@ -352,7 +354,7 @@ TorchScript records its definitions in an Intermediate Representation
 examine the graph with the ``.graph`` property:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-218
+.. GENERATED FROM PYTHON SOURCE LINES 216-220
 
 .. code-block:: default
 
@@ -373,9 +375,9 @@ examine the graph with the ``.graph`` property:
           %h : Float(3, 4, strides=[4, 1], requires_grad=0, device=cpu)):
       %linear : __torch__.torch.nn.modules.linear.Linear = prim::GetAttr[name="linear"](%self.1)
       %20 : Tensor = prim::CallMethod[name="forward"](%linear, %x)
-      %11 : int = prim::Constant[value=1]() # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:189:0
-      %12 : Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu) = aten::add(%20, %h, %11) # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:189:0
-      %13 : Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu) = aten::tanh(%12) # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:189:0
+      %11 : int = prim::Constant[value=1]() # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:191:0
+      %12 : Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu) = aten::add(%20, %h, %11) # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:191:0
+      %13 : Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu) = aten::tanh(%12) # /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:191:0
       %14 : (Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu), Float(3, 4, strides=[4, 1], requires_grad=1, device=cpu)) = prim::TupleConstruct(%13, %13)
       return (%14)
 
@@ -383,7 +385,7 @@ examine the graph with the ``.graph`` property:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-224
+.. GENERATED FROM PYTHON SOURCE LINES 221-226
 
 However, this is a very low-level representation and most of the
 information contained in the graph is not useful for end users. Instead,
@@ -391,7 +393,7 @@ we can use the ``.code`` property to give a Python-syntax interpretation
 of the code:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-228
+.. GENERATED FROM PYTHON SOURCE LINES 226-230
 
 .. code-block:: default
 
@@ -418,7 +420,7 @@ of the code:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-246
+.. GENERATED FROM PYTHON SOURCE LINES 231-248
 
 So **why** did we do all this? There are several reasons:
 
@@ -438,7 +440,7 @@ We can see that invoking ``traced_cell`` produces the same results as
 the Python module:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-251
+.. GENERATED FROM PYTHON SOURCE LINES 248-253
 
 .. code-block:: default
 
@@ -469,7 +471,7 @@ the Python module:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-258
+.. GENERATED FROM PYTHON SOURCE LINES 254-260
 
 Using Scripting to Convert Modules
 ----------------------------------
@@ -478,7 +480,7 @@ There’s a reason we used version two of our module, and not the one with
 the control-flow-laden submodule. Let’s examine that now:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-283
+.. GENERATED FROM PYTHON SOURCE LINES 260-285
 
 .. code-block:: default
 
@@ -515,7 +517,7 @@ the control-flow-laden submodule. Let’s examine that now:
 
  .. code-block:: none
 
-    /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:261: TracerWarning:
+    /var/lib/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:263: TracerWarning:
 
     Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
@@ -537,7 +539,7 @@ the control-flow-laden submodule. Let’s examine that now:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 284-295
+.. GENERATED FROM PYTHON SOURCE LINES 286-297
 
 Looking at the ``.code`` output, we can see that the ``if-else`` branch
 is nowhere to be found! Why? Tracing does exactly what we said it would:
@@ -551,7 +553,7 @@ code to transform it into TorchScript. Let’s convert ``MyDecisionGate``
 using the script compiler:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 295-305
+.. GENERATED FROM PYTHON SOURCE LINES 297-307
 
 .. code-block:: default
 
@@ -594,13 +596,13 @@ using the script compiler:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-309
+.. GENERATED FROM PYTHON SOURCE LINES 308-311
 
 Hooray! We’ve now faithfully captured the behavior of our program in
 TorchScript. Let’s now try running the program:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-315
+.. GENERATED FROM PYTHON SOURCE LINES 311-317
 
 .. code-block:: default
 
@@ -627,7 +629,7 @@ TorchScript. Let’s now try running the program:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-328
+.. GENERATED FROM PYTHON SOURCE LINES 318-330
 
 Mixing Scripting and Tracing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -642,7 +644,7 @@ for a scripted module.
 An example of the first case:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 328-345
+.. GENERATED FROM PYTHON SOURCE LINES 330-347
 
 .. code-block:: default
 
@@ -688,12 +690,12 @@ An example of the first case:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-348
+.. GENERATED FROM PYTHON SOURCE LINES 348-350
 
 And an example of the second case:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 348-362
+.. GENERATED FROM PYTHON SOURCE LINES 350-364
 
 .. code-block:: default
 
@@ -729,7 +731,7 @@ And an example of the second case:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 363-375
+.. GENERATED FROM PYTHON SOURCE LINES 365-377
 
 This way, scripting and tracing can be used when the situation calls for
 each of them and used together.
@@ -744,7 +746,7 @@ representation of the model that can be loaded in an entirely separate
 process. Let’s save and load our wrapped RNN module:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 375-384
+.. GENERATED FROM PYTHON SOURCE LINES 377-386
 
 .. code-block:: default
 
@@ -786,7 +788,7 @@ process. Let’s save and load our wrapped RNN module:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 385-399
+.. GENERATED FROM PYTHON SOURCE LINES 387-401
 
 As you can see, serialization preserves the module hierarchy and the
 code we’ve been examining throughout. The model can also be loaded, for
@@ -806,7 +808,7 @@ https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.218 seconds)
+   **Total running time of the script:** ( 0 minutes  0.221 seconds)
 
 
 .. _sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py:
