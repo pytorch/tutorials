@@ -1,6 +1,8 @@
 Dynamic Parallelism in TorchScript
 ==================================
 
+.. note:: TorchScript is no longer in active development.
+
 In this tutorial, we introduce the syntax for doing *dynamic inter-op parallelism*
 in TorchScript. This parallelism has the following properties:
 
