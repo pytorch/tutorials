@@ -1,7 +1,7 @@
 Summary of PyTorch Mobile Recipes
 =====================================
 
-This tutorial has been deprecated. There is a new tutorial on this topic.
+PyTorch Mobile is no longer actively supported. Please check out Executorch.
 
 Redirecting in 3 seconds...
 
