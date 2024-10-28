@@ -1,7 +1,7 @@
 Image Segmentation DeepLabV3 on iOS
 ==============================================
 
-PyTorch Mobile is no longer actively supported. Please check out Executorch.
+PyTorch Mobile is no longer actively supported. Please check out ExecuTorch.
 
 Redirecting in 3 seconds...
 

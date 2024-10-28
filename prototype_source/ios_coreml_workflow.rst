@@ -1,7 +1,7 @@
 (Prototype) Convert Mobilenetv2 to Core ML
 ==========================================
 
-PyTorch Mobile is no longer actively supported. Please check out Executorch.
+PyTorch Mobile is no longer actively supported. Please check out ExecuTorch.
 
 Redirecting in 3 seconds...
 
