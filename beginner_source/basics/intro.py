@@ -13,9 +13,9 @@ Learn the Basics
 ===================
 
 Authors:
-`Suraj Subramanian <https://github.com/suraj813>`_,
+`Suraj Subramanian <https://github.com/subramen>`_,
 `Seth Juarez <https://github.com/sethjuarez/>`_,
-`Cassie Breviu <https://github.com/cassieview/>`_,
+`Cassie Breviu <https://github.com/cassiebreviu/>`_,
 `Dmitry Soshnikov <https://soshnikov.com/>`_,
 `Ari Bornstein <https://github.com/aribornstein/>`_
 
