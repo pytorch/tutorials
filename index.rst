@@ -71,7 +71,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: beginner/introyt.html
+   :link: beginner/introyt/introyt.html
    :tags: Getting-Started
 
 .. customcarditem::
