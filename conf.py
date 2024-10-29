@@ -238,7 +238,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_logo = '_static/img/pytorch-logo-dark.svg'
 html_theme_options = {
     'pytorch_project': 'tutorials',
-    'collapse_navigation': False,
+    'collapse_navigation': True,
     'display_version': True,
     'navigation_with_keys': True,
     'logo_only': False,

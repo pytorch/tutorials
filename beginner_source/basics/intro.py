@@ -49,6 +49,16 @@ If you're new to deep learning frameworks, head right into the first section of 
 .. include:: /beginner_source/basics/qs_toc.txt
 
 .. toctree::
+   :maxdepth: 2
    :hidden:
+
+   quickstart_tutorial
+   tensorqs_tutorial
+   data_tutorial
+   transforms_tutorial
+   buildmodel_tutorial
+   autogradqs_tutorial
+   optimization_tutorial
+   saveloadrun_tutorial
 
 """
