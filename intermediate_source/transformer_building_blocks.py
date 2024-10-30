@@ -344,7 +344,7 @@ mha_layer = MultiHeadAttention(E_q, E_k, E_v, E_total, nheads, dropout=dropout, 
 torch.manual_seed(6)
 vanilla_mha_layer = nn.MultiheadAttention(E_q, nheads, dropout=dropout, batch_first=True, bias=bias, device='cuda')
 
-# nn.MultiheadAttention uses a non conventional initialization for layers, so do this for exact parity :(
+# ``nn.MultiheadAttention`` uses a non conventional initialization for layers, so do this for exact parity :(
 mha_layer.out_proj.weight = nn.Parameter(vanilla_mha_layer.out_proj.weight.clone().detach())
 mha_layer.packed_proj.weight = nn.Parameter(vanilla_mha_layer.in_proj_weight.clone().detach())
 mha_layer.out_proj.bias = nn.Parameter(vanilla_mha_layer.out_proj.bias.clone().detach())
@@ -421,7 +421,7 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # gives equivalent results to an ``nn.TransformerEncoderLayer`` with
 # ``is_causal=True``.
 #
-# We  demonstrate examples of implementing the rest of the nn layers
+# We  demonstrate examples of implementing the rest of the ``nn`` layers
 # `here <https://github.com/mikaylagawarecki/temp>`_ but omit that from this
 # tutorial for brevity.
 
@@ -457,7 +457,7 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # * SwiGLU activation in feed-forward network of Transformer Layer
 # 
 # Input projection for MultiheadAttention
-# ----------------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Recall that when doing self-attention, the ``query``, ``key`` and ``value``
 # are the same tensor. Each of these tensors is projected with a 
 # ``Linear(E_q, E_total)`` layer. Instead, we can pack this into one layer,
@@ -502,8 +502,9 @@ packed_in_proj(q)
 (q_out, k_out, v_out), time_packed, _ = benchmark(packed_in_proj, q)
 print(f"InputProjection: {time:5f} s, PackedInputProjection: {time_packed:5f} s, speedup: {time/time_packed:.2f}x")
 
+##################################################
 # SwiGLU feed forward network of Transformer Layer
-# ------------------------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # SwiGLU is a non-linear activation function that is increasingly popular in the feed-forward
 # network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as
 
@@ -524,6 +525,7 @@ class SwiGLUFFN(nn.Module):
     def forward(self, x):
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
 
+########################################################################
 # An alternative way of implementing this that uses packed projection is 
 
 class PackedSwiGLUFFN(nn.Module):
@@ -543,6 +545,7 @@ class PackedSwiGLUFFN(nn.Module):
         x1, x3 = torch.chunk(self.w13(x), 2, dim=-1)
         return self.w2(F.silu(x1) * x3)
 
+################################################################################
 # We can compare the performance of the two implementations as follows
 # Depending on your hardware, you might see different results. On an A100 I see
 # 1.12x speedup for D=128.
@@ -635,20 +638,14 @@ value = (
 )
 out_flex2 = flex_attention(query, key, value, score_mod=alibi_score_mod)
 
-################################################################################
-# And more
-# --------
-# 
-# We intend to update this tutorial to demonstrate more examples of how to use
-# the various performant building blocks such as KV-Caching, Grouped Query Attention
-# etc.
-
 
 ################################################################################
 # Extended examples
 # -----------------
 # 
-# There are several good examples of using various performant building blocks to
+# We intend to update this tutorial to demonstrate more examples of how to use
+# the various performant building blocks such as KV-Caching, Grouped Query Attention
+# etc. Further, there are several good examples of using various performant building blocks to
 # implement various transformer architectures. Some examples include
 #
 # * `gpt-fast <https://github.com/pytorch-labs/gpt-fast>`_
