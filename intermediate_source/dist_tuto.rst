@@ -2,8 +2,6 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
-**Edited by**: `Chirag Pandya <https://github.com/c-p-i-o>`_
-
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/intermediate_source/dist_tuto.rst>`__.
 
