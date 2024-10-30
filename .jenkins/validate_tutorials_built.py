@@ -15,6 +15,7 @@ NOT_RUN = [
     "beginner_source/profiler",
     "beginner_source/saving_loading_models",
     "beginner_source/introyt/captumyt",
+    "beginner_source/introyt/introyt1_tutorial",
     "beginner_source/examples_nn/polynomial_module",
     "beginner_source/examples_nn/dynamic_net",
     "beginner_source/examples_nn/polynomial_optim",
