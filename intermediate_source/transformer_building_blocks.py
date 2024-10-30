@@ -255,69 +255,70 @@ class MultiHeadAttention(nn.Module):
 
 
 ###############################################################################
-# .. dropdown:: Utilities
-# ========================
+# Utilities
+# =========
 # In this section, we include a utility to generate semi-realistic data using
 # Zipf distribution for sentence lengths. This is used to generate the nested
 # query, key and value tensors. We also include a benchmark utility.
 
-import numpy as np
+# .. dropdown::
+    import numpy as np
 
-def zipf_sentence_lengths(alpha: float, batch_size: int) -> torch.Tensor:
-    # generate fake corpus by unigram Zipf distribution
-    # from wikitext-2 corpus, we get rank "." = 3, "!" = 386, "?" = 858
-    sentence_lengths = np.empty(batch_size, dtype=int)
-    for ibatch in range(batch_size):
-        sentence_lengths[ibatch] = 1
-        word = np.random.zipf(alpha)
-        while word != 3 and word != 386 and word != 858:
-            sentence_lengths[ibatch] += 1
+    def zipf_sentence_lengths(alpha: float, batch_size: int) -> torch.Tensor:
+        # generate fake corpus by unigram Zipf distribution
+        # from wikitext-2 corpus, we get rank "." = 3, "!" = 386, "?" = 858
+        sentence_lengths = np.empty(batch_size, dtype=int)
+        for ibatch in range(batch_size):
+            sentence_lengths[ibatch] = 1
             word = np.random.zipf(alpha)
-    return torch.tensor(sentence_lengths)
+            while word != 3 and word != 386 and word != 858:
+                sentence_lengths[ibatch] += 1
+                word = np.random.zipf(alpha)
+        return torch.tensor(sentence_lengths)
 
-# Generate a batch of semi-realistic data using Zipf distribution for sentence lengths
-# in the form of nested tensors with the jagged layout.
-def gen_batch(N, E_q, E_k, E_v, device, dtype=torch.float32, query_seq_len_1=False):
-    # generate semi-realistic data using Zipf distribution for sentence lengths
-    sentence_lengths = zipf_sentence_lengths(alpha=1.2, batch_size=N)
+    # Generate a batch of semi-realistic data using Zipf distribution for sentence lengths
+    # in the form of nested tensors with the jagged layout.
+    def gen_batch(N, E_q, E_k, E_v, device, dtype=torch.float32, query_seq_len_1=False):
+        # generate semi-realistic data using Zipf distribution for sentence lengths
+        sentence_lengths = zipf_sentence_lengths(alpha=1.2, batch_size=N)
 
-    # Note: the torch.jagged layout is a nested tensor layout that supports a single ragged
-    # dimension and works with torch.compile. The batch items each have shape (B, S*, D)
-    # where B = batch size, S* = ragged sequence length, and D = embedding dimension.
-    if query_seq_len_1:
-      query = torch.nested.nested_tensor([
-          torch.randn(1, E_q, dtype=dtype, device=device)
-          for l in sentence_lengths
-      ], layout=torch.jagged)
-    else:
-      query = torch.nested.nested_tensor([
-          torch.randn(l.item(), E_q, dtype=dtype, device=device)
-          for l in sentence_lengths
-      ], layout=torch.jagged)
+        # Note: the torch.jagged layout is a nested tensor layout that supports a single ragged
+        # dimension and works with torch.compile. The batch items each have shape (B, S*, D)
+        # where B = batch size, S* = ragged sequence length, and D = embedding dimension.
+        if query_seq_len_1:
+        query = torch.nested.nested_tensor([
+            torch.randn(1, E_q, dtype=dtype, device=device)
+            for l in sentence_lengths
+        ], layout=torch.jagged)
+        else:
+        query = torch.nested.nested_tensor([
+            torch.randn(l.item(), E_q, dtype=dtype, device=device)
+            for l in sentence_lengths
+        ], layout=torch.jagged)
 
-    key = torch.nested.nested_tensor([
-        torch.randn(s.item(), E_k, dtype=dtype, device=device)
-        for s in sentence_lengths
-    ], layout=torch.jagged)
+        key = torch.nested.nested_tensor([
+            torch.randn(s.item(), E_k, dtype=dtype, device=device)
+            for s in sentence_lengths
+        ], layout=torch.jagged)
 
-    value = torch.nested.nested_tensor([
-        torch.randn(s.item(), E_v, dtype=dtype, device=device)
-        for s in sentence_lengths
-    ], layout=torch.jagged)
+        value = torch.nested.nested_tensor([
+            torch.randn(s.item(), E_v, dtype=dtype, device=device)
+            for s in sentence_lengths
+        ], layout=torch.jagged)
 
-    return query, key, value, sentence_lengths
+        return query, key, value, sentence_lengths
 
-import timeit
-import math
+    import timeit
+    import math
 
-def benchmark(func, *args, **kwargs):
-    torch.cuda.synchronize()
-    torch.cuda.reset_peak_memory_stats()
-    begin = timeit.default_timer()
-    output = func(*args, **kwargs)
-    torch.cuda.synchronize()
-    end = timeit.default_timer()
-    return output, (end - begin), torch.cuda.max_memory_allocated()
+    def benchmark(func, *args, **kwargs):
+        torch.cuda.synchronize()
+        torch.cuda.reset_peak_memory_stats()
+        begin = timeit.default_timer()
+        output = func(*args, **kwargs)
+        torch.cuda.synchronize()
+        end = timeit.default_timer()
+        return output, (end - begin), torch.cuda.max_memory_allocated()
 
 ##############################################################################
 # We will now demonstrate the performance improvements of using nested tensors
