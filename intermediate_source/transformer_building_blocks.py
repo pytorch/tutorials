@@ -253,7 +253,7 @@ class MultiHeadAttention(nn.Module):
 
 
 ###############################################################################
-# Utilities
+# .. dropdown:: Utilities
 # ========================
 # In this section, we include a utility to generate semi-realistic data using
 # Zipf distribution for sentence lengths. This is used to generate the nested
