@@ -227,7 +227,7 @@ print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}
 # This CharRNN class implements an RNN with three components. 
 # First, we use the `nn.RNN implementation <https://pytorch.org/docs/stable/generated/torch.nn.RNN.html>`__.
 # Next, we define a layer that maps the RNN hidden layers to our output. And finally, we apply a ``softmax`` function. Using ``nn.RNN``
-# leads to a significant improvement in performance (e.g. cuDNN-accelerated kernals) versus implementing 
+# leads to a significant improvement in performance, such as cuDNN-accelerated kernels, versus implementing 
 # each layer as a nn.Linear. It also simplifies the implementation in forward().
 #
 
