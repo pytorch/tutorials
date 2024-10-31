@@ -763,7 +763,7 @@ Welcome to PyTorch Tutorials
    :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
-   :link: intermediate/FSDP_adavnced_tutorial.html
+   :link: intermediate/FSDP_advanced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -1115,7 +1115,7 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
-   intermediate/FSDP_adavnced_tutorial
+   intermediate/FSDP_advanced_tutorial
    intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial
