@@ -260,7 +260,7 @@ class MultiHeadAttention(nn.Module):
 
 ###############################################################################
 # Utilities
-# =========
+# ~~~~~~~~~
 # In this section, we include a utility to generate semi-realistic data using
 # Zipf distribution for sentence lengths. This is used to generate the nested
 # query, key and value tensors. We also include a benchmark utility.
@@ -400,11 +400,13 @@ print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)
 ######################################################################################
 # For reference some sample outputs on A100:
 # 
-# padded_time=0.03454, padded_peak_memory=4.14 GB
-# nested_time=0.00612, nested_peak_memory=0.76 GB
-# Difference between vanilla and nested result 0.0
-# Nested speedup: 5.65
-# Nested peak memory reduction 3.39 GB
+# ..code::
+#
+#     padded_time=0.03454, padded_peak_memory=4.14 GB
+#     nested_time=0.00612, nested_peak_memory=0.76 GB
+#     Difference between vanilla and nested result 0.0
+#     Nested speedup: 5.65
+#     Nested peak memory reduction 3.39 GB
 #
 # We can also see the same for backward pass
 
@@ -428,14 +430,16 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 ##################################################################################
 # Sample outputs on A100:
 #
-# ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
-# ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
-# Nested backward speedup: 144.13
-# Nested backward peak memory reduction 1.86 GB
-# Difference in ``out_proj.weight.grad`` 0.000244140625
-# Difference in ``packed_proj.weight.grad`` 0.001556396484375
-# Difference in ``out_proj.bias.grad`` 0.0
-# Difference in ``packed_proj.bias.grad`` 0.001953125
+# ..code::
+# 
+#     ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
+#     ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
+#     Nested backward speedup: 144.13
+#     Nested backward peak memory reduction 1.86 GB
+#     Difference in ``out_proj.weight.grad`` 0.000244140625
+#     Difference in ``packed_proj.weight.grad`` 0.001556396484375
+#     Difference in ``out_proj.bias.grad`` 0.0
+#     Difference in ``packed_proj.bias.grad`` 0.001953125
 #
 
 ##################################################################################
