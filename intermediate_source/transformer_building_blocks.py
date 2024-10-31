@@ -253,15 +253,16 @@ class MultiHeadAttention(nn.Module):
 
         return attn_output
 
-
-###############################################################################
-# Utilities
-# =========
-# In this section, we include a utility to generate semi-realistic data using
-# Zipf distribution for sentence lengths. This is used to generate the nested
-# query, key and value tensors. We also include a benchmark utility.
-
 # .. dropdown::
+
+    ###############################################################################
+    # Utilities
+    # =========
+    # In this section, we include a utility to generate semi-realistic data using
+    # Zipf distribution for sentence lengths. This is used to generate the nested
+    # query, key and value tensors. We also include a benchmark utility.
+
+
     import numpy as np
 
     def zipf_sentence_lengths(alpha: float, batch_size: int) -> torch.Tensor:
