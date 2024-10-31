@@ -3,6 +3,9 @@ Dismantling the ``nn.Transformer`` modules for gains and profits
 =================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
+.. note::
+    This tutorial should be run with the latest nightly, or, when available, 2.6.
+
 The ``torch.nn`` module currently provides various ``Transformer``-related layers.
 In particular ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``,
 ``TransformerDecoder``, ``Transformer`` and ``MultiheadAttention``. This family
@@ -253,73 +256,72 @@ class MultiHeadAttention(nn.Module):
 
         return attn_output
 
-# .. dropdown::
 
-    ###############################################################################
-    # Utilities
-    # =========
-    # In this section, we include a utility to generate semi-realistic data using
-    # Zipf distribution for sentence lengths. This is used to generate the nested
-    # query, key and value tensors. We also include a benchmark utility.
+###############################################################################
+# Utilities
+# =========
+# In this section, we include a utility to generate semi-realistic data using
+# Zipf distribution for sentence lengths. This is used to generate the nested
+# query, key and value tensors. We also include a benchmark utility.
 
 
-    import numpy as np
+import numpy as np
 
-    def zipf_sentence_lengths(alpha: float, batch_size: int) -> torch.Tensor:
-        # generate fake corpus by unigram Zipf distribution
-        # from wikitext-2 corpus, we get rank "." = 3, "!" = 386, "?" = 858
-        sentence_lengths = np.empty(batch_size, dtype=int)
-        for ibatch in range(batch_size):
-            sentence_lengths[ibatch] = 1
+def zipf_sentence_lengths(alpha: float, batch_size: int) -> torch.Tensor:
+    # generate fake corpus by unigram Zipf distribution
+    # from wikitext-2 corpus, we get rank "." = 3, "!" = 386, "?" = 858
+    sentence_lengths = np.empty(batch_size, dtype=int)
+    for ibatch in range(batch_size):
+        sentence_lengths[ibatch] = 1
+        word = np.random.zipf(alpha)
+        while word != 3 and word != 386 and word != 858:
+            sentence_lengths[ibatch] += 1
             word = np.random.zipf(alpha)
-            while word != 3 and word != 386 and word != 858:
-                sentence_lengths[ibatch] += 1
-                word = np.random.zipf(alpha)
-        return torch.tensor(sentence_lengths)
+    return torch.tensor(sentence_lengths)
 
-    # Generate a batch of semi-realistic data using Zipf distribution for sentence lengths
-    # in the form of nested tensors with the jagged layout.
-    def gen_batch(N, E_q, E_k, E_v, device, dtype=torch.float32, query_seq_len_1=False):
-        # generate semi-realistic data using Zipf distribution for sentence lengths
-        sentence_lengths = zipf_sentence_lengths(alpha=1.2, batch_size=N)
+# Generate a batch of semi-realistic data using Zipf distribution for sentence lengths
+# in the form of nested tensors with the jagged layout.
+def gen_batch(N, E_q, E_k, E_v, device, dtype=torch.float32, query_seq_len_1=False):
+    # generate semi-realistic data using Zipf distribution for sentence lengths
+    sentence_lengths = zipf_sentence_lengths(alpha=1.2, batch_size=N)
 
-        # Note: the torch.jagged layout is a nested tensor layout that supports a single ragged
-        # dimension and works with torch.compile. The batch items each have shape (B, S*, D)
-        # where B = batch size, S* = ragged sequence length, and D = embedding dimension.
-        if query_seq_len_1:
+    # Note: the torch.jagged layout is a nested tensor layout that supports a single ragged
+    # dimension and works with torch.compile. The batch items each have shape (B, S*, D)
+    # where B = batch size, S* = ragged sequence length, and D = embedding dimension.
+    if query_seq_len_1:
         query = torch.nested.nested_tensor([
             torch.randn(1, E_q, dtype=dtype, device=device)
             for l in sentence_lengths
         ], layout=torch.jagged)
-        else:
+    else:
         query = torch.nested.nested_tensor([
             torch.randn(l.item(), E_q, dtype=dtype, device=device)
             for l in sentence_lengths
         ], layout=torch.jagged)
 
-        key = torch.nested.nested_tensor([
-            torch.randn(s.item(), E_k, dtype=dtype, device=device)
-            for s in sentence_lengths
-        ], layout=torch.jagged)
+    key = torch.nested.nested_tensor([
+        torch.randn(s.item(), E_k, dtype=dtype, device=device)
+        for s in sentence_lengths
+    ], layout=torch.jagged)
 
-        value = torch.nested.nested_tensor([
-            torch.randn(s.item(), E_v, dtype=dtype, device=device)
-            for s in sentence_lengths
-        ], layout=torch.jagged)
+    value = torch.nested.nested_tensor([
+        torch.randn(s.item(), E_v, dtype=dtype, device=device)
+        for s in sentence_lengths
+    ], layout=torch.jagged)
 
-        return query, key, value, sentence_lengths
+    return query, key, value, sentence_lengths
 
-    import timeit
-    import math
+import timeit
+import math
 
-    def benchmark(func, *args, **kwargs):
-        torch.cuda.synchronize()
-        torch.cuda.reset_peak_memory_stats()
-        begin = timeit.default_timer()
-        output = func(*args, **kwargs)
-        torch.cuda.synchronize()
-        end = timeit.default_timer()
-        return output, (end - begin), torch.cuda.max_memory_allocated()
+def benchmark(func, *args, **kwargs):
+    torch.cuda.synchronize()
+    torch.cuda.reset_peak_memory_stats()
+    begin = timeit.default_timer()
+    output = func(*args, **kwargs)
+    torch.cuda.synchronize()
+    end = timeit.default_timer()
+    return output, (end - begin), torch.cuda.max_memory_allocated()
 
 ##############################################################################
 # We will now demonstrate the performance improvements of using nested tensors
@@ -395,6 +397,16 @@ print(f"Nested speedup: {(padded_time/nested_time):.2f}")
 print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)/1e9):.2f} GB")
 
 ######################################################################################
+# For reference some sample outputs on A100:
+# 
+# ```
+# padded_time=0.03454, padded_peak_memory=4.14 GB
+# nested_time=0.00612, nested_peak_memory=0.76 GB
+# Difference between vanilla and nested result 0.0
+# Nested speedup: 5.65
+# Nested peak memory reduction 3.39 GB
+# ````
+#
 # We can also see the same for backward pass
 
 for i, entry_length in enumerate(sentence_lengths):
@@ -415,6 +427,20 @@ print("Difference in out_proj.bias.grad", (mha_layer.out_proj.bias.grad - vanill
 print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - vanilla_mha_layer.in_proj_bias.grad).abs().max().item())
 
 ##################################################################################
+# Sample outputs on A100:
+#
+# ```
+# padded_bw_time=2.09337, padded_bw_peak_mem=5.10 GB
+# nested_bw_time=0.01452, nested_bw_peak_mem=3.24 GB
+# Nested backward speedup: 144.13
+# Nested backward peak memory reduction 1.86 GB
+# Difference in out_proj.weight.grad 0.000244140625
+# Difference in packed_proj.weight.grad 0.001556396484375
+# Difference in out_proj.bias.grad 0.0
+# Difference in packed_proj.bias.grad 0.001953125
+# ```
+
+##################################################################################
 # GPT-style layer
 # ---------------
 # A basic GPT-style transformer layer consists of a causal self-attention layer
@@ -424,8 +450,9 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # ``is_causal=True``.
 #
 # We  demonstrate examples of implementing the rest of the ``nn`` layers
-# `here <https://github.com/mikaylagawarecki/temp>`_ but omit that from this
-# tutorial for brevity.
+# `here <https://github.com/mikaylagawarecki/transformer_tutorial_accompaniment>`_
+# but omit that from this tutorial for brevity.
+
 
 ###############################################################################
 # Going one step further
@@ -440,10 +467,85 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # In this section, we will discuss various functionalities using the
 # aforementioned building blocks. In particular,
 # 
-# * Packed Projection
 # * Cross Attention
 # * Fully masked rows no longer cause ``NaN``s
 # * Modifying attention score: ALiBi with FlexAttention and NJT
+# * Packed Projection
+
+###############################################################################
+# Cross Attention
+# ---------------
+# Cross attention is a form of attention where the query and key/value tensors
+# are from different sequences.
+#
+# One example of this is in ``nn.TransformerDecoderLayer`` where the query comes
+# from the decoder and the key/value come from the encoder.
+#
+# The above MultiheadAttention layer nicely generalizes to this case with nested
+# tensors for both query and key/value.
+
+query, _, _, q_len = gen_batch(N, E_q, E_k, E_v, device)
+_, key, value, kv_len = gen_batch(N, E_q, E_k, E_v, device)
+
+print(f"Total sequence length in nested query {q_len.sum().item()}, max sequence length {q_len.max().item()}")
+print(f"Total sequence length in nested key/value {kv_len.sum().item()}, max sequence length {kv_len.max().item()}")
+out = new_mha_layer(query, key, value, is_causal=False)
+
+
+################################################################################
+# Fully masked rows no longer cause NaNs
+# --------------------------------------
+# 
+# There has been a long standing issue with ``nn.MultiheadAttention`` and
+# ``scaled_dot_product_attention`` where if a row was fully masked out, the output
+# of the attention layer would be NaN. See `issue <https://github.com/pytorch/pytorch/issues/41508>`_.
+# This is because the softmax over an empty set is undefined.
+# 
+# Thanks to `this PR <https://github.com/pytorch/pytorch/pull/133882>`_
+# this is no longer the case. Instead, fully masked rows in ``scaled_dot_product_attention``.
+# For cases where ``nn.MHA`` does not employ the "fast-path", this will also apply.
+#
+# Using a custom MHA layer with NJTs is strongly recommended over the
+# existing "fast-path" in ``nn.MultiheadAttention`` as NJT's ability to model raggedness
+# appropriately makes it possible to properly express empty sequences.
+
+
+################################################################################
+# FlexAttention + NJT
+# ---------------------------------------------------------------------
+# NJT also composes with the ``FlexAttention`` module. This is a generalization
+# of the ``MultiheadAttention`` layer that allows for arbitrary modifications
+# to the attention score. The example below takes the ``alibi_mod``
+# that implements `ALiBi <https://arxiv.org/abs/2108.12409>`_ from
+# `attention gym <https://github.com/pytorch-labs/attention-gym>`_ and uses it
+# with nested input tensors.
+
+from torch.nn.attention.flex_attention import flex_attention
+
+def generate_alibi_bias(H: int):
+    """Returns an alibi bias score_mod given the number of heads H
+    Args:
+        H: number of heads
+    Returns:
+        alibi_bias: alibi bias score_mod
+    """
+    def alibi_mod(score, b, h, q_idx, kv_idx):
+        scale = torch.exp2(-((h + 1) * 8.0 / H))
+        bias = (q_idx - kv_idx) * scale
+        return score + bias
+    return alibi_mod
+
+query, key, value, _ = gen_batch(N, E_q, E_k, E_v, device)
+n_heads, D = 8, E_q // 8
+alibi_score_mod = generate_alibi_bias(n_heads)
+query = (
+    query.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+)
+key = key.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+value = (
+    value.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+)
+out_flex2 = flex_attention(query, key, value, score_mod=alibi_score_mod)
 
 ###############################################################################
 # Packed Projection
@@ -566,80 +668,6 @@ packed_swigluffn(q)
 _, time, _ = benchmark(swigluffn, q)
 _, time_packed, _ = benchmark(packed_swigluffn, q)
 print(f"SwiGLUFFN: {time} s, PackedSwiGLUFFN: {time_packed} s, speedup: {time/time_packed:.2f}x")
-
-###############################################################################
-# Cross Attention
-# ---------------
-# Cross attention is a form of attention where the query and key/value tensors
-# are from different sequences.
-#
-# One example of this is in ``nn.TransformerDecoderLayer`` where the query comes
-# from the decoder and the key/value come from the encoder.
-#
-# The above MultiheadAttention layer nicely generalizes to this case with nested
-# tensors for both query and key/value.
-
-query, _, _, q_len = gen_batch(N, E_q, E_k, E_v, device)
-_, key, value, kv_len = gen_batch(N, E_q, E_k, E_v, device)
-
-print(f"Total sequence length in nested query {q_len.sum().item()}, max sequence length {q_len.max().item()}")
-print(f"Total sequence length in nested key/value {kv_len.sum().item()}, max sequence length {kv_len.max().item()}")
-out = new_mha_layer(query, key, value, is_causal=False)
-
-
-################################################################################
-# Fully masked rows no longer cause NaNs
-# --------------------------------------
-# 
-# There has been a long standing issue with ``nn.MultiheadAttention`` and
-# ``scaled_dot_product_attention`` where if a row was fully masked out, the output
-# of the attention layer would be NaN. See `issue <https://github.com/pytorch/pytorch/issues/41508>`_.
-# This is because the softmax over an empty set is undefined.
-# 
-# Thanks to `this PR <https://github.com/pytorch/pytorch/pull/133882>`_
-# this is no longer the case. Instead, fully masked rows in ``scaled_dot_product_attention``.
-# For cases where ``nn.MHA`` does not employ the "fast-path", this will also apply.
-#
-# Using a custom MHA layer with NJTs is strongly recommended over the
-# existing "fast-path" in ``nn.MultiheadAttention`` as NJT's ability to model raggedness
-# appropriately makes it possible to distinguish when there is an empty sequence.
-
-
-################################################################################
-# ALiBi with NJT (FlexAttention + NJT)
-# ---------------------------------------------------------------------
-# NJT also composes with the ``FlexAttention`` module. This is a generalization
-# of the ``MultiheadAttention`` layer that allows for arbitrary modifications
-# to the attention score. The example below takes the ``alibi_mod`` from
-# attention gym and uses it with nested input tensors.
-
-from torch.nn.attention.flex_attention import flex_attention
-
-def generate_alibi_bias(H: int):
-    """Returns an alibi bias score_mod given the number of heads H
-    Args:
-        H: number of heads
-    Returns:
-        alibi_bias: alibi bias score_mod
-    """
-    def alibi_mod(score, b, h, q_idx, kv_idx):
-        scale = torch.exp2(-((h + 1) * 8.0 / H))
-        bias = (q_idx - kv_idx) * scale
-        return score + bias
-    return alibi_mod
-
-query, key, value, _ = gen_batch(N, E_q, E_k, E_v, device)
-n_heads, D = 8, E_q // 8
-alibi_score_mod = generate_alibi_bias(n_heads)
-query = (
-    query.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
-)
-key = key.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
-value = (
-    value.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
-)
-out_flex2 = flex_attention(query, key, value, score_mod=alibi_score_mod)
-
 
 ################################################################################
 # Extended examples
