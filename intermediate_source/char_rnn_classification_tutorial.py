@@ -210,7 +210,7 @@ train_set, test_set = torch.utils.data.random_split(alldata, [.85, .15], generat
 print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}")
 
 #########################
-#Now we have a basic dataset containing 20074 examples where each example is a pairing of label and name. We have also 
+# Now we have a basic dataset containing **20074** examples where each example is a pairing of label and name. We have also 
 #split the dataset into training and testing so we can validate the model that we build. 
 
 
