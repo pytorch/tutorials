@@ -251,7 +251,7 @@ class CharRNN(nn.Module):
 
 
 ###########################
-#We can then create a RNN with 57 input nodes, 128 hidden nodes and 18 outputs.
+# We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:
 
 n_hidden = 128
 rnn = CharRNN(n_letters, n_hidden, len(alldata.labels_uniq))
