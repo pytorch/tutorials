@@ -330,9 +330,9 @@ A command line utility is provided for the users convenience, which follows the 
 
 .. code-block:: bash
 
-    python -m torch.distributed.checkpoint.format_utils -m <checkpoint location> <location to write formats to> <mode>
+    python -m torch.distributed.checkpoint.format_utils <mode> <checkpoint location> <location to write formats to>
 
-In the command above, ``mode`` is one of ``torch_to_dcp``` or ``dcp_to_torch``.
+In the command above, ``mode`` is one of ``torch_to_dcp`` or ``dcp_to_torch``.
 
 
 Alternatively, methods are also provided for users who may wish to convert checkpoints directly.
