@@ -3,6 +3,7 @@
 `Tensors <tensors_deeper_tutorial.html>`_ ||
 **Autograd** ||
 `Building Models <modelsyt_tutorial.html>`_ ||
+`TensorBoard Support <tensorboardyt_tutorial.html>`_ ||
 `Training Models <trainingyt.html>`_ ||
 `Model Understanding <captumyt.html>`_
 

@@ -21,10 +21,14 @@ Introduction to PyTorch on YouTube
     Building Models with PyTorch
     https://pytorch.org/tutorials/beginner/introyt/modelsyt_tutorial.html
 
-6. trainingyt_tutorial.py
+6. tensorboardyt_tutorial.py
+    PyTorch TensorBoard Support
+    https://pytorch.org/tutorials/beginner/introyt/tensorboardyt_tutorial.html
+
+7. trainingyt_tutorial.py
     Training with PyTorch
     https://pytorch.org/tutorials/beginner/introyt/trainingyt_tutorial.html
     
-7. captumyt_tutorial.py
+8. captumyt_tutorial.py
     Model Understanding with Captum
     https://pytorch.org/tutorials/beginner/introyt/captumyt_tutorial.html
