@@ -25,7 +25,7 @@ to be the output, i.e. which class the word belongs to.
 
 Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
-spelling:
+spelling. 
 
 Recommended Preparation
 =======================
@@ -79,8 +79,8 @@ print(f"Using device = {torch.get_default_device()}")
 # line, mostly romanized (but we still need to convert from Unicode to
 # ASCII).
 #
-# The first thing we need to define and clean our data. First off, we need to convert Unicode to plain ASCII to 
-# limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing a small set of allowed characters (allowed_characters)
+# The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to 
+# limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
 
 import string 
 import unicodedata
@@ -141,9 +141,9 @@ print (f"The name 'Ahn' becomes {lineToTensor('Ahn')}") #notice 'A' sets the 27t
 # Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach 
 # for other RNN tasks with text.
 #
-# Next, we need to combine all our examples into a dataset so we can train, text and validate our models. For this, 
-# we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>` classes 
-# to hold our dataset. Each Dataset needs to implement three functions: __init__, __len__, and __getitem__. 
+# Next, we need to combine all our examples into a dataset so we can train, test and validate our models. For this, 
+# we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__ classes 
+# to hold our dataset. Each Dataset needs to implement three functions: ``__init__``, ``__len__``, and ``__getitem__``.
 from io import open
 import glob
 import os
@@ -194,7 +194,7 @@ class NamesDataset(Dataset):
 
 
 #########################
-#Here we can load our example data into the NamesDataset
+#Here we can load our example data into the ``NamesDataset``
 
 alldata = NamesDataset("data/names")
 print(f"loaded {len(alldata)} items of data")
@@ -286,8 +286,8 @@ print(label_from_output(output, alldata.labels_uniq))
 #
 # We do this by defining a train() function which trains on a given dataset with minibatches. RNNs 
 # train similar to other networks so for completeness we include a batched training method here.
-# The loop (for i in batch) computes the losses for each of the items in the batch before adjusting the 
-# weights. This is repeated until the number of epochs is reached. 
+# The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the 
+# weights. This operation is repeated until the number of epochs is reached. 
 
 import random 
 import numpy as np 
@@ -338,7 +338,7 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
     return all_losses
 
 ##########################################################################
-# We can now train a dataset with mini batches for a specified number of epochs
+# We can now train a dataset with minibatches for a specified number of epochs
 
 start = time.time()
 all_losses = train(rnn, train_set, n_epoch=55, learning_rate=0.15, report_every=5)
@@ -425,9 +425,9 @@ evaluate(rnn, test_set, classes=alldata.labels_uniq)
 #
 # -  Get better results with a bigger and/or better shaped network
 #
-#    -  Vary the hyperparameters to improve performance (e.g. change epochs, batch size, learning rate ) 
+#    -  Adjust the hyperparameters to enhance performance, such as changing the number of epochs, batch size, and learning rate
 #    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
-#    -  Change the size of the layers (e.g. fewer or more hidden nodes, additional linear layers)
+#    -  Modify the size of the layers, such as increasing or decreasing the number of hidden nodes or adding additional linear layers
 #    -  Combine multiple of these RNNs as a higher level network
 # 
 # -  Try with a different dataset of line -> label, for example:
