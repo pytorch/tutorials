@@ -57,17 +57,17 @@ right place, please keep reading!
 # Introducing the Building Blocks
 # ===============================
 # First, we will briefly introduce the 4 technologies mentioned in the introduction
-
+#
 # * `torch.nested <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
-
+#
 # Nested tensors generalize the shape of regular dense tensors, allowing for
 # representation of ragged-sized data with the same tensor UX. In the context of
 # transformers, we can think of nested tensors as a tool for representing variable
 # sequence lengths. They eliminate the need for the bug-prone practices of explicit
 # padding and masking (think ``key_padding_mask`` in ``nn.MultiHeadAttention``).
-
+#
 # * `scaled_dot_product_attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`_
-
+#
 # ``scaled_dot_product_attention`` is a primitive for
 # :math:`\text{softmax}(\frac{QK^T}{\sqrt{E}} + B)V` that dispatches into either fused
 # implementations of the operator or a fallback implementation. It works out of
@@ -75,9 +75,9 @@ right place, please keep reading!
 # are executed on the fly as they are encountered) and also integrates seamlessly
 # with ``torch.compile()``. As of 2.6, it will also offer grouped query attention
 # natively.
-
+#
 # * `torch.compile() <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
-
+#
 # ``torch.compile()`` is a compiler introduced in version 2.0 that is able to
 # capture a graph of PyTorch code and perform various optimizations on it, such as
 # fusing together sequences of ops. Nested tensors with the ``torch.jagged`` layout
@@ -86,28 +86,28 @@ right place, please keep reading!
 # and SDPA is that compile can remove framework overhead ones sees in eager mode
 # and fuse sequences of ops in transformers together (e.g. projection and
 # activation).
-
+#
 # * `FlexAttention <https://pytorch.org/blog/flexattention/>`_
-
+#
 # ``FlexAttention`` is a primitive that allows users to modify attention scores
 # prior to the softmax operation. It generalizes the additive ``B`` term above
 # for ``scaled_dot_product_attention``, allowing for arbitrary calculation. It
 # requires compile to achieve good performance.
-
+#
 # The above building blocks are "All You Need" (as of October 2024)
 # ==================================================================
-
+#
 # The main premise in this section is that most transformer variations are
 # GPT-style, consisting of layers like Embedding, Positional Encoding, Attention
 # Blocks and Feed Forward networks. If we were to try to classify the differences
 # in this space, we might land on something like:
-
+#
 # 1.   Layer type (activation functions e.g. ``SwiGLU``, normalization functions
 #      e.g. ``RMSNorm`` etc., positional encodings e.g. Sinusoidal, Rotary etc.)
 # 2.   Layer ordering (where to apply norms, where to apply positional encoding etc.)
 # 3.   Modifications to attention score (``ALiBi``, Relative Positional Bias etc.)
-
-
+#
+#
 # In a pre-compiler world, one might write their custom transformer and observe
 # that it works but is slow. Then, one might write a custom fused kernel for
 # the specific series of ops. In a compiler world, one can do the former, compile
@@ -400,12 +400,11 @@ print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)
 ######################################################################################
 # For reference some sample outputs on A100:
 # 
-# ..code::
-#   padded_time=0.03454, padded_peak_memory=4.14 GB
-#   nested_time=0.00612, nested_peak_memory=0.76 GB
-#   Difference between vanilla and nested result 0.0
-#   Nested speedup: 5.65
-#   Nested peak memory reduction 3.39 GB
+# padded_time=0.03454, padded_peak_memory=4.14 GB
+# nested_time=0.00612, nested_peak_memory=0.76 GB
+# Difference between vanilla and nested result 0.0
+# Nested speedup: 5.65
+# Nested peak memory reduction 3.39 GB
 #
 # We can also see the same for backward pass
 
@@ -429,15 +428,14 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 ##################################################################################
 # Sample outputs on A100:
 #
-# ..code::
-#   ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
-#   ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
-#   Nested backward speedup: 144.13
-#   Nested backward peak memory reduction 1.86 GB
-#   Difference in ``out_proj.weight.grad`` 0.000244140625
-#   Difference in ``packed_proj.weight.grad`` 0.001556396484375
-#   Difference in ``out_proj.bias.grad`` 0.0
-#   Difference in ``packed_proj.bias.grad`` 0.001953125
+# ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
+# ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
+# Nested backward speedup: 144.13
+# Nested backward peak memory reduction 1.86 GB
+# Difference in ``out_proj.weight.grad`` 0.000244140625
+# Difference in ``packed_proj.weight.grad`` 0.001556396484375
+# Difference in ``out_proj.bias.grad`` 0.0
+# Difference in ``packed_proj.bias.grad`` 0.001953125
 #
 
 ##################################################################################
