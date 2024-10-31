@@ -238,7 +238,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_logo = '_static/img/pytorch-logo-dark.svg'
 html_theme_options = {
     'pytorch_project': 'tutorials',
-    'collapse_navigation': True,
+    'collapse_navigation': False,
     'display_version': True,
     'navigation_with_keys': True,
     'logo_only': False,
@@ -307,6 +307,10 @@ html_css_files = [
         'css/custom.css',
         'css/custom2.css'
     ]
+
+html_js_files = [
+    "js/custom.js",
+]
 
 def setup(app):
     # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value

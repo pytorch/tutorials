@@ -915,7 +915,6 @@ Additional Resources
    See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
-   :maxdepth: 3
    :hidden:
    :includehidden:
    :caption: Introduction to PyTorch
@@ -924,7 +923,7 @@ Additional Resources
    beginner/introyt/introyt
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: Learning PyTorch
@@ -968,7 +967,7 @@ Additional Resources
    intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Backends
@@ -987,7 +986,7 @@ Additional Resources
    advanced/pendulum
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Deploying PyTorch Models in Production
