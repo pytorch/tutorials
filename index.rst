@@ -666,7 +666,7 @@ Welcome to PyTorch Tutorials
 
 
 .. customcarditem::
-   :header: [Title TBD] Unbundling nn.Transformer modules for gains and profits
+   :header: Dismantling the nn.Transformer modules for gains and profits
    :card_description: This tutorial goes over recommended best practices for implementing Transformers with native PyTorch.
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: intermediate/transformer_building_blocks.html

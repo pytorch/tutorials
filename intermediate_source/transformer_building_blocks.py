@@ -430,14 +430,14 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # Sample outputs on A100:
 #
 # ..code::
-#   padded_bw_time=2.09337, padded_bw_peak_mem=5.10 GB
-#   nested_bw_time=0.01452, nested_bw_peak_mem=3.24 GB
+#   ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
+#   ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
 #   Nested backward speedup: 144.13
 #   Nested backward peak memory reduction 1.86 GB
-#   Difference in out_proj.weight.grad 0.000244140625
-#   Difference in packed_proj.weight.grad 0.001556396484375
-#   Difference in out_proj.bias.grad 0.0
-#   Difference in packed_proj.bias.grad 0.001953125
+#   Difference in ``out_proj.weight.grad`` 0.000244140625
+#   Difference in ``packed_proj.weight.grad`` 0.001556396484375
+#   Difference in ``out_proj.bias.grad`` 0.0
+#   Difference in ``packed_proj.bias.grad`` 0.001953125
 #
 
 ##################################################################################
