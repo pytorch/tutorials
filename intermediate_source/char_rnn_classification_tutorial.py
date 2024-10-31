@@ -258,8 +258,8 @@ rnn = CharRNN(n_letters, n_hidden, len(alldata.labels_uniq))
 print(rnn) 
 
 ######################################################################
-# We can then pass our Tensor to the RNN to get a predicted output and 
-# use a helper function, label_from_output, to get a text label for the class.
+# After that we can pass our Tensor to the RNN to obtain a predicted output. Subsequently,  
+# we use a helper function, ``label_from_output``, to derive a text label for the class.
 
 def label_from_output(output, output_labels):
     top_n, top_i = output.topk(1)
