@@ -1,37 +1,8 @@
 PyTorch for Former Torch Users
-------------------------------
-**Author**: `Soumith Chintala <http://soumith.ch>`_
+==============
+This tutorial is out of date. Please check out the PyTorch tutorials here: https://pytorch.org/tutorials/
 
-In this tutorial, you will learn the following:
-
-1. Using torch Tensors, and important difference against (Lua)Torch
-2. Using the autograd package
-3. Building neural networks
-
-  -  Building a ConvNet
-  -  Building a Recurrent Net
-
-4. Use multiple GPUs
-
-
-.. toctree::
-   :hidden:
-
-   /beginner/former_torchies/tensor_tutorial_old
-   /beginner/former_torchies/autograd_tutorial_old
-   /beginner/former_torchies/nnft_tutorial
-   /beginner/former_torchies/parallelism_tutorial
-
-.. galleryitem:: /beginner/former_torchies/tensor_tutorial_old.py
-    :figure: /_static/img/tensor_illustration_flat.png
-
-.. galleryitem:: /beginner/former_torchies/autograd_tutorial_old.py
-
-.. galleryitem:: /beginner/former_torchies/nnft_tutorial.py
-    :figure: /_static/img/torch-nn-vs-pytorch-nn.png
-
-.. galleryitem:: /beginner/former_torchies/parallelism_tutorial.py
-
+You will be redirected in 3 seconds.
 .. raw:: html
 
-    <div style='clear:both'></div>
+   <meta http-equiv="Refresh" content="3; url='https://pytorch.org/tutorials/'" />
