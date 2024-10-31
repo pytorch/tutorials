@@ -499,7 +499,7 @@ simultaneously. If you have access to compute cluster you should check
 with your local sysadmin or use your favorite coordination tool (e.g.,
 <a class="reference external" href="https://linux.die.net/man/1/pdsh">pdsh</a>,
 <a class="reference external" href="https://cea-hpc.github.io/clustershell/">clustershell</a>, or
-<a class="reference external" href="https://slurm.schedmd.com/">others</a>). For the purpose of this
+<a class="reference external" href="https://slurm.schedmd.com/">slurm</a>). For the purpose of this
 tutorial, we will use a single machine and spawn multiple processes using
 the following template.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""run.py:"""</span>
@@ -522,11 +522,11 @@ the following template.</p>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">mp</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">init_process</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">run</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">world_size</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">init_process</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">run</span><span class="p">))</span>
         <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
@@ -575,7 +575,7 @@ and <code class="docutils literal notranslate"><span class="pre">recv</span></co
 process 0 increments the tensor and sends it to process 1 so that they
 both end up with 1.0. Notice that process 1 needs to allocate memory in
 order to store the data it will receive.</p>
-<p>Also notice that <code class="docutils literal notranslate"><span class="pre">send</span></code>/<code class="docutils literal notranslate"><span class="pre">recv</span></code> are <strong>blocking</strong>: both processes stop
+<p>Also notice that <code class="docutils literal notranslate"><span class="pre">send/recv</span></code> are <strong>blocking</strong>: both processes block
 until the communication is completed. On the other hand immediates are
 <strong>non-blocking</strong>; the script continues its execution and the methods
 return a <code class="docutils literal notranslate"><span class="pre">Work</span></code> object upon which we can choose to
@@ -679,16 +679,22 @@ to obtain the sum of all tensors on all processes, we can use the
 <p>Since we want the sum of all tensors in the group, we use
 <code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.SUM</span></code> as the reduce operator. Generally speaking, any
 commutative mathematical operation can be used as an operator.
-Out-of-the-box, PyTorch comes with 4 such operators, all working at the
+Out-of-the-box, PyTorch comes with many such operators, all working at the
 element-wise level:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.SUM</span></code>,</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.PRODUCT</span></code>,</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.MAX</span></code>,</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.MIN</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.MIN</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.BAND</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.BOR</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.BXOR</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.PREMUL_SUM</span></code>.</p></li>
 </ul>
-<p>In addition to <code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>, there are a total
-of 6 collectives currently implemented in PyTorch.</p>
+<p>The full list of supported operators is
+<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.ReduceOp">here</a>.</p>
+<p>In addition to <code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>, there are many additional collectives currently implemented in
+PyTorch. Here are a few supported collectives.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.broadcast(tensor,</span> <span class="pre">src,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code> from
 <code class="docutils literal notranslate"><span class="pre">src</span></code> to all other processes.</p></li>
@@ -704,7 +710,11 @@ from all processes in <code class="docutils literal notranslate"><span class="pr
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.all_gather(tensor_list,</span> <span class="pre">tensor,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code>
 from all processes to <code class="docutils literal notranslate"><span class="pre">tensor_list</span></code>, on all processes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dist.barrier(group)</span></code>: Blocks all processes in <cite>group</cite> until each one has entered this function.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dist.all_to_all(output_tensor_list,</span> <span class="pre">input_tensor_list,</span> <span class="pre">group)</span></code>: Scatters list of input tensors to all processes in</p></li>
 </ul>
+<p>a group and return gathered list of tensors in output list.</p>
+<p>The full list of supported collectives can be found by looking at the latest documentation for PyTorch Distributed
+<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">(link)</a>.</p>
 </div>
 <div class="section" id="distributed-training">
 <h2>Distributed Training<a class="headerlink" href="#distributed-training" title="Permalink to this heading">¶</a></h2>
@@ -729,7 +739,7 @@ gradients of their model on their batch of data and then average their
 gradients. In order to ensure similar convergence results when changing
 the number of processes, we will first have to partition our dataset.
 (You could also use
-<a class="reference external" href="https://github.com/pytorch/tnt/blob/master/torchnet/dataset/splitdataset.py#L4">tnt.dataset.SplitDataset</a>,
+<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.random_split">torch.utils.data.random_split</a>,
 instead of the snippet below.)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">""" Dataset partitioning helper """</span>
 <span class="k">class</span> <span class="nc">Partition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -832,7 +842,7 @@ could train any model on a large computer cluster.</p>
 <p><strong>Note:</strong> While the last sentence is <em>technically</em> true, there are <a class="reference external" href="https://seba-1511.github.io/dist_blog">a
 lot more tricks</a> required to
 implement a production-level implementation of synchronous SGD. Again,
-use what <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">has been tested and
+use what <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel">has been tested and
 optimized</a>.</p>
 <div class="section" id="our-own-ring-allreduce">
 <h3>Our Own Ring-Allreduce<a class="headerlink" href="#our-own-ring-allreduce" title="Permalink to this heading">¶</a></h3>
@@ -890,8 +900,9 @@ initial coordination phase in <code class="docutils literal notranslate"><span c
 <h3>Communication Backends<a class="headerlink" href="#communication-backends" title="Permalink to this heading">¶</a></h3>
 <p>One of the most elegant aspects of <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> is its ability
 to abstract and build on top of different backends. As mentioned before,
-there are currently three backends implemented in PyTorch: Gloo, NCCL, and
-MPI. They each have different specifications and tradeoffs, depending
+there are multiple backends implemented in PyTorch.
+Some of the most popular ones are Gloo, NCCL, and MPI.
+They each have different specifications and tradeoffs, depending
 on the desired use case. A comparative table of supported functions can
 be found
 <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#module-torch.distributed">here</a>.</p>
@@ -974,15 +985,13 @@ NCCL backend is included in the pre-built binaries with CUDA support.</p>
 </div>
 <div class="section" id="initialization-methods">
 <h3>Initialization Methods<a class="headerlink" href="#initialization-methods" title="Permalink to this heading">¶</a></h3>
-<p>To finish this tutorial, let’s talk about the very first function we
-called: <code class="docutils literal notranslate"><span class="pre">dist.init_process_group(backend,</span> <span class="pre">init_method)</span></code>. In
-particular, we will go over the different initialization methods which
-are responsible for the initial coordination step between each process.
-Those methods allow you to define how this coordination is done.
-Depending on your hardware setup, one of these methods should be
-naturally more suitable than the others. In addition to the following
-sections, you should also have a look at the <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#initialization">official
-documentation</a>.</p>
+<p>To conclude this tutorial, let’s examine the initial function we invoked:
+<code class="docutils literal notranslate"><span class="pre">dist.init_process_group(backend,</span> <span class="pre">init_method)</span></code>. Specifically, we will discuss the various
+initialization methods responsible for the preliminary coordination step between each process.
+These methods enable you to define how this coordination is accomplished.</p>
+<p>The choice of initialization method depends on your hardware setup, and one method may be more
+suitable than others. In addition to the following sections, please refer to the <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#initialization">official
+documentation</a> for further information.</p>
 <p><strong>Environment Variable</strong></p>
 <p>We have been using the environment variable initialization method
 throughout this tutorial. By setting the following four environment
