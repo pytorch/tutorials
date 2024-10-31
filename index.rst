@@ -89,6 +89,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Visualizing Models, Data, and Training with TensorBoard
+   :card_description: Learn to use TensorBoard to visualize data and model training.
+   :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
+   :link: intermediate/tensorboard_tutorial.html
+   :tags: Interpretability,Getting-Started,TensorBoard
+
+.. customcarditem::
    :header: Good usage of `non_blocking` and `pin_memory()` in PyTorch
    :card_description: A guide on best practices to copy data from CPU to GPU.
    :image: _static/img/pinmem.png
@@ -539,6 +546,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
+   :header: Performance Profiling in TensorBoard
+   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: intermediate/tensorboard_profiler_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
@@ -928,6 +942,7 @@ Additional Resources
    beginner/introyt/tensors_deeper_tutorial
    beginner/introyt/autogradyt_tutorial
    beginner/introyt/modelsyt_tutorial
+   beginner/introyt/tensorboardyt_tutorial
    beginner/introyt/trainingyt
    beginner/introyt/captumyt
 
@@ -941,6 +956,7 @@ Additional Resources
    beginner/pytorch_with_examples
    beginner/nn_tutorial
    intermediate/nlp_from_scratch_index
+   intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
 
 .. toctree::
@@ -1066,6 +1082,7 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
+   intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
    beginner/vt_tutorial
    intermediate/parametrizations
