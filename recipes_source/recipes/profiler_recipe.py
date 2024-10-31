@@ -70,6 +70,7 @@ inputs = torch.randn(5, 3, 224, 224)
 #    - ``ProfilerActivity.CPU`` - PyTorch operators, TorchScript functions and
 #      user-defined code labels (see ``record_function`` below);
 #    - ``ProfilerActivity.CUDA`` - on-device CUDA kernels;
+#    - ``ProfilerActivity.XPU`` - on-device XPU kernels;
 # - ``record_shapes`` - whether to record shapes of the operator inputs;
 # - ``profile_memory`` - whether to report amount of memory consumed by
 #   model's Tensors;
@@ -160,17 +161,28 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 # Note the occurrence of ``aten::convolution`` twice with different input shapes.
 
 ######################################################################
-# Profiler can also be used to analyze performance of models executed on GPUs:
+# Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
+# Users could switch between cpu, cuda and xpu
+if torch.cuda.is_available():
+    device = 'cuda'
+elif torch.xpu.is_available():
+    device = 'xpu'
+else:
+    print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
+    import sys
+    sys.exit(0)
 
-model = models.resnet18().cuda()
-inputs = torch.randn(5, 3, 224, 224).cuda()
+activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
+sort_by_keyword = device + "_time_total"
 
-with profile(activities=[
-        ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
+model = models.resnet18().to(device)
+inputs = torch.randn(5, 3, 224, 224).to(device)
+
+with profile(activities=activities, record_shapes=True) as prof:
     with record_function("model_inference"):
         model(inputs)
 
-print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 
 ######################################################################
 # (Note: the first use of CUDA profiling may bring an extra overhead.)
@@ -197,6 +209,36 @@ print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
 #    Self CPU time total: 23.015ms
 #    Self CUDA time total: 11.666ms
 #
+######################################################################
+
+
+######################################################################
+# (Note: the first use of XPU profiling may bring an extra overhead.)
+
+######################################################################
+# The resulting table output (omitting some columns):
+#
+# .. code-block:: sh
+#
+#-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
+#                                                   Name    Self XPU    Self XPU %     XPU total  XPU time avg    # of Calls
+#  -------------------------------------------------------   ------------  ------------  ------------  ------------  ------------
+#                                        model_inference      0.000us         0.00%       2.567ms       2.567ms             1
+#                                           aten::conv2d      0.000us         0.00%       1.871ms      93.560us            20
+#                                      aten::convolution      0.000us         0.00%       1.871ms      93.560us            20
+#                                     aten::_convolution      0.000us         0.00%       1.871ms      93.560us            20
+#                         aten::convolution_overrideable      1.871ms        72.89%       1.871ms      93.560us            20
+#                                               gen_conv      1.484ms        57.82%       1.484ms      74.216us            20
+#                                       aten::batch_norm      0.000us         0.00%     432.640us      21.632us            20
+#                           aten::_batch_norm_impl_index      0.000us         0.00%     432.640us      21.632us            20
+#                                aten::native_batch_norm      432.640us      16.85%     432.640us      21.632us            20
+#                                           conv_reorder      386.880us      15.07%     386.880us       6.448us            60
+#  -------------------------------------------------------   ------------  ------------  ------------  ------------  ------------
+#  Self CPU time total: 712.486ms
+#  Self XPU time total: 2.567ms
+
+#
+
 
 ######################################################################
 # Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
@@ -266,17 +308,22 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Profiling results can be outputted as a ``.json`` trace file:
+# Tracing CUDA or XPU kernels
+# Users could switch between cpu, cuda and xpu
+device = 'cuda'
 
-model = models.resnet18().cuda()
-inputs = torch.randn(5, 3, 224, 224).cuda()
+activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
 
-with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+model = models.resnet18().to(device)
+inputs = torch.randn(5, 3, 224, 224).to(device)
+
+with profile(activities=activities) as prof:
     model(inputs)
 
 prof.export_chrome_trace("trace.json")
 
 ######################################################################
-# You can examine the sequence of profiled operators and CUDA kernels
+# You can examine the sequence of profiled operators and CUDA/XPU kernels
 # in Chrome trace viewer (``chrome://tracing``):
 #
 # .. image:: ../../_static/img/trace_img.png
@@ -287,15 +334,16 @@ prof.export_chrome_trace("trace.json")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Profiler can be used to analyze Python and TorchScript stack traces:
+sort_by_keyword = "self_" + device + "_time_total"
 
 with profile(
-    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    activities=activities,
     with_stack=True,
 ) as prof:
     model(inputs)
 
 # Print aggregated stats
-print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total", row_limit=2))
+print(prof.key_averages(group_by_stack_n=5).table(sort_by=sort_by_keyword, row_limit=2))
 
 #################################################################################
 # The output might look like this (omitting some columns):
@@ -384,15 +432,17 @@ my_schedule = schedule(
 # To send the signal to the profiler that the next step has started, call ``prof.step()`` function.
 # The current profiler step is stored in ``prof.step_num``.
 #
-# The following example shows how to use all of the concepts above:
+# The following example shows how to use all of the concepts above for CUDA and XPU Kernels:
+
+sort_by_keyword = "self_" + device + "_time_total"
 
 def trace_handler(p):
-    output = p.key_averages().table(sort_by="self_cuda_time_total", row_limit=10)
+    output = p.key_averages().table(sort_by=sort_by_keyword, row_limit=10)
     print(output)
     p.export_chrome_trace("/tmp/trace_" + str(p.step_num) + ".json")
 
 with profile(
-    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    activities=activities,
     schedule=torch.profiler.schedule(
         wait=1,
         warmup=1,
@@ -402,7 +452,6 @@ with profile(
     for idx in range(8):
         model(inputs)
         p.step()
-
 
 ######################################################################
 # Learn More
