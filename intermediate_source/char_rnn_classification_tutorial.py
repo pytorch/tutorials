@@ -203,7 +203,7 @@ print(f"example = {alldata[0]}")
 #########################
 #Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20 
 # split but the ``torch.utils.data`` has more useful utilities. Here we specify a generator since we need to use the 
-#same device as torch defaults to above. 
+#same device as PyTorch defaults to above. 
 
 train_set, test_set = torch.utils.data.random_split(alldata, [.85, .15], generator=torch.Generator(device=device).manual_seed(2024))
 
