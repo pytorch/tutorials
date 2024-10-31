@@ -285,7 +285,7 @@ print(label_from_output(output, alldata.labels_uniq))
 # have it make guesses, and tell it if it's wrong.
 #
 # We do this by defining a ``train()`` function which trains the model on a given dataset using minibatches. RNNs 
-# train similar to other networks so for completeness we include a batched training method here.
+# RNNs are trained similarly to other networks; therefore, for completeness, we include a batched training method here.
 # The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the 
 # weights. This operation is repeated until the number of epochs is reached. 
 
