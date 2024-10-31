@@ -459,5 +459,6 @@ with profile(
 #
 # Take a look at the following recipes/tutorials to continue your learning:
 #
-# -  `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
+# - `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
+# - `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
 #
