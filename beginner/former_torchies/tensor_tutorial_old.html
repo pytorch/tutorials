@@ -383,7 +383,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
@@ -443,10 +443,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/former_torchies/tensor_tutorial_old</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -464,145 +464,10 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-former-torchies-tensor-tutorial-old-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="tensors">
-<span id="sphx-glr-beginner-former-torchies-tensor-tutorial-old-py"></span><h1>Tensors<a class="headerlink" href="#tensors" title="Permalink to this heading">¶</a></h1>
-<p>Tensors behave almost exactly the same way in PyTorch as they do in
-Torch.</p>
-<p>Create a tensor of size (5 x 7) with uninitialized memory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty.html#torch.empty" title="torch.empty"><span class="n">torch</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Initialize a double tensor randomized with a normal distribution with mean=0,
-var=1:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">torch.Size</span></code> is in fact a tuple, so it supports the same operations</p>
-</div>
-<div class="section" id="inplace-out-of-place">
-<h2>Inplace / Out-of-place<a class="headerlink" href="#inplace-out-of-place" title="Permalink to this heading">¶</a></h2>
-<p>The first difference is that ALL operations on the tensor that operate
-in-place on it will have an <code class="docutils literal notranslate"><span class="pre">_</span></code> postfix. For example, <code class="docutils literal notranslate"><span class="pre">add</span></code> is the
-out-of-place version, and <code class="docutils literal notranslate"><span class="pre">add_</span></code> is the in-place version.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">3.5</span><span class="p">)</span>
-<span class="c1"># a has now been filled with the value 3.5</span>
-
-<span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mf">4.0</span><span class="p">)</span>
-<span class="c1"># a is still filled with 3.5</span>
-<span class="c1"># new tensor b is returned with values 3.5 + 4.0 = 7.5</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Some operations like <code class="docutils literal notranslate"><span class="pre">narrow</span></code> do not have in-place versions, and
-hence, <code class="docutils literal notranslate"><span class="pre">.narrow_</span></code> does not exist. Similarly, some operations like
-<code class="docutils literal notranslate"><span class="pre">fill_</span></code> do not have an out-of-place version, so <code class="docutils literal notranslate"><span class="pre">.fill</span></code> does not
-exist.</p>
-</div>
-<div class="section" id="zero-indexing">
-<h2>Zero Indexing<a class="headerlink" href="#zero-indexing" title="Permalink to this heading">¶</a></h2>
-<p>Another difference is that Tensors are zero-indexed. (In lua, tensors are
-one-indexed)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># select 1st row, 4th column from a</span>
-</pre></div>
-</div>
-<p>Tensors can be also indexed with Python’s slicing</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># selects all rows, 4th column and  5th column from a</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="no-camel-casing">
-<h2>No camel casing<a class="headerlink" href="#no-camel-casing" title="Permalink to this heading">¶</a></h2>
-<p>The next small difference is that all functions are now NOT camelCase
-anymore. For example <code class="docutils literal notranslate"><span class="pre">indexAdd</span></code> is now called <code class="docutils literal notranslate"><span class="pre">index_add_</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">z</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty.html#torch.empty" title="torch.empty"><span class="n">torch</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">z</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">z</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="o">.</span><span class="n">index_add_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">),</span> <span class="n">z</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="numpy-bridge">
-<h2>Numpy Bridge<a class="headerlink" href="#numpy-bridge" title="Permalink to this heading">¶</a></h2>
-<p>Converting a torch Tensor to a numpy array and vice versa is a breeze.
-The torch Tensor and numpy array will share their underlying memory
-locations, and changing one will change the other.</p>
-<div class="section" id="converting-torch-tensor-to-numpy-array">
-<h3>Converting torch Tensor to numpy Array<a class="headerlink" href="#converting-torch-tensor-to-numpy-array" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>    <span class="c1"># see how the numpy array changed in value</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="converting-numpy-array-to-torch-tensor">
-<h3>Converting numpy Array to torch Tensor<a class="headerlink" href="#converting-numpy-array-to-torch-tensor" title="Permalink to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.from_numpy.html#torch.from_numpy" title="torch.from_numpy"><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span></a><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>  <span class="c1"># see how changing the np array changed the torch Tensor automatically</span>
-</pre></div>
-</div>
-<p>All the Tensors on the CPU except a CharTensor support converting to
-NumPy and back.</p>
-</div>
-</div>
-<div class="section" id="cuda-tensors">
-<h2>CUDA Tensors<a class="headerlink" href="#cuda-tensors" title="Permalink to this heading">¶</a></h2>
-<p>CUDA Tensors are nice and easy in pytorch, and transfering a CUDA tensor
-from the CPU to GPU will retain its underlying type.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># let us run this cell only if CUDA is available</span>
-<span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-
-    <span class="c1"># creates a LongTensor and transfers it</span>
-    <span class="c1"># to GPU as torch.cuda.LongTensor</span>
-    <span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.full.html#torch.full" title="torch.full"><span class="n">torch</span><span class="o">.</span><span class="n">full</span></a><span class="p">((</span><span class="mi">10</span><span class="p">,),</span> <span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">))</span>
-    <span class="c1"># transfers it to CPU, back to</span>
-    <span class="c1"># being a torch.LongTensor</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-former-torchies-tensor-tutorial-old-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/27536182f7bcc1469e1a63b7faf8174a/tensor_tutorial_old.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensor_tutorial_old.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/303a511ec52e0933ffe70a0320cc68dc/tensor_tutorial_old.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tensor_tutorial_old.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+<div class="section" id="tensors">
+<h1>Tensors<a class="headerlink" href="#tensors" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial is out of date. You’ll be redirected to the new tutorial in 3 seconds: <a class="reference external" href="https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html">https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html</a></p>
+<meta content="3; url='https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
@@ -617,7 +482,7 @@ from the CPU to GPU will retain its underlying type.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -627,7 +492,7 @@ from the CPU to GPU will retain its underlying type.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -641,18 +506,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Tensors</a><ul>
-<li><a class="reference internal" href="#inplace-out-of-place">Inplace / Out-of-place</a></li>
-<li><a class="reference internal" href="#zero-indexing">Zero Indexing</a></li>
-<li><a class="reference internal" href="#no-camel-casing">No camel casing</a></li>
-<li><a class="reference internal" href="#numpy-bridge">Numpy Bridge</a><ul>
-<li><a class="reference internal" href="#converting-torch-tensor-to-numpy-array">Converting torch Tensor to numpy Array</a></li>
-<li><a class="reference internal" href="#converting-numpy-array-to-torch-tensor">Converting numpy Array to torch Tensor</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#cuda-tensors">CUDA Tensors</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Tensors</a></li>
 </ul>
 </div>
 </div>

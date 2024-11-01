@@ -383,7 +383,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
@@ -443,10 +443,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/former_torchies/parallelism_tutorial</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -464,141 +464,10 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-former-torchies-parallelism-tutorial-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="multi-gpu-examples">
-<span id="sphx-glr-beginner-former-torchies-parallelism-tutorial-py"></span><h1>Multi-GPU Examples<a class="headerlink" href="#multi-gpu-examples" title="Permalink to this heading">¶</a></h1>
-<p>Data Parallelism is when we split the mini-batch of samples into
-multiple smaller mini-batches and run the computation for each of the
-smaller mini-batches in parallel.</p>
-<p>Data Parallelism is implemented using <code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code>.
-One can wrap a Module in <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> and it will be parallelized
-over multiple GPUs in the batch dimension.</p>
-<div class="section" id="dataparallel">
-<h2>DataParallel<a class="headerlink" href="#dataparallel" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-
-
-<span class="k">class</span> <span class="nc">DataParallelModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">block1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-
-        <span class="c1"># wrap block2 in DataParallel</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">block2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">block2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block2</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">block3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-</pre></div>
-</div>
-<p>The code does not need to be changed in CPU-mode.</p>
-<p>The documentation for DataParallel can be found
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.html#dataparallel-layers-multi-gpu-distributed">here</a>.</p>
-<p><strong>Attributes of the wrapped module</strong></p>
-<p>After wrapping a Module with <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>, the attributes of the module
-(e.g. custom methods) became inaccessible. This is because <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>
-defines a few new members, and allowing other attributes might lead to
-clashes in their names. For those who still want to access the attributes,
-a workaround is to use a subclass of <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> as below.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyDataParallel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Primitives on which DataParallel is implemented upon:</strong></p>
-<p>In general, pytorch’s <cite>nn.parallel</cite> primitives can be used independently.
-We have implemented simple MPI-like primitives:</p>
-<ul class="simple">
-<li><p>replicate: replicate a Module on multiple devices</p></li>
-<li><p>scatter: distribute the input in the first-dimension</p></li>
-<li><p>gather: gather and concatenate the input in the first-dimension</p></li>
-<li><p>parallel_apply: apply a set of already-distributed inputs to a set of
-already-distributed models.</p></li>
-</ul>
-<p>To give a better clarity, here function <code class="docutils literal notranslate"><span class="pre">data_parallel</span></code> composed using
-these collectives</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">data_parallel</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">output_device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">device_ids</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">output_device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">output_device</span> <span class="o">=</span> <span class="n">device_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">replicas</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-parallel sphx-glr-backref-type-py-module" href="https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel.replicate" title="torch.nn.parallel.replicate"><span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">replicate</span></a><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">)</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">)</span>
-    <span class="n">replicas</span> <span class="o">=</span> <span class="n">replicas</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)]</span>
-    <span class="n">outputs</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-parallel sphx-glr-backref-type-py-module" href="https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel.parallel_apply" title="torch.nn.parallel.parallel_apply"><span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">parallel_apply</span></a><span class="p">(</span><span class="n">replicas</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">output_device</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="part-of-the-model-on-cpu-and-part-on-the-gpu">
-<h2>Part of the model on CPU and part on the GPU<a class="headerlink" href="#part-of-the-model-on-cpu-and-part-on-the-gpu" title="Permalink to this heading">¶</a></h2>
-<p>Let’s look at a small example of implementing a network where part of it
-is on the CPU and part on the GPU</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda:0"</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">DistributedModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">embedding</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span></a><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
-            <span class="n">rnn</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="c1"># Compute embedding on CPU</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="c1"># Transfer to GPU</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-
-        <span class="c1"># Compute RNN on GPU</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-</pre></div>
-</div>
-<p>This was a small introduction to PyTorch for former Torch users.
-There’s a lot more to learn.</p>
-<p>Look at our more comprehensive introductory tutorial which introduces
-the <code class="docutils literal notranslate"><span class="pre">optim</span></code> package, data loaders etc.: <a class="reference internal" href="../deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a>.</p>
-<p>Also look at</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html"><span class="doc">Train neural nets to play video games</span></a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch/examples/tree/master/imagenet">Train a state-of-the-art ResNet network on imagenet</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch/examples/tree/master/dcgan">Train a face generator using Generative Adversarial Networks</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch/examples/tree/master/word_language_model">Train a word-level language model using Recurrent LSTM networks</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch/examples">More examples</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch/tutorials">More tutorials</a></p></li>
-<li><p><a class="reference external" href="https://discuss.pytorch.org/">Discuss PyTorch on the Forums</a></p></li>
-<li><p><a class="reference external" href="https://pytorch.slack.com/messages/beginner/">Chat with other users on Slack</a></p></li>
-</ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.002 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-former-torchies-parallelism-tutorial-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/9629e4ec46921a9569d03101ecfddaee/parallelism_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">parallelism_tutorial.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/1b58d206e701317cf46c92dcf2a8978d/parallelism_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">parallelism_tutorial.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+<div class="section" id="multi-gpu-examples">
+<h1>Multi-GPU Examples<a class="headerlink" href="#multi-gpu-examples" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial is out of date. You’ll be redirected to the new tutorial in 3 seconds: <a class="reference external" href="https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html">https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html</a></p>
+<meta content="3; url='https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
@@ -613,7 +482,7 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -623,7 +492,7 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -637,11 +506,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Multi-GPU Examples</a><ul>
-<li><a class="reference internal" href="#dataparallel">DataParallel</a></li>
-<li><a class="reference internal" href="#part-of-the-model-on-cpu-and-part-on-the-gpu">Part of the model on CPU and part on the GPU</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Multi-GPU Examples</a></li>
 </ul>
 </div>
 </div>

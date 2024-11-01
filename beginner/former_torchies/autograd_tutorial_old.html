@@ -383,7 +383,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_adavnced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
@@ -443,10 +443,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/former_torchies/autograd_tutorial_old</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -464,133 +464,10 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-former-torchies-autograd-tutorial-old-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="autograd">
-<span id="sphx-glr-beginner-former-torchies-autograd-tutorial-old-py"></span><h1>Autograd<a class="headerlink" href="#autograd" title="Permalink to this heading">¶</a></h1>
-<p>Autograd is now a core torch package for automatic differentiation.
-It uses a tape based system for automatic differentiation.</p>
-<p>In the forward phase, the autograd tape will remember all the operations
-it executed, and in the backward phase, it will replay the operations.</p>
-<div class="section" id="tensors-that-track-history">
-<h2>Tensors that track history<a class="headerlink" href="#tensors-that-track-history" title="Permalink to this heading">¶</a></h2>
-<p>In autograd, if any input <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> of an operation has <code class="docutils literal notranslate"><span class="pre">requires_grad=True</span></code>,
-the computation will be tracked. After computing the backward pass, a gradient
-w.r.t. this tensor is accumulated into <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute.</p>
-<p>There’s one more class which is very important for autograd
-implementation - a <code class="docutils literal notranslate"><span class="pre">Function</span></code>. <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> and <code class="docutils literal notranslate"><span class="pre">Function</span></code> are
-interconnected and build up an acyclic graph, that encodes a complete
-history of computation. Each variable has a <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code> attribute that
-references a function that has created a function (except for Tensors
-created by the user - these have <code class="docutils literal notranslate"><span class="pre">None</span></code> as <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code>).</p>
-<p>If you want to compute the derivatives, you can call <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> on
-a <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>. If <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> is a scalar (i.e. it holds a one element
-tensor), you don’t need to specify any arguments to <code class="docutils literal notranslate"><span class="pre">backward()</span></code>,
-however if it has more elements, you need to specify a <code class="docutils literal notranslate"><span class="pre">grad_output</span></code>
-argument that is a tensor of matching shape.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-</pre></div>
-</div>
-<p>Create a tensor and set requires_grad=True to track computation with it</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>  <span class="c1"># we've created x ourselves</span>
-</pre></div>
-</div>
-<p>Do an operation of x:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>y was created as a result of an operation,
-so it has a grad_fn</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>More operations on y:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">z</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mi">3</span>
-<span class="n">out</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">.requires_grad_(</span> <span class="pre">...</span> <span class="pre">)</span></code> changes an existing Tensor’s <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code>
-flag in-place. The input flag defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code> if not given.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">a</span> <span class="o">=</span> <span class="p">((</span><span class="n">a</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-<span class="n">a</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="gradients">
-<h2>Gradients<a class="headerlink" href="#gradients" title="Permalink to this heading">¶</a></h2>
-<p>let’s backprop now and print gradients d(out)/dx</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">out</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>By default, gradient computation flushes all the internal buffers
-contained in the graph, so if you even want to do the backward on some
-part of the graph twice, you need to pass in <code class="docutils literal notranslate"><span class="pre">retain_variables</span> <span class="pre">=</span> <span class="pre">True</span></code>
-during the first pass.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="c1"># the retain_variables flag will prevent the internal buffers from being freed</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">z</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>just backprop random gradients</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gradient</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-<span class="c1"># this would fail if we didn't specify</span>
-<span class="c1"># that we want to retain variables</span>
-<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">gradient</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can also stop autograd from tracking history on Tensors
-with requires_grad=True by wrapping the code block in
-<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">torch.no_grad():</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">((</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-
-<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
-    <span class="nb">print</span><span class="p">((</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-former-torchies-autograd-tutorial-old-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/073d464654f4be37e645f8bfbad70f6b/autograd_tutorial_old.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial_old.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/a1687058579b7f1d970855ee56beb272/autograd_tutorial_old.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">autograd_tutorial_old.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+<div class="section" id="autograd">
+<h1>Autograd<a class="headerlink" href="#autograd" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial is out of date. You’ll be redirected to the new tutorial in 3 seconds: <a class="reference external" href="https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html">https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html</a></p>
+<meta content="3; url='https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
@@ -605,7 +482,7 @@ with requires_grad=True by wrapping the code block in
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -615,7 +492,7 @@ with requires_grad=True by wrapping the code block in
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -629,11 +506,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Autograd</a><ul>
-<li><a class="reference internal" href="#tensors-that-track-history">Tensors that track history</a></li>
-<li><a class="reference internal" href="#gradients">Gradients</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Autograd</a></li>
 </ul>
 </div>
 </div>

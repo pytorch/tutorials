@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Saving and loading models across devices in PyTorch &mdash; PyTorch Tutorials 2.5.0+cu124 documentation</title>
+  <title>Save Load Across Devices &mdash; PyTorch Tutorials 2.5.0+cu124 documentation</title>
   
 
   
@@ -511,7 +511,7 @@
         
           <li><a href="../recipes_index.html">PyTorch Recipes</a> &gt;</li>
         
-      <li>Saving and loading models across devices in PyTorch</li>
+      <li>Save Load Across Devices</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -570,170 +570,11 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-recipes-recipes-save-load-across-devices-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="saving-and-loading-models-across-devices-in-pytorch">
-<span id="sphx-glr-recipes-recipes-save-load-across-devices-py"></span><h1>Saving and loading models across devices in PyTorch<a class="headerlink" href="#saving-and-loading-models-across-devices-in-pytorch" title="Permalink to this heading">¶</a></h1>
-<p>There may be instances where you want to save and load your neural
-networks across different devices.</p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>Saving and loading models across devices is relatively straightforward
-using PyTorch. In this recipe, we will experiment with saving and
-loading models across CPUs and GPUs.</p>
-</div>
-<div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
-<p>In order for every code block to run properly in this recipe, you must
-first change the runtime to “GPU” or higher. Once you do, we need to
-install <code class="docutils literal notranslate"><span class="pre">torch</span></code> if it isn’t already available.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch
-</pre></div>
-</div>
-</div>
-<div class="section" id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Import all necessary libraries for loading our data</p></li>
-<li><p>Define and initialize the neural network</p></li>
-<li><p>Save on a GPU, load on a CPU</p></li>
-<li><p>Save on a GPU, load on a GPU</p></li>
-<li><p>Save on a CPU, load on a GPU</p></li>
-<li><p>Saving and loading <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> models</p></li>
-</ol>
-<div class="section" id="import-necessary-libraries-for-loading-our-data">
-<h3>1. Import necessary libraries for loading our data<a class="headerlink" href="#import-necessary-libraries-for-loading-our-data" title="Permalink to this heading">¶</a></h3>
-<p>For this recipe, we will use <code class="docutils literal notranslate"><span class="pre">torch</span></code> and its subsidiaries <code class="docutils literal notranslate"><span class="pre">torch.nn</span></code>
-and <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="define-and-initialize-the-neural-network">
-<h3>2. Define and initialize the neural network<a class="headerlink" href="#define-and-initialize-the-neural-network" title="Permalink to this heading">¶</a></h3>
-<p>For sake of example, we will create a neural network for training
-images. To learn more see the Defining a Neural Network recipe.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d" title="torch.nn.MaxPool2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-
-<span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="save-on-gpu-load-on-cpu">
-<h3>3. Save on GPU, Load on CPU<a class="headerlink" href="#save-on-gpu-load-on-cpu" title="Permalink to this heading">¶</a></h3>
-<p>When loading a model on a CPU that was trained with a GPU, pass
-<code class="docutils literal notranslate"><span class="pre">torch.device('cpu')</span></code> to the <code class="docutils literal notranslate"><span class="pre">map_location</span></code> argument in the
-<code class="docutils literal notranslate"><span class="pre">torch.load()</span></code> function.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify a path to save to</span>
-<span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;model.pt&quot;</span>
-
-<span class="c1"># Save</span>
-<a href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
-
-<span class="c1"># Load</span>
-<span class="n">device</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="torch.load" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="n">PATH</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>In this case, the storages underlying the tensors are dynamically
-remapped to the CPU device using the <code class="docutils literal notranslate"><span class="pre">map_location</span></code> argument.</p>
-</div>
-<div class="section" id="save-on-gpu-load-on-gpu">
-<h3>4. Save on GPU, Load on GPU<a class="headerlink" href="#save-on-gpu-load-on-gpu" title="Permalink to this heading">¶</a></h3>
-<p>When loading a model on a GPU that was trained and saved on GPU, simply
-convert the initialized model to a CUDA optimized model using
-<code class="docutils literal notranslate"><span class="pre">model.to(torch.device('cuda'))</span></code>.</p>
-<p>Be sure to use the <code class="docutils literal notranslate"><span class="pre">.to(torch.device('cuda'))</span></code> function on all model
-inputs to prepare the data for the model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save</span>
-<a href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
-
-<span class="c1"># Load</span>
-<span class="n">device</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="torch.load" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Note that calling <code class="docutils literal notranslate"><span class="pre">my_tensor.to(device)</span></code> returns a new copy of
-<code class="docutils literal notranslate"><span class="pre">my_tensor</span></code> on GPU. It does NOT overwrite <code class="docutils literal notranslate"><span class="pre">my_tensor</span></code>. Therefore,
-remember to manually overwrite tensors:
-<code class="docutils literal notranslate"><span class="pre">my_tensor</span> <span class="pre">=</span> <span class="pre">my_tensor.to(torch.device('cuda'))</span></code>.</p>
-</div>
-<div class="section" id="save-on-cpu-load-on-gpu">
-<h3>5. Save on CPU, Load on GPU<a class="headerlink" href="#save-on-cpu-load-on-gpu" title="Permalink to this heading">¶</a></h3>
-<p>When loading a model on a GPU that was trained and saved on CPU, set the
-<code class="docutils literal notranslate"><span class="pre">map_location</span></code> argument in the <code class="docutils literal notranslate"><span class="pre">torch.load()</span></code> function to
-<code class="docutils literal notranslate"><span class="pre">cuda:device_id</span></code>. This loads the model to a given GPU device.</p>
-<p>Be sure to call <code class="docutils literal notranslate"><span class="pre">model.to(torch.device('cuda'))</span></code> to convert the
-model’s parameter tensors to CUDA tensors.</p>
-<p>Finally, also be sure to use the <code class="docutils literal notranslate"><span class="pre">.to(torch.device('cuda'))</span></code> function
-on all model inputs to prepare the data for the CUDA optimized model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save</span>
-<a href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
-
-<span class="c1"># Load</span>
-<span class="n">device</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="c1"># Choose whatever GPU device number you want</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="torch.load" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="n">PATH</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">))</span>
-<span class="c1"># Make sure to call input = input.to(device) on any input tensors that you feed to the model</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="saving-torch-nn-dataparallel-models">
-<h3>6. Saving <code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code> Models<a class="headerlink" href="#saving-torch-nn-dataparallel-models" title="Permalink to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code> is a model wrapper that enables parallel GPU
-utilization.</p>
-<p>To save a <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> model generically, save the
-<code class="docutils literal notranslate"><span class="pre">model.module.state_dict()</span></code>. This way, you have the flexibility to
-load the model any way you want to any device you want.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save</span>
-<a href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
-
-<span class="c1"># Load to whatever device you want</span>
-</pre></div>
-</div>
-<p>Congratulations! You have successfully saved and loaded models across
-devices in PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-save-load-across-devices-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/24a1f488719911ce2f2faf50ed716a58/save_load_across_devices.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">save_load_across_devices.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/67710f3d40ca3863323ce02dddbf8618/save_load_across_devices.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">save_load_across_devices.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
-</div>
+  <div class="section" id="save-load-across-devices">
+<h1>Save Load Across Devices<a class="headerlink" href="#save-load-across-devices" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial was deprecated. There is a newer tutorial that covers the same topic:  <a class="reference external" href="https://pytorch.org/tutorials/beginner/saving_loading_models.html">https://pytorch.org/tutorials/beginner/saving_loading_models.html</a></p>
+<p>Redirecting in 3 seconds…</p>
+<meta http-equiv="Refresh" content="3; url='https://pytorch.org/tutorials/beginner/saving_loading_models.html'" /></div>
 
 
              </article>
@@ -796,20 +637,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Saving and loading models across devices in PyTorch</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#setup">Setup</a></li>
-<li><a class="reference internal" href="#steps">Steps</a><ul>
-<li><a class="reference internal" href="#import-necessary-libraries-for-loading-our-data">1. Import necessary libraries for loading our data</a></li>
-<li><a class="reference internal" href="#define-and-initialize-the-neural-network">2. Define and initialize the neural network</a></li>
-<li><a class="reference internal" href="#save-on-gpu-load-on-cpu">3. Save on GPU, Load on CPU</a></li>
-<li><a class="reference internal" href="#save-on-gpu-load-on-gpu">4. Save on GPU, Load on GPU</a></li>
-<li><a class="reference internal" href="#save-on-cpu-load-on-gpu">5. Save on CPU, Load on GPU</a></li>
-<li><a class="reference internal" href="#saving-torch-nn-dataparallel-models">6. Saving <code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code> Models</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Save Load Across Devices</a></li>
 </ul>
 
             </div>

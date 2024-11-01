@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Saving and loading a general checkpoint in PyTorch &mdash; PyTorch Tutorials 2.5.0+cu124 documentation</title>
+  <title>Saving And Loading A General Checkpoint &mdash; PyTorch Tutorials 2.5.0+cu124 documentation</title>
   
 
   
@@ -42,8 +42,8 @@
   <link rel="stylesheet" href="../../_static/css/custom2.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Saving and loading multiple models in one file using PyTorch" href="saving_multiple_models_in_one_file.html" />
-    <link rel="prev" title="Saving and loading models for inference in PyTorch" href="saving_and_loading_models_for_inference.html" />
+    <link rel="next" title="Saving Multiple Models In One File" href="saving_multiple_models_in_one_file.html" />
+    <link rel="prev" title="Saving And Loading Models For Inference" href="saving_and_loading_models_for_inference.html" />
   <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -511,7 +511,7 @@
         
           <li><a href="../recipes_index.html">PyTorch Recipes</a> &gt;</li>
         
-      <li>Saving and loading a general checkpoint in PyTorch</li>
+      <li>Saving And Loading A General Checkpoint</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -570,150 +570,11 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-recipes-recipes-saving-and-loading-a-general-checkpoint-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
-</div>
-<div class="sphx-glr-example-title section" id="saving-and-loading-a-general-checkpoint-in-pytorch">
-<span id="sphx-glr-recipes-recipes-saving-and-loading-a-general-checkpoint-py"></span><h1>Saving and loading a general checkpoint in PyTorch<a class="headerlink" href="#saving-and-loading-a-general-checkpoint-in-pytorch" title="Permalink to this heading">¶</a></h1>
-<p>Saving and loading a general checkpoint model for inference or
-resuming training can be helpful for picking up where you last left off.
-When saving a general checkpoint, you must save more than just the
-model’s state_dict. It is important to also save the optimizer’s
-state_dict, as this contains buffers and parameters that are updated as
-the model trains. Other items that you may want to save are the epoch
-you left off on, the latest recorded training loss, external
-<code class="docutils literal notranslate"><span class="pre">torch.nn.Embedding</span></code> layers, and more, based on your own algorithm.</p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>To save multiple checkpoints, you must organize them in a dictionary and
-use <code class="docutils literal notranslate"><span class="pre">torch.save()</span></code> to serialize the dictionary. A common PyTorch
-convention is to save these checkpoints using the <code class="docutils literal notranslate"><span class="pre">.tar</span></code> file
-extension. To load the items, first initialize the model and optimizer,
-then load the dictionary locally using torch.load(). From here, you can
-easily access the saved items by simply querying the dictionary as you
-would expect.</p>
-<p>In this recipe, we will explore how to save and load multiple
-checkpoints.</p>
-</div>
-<div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
-<p>Before we begin, we need to install <code class="docutils literal notranslate"><span class="pre">torch</span></code> if it isn’t already
-available.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Import all necessary libraries for loading our data</p></li>
-<li><p>Define and initialize the neural network</p></li>
-<li><p>Initialize the optimizer</p></li>
-<li><p>Save the general checkpoint</p></li>
-<li><p>Load the general checkpoint</p></li>
-</ol>
-<div class="section" id="import-necessary-libraries-for-loading-our-data">
-<h3>1. Import necessary libraries for loading our data<a class="headerlink" href="#import-necessary-libraries-for-loading-our-data" title="Permalink to this heading">¶</a></h3>
-<p>For this recipe, we will use <code class="docutils literal notranslate"><span class="pre">torch</span></code> and its subsidiaries <code class="docutils literal notranslate"><span class="pre">torch.nn</span></code>
-and <code class="docutils literal notranslate"><span class="pre">torch.optim</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="define-and-initialize-the-neural-network">
-<h3>2. Define and initialize the neural network<a class="headerlink" href="#define-and-initialize-the-neural-network" title="Permalink to this heading">¶</a></h3>
-<p>For sake of example, we will create a neural network for training
-images. To learn more see the Defining a Neural Network recipe.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d" title="torch.nn.MaxPool2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-
-<span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="initialize-the-optimizer">
-<h3>3. Initialize the optimizer<a class="headerlink" href="#initialize-the-optimizer" title="Permalink to this heading">¶</a></h3>
-<p>We will use SGD with momentum.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD" class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="save-the-general-checkpoint">
-<h3>4. Save the general checkpoint<a class="headerlink" href="#save-the-general-checkpoint" title="Permalink to this heading">¶</a></h3>
-<p>Collect all relevant information and build your dictionary.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Additional information</span>
-<span class="n">EPOCH</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;model.pt&quot;</span>
-<span class="n">LOSS</span> <span class="o">=</span> <span class="mf">0.4</span>
-
-<a href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="torch.save" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">save</span></a><span class="p">({</span>
-            <span class="s1">&#39;epoch&#39;</span><span class="p">:</span> <span class="n">EPOCH</span><span class="p">,</span>
-            <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span> <span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
-            <span class="s1">&#39;optimizer_state_dict&#39;</span><span class="p">:</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
-            <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="n">LOSS</span><span class="p">,</span>
-            <span class="p">},</span> <span class="n">PATH</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="load-the-general-checkpoint">
-<h3>5. Load the general checkpoint<a class="headerlink" href="#load-the-general-checkpoint" title="Permalink to this heading">¶</a></h3>
-<p>Remember to first initialize the model and optimizer, then load the
-dictionary locally.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD" class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-
-<span class="n">checkpoint</span> <span class="o">=</span> <a href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="torch.load" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="n">PATH</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">])</span>
-<span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;optimizer_state_dict&#39;</span><span class="p">])</span>
-<span class="n">epoch</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>
-<span class="n">loss</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="c1"># - or -</span>
-<span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>You must call <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to set dropout and batch normalization
-layers to evaluation mode before running inference. Failing to do this
-will yield inconsistent inference results.</p>
-<p>If you wish to resuming training, call <code class="docutils literal notranslate"><span class="pre">model.train()</span></code> to ensure these
-layers are in training mode.</p>
-<p>Congratulations! You have successfully saved and loaded a general
-checkpoint for inference and/or resuming training in PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-saving-and-loading-a-general-checkpoint-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/f1c4e73325cc32385d0f39145a3d83eb/saving_and_loading_a_general_checkpoint.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">saving_and_loading_a_general_checkpoint.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/dbcf5e6a5e95bf9f7a0e49e123c13b60/saving_and_loading_a_general_checkpoint.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">saving_and_loading_a_general_checkpoint.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
-</div>
+  <div class="section" id="saving-and-loading-a-general-checkpoint">
+<h1>Saving And Loading A General Checkpoint<a class="headerlink" href="#saving-and-loading-a-general-checkpoint" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial was deprecated. There is a newer tutorial that covers the same topic:  <a class="reference external" href="https://pytorch.org/tutorials/beginner/saving_loading_models.html">https://pytorch.org/tutorials/beginner/saving_loading_models.html</a></p>
+<p>Redirecting in 3 seconds…</p>
+<meta http-equiv="Refresh" content="3; url='https://pytorch.org/tutorials/beginner/saving_loading_models.html'" /></div>
 
 
              </article>
@@ -723,10 +584,10 @@ checkpoint for inference and/or resuming training in PyTorch.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="saving_multiple_models_in_one_file.html" class="btn btn-neutral float-right" title="Saving and loading multiple models in one file using PyTorch" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
+        <a href="saving_multiple_models_in_one_file.html" class="btn btn-neutral float-right" title="Saving Multiple Models In One File" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
-        <a href="saving_and_loading_models_for_inference.html" class="btn btn-neutral" title="Saving and loading models for inference in PyTorch" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+        <a href="saving_and_loading_models_for_inference.html" class="btn btn-neutral" title="Saving And Loading Models For Inference" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
       
     </div>
   
@@ -776,19 +637,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Saving and loading a general checkpoint in PyTorch</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#setup">Setup</a></li>
-<li><a class="reference internal" href="#steps">Steps</a><ul>
-<li><a class="reference internal" href="#import-necessary-libraries-for-loading-our-data">1. Import necessary libraries for loading our data</a></li>
-<li><a class="reference internal" href="#define-and-initialize-the-neural-network">2. Define and initialize the neural network</a></li>
-<li><a class="reference internal" href="#initialize-the-optimizer">3. Initialize the optimizer</a></li>
-<li><a class="reference internal" href="#save-the-general-checkpoint">4. Save the general checkpoint</a></li>
-<li><a class="reference internal" href="#load-the-general-checkpoint">5. Load the general checkpoint</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Saving And Loading A General Checkpoint</a></li>
 </ul>
 
             </div>
