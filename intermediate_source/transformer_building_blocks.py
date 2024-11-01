@@ -400,7 +400,7 @@ print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)
 ######################################################################################
 # For reference some sample outputs on A100:
 # 
-# ..code::
+# .. code::
 #
 #     padded_time=0.03454, padded_peak_memory=4.14 GB
 #     nested_time=0.00612, nested_peak_memory=0.76 GB
@@ -430,7 +430,7 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 ##################################################################################
 # Sample outputs on A100:
 #
-# ..code::
+# .. code::
 # 
 #     ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
 #     ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
