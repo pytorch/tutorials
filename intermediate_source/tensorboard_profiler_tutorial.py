@@ -4,6 +4,14 @@ PyTorch Profiler With TensorBoard
 This tutorial demonstrates how to use TensorBoard plugin with PyTorch Profiler
 to detect performance bottlenecks of the model.
 
+.. warning::
+   The TensorBoard integration with the PyTorch profiler is now
+   deprecated. Instead, use Perfetto or the Chrome trace to
+   view ``trace.json`` files. After
+   `generating a trace <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html#using-tracing-functionality>`__,
+   simply drag the ``trace.json`` into `Perfetto UI <https://ui.perfetto.dev/>`__
+   or ``chrome://tracing`` to visualize your profile.
+
 Introduction
 ------------
 PyTorch 1.8 includes an updated profiler API capable of
