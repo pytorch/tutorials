@@ -7,4 +7,4 @@ Redirecting now...
 
 .. raw:: html
 
-   <meta http-equiv="Refresh" content="0; url='https://pytorch.org/tutorials/introyt/introyt_index.html'" />
+   <meta http-equiv="Refresh" content="0; url='https://pytorch.org/tutorials/beginner/introyt/introyt_index.html'" />
