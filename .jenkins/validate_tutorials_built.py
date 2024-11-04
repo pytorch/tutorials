@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).parent.parent
 NOT_RUN = [
     "beginner_source/basics/intro",  # no code
     "beginner_source/introyt/introyt_index", # no code
+    "beginner_source/blitz/tensor_tutorial",  # no code, redirects
     "beginner_source/onnx/intro_onnx",
     "beginner_source/profiler",
     "beginner_source/saving_loading_models",
