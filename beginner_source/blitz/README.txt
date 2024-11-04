@@ -1,7 +1,7 @@
 Deep Learning with PyTorch: A 60 Minute Blitz
 ---------------------------------------------
 
-1. tensor_tutorial.py
+1. tensor_tutorial.rst
 	What is PyTorch?
 	https://pytorch.org/tutorials/beginner/blitz/tensor_tutorial.html
 
