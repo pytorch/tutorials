@@ -568,116 +568,9 @@
               
   <div class="section" id="prototype-use-ios-gpu-in-pytorch">
 <h1>(Prototype) Use iOS GPU in PyTorch<a class="headerlink" href="#prototype-use-ios-gpu-in-pytorch" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/xta0">Tao Xu</a></p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>This tutorial introduces the steps to run your models on iOS GPU. We’ll be using the mobilenetv2 model as an example. Since the mobile GPU features are currently in the prototype stage, you’ll need to build a custom pytorch binary from source. For the time being, only a limited number of operators are supported, and certain client side APIs are subject to change in the future versions.</p>
-</div>
-<div class="section" id="model-preparation">
-<h2>Model Preparation<a class="headerlink" href="#model-preparation" title="Permalink to this heading">¶</a></h2>
-<p>Since GPUs consume weights in a different order, the first step we need to do is to convert our TorchScript model to a GPU compatible model. This step is also known as “prepacking”.</p>
-<div class="section" id="pytorch-with-metal">
-<h3>PyTorch with Metal<a class="headerlink" href="#pytorch-with-metal" title="Permalink to this heading">¶</a></h3>
-<p>To do that, we’ll install a pytorch nightly binary that includes the Metal backend. Go ahead run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>pytorch<span class="w"> </span>-c<span class="w"> </span>pytorch-nightly
-//<span class="w"> </span>or
-pip3<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>torch<span class="w"> </span>-f<span class="w"> </span>https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-</pre></div>
-</div>
-<p>Also, you can build a custom pytorch binary from source that includes the Metal backend. Just checkout the pytorch source code from github and run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>PYTORCH_ROOT
-<span class="nv">USE_PYTORCH_METAL_EXPORT</span><span class="o">=</span>ON<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install<span class="w"> </span>--cmake
-</pre></div>
-</div>
-<p>The command above will build a custom pytorch binary from master. The <code class="docutils literal notranslate"><span class="pre">install</span></code> argument simply tells <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is <code class="docutils literal notranslate"><span class="pre">1.8.0a0+41237a4</span></code>. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">__version__</span> <span class="c1">#1.8.0a0+41237a4</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="metal-compatible-model">
-<h3>Metal Compatible Model<a class="headerlink" href="#metal-compatible-model" title="Permalink to this heading">¶</a></h3>
-<p>The next step is going to be converting the mobilenetv2 torchscript model to a Metal compatible model. We’ll be leveraging the <code class="docutils literal notranslate"><span class="pre">optimize_for_mobile</span></code> API from the <code class="docutils literal notranslate"><span class="pre">torch.utils</span></code> module. As shown below</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchvision</span>
-<span class="kn">from</span> <span class="nn">torch.utils.mobile_optimizer</span> <span class="kn">import</span> <span class="n">optimize_for_mobile</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">scripted_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">optimized_model</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">scripted_model</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;metal&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">export_opnames</span><span class="p">(</span><span class="n">optimized_model</span><span class="p">))</span>
-<span class="n">optimized_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s1">&#39;./mobilenetv2_metal.pt&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Note that the <code class="docutils literal notranslate"><span class="pre">torch.jit.export_opnames(optimized_model)</span></code> is going to dump all the optimized operators from the <code class="docutils literal notranslate"><span class="pre">optimized_mobile</span></code>. If everything works well, you should be able to see the following ops being printed out from the console</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">[</span><span class="s1">&#39;aten::adaptive_avg_pool2d&#39;</span>,
-<span class="s1">&#39;aten::add.Tensor&#39;</span>,
-<span class="s1">&#39;aten::addmm&#39;</span>,
-<span class="s1">&#39;aten::reshape&#39;</span>,
-<span class="s1">&#39;aten::size.int&#39;</span>,
-<span class="s1">&#39;metal::copy_to_host&#39;</span>,
-<span class="s1">&#39;metal_prepack::conv2d_run&#39;</span><span class="o">]</span>
-</pre></div>
-</div>
-<p>Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now that you have the <code class="docutils literal notranslate"><span class="pre">mobilenetv2_metal.pt</span></code> saved on your disk, let’s move on to the iOS part.</p>
-</div>
-</div>
-<div class="section" id="use-pytorch-ios-library-with-metal">
-<h2>Use PyTorch iOS library with Metal<a class="headerlink" href="#use-pytorch-ios-library-with-metal" title="Permalink to this heading">¶</a></h2>
-<p>The PyTorch iOS library with Metal support <code class="docutils literal notranslate"><span class="pre">LibTorch-Lite-Nightly</span></code> is available in Cocoapods. You can read the <a class="reference external" href="https://pytorch.org/mobile/ios/#using-the-nightly-pytorch-ios-libraries-in-cocoapods">Using the Nightly PyTorch iOS Libraries in CocoaPods</a> section from the iOS tutorial for more detail about its usage.</p>
-<p>We also have the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-Metal">HelloWorld-Metal example</a> that shows how to conect all pieces together.</p>
-<p>Note that if you run the HelloWorld-Metal example, you may notice that the results are slighly different from the <a class="reference external" href="https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods">results</a> we got from the CPU model as shown in the iOS tutorial.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>-<span class="w"> </span>timber<span class="w"> </span>wolf,<span class="w"> </span>grey<span class="w"> </span>wolf,<span class="w"> </span>gray<span class="w"> </span>wolf,<span class="w"> </span>Canis<span class="w"> </span>lupus
--<span class="w"> </span>malamute,<span class="w"> </span>malemute,<span class="w"> </span>Alaskan<span class="w"> </span>malamute
--<span class="w"> </span>Eskimo<span class="w"> </span>dog,<span class="w"> </span>husky
-</pre></div>
-</div>
-<p>This is because by default Metal uses fp16 rather than fp32 to compute. The precision loss is expected.</p>
-</div>
-<div class="section" id="use-libtorch-lite-built-from-source">
-<h2>Use LibTorch-Lite Built from Source<a class="headerlink" href="#use-libtorch-lite-built-from-source" title="Permalink to this heading">¶</a></h2>
-<p>You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we’ll be using the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld">HelloWorld example</a> to demonstrate this process.</p>
-<p>First, make sure you have deleted the <strong>build</strong> folder from the “Model Preparation” step in PyTorch root directory. Then run the command below</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">IOS_ARCH</span><span class="o">=</span>arm64<span class="w"> </span><span class="nv">USE_PYTORCH_METAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./scripts/build_ios.sh
-</pre></div>
-</div>
-<p>Note <code class="docutils literal notranslate"><span class="pre">IOS_ARCH</span></code> tells the script to build a arm64 version of Libtorch-Lite. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the <a class="reference external" href="https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source">Build PyTorch iOS libraries from source</a> section from the iOS tutorial to setup the XCode settings properly. Don’t forget to copy the <code class="docutils literal notranslate"><span class="pre">./mobilenetv2_metal.pt</span></code> to your XCode project and modify the model file path accordingly.</p>
-<p>Next we need to make some changes in <code class="docutils literal notranslate"><span class="pre">TorchModule.mm</span></code></p>
-<div class="highlight-objective-c notranslate"><div class="highlight"><pre><span></span><span class="p">...</span>
-<span class="c1">// #import &lt;Libtorch-Lite/Libtorch-Lite.h&gt;</span>
-<span class="c1">// If it&#39;s built from source with Xcode, comment out the line above</span>
-<span class="c1">// and use following headers</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/import.h&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/csrc/jit/mobile/module.h&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/script.h&gt;</span>
-<span class="p">...</span>
-
-<span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="bp">NSArray</span><span class="o">&lt;</span><span class="bp">NSNumber</span><span class="o">*&gt;*</span><span class="p">)</span><span class="n">predictImage</span><span class="o">:</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">imageBuffer</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">c10</span><span class="o">::</span><span class="n">InferenceMode</span><span class="w"> </span><span class="n">mode</span><span class="p">;</span>
-<span class="w">  </span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">from_blob</span><span class="p">(</span><span class="n">imageBuffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="o">::</span><span class="n">kFloat</span><span class="p">).</span><span class="n">metal</span><span class="p">();</span>
-<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">outputTensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_impl</span><span class="p">.</span><span class="n">forward</span><span class="p">({</span><span class="n">tensor</span><span class="p">}).</span><span class="n">toTensor</span><span class="p">().</span><span class="n">cpu</span><span class="p">();</span>
-<span class="w">  </span><span class="p">...</span>
-<span class="p">}</span>
-<span class="p">...</span>
-</pre></div>
-</div>
-<p>As you can see, we simply just call <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> to move our input tensor from CPU to GPU, and then call <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> to move the result back. Internally, <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> is invoked, the GPU command buffer will be flushed and synced. After <cite>forward</cite> finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.</p>
-<p>The last step we have to do is to add the <code class="docutils literal notranslate"><span class="pre">Accelerate.framework</span></code> and the <code class="docutils literal notranslate"><span class="pre">MetalPerformanceShaders.framework</span></code> to your xcode project (Open your project via XCode, go to your project target’s “General” tab, locate the “Frameworks, Libraries and Embedded Content” section and click the “+” button).</p>
-<p>If everything works fine, you should be able to see the inference results on your phone.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>In this tutorial, we demonstrated how to convert a mobilenetv2 model to a GPU compatible model. We walked through a HelloWorld example to show how to use the C++ APIs to run models on iOS GPU. Please be aware of that GPU feature is still under development, new operators will continue to be added. APIs are subject to change in the future versions.</p>
-<p>Thanks for reading! As always, we welcome any feedback, so please create an issue <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-</div>
-<div class="section" id="learn-more">
-<h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>The <a class="reference external" href="https://pytorch.org/hub/pytorch_vision_mobilenet_v2/">Mobilenetv2</a> from Torchvision</p></li>
-<li><p>To learn more about how to use <code class="docutils literal notranslate"><span class="pre">optimize_for_mobile</span></code>, please refer to the <a class="reference external" href="https://pytorch.org/tutorials/recipes/mobile_perf.html">Mobile Perf Recipe</a></p></li>
-</ul>
-</div>
-</div>
+<p>PyTorch Mobile is no longer actively supported. Please check out <a class="reference external" href="https://github.com/pytorch/executorch">ExecuTorch</a>.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta http-equiv="Refresh" content="3; url='https://pytorch.org/executorch/stable/index.html'" /></div>
 
 
              </article>
@@ -731,19 +624,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">(Prototype) Use iOS GPU in PyTorch</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#model-preparation">Model Preparation</a><ul>
-<li><a class="reference internal" href="#pytorch-with-metal">PyTorch with Metal</a></li>
-<li><a class="reference internal" href="#metal-compatible-model">Metal Compatible Model</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#use-pytorch-ios-library-with-metal">Use PyTorch iOS library with Metal</a></li>
-<li><a class="reference internal" href="#use-libtorch-lite-built-from-source">Use LibTorch-Lite Built from Source</a></li>
-<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
-<li><a class="reference internal" href="#learn-more">Learn More</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">(Prototype) Use iOS GPU in PyTorch</a></li>
 </ul>
 
             </div>

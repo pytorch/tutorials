@@ -472,7 +472,7 @@
 <a class="reference external" href="../intermediate/ddp_series_minGPT.html">minGPT Training</a></p>
 <div class="section" id="multi-gpu-training-with-ddp">
 <h1>Multi GPU training with DDP<a class="headerlink" href="#multi-gpu-training-with-ddp" title="Permalink to this heading">¶</a></h1>
-<p>Authors: <a class="reference external" href="https://github.com/suraj813">Suraj Subramanian</a></p>
+<p>Authors: <a class="reference external" href="https://github.com/subramen">Suraj Subramanian</a></p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
 <div class="sd-col sd-d-flex-row docutils">
@@ -533,15 +533,15 @@ multiprocessing</p></li>
 <li><p>The distributed process group contains all the processes that can
 communicate and synchronize with each other.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>import torch
-import torch.nn.functional as F
-from utils import MyTrainDataset
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">MyTrainDataset</span>
 
-<span class="gi">+ import torch.multiprocessing as mp</span>
-<span class="gi">+ from torch.utils.data.distributed import DistributedSampler</span>
-<span class="gi">+ from torch.nn.parallel import DistributedDataParallel as DDP</span>
-<span class="gi">+ from torch.distributed import init_process_group, destroy_process_group</span>
-<span class="gi">+ import os</span>
+<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
+<span class="kn">from</span> <span class="nn">torch.distributed</span> <span class="kn">import</span> <span class="n">init_process_group</span><span class="p">,</span> <span class="n">destroy_process_group</span>
+<span class="kn">import</span> <span class="nn">os</span>
 </pre></div>
 </div>
 </div>
@@ -558,23 +558,22 @@ initializes the distributed process group.</p></li>
 <li><p>Read more about <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#which-backend-to-use">choosing a DDP
 backend</a></p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gi">+ def ddp_setup(rank: int, world_size: int):</span>
-<span class="gi">+   """</span>
-<span class="gi">+   Args:</span>
-<span class="gi">+       rank: Unique identifier of each process</span>
-<span class="gi">+      world_size: Total number of processes</span>
-<span class="gi">+   """</span>
-<span class="gi">+   os.environ["MASTER_ADDR"] = "localhost"</span>
-<span class="gi">+   os.environ["MASTER_PORT"] = "12355"</span>
-<span class="gi">+   torch.cuda.set_device(rank)</span>
-<span class="gi">+   init_process_group(backend="nccl", rank=rank, world_size=world_size)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ddp_setup</span><span class="p">(</span><span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">world_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">   </span><span class="sd">"""</span>
+<span class="sd">   Args:</span>
+<span class="sd">       rank: Unique identifier of each process</span>
+<span class="sd">      world_size: Total number of processes</span>
+<span class="sd">   """</span>
+   <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_ADDR"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"localhost"</span>
+   <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_PORT"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"12355"</span>
+   <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+   <span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">"nccl"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="constructing-the-ddp-model">
 <h2>Constructing the DDP model<a class="headerlink" href="#constructing-the-ddp-model" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">- self.model = model.to(gpu_id)</span>
-<span class="gi">+ self.model = DDP(model, device_ids=[gpu_id])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">gpu_id</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -583,28 +582,32 @@ backend</a></p></li>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=distributedsampler#torch.utils.data.distributed.DistributedSampler">DistributedSampler</a>
 chunks the input data across all distributed processes.</p></li>
+<li><dl class="simple">
+<dt>The <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">DataLoader</a> combines a dataset and a</dt><dd><p>sampler, and provides an iterable over the given dataset.</p>
+</dd>
+</dl>
+</li>
 <li><p>Each process will receive an input batch of 32 samples; the effective
 batch size is <code class="docutils literal notranslate"><span class="pre">32</span> <span class="pre">*</span> <span class="pre">nprocs</span></code>, or 128 when using 4 GPUs.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>train_data = torch.utils.data.DataLoader(
-<span class="w"> </span>   dataset=train_dataset,
-<span class="w"> </span>   batch_size=32,
-<span class="gd">-   shuffle=True,</span>
-<span class="gi">+   shuffle=False,</span>
-<span class="gi">+   sampler=DistributedSampler(train_dataset),</span>
-)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># We don't shuffle</span>
+    <span class="n">sampler</span><span class="o">=</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">),</span> <span class="c1"># Use the Distributed Sampler here.</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>Calling the <code class="docutils literal notranslate"><span class="pre">set_epoch()</span></code> method on the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> at the beginning of each epoch is necessary to make shuffling work
 properly across multiple epochs. Otherwise, the same ordering will be used in each epoch.</p></li>
 </ul>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span>def _run_epoch(self, epoch):
-<span class="w"> </span>   b_sz = len(next(iter(self.train_data))[0])
-<span class="gi">+   self.train_data.sampler.set_epoch(epoch)</span>
-<span class="w"> </span>   for source, targets in self.train_data:
-<span class="w"> </span>     ...
-<span class="w"> </span>     self._run_batch(source, targets)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_run_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
+    <span class="n">b_sz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">train_data</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>   <span class="c1"># call this additional line at every epoch</span>
+    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">targets</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_data</span><span class="p">:</span>
+      <span class="o">...</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_run_batch</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -663,16 +666,17 @@ if __name__ == "__main__":
 <span class="gi">+  mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)</span>
 </pre></div>
 </div>
+<p>Here’s what the code looks like:</p>
+</div>
 <div class="section" id="further-reading">
-<h3>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h3>
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="ddp_series_fault_tolerance.html">Fault Tolerant distributed training</a>  (next tutorial in this series)</p></li>
 <li><p><a class="reference external" href="ddp_series_theory.html">Intro to DDP</a> (previous tutorial in this series)</p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">Getting Started with DDP</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#tcp-initialization">Process Group
-initialization</a></p></li>
+Initialization</a></p></li>
 </ul>
-</div>
 </div>
 </div>
 </article>
@@ -719,10 +723,8 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#constructing-the-ddp-model">Constructing the DDP model</a></li>
 <li><a class="reference internal" href="#distributing-input-data">Distributing input data</a></li>
 <li><a class="reference internal" href="#saving-model-checkpoints">Saving model checkpoints</a></li>
-<li><a class="reference internal" href="#running-the-distributed-training-job">Running the distributed training job</a><ul>
+<li><a class="reference internal" href="#running-the-distributed-training-job">Running the distributed training job</a></li>
 <li><a class="reference internal" href="#further-reading">Further Reading</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

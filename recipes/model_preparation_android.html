@@ -568,76 +568,9 @@
               
   <div class="section" id="model-preparation-for-android-recipe">
 <h1>Model Preparation for Android Recipe<a class="headerlink" href="#model-preparation-for-android-recipe" title="Permalink to this heading">¶</a></h1>
-<p>This recipe demonstrates how to prepare a PyTorch MobileNet v2 image classification model for Android apps, and how to set up Android projects to use the mobile-ready model file.</p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>After a PyTorch model is trained or a pre-trained model is made available, it is normally not ready to be used in mobile apps yet. It needs to be quantized (see the <a class="reference external" href="quantization.html">Quantization Recipe</a>), converted to TorchScript so Android apps can load it, and optimized for mobile apps. Furthermore, Android apps need to be set up correctly to enable the use of PyTorch Mobile libraries, before they can load and use the model for inference.</p>
-</div>
-<div class="section" id="pre-requisites">
-<h2>Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permalink to this heading">¶</a></h2>
-<p>PyTorch 1.6.0 or 1.7.0</p>
-<p>torchvision 0.6.0 or 0.7.0</p>
-<p>Android Studio 3.5.1 or above with NDK installed</p>
-</div>
-<div class="section" id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this heading">¶</a></h2>
-<div class="section" id="get-pretrained-and-quantized-mobilenet-v2-model">
-<h3>1. Get Pretrained and Quantized MobileNet v2 Model<a class="headerlink" href="#get-pretrained-and-quantized-mobilenet-v2-model" title="Permalink to this heading">¶</a></h3>
-<p>To get the MobileNet v2 quantized model, simply do:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchvision</span>
-
-<span class="n">model_quantized</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="script-and-optimize-the-model-for-mobile-apps">
-<h3>2. Script and Optimize the Model for Mobile Apps<a class="headerlink" href="#script-and-optimize-the-model-for-mobile-apps" title="Permalink to this heading">¶</a></h3>
-<p>Use either the <cite>script</cite> or <cite>trace</cite> method to convert the quantized model to the TorchScript format:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="n">dummy_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-<span class="n">torchscript_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model_quantized</span><span class="p">,</span> <span class="n">dummy_input</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torchscript_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model_quantized</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The <cite>trace</cite> method only scripts the code path executed during the trace, so it will not work properly for models that include decision branches. See the <a class="reference external" href="script_optimized.html">Script and Optimize for Mobile Recipe</a> for more details.</p>
-</div>
-<p>Then optimize the TorchScript formatted model for mobile and save it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.mobile_optimizer</span> <span class="kn">import</span> <span class="n">optimize_for_mobile</span>
-<span class="n">torchscript_model_optimized</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">torchscript_model</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">torchscript_model_optimized</span><span class="p">,</span> <span class="s2">&quot;mobilenetv2_quantized.pt&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>With the total 7 or 8 (depending on if the <cite>script</cite> or <cite>trace</cite> method is called to get the TorchScript format of the model) lines of code in the two steps above, we have a model ready to be added to mobile apps.</p>
-</div>
-<div class="section" id="add-the-model-and-pytorch-library-on-android">
-<h3>3. Add the Model and PyTorch Library on Android<a class="headerlink" href="#add-the-model-and-pytorch-library-on-android" title="Permalink to this heading">¶</a></h3>
-<ul class="simple">
-<li><p>In your current or a new Android Studio project, open the build.gradle file, and add the following two lines (the second one is required only if you plan to use a TorchVision model):</p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">implementation</span> <span class="s1">&#39;org.pytorch:pytorch_android:1.6.0&#39;</span>
-<span class="n">implementation</span> <span class="s1">&#39;org.pytorch:pytorch_android_torchvision:1.6.0&#39;</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Drag and drop the model file <cite>mobilenetv2_quantized.pt</cite> to your project’s assets folder.</p></li>
-</ul>
-<p>That’s it! Now you can build your Android app with the PyTorch library and the model ready to use. To actually write code to use the model, refer to the PyTorch Mobile <a class="reference external" href="https://pytorch.org/mobile/android/#quickstart-with-a-helloworld-example">Android Quickstart with a HelloWorld Example</a> and <a class="reference external" href="https://github.com/pytorch/workshops/tree/master/PTMobileWalkthruAndroid">Android Hackathon Example</a>.</p>
-</div>
-</div>
-<div class="section" id="learn-more">
-<h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p><a class="reference external" href="https://pytorch.org/mobile">PyTorch Mobile site</a></p></li>
-<li><p><a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></p></li>
-</ol>
-</div>
-</div>
+<p>PyTorch Mobile is no longer actively supported. Please check out <a class="reference external" href="https://github.com/pytorch/executorch">ExecuTorch</a>.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta http-equiv="Refresh" content="3; url='https://pytorch.org/executorch/stable/index.html'" /></div>
 
 
              </article>
@@ -691,18 +624,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Model Preparation for Android Recipe</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#pre-requisites">Pre-requisites</a></li>
-<li><a class="reference internal" href="#steps">Steps</a><ul>
-<li><a class="reference internal" href="#get-pretrained-and-quantized-mobilenet-v2-model">1. Get Pretrained and Quantized MobileNet v2 Model</a></li>
-<li><a class="reference internal" href="#script-and-optimize-the-model-for-mobile-apps">2. Script and Optimize the Model for Mobile Apps</a></li>
-<li><a class="reference internal" href="#add-the-model-and-pytorch-library-on-android">3. Add the Model and PyTorch Library on Android</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#learn-more">Learn More</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Model Preparation for Android Recipe</a></li>
 </ul>
 
             </div>

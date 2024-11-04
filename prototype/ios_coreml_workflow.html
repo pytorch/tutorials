@@ -568,112 +568,9 @@
               
   <div class="section" id="prototype-convert-mobilenetv2-to-core-ml">
 <h1>(Prototype) Convert Mobilenetv2 to Core ML<a class="headerlink" href="#prototype-convert-mobilenetv2-to-core-ml" title="Permalink to this heading">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/xta0">Tao Xu</a></p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>Core ML provides access to powerful and efficient NPUs(Neural Process Unit) on modern iPhone devices. This tutorial shows how to prepare a computer vision model (mobilenetv2) to use the PyTorch Core ML mobile backend.</p>
-<p>Note that this feature is currently in the “prototype” phase and only supports a limited numbers of operators, but we expect to solidify the integration and expand our operator support over time. The APIs are subject to change in the future.</p>
-</div>
-<div class="section" id="environment-setup-macos">
-<h2>Environment Setup (MacOS)<a class="headerlink" href="#environment-setup-macos" title="Permalink to this heading">¶</a></h2>
-<p>Let’s start off by creating a new conda environment.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span><span class="m">1</span>.10<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8<span class="w"> </span>--yes
-conda<span class="w"> </span>activate<span class="w"> </span><span class="m">1</span>.10
-</pre></div>
-</div>
-<p>Next, since the Core ML delegate is a prototype feature, let’s install the PyTorch nightly build and coremltools</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>torchaudio<span class="w"> </span>-f<span class="w"> </span>https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-
-pip3<span class="w"> </span>install<span class="w"> </span><span class="nv">coremltools</span><span class="o">==</span><span class="m">5</span>.0b5<span class="w"> </span><span class="nv">protobuf</span><span class="o">==</span><span class="m">3</span>.20.1
-</pre></div>
-</div>
-</div>
-<div class="section" id="model-preparation">
-<h2>Model Preparation<a class="headerlink" href="#model-preparation" title="Permalink to this heading">¶</a></h2>
-<p>To convert a pre-trained mobilenetv2 model to be Core ML compatible, we’re going to use the <code class="docutils literal notranslate"><span class="pre">to_backend()</span></code> API, which is a prototype feature for delegating model executions to some specific backends. The following python code shows how to use it to convert the mobilenetv2 torchscript model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchvision</span>
-
-<span class="kn">from</span> <span class="nn">torch.backends._coreml.preprocess</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CompileSpec</span><span class="p">,</span>
-    <span class="n">TensorSpec</span><span class="p">,</span>
-    <span class="n">CoreMLComputeUnit</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">mobilenetv2_spec</span><span class="p">():</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;forward&quot;</span><span class="p">:</span> <span class="n">CompileSpec</span><span class="p">(</span>
-            <span class="n">inputs</span><span class="o">=</span><span class="p">(</span>
-                <span class="n">TensorSpec</span><span class="p">(</span>
-                    <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">],</span>
-                <span class="p">),</span>
-            <span class="p">),</span>
-            <span class="n">outputs</span><span class="o">=</span><span class="p">(</span>
-                <span class="n">TensorSpec</span><span class="p">(</span>
-                    <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
-                <span class="p">),</span>
-            <span class="p">),</span>
-            <span class="n">backend</span><span class="o">=</span><span class="n">CoreMLComputeUnit</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span>
-            <span class="n">allow_low_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">),</span>
-    <span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">example</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">example</span><span class="p">)</span>
-    <span class="n">compile_spec</span> <span class="o">=</span> <span class="n">mobilenetv2_spec</span><span class="p">()</span>
-    <span class="n">mlmodel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_jit_to_backend</span><span class="p">(</span><span class="s2">&quot;coreml&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">compile_spec</span><span class="p">)</span>
-    <span class="n">mlmodel</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s2">&quot;./mobilenetv2_coreml.ptl&quot;</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>First, we need to call <code class="docutils literal notranslate"><span class="pre">.eval()</span></code> to set the model to inference mode. Secondly, we defined a <code class="docutils literal notranslate"><span class="pre">mobilenetv2_spec()</span></code> function to tell Core ML what the model looks like. Note that the <code class="docutils literal notranslate"><span class="pre">CoreMLComputeUnit</span></code> corresponds to <a class="reference external" href="https://developer.apple.com/documentation/coreml/mlcomputeunits">Apple’s processing unit</a> whose value can be <code class="docutils literal notranslate"><span class="pre">CPU</span></code>, <code class="docutils literal notranslate"><span class="pre">CPUAndGPU</span></code> and <code class="docutils literal notranslate"><span class="pre">ALL</span></code>. In our example, we set the <code class="docutils literal notranslate"><span class="pre">backend</span></code> type to <code class="docutils literal notranslate"><span class="pre">ALL</span></code> which means Core ML will try to run the model on Neural Engine. Finally, we called the <code class="docutils literal notranslate"><span class="pre">to_backend</span></code> API to convert the torchscript model to a Core ML compatible model and save it to the disk.</p>
-<p>Run the python script. If everything works well, you should see following outputs from coremltools</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Converting<span class="w"> </span><span class="nv">Frontend</span><span class="w"> </span><span class="o">==</span>&gt;<span class="w"> </span>MIL<span class="w"> </span>Ops:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>███████████████████████████████████████████████████████████████████████████████▊<span class="p">|</span><span class="w"> </span><span class="m">384</span>/385<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">1496</span>.98<span class="w"> </span>ops/s<span class="o">]</span>
-Running<span class="w"> </span>MIL<span class="w"> </span>Common<span class="w"> </span>passes:<span class="w">   </span><span class="m">0</span>%<span class="p">|</span>
-<span class="m">0</span>/33<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;?,<span class="w"> </span>?<span class="w"> </span>passes/s<span class="o">]</span>/Users/distill/anaconda3/envs/1.10/lib/python3.8/site-packages/coremltools/converters/mil/mil/passes/name_sanitization_utils.py:129:<span class="w"> </span>UserWarning:<span class="w"> </span>Output,<span class="w"> </span><span class="s1">&#39;647&#39;</span>,<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span><span class="nb">source</span><span class="w"> </span>model,<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>renamed<span class="w"> </span>to<span class="w"> </span><span class="s1">&#39;var_647&#39;</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>Core<span class="w"> </span>ML<span class="w"> </span>model.
-warnings.warn<span class="o">(</span>msg.format<span class="o">(</span>var.name,<span class="w"> </span>new_name<span class="o">))</span>
-Running<span class="w"> </span>MIL<span class="w"> </span>Common<span class="w"> </span>passes:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>███████████████████████████████████████████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">33</span>/33<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">84</span>.16<span class="w"> </span>passes/s<span class="o">]</span>
-Running<span class="w"> </span>MIL<span class="w"> </span>Clean<span class="w"> </span>up<span class="w"> </span>passes:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>██████████████████████████████████████████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">8</span>/8<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">138</span>.17<span class="w"> </span>passes/s<span class="o">]</span>
-Translating<span class="w"> </span><span class="nv">MIL</span><span class="w"> </span><span class="o">==</span>&gt;<span class="w"> </span>NeuralNetwork<span class="w"> </span>Ops:<span class="w"> </span><span class="m">100</span>%<span class="p">|</span>██████████████████████████████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">495</span>/495<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">1977</span>.15<span class="w"> </span>ops/s<span class="o">]</span>
-<span class="o">[</span>W<span class="w"> </span>backend_detail.cpp:376<span class="o">]</span><span class="w"> </span>Warning:<span class="w"> </span>Backend<span class="w"> </span><span class="o">[</span>coreml<span class="o">]</span><span class="w"> </span>is<span class="w"> </span>not<span class="w"> </span>available.<span class="w"> </span>Execution<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>Module<span class="w"> </span>is<span class="w"> </span>still<span class="w"> </span>possible<span class="w"> </span>by<span class="w"> </span>saving<span class="w"> </span>and<span class="w"> </span>loading<span class="w"> </span>on<span class="w"> </span>a<span class="w"> </span>device<span class="w"> </span>where<span class="w"> </span>the<span class="w"> </span>backend<span class="w"> </span>is<span class="w"> </span>available.<span class="w"> </span><span class="o">(</span><span class="k">function</span><span class="w"> </span>codegen_backend_module<span class="o">)</span>
-</pre></div>
-</div>
-<p>We can safely ignore the warning above, as we don’t plan to run our model on desktop.</p>
-</div>
-<div class="section" id="ios-app-integration">
-<h2>iOS app integration<a class="headerlink" href="#ios-app-integration" title="Permalink to this heading">¶</a></h2>
-<p>Now that the model is ready, we can integrate it to our app. We’ll be using the pytorch nightly cocoapods which contains the code for executing the Core ML model. Simply add the following code to your Podfile</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pod<span class="w"> </span>LibTorch-Lite-Nightly
-</pre></div>
-</div>
-<p>In this tutorial, we’ll be reusing our <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-CoreML">HelloWorld</a> project. Feel free to walk through the code there.</p>
-<p>To benchmark the latency, you can simply put the following code before and after the PyTorch <code class="docutils literal notranslate"><span class="pre">forward</span></code> function</p>
-<div class="highlight-objective-c notranslate"><div class="highlight"><pre><span></span><span class="n">caffe2</span><span class="o">::</span><span class="n">Timer</span><span class="w"> </span><span class="n">t</span><span class="p">;</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">outputTensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_impl</span><span class="p">.</span><span class="n">forward</span><span class="p">({</span><span class="n">tensor</span><span class="p">}).</span><span class="n">toTensor</span><span class="p">().</span><span class="n">cpu</span><span class="p">();</span>
-<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;forward took: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">MilliSeconds</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>In this tutorial, we demonstrated how to convert a mobilenetv2 model to a Core ML compatible model. Please be aware of that Core ML feature is still under development, new operators/models will continue to be added. APIs are subject to change in the future versions.</p>
-<p>Thanks for reading! As always, we welcome any feedback, so please create an issue <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-</div>
-<div class="section" id="learn-more">
-<h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>The <a class="reference external" href="https://pytorch.org/hub/pytorch_vision_mobilenet_v2/">Mobilenetv2</a> from Torchvision</p></li>
-<li><p>Information about <a class="reference external" href="https://developer.apple.com/documentation/coreml">Core ML</a></p></li>
-</ul>
-</div>
-</div>
+<p>PyTorch Mobile is no longer actively supported. Please check out <a class="reference external" href="https://github.com/pytorch/executorch">ExecuTorch</a>.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta http-equiv="Refresh" content="3; url='https://pytorch.org/executorch/stable/index.html'" /></div>
 
 
              </article>
@@ -727,15 +624,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">(Prototype) Convert Mobilenetv2 to Core ML</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#environment-setup-macos">Environment Setup (MacOS)</a></li>
-<li><a class="reference internal" href="#model-preparation">Model Preparation</a></li>
-<li><a class="reference internal" href="#ios-app-integration">iOS app integration</a></li>
-<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
-<li><a class="reference internal" href="#learn-more">Learn More</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">(Prototype) Convert Mobilenetv2 to Core ML</a></li>
 </ul>
 
             </div>
