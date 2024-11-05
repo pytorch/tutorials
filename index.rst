@@ -71,7 +71,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: beginner/introyt.html
+   :link: beginner/introyt/introyt_index.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -906,7 +906,7 @@ Additional Resources
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: PyTorch Recipes
@@ -915,39 +915,15 @@ Additional Resources
    See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
    :includehidden:
    :caption: Introduction to PyTorch
 
    beginner/basics/intro
-   beginner/basics/quickstart_tutorial
-   beginner/basics/tensorqs_tutorial
-   beginner/basics/data_tutorial
-   beginner/basics/transforms_tutorial
-   beginner/basics/buildmodel_tutorial
-   beginner/basics/autogradqs_tutorial
-   beginner/basics/optimization_tutorial
-   beginner/basics/saveloadrun_tutorial
-   advanced/custom_ops_landing_page
+   beginner/introyt/introyt_index
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
-   :includehidden:
-   :caption: Introduction to PyTorch on YouTube
-
-   beginner/introyt
-   beginner/introyt/introyt1_tutorial
-   beginner/introyt/tensors_deeper_tutorial
-   beginner/introyt/autogradyt_tutorial
-   beginner/introyt/modelsyt_tutorial
-   beginner/introyt/tensorboardyt_tutorial
-   beginner/introyt/trainingyt
-   beginner/introyt/captumyt
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: Learning PyTorch
@@ -960,7 +936,7 @@ Additional Resources
    intermediate/pinmem_nonblock
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Image and Video
@@ -991,7 +967,7 @@ Additional Resources
    intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Backends
@@ -1010,7 +986,7 @@ Additional Resources
    advanced/pendulum
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Deploying PyTorch Models in Production

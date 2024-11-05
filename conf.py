@@ -304,6 +304,10 @@ html_css_files = [
         'css/custom2.css'
     ]
 
+html_js_files = [
+    "js/custom.js",
+]
+
 def setup(app):
     # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value
     # and can be moved outside of this function (and the setup(app) function
