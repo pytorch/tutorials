@@ -1,4 +1,4 @@
 Tensors
 =======
 
-.. literalinclude:: ../basics/tensorqs_tutorial.py
+.. include:: ../basics/tensorqs_tutorial.py
