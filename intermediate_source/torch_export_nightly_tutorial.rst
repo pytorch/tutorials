@@ -1,4 +1,4 @@
-Torch Export Nightly Tutorial
+torch.export Nightly Tutorial
 =============================
 
 This tutorial has been moved to https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html
