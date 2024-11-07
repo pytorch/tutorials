@@ -98,7 +98,8 @@ html-noplot:
 	# bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
-
+	@echo "Running post-processing script to insert 'Last Verified' dates..."
+	@python insert_last_verified.py
 clean-cache:
 	make clean
 	rm -rf advanced beginner intermediate recipes
