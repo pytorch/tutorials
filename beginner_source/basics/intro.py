@@ -13,9 +13,9 @@ Learn the Basics
 ===================
 
 Authors:
-`Suraj Subramanian <https://github.com/suraj813>`_,
+`Suraj Subramanian <https://github.com/subramen>`_,
 `Seth Juarez <https://github.com/sethjuarez/>`_,
-`Cassie Breviu <https://github.com/cassieview/>`_,
+`Cassie Breviu <https://github.com/cassiebreviu/>`_,
 `Dmitry Soshnikov <https://soshnikov.com/>`_,
 `Ari Bornstein <https://github.com/aribornstein/>`_
 
@@ -49,6 +49,16 @@ If you're new to deep learning frameworks, head right into the first section of 
 .. include:: /beginner_source/basics/qs_toc.txt
 
 .. toctree::
+   :maxdepth: 2
    :hidden:
+
+   quickstart_tutorial
+   tensorqs_tutorial
+   data_tutorial
+   transforms_tutorial
+   buildmodel_tutorial
+   autogradqs_tutorial
+   optimization_tutorial
+   saveloadrun_tutorial
 
 """

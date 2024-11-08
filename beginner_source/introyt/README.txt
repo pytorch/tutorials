@@ -1,7 +1,7 @@
 Introduction to PyTorch on YouTube
 ----------------------------------
 
-1. introyt.rst
+1. introyt.py
     Introduction to PyTorch - Youtube Series
     https://pytorch.org/tutorials/beginner/introyt/introyt.html
 
