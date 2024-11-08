@@ -1,6 +1,6 @@
 """
-Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile()
-=====================================================================================================
+Accelerating PyTorch Transformers by replacing ``nn.Transformer`` with Nested Tensors and ``torch.compile()``
+=============================================================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
 .. note::
