@@ -89,6 +89,7 @@ download:
 docs:
 	make download
 	make html
+	@python insert_last_verified.py $(BUILDDIR)/html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
@@ -99,7 +100,7 @@ html-noplot:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 	@echo "Running post-processing script to insert 'Last Verified' dates..."
-	@python insert_last_verified.py
+	@python insert_last_verified.py $(BUILDDIR)/html
 clean-cache:
 	make clean
 	rm -rf advanced beginner intermediate recipes
