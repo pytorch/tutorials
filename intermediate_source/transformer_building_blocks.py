@@ -1,37 +1,38 @@
 """
-Dismantling the ``nn.Transformer`` modules for gains and profits 
-=================================================================
+Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile()
+=====================================================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
 .. note::
     This tutorial should be run with the latest nightly, or, when available, 2.6.
 
-The ``torch.nn`` module currently provides various ``Transformer``-related layers.
-In particular ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``,
-``TransformerDecoder``, ``Transformer`` and ``MultiheadAttention``. This family
-of layers was initially implemented following the `Attention is All
-You Need <https://arxiv.org/abs/1706.03762>`_ paper. Since then, various improvements
-were made to try to make these layers more flexible.
-
-While historically these layers intended to provide out-of-the-box, performant
-solutions, we make the observations that
-
-1.  People want to add slight customizations to their transformer layers
-2.  Writing these layers and customizations is not hard
-
-
-Supporting all transformer variants via a small number of out of the box layers would
-yield too many keyword arguments. This tutorial will describe how to build your
-own performant transformer layers following our recommended best practices.
-The technologies used will be the following
+Over the past few years, the PyTorch team has developed various lower level
+features that, when composed, can create a variety of transformer variants. These
+include:
 
 1.   Nested Tensors with the ``torch.jagged`` layout (AKA NJTs)
 2.   ``scaled_dot_product_attention``
 3.   ``torch.compile()``
 4.   ``FlexAttention``
 
+This tutorial will give a brief overview of the above technologies and
+demonstrate how they can be composed to yield flexible and performant transformer \
+layers with improved user experience.
+
+One may observe that the ``torch.nn`` module currently provides various ``Transformer``-related layers.
+In particular ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``,
+``TransformerDecoder``, ``Transformer`` and ``MultiheadAttention``. This family
+of layers was initially implemented following the `Attention is All
+You Need <https://arxiv.org/abs/1706.03762>`_ paper. The components discussed in
+this tutorial provide improved user experience, flexibility and performance over
+the existing ``nn`` layers.
+
 Is this tutorial for me?
 ========================
+
+If you are wondering about what building blocks the ``torch`` library provides
+for writing your own transformer layers and best practices, you are in the
+right place, please keep reading!
 
 If you are looking for an out-of-the-box implementation of a popular transformer
 architecture, note that there are many open-source libraries that provide them,
@@ -41,15 +42,9 @@ with some examples being:
 * `xformers <https://github.com/facebookresearch/xformers>`_
 * `torchtune <https://github.com/pytorch/torchtune>`_
 
-Please head there instead!
-
 If you are only interested in performant attention score modifications, please
 head to the `FlexAttention blog <https://pytorch.org/blog/flexattention/>`_ that
 contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
-If you are wondering about what building blocks the ``torch`` library provides
-for writing your own transformer layers and best practices, you are in the
-right place, please keep reading!
-
 
 """
 
@@ -393,7 +388,7 @@ warmup_vanilla_result = vanilla_mha_layer(padded_query,
 
 print(f"{padded_time=:.5f}, padded_peak_memory={padded_peak_memory/1e9:.2f} GB")
 print(f"{nested_time=:.5f}, nested_peak_memory={nested_peak_memory/1e9:.2f} GB")
-print("Difference between vanilla and nested result", (padded_result - padded_nested_result).abs().max().item())
+print("Max difference between vanilla and nested result", (padded_result - padded_nested_result).abs().max().item())
 print(f"Nested speedup: {(padded_time/nested_time):.2f}")
 print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)/1e9):.2f} GB")
 
@@ -404,7 +399,7 @@ print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)
 #
 #     padded_time=0.03454, padded_peak_memory=4.14 GB
 #     nested_time=0.00612, nested_peak_memory=0.76 GB
-#     Difference between vanilla and nested result 0.0
+#     Max difference between vanilla and nested result 0.0
 #     Nested speedup: 5.65
 #     Nested peak memory reduction 3.39 GB
 #
@@ -432,14 +427,14 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 #
 # .. code::
 # 
-#     ``padded_bw_time``=2.09337, ``padded_bw_peak_mem``=5.10 GB
-#     ``nested_bw_time``=0.01452, ``nested_bw_peak_mem``=3.24 GB
+#     padded_bw_time=2.09337, padded_bw_peak_mem=5.10 GB
+#     nested_bw_time=0.01452, nested_bw_peak_mem=3.24 GB
 #     Nested backward speedup: 144.13
 #     Nested backward peak memory reduction 1.86 GB
-#     Difference in ``out_proj.weight.grad`` 0.000244140625
-#     Difference in ``packed_proj.weight.grad`` 0.001556396484375
-#     Difference in ``out_proj.bias.grad`` 0.0
-#     Difference in ``packed_proj.bias.grad`` 0.001953125
+#     Difference in out_proj.weight.grad 0.000244140625
+#     Difference in packed_proj.weight.grad 0.001556396484375
+#     Difference in out_proj.bias.grad 0.0
+#     Difference in packed_proj.bias.grad 0.001953125
 #
 
 ##################################################################################
@@ -493,6 +488,53 @@ print(f"Total sequence length in nested query {q_len.sum().item()}, max sequence
 print(f"Total sequence length in nested key/value {kv_len.sum().item()}, max sequence length {kv_len.max().item()}")
 out = new_mha_layer(query, key, value, is_causal=False)
 
+########################################################################################
+# As above, we can compare this against the vanilla compiled ``nn.MultiheadAttention``.
+
+torch.manual_seed(6)
+query, _, _, q_len = gen_batch(N, E_q, E_k, E_v, device)
+_, key, value, kv_len = gen_batch(N, E_q, E_k, E_v, device)
+padded_query, padded_key, padded_value = (
+    t.to_padded_tensor(0.0) for t in (query, key, value)
+)
+
+key_padding_mask = torch.where(padded_key == 0.0, -math.inf, 0)[:, :, 0]
+
+# warmup compile
+warmup_nested_result = new_mha_layer(query, key, value, is_causal=False)
+warmup_vanilla_result = vanilla_mha_layer(padded_query,
+                                          padded_key,
+                                          padded_value,
+                                          key_padding_mask=key_padding_mask,
+                                          need_weights=False,
+                                          is_causal=False)
+
+nested_result, nested_time, nested_peak_memory = benchmark(new_mha_layer, query, key, value, is_causal=False)
+(padded_result, _), padded_time, padded_peak_memory = benchmark(vanilla_mha_layer,
+                                                                padded_query,
+                                                                padded_key,
+                                                                padded_value,
+                                                                key_padding_mask=key_padding_mask,
+                                                                need_weights=False,
+                                                                is_causal=False)
+padded_nested_result = nested_result.to_padded_tensor(0.0)
+for i, entry_length in enumerate(q_len):
+    # padding-specific step: remove output projection bias from padded entries for fair comparison
+    padded_result[i, entry_length:, :] = 0.0
+
+print("Max difference between vanilla and nested result", (padded_result - padded_nested_result).abs().max().item())
+print(f"Nested speedup: {(padded_time/nested_time):.2f}")
+print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)/1e9):.2f} GB")
+
+##################################################################################
+# Sample outputs on A100:
+#
+# .. code::
+#
+#     Max difference between vanilla and nested result 0.0
+#     Nested speedup: 4.01
+#     Nested peak memory reduction 1.40 GB
+#
 
 ################################################################################
 # Fully masked rows no longer cause NaNs
@@ -550,6 +592,29 @@ value = (
 out_flex2 = flex_attention(query, key, value, score_mod=alibi_score_mod)
 
 ###############################################################################
+# In addition, one can also use the ``block_mask`` utility of ``FlexAttention``
+# with NJTs via the ``create_nested_block_mask`` function. This is useful for
+# taking advantage of the sparsity of the mask to speed up the attention computation.
+# In the following example, we show how to create a causal block mask using this
+# utility.
+
+from torch.nn.attention.flex_attention import create_nested_block_mask
+
+def causal_mask(b, h, q_idx, kv_idx):
+    return q_idx >= kv_idx
+
+query, key, value, _ = gen_batch(N, E_q, E_k, E_v, device)
+block_mask = create_nested_block_mask(causal_mask, 1, 1, query, _compile=True)
+query = (
+    query.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+)
+key = key.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+value = (
+    value.unflatten(-1, [n_heads, D]).transpose(1, 2).detach().requires_grad_()
+)
+out_flex = flex_attention(query, key, value, block_mask=block_mask)
+
+###############################################################################
 # Packed Projection
 # -----------------
 # 
@@ -579,8 +644,8 @@ class InputProjection(nn.Module):
         self.k_proj = nn.Linear(E_q, E_total, bias=bias, **factory_kwargs)
         self.v_proj = nn.Linear(E_q, E_total, bias=bias, **factory_kwargs)
 
-    def forward(self, query):  
-        return self.q_proj(query), self.k_proj(query), self.v_proj(query)
+    def forward(self, x):  
+        return self.q_proj(x), self.k_proj(x), self.v_proj(x)
 
 class PackedInputProjection(nn.Module):
     def __init__(self, E_q, E_total, bias=False, device=None, dtype=None):
@@ -591,7 +656,7 @@ class PackedInputProjection(nn.Module):
     def forward(self, query):  
         return torch.chunk(self.packed_proj(query), 3, dim=-1)
 
-B, D, dtype = 256, 4096, torch.bfloat16
+B, D, dtype = 256, 8192, torch.bfloat16
 
 torch.set_float32_matmul_precision('high')
 in_proj = torch.compile(InputProjection(D, D, device='cuda', dtype=torch.bfloat16))
@@ -606,6 +671,7 @@ packed_in_proj(q)
 # benchmark
 (q_out, k_out, v_out), time, _ = benchmark(in_proj, q)
 (q_out, k_out, v_out), time_packed, _ = benchmark(packed_in_proj, q)
+# On my A100 prints 1.05x speedup
 print(f"InputProjection: {time:5f} s, PackedInputProjection: {time_packed:5f} s, speedup: {time/time_packed:.2f}x")
 
 ##################################################
@@ -669,6 +735,7 @@ packed_swigluffn(q)
 # benchmark
 _, time, _ = benchmark(swigluffn, q)
 _, time_packed, _ = benchmark(packed_swigluffn, q)
+# On my A100 prints 1.08x speedup
 print(f"SwiGLUFFN: {time} s, PackedSwiGLUFFN: {time_packed} s, speedup: {time/time_packed:.2f}x")
 
 ################################################################################
