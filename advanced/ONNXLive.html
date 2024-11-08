@@ -466,132 +466,9 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="onnx-live-tutorial">
 <h1>ONNX Live Tutorial<a class="headerlink" href="#onnx-live-tutorial" title="Permalink to this heading">¶</a></h1>
-<p>This tutorial will show you to convert a neural style transfer model that has been exported from PyTorch into the Apple CoreML format using ONNX. This will allow you to easily run deep learning models on Apple devices and, in this case, live stream from the camera.</p>
-<div class="section" id="what-is-onnx">
-<h2>What is ONNX?<a class="headerlink" href="#what-is-onnx" title="Permalink to this heading">¶</a></h2>
-<p>ONNX (Open Neural Network Exchange) is an open format to represent deep learning models. With ONNX, AI developers can more easily move models between state-of-the-art tools and choose the combination that is best for them. ONNX is developed and supported by a community of partners. You can learn more about ONNX and what tools are supported by going to <a class="reference external" href="https://onnx.ai/">onnx.ai</a>.</p>
-</div>
-<div class="section" id="tutorial-overview">
-<h2>Tutorial Overview<a class="headerlink" href="#tutorial-overview" title="Permalink to this heading">¶</a></h2>
-<p>This tutorial will walk you through 4 main steps:</p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="#download-or-train-pytorch-style-transfer-models">Download (or train) PyTorch style transfer models</a></p></li>
-<li><p><a class="reference internal" href="#convert-the-pytorch-models-to-onnx-models">Convert the PyTorch models to ONNX models</a></p></li>
-<li><p><a class="reference internal" href="#convert-the-onnx-models-to-coreml-models">Convert the ONNX models to CoreML models</a></p></li>
-<li><p><a class="reference internal" href="#run-the-coreml-models-in-a-style-transfer-ios-app">Run the CoreML models in a style transfer iOS App</a></p></li>
-</ol>
-</div>
-<div class="section" id="preparing-the-environment">
-<h2>Preparing the Environment<a class="headerlink" href="#preparing-the-environment" title="Permalink to this heading">¶</a></h2>
-<p>We will be working in a virtualenv in order to avoid conflicts with your local packages.
-We are also using Python 3.6 for this tutorial, but other versions should work as well.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span><span class="mf">.6</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">venv</span>
-<span class="n">source</span> <span class="o">./</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
-</pre></div>
-</div>
-<p>You need to install pytorch and the onnx-&gt;coreml converter:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torchvision<span class="w"> </span>onnx-coreml
-</pre></div>
-</div>
-<p>You will also need to install XCode if you want to run the iOS style transfer app on your iPhone.
-You can also convert models in Linux, however to run the iOS app itself, you will need a Mac.</p>
-</div>
-<div class="section" id="download-or-train-pytorch-style-transfer-models">
-<h2>Download (or train) PyTorch style transfer models<a class="headerlink" href="#download-or-train-pytorch-style-transfer-models" title="Permalink to this heading">¶</a></h2>
-<p>For this tutorial, we will use the style transfer models that are published with pytorch in <a class="reference external" href="https://github.com/pytorch/examples/tree/master/fast_neural_style">https://github.com/pytorch/examples/tree/master/fast_neural_style</a> .
-If you would like to use a different PyTorch or ONNX model, feel free to skip this step.</p>
-<p>These models are meant for applying style transfer on still images and really not optimized to be fast enough for video. However if we reduce the resolution low enough, they can also work well on videos.</p>
-<p>Let’s download the models:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/pytorch/examples
-<span class="nb">cd</span><span class="w"> </span>examples/fast_neural_style
-</pre></div>
-</div>
-<p>If you would like to train the models yourself, the pytorch/examples repository you just cloned has more information on how to do this.
-For now, we’ll just download pre-trained models with the script provided by the repository:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>download_saved_models.py
-</pre></div>
-</div>
-<p>This script downloads the pre-trained PyTorch models and puts them into the <code class="docutils literal notranslate"><span class="pre">saved_models</span></code> folder.
-There should now be 4 files, <code class="docutils literal notranslate"><span class="pre">candy.pth</span></code>, <code class="docutils literal notranslate"><span class="pre">mosaic.pth</span></code>, <code class="docutils literal notranslate"><span class="pre">rain_princess.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">udnie.pth</span></code> in your directory.</p>
-</div>
-<div class="section" id="convert-the-pytorch-models-to-onnx-models">
-<h2>Convert the PyTorch models to ONNX models<a class="headerlink" href="#convert-the-pytorch-models-to-onnx-models" title="Permalink to this heading">¶</a></h2>
-<p>Now that we have the pre-trained PyTorch models as <code class="docutils literal notranslate"><span class="pre">.pth</span></code> files in the <code class="docutils literal notranslate"><span class="pre">saved_models</span></code> folder, we will need to convert them to ONNX format.
-The model definition is in the pytorch/examples repository we cloned previously, and with a few lines of python we can export it to ONNX.
-In this case, instead of actually running the neural net, we will call <code class="docutils literal notranslate"><span class="pre">torch.onnx._export</span></code>, which is provided with PyTorch as an api to directly export ONNX formatted models from PyTorch.
-However, in this case we don’t even need to do that, because a script already exists <code class="docutils literal notranslate"><span class="pre">neural_style/neural_style.py</span></code> that will do this for us.
-You can also take a look at that script if you would like to apply it to other models.</p>
-<p>Exporting the ONNX format from PyTorch is essentially tracing your neural network so this api call will internally run the network on ‘dummy data’ in order to generate the graph.
-For this, it needs an input image to apply the style transfer to which can simply be a blank image.
-However, the pixel size of this image is important, as this will be the size for the exported style transfer model.
-To get good performance, we’ll use a resolution of 250x540. Feel free to take a larger resolution if you care less about
-FPS and more about style transfer quality.</p>
-<p>Let’s use <a class="reference external" href="https://www.imagemagick.org/">ImageMagick</a> to create a blank image of the resolution we want:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>convert<span class="w"> </span>-size<span class="w"> </span>250x540<span class="w"> </span>xc:white<span class="w"> </span>png24:dummy.jpg
-</pre></div>
-</div>
-<p>and use that to export the PyTorch models:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>./neural_style/neural_style.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--content-image<span class="w"> </span>dummy.jpg<span class="w"> </span>--output-image<span class="w"> </span>dummy-out.jpg<span class="w"> </span>--model<span class="w"> </span>./saved_models/candy.pth<span class="w"> </span>--cuda<span class="w"> </span><span class="m">0</span><span class="w"> </span>--export_onnx<span class="w"> </span>./saved_models/candy.onnx
-python<span class="w"> </span>./neural_style/neural_style.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--content-image<span class="w"> </span>dummy.jpg<span class="w"> </span>--output-image<span class="w"> </span>dummy-out.jpg<span class="w"> </span>--model<span class="w"> </span>./saved_models/udnie.pth<span class="w"> </span>--cuda<span class="w"> </span><span class="m">0</span><span class="w"> </span>--export_onnx<span class="w"> </span>./saved_models/udnie.onnx
-python<span class="w"> </span>./neural_style/neural_style.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--content-image<span class="w"> </span>dummy.jpg<span class="w"> </span>--output-image<span class="w"> </span>dummy-out.jpg<span class="w"> </span>--model<span class="w"> </span>./saved_models/rain_princess.pth<span class="w"> </span>--cuda<span class="w"> </span><span class="m">0</span><span class="w"> </span>--export_onnx<span class="w"> </span>./saved_models/rain_princess.onnx
-python<span class="w"> </span>./neural_style/neural_style.py<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>--content-image<span class="w"> </span>dummy.jpg<span class="w"> </span>--output-image<span class="w"> </span>dummy-out.jpg<span class="w"> </span>--model<span class="w"> </span>./saved_models/mosaic.pth<span class="w"> </span>--cuda<span class="w"> </span><span class="m">0</span><span class="w"> </span>--export_onnx<span class="w"> </span>./saved_models/mosaic.onnx
-</pre></div>
-</div>
-<p>You should end up with 4 files, <code class="docutils literal notranslate"><span class="pre">candy.onnx</span></code>, <code class="docutils literal notranslate"><span class="pre">mosaic.onnx</span></code>, <code class="docutils literal notranslate"><span class="pre">rain_princess.onnx</span></code> and <code class="docutils literal notranslate"><span class="pre">udnie.onnx</span></code>,
-created from the corresponding <code class="docutils literal notranslate"><span class="pre">.pth</span></code> files.</p>
-</div>
-<div class="section" id="convert-the-onnx-models-to-coreml-models">
-<h2>Convert the ONNX models to CoreML models<a class="headerlink" href="#convert-the-onnx-models-to-coreml-models" title="Permalink to this heading">¶</a></h2>
-<p>Now that we have ONNX models, we can convert them to CoreML models in order to run them on Apple devices.
-For this, we use the onnx-coreml converter we installed previously.
-The converter comes with a <code class="docutils literal notranslate"><span class="pre">convert-onnx-to-coreml</span></code> script, which the installation steps above added to our path. Unfortunately that won’t work for us as we need to mark the input and output of the network as an image
-and, while this is supported by the converter, it is only supported when calling the converter from python.</p>
-<p>Looking at the style transfer model (for example opening the .onnx file in an application like <a class="reference external" href="https://github.com/lutzroeder/Netron">Netron</a>),
-we see that the input is named ‘0’ and the output is named ‘186’. These are just numeric ids assigned by PyTorch.
-We will need to mark these as images.</p>
-<p>So let’s create a small python file and call it <code class="docutils literal notranslate"><span class="pre">onnx_to_coreml.py</span></code>. This can be created by using the touch command and edited with your favorite editor to add the following lines of code.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">onnx</span> <span class="kn">import</span> <span class="n">onnx_pb</span>
-<span class="kn">from</span> <span class="nn">onnx_coreml</span> <span class="kn">import</span> <span class="n">convert</span>
-
-<span class="n">model_in</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">model_out</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-
-<span class="n">model_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_in</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span>
-<span class="n">model_proto</span> <span class="o">=</span> <span class="n">onnx_pb</span><span class="o">.</span><span class="n">ModelProto</span><span class="p">()</span>
-<span class="n">model_proto</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">model_file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-<span class="n">coreml_model</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">model_proto</span><span class="p">,</span> <span class="n">image_input_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'0'</span><span class="p">],</span> <span class="n">image_output_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'186'</span><span class="p">])</span>
-<span class="n">coreml_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model_out</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>we now run it:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>onnx_to_coreml.py<span class="w"> </span>./saved_models/candy.onnx<span class="w"> </span>./saved_models/candy.mlmodel
-python<span class="w"> </span>onnx_to_coreml.py<span class="w"> </span>./saved_models/udnie.onnx<span class="w"> </span>./saved_models/udnie.mlmodel
-python<span class="w"> </span>onnx_to_coreml.py<span class="w"> </span>./saved_models/rain_princess.onnx<span class="w"> </span>./saved_models/rain_princess.mlmodel
-python<span class="w"> </span>onnx_to_coreml.py<span class="w"> </span>./saved_models/mosaic.onnx<span class="w"> </span>./saved_models/mosaic.mlmodel
-</pre></div>
-</div>
-<p>Now, there should be 4 CoreML models in your <code class="docutils literal notranslate"><span class="pre">saved_models</span></code> directory: <code class="docutils literal notranslate"><span class="pre">candy.mlmodel</span></code>, <code class="docutils literal notranslate"><span class="pre">mosaic.mlmodel</span></code>, <code class="docutils literal notranslate"><span class="pre">rain_princess.mlmodel</span></code> and <code class="docutils literal notranslate"><span class="pre">udnie.mlmodel</span></code>.</p>
-</div>
-<div class="section" id="run-the-coreml-models-in-a-style-transfer-ios-app">
-<h2>Run the CoreML models in a style transfer iOS App<a class="headerlink" href="#run-the-coreml-models-in-a-style-transfer-ios-app" title="Permalink to this heading">¶</a></h2>
-<p>This repository (i.e. the one you’re currently reading the README.md of) contains an iOS app able to run CoreML style transfer models on a live camera stream from your phone camera. Let’s clone the repository:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/onnx/tutorials
-</pre></div>
-</div>
-<p>and open the <code class="docutils literal notranslate"><span class="pre">tutorials/examples/CoreML/ONNXLive/ONNXLive.xcodeproj</span></code> project in XCode.
-We recommend using XCode 9.3 and an iPhone X. There might be issues running on older devices or XCode versions.</p>
-<p>In the <code class="docutils literal notranslate"><span class="pre">Models/</span></code> folder, the project contains some .mlmodel files. We’re going to replace them with the models we just created.</p>
-<p>You then run the app on your iPhone and you are all set. Tapping on the screen switches through the models.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>We hope this tutorial gave you an overview of what ONNX is about and how you can use it to convert neural networks
-between frameworks, in this case neural style transfer models moving from PyTorch to CoreML.</p>
-<p>Feel free to experiment with these steps and test them on your own models.
-Please let us know if you hit any issues or want to give feedback. We’d like to hear what you think.</p>
-</div>
-</div>
+<p>This tutorial has been deprecated.</p>
+<p>Redirecting in 3 seconds…</p>
+<meta content="3; url='https://pytorch.org/tutorials/index.html'" http-equiv="Refresh"/></div>
 </article>
 </div>
 <footer>
@@ -630,17 +507,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">ONNX Live Tutorial</a><ul>
-<li><a class="reference internal" href="#what-is-onnx">What is ONNX?</a></li>
-<li><a class="reference internal" href="#tutorial-overview">Tutorial Overview</a></li>
-<li><a class="reference internal" href="#preparing-the-environment">Preparing the Environment</a></li>
-<li><a class="reference internal" href="#download-or-train-pytorch-style-transfer-models">Download (or train) PyTorch style transfer models</a></li>
-<li><a class="reference internal" href="#convert-the-pytorch-models-to-onnx-models">Convert the PyTorch models to ONNX models</a></li>
-<li><a class="reference internal" href="#convert-the-onnx-models-to-coreml-models">Convert the ONNX models to CoreML models</a></li>
-<li><a class="reference internal" href="#run-the-coreml-models-in-a-style-transfer-ios-app">Run the CoreML models in a style transfer iOS App</a></li>
-<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">ONNX Live Tutorial</a></li>
 </ul>
 </div>
 </div>
