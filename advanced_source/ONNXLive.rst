@@ -4,7 +4,7 @@ ONNX Live Tutorial
 
 This tutorial has been deprecated.
 
-Redirecting to a newer tutorial in 3 seconds...
+Redirecting in 3 seconds...
 
 
 .. raw:: html
