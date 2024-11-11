@@ -10,7 +10,7 @@ install_ubuntu() {
   apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
-    cmake=3.16* \
+    cmake=3.22* \
     curl \
     git \
     wget \
@@ -27,7 +27,9 @@ install_ubuntu() {
     libglfw3-dev \
     sox \
     libsox-dev \
-    libsox-fmt-all
+    libsox-fmt-all \
+    python3-pip \
+    python3-dev
 
   # Cleanup package manager
   apt-get autoclean && apt-get clean
