@@ -52,7 +52,7 @@ def get_creation_date(file_path):
         if result.stdout:
             creation_date = result.stdout.splitlines()[0]
             creation_date = datetime.strptime(creation_date, "%a, %d %b %Y %H:%M:%S %z")
-            formatted_date = creation_date.strftime("%d %b, %Y")
+            formatted_date = creation_date.strftime("%b %d, %Y")
         else:
             formatted_date = "Unknown"
         return formatted_date
@@ -74,7 +74,7 @@ def get_last_updated_date(file_path):
             last_updated_date = datetime.strptime(
                 last_updated_date, "%a, %d %b %Y %H:%M:%S %z"
             )
-            formatted_date = last_updated_date.strftime("%d %b, %Y")
+            formatted_date = last_updated_date.strftime("%b %d, %Y")
         else:
             formatted_date = "Unknown"
         return formatted_date
@@ -108,7 +108,7 @@ def process_json_file(json_file_path):
         elif last_verified:
             try:
                 last_verified_date = datetime.strptime(last_verified, "%Y-%m-%d")
-                formatted_last_verified = last_verified_date.strftime("%d %b, %Y")
+                formatted_last_verified = last_verified_date.strftime("%b %d, %Y")
             except ValueError:
                 formatted_last_verified = "Unknown"
         else:
