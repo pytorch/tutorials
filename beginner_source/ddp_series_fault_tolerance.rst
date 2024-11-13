@@ -9,7 +9,7 @@
 Fault-tolerant Distributed Training with ``torchrun``
 =====================================================
 
-Authors: `Suraj Subramanian <https://github.com/suraj813>`__
+Authors: `Suraj Subramanian <https://github.com/subramen>`__
 
 .. grid:: 2
 
