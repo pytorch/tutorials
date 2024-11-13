@@ -13,7 +13,7 @@ Accelerating PyTorch Transformers by replacing ``nn.Transformer`` with Nested Te
        * Discover how the above improve memory usage and performance using MultiHeadAttention as an example
        * Explore advanced customizations using the aforementioned building blocks
     
-     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
 
        * PyTorch v.2.6.0 or later
