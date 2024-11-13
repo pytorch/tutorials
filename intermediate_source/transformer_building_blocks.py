@@ -3,47 +3,61 @@ Accelerating PyTorch Transformers by replacing ``nn.Transformer`` with Nested Te
 =============================================================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
-.. note::
-    This tutorial should be run with the latest nightly, or, when available, 2.6.
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * Learn about the low-level building blocks PyTorch provides to build custom transformer layers (
+         nested tensors, ``scaled_dot_product_attention``, ``torch.compile()``, and ``FlexAttention``)
+       * Discover how the above improve memory usage and performance using MultiHeadAttention as an example
+       * Explore advanced customizations using the aforementioned building blocks
+    
+     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v.2.6.0 or later
+
 
 Over the past few years, the PyTorch team has developed various lower level
 features that, when composed, can create a variety of transformer variants. These
 include:
 
-1.   Nested Tensors with the ``torch.jagged`` layout (AKA NJTs)
-2.   ``scaled_dot_product_attention``
-3.   ``torch.compile()``
-4.   ``FlexAttention``
+*   Nested Tensors with the ``torch.jagged`` layout (AKA NJTs)
+*   ``scaled_dot_product_attention``
+*   ``torch.compile()``
+*   ``FlexAttention``
 
 This tutorial will give a brief overview of the above technologies and
 demonstrate how they can be composed to yield flexible and performant transformer \
 layers with improved user experience.
 
 One may observe that the ``torch.nn`` module currently provides various ``Transformer``-related layers.
-In particular ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``,
+In particular, it includes ``TransformerEncoderLayer``, ``TransformerEncoder``, ``TransformerDecoderLayer``,
 ``TransformerDecoder``, ``Transformer`` and ``MultiheadAttention``. This family
 of layers was initially implemented following the `Attention is All
 You Need <https://arxiv.org/abs/1706.03762>`_ paper. The components discussed in
 this tutorial provide improved user experience, flexibility and performance over
 the existing ``nn`` layers.
 
+
 Is this tutorial for me?
 ========================
 
 If you are wondering about what building blocks the ``torch`` library provides
 for writing your own transformer layers and best practices, you are in the
-right place, please keep reading!
+right place. Please keep reading!
 
 If you are looking for an out-of-the-box implementation of a popular transformer
 architecture, note that there are many open-source libraries that provide them,
-with some examples being:
+including:
 
 * `HuggingFace transformers <https://github.com/huggingface/transformers>`_
 * `xformers <https://github.com/facebookresearch/xformers>`_
 * `torchtune <https://github.com/pytorch/torchtune>`_
 
 If you are only interested in performant attention score modifications, please
-head to the `FlexAttention blog <https://pytorch.org/blog/flexattention/>`_ that
+check out the `FlexAttention blog <https://pytorch.org/blog/flexattention/>`_ that
 contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
 
 """
@@ -51,7 +65,7 @@ contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
 ################################################################################
 # Introducing the Building Blocks
 # ===============================
-# First, we will briefly introduce the 4 technologies mentioned in the introduction
+# First, we will briefly introduce the four technologies mentioned in the introduction
 #
 # * `torch.nested <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
 #
@@ -79,8 +93,8 @@ contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
 # and ``scaled_dot_product_attention`` work seamlessly with compile. In the
 # context of transformers, the value add of using compile with nested tensor
 # and SDPA is that compile can remove framework overhead ones sees in eager mode
-# and fuse sequences of ops in transformers together (e.g. projection and
-# activation).
+# and fuse sequences of ops in transformers together, such as projection and
+# activation.
 #
 # * `FlexAttention <https://pytorch.org/blog/flexattention/>`_
 #
@@ -97,48 +111,48 @@ contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
 # Blocks and Feed Forward networks. If we were to try to classify the differences
 # in this space, we might land on something like:
 #
-# 1.   Layer type (activation functions e.g. ``SwiGLU``, normalization functions
-#      e.g. ``RMSNorm`` etc., positional encodings e.g. Sinusoidal, Rotary etc.)
-# 2.   Layer ordering (where to apply norms, where to apply positional encoding etc.)
-# 3.   Modifications to attention score (``ALiBi``, Relative Positional Bias etc.)
+# 1.   Layer type (activation functions such as ``SwiGLU`` and others, normalization functions
+#      such as ``RMSNorm`` and others, positional encodings, such as Sinusoidal, Rotary.)
+# 2.   Layer ordering, such as where to apply norms and positional encoding.
+# 3.   Modifications to attention score, such as ``ALiBi``, Relative Positional Bias and so on.
 #
 #
-# In a pre-compiler world, one might write their custom transformer and observe
-# that it works but is slow. Then, one might write a custom fused kernel for
-# the specific series of ops. In a compiler world, one can do the former, compile
-# and profit.
+# In a pre-compiler environment, you might write a custom transformer and notice
+# that it functions correctly but is slow. To address this, you might develop a
+# custom fused kernel for the specific series of operations. In a compiler environment,
+# you can simply perform the initial step and then compile and benefit from improved performance.
 
 
 ###############################################################################
 # MultiheadAttention
 # ------------------
-# Recall that MultiheadAttention takes in a query, key and value and consists
+# Remember that MultiheadAttention takes in a query, key, and value, and consists
 # of an input projection, a ``scaled_dot_product_attention`` operator and an
 # output projection. The main takeaway we want to demonstrate here is the
 # improvement yielded when we replaced padded/masked inputs with nested tensors.
 # The improvements are threefold:
 #
-# * User Experience
-#   Recall that ``nn.MultiheadAttention`` requires ``query``, ``key`` and
+# * **User Experience**
+#   Remember that ``nn.MultiheadAttention`` requires ``query``, ``key``, and
 #   ``value`` to be dense ``torch.Tensors``. It also provides a
 #   ``key_padding_mask`` that is used to mask out padding tokens in the ``key``
 #   that arise due to different sequence lengths within a batch. Since there is
 #   no ``query_padding_mask`` in ``nn.MHA``, users have to take care to mask/slice
-#   the outputs appropriately to account for query sequence lengths. Nested tensor
+#   the outputs appropriately to account for query sequence lengths. ``NestedTensor``
 #   cleanly removes the need for this sort of error-prone padding masks. 
 #
-# * Memory
+# * **Memory**
 #   Instead of materializing a dense ``[B, S, D]`` tensor with a ``[B, S]``
 #   padding mask (where ``B`` is batch size, ``S`` is max sequence length in the
 #   batch and ``D`` is embedding size), nested tensors allow you to cleanly
 #   represent the batch of varying sequence lengths. As a result, the input and
 #   intermediate activations will use less memory.
 #
-# * Performance
+# * **Performance**
 #   Since padding is not materialized and unnecessary computation on padding is
 #   skipped, performance and memory usage improve.
 #
-# We'll demonstrate the above by building off the ``MultiheadAttention`` layer in the
+# We'll demonstrate the above by building upon the ``MultiheadAttention`` layer in the
 # `Nested Tensor tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
 # and comparing it to the ``nn.MultiheadAttention`` layer.
 
@@ -257,8 +271,8 @@ class MultiHeadAttention(nn.Module):
 # Utilities
 # ~~~~~~~~~
 # In this section, we include a utility to generate semi-realistic data using
-# Zipf distribution for sentence lengths. This is used to generate the nested
-# query, key and value tensors. We also include a benchmark utility.
+# ``Zipf`` distribution for sentence lengths. This is used to generate the nested
+# query, key, and value tensors. We also include a benchmark utility.
 
 
 import numpy as np
@@ -393,7 +407,7 @@ print(f"Nested speedup: {(padded_time/nested_time):.2f}")
 print(f"Nested peak memory reduction {((padded_peak_memory - nested_peak_memory)/1e9):.2f} GB")
 
 ######################################################################################
-# For reference some sample outputs on A100:
+# For reference, here are some sample outputs on A100:
 # 
 # .. code::
 #
@@ -456,13 +470,13 @@ print("Difference in packed_proj.bias.grad", (mha_layer.packed_proj.bias.grad - 
 # ----------------------
 # So far, we have demonstrated how to implement a performant ``MultiheadAttention``
 # layer that follows the traditional ``nn.MultiheadAttention``. Going back to our
-# classification of modifications to the transformer architecture, recall that we
+# classification of modifications to the transformer architecture, remember that we
 # classified the modifications into layer type, layer ordering, and modifications
 # to the attention score. We trust that changing layer type and layer ordering
-# (e.g. swapping ``LayerNorm`` for ``RMSNorm``) is fairly straightforward.
+# (such as swapping ``LayerNorm`` for ``RMSNorm``) is fairly straightforward.
 # 
 # In this section, we will discuss various functionalities using the
-# aforementioned building blocks. In particular,
+# aforementioned building blocks, including the following:
 # 
 # * Cross Attention
 # * Fully masked rows no longer cause NaNs
@@ -595,8 +609,10 @@ out_flex2 = flex_attention(query, key, value, score_mod=alibi_score_mod)
 # In addition, one can also use the ``block_mask`` utility of ``FlexAttention``
 # with NJTs via the ``create_nested_block_mask`` function. This is useful for
 # taking advantage of the sparsity of the mask to speed up the attention computation.
-# In the following example, we show how to create a causal block mask using this
-# utility.
+# In particular, the function creates a sparse block mask for a "stacked sequence" of all
+# the variable length sequences in the NJT combined into one, while properly masking out
+# inter-sequence attention. In the following example, we show how to create a
+# causal block mask using this utility.
 
 from torch.nn.attention.flex_attention import create_nested_block_mask
 
@@ -629,7 +645,7 @@ out_flex = flex_attention(query, key, value, block_mask=block_mask)
 # 
 # Input projection for MultiheadAttention
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Recall that when doing self-attention, the ``query``, ``key`` and ``value``
+# When doing self-attention, the ``query``, ``key``, and ``value``
 # are the same tensor. Each of these tensors is projected with a 
 # ``Linear(E_q, E_total)`` layer. Instead, we can pack this into one layer,
 # which is what we do in the MultiheadAttention layer above.
@@ -677,8 +693,8 @@ print(f"InputProjection: {time:5f} s, PackedInputProjection: {time_packed:5f} s,
 ##################################################
 # SwiGLU feed forward network of Transformer Layer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# SwiGLU is a non-linear activation function that is increasingly popular in the feed-forward
-# network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as
+# Swish-Gated Linear Unit (SwiGLU) is a non-linear activation function that is increasingly popular in the feed-forward
+# network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as:
 
 class SwiGLUFFN(nn.Module):
     def __init__(self, dim, hidden_dim, multiple_of, ffn_dim_multiplier=None, device=None, dtype=None):
@@ -751,3 +767,12 @@ print(f"SwiGLUFFN: {time} s, PackedSwiGLUFFN: {time_packed} s, speedup: {time/ti
 # * `segment-anything-fast <https://github.com/pytorch-labs/segment-anything-fast>`_
 # * `lucidrains implementation of NaViT with nested tensors <https://github.com/lucidrains/vit-pytorch/blob/73199ab486e0fad9eced2e3350a11681db08b61b/vit_pytorch/na_vit_nested_tensor.py>`_
 # * `torchtune's implementation of VisionTransformer <https://github.com/pytorch/torchtune/blob/a8a64ec6a99a6ea2be4fdaf0cd5797b03a2567cf/torchtune/modules/vision_transformer.py#L16>`_
+
+################################################################################
+# Conclusion
+# ----------
+# 
+# In this tutorial, we have introduced the low level building blocks PyTorch
+# provides for writing transformer layers and demonstrated examples how to compose
+# them. It is our hope that this tutorial has educated the reader on the ease with
+# which flexible and performant transformer layers can be implemented by users of PyTorch.
