@@ -1,0 +1,1633 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() — PyTorch Tutorials 2.5.0+cu124 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T8XT4PS');</script>
+<!-- End Google Tag Manager -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Learn
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/get-started">
+<span class="dropdown-title">Get Started</span>
+<p>Run PyTorch locally or get started quickly with one of the supported cloud platforms</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials">
+<span class="dropdown-title">Tutorials</span>
+<p>Whats new in PyTorch tutorials</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
+<span class="dropdown-title">Learn the Basics</span>
+<p>Familiarize yourself with PyTorch concepts and modules</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
+<span class="dropdown-title">PyTorch Recipes</span>
+<p>Bite-size, ready-to-deploy PyTorch code examples</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
+<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
+<p>Master PyTorch basics with our engaging YouTube tutorial series</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Ecosystem
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem">
+<span class="dropdown-title">Tools</span>
+<p>Learn about the tools and frameworks in the PyTorch Ecosystem</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
+<span class="dropdown-title">Contributor Awards - 2023</span>
+<p>Award winners announced at this year's PyTorch Conference</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Edge
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/edge">
+<span class="dropdown-title">About PyTorch Edge</span>
+<p>Build innovative and privacy-aware AI experiences for edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
+<span class="dropdown-title">ExecuTorch</span>
+<p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p>Explore the documentation for comprehensive guidance on how to use PyTorch</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/pytorch-domains">
+<span class="dropdown-title">PyTorch Domains</span>
+<p>Read the PyTorch Domains documentation to learn more about domain-specific libraries</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                Blogs &amp; News 
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
+<span class="dropdown-title">PyTorch Blog</span>
+<p>Catch up on the latest technical news and happenings</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-blog">
+<span class="dropdown-title">Community Blog</span>
+<p>Stories from the PyTorch ecosystem</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/videos">
+<span class="dropdown-title">Videos</span>
+<p>Learn about the latest PyTorch tutorials, new, and more </p>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-stories">
+<span class="dropdown-title">Community Stories</span>
+<p>Learn how our community solves real, everyday machine learning problems with PyTorch</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+<p>Find events, webinars, and podcasts</p>
+</a>
+</a></div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+                About
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+<p>Learn more about the PyTorch Foundation</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
+<span class="dropdown-title">Governing Board</span>
+<p></p>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="no-dropdown">
+<a data-cta="join" href="https://pytorch.org/join">
+                Become a Member
+              </a>
+</div>
+</li>
+<li>
+<div class="main-menu-item">
+<a class="github-icon" href="https://github.com/pytorch/pytorch">
+</a>
+</div>
+</li>
+<!--- TODO: This block adds the search icon to the nav bar. We will enable it later. 
+          <li>
+            <div class="main-menu-item">
+             <a href="https://github.com/pytorch/pytorch" class="search-icon">
+             </a>
+            </div>
+          </li>
+          --->
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+            2.5.0+cu124
+        </div>
+<div class="searchbox">
+<script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<div class="gcse-search"></div>
+</div>
+</div>
+<p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/intro.html">Learn the Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt_index.html">Introduction to PyTorch - YouTube Series</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nlp_from_scratch_index.html">NLP from Scratch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tiatoolbox_tutorial.html">Whole Slide Image Classification Using PyTorch and TIAToolbox</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_to_speech_with_torchaudio.html">Text-to-speech with Tacotron2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Backends</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_ppo.html">Reinforcement Learning (PPO) with TorchRL Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/pendulum.html">Pendulum: Writing your environment and transforms with TorchRL</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hta_intro_tutorial.html">Introduction to Holistic Trace Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hta_trace_diff_tutorial.html">Trace Diff using Holistic Trace Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ensembling.html">Model ensembling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="per_sample_grads.html">Per-sample-gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/custom_ops_landing_page.html">PyTorch Custom Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/python_custom_ops.html">Python Custom Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_custom_ops.html">Custom C++ and CUDA Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex_2.html">Grokking PyTorch Intel CPU performance from first principles (Part 2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/knowledge_distillation_tutorial.html">Knowledge Distillation Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../distributed/home.html">Distributed and Parallel Training Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Edge with ExecuTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html">Exporting to ExecuTorch Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href=" https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html">Running an ExecuTorch Model in C++ Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html">Using the ExecuTorch SDK to Profile a Model</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/demo-apps-ios.html">Building an ExecuTorch iOS Demo App</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/demo-apps-android.html">Building an ExecuTorch Android Demo App</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html">Lowering a Model as a Delegate</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Recommendation Systems</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torchrec_intro_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/sharding.html">Exploring TorchRec sharding</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Multimodality</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/flava_finetuning_tutorial.html">TorchMultimodal Tutorial: Finetuning FLAVA</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Accelerating PyTorch Transformers by replacing <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> with Nested Tensors and <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code></li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/intermediate/transformer_building_blocks.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/transformer_building_blocks</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-transformer-building-blocks-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="accelerating-pytorch-transformers-by-replacing-nn-transformer-with-nested-tensors-and-torch-compile">
+<span id="sphx-glr-intermediate-transformer-building-blocks-py"></span><h1>Accelerating PyTorch Transformers by replacing <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> with Nested Tensors and <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code><a class="headerlink" href="#accelerating-pytorch-transformers-by-replacing-nn-transformer-with-nested-tensors-and-torch-compile" title="Permalink to this heading">¶</a></h1>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/mikaylagawarecki">Mikayla Gawarecki</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial currently requires you to use the PyTorch nightly build.</p>
+</div>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-mortar-board" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M7.693 1.066a.747.747 0 0 1 .614 0l7.25 3.25a.75.75 0 0 1 0 1.368L13 6.831v2.794c0 1.024-.81 1.749-1.66 2.173-.893.447-2.075.702-3.34.702-.278 0-.55-.012-.816-.036a.75.75 0 0 1 .133-1.494c.22.02.45.03.683.03 1.082 0 2.025-.221 2.67-.543.69-.345.83-.682.83-.832V7.503L8.307 8.934a.747.747 0 0 1-.614 0L4 7.28v1.663c.296.105.575.275.812.512.438.438.688 1.059.688 1.796v3a.75.75 0 0 1-.75.75h-3a.75.75 0 0 1-.75-.75v-3c0-.737.25-1.358.688-1.796.237-.237.516-.407.812-.512V6.606L.443 5.684a.75.75 0 0 1 0-1.368ZM2.583 5 8 7.428 13.416 5 8 2.572ZM2.5 11.25v2.25H4v-2.25c0-.388-.125-.611-.25-.735a.697.697 0 0 0-.5-.203.707.707 0 0 0-.5.203c-.125.124-.25.347-.25.735Z"></path></svg> What you will learn</div>
+<ul class="simple">
+<li><p class="sd-card-text">Learn about the low-level building blocks PyTorch provides to build custom transformer layers (
+nested tensors, <code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code>, <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code>, and <code class="docutils literal notranslate"><span class="pre">FlexAttention</span></code>)</p></li>
+<li><p class="sd-card-text">Discover how the above improve memory usage and performance using MultiHeadAttention as an example</p></li>
+<li><p class="sd-card-text">Explore advanced customizations using the aforementioned building blocks</p></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-list-unordered" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M5.75 2.5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-6a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM2 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg> Prerequisites</div>
+<ul class="simple">
+<li><p class="sd-card-text">PyTorch v.2.6.0 or later</p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Over the past few years, the PyTorch team has developed various lower level
+features that, when composed, can create a variety of transformer variants. These
+include:</p>
+<ul class="simple">
+<li><p>Nested Tensors with the <code class="docutils literal notranslate"><span class="pre">torch.jagged</span></code> layout (AKA NJTs)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FlexAttention</span></code></p></li>
+</ul>
+<p>This tutorial will give a brief overview of the above technologies and
+demonstrate how they can be composed to yield flexible and performant transformer layers with improved user experience.</p>
+<p>One may observe that the <code class="docutils literal notranslate"><span class="pre">torch.nn</span></code> module currently provides various <code class="docutils literal notranslate"><span class="pre">Transformer</span></code>-related layers.
+In particular, it includes <code class="docutils literal notranslate"><span class="pre">TransformerEncoderLayer</span></code>, <code class="docutils literal notranslate"><span class="pre">TransformerEncoder</span></code>, <code class="docutils literal notranslate"><span class="pre">TransformerDecoderLayer</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TransformerDecoder</span></code>, <code class="docutils literal notranslate"><span class="pre">Transformer</span></code> and <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code>. This family
+of layers was initially implemented following the <a class="reference external" href="https://arxiv.org/abs/1706.03762">Attention is All
+You Need</a> paper. The components discussed in
+this tutorial provide improved user experience, flexibility and performance over
+the existing <code class="docutils literal notranslate"><span class="pre">nn</span></code> layers.</p>
+</div>
+<div class="section" id="is-this-tutorial-for-me">
+<h1>Is this tutorial for me?<a class="headerlink" href="#is-this-tutorial-for-me" title="Permalink to this heading">¶</a></h1>
+<p>If you are wondering about what building blocks the <code class="docutils literal notranslate"><span class="pre">torch</span></code> library provides
+for writing your own transformer layers and best practices, you are in the
+right place. Please keep reading!</p>
+<p>If you are looking for an out-of-the-box implementation of a popular transformer
+architecture, note that there are many open-source libraries that provide them,
+including:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/huggingface/transformers">HuggingFace transformers</a></p></li>
+<li><p><a class="reference external" href="https://github.com/facebookresearch/xformers">xformers</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/torchtune">torchtune</a></p></li>
+</ul>
+<p>If you are only interested in performant attention score modifications, please
+check out the <a class="reference external" href="https://pytorch.org/blog/flexattention/">FlexAttention blog</a> that
+contains a <a class="reference external" href="https://github.com/pytorch-labs/attention-gym">gym of masks</a>.</p>
+</div>
+<div class="section" id="introducing-the-building-blocks">
+<h1>Introducing the Building Blocks<a class="headerlink" href="#introducing-the-building-blocks" title="Permalink to this heading">¶</a></h1>
+<p>First, we will briefly introduce the four technologies mentioned in the introduction</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/prototype/nestedtensor.html">torch.nested</a></p></li>
+</ul>
+<p>Nested tensors generalize the shape of regular dense tensors, allowing for
+representation of ragged-sized data with the same tensor UX. In the context of
+transformers, we can think of nested tensors as a tool for representing variable
+sequence lengths. They eliminate the need for the bug-prone practices of explicit
+padding and masking (think <code class="docutils literal notranslate"><span class="pre">key_padding_mask</span></code> in <code class="docutils literal notranslate"><span class="pre">nn.MultiHeadAttention</span></code>).</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html">scaled_dot_product_attention</a></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code> is a primitive for
+<span class="math">\(\text{softmax}(\frac{QK^T}{\sqrt{E}} + B)V\)</span> that dispatches into either fused
+implementations of the operator or a fallback implementation. It works out of
+the box in eager mode (i.e. the default mode of using PyTorch where operations
+are executed on the fly as they are encountered) and also integrates seamlessly
+with <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code>. As of 2.6, it will also offer grouped query attention
+natively.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">torch.compile()</a></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code> is a compiler introduced in version 2.0 that is able to
+capture a graph of PyTorch code and perform various optimizations on it, such as
+fusing together sequences of ops. Nested tensors with the <code class="docutils literal notranslate"><span class="pre">torch.jagged</span></code> layout
+and <code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code> work seamlessly with compile. In the
+context of transformers, the value add of using compile with nested tensor
+and SDPA is that compile can remove framework overhead ones sees in eager mode
+and fuse sequences of ops in transformers together, such as projection and
+activation.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/blog/flexattention/">FlexAttention</a></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">FlexAttention</span></code> is a primitive that allows users to modify attention scores
+prior to the softmax operation. It generalizes the additive <code class="docutils literal notranslate"><span class="pre">B</span></code> term above
+for <code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code>, allowing for arbitrary calculation. It
+requires compile to achieve good performance.</p>
+</div>
+<div class="section" id="the-above-building-blocks-are-all-you-need-as-of-october-2024">
+<h1>The above building blocks are “All You Need” (as of October 2024)<a class="headerlink" href="#the-above-building-blocks-are-all-you-need-as-of-october-2024" title="Permalink to this heading">¶</a></h1>
+<p>The main premise in this section is that most transformer variations are
+GPT-style, consisting of layers like Embedding, Positional Encoding, Attention
+Blocks and Feed Forward networks. If we were to try to classify the differences
+in this space, we might land on something like:</p>
+<ol class="arabic simple">
+<li><p>Layer type (activation functions such as <code class="docutils literal notranslate"><span class="pre">SwiGLU</span></code> and others, normalization functions
+such as <code class="docutils literal notranslate"><span class="pre">RMSNorm</span></code> and others, positional encodings, such as Sinusoidal, Rotary.)</p></li>
+<li><p>Layer ordering, such as where to apply norms and positional encoding.</p></li>
+<li><p>Modifications to attention score, such as <code class="docutils literal notranslate"><span class="pre">ALiBi</span></code>, Relative Positional Bias and so on.</p></li>
+</ol>
+<p>In a pre-compiler environment, you might write a custom transformer and notice
+that it functions correctly but is slow. To address this, you might develop a
+custom fused kernel for the specific series of operations. In a compiler environment,
+you can simply perform the initial step and then compile and benefit from improved performance.</p>
+<div class="section" id="multiheadattention">
+<h2>MultiheadAttention<a class="headerlink" href="#multiheadattention" title="Permalink to this heading">¶</a></h2>
+<p>Remember that MultiheadAttention takes in a query, key, and value, and consists
+of an input projection, a <code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code> operator and an
+output projection. The main takeaway we want to demonstrate here is the
+improvement yielded when we replaced padded/masked inputs with nested tensors.
+The improvements are threefold:</p>
+<ul class="simple">
+<li><p><strong>User Experience</strong>
+Remember that <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> requires <code class="docutils literal notranslate"><span class="pre">query</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">value</span></code> to be dense <code class="docutils literal notranslate"><span class="pre">torch.Tensors</span></code>. It also provides a
+<code class="docutils literal notranslate"><span class="pre">key_padding_mask</span></code> that is used to mask out padding tokens in the <code class="docutils literal notranslate"><span class="pre">key</span></code>
+that arise due to different sequence lengths within a batch. Since there is
+no <code class="docutils literal notranslate"><span class="pre">query_padding_mask</span></code> in <code class="docutils literal notranslate"><span class="pre">nn.MHA</span></code>, users have to take care to mask/slice
+the outputs appropriately to account for query sequence lengths. <code class="docutils literal notranslate"><span class="pre">NestedTensor</span></code>
+cleanly removes the need for this sort of error-prone padding masks.</p></li>
+<li><p><strong>Memory</strong>
+Instead of materializing a dense <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">S,</span> <span class="pre">D]</span></code> tensor with a <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">S]</span></code>
+padding mask (where <code class="docutils literal notranslate"><span class="pre">B</span></code> is batch size, <code class="docutils literal notranslate"><span class="pre">S</span></code> is max sequence length in the
+batch and <code class="docutils literal notranslate"><span class="pre">D</span></code> is embedding size), nested tensors allow you to cleanly
+represent the batch of varying sequence lengths. As a result, the input and
+intermediate activations will use less memory.</p></li>
+<li><p><strong>Performance</strong>
+Since padding is not materialized and unnecessary computation on padding is
+skipped, performance and memory usage improve.</p></li>
+</ul>
+<p>We’ll demonstrate the above by building upon the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer in the
+<a class="reference external" href="https://pytorch.org/tutorials/prototype/nestedtensor.html">Nested Tensor tutorial</a>
+and comparing it to the <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> layer.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">MultiHeadAttention</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Computes multi-head attention. Supports nested or padded tensors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        E_q (int): Size of embedding dim for query</span>
+<span class="sd">        E_k (int): Size of embedding dim for key</span>
+<span class="sd">        E_v (int): Size of embedding dim for value</span>
+<span class="sd">        E_total (int): Total embedding dim of combined heads post input projection. Each head</span>
+<span class="sd">            has dim E_total // nheads</span>
+<span class="sd">        nheads (int): Number of heads</span>
+<span class="sd">        dropout (float, optional): Dropout probability. Default: 0.0</span>
+<span class="sd">        bias (bool, optional): Whether to add bias to input projection. Default: True</span>
+<span class="sd">    """</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">E_q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">E_k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">E_v</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">E_total</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">nheads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"device"</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s2">"dtype"</span><span class="p">:</span> <span class="n">dtype</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nheads</span> <span class="o">=</span> <span class="n">nheads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_qkv_same_embed_dim</span> <span class="o">=</span> <span class="n">E_q</span> <span class="o">==</span> <span class="n">E_k</span> <span class="ow">and</span> <span class="n">E_q</span> <span class="o">==</span> <span class="n">E_v</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_qkv_same_embed_dim</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">q_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">k_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_k</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">v_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="n">E_out</span> <span class="o">=</span> <span class="n">E_q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_total</span><span class="p">,</span> <span class="n">E_out</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">E_total</span> <span class="o">%</span> <span class="n">nheads</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Embedding dim is not divisible by nheads"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span> <span class="o">=</span> <span class="n">E_total</span> <span class="o">//</span> <span class="n">nheads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">query</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>
+                <span class="n">key</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>
+                <span class="n">value</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>
+                <span class="n">attn_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Forward pass; runs the following process:</span>
+<span class="sd">            1. Apply input projection</span>
+<span class="sd">            2. Split heads and prepare for SDPA</span>
+<span class="sd">            3. Run SDPA</span>
+<span class="sd">            4. Apply output projection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (torch.Tensor): query of shape (``N``, ``L_q``, ``E_qk``)</span>
+<span class="sd">            key (torch.Tensor): key of shape (``N``, ``L_kv``, ``E_qk``)</span>
+<span class="sd">            value (torch.Tensor): value of shape (``N``, ``L_kv``, ``E_v``)</span>
+<span class="sd">            attn_mask (torch.Tensor, optional): attention mask of shape (``N``, ``L_q``, ``L_kv``) to pass to SDPA. Default: None</span>
+<span class="sd">            is_causal (bool, optional): Whether to apply causal mask. Default: False</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            attn_output (torch.Tensor): output of shape (N, L_t, E_q)</span>
+<span class="sd">        """</span>
+        <span class="c1"># Step 1. Apply input projection</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_qkv_same_embed_dim</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="n">key</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">is</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+                <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.chunk.html#torch.chunk" title="torch.chunk"><span class="n">torch</span><span class="o">.</span><span class="n">chunk</span></a><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q_weight</span><span class="p">,</span> <span class="n">k_weight</span><span class="p">,</span> <span class="n">v_weight</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.chunk.html#torch.chunk" title="torch.chunk"><span class="n">torch</span><span class="o">.</span><span class="n">chunk</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">:</span>
+                    <span class="n">q_bias</span><span class="p">,</span> <span class="n">k_bias</span><span class="p">,</span> <span class="n">v_bias</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.chunk.html#torch.chunk" title="torch.chunk"><span class="n">torch</span><span class="o">.</span><span class="n">chunk</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">q_bias</span><span class="p">,</span> <span class="n">k_bias</span><span class="p">,</span> <span class="n">v_bias</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.linear.html#torch.nn.functional.linear" title="torch.nn.functional.linear"><span class="n">F</span><span class="o">.</span><span class="n">linear</span></a><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">q_weight</span><span class="p">,</span> <span class="n">q_bias</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.linear.html#torch.nn.functional.linear" title="torch.nn.functional.linear"><span class="n">F</span><span class="o">.</span><span class="n">linear</span></a><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">k_weight</span><span class="p">,</span> <span class="n">k_bias</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.linear.html#torch.nn.functional.linear" title="torch.nn.functional.linear"><span class="n">F</span><span class="o">.</span><span class="n">linear</span></a><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">v_weight</span><span class="p">,</span> <span class="n">v_bias</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_proj</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_proj</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_proj</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># Step 2. Split heads and prepare for SDPA</span>
+        <span class="c1"># reshape query, key, value to separate by head</span>
+        <span class="c1"># (N, L_t, E_total) -&gt; (N, L_t, nheads, E_head) -&gt; (N, nheads, L_t, E_head)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># (N, L_s, E_total) -&gt; (N, L_s, nheads, E_head) -&gt; (N, nheads, L_s, E_head)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># (N, L_s, E_total) -&gt; (N, L_s, nheads, E_head) -&gt; (N, nheads, L_s, E_head)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Step 3. Run SDPA</span>
+        <span class="c1"># (N, nheads, L_t, E_head)</span>
+        <span class="n">attn_output</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html#torch.nn.functional.scaled_dot_product_attention" title="torch.nn.functional.scaled_dot_product_attention"><span class="n">F</span><span class="o">.</span><span class="n">scaled_dot_product_attention</span></a><span class="p">(</span>
+            <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="n">is_causal</span><span class="p">)</span>
+        <span class="c1"># (N, nheads, L_t, E_head) -&gt; (N, L_t, nheads, E_head) -&gt; (N, L_t, E_total)</span>
+        <span class="n">attn_output</span> <span class="o">=</span> <span class="n">attn_output</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Step 4. Apply output projection</span>
+        <span class="c1"># (N, L_t, E_total) -&gt; (N, L_t, E_out)</span>
+        <span class="n">attn_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_proj</span><span class="p">(</span><span class="n">attn_output</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">attn_output</span>
+</pre></div>
+</div>
+<div class="section" id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this heading">¶</a></h3>
+<p>In this section, we include a utility to generate semi-realistic data using
+<code class="docutils literal notranslate"><span class="pre">Zipf</span></code> distribution for sentence lengths. This is used to generate the nested
+query, key, and value tensors. We also include a benchmark utility.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">zipf_sentence_lengths</span><span class="p">(</span><span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+    <span class="c1"># generate fake corpus by unigram Zipf distribution</span>
+    <span class="c1"># from wikitext-2 corpus, we get rank "." = 3, "!" = 386, "?" = 858</span>
+    <span class="n">sentence_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ibatch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">sentence_lengths</span><span class="p">[</span><span class="n">ibatch</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">zipf</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">386</span> <span class="ow">and</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">858</span><span class="p">:</span>
+            <span class="n">sentence_lengths</span><span class="p">[</span><span class="n">ibatch</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">zipf</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">sentence_lengths</span><span class="p">)</span>
+
+<span class="c1"># Generate a batch of semi-realistic data using Zipf distribution for sentence lengths</span>
+<span class="c1"># in the form of nested tensors with the jagged layout.</span>
+<span class="k">def</span> <span class="nf">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">query_seq_len_1</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># generate semi-realistic data using Zipf distribution for sentence lengths</span>
+    <span class="n">sentence_lengths</span> <span class="o">=</span> <span class="n">zipf_sentence_lengths</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="c1"># Note: the torch.jagged layout is a nested tensor layout that supports a single ragged</span>
+    <span class="c1"># dimension and works with torch.compile. The batch items each have shape (B, S*, D)</span>
+    <span class="c1"># where B = batch size, S* = ragged sequence length, and D = embedding dimension.</span>
+    <span class="k">if</span> <span class="n">query_seq_len_1</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">sentence_lengths</span>
+        <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
+            <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">sentence_lengths</span>
+        <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span><span class="p">)</span>
+
+    <span class="n">key</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sentence_lengths</span>
+    <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sentence_lengths</span>
+    <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sentence_lengths</span>
+
+<span class="kn">import</span> <span class="nn">timeit</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="k">def</span> <span class="nf">benchmark</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.synchronize.html#torch.cuda.synchronize" title="torch.cuda.synchronize"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span></a><span class="p">()</span>
+    <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.reset_peak_memory_stats.html#torch.cuda.reset_peak_memory_stats" title="torch.cuda.reset_peak_memory_stats"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">reset_peak_memory_stats</span></a><span class="p">()</span>
+    <span class="n">begin</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.synchronize.html#torch.cuda.synchronize" title="torch.cuda.synchronize"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span></a><span class="p">()</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">begin</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_allocated.html#torch.cuda.max_memory_allocated" title="torch.cuda.max_memory_allocated"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_allocated</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p>We will now demonstrate the performance improvements of using nested tensors
+in the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer + compile for self attention. We compare this against
+the traditional <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> + compile with padding and masking.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span>
+<span class="n">E_out</span> <span class="o">=</span> <span class="n">E_q</span>
+<span class="n">d_model</span> <span class="o">=</span> <span class="n">E_q</span>
+<span class="n">nheads</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">bias</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sentence_lengths</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">sentence_lengths</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total sequence length in nested query </span><span class="si">{</span><span class="n">sentence_lengths</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">, max sequence length </span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">padded_query</span><span class="p">,</span> <span class="n">padded_key</span><span class="p">,</span> <span class="n">padded_value</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">to_padded_tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">mha_layer</span> <span class="o">=</span> <span class="n">MultiHeadAttention</span><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">nheads</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">vanilla_mha_layer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html#torch.nn.MultiheadAttention" title="torch.nn.MultiheadAttention"><span class="n">nn</span><span class="o">.</span><span class="n">MultiheadAttention</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">nheads</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">)</span>
+
+<span class="c1"># ``nn.MultiheadAttention`` uses a non conventional initialization for layers, so do this for exact parity :(</span>
+<span class="n">mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+<span class="n">mha_layer</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">in_proj_weight</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+<span class="n">mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+<span class="n">mha_layer</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">in_proj_bias</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+
+<span class="n">new_mha_layer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">mha_layer</span><span class="p">)</span>
+<span class="c1"># warmup compile</span>
+<span class="n">nested_result_warmup</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># benchmark</span>
+<span class="n">nested_result</span><span class="p">,</span> <span class="n">nested_time</span><span class="p">,</span> <span class="n">nested_peak_memory</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">new_mha_layer</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">padded_nested_result</span> <span class="o">=</span> <span class="n">nested_result</span><span class="o">.</span><span class="n">to_padded_tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+<span class="c1"># For the vanilla ``nn.MultiheadAttention``, we need to construct the ``key_padding_mask``</span>
+<span class="c1"># Further, ``nn.MultiheadAttention`` forces one to materialize the ``attn_mask`` even if using ``is_causal``</span>
+<span class="n">src_key_padding_mask</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.where.html#torch.where" title="torch.where"><span class="n">torch</span><span class="o">.</span><span class="n">where</span></a><span class="p">(</span><span class="n">padded_query</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">attn_mask</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty.html#torch.empty" title="torch.empty"><span class="n">torch</span><span class="o">.</span><span class="n">empty</span></a><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sentence_lengths</span><span class="p">):</span>
+    <span class="n">attn_mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="n">s</span><span class="p">,</span> <span class="p">:</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-Transformer sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html#torch.nn.Transformer.generate_square_subsequent_mask" title="torch.nn.Transformer.generate_square_subsequent_mask"><span class="n">nn</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">generate_square_subsequent_mask</span></a><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="n">attn_mask</span> <span class="o">=</span> <span class="n">attn_mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">nheads</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">nheads</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+
+<span class="n">vanilla_mha_layer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="p">)</span>
+<span class="c1"># warmup compile</span>
+<span class="n">warmup_vanilla_result</span> <span class="o">=</span> <span class="n">vanilla_mha_layer</span><span class="p">(</span><span class="n">padded_query</span><span class="p">,</span>
+                                          <span class="n">padded_query</span><span class="p">,</span>
+                                          <span class="n">padded_query</span><span class="p">,</span>
+                                          <span class="n">attn_mask</span><span class="o">=</span><span class="n">attn_mask</span><span class="p">,</span>
+                                          <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">,</span>
+                                          <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                          <span class="n">is_causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># benchmark</span>
+<span class="p">(</span><span class="n">padded_result</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">padded_time</span><span class="p">,</span> <span class="n">padded_peak_memory</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="p">,</span>
+                                                                <span class="n">padded_query</span><span class="p">,</span>
+                                                                <span class="n">padded_query</span><span class="p">,</span>
+                                                                <span class="n">padded_query</span><span class="p">,</span>
+                                                                <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">,</span>
+                                                                <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                                <span class="n">attn_mask</span><span class="o">=</span><span class="n">attn_mask</span><span class="p">,</span>
+                                                                <span class="n">is_causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">padded_time</span><span class="si">=:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">, padded_peak_memory=</span><span class="si">{</span><span class="n">padded_peak_memory</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">nested_time</span><span class="si">=:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">, nested_peak_memory=</span><span class="si">{</span><span class="n">nested_peak_memory</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Max difference between vanilla and nested result"</span><span class="p">,</span> <span class="p">(</span><span class="n">padded_result</span> <span class="o">-</span> <span class="n">padded_nested_result</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested speedup: </span><span class="si">{</span><span class="p">(</span><span class="n">padded_time</span><span class="o">/</span><span class="n">nested_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested peak memory reduction </span><span class="si">{</span><span class="p">((</span><span class="n">padded_peak_memory</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nested_peak_memory</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For reference, here are some sample outputs on A100:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">padded_time</span><span class="o">=</span><span class="mf">0.03454</span><span class="p">,</span> <span class="n">padded_peak_memory</span><span class="o">=</span><span class="mf">4.14</span> <span class="n">GB</span>
+<span class="n">nested_time</span><span class="o">=</span><span class="mf">0.00612</span><span class="p">,</span> <span class="n">nested_peak_memory</span><span class="o">=</span><span class="mf">0.76</span> <span class="n">GB</span>
+<span class="n">Max</span> <span class="n">difference</span> <span class="n">between</span> <span class="n">vanilla</span> <span class="ow">and</span> <span class="n">nested</span> <span class="n">result</span> <span class="mf">0.0</span>
+<span class="n">Nested</span> <span class="n">speedup</span><span class="p">:</span> <span class="mf">5.65</span>
+<span class="n">Nested</span> <span class="n">peak</span> <span class="n">memory</span> <span class="n">reduction</span> <span class="mf">3.39</span> <span class="n">GB</span>
+</pre></div>
+</div>
+<p>We can also see the same for backward pass</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry_length</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sentence_lengths</span><span class="p">):</span>
+    <span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
+    <span class="n">padded_result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">entry_length</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">padded_bw_time</span><span class="p">,</span> <span class="n">padded_bw_peak_mem</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="k">lambda</span> <span class="p">:</span> <span class="n">padded_result</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">())</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">nested_bw_time</span><span class="p">,</span> <span class="n">nested_bw_peak_mem</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="k">lambda</span> <span class="p">:</span> <span class="n">padded_nested_result</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">padded_bw_time</span><span class="si">=:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">, padded_bw_peak_mem=</span><span class="si">{</span><span class="n">padded_bw_peak_mem</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">nested_bw_time</span><span class="si">=:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">, nested_bw_peak_mem=</span><span class="si">{</span><span class="n">nested_bw_peak_mem</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested backward speedup: </span><span class="si">{</span><span class="p">(</span><span class="n">padded_bw_time</span><span class="o">/</span><span class="n">nested_bw_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested backward peak memory reduction </span><span class="si">{</span><span class="p">((</span><span class="n">padded_bw_peak_mem</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nested_bw_peak_mem</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Difference in out_proj.weight.grad"</span><span class="p">,</span> <span class="p">(</span><span class="n">mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span> <span class="o">-</span> <span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Difference in packed_proj.weight.grad"</span><span class="p">,</span> <span class="p">(</span><span class="n">mha_layer</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span> <span class="o">-</span> <span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">in_proj_weight</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Difference in out_proj.bias.grad"</span><span class="p">,</span> <span class="p">(</span><span class="n">mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="o">-</span> <span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Difference in packed_proj.bias.grad"</span><span class="p">,</span> <span class="p">(</span><span class="n">mha_layer</span><span class="o">.</span><span class="n">packed_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="o">-</span> <span class="n">vanilla_mha_layer</span><span class="o">.</span><span class="n">in_proj_bias</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Sample outputs on A100:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">padded_bw_time</span><span class="o">=</span><span class="mf">2.09337</span><span class="p">,</span> <span class="n">padded_bw_peak_mem</span><span class="o">=</span><span class="mf">5.10</span> <span class="n">GB</span>
+<span class="n">nested_bw_time</span><span class="o">=</span><span class="mf">0.01452</span><span class="p">,</span> <span class="n">nested_bw_peak_mem</span><span class="o">=</span><span class="mf">3.24</span> <span class="n">GB</span>
+<span class="n">Nested</span> <span class="n">backward</span> <span class="n">speedup</span><span class="p">:</span> <span class="mf">144.13</span>
+<span class="n">Nested</span> <span class="n">backward</span> <span class="n">peak</span> <span class="n">memory</span> <span class="n">reduction</span> <span class="mf">1.86</span> <span class="n">GB</span>
+<span class="n">Difference</span> <span class="ow">in</span> <span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span> <span class="mf">0.000244140625</span>
+<span class="n">Difference</span> <span class="ow">in</span> <span class="n">packed_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span> <span class="mf">0.001556396484375</span>
+<span class="n">Difference</span> <span class="ow">in</span> <span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="mf">0.0</span>
+<span class="n">Difference</span> <span class="ow">in</span> <span class="n">packed_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="mf">0.001953125</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="gpt-style-layer">
+<h2>GPT-style layer<a class="headerlink" href="#gpt-style-layer" title="Permalink to this heading">¶</a></h2>
+<p>A basic GPT-style transformer layer consists of a causal self-attention layer
+followed by a feed-forward network (FFN) with skip connections. Implementing
+this is fairly straightforward using the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer above and
+gives equivalent results to an <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoderLayer</span></code> with
+<code class="docutils literal notranslate"><span class="pre">is_causal=True</span></code>.</p>
+<p>We  demonstrate examples of implementing the rest of the <code class="docutils literal notranslate"><span class="pre">nn</span></code> layers
+<a class="reference external" href="https://github.com/mikaylagawarecki/transformer_tutorial_accompaniment">here</a>
+but omit that from this tutorial for brevity.</p>
+</div>
+<div class="section" id="going-one-step-further">
+<h2>Going one step further<a class="headerlink" href="#going-one-step-further" title="Permalink to this heading">¶</a></h2>
+<p>So far, we have demonstrated how to implement a performant <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code>
+layer that follows the traditional <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>. Going back to our
+classification of modifications to the transformer architecture, remember that we
+classified the modifications into layer type, layer ordering, and modifications
+to the attention score. We trust that changing layer type and layer ordering
+(such as swapping <code class="docutils literal notranslate"><span class="pre">LayerNorm</span></code> for <code class="docutils literal notranslate"><span class="pre">RMSNorm</span></code>) is fairly straightforward.</p>
+<p>In this section, we will discuss various functionalities using the
+aforementioned building blocks, including the following:</p>
+<ul class="simple">
+<li><p>Cross Attention</p></li>
+<li><p>Fully masked rows no longer cause NaNs</p></li>
+<li><p>Modifying attention score: ALiBi with FlexAttention and NJT</p></li>
+<li><p>Packed Projection</p></li>
+</ul>
+</div>
+<div class="section" id="cross-attention">
+<h2>Cross Attention<a class="headerlink" href="#cross-attention" title="Permalink to this heading">¶</a></h2>
+<p>Cross attention is a form of attention where the query and key/value tensors
+are from different sequences.</p>
+<p>One example of this is in <code class="docutils literal notranslate"><span class="pre">nn.TransformerDecoderLayer</span></code> where the query comes
+from the decoder and the key/value come from the encoder.</p>
+<p>The above MultiheadAttention layer nicely generalizes to this case with nested
+tensors for both query and key/value.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">query</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">q_len</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">kv_len</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total sequence length in nested query </span><span class="si">{</span><span class="n">q_len</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">, max sequence length </span><span class="si">{</span><span class="n">q_len</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total sequence length in nested key/value </span><span class="si">{</span><span class="n">kv_len</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">, max sequence length </span><span class="si">{</span><span class="n">kv_len</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As above, we can compare this against the vanilla compiled <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">query</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">q_len</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">kv_len</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">padded_query</span><span class="p">,</span> <span class="n">padded_key</span><span class="p">,</span> <span class="n">padded_value</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">to_padded_tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">key_padding_mask</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.where.html#torch.where" title="torch.where"><span class="n">torch</span><span class="o">.</span><span class="n">where</span></a><span class="p">(</span><span class="n">padded_key</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># warmup compile</span>
+<span class="n">warmup_nested_result</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">warmup_vanilla_result</span> <span class="o">=</span> <span class="n">vanilla_mha_layer</span><span class="p">(</span><span class="n">padded_query</span><span class="p">,</span>
+                                          <span class="n">padded_key</span><span class="p">,</span>
+                                          <span class="n">padded_value</span><span class="p">,</span>
+                                          <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">key_padding_mask</span><span class="p">,</span>
+                                          <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                          <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">nested_result</span><span class="p">,</span> <span class="n">nested_time</span><span class="p">,</span> <span class="n">nested_peak_memory</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">new_mha_layer</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="p">(</span><span class="n">padded_result</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">padded_time</span><span class="p">,</span> <span class="n">padded_peak_memory</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">vanilla_mha_layer</span><span class="p">,</span>
+                                                                <span class="n">padded_query</span><span class="p">,</span>
+                                                                <span class="n">padded_key</span><span class="p">,</span>
+                                                                <span class="n">padded_value</span><span class="p">,</span>
+                                                                <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">key_padding_mask</span><span class="p">,</span>
+                                                                <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                                <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">padded_nested_result</span> <span class="o">=</span> <span class="n">nested_result</span><span class="o">.</span><span class="n">to_padded_tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry_length</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">q_len</span><span class="p">):</span>
+    <span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
+    <span class="n">padded_result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">entry_length</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Max difference between vanilla and nested result"</span><span class="p">,</span> <span class="p">(</span><span class="n">padded_result</span> <span class="o">-</span> <span class="n">padded_nested_result</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested speedup: </span><span class="si">{</span><span class="p">(</span><span class="n">padded_time</span><span class="o">/</span><span class="n">nested_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nested peak memory reduction </span><span class="si">{</span><span class="p">((</span><span class="n">padded_peak_memory</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nested_peak_memory</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Sample outputs on A100:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Max</span> <span class="n">difference</span> <span class="n">between</span> <span class="n">vanilla</span> <span class="ow">and</span> <span class="n">nested</span> <span class="n">result</span> <span class="mf">0.0</span>
+<span class="n">Nested</span> <span class="n">speedup</span><span class="p">:</span> <span class="mf">4.01</span>
+<span class="n">Nested</span> <span class="n">peak</span> <span class="n">memory</span> <span class="n">reduction</span> <span class="mf">1.40</span> <span class="n">GB</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fully-masked-rows-no-longer-cause-nans">
+<h2>Fully masked rows no longer cause NaNs<a class="headerlink" href="#fully-masked-rows-no-longer-cause-nans" title="Permalink to this heading">¶</a></h2>
+<p>There has been a long standing issue with <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> and
+<code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code> where if a row was fully masked out, the output
+of the attention layer would be NaN. See <a class="reference external" href="https://github.com/pytorch/pytorch/issues/41508">issue</a>.
+This is because the softmax over an empty set is undefined.</p>
+<p>Thanks to <a class="reference external" href="https://github.com/pytorch/pytorch/pull/133882">this PR</a>
+this is no longer the case. Instead, fully masked rows in <code class="docutils literal notranslate"><span class="pre">scaled_dot_product_attention</span></code>.
+For cases where <code class="docutils literal notranslate"><span class="pre">nn.MHA</span></code> does not employ the “fast-path”, this will also apply.</p>
+<p>Using a custom MHA layer with NJTs is strongly recommended over the
+existing “fast-path” in <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> as NJT’s ability to model raggedness
+appropriately makes it possible to properly express empty sequences.</p>
+</div>
+<div class="section" id="flexattention-njt">
+<h2>FlexAttention + NJT<a class="headerlink" href="#flexattention-njt" title="Permalink to this heading">¶</a></h2>
+<p>NJT also composes with the <code class="docutils literal notranslate"><span class="pre">FlexAttention</span></code> module. This is a generalization
+of the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer that allows for arbitrary modifications
+to the attention score. The example below takes the <code class="docutils literal notranslate"><span class="pre">alibi_mod</span></code>
+that implements <a class="reference external" href="https://arxiv.org/abs/2108.12409">ALiBi</a> from
+<a class="reference external" href="https://github.com/pytorch-labs/attention-gym">attention gym</a> and uses it
+with nested input tensors.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.attention.flex_attention</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a>
+
+<span class="k">def</span> <span class="nf">generate_alibi_bias</span><span class="p">(</span><span class="n">H</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Returns an alibi bias score_mod given the number of heads H</span>
+<span class="sd">    Args:</span>
+<span class="sd">        H: number of heads</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        alibi_bias: alibi bias score_mod</span>
+<span class="sd">    """</span>
+    <span class="k">def</span> <span class="nf">alibi_mod</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">,</span> <span class="n">kv_idx</span><span class="p">):</span>
+        <span class="n">scale</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.exp2.html#torch.exp2" title="torch.exp2"><span class="n">torch</span><span class="o">.</span><span class="n">exp2</span></a><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">h</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">8.0</span> <span class="o">/</span> <span class="n">H</span><span class="p">))</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="p">(</span><span class="n">q_idx</span> <span class="o">-</span> <span class="n">kv_idx</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="k">return</span> <span class="n">score</span> <span class="o">+</span> <span class="n">bias</span>
+    <span class="k">return</span> <span class="n">alibi_mod</span>
+
+<span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">E_q</span> <span class="o">//</span> <span class="mi">8</span>
+<span class="n">alibi_score_mod</span> <span class="o">=</span> <span class="n">generate_alibi_bias</span><span class="p">(</span><span class="n">n_heads</span><span class="p">)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">query</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">out_flex2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">score_mod</span><span class="o">=</span><span class="n">alibi_score_mod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In addition, one can also use the <code class="docutils literal notranslate"><span class="pre">block_mask</span></code> utility of <code class="docutils literal notranslate"><span class="pre">FlexAttention</span></code>
+with NJTs via the <code class="docutils literal notranslate"><span class="pre">create_nested_block_mask</span></code> function. This is useful for
+taking advantage of the sparsity of the mask to speed up the attention computation.
+In particular, the function creates a sparse block mask for a “stacked sequence” of all
+the variable length sequences in the NJT combined into one, while properly masking out
+inter-sequence attention. In the following example, we show how to create a
+causal block mask using this utility.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.attention.flex_attention</span> <span class="kn">import</span> <span class="n">create_nested_block_mask</span>
+
+<span class="k">def</span> <span class="nf">causal_mask</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">,</span> <span class="n">kv_idx</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">q_idx</span> <span class="o">&gt;=</span> <span class="n">kv_idx</span>
+
+<span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">block_mask</span> <span class="o">=</span> <span class="n">create_nested_block_mask</span><span class="p">(</span><span class="n">causal_mask</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">_compile</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">query</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">n_heads</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">out_flex</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">block_mask</span><span class="o">=</span><span class="n">block_mask</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="packed-projection">
+<h2>Packed Projection<a class="headerlink" href="#packed-projection" title="Permalink to this heading">¶</a></h2>
+<p>Packed projection is a technique that makes use of the fact that when the input
+for projection (matrix multiplications) are the same (self-attention), we can pack the projection
+weights and biases into single tensors. It is especially useful when the individual
+projections are memory bound rather than compute bound. There are
+two examples that we will demonstrate here:</p>
+<ul class="simple">
+<li><p>Input projection for MultiheadAttention</p></li>
+<li><p>SwiGLU activation in feed-forward network of Transformer Layer</p></li>
+</ul>
+<div class="section" id="input-projection-for-multiheadattention">
+<h3>Input projection for MultiheadAttention<a class="headerlink" href="#input-projection-for-multiheadattention" title="Permalink to this heading">¶</a></h3>
+<p>When doing self-attention, the <code class="docutils literal notranslate"><span class="pre">query</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code>, and <code class="docutils literal notranslate"><span class="pre">value</span></code>
+are the same tensor. Each of these tensors is projected with a
+<code class="docutils literal notranslate"><span class="pre">Linear(E_q,</span> <span class="pre">E_total)</span></code> layer. Instead, we can pack this into one layer,
+which is what we do in the MultiheadAttention layer above.</p>
+<p>Let us compare the performance of the packed projection against the usual method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InputProjection</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'device'</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">:</span> <span class="n">dtype</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_proj</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_proj</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">PackedInputProjection</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'device'</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">:</span> <span class="n">dtype</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+        <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.chunk.html#torch.chunk" title="torch.chunk"><span class="n">torch</span><span class="o">.</span><span class="n">chunk</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">packed_proj</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">8192</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision" title="torch.set_float32_matmul_precision"><span class="n">torch</span><span class="o">.</span><span class="n">set_float32_matmul_precision</span></a><span class="p">(</span><span class="s1">'high'</span><span class="p">)</span>
+<span class="n">in_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">InputProjection</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">))</span>
+<span class="n">packed_in_proj</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">PackedInputProjection</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">))</span>
+
+<span class="n">q</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sequence_lengths</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+
+<span class="c1"># warmup</span>
+<span class="n">in_proj</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="n">packed_in_proj</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+<span class="c1"># benchmark</span>
+<span class="p">(</span><span class="n">q_out</span><span class="p">,</span> <span class="n">k_out</span><span class="p">,</span> <span class="n">v_out</span><span class="p">),</span> <span class="n">time</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">in_proj</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="p">(</span><span class="n">q_out</span><span class="p">,</span> <span class="n">k_out</span><span class="p">,</span> <span class="n">v_out</span><span class="p">),</span> <span class="n">time_packed</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">packed_in_proj</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="c1"># On my A100 prints 1.05x speedup</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"InputProjection: </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">5f</span><span class="si">}</span><span class="s2"> s, PackedInputProjection: </span><span class="si">{</span><span class="n">time_packed</span><span class="si">:</span><span class="s2">5f</span><span class="si">}</span><span class="s2"> s, speedup: </span><span class="si">{</span><span class="n">time</span><span class="o">/</span><span class="n">time_packed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="swiglu-feed-forward-network-of-transformer-layer">
+<h3>SwiGLU feed forward network of Transformer Layer<a class="headerlink" href="#swiglu-feed-forward-network-of-transformer-layer" title="Permalink to this heading">¶</a></h3>
+<p>Swish-Gated Linear Unit (SwiGLU) is a non-linear activation function that is increasingly popular in the feed-forward
+network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">multiple_of</span><span class="p">,</span> <span class="n">ffn_dim_multiplier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'device'</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">:</span> <span class="n">dtype</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">hidden_dim</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># custom dim factor multiplier</span>
+        <span class="k">if</span> <span class="n">ffn_dim_multiplier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ffn_dim_multiplier</span> <span class="o">*</span> <span class="n">hidden_dim</span><span class="p">)</span>
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">multiple_of</span> <span class="o">*</span> <span class="p">((</span><span class="n">hidden_dim</span> <span class="o">+</span> <span class="n">multiple_of</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">multiple_of</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.silu.html#torch.nn.functional.silu" title="torch.nn.functional.silu"><span class="n">F</span><span class="o">.</span><span class="n">silu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w3</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>An alternative way of implementing this that uses packed projection is</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PackedSwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">multiple_of</span><span class="p">,</span> <span class="n">ffn_dim_multiplier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'device'</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">:</span> <span class="n">dtype</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">hidden_dim</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># custom dim factor multiplier</span>
+        <span class="k">if</span> <span class="n">ffn_dim_multiplier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ffn_dim_multiplier</span> <span class="o">*</span> <span class="n">hidden_dim</span><span class="p">)</span>
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">multiple_of</span> <span class="o">*</span> <span class="p">((</span><span class="n">hidden_dim</span> <span class="o">+</span> <span class="n">multiple_of</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">multiple_of</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w13</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">x3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.chunk.html#torch.chunk" title="torch.chunk"><span class="n">torch</span><span class="o">.</span><span class="n">chunk</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w13</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.silu.html#torch.nn.functional.silu" title="torch.nn.functional.silu"><span class="n">F</span><span class="o">.</span><span class="n">silu</span></a><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="n">x3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can compare the performance of the two implementations as follows
+Depending on your hardware, you might see different results. On an A100 I see
+1.12x speedup for D=128.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="n">swigluffn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">SwiGLUFFN</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">))</span>
+<span class="n">packed_swigluffn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">PackedSwiGLUFFN</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cuda'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">))</span>
+
+<span class="n">q</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sentence_lengths</span> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+
+<span class="c1"># warmup</span>
+<span class="n">swigluffn</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="n">packed_swigluffn</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+<span class="c1"># benchmark</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">swigluffn</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">time_packed</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">packed_swigluffn</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="c1"># On my A100 prints 1.08x speedup</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SwiGLUFFN: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> s, PackedSwiGLUFFN: </span><span class="si">{</span><span class="n">time_packed</span><span class="si">}</span><span class="s2"> s, speedup: </span><span class="si">{</span><span class="n">time</span><span class="o">/</span><span class="n">time_packed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="extended-examples">
+<h2>Extended examples<a class="headerlink" href="#extended-examples" title="Permalink to this heading">¶</a></h2>
+<p>We intend to update this tutorial to demonstrate more examples of how to use
+the various performant building blocks such as KV-Caching, Grouped Query Attention
+etc. Further, there are several good examples of using various performant building blocks to
+implement various transformer architectures. Some examples include</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pytorch-labs/gpt-fast">gpt-fast</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch-labs/segment-anything-fast">segment-anything-fast</a></p></li>
+<li><p><a class="reference external" href="https://github.com/lucidrains/vit-pytorch/blob/73199ab486e0fad9eced2e3350a11681db08b61b/vit_pytorch/na_vit_nested_tensor.py">lucidrains implementation of NaViT with nested tensors</a></p></li>
+<li><p><a class="reference external" href="https://github.com/pytorch/torchtune/blob/a8a64ec6a99a6ea2be4fdaf0cd5797b03a2567cf/torchtune/modules/vision_transformer.py#L16">torchtune’s implementation of VisionTransformer</a></p></li>
+</ul>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>In this tutorial, we have introduced the low level building blocks PyTorch
+provides for writing transformer layers and demonstrated examples how to compose
+them. It is our hope that this tutorial has educated the reader on the ease with
+which flexible and performant transformer layers can be implemented by users of PyTorch.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-transformer-building-blocks-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/57114670a041b4c96ed6eb9fc17a6b3f/transformer_building_blocks.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_building_blocks.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_building_blocks.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2024, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+<script>
+if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
+  {
+    var div = '<div class="admonition note"><p class="admonition-title">Note</p><p><i class="fa fa-flask" aria-hidden="true">&nbsp</i> This tutorial describes a prototype feature. Prototype features are typically not available as part of binary distributions like PyPI or Conda, except sometimes behind run-time flags, and are at an early stage for feedback and testing.</p></div>'
+    document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div)
+  } 
+</script>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Accelerating PyTorch Transformers by replacing <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> with Nested Tensors and <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code></a></li>
+<li><a class="reference internal" href="#is-this-tutorial-for-me">Is this tutorial for me?</a></li>
+<li><a class="reference internal" href="#introducing-the-building-blocks">Introducing the Building Blocks</a></li>
+<li><a class="reference internal" href="#the-above-building-blocks-are-all-you-need-as-of-october-2024">The above building blocks are “All You Need” (as of October 2024)</a><ul>
+<li><a class="reference internal" href="#multiheadattention">MultiheadAttention</a><ul>
+<li><a class="reference internal" href="#utilities">Utilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gpt-style-layer">GPT-style layer</a></li>
+<li><a class="reference internal" href="#going-one-step-further">Going one step further</a></li>
+<li><a class="reference internal" href="#cross-attention">Cross Attention</a></li>
+<li><a class="reference internal" href="#fully-masked-rows-no-longer-cause-nans">Fully masked rows no longer cause NaNs</a></li>
+<li><a class="reference internal" href="#flexattention-njt">FlexAttention + NJT</a></li>
+<li><a class="reference internal" href="#packed-projection">Packed Projection</a><ul>
+<li><a class="reference internal" href="#input-projection-for-multiheadattention">Input projection for MultiheadAttention</a></li>
+<li><a class="reference internal" href="#swiglu-feed-forward-network-of-transformer-layer">SwiGLU feed forward network of Transformer Layer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extended-examples">Extended examples</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="../_static/katex.min.js"></script>
+<script src="../_static/auto-render.min.js"></script>
+<script src="../_static/katex_autorenderer.js"></script>
+<script src="../_static/design-tabs.js"></script>
+<script src="../_static/js/custom.js"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+// Helper function to make it easier to call dataLayer.push() 
+function gtag(){window.dataLayer.push(arguments);}
+
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; display: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count"),
+      'customEvent:Rating': $(this).attr("data-count") // send to GA custom dimension customEvent:Rating.
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Backends', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Profiling PyTorch', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Edge with ExecuTorch', 'Recommendation Systems', 'Multimodality'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">Stay up to date</li>
+<li><a href="https://www.facebook.com/pytorch" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank">Twitter</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank">YouTube</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank">LinkedIn</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title">PyTorch Podcasts</li>
+<li><a href="https://open.spotify.com/show/6UzHKeiy368jKfQMKKvJY5" target="_blank">Spotify</a></li>
+<li><a href="https://podcasts.apple.com/us/podcast/pytorch-developer-podcast/id1566080008" target="_blank">Apple</a></li>
+<li><a href="https://www.google.com/podcasts?feed=aHR0cHM6Ly9mZWVkcy5zaW1wbGVjYXN0LmNvbS9PQjVGa0lsOA%3D%3D" target="_blank">Google</a></li>
+<li><a href="https://music.amazon.com/podcasts/7a4e6f0e-26c2-49e9-a478-41bd244197d0/PyTorch-Developer-Podcast?" target="_blank">Amazon</a></li>
+</ul>
+</div>
+</div>
+<div class="privacy-policy">
+<ul>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/terms/" target="_blank">Terms</a></li>
+<li class="privacy-policy-links">|</li>
+<li class="privacy-policy-links"><a href="https://www.linuxfoundation.org/privacy-policy/" target="_blank">Privacy</a></li>
+</ul>
+</div>
+<div class="copyright">
+<p>© Copyright The Linux Foundation. The PyTorch Foundation is a project of The Linux Foundation.
+          For web site terms of use, trademark policy and other policies applicable to The PyTorch Foundation please see
+          <a href="https://www.linuxfoundation.org/policies/">www.linuxfoundation.org/policies/</a>. The PyTorch Foundation supports the PyTorch open source
+          project, which has been established as PyTorch Project a Series of LF Projects, LLC. For policies applicable to the PyTorch Project a Series of LF Projects, LLC,
+          please see <a href="https://www.lfprojects.org/policies/">www.lfprojects.org/policies/</a>.</p>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li class="resources-mobile-menu-title">
+<a>Learn</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Ecosystem</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/ecosystem">Tools</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Edge</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/edge">About PyTorch Edge</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Docs</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/pytorch-domains">PyTorch Domains</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Blog &amp; News</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/blog/">PyTorch Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-blog">Community Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/videos">Videos</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-stories">Community Stories</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>About</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+</ul>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
