@@ -45,6 +45,7 @@ from get_sphinx_filenames import SPHINX_SHOULD_RUN
 import pandocfilters
 import pypandoc
 import plotly.io as pio
+from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
 
@@ -140,22 +141,17 @@ if os.getenv('GALLERY_PATTERN'):
     sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
 
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
-    gallery_dir = sphinx_gallery_conf['gallery_dirs'][i]
-    source_dir = sphinx_gallery_conf['examples_dirs'][i]
-    # Create gallery dirs if it doesn't exist
-    try:
-        os.mkdir(gallery_dir)
-    except OSError:
-        pass
+    gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
+    source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
 
     # Copy rst files from source dir to gallery dir
-    for f in glob.glob(os.path.join(source_dir, '*.rst')):
-        distutils.file_util.copy_file(f, gallery_dir, update=True)
-
+    for f in source_dir.rglob("*.rst"):
+        f_dir = Path(f).parent
+        gallery_subdir_path = gallery_dir / f_dir.relative_to(source_dir)
+        gallery_subdir_path.mkdir(parents=True, exist_ok=True)
+        distutils.file_util.copy_file(f, gallery_subdir_path, update=True)
 
 # Add any paths that contain templates here, relative to this directory.
-
-
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
@@ -307,6 +303,10 @@ html_css_files = [
         'css/custom.css',
         'css/custom2.css'
     ]
+
+html_js_files = [
+    "js/custom.js",
+]
 
 def setup(app):
     # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value
