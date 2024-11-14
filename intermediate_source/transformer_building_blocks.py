@@ -3,6 +3,9 @@ Accelerating PyTorch Transformers by replacing ``nn.Transformer`` with Nested Te
 =============================================================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
 
+.. note::
+    This tutorial currently requires you to use the PyTorch nightly build.
+
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
