@@ -39,3 +39,7 @@ Prototype Tutorials
 10 flight_recorder_tutorial.rst
 	   Flight Recorder User Guide
 	   https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html
+
+11 python_extension_autoload.rst
+	   Autoloading Out-of-Tree Extension
+	   https://pytorch.org/tutorials/prototype/python_extension_autoload.html
