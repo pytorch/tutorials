@@ -3,13 +3,13 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `torch.export AOTInductor Tutorial for Python runtime (Beta) <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
-* `A guide on good usage of non_blocking and pin_memory() in PyTorch <https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`__
-* `Introduction to Distributed Pipeline Parallelism <https://pytorch.org/tutorials/intermediate/pipelining_tutorial.html>`__
-* `Introduction to Libuv TCPStore Backend <https://pytorch.org/tutorials/intermediate/TCPStore_libuv_backend.html>`__ 
-* `Asynchronous Saving with Distributed Checkpoint (DCP) <https://pytorch.org/tutorials/recipes/distributed_async_checkpoint_recipe.html>`__
-* `Python Custom Operators <https://pytorch.org/tutorials/advanced/python_custom_ops.html>`__
-* Updated `Getting Started with DeviceMesh <https://pytorch.org/tutorials/recipes/distributed_device_mesh.html>`__
+* `Compiled Autograd: Capturing a larger backward graph for torch.compile <https://pytorch.org/tutorials/intermediate/compiled_autograd_tutorial>`__
+* `Reducing torch.compile cold start compilation time with regional compilation <https://pytorch.org/tutorials/recipes/regional_compilation.html>`__
+* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html>`__
+* `(prototype) Flight Recorder for Debugging Stuck Jobs <https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html>`__
+* `(prototype) How to use TorchInductor on Windows CPU <https://pytorch.org/tutorials/prototype/inductor_windows_cpu.html>`__
+* `(prototype) Using Max-Autotune Compilation on CPU for Better Performance <https://pytorch.org/tutorials/prototype/max_autotune_on_CPU_tutorial.html>`__
+* `(prototype) Autoloading Out-of-Tree Extension <https://pytorch.org/tutorials/prototype/python_extension_autoload.html>`__
 
 .. raw:: html
 
@@ -71,7 +71,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: beginner/introyt.html
+   :link: beginner/introyt/introyt_index.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -238,57 +238,28 @@ Welcome to PyTorch Tutorials
    :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
    :tags: Audio
 
-.. Text
-
-.. customcarditem::
-   :header: Fast Transformer Inference with Better Transformer
-   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
-   :image: _static/img/thumbnails/cropped/pytorch-logo.png
-   :link: beginner/bettertransformer_tutorial.html
-   :tags: Production,Text
+.. NLP
 
 .. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
    :card_description: Build and train a basic character-level RNN to classify word from scratch without the use of torchtext. First in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Classifying-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_classification_tutorial
-   :tags: Text
+   :tags: NLP
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
    :card_description: After using character-level RNN to classify names, learn how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
-   :tags: Text
+   :tags: NLP
 
 .. customcarditem::
    :header: NLP from Scratch: Translation with a Sequence-to-sequence Network and Attention
    :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Translation-with-a-Sequence-to-Sequence-Network-and-Attention.png
    :link: intermediate/seq2seq_translation_tutorial.html
-   :tags: Text
-
-.. customcarditem::
-   :header: Text Classification with Torchtext
-   :card_description: Learn how to build the dataset and classify text using torchtext library.
-   :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
-   :link: beginner/text_sentiment_ngrams_tutorial.html
-   :tags: Text
-
-.. customcarditem::
-   :header: Language Translation with Transformer
-   :card_description: Train a language translation model from scratch using Transformer.
-   :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/translation_transformer.html
-   :tags: Text
-
-.. customcarditem::
-   :header: Pre-process custom text dataset using Torchtext
-   :card_description: Learn how to use torchtext to prepare a custom dataset
-   :image: _static/img/thumbnails/cropped/torch_text_logo.png
-   :link: beginner/torchtext_custom_dataset_tutorial.html
-   :tags: Text
-
+   :tags: NLP
 
 .. ONNX
 
@@ -444,6 +415,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
+
+.. customcarditem::
+   :header: Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
+   :card_description: Learn how to use compiled autograd to capture a larger backward graph.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/compiled_autograd_tutorial
+   :tags: Model-Optimization,CUDA
 
 .. customcarditem::
    :header: Custom C++ and CUDA Operators
@@ -692,6 +670,14 @@ Welcome to PyTorch Tutorials
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
 
+
+.. customcarditem::
+   :header: Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile()
+   :card_description: This tutorial goes over recommended best practices for implementing Transformers with native PyTorch.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/transformer_building_blocks.html
+   :tags: Transformer
+
 .. Parallel-and-Distributed-Training
 
 
@@ -791,7 +777,7 @@ Welcome to PyTorch Tutorials
    :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
-   :link: intermediate/FSDP_adavnced_tutorial.html
+   :link: intermediate/FSDP_advanced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -934,7 +920,7 @@ Additional Resources
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: PyTorch Recipes
@@ -943,39 +929,15 @@ Additional Resources
    See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
    :includehidden:
    :caption: Introduction to PyTorch
 
    beginner/basics/intro
-   beginner/basics/quickstart_tutorial
-   beginner/basics/tensorqs_tutorial
-   beginner/basics/data_tutorial
-   beginner/basics/transforms_tutorial
-   beginner/basics/buildmodel_tutorial
-   beginner/basics/autogradqs_tutorial
-   beginner/basics/optimization_tutorial
-   beginner/basics/saveloadrun_tutorial
-   advanced/custom_ops_landing_page
+   beginner/introyt/introyt_index
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
-   :includehidden:
-   :caption: Introduction to PyTorch on YouTube
-
-   beginner/introyt
-   beginner/introyt/introyt1_tutorial
-   beginner/introyt/tensors_deeper_tutorial
-   beginner/introyt/autogradyt_tutorial
-   beginner/introyt/modelsyt_tutorial
-   beginner/introyt/tensorboardyt_tutorial
-   beginner/introyt/trainingyt
-   beginner/introyt/captumyt
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: Learning PyTorch
@@ -983,11 +945,12 @@ Additional Resources
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
+   intermediate/nlp_from_scratch_index
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Image and Video
@@ -1020,22 +983,7 @@ Additional Resources
    intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Text
-
-   beginner/bettertransformer_tutorial
-   intermediate/char_rnn_classification_tutorial
-   intermediate/char_rnn_generation_tutorial
-   intermediate/seq2seq_translation_tutorial
-   beginner/text_sentiment_ngrams_tutorial
-   beginner/translation_transformer
-   beginner/torchtext_custom_dataset_tutorial
-
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Backends
@@ -1054,7 +1002,7 @@ Additional Resources
    advanced/pendulum
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Deploying PyTorch Models in Production
@@ -1140,6 +1088,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
@@ -1158,7 +1107,7 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
-   intermediate/FSDP_adavnced_tutorial
+   intermediate/FSDP_advanced_tutorial
    intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial

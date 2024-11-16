@@ -25,34 +25,22 @@ PyTorch Recipes
          Dynamic Quantization
          https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html
 
-7. save_load_across_devices.py
-         Saving and loading models across devices in PyTorch
-         https://pytorch.org/tutorials/recipes/recipes/save_load_across_devices.html
-
-8. saving_and_loading_a_general_checkpoint.py
-         Saving and loading a general checkpoint in PyTorch
-         https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html
-
-9. saving_and_loading_models_for_inference.py
-         Saving and loading models for inference in PyTorch
-         https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html
-
-10. saving_multiple_models_in_one_file.py
-         Saving and loading multiple models in one file using PyTorch
-         https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html
-
-11. warmstarting_model_using_parameters_from_a_different_model.py
+7. warmstarting_model_using_parameters_from_a_different_model.py
          Warmstarting models using parameters from different model
          https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html
 
-12. zeroing_out_gradients.py
+8. zeroing_out_gradients.py
          Zeroing out gradients
          https://pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html
 
-13. mobile_perf.py
+9. mobile_perf.py
          PyTorch Mobile Performance Recipes
          https://pytorch.org/tutorials/recipes/mobile_perf.html
 
-14. amp_recipe.py
+10. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
+
+11. regional_compilation.py
+	Reducing torch.compile cold start compilation time with regional compilation
+         https://pytorch.org/tutorials/recipes/regional_compilation.html

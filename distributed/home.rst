@@ -77,7 +77,7 @@ Learn FSDP
 
      .. grid-item-card:: :octicon:`file-code;1em`
         FSDP Advanced
-        :link: https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_advanced
+        :link: https://pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_advanced
         :link-type: url
 
         In this tutorial, you will learn how to fine-tune a HuggingFace (HF) T5
