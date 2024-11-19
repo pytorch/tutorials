@@ -231,12 +231,73 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-            2.5.0+cu124
-        </div>
-<div class="searchbox">
+        2.5.0+cu124
+      </div>
+<!-- Search box -->
+<div id="searchBox">
+<div class="searchbox" id="googleSearchBox">
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
 <div class="gcse-search"></div>
 </div>
+<div id="sphinxSearchBox" style="display: none;">
+<div role="search">
+<form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Docs" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+</div>
+<form id="searchForm">
+<label style="margin-bottom: 1rem">
+<input checked="" name="searchType" type="radio" value="google"/>
+      Google Search
+    </label>
+<label style="margin-bottom: 1rem">
+<input name="searchType" type="radio" value="sphinx"/>
+      Classic Search
+    </label>
+</form>
+<script>
+     document.addEventListener('DOMContentLoaded', function() {
+      const searchForm = document.getElementById('searchForm');
+      const googleSearchBox = document.getElementById('googleSearchBox');
+      const sphinxSearchBox = document.getElementById('sphinxSearchBox');
+      // Function to toggle search box visibility
+      function toggleSearchBox(searchType) {
+        googleSearchBox.style.display = searchType === 'google' ? 'block' : 'none';
+        sphinxSearchBox.style.display = searchType === 'sphinx' ? 'block' : 'none';
+      }
+      // Determine the default search type
+      let defaultSearchType = 'google';
+      if (window.location.href.startsWith('https://docs-preview.pytorch.org/')) {
+        defaultSearchType = 'sphinx';
+      } else {
+        defaultSearchType = localStorage.getItem('searchType') || 'google';
+      }
+      // Set the default search type
+      document.querySelector(`input[name="searchType"][value="${defaultSearchType}"]`).checked = true;
+      toggleSearchBox(defaultSearchType);
+      // Event listener for changes in search type
+      searchForm.addEventListener('change', function(event) {
+        const selectedSearchType = event.target.value;
+        localStorage.setItem('searchType', selectedSearchType);
+        toggleSearchBox(selectedSearchType);
+      });
+      // Set placeholder text for Google search box
+      window.onload = function() {
+        var placeholderText = "Search Docs";
+        var googleSearchboxText = document.querySelector("#gsc-i-id1");
+        if (googleSearchboxText) {
+          googleSearchboxText.placeholder = placeholderText;
+          googleSearchboxText.style.fontFamily = 'FreightSans';
+          googleSearchboxText.style.fontSize = "1.2rem"; 
+          googleSearchboxText.style.color = '#262626';
+        } 
+      };
+    });
+  </script>
 </div>
 <p class="caption" role="heading"><span class="caption-text">PyTorch Recipes</span></p>
 <ul>
@@ -502,9 +563,9 @@ Python’s math module to facilitate some of the examples.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;class 'torch.Tensor'&gt;
-tensor([[-3.5831e+37,  3.0672e-41,  0.0000e+00,  2.3510e-38],
-        [ 1.2191e+20,  3.0679e-41,  1.0842e-19,  0.0000e+00],
-        [ 1.2691e+20,  3.0679e-41,  1.2224e+20,  3.0679e-41]])
+tensor([[ 8.7745e+32,  3.0938e-41,  8.8797e+32,  3.0938e-41],
+        [ 1.1210e-43,  0.0000e+00,  8.9683e-44,  0.0000e+00],
+        [-1.1782e+20,  3.0934e-41,  0.0000e+00,  1.4013e-45]])
 </pre></div>
 </div>
 <p>Let’s unpack what we just did:</p>
@@ -625,17 +686,17 @@ have the <code class="docutils literal notranslate"><span class="pre">torch.*_li
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([2, 2, 3])
-tensor([[[ 2.2024e+02,  4.5904e-41, -2.4693e-16],
-         [ 3.0679e-41,  0.0000e+00,  0.0000e+00]],
+tensor([[[-2.0796e+24,  3.0934e-41,  0.0000e+00],
+         [ 1.4013e-45,  0.0000e+00,  0.0000e+00]],
 
-        [[ 9.1084e-44,  0.0000e+00, -4.7345e+36],
-         [ 3.0679e-41, -2.4693e-16,  3.0679e-41]]])
+        [[ 1.3593e-43,  0.0000e+00, -2.1209e-36],
+         [ 3.0938e-41,  1.8311e-06,  3.0938e-41]]])
 torch.Size([2, 2, 3])
-tensor([[[-1.4271e-10,  3.0679e-41, -2.4618e-16],
-         [ 3.0679e-41,  4.1275e-01,  5.9382e-01]],
+tensor([[[ 3.5406e+04,  3.0938e-41,  1.8311e-06],
+         [ 3.0938e-41,  1.1210e-43,  0.0000e+00]],
 
-        [[ 1.0842e-19,  0.0000e+00,  0.0000e+00],
-         [ 0.0000e+00,  0.0000e+00,  0.0000e+00]]])
+        [[ 8.9683e-44,  0.0000e+00, -1.1782e+20],
+         [ 3.0934e-41,  0.0000e+00,  2.3510e-38]]])
 torch.Size([2, 2, 3])
 tensor([[[0., 0., 0.],
          [0., 0., 0.]],
@@ -1579,7 +1640,7 @@ are reflected in the other:</p>
  [ 0.2853077  17.          0.5695162 ]]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.163 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.156 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-tensors-deeper-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/be017e7b39198fdf668c138fd8d57abe/tensors_deeper_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensors_deeper_tutorial.py</span></code></a></p>
