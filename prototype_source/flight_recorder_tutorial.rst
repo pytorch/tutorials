@@ -274,8 +274,8 @@ Finally, to analyze these two files, we use the ``torchfrtrace`` command:
 
   torchfrtrace --prefix "trace_" /tmp/
 
-The output from the trace command is meant to be human readable. It includes information about the
-set of collectives that induced a failure.
+The output from the trace command is meant to be human-readable. It includes information about the
+set of collectives that caused a failure.
 The output for the command above is shown below.
 We can clearly see that rank 1 did not join the "all_reduce" collective.
 
