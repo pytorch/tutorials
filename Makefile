@@ -86,21 +86,29 @@ download:
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
+download-last-reviewed-json:
+	curl -o tutorials-review-data.json https://raw.githubusercontent.com/pytorch/tutorials/refs/heads/last-reviewed-data-json/tutorials-review-data.json
+
 docs:
 	make download
+	make download-last-reviewed-json
 	make html
 	@python insert_last_verified.py $(BUILDDIR)/html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
+	rm -rf tutorials-review-data.json
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 	# bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
 	@echo
+	make download-last-reviewed-json
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 	@echo "Running post-processing script to insert 'Last Verified' dates..."
 	@python insert_last_verified.py $(BUILDDIR)/html
+	rm -rf tutorials-review-data.json
+
 clean-cache:
 	make clean
 	rm -rf advanced beginner intermediate recipes
