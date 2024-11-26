@@ -87,8 +87,9 @@ download:
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
 download-last-reviewed-json:
+	@echo "Downloading tutorials-review-data.json..."
 	curl -o tutorials-review-data.json https://raw.githubusercontent.com/pytorch/tutorials/refs/heads/last-reviewed-data-json/tutorials-review-data.json
-
+	@echo "Finished downloading tutorials-review-data.json."
 docs:
 	make download
 	make download-last-reviewed-json
