@@ -819,6 +819,36 @@ torchfrtrace<span class="w"> </span>&lt;dump<span class="w"> </span>dir<span cla
 </pre></div>
 </div>
 </div>
+<div class="section" id="an-end-to-end-example">
+<h2>An End-to-End Example<a class="headerlink" href="#an-end-to-end-example" title="Permalink to this heading">¶</a></h2>
+<p>To demonstrate the use of Flight Recorder, we will use a small program where we induce mismatched collectives.
+In this example, <code class="docutils literal notranslate"><span class="pre">rank0</span></code> is programmed to do an additional collective.
+The Flight Recorder dump files are saved to the <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> directory.
+For demonstration purposes, we named this program <code class="docutils literal notranslate"><span class="pre">crash.py</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please note that this is a simplified example. In real-world scenarios, the process would involve more
+complexities.</p>
+</div>
+<p>To run this program, use <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torchrun</span> <span class="o">--</span><span class="n">nnodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">nproc_per_node</span><span class="o">=</span><span class="mi">2</span> <span class="n">crash</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>You should see two files in the <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$ls</span><span class="w"> </span>/tmp/trace*
+<span class="c1"># Expected output</span>
+/tmp/trace_0<span class="w"> </span>/tmp/trace_1
+</pre></div>
+</div>
+<p>Finally, to analyze these two files, we use the <code class="docutils literal notranslate"><span class="pre">torchfrtrace</span></code> command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>torchfrtrace<span class="w"> </span>--prefix<span class="w"> </span><span class="s2">&quot;trace_&quot;</span><span class="w"> </span>/tmp/
+</pre></div>
+</div>
+<p>The output from the trace command is meant to be human-readable. It includes information about the
+set of collectives that caused a failure.
+The output for the command above is shown below.
+We can clearly see that rank 1 did not join the “all_reduce” collective.</p>
+</div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>In this tutorial, we have learned about a new PyTorch diagnostic tool called Flight Recorder.
@@ -890,6 +920,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#retrieving-flight-recorder-data-via-an-api">Retrieving Flight Recorder Data via an API</a></li>
 <li><a class="reference internal" href="#flight-recorder-file-formats">Flight Recorder File Formats</a></li>
 <li><a class="reference internal" href="#analyzing-flight-recorder-dumps">Analyzing Flight Recorder Dumps</a></li>
+<li><a class="reference internal" href="#an-end-to-end-example">An End-to-End Example</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
