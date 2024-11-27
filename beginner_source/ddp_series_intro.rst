@@ -7,7 +7,7 @@
 Distributed Data Parallel in PyTorch - Video Tutorials
 ======================================================
 
-Authors: `Suraj Subramanian <https://github.com/suraj813>`__
+Authors: `Suraj Subramanian <https://github.com/subramen>`__
 
 Follow along with the video below or on `youtube <https://www.youtube.com/watch/-K3bZYHYHEA>`__.
 
