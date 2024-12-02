@@ -6,17 +6,11 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-# Check if the build directory is provided as an argument in the Makefile
-def main():
-    if len(sys.argv) < 2:
-        print("Error: Build directory not provided. Exiting.")
-        exit(1)
-
 build_dir = sys.argv[1]
 print(f"Build directory: {build_dir}")
 
 json_file_path = "tutorials-review-data.json"
-build_dir = "_build/html"  # for testing after _build/html is created
+#build_dir = "_build/html"  # for testing after _build/html is created
 
 # paths to skip from the post-processing script
 paths_to_skip = [
@@ -156,6 +150,11 @@ print(
     "or `make html` build. Warnings about these files when you run `make html-noplot` "
     "can be ignored."
 )
+
+def main():
+    if len(sys.argv) < 2:
+        print("Error: Build directory not provided. Exiting.")
+        exit(1)
 
 if __name__ == "__main__":
     main()
