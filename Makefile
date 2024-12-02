@@ -94,7 +94,7 @@ docs:
 	make download
 	make download-last-reviewed-json
 	make html
-	@python insert_last_verified.py $(BUILDDIR)/html
+	@python .jenkins/insert_last_verified.py $(BUILDDIR)/html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
@@ -107,7 +107,7 @@ html-noplot:
 	make download-last-reviewed-json
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 	@echo "Running post-processing script to insert 'Last Verified' dates..."
-	@python insert_last_verified.py $(BUILDDIR)/html
+	@python .jenkins/insert_last_verified.py $(BUILDDIR)/html
 	rm -rf tutorials-review-data.json
 
 clean-cache:

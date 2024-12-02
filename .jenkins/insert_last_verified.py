@@ -7,9 +7,10 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 # Check if the build directory is provided as an argument in the Makefile
-if len(sys.argv) < 2:
-    print("Error: Build directory not provided. Exiting.")
-    exit(1)
+def main():
+    if len(sys.argv) < 2:
+        print("Error: Build directory not provided. Exiting.")
+        exit(1)
 
 build_dir = sys.argv[1]
 print(f"Build directory: {build_dir}")
@@ -39,48 +40,25 @@ source_to_build_mapping = {
     "": "",  # root dir for index.rst
 }
 
+def get_git_log_date(file_path, git_log_args):
+    try:
+        result = subprocess.run(
+            ["git", "log"] + git_log_args + ["--", file_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if result.stdout:
+            date_str = result.stdout.splitlines()[0]
+            return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+    except subprocess.CalledProcessError:
+        pass
+    raise ValueError(f"Could not find date for {file_path}")
 
-# Use git log to get the creation date of the file
 def get_creation_date(file_path):
-    try:
-        result = subprocess.run(
-            ["git", "log", "--diff-filter=A", "--format=%aD", "--", file_path],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        if result.stdout:
-            creation_date = result.stdout.splitlines()[0]
-            creation_date = datetime.strptime(creation_date, "%a, %d %b %Y %H:%M:%S %z")
-            formatted_date = creation_date.strftime("%b %d, %Y")
-        else:
-            formatted_date = "Unknown"
-        return formatted_date
-    except subprocess.CalledProcessError:
-        return "Unknown"
-
-
-# Use git log to get the last updated date of the file
+    return get_git_log_date(file_path, ["--diff-filter=A", "--format=%aD"]).strftime("%b %d, %Y")
 def get_last_updated_date(file_path):
-    try:
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%aD", "--", file_path],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        if result.stdout:
-            last_updated_date = result.stdout.strip()
-            last_updated_date = datetime.strptime(
-                last_updated_date, "%a, %d %b %Y %H:%M:%S %z"
-            )
-            formatted_date = last_updated_date.strftime("%b %d, %Y")
-        else:
-            formatted_date = "Unknown"
-        return formatted_date
-    except subprocess.CalledProcessError:
-        return "Unknown"
-
+    return get_git_log_date(file_path, ["-1", "--format=%aD"]).strftime("%b %d, %Y")
 
 # Try to find the source file with the given base path and the extensions .rst and .py
 def find_source_file(base_path):
@@ -178,3 +156,6 @@ print(
     "or `make html` build. Warnings about these files when you run `make html-noplot` "
     "can be ignored."
 )
+
+if __name__ == "__main__":
+    main()
