@@ -2,6 +2,8 @@
 Model Freezing in TorchScript
 =============================
 
+.. warning:: TorchScript is no longer in active development.
+
 In this tutorial, we introduce the syntax for *model freezing* in TorchScript.
 Freezing is the process of inlining Pytorch module parameters and attributes
 values into the TorchScript internal representation. Parameter and attribute

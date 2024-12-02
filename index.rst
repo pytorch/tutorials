@@ -71,7 +71,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: beginner/introyt.html
+   :link: beginner/introyt/introyt_index.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -664,6 +664,14 @@ Welcome to PyTorch Tutorials
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
 
+
+.. customcarditem::
+   :header: Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile()
+   :card_description: This tutorial goes over recommended best practices for implementing Transformers with native PyTorch.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/transformer_building_blocks.html
+   :tags: Transformer
+
 .. Parallel-and-Distributed-Training
 
 
@@ -763,7 +771,7 @@ Welcome to PyTorch Tutorials
    :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
-   :link: intermediate/FSDP_adavnced_tutorial.html
+   :link: intermediate/FSDP_advanced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -906,7 +914,7 @@ Additional Resources
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: PyTorch Recipes
@@ -915,39 +923,15 @@ Additional Resources
    See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
    :includehidden:
    :caption: Introduction to PyTorch
 
    beginner/basics/intro
-   beginner/basics/quickstart_tutorial
-   beginner/basics/tensorqs_tutorial
-   beginner/basics/data_tutorial
-   beginner/basics/transforms_tutorial
-   beginner/basics/buildmodel_tutorial
-   beginner/basics/autogradqs_tutorial
-   beginner/basics/optimization_tutorial
-   beginner/basics/saveloadrun_tutorial
-   advanced/custom_ops_landing_page
+   beginner/introyt/introyt_index
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
-   :includehidden:
-   :caption: Introduction to PyTorch on YouTube
-
-   beginner/introyt
-   beginner/introyt/introyt1_tutorial
-   beginner/introyt/tensors_deeper_tutorial
-   beginner/introyt/autogradyt_tutorial
-   beginner/introyt/modelsyt_tutorial
-   beginner/introyt/tensorboardyt_tutorial
-   beginner/introyt/trainingyt
-   beginner/introyt/captumyt
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: Learning PyTorch
@@ -960,7 +944,7 @@ Additional Resources
    intermediate/pinmem_nonblock
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Image and Video
@@ -991,7 +975,7 @@ Additional Resources
    intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Backends
@@ -1010,7 +994,7 @@ Additional Resources
    advanced/pendulum
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Deploying PyTorch Models in Production
@@ -1115,7 +1099,7 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
-   intermediate/FSDP_adavnced_tutorial
+   intermediate/FSDP_advanced_tutorial
    intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial

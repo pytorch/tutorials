@@ -1,8 +1,7 @@
 Distributed Optimizer with TorchScript support
 ==============================================================
 
-.. note:: Distributed Optimizer with TorchScript support is introduced in PyTorch 1.8
-    as a beta feature. This API is subject to change.
+.. warning:: TorchScript is no longer in active development.
 
 In this recipe, you will learn:
 
