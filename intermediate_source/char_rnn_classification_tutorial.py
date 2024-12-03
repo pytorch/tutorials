@@ -396,8 +396,8 @@ def evaluate(rnn, testing_data, classes):
     fig.colorbar(cax)
 
     # Set up axes
-    ax.set_xticklabels([''] + classes, rotation=90)
-    ax.set_yticklabels([''] + classes)
+    ax.set_xticks(np.arange(len(classes)), labels=classes, rotation=90)
+    ax.set_yticks(np.arange(len(classes)), labels=classes)
 
     # Force label at every tick
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
