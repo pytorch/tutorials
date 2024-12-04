@@ -132,7 +132,7 @@ def lineToTensor(line):
     return tensor
 
 #########################
-# Here are some examples of how to use lineToTensor() for a single and multiple character string.
+# Here are some examples of how to use ``lineToTensor()`` for a single and multiple character string.
 
 print (f"The letter 'a' becomes {lineToTensor('a')}") #notice that the first position in the tensor = 1
 print (f"The name 'Ahn' becomes {lineToTensor('Ahn')}") #notice 'A' sets the 27th index to 1
@@ -164,7 +164,7 @@ class NamesDataset(Dataset):
         self.labels = [] 
         self.labels_tensors = [] 
 
-        #read all the txt files in the specified directory
+        #read all the ``.txt`` files in the specified directory
         text_files = glob.glob(os.path.join(data_dir, '*.txt'))                           
         for filename in text_files:
             label = os.path.splitext(os.path.basename(filename))[0]
@@ -267,7 +267,7 @@ def label_from_output(output, output_labels):
     return output_labels[label_i], label_i
 
 input = lineToTensor('Albert')
-output = rnn(input) #this is equivalent to output = rnn.forward(input)
+output = rnn(input) #this is equivalent to ``output = rnn.forward(input)``
 print(output) 
 print(label_from_output(output, alldata.labels_uniq))
 
