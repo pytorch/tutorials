@@ -23,7 +23,7 @@ Before starting this recipe, make sure that you have the following:
 Inductor Cache Settings
 ----------------------------
 
-Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is the FX graph cache that stores compiled FX graphs. This cache allows Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.
+Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception are caches tha stores compiled FX graphs (FXGraphCache, AOTAutogradCache). These caches allow Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.
 
 There are a few settings relevant to caching and to FX graph caching in particular.
 The settings are accessible via environment variables listed below or can be hard-coded in Inductor’s config file.
@@ -31,6 +31,12 @@ The settings are accessible via environment variables listed below or can be har
 TORCHINDUCTOR_FX_GRAPH_CACHE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This setting enables the local FX graph cache feature, i.e., by storing artifacts in the host’s temp directory. ``1`` enables, and any other value disables it. By default, the disk location is per username, but users can enable sharing across usernames by specifying ``TORCHINDUCTOR_CACHE_DIR`` (below).
+
+TORCHINDUCTOR_AUTOGRAD_CACHE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This setting extends FXGraphCache to store cached results at the AOTAutograd level, instead of at the Inductor level. ``1`` enables, and any other value disables it.
+By default, the disk location is per username, but users can enable sharing across usernames by specifying ``TORCHINDUCTOR_CACHE_DIR`` (below).
+`TORCHINDUCTOR_AUTOGRAD_CACHE` requires `TORCHINDUCTOR_FX_GRAPH_CACHE` to work. The same cache dir stores cache entries for AOTAutogradCache (under `{TORCHINDUCTOR_CACHE_DIR}/aotautograd`) and FXGraphCache (under `{TORCHINDUCTOR_CACHE_DIR}/fxgraph`).
 
 TORCHINDUCTOR_CACHE_DIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,6 +53,14 @@ This setting enables the remote FX graph cache feature. The current implementati
 
 Note that if Inductor locates a remote cache entry, it stores the compiled artifact in the local on-disk cache; that local artifact would be served on subsequent runs on the same machine.
 
+TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Like TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE, this setting enables the remote AOT AutogradCache feature. The current implementation uses Redis. ``1`` enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:
+``TORCHINDUCTOR_REDIS_HOST`` (defaults to ``localhost``)
+``TORCHINDUCTOR_REDIS_PORT`` (defaults to ``6379``)
+
+`TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE`` depends on `TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE` to be enabled to work. The same Redis server can store both AOTAutograd and FXGraph cache results.
+
 TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This setting enables a remote cache for Inductor’s autotuner. As with the remote FX graph cache, the current implementation uses Redis. ``1`` enables caching, and any other value disables it. The same host / port environment variables listed above apply to this cache.
@@ -59,3 +73,4 @@ Conclusion
 -------------
 In this recipe, we have learned that PyTorch Inductor's caching mechanisms significantly reduce compilation latency by utilizing both local and remote caches, which operate seamlessly in the background without requiring user intervention.
 Additionally, we explored the various settings and environment variables that allow users to configure and optimize these caching features according to their specific needs.
+
