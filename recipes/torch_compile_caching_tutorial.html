@@ -652,12 +652,18 @@ This recipe demonstrates how you can configure various parts of the caching in <
 </div>
 <div class="section" id="inductor-cache-settings">
 <h2>Inductor Cache Settings<a class="headerlink" href="#inductor-cache-settings" title="Permalink to this heading">¶</a></h2>
-<p>Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is the FX graph cache that stores compiled FX graphs. This cache allows Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.</p>
+<p>Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception are caches tha stores compiled FX graphs (FXGraphCache, AOTAutogradCache). These caches allow Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.</p>
 <p>There are a few settings relevant to caching and to FX graph caching in particular.
 The settings are accessible via environment variables listed below or can be hard-coded in Inductor’s config file.</p>
 <div class="section" id="torchinductor-fx-graph-cache">
 <h3>TORCHINDUCTOR_FX_GRAPH_CACHE<a class="headerlink" href="#torchinductor-fx-graph-cache" title="Permalink to this heading">¶</a></h3>
 <p>This setting enables the local FX graph cache feature, i.e., by storing artifacts in the host’s temp directory. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables, and any other value disables it. By default, the disk location is per username, but users can enable sharing across usernames by specifying <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_CACHE_DIR</span></code> (below).</p>
+</div>
+<div class="section" id="torchinductor-autograd-cache">
+<h3>TORCHINDUCTOR_AUTOGRAD_CACHE<a class="headerlink" href="#torchinductor-autograd-cache" title="Permalink to this heading">¶</a></h3>
+<p>This setting extends FXGraphCache to store cached results at the AOTAutograd level, instead of at the Inductor level. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables, and any other value disables it.
+By default, the disk location is per username, but users can enable sharing across usernames by specifying <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_CACHE_DIR</span></code> (below).
+<cite>TORCHINDUCTOR_AUTOGRAD_CACHE</cite> requires <cite>TORCHINDUCTOR_FX_GRAPH_CACHE</cite> to work. The same cache dir stores cache entries for AOTAutogradCache (under <cite>{TORCHINDUCTOR_CACHE_DIR}/aotautograd</cite>) and FXGraphCache (under <cite>{TORCHINDUCTOR_CACHE_DIR}/fxgraph</cite>).</p>
 </div>
 <div class="section" id="torchinductor-cache-dir">
 <h3>TORCHINDUCTOR_CACHE_DIR<a class="headerlink" href="#torchinductor-cache-dir" title="Permalink to this heading">¶</a></h3>
@@ -670,6 +676,13 @@ The settings are accessible via environment variables listed below or can be har
 <p><code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_HOST</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">localhost</span></code>)
 <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_PORT</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">6379</span></code>)</p>
 <p>Note that if Inductor locates a remote cache entry, it stores the compiled artifact in the local on-disk cache; that local artifact would be served on subsequent runs on the same machine.</p>
+</div>
+<div class="section" id="torchinductor-autograd-remote-cache">
+<h3>TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE<a class="headerlink" href="#torchinductor-autograd-remote-cache" title="Permalink to this heading">¶</a></h3>
+<p>Like TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE, this setting enables the remote AOT AutogradCache feature. The current implementation uses Redis. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:
+<code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_HOST</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">localhost</span></code>)
+<code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_PORT</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">6379</span></code>)</p>
+<p><cite>TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE`</cite> depends on <cite>TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE</cite> to be enabled to work. The same Redis server can store both AOTAutograd and FXGraph cache results.</p>
 </div>
 <div class="section" id="torchinductor-autotune-remote-cache">
 <h3>TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE<a class="headerlink" href="#torchinductor-autotune-remote-cache" title="Permalink to this heading">¶</a></h3>
@@ -744,8 +757,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#inductor-cache-settings">Inductor Cache Settings</a><ul>
 <li><a class="reference internal" href="#torchinductor-fx-graph-cache">TORCHINDUCTOR_FX_GRAPH_CACHE</a></li>
+<li><a class="reference internal" href="#torchinductor-autograd-cache">TORCHINDUCTOR_AUTOGRAD_CACHE</a></li>
 <li><a class="reference internal" href="#torchinductor-cache-dir">TORCHINDUCTOR_CACHE_DIR</a></li>
 <li><a class="reference internal" href="#torchinductor-fx-graph-remote-cache">TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE</a></li>
+<li><a class="reference internal" href="#torchinductor-autograd-remote-cache">TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE</a></li>
 <li><a class="reference internal" href="#torchinductor-autotune-remote-cache">TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE</a></li>
 <li><a class="reference internal" href="#torchinductor-force-disable-caches">TORCHINDUCTOR_FORCE_DISABLE_CACHES</a></li>
 </ul>
