@@ -251,6 +251,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         init_end_event.record()
 
         if rank == 0:
+            init_end_event.synchronize()
             print(f"CUDA event elapsed time: {init_start_event.elapsed_time(init_end_event) / 1000}sec")
             print(f"{model}")
 
