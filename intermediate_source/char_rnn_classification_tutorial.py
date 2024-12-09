@@ -49,6 +49,22 @@ It would also be useful to know about RNNs and how they work:
    is about LSTMs specifically but also informative about RNNs in
    general
 """
+######################################################################
+# Preparing Torch 
+# ==========================
+#
+# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). 
+#
+
+import torch 
+
+# Check if CUDA is available
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+
+torch.set_default_device(device)
+print(f"Using device = {torch.get_default_device()}")
 
 ######################################################################
 # Preparing the Data
@@ -65,8 +81,6 @@ It would also be useful to know about RNNs and how they work:
 # The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to 
 # limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
 
-import torch 
-device = torch.device('cpu')
 import string 
 import unicodedata
 
@@ -326,7 +340,7 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
 # We can now train a dataset with minibatches for a specified number of epochs
 
 start = time.time()
-all_losses = train(rnn, train_set, n_epoch=55, learning_rate=0.15, report_every=5)
+all_losses = train(rnn, train_set, n_epoch=27, learning_rate=0.15, report_every=5)
 end = time.time()
 print(f"training took {end-start}s")
 
