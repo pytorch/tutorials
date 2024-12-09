@@ -51,23 +51,6 @@ It would also be useful to know about RNNs and how they work:
 """
 
 ######################################################################
-# Preparing Torch 
-# ==========================
-#
-# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). 
-#
-
-import torch 
-
-# Check if CUDA is available
-device = torch.device('cpu')
-if torch.cuda.is_available():
-    device = torch.device('cuda')
-
-torch.set_default_device(device)
-print(f"Using device = {torch.get_default_device()}")
-
-######################################################################
 # Preparing the Data
 # ==================
 #
@@ -82,6 +65,7 @@ print(f"Using device = {torch.get_default_device()}")
 # The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to 
 # limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
 
+import torch 
 import string 
 import unicodedata
 
