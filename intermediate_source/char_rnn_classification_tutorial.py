@@ -66,6 +66,7 @@ It would also be useful to know about RNNs and how they work:
 # limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
 
 import torch 
+device = torch.device('cpu')
 import string 
 import unicodedata
 
