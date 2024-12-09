@@ -84,16 +84,10 @@ for X, y in test_dataloader:
 # To define a neural network in PyTorch, we create a class that inherits
 # from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. We define the layers of the network
 # in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate
-# operations in the neural network, we move it to the GPU or MPS if available.
+# operations in the neural network, we move it to the `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+# such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
 
-# Get cpu, gpu or mps device for training.
-device = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
-)
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f"Using {device} device")
 
 # Define model
