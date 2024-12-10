@@ -3,17 +3,17 @@ Demonstration of torch.export flow, common challenges and the solutions to addre
 **Authors:** `Ankith Gunapal`, `Jordi Ramon`, `Marcos Carranza`
 
 In a previous `tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__ , we learnt how to use `torch.export <https://pytorch.org/docs/stable/export.html>`__.
-This tutorial builds on the previous tutorial and explores the process of exporting popular models with code & addresses common challenges one might face with `torch.export`.
+This tutorial expands on the previous one and explores the process of exporting popular models with code, as well as addresses common challenges that may arise with ``torch.export``.
 
-You will learn how to export models for these usecases
+In this tutorial, you will learn how to export models for these use cases:
 
 * Video classifier (MViT)
 * Pose Estimation (Yolov11 Pose)
 * Image Captioning (BLIP)
 * Promptable Image Segmentation (SAM2)
 
-Each of the four models were chosen to demonstrate unique features of `torch.export`, some practical considerations
-& issues faced in the implementation.
+Each of the four models were chosen to demonstrate unique features of `torch.export`, as well as some practical considerations
+and issues faced in the implementation.
 
 Prerequisites
 -------------
@@ -22,20 +22,20 @@ Prerequisites
 * Basic understanding of ``torch.export`` and PyTorch Eager inference.
 
 
-Key requirement for `torch.export`: No graph break
-------------------------------------------------
+Key requirement for ``torch.export``: No graph break
+----------------------------------------------------
 
 `torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__ speeds up PyTorch code by JIT compiling PyTorch code into optimized kernels. It optimizes the given model
-using TorchDynamo and creates an optimized graph , which is then lowered into the hardware using the backend specified in the API.
+using ``TorchDynamo`` and creates an optimized graph , which is then lowered into the hardware using the backend specified in the API.
 When TorchDynamo encounters unsupported Python features, it breaks the computation graph, lets the default Python interpreter
-handle the unsupported code, then resumes capturing the graph. This break in the computation graph is called a `graph break <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html#torchdynamo-and-fx-graphs>`__.
+handle the unsupported code, and then resumes capturing the graph. This break in the computation graph is called a `graph break <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html#torchdynamo-and-fx-graphs>`__.
 
-One of the key differences between `torch.export` and `torch.compile` is that `torch.export` doesn’t support graph breaks
-i.e the entire model or part of the model that you are exporting needs to be a single graph. This is because handling graph breaks
-involves interpreting the unsupported operation with default Python evaluation, which is incompatible with what torch.export is
+One of the key differences between ``torch.export`` and ``torch.compile`` is that ``torch.export`` doesn’t support graph breaks
+which means that the entire model or part of the model that you are exporting needs to be a single graph. This is because handling graph breaks
+involves interpreting the unsupported operation with default Python evaluation, which is incompatible with what ``torch.export`` is
 designed for.
 
-You can identify graph breaks in your program by using the following
+You can identify graph breaks in your program by using the following command:
 
 .. code:: console
 
@@ -50,11 +50,11 @@ The models in this recipe have no graph break, but fail with `torch.export`
 Video Classification
 --------------------
 
-MViT is a class of models based on `MultiScale Vision Transformers <https://arxiv.org/abs/2104.11227>`__. This has been trained for video classification using the `Kinetics-400 Dataset <https://arxiv.org/abs/1705.06950>`__.
+MViT is a class of models based on `MultiScale Vision Transformers <https://arxiv.org/abs/2104.11227>`__. This model has been trained for video classification using the `Kinetics-400 Dataset <https://arxiv.org/abs/1705.06950>`__.
 This model with a relevant dataset can be used for action recognition in the context of gaming.
 
 
-The code below exports MViT by tracing with `batch_size=2` and then checks if the ExportedProgram can run with `batch_size=4`
+The code below exports MViT by tracing with ``batch_size=2`` and then checks if the ExportedProgram can run with ``batch_size=4``.
 
 .. code:: python
 
@@ -95,15 +95,15 @@ Error: Static batch size
 
 
 By default, the exporting flow will trace the program assuming that all input shapes are static, so if you run the program with
-inputs shapes that are different than the ones you used while tracing, you will run into an error.
+input shapes that are different than the ones you used while tracing, you will run into an error.
 
 Solution
 ~~~~~~~~
 
-To address the error, we specify the first dimension of the input (`batch_size`) to be dynamic , specifying the expected range of `batch_size`.
-In the corrected example shown below, we specify that the expected `batch_size` can range from 1 to 16.
-One detail to notice that `min=2`  is not a bug and is explained in `The 0/1 Specialization Problem <https://docs.google.com/document/d/16VPOa3d-Liikf48teAOmxLc92rgvJdfosIy-yoT38Io/edit?fbclid=IwAR3HNwmmexcitV0pbZm_x1a4ykdXZ9th_eJWK-3hBtVgKnrkmemz6Pm5jRQ#heading=h.ez923tomjvyk>`__. A detailed description of dynamic shapes
-for torch.export can be found in the export tutorial. The code shown below demonstrates how to export mViT with dynamic batch sizes.
+To address the error, we specify the first dimension of the input (``batch_size``) to be dynamic , specifying the expected range of ``batch_size``.
+In the corrected example shown below, we specify that the expected ``batch_size`` can range from 1 to 16.
+One detail to notice that ``min=2``  is not a bug and is explained in `The 0/1 Specialization Problem <https://docs.google.com/document/d/16VPOa3d-Liikf48teAOmxLc92rgvJdfosIy-yoT38Io/edit?fbclid=IwAR3HNwmmexcitV0pbZm_x1a4ykdXZ9th_eJWK-3hBtVgKnrkmemz6Pm5jRQ#heading=h.ez923tomjvyk>`__. A detailed description of dynamic shapes
+for ``torch.export`` can be found in the export tutorial. The code shown below demonstrates how to export mViT with dynamic batch sizes:
 
 .. code:: python
 
@@ -145,7 +145,7 @@ for torch.export can be found in the export tutorial. The code shown below demon
 Pose Estimation
 ---------------
 
-Pose Estimation is a popular Computer Vision concept that can be used to identify the location of joints of a human in a 2D image.
+**Pose Estimation** is a Computer Vision concept that can be used to identify the location of joints of a human in a 2D image.
 `Ultralytics <https://docs.ultralytics.com/tasks/pose/>`__ has published a Pose Estimation model based on `YOLO11 <https://docs.ultralytics.com/models/yolo11/>`__. This has been trained on the `COCO Dataset <https://cocodataset.org/#keypoints-2017>`__. This model can be used
 for analyzing human pose for determining action or intent. The code below tries to export the YOLO11 Pose model with `batch_size=1`
 
@@ -171,16 +171,16 @@ Error: strict tracing with TorchDynamo
    torch._dynamo.exc.InternalTorchDynamoError: PendingUnbackedSymbolNotFound: Pending unbacked symbols {zuf0} not in returned outputs FakeTensor(..., size=(6400, 1)) ((1, 1), 0).
 
 
-By default `torch.export` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
-This analysis provides a stronger guarantee about safety but not all python code is supported. When we export the `yolo11n-pose` model  using the
+By default ``torch.export`` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
+This analysis provides a stronger guarantee about safety but not all Python code is supported. When we export the ``yolo11n-pose`` model  using the
 default strict mode, it errors.
 
 Solution
 ~~~~~~~~
 
-To address the above error `torch.export` supports non_strict mode where the program is traced using the python interpreter, which works similar to
-PyTorch eager execution, the only difference is that all Tensor objects will be replaced by ProxyTensors, which will record all their operations into
-a graph. By using `strict=False`, we are able to export the program.
+To address the above error ,``torch.export`` supports  the``non_strict`` mode where the program is traced using the Python interpreter, which works similar to
+PyTorch eager execution. The only difference is that all ``Tensor`` objects will be replaced by ``ProxyTensors``, which will record all their operations into
+a graph. By using ``strict=False``, we are able to export the program.
 
 .. code:: python
 
@@ -199,9 +199,9 @@ a graph. By using `strict=False`, we are able to export the program.
 Image Captioning
 ----------------
 
-Image Captioning is the task of defining the contents of an image in words. In the context of gaming, Image Captioning can be used to enhance the
+**Image Captioning** is the task of defining the contents of an image in words. In the context of gaming, Image Captioning can be used to enhance the
 gameplay experience by dynamically generating text description of the various game objects in the scene, thereby providing the gamer with additional
-details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Image Captioning `released by SalesForce Research <https://github.com/salesforce/BLIP>`__. The code below tries to export BLIP with `batch_size=1`
+details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Image Captioning `released by SalesForce Research <https://github.com/salesforce/BLIP>`__. The code below tries to export BLIP with ``batch_size=1``
 
 
 .. code:: python
@@ -223,12 +223,12 @@ details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Imag
 
 
 
-Error: Unsupported python operations
+Error: Unsupported Python Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While exporting a model, it might fail because the model implementation might contain certain python operations which are not yet supported by `torch.export`.
-Some of these failures may have a workaround. BLIP is an example where the original model errors and making a small change in the code resolves the issue.
-`torch.export` lists the common cases of supported and unsupported operations in `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ and shows how you can modify your code to make it export compatible.
+While exporting a model, it might fail because the model implementation might contain certain Python operations which are not yet supported by ``torch.export``.
+Some of these failures may have a workaround. BLIP is an example where the original model errors, which can be resolved by making a small change in the code.
+``torch.export`` lists the common cases of supported and unsupported operations in `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ and shows how you can modify your code to make it export compatible.
 
 .. code:: console
 
@@ -255,14 +255,14 @@ Clone the `tensor <https://github.com/salesforce/BLIP/blob/main/models/blip.py#L
 Promptable Image Segmentation
 -----------------------------
 
-Image segmentation is a computer vision technique that divides a digital image into distinct groups of pixels, or segments, based on their characteristics.
-Segment Anything Model(`SAM <https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/>`__) introduced promptable image segmentation, which predicts object masks given prompts that indicate the desired object. `SAM 2 <https://ai.meta.com/sam2/>`__ is
+**Image segmentation** is a computer vision technique that divides a digital image into distinct groups of pixels, or segments, based on their characteristics.
+`Segment Anything Model (SAM) <https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/>`__) introduced promptable image segmentation, which predicts object masks given prompts that indicate the desired object. `SAM 2 <https://ai.meta.com/sam2/>`__ is
 the first unified model for segmenting objects across images and videos. The `SAM2ImagePredictor <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L20>`__ class provides an easy interface to the model for prompting
 the model. The model can take as input both point and box prompts, as well as masks from the previous iteration of prediction. Since SAM2 provides strong
 zero-shot performance for object tracking, it can be used for tracking game objects in a scene. The code below tries to export SAM2ImagePredictor with batch_size=1
 
 
-The tensor operations in the predict method of `SAM2ImagePredictor <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L20>`__  are happening in the `_predict <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L291>`__ method. So, we try to export this.
+The tensor operations in the predict method of `SAM2ImagePredictor <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L20>`__  are happening in the `_predict <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L291>`__ method. So, we try to export like this.
 
 .. code:: python
 
@@ -274,10 +274,10 @@ The tensor operations in the predict method of `SAM2ImagePredictor <https://gith
    )
 
 
-Error: Model is not of type `torch.nn.Module`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Error: Model is not of type ``torch.nn.Module``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`torch.export` expects the module to be of type `torch.nn.Module`. However, the module we are trying to export is a class method. Hence it errors.
+``torch.export`` expects the module to be of type ``torch.nn.Module``. However, the module we are trying to export is a class method. Hence it errors.
 
 .. code:: console
 
@@ -294,7 +294,7 @@ Error: Model is not of type `torch.nn.Module`
 Solution
 ~~~~~~~~
 
-We write a helper class, which inherits from `torch.nn.Module` and call the `_predict method` in the `forward` method of the class. The complete code can be found `here <https://github.com/anijain2305/sam2/blob/ued/sam2/sam2_image_predictor.py#L293-L311>`__.
+We write a helper class, which inherits from ``torch.nn.Module`` and call the ``_predict method`` in the ``forward`` method of the class. The complete code can be found `here <https://github.com/anijain2305/sam2/blob/ued/sam2/sam2_image_predictor.py#L293-L311>`__.
 
 .. code:: python
 
@@ -316,4 +316,4 @@ We write a helper class, which inherits from `torch.nn.Module` and call the `_pr
 Conclusion
 ----------
 
-In this tutorial, we have learned how to use `torch.export` to export models for popular use cases by addressing challenges through correct configuration & simple code modifications.
+In this tutorial, we have learned how to use ``torch.export`` to export models for popular use cases by addressing challenges through correct configuration and simple code modifications.
