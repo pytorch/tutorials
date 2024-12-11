@@ -3,7 +3,7 @@
 """
 torch.export Tutorial
 ===================================================
-**Author:** William Wen, Zhengxu Chen, Angela Yi
+**Author:** William Wen, Zhengxu Chen, Angela Yi, Pian Pawakapan
 """
 
 ######################################################################
@@ -304,6 +304,220 @@ print(exported_bad1_fixed.module()(-torch.ones(3, 3)))
 # Constraints/Dynamic Shapes
 # --------------------------
 #
+# This section covers dynamic behavior and representation of exported programs. Dynamic behavior is
+# very subjective to the particular model being exported, so for purposes of this tutorial, we'll focus
+# on this particular toy model (with the sample input shapes annotated):
+
+class DynamicModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.l = torch.nn.Linear(5, 3)
+
+    def forward(
+        self,
+        w: torch.Tensor,  # [6, 5]
+        x: torch.Tensor,  # [4]
+        y: torch.Tensor,  # [8, 4]
+        z: torch.Tensor,  # [32]
+    ):
+        x0 = x + y  # output shape: [8, 4]
+        x1 = self.l(w)  # [6, 3]
+        x2 = x0.flatten()  # [32]
+        x3 = x2 + z  # [32]
+        return x1, x3
+
+# By default, ``torch.export`` produces a static program. One clear consequence of this is that at runtime,
+# the program won't work on inputs with different shapes, even if they're valid in eager mode.
+
+w = torch.randn(6, 5)
+x = torch.randn(4)
+y = torch.randn(8, 4)
+z = torch.randn(32)
+model = DynamicModel()
+ep = export(model, (w, x, y, z))
+model(w, x, torch.randn(3, 4), torch.randn(12))
+ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
+
+# To enable dynamism, ``export()`` provides a ``dynamic_shapes`` argument. The easiest way to work with
+# dynamic shapes is to use ``Dim.AUTO`` and look at the program that's returned. Dynamic behavior is specified
+# at a input dimension-level; for each input we can specify a tuple of values:
+
+from torch.export.dynamic_shapes import Dim
+
+dynamic_shapes = {
+    "w": (Dim.AUTO, Dim.AUTO),
+    "x": (Dim.AUTO,),
+    "y": (Dim.AUTO, Dim.AUTO),
+    "z": (Dim.AUTO,),
+}
+ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+
+# Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
+# and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
+# allocated, taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or [1, inf]``? we'll explain later in the
+# 0/1 specialization section).
+#
+# Export then runs model tracing, looking at each operation that's performed by the model. Each individual can emit
+# what's called a "guard"; basically a boolean condition that's required to be true for this program to be valid.
+# When these guards involve the symbols allocated for the input dimensions, our program now contains restrictions on
+# what input shapes are valid; i.e. the program's dynamic behavior. The symbolic shapes subsystem is the part responsible
+# for taking in all the emitted guards and producing a final program representation that adheres to all of these guards.
+# Before we see this "final representation", let's look at the guards emitted by the toy model we're tracing.
+#
+# Here, each input tensor is annotated with the symbol allocated at the start of tracing:
+
+class DynamicModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.l = torch.nn.Linear(5, 3)
+
+    def forward(
+        self,
+        w: torch.Tensor,  # [s0, s1]
+        x: torch.Tensor,  # [s2]
+        y: torch.Tensor,  # [s3, s4]
+        z: torch.Tensor,  # [s5]
+    ):
+        x0 = x + y  # guard: s2 == s4
+        x1 = self.l(w)  # guard: s1 == 5
+        x2 = x0.flatten()
+        x3 = x2 + z  # guard: s3 * s4 == s5
+        return x1, x3
+
+# Let's understand each of the operations and the emitted guards:
+#
+# - ``x0 = x + y``: This is an elementwise-add with broadcasting, since ``x`` is a 1-d tensor and ``y`` a 2-d tensor.
+# ``x`` is broadcasted to match the last dimension ``y``, emitting the guard ``s2 == s4``.
+# - ``x1 = self.l(w)``: Calling ``nn.Linear()`` performs a matrix multiplication with model parameters. In export,
+# parameters, buffers, and constants are considered program state, which we require to be static, and therefore this is
+# a matmul between a dynamic input (``w: [s0, s1]``), and a statically-shaped tensor. This emits the guard ``s1 == 5``.
+# - ``x2 = x0.flatten()``: This call actually doesn't emit any guards! (at least none relevant to input shapes)
+# - ``x3 = x2 + z``: ``x2`` has shape ``[s3*s4]`` after flattening, and this elementwise-add emits ``s3 * s4 == s5``.
+#
+# Writing all of these guards down and summarizing is almost like a mathematical proof, which is what the symbolic shapes
+# subsystem tries to do! In summary, we can conclude that the program must have the following input shapes to be valid:
+# 
+# ``w: [s0, 5]``
+# ``x: [s2]``
+# ``y: [s3, s2]``
+# ``z: [s2*s3]``
+#
+# And when we do finally print out the exported program to see our result, those shapes are what we see annotated on the
+# corresponding inputs!
+
+print(ep)
+
+# Another feature to notice is the range_constraints field above, which contains a valid range for each symbol. This isn't
+# so interesting currently, since this export call doesn't emit any guards related to symbol bounds and each base symbol has
+# a generic bound, but this will come up later.
+#
+# So far, because we've been exporting this toy model, this experience has been misrepresentative of how hard
+# it typically is to debug dynamic shapes guards & issues. In most cases it isn't obvious what guards are being emitted,
+# and which operations and lines of user code are responsible. For this toy model we pinpoint the exact lines, and the guards
+# are rather intuitive.
+#
+# In more complicated cases, a helpful first step is always to enable verbose logging. This can be done either with the environment
+# variable ``TORCH_LOGS="+dynamic"``, or interactively with ``torch._logging.set_logs(dynamic=10)``:
+
+torch._logging.set_logs(dynamic=10)
+ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+
+# This spits out quite a handful, even with this simple toy model. But looking through the logs we can see the lines relevant
+# to what we described above; e.g. the allocation of symbols:
+
+"""
+I1210 16:20:19.720000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s0 = 6 for L['w'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s0" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+I1210 16:20:19.722000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s1 = 5 for L['w'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s1" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+V1210 16:20:19.722000 3417744 torch/fx/experimental/symbolic_shapes.py:6535] [1/0] runtime_assert True == True [statically known]
+I1210 16:20:19.727000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s2 = 4 for L['x'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s2" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+I1210 16:20:19.729000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s3 = 8 for L['y'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s3" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+I1210 16:20:19.731000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s4 = 4 for L['y'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s4" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+I1210 16:20:19.734000 3417744 torch/fx/experimental/symbolic_shapes.py:4404] [1/0] create_symbol s5 = 32 for L['z'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="s5" or to suppress this message run with TORCHDYNAMO_EXTENDED_ADVICE="0"
+"""
+
+# Or the guards emitted:
+
+"""
+I1210 16:20:19.743000 3417744 torch/fx/experimental/symbolic_shapes.py:6234] [1/0] runtime_assert Eq(s2, s4) [guard added] x0 = x + y  # output shape: [8, 4]  # dynamic_shapes_tutorial.py:16 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2, s4)"
+I1210 16:20:19.754000 3417744 torch/fx/experimental/symbolic_shapes.py:6234] [1/0] runtime_assert Eq(s1, 5) [guard added] x1 = self.l(w)  # [6, 3]  # dynamic_shapes_tutorial.py:17 in forward (_meta_registrations.py:2127 in meta_mm), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s1, 5)"
+I1210 16:20:19.775000 3417744 torch/fx/experimental/symbolic_shapes.py:6234] [1/0] runtime_assert Eq(s2*s3, s5) [guard added] x3 = x2 + z  # [32]  # dynamic_shapes_tutorial.py:19 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2*s3, s5)"
+"""
+
+# Next to the ``[guard added]`` messages, we also see the responsible user lines of code - luckily here the model is simple enough.
+# In many real-world cases it's not so straightforward: high-level torch operations can have complicated fake-kernel implementations
+# or operator decompositions that complicate where and what guards are emitted. In such cases the best way to dig deeper and investigate
+# is to follow the logs' suggestion, and re-run with environment variable ``TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="..."``, to further
+# attribute the guard of interest.
+#
+# ``Dim.AUTO`` is just one of the available options for interacting with ``dynamic_shapes``; as of writing this 2 other options are available:
+# ``Dim.DYNAMIC``, and ``Dim.STATIC``. ``Dim.STATIC`` simply marks a dimension static, while ``Dim.DYNAMIC`` is similar to ``Dim.AUTO`` in all
+# ways except one: it raises an error when specializing to a constant; designed to maintain dynamism. See for example what happens when a
+# static guard is emitted on a dynamically-marked dimension:
+
+dynamic_shapes["w"] = (Dim.AUTO, Dim.DYNAMIC)
+export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+
+# Static guards also aren't always inherent to the model; they can also come from user-specifications. In fact, a common pitfall leading to shape
+# specializations is when the user specifies conflicting markers for equivalent dimensions; one dynamic and another static. The same error type is
+# raised when this is the case for ``x.shape[0]`` and ``y.shape[1]``:
+
+dynamic_shapes["w"] = (Dim.AUTO, Dim.AUTO)
+dynamic_shapes["x"] = (Dim.STATIC,)
+dynamic_shapes["y"] = (Dim.AUTO, Dim.DYNAMIC)
+export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+
+# Here you might ask why export "specializes"; why we resolve this static/dynamic conflict by going with the static route. The answer is because
+# of the symbolic shapes system described above, of symbols and guards. When ``x.shape[0]`` is marked static, we don't allocate a symbol, and compile
+# treating this shape as a concrete integer 4. A symbol is allocated for ``y.shape[1]``, and so we finally emit the guard ``s3 == 4``, leading to
+# specialization.
+#
+# One feature of export is that during tracing, statements like asserts, ``torch._checks()``, and if/else conditions will also emit guards.
+# See what happens when we augment the existing model with such statements:
+
+class DynamicModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.l = torch.nn.Linear(5, 3)
+
+    def forward(self, w, x, y, z):
+        assert w.shape[0] <= 512
+        torch._check(x.shape[0] >= 16)
+        if w.shape[0] == x.shape[0] + 2:
+            x0 = x + y
+            x1 = self.l(w)
+            x2 = x0.flatten()
+            x3 = x2 + z
+            return x1, x3
+        else:
+            return w
+
+dynamic_shapes = {
+    "w": (Dim.AUTO, Dim.AUTO),
+    "x": (Dim.AUTO,),
+    "y": (Dim.AUTO, Dim.AUTO),
+    "z": (Dim.AUTO,),
+}
+ep = export(DynamicModel(), (w, x, y, z), dynamic_shapes=dynamic_shapes)
+print(ep)
+
+# Each of these statements emits an additional guard, and the exported program shows the changes; ``s0`` is eliminated in favor of ``s2 + 2``,
+# and ``s2`` now contains lower and upper bounds, reflected in ``range_constraints``.
+#
+# For the if/else condition, you might ask why the True branch was taken, and why it wasn't the ``w.shape[0] != x.shape[0] + 2`` guard that
+# got emitted from tracing. The answer is export is guided by the sample inputs provided by tracing, and specializes on the branches taken.
+# If different sample input shapes were provided that fail the if condition, export would trace and emit guards corresponding to the else branch.
+# Additionally, you might ask why we traced only the if branch, and if it's possible to maintain control-flow in your program and keep both branches
+# alive. For that, refer to rewriting your model code following the ``Control Flow Ops`` section above.
+#
+# Since we're talking about guards and specializations, it's a good time to talk about the 0/1 specialization issue we brought up earlier.
+# 
+
+
+
+
+
+
+
 # Ops can have different specializations/behaviors for different tensor shapes, so by default,
 # ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
 # example inputs given to the initial ``torch.export.export()`` call.
