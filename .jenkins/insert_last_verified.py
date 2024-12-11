@@ -6,11 +6,8 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-build_dir = sys.argv[1]
-print(f"Build directory: {build_dir}")
 
 json_file_path = "tutorials-review-data.json"
-#build_dir = "_build/html"  # for testing after _build/html is created
 
 # paths to skip from the post-processing script
 paths_to_skip = [
@@ -143,18 +140,19 @@ def process_json_file(json_file_path):
             print(f"Warning: <h1> tag not found in {html_file_path}")
 
 
-process_json_file(json_file_path)
-print(
-    f"Finished processing JSON file. Please check the output for any warnings. "
-    "Pages like `nlp/index.html` are generated only during the full `make docs` "
-    "or `make html` build. Warnings about these files when you run `make html-noplot` "
-    "can be ignored."
-)
-
 def main():
     if len(sys.argv) < 2:
         print("Error: Build directory not provided. Exiting.")
         exit(1)
+    build_dir = sys.argv[1]
+    print(f"Build directory: {build_dir}")
+    process_json_file(json_file_path)
+    print(
+        "Finished processing JSON file. Please check the output for any warnings. "
+        "Pages like `nlp/index.html` are generated only during the full `make docs` "
+        "or `make html` build. Warnings about these files when you run `make html-noplot` "
+        "can be ignored."
+    )
 
 if __name__ == "__main__":
     main()
