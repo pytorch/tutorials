@@ -510,245 +510,94 @@ print(ep)
 # alive. For that, refer to rewriting your model code following the ``Control Flow Ops`` section above.
 #
 # Since we're talking about guards and specializations, it's a good time to talk about the 0/1 specialization issue we brought up earlier.
-# 
+# The bottom line is that export will specialize on sample input dimensions with value 0 or 1, because these shapes have trace-time properties that
+# don't generalize to other shapes. For example, size 1 tensors can broadcast while other sizes fail; and size 0 ... . This just means that you should
+# specify 0/1 sample inputs when you'd like your program to hardcode them, and non-0/1 sample inputs when dynamic behavior is desirable. See what happens
+# at runtime when we export this linear layer:
 
+ep = export(
+    torch.nn.Linear(4, 3),
+    (torch.randn(1, 4),),
+    dynamic_shapes={
+        "input": (Dim.AUTO, Dim.STATIC),
+    },
+)
+ep.module()(torch.randn(2, 4))
 
-
-
-
-
-
-# Ops can have different specializations/behaviors for different tensor shapes, so by default,
-# ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
-# example inputs given to the initial ``torch.export.export()`` call.
-# If we try to run the ``ExportedProgram`` in the example below with a tensor
-# with a different shape, we get an error:
-
-class MyModule2(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.lin = torch.nn.Linear(100, 10)
-
-    def forward(self, x, y):
-        return torch.nn.functional.relu(self.lin(x + y), inplace=True)
-
-mod2 = MyModule2()
-exported_mod2 = export(mod2, (torch.randn(8, 100), torch.randn(8, 100)))
-
-try:
-    exported_mod2.module()(torch.randn(10, 100), torch.randn(10, 100))
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can relax this constraint using the ``dynamic_shapes`` argument of
-# ``torch.export.export()``, which allows us to specify, using ``torch.export.Dim``
-# (`documentation <https://pytorch.org/docs/main/export.html#torch.export.Dim>`__),
-# which dimensions of the input tensors are dynamic.
+# So far we've only been talking about 3 ways to specify dynamic shapes: ``Dim.AUTO``, ``Dim.DYNAMIC``, and ``Dim.STATIC``. The attraction of these is the
+# low-friction user experience; all the guards emitted during model tracing are adhered to, and dynamic behavior like min/max ranges, relations, and static/dynamic
+# dimensions are automatically figured out underneath export. The dynamic shapes subsystem essentially acts as a "discovery" process, summarizing these guards
+# and presenting what export believes is the overall dynamic behavior of the program. The drawback of this design appears once the user has stronger expectations or
+# beliefs about the dynamic behavior of these models - maybe there is a strong desire on dynamism and specializations on particular dimensions are to be avoided at
+# all costs, or maybe we just want to catch changes in dynamic behavior with changes to the original model code, or possibly underlying decompositions or meta-kernels.
+# These changes won't be detected and the ``export()`` call will most likely succeed, unless tests are in place that check the resulting ExportedProgram representation.
 #
-# For each tensor argument of the input callable, we can specify a mapping from the dimension
-# to a ``torch.export.Dim``.
-# A ``torch.export.Dim`` is essentially a named symbolic integer with optional
-# minimum and maximum bounds.
-#
-# Then, the format of ``torch.export.export()``'s ``dynamic_shapes`` argument is a mapping
-# from the input callable's tensor argument names, to dimension --> dim mappings as described above.
-# If there is no ``torch.export.Dim`` given to a tensor argument's dimension, then that dimension is
-# assumed to be static.
-#
-# The first argument of ``torch.export.Dim`` is the name for the symbolic integer, used for debugging.
-# Then we can specify an optional minimum and maximum bound (inclusive). Below, we show a usage example.
-#
-# In the example below, our input
-# ``inp1`` has an unconstrained first dimension, but the size of the second
-# dimension must be in the interval [4, 18].
+# For such cases, our stance is to recommend the "traditional" way of specifying dynamic shapes, which longer-term users of export might be familiar with: named ``Dims``:
 
-from torch.export import Dim
-
-inp1 = torch.randn(10, 10, 2)
-
-class DynamicShapesExample1(torch.nn.Module):
-    def forward(self, x):
-        x = x[:, 2:]
-        return torch.relu(x)
-
-inp1_dim0 = Dim("inp1_dim0")
-inp1_dim1 = Dim("inp1_dim1", min=4, max=18)
-dynamic_shapes1 = {
-    "x": {0: inp1_dim0, 1: inp1_dim1},
+dx = Dim("dx", min=4, max=256)
+dh = Dim("dh", max=512)
+dynamic_shapes = {
+    "x": (dx, None),
+    "y": (2 * dx, dh),
 }
 
-exported_dynamic_shapes_example1 = export(DynamicShapesExample1(), (inp1,), dynamic_shapes=dynamic_shapes1)
-
-print(exported_dynamic_shapes_example1.module()(torch.randn(5, 5, 2)))
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 1, 2))
-except Exception:
-    tb.print_exc()
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 20, 2))
-except Exception:
-    tb.print_exc()
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 8, 3))
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# Note that if our example inputs to ``torch.export`` do not satisfy the constraints
-# given by ``dynamic_shapes``, then we get an error.
-
-inp1_dim1_bad = Dim("inp1_dim1_bad", min=11, max=18)
-dynamic_shapes1_bad = {
-    "x": {0: inp1_dim0, 1: inp1_dim1_bad},
-}
-
-try:
-    export(DynamicShapesExample1(), (inp1,), dynamic_shapes=dynamic_shapes1_bad)
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can enforce that equalities between dimensions of different tensors
-# by using the same ``torch.export.Dim`` object, for example, in matrix multiplication:
-
-inp2 = torch.randn(4, 8)
-inp3 = torch.randn(8, 2)
-
-class DynamicShapesExample2(torch.nn.Module):
-    def forward(self, x, y):
-        return x @ y
-
-inp2_dim0 = Dim("inp2_dim0")
-inner_dim = Dim("inner_dim")
-inp3_dim1 = Dim("inp3_dim1")
-
-dynamic_shapes2 = {
-    "x": {0: inp2_dim0, 1: inner_dim},
-    "y": {0: inner_dim, 1: inp3_dim1},
-}
-
-exported_dynamic_shapes_example2 = export(DynamicShapesExample2(), (inp2, inp3), dynamic_shapes=dynamic_shapes2)
-
-print(exported_dynamic_shapes_example2.module()(torch.randn(2, 16), torch.randn(16, 4)))
-
-try:
-    exported_dynamic_shapes_example2.module()(torch.randn(4, 8), torch.randn(4, 2))
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can also describe one dimension in terms of other. There are some
-# restrictions to how detailed we can specify one dimension in terms of another,
-# but generally, those in the form of ``A * Dim + B`` should work.
-
-class DerivedDimExample1(torch.nn.Module):
-    def forward(self, x, y):
-        return x + y[1:]
-
-foo = DerivedDimExample1()
-
-x, y = torch.randn(5), torch.randn(6)
-dimx = torch.export.Dim("dimx", min=3, max=6)
-dimy = dimx + 1
-derived_dynamic_shapes1 = ({0: dimx}, {0: dimy})
-
-derived_dim_example1 = export(foo, (x, y), dynamic_shapes=derived_dynamic_shapes1)
-
-print(derived_dim_example1.module()(torch.randn(4), torch.randn(5)))
-
-try:
-    derived_dim_example1.module()(torch.randn(4), torch.randn(6))
-except Exception:
-    tb.print_exc()
-
-
-class DerivedDimExample2(torch.nn.Module):
-    def forward(self, z, y):
-        return z[1:] + y[1::3]
-
-foo = DerivedDimExample2()
-
-z, y = torch.randn(4), torch.randn(10)
-dx = torch.export.Dim("dx", min=3, max=6)
-dz = dx + 1
-dy = dx * 3 + 1
-derived_dynamic_shapes2 = ({0: dz}, {0: dy})
-
-derived_dim_example2 = export(foo, (z, y), dynamic_shapes=derived_dynamic_shapes2)
-print(derived_dim_example2.module()(torch.randn(7), torch.randn(19)))
-
-######################################################################
-# We can actually use ``torch.export`` to guide us as to which ``dynamic_shapes`` constraints
-# are necessary. We can do this by relaxing all constraints (recall that if we
-# do not provide constraints for a dimension, the default behavior is to constrain
-# to the exact shape value of the example input) and letting ``torch.export``
-# error out.
-
-inp4 = torch.randn(8, 16)
-inp5 = torch.randn(16, 32)
-
-class DynamicShapesExample3(torch.nn.Module):
-    def forward(self, x, y):
-        if x.shape[0] <= 16:
-            return x @ y[:, :16]
-        return y
-
-dynamic_shapes3 = {
-    "x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())},
-    "y": {i: Dim(f"inp5_dim{i}") for i in range(inp5.dim())},
-}
-
-try:
-    export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3)
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can see that the error message gives us suggested fixes to our
-# dynamic shape constraints. Let us follow those suggestions (exact
-# suggestions may differ slightly):
-
-def suggested_fixes():
-    inp4_dim1 = Dim('shared_dim')
-    # suggested fixes below
-    inp4_dim0 = Dim('inp4_dim0', max=16)
-    inp5_dim1 = Dim('inp5_dim1', min=17)
-    inp5_dim0 = inp4_dim1
-    # end of suggested fixes
-    return {
-        "x": {0: inp4_dim0, 1: inp4_dim1},
-        "y": {0: inp5_dim0, 1: inp5_dim1},
-    }
-
-dynamic_shapes3_fixed = suggested_fixes()
-exported_dynamic_shapes_example3 = export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
-print(exported_dynamic_shapes_example3.module()(torch.randn(4, 32), torch.randn(32, 64)))
-
-######################################################################
-# Note that in the example above, because we constrained the value of ``x.shape[0]`` in
-# ``dynamic_shapes_example3``, the exported program is sound even though there is a
-# raw ``if`` statement.
+# This style of dynamic shapes allows the user to specify what symbols are allocated for input dimensions, min/max bounds on those symbols, and places restrictions on the
+# dynamic behavior of the ExportedProgram produced; ConstraintViolation errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
+# specifications given. For example, in the above specification, the following is asserted:
+# - ``x.shape[0]`` is to have range ``[4, 256]``, and related to ``y.shape[0]`` by ``y.shape[0] == 2 * x.shape[0]``.
+# - ``x.shape[1]`` is static.
+# - ``y.shape[1]`` has range ``[2, 512]``, and is unrelated to any other dimension.
 #
-# If you want to see why ``torch.export`` generated these constraints, you can
-# re-run the script with the environment variable ``TORCH_LOGS=dynamic,dynamo``,
-# or use ``torch._logging.set_logs``.
+# In this design, we allow relations between dimensions to be specified with univariate linear expressions: ``A * dim + B`` can be specified for any dimension. This allows users
+# to specify more complex constraints like integer divisibility for dynamic dimensions:
 
-import logging
-torch._logging.set_logs(dynamic=logging.INFO, dynamo=logging.INFO)
-exported_dynamic_shapes_example3 = export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
+dx = Dim("dx", min=4, max=512)
+dynamic_shapes = {
+    "x": (4 * dx, None)  # x.shape[0] has range [16, 2048], and is divisible by 4.
+}
 
-# reset to previous values
-torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
+# One common issue with this specification style (before ``Dim.AUTO`` was introduced), is that the specification would often be mismatched with what was produced by model tracing.
+# That would lead to ConstraintViolation errors and export suggested fixes - see for example with this model & specification, where the model inherently requires equality between
+# dimensions 0 of ``x`` and ``y``, and requires dimension 1 to be static.
 
-######################################################################
-# We can view an ``ExportedProgram``'s symbolic shape ranges using the
-# ``range_constraints`` field.
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        w = x + y
+        return w + torch.ones(4)
 
-print(exported_dynamic_shapes_example3.range_constraints)
+dx, dy, d1 = torch.export.dims("dx", "dy", "d1")
+ep = export(
+    Foo(),
+    (torch.randn(6, 4), torch.randn(6, 4)),
+    dynamic_shapes={
+        "x": (dx, d1),
+        "y": (dy, d1),
+    },
+)
+
+# The expectation with suggested fixes is that the user can interactively copy-paste the changes into their dynamic shapes specification, and successfully export afterwards.
+#
+# Lastly, there's couple nice-to-knows about the options for specification:
+# - ``None`` is a good option for static behavior:
+#   - ``dynamic_shapes=None`` (default) exports with the entire model being static.
+#   - specifying ``None`` at an input-level exports with all tensor dimensions static, and alternatively is also required for non-tensor inputs.
+#   - specfiying ``None`` at a dimension-level specializes that dimension, though this is deprecated in favor of ``Dim.STATIC``.
+# - specifying per-dimension integer values also produces static behavior, and will additionally check that the provided sample input matches the specification.
+#
+# These options are combined in the inputs & dynamic shapes spec below:
+
+inputs = (
+    torch.randn(4, 4),
+    torch.randn(3, 3),
+    16,
+    False,
+)
+dynamic_shapes = {
+    "tensor_0": (Dim.AUTO, None),
+    "tensor_1": None,
+    "int_val": None,
+    "bool_val": None,
+}
 
 ######################################################################
 # Custom Ops
