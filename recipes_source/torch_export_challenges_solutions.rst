@@ -25,7 +25,7 @@ Prerequisites
 Key requirement for ``torch.export``: No graph break
 ----------------------------------------------------
 
-`torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__ speeds up PyTorch code by JIT compiling PyTorch code into optimized kernels. It optimizes the given model
+`torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__ speeds up PyTorch code by using JIT to compile PyTorch code into optimized kernels. It optimizes the given model
 using ``TorchDynamo`` and creates an optimized graph , which is then lowered into the hardware using the backend specified in the API.
 When TorchDynamo encounters unsupported Python features, it breaks the computation graph, lets the default Python interpreter
 handle the unsupported code, and then resumes capturing the graph. This break in the computation graph is called a `graph break <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html#torchdynamo-and-fx-graphs>`__.
@@ -173,7 +173,7 @@ Error: strict tracing with TorchDynamo
 
 By default ``torch.export`` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
 This analysis provides a stronger guarantee about safety but not all Python code is supported. When we export the ``yolo11n-pose`` model  using the
-default strict mode, it errors.
+default strict mode, it typically returns an error.
 
 Solution
 ~~~~~~~~
