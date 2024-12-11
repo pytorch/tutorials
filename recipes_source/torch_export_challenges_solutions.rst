@@ -1,16 +1,16 @@
 Demonstration of torch.export flow, common challenges and the solutions to address them
 =======================================================================================
-**Authors:** `Ankith Gunapal`, `Jordi Ramon`, `Marcos Carranza`
+**Authors:** `Ankith Gunapal <https://github.com/agunapal>`__, `Jordi Ramon <https://github.com/JordiFB>`__, `Marcos Carranza <https://github.com/macarran>`__
 
-In a previous `tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__ , we learnt how to use `torch.export <https://pytorch.org/docs/stable/export.html>`__.
+In the `Introduction to torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__ , we learned how to use `torch.export <https://pytorch.org/docs/stable/export.html>`__.
 This tutorial expands on the previous one and explores the process of exporting popular models with code, as well as addresses common challenges that may arise with ``torch.export``.
 
 In this tutorial, you will learn how to export models for these use cases:
 
-* Video classifier (MViT)
-* Pose Estimation (Yolov11 Pose)
-* Image Captioning (BLIP)
-* Promptable Image Segmentation (SAM2)
+* Video classifier (`MViT <https://pytorch.org/vision/main/models/video_mvit.html>`__)
+* Pose Estimation (`Yolov11 Pose <https://docs.ultralytics.com/tasks/pose/>`__)
+* Image Captioning (`BLIP <https://github.com/salesforce/BLIP>`__)
+* Promptable Image Segmentation (`SAM2 <https://ai.meta.com/sam2/>`__)
 
 Each of the four models were chosen to demonstrate unique features of `torch.export`, as well as some practical considerations
 and issues faced in the implementation.
@@ -178,7 +178,7 @@ default strict mode, it errors.
 Solution
 ~~~~~~~~
 
-To address the above error ,``torch.export`` supports  the``non_strict`` mode where the program is traced using the Python interpreter, which works similar to
+To address the above error , ``torch.export`` supports  the ``non_strict`` mode where the program is traced using the Python interpreter, which works similar to
 PyTorch eager execution. The only difference is that all ``Tensor`` objects will be replaced by ``ProxyTensors``, which will record all their operations into
 a graph. By using ``strict=False``, we are able to export the program.
 
@@ -259,7 +259,7 @@ Promptable Image Segmentation
 `Segment Anything Model (SAM) <https://ai.meta.com/blog/segment-anything-foundation-model-image-segmentation/>`__) introduced promptable image segmentation, which predicts object masks given prompts that indicate the desired object. `SAM 2 <https://ai.meta.com/sam2/>`__ is
 the first unified model for segmenting objects across images and videos. The `SAM2ImagePredictor <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L20>`__ class provides an easy interface to the model for prompting
 the model. The model can take as input both point and box prompts, as well as masks from the previous iteration of prediction. Since SAM2 provides strong
-zero-shot performance for object tracking, it can be used for tracking game objects in a scene. The code below tries to export SAM2ImagePredictor with batch_size=1
+zero-shot performance for object tracking, it can be used for tracking game objects in a scene.
 
 
 The tensor operations in the predict method of `SAM2ImagePredictor <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L20>`__  are happening in the `_predict <https://github.com/facebookresearch/sam2/blob/main/sam2/sam2_image_predictor.py#L291>`__ method. So, we try to export like this.
@@ -317,3 +317,6 @@ Conclusion
 ----------
 
 In this tutorial, we have learned how to use ``torch.export`` to export models for popular use cases by addressing challenges through correct configuration and simple code modifications.
+Once you are able to export a model, you can lower the ``ExportedProgram`` into your hardware using `AOTInductor <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html>`__ in case of servers and `ExecuTorch <https://pytorch.org/executorch/stable/index.html>`__ in case of edge device.
+To learn more about ``AOTInductor``(AOTI), please refer to the `AOTI tutorial <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`
+To learn more about ``ExecuTorch``, please refer to the `ExecuTorch tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>`__
