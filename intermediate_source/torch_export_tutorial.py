@@ -341,7 +341,7 @@ ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
 
 ######################################################################
 # To enable dynamism, ``export()`` provides a ``dynamic_shapes`` argument. The easiest way to work with
-# dynamic shapes is to use ``Dim.AUTO`` and look at the program that's returned. Dynamic behavior is specified
+# dynamic shapes is using ``Dim.AUTO`` and looking at the program that's returned. Dynamic behavior is specified
 # at a input dimension-level; for each input we can specify a tuple of values:
 
 from torch.export.dynamic_shapes import Dim
