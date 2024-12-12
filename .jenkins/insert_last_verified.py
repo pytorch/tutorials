@@ -48,6 +48,8 @@ def get_git_log_date(file_path, git_log_args):
 
 def get_creation_date(file_path):
     return get_git_log_date(file_path, ["--diff-filter=A", "--format=%aD"]).strftime("%b %d, %Y")
+
+
 def get_last_updated_date(file_path):
     return get_git_log_date(file_path, ["-1", "--format=%aD"]).strftime("%b %d, %Y")
 
