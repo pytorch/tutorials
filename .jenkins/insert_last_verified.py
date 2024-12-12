@@ -63,7 +63,7 @@ def find_source_file(base_path):
 
 
 # Function to process a JSON file and insert the "Last Verified" information into the HTML files
-def process_json_file(json_file_path):
+def process_json_file(build_dir , json_file_path):
     with open(json_file_path, "r", encoding="utf-8") as json_file:
         json_data = json.load(json_file)
 
@@ -148,7 +148,7 @@ def main():
         exit(1)
     build_dir = sys.argv[1]
     print(f"Build directory: {build_dir}")
-    process_json_file(json_file_path)
+    process_json_file(build_dir , json_file_path)
     print(
         "Finished processing JSON file. Please check the output for any warnings. "
         "Pages like `nlp/index.html` are generated only during the full `make docs` "
