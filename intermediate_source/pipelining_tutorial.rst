@@ -234,7 +234,7 @@ processes using ``torchrun``.
 Additional Resources
 --------------------
 
-We have successfully integrated torch.distributed.pipelining into the torchtitan repository. TorchTitan is a clean, minimal code base for
+We have successfully integrated ``torch.distributed.pipelining`` into the `torchtitan repository <https://github.com/pytorch/torchtitan>`__. TorchTitan is a clean, minimal code base for
 Large-scale LLM training using native PyTorch. For a production ready usage of pipeline
 parallelism as well as composition with other distributed techniques, see
 `TorchTitan end to end example of 3D parallelism <https://github.com/pytorch/torchtitan>`__.
