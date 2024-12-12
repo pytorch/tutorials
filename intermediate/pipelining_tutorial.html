@@ -604,7 +604,7 @@ chunks. First, let us define the model:</p>
             <span class="n">h</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
 
       <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="k">else</span> <span class="n">h</span>
-      <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="k">else</span> <span class="n">h</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="k">else</span> <span class="n">h</span>
       <span class="k">return</span> <span class="n">output</span>
 </pre></div>
 </div>
@@ -641,29 +641,26 @@ use data from the dataloader and does not need to receive data from any previous
 <h2>Step 1: Partition the Transformer Model<a class="headerlink" href="#step-1-partition-the-transformer-model" title="Permalink to this heading">¶</a></h2>
 <p>There are two different ways of partitioning the model:</p>
 <p>First is the manual mode in which we can manually create two instances of the model by deleting portions of
-attributes of the model. In this example for a 2 stage (2 ranks) the model is cut in half.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">manual_model_split</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">example_input_microbatch</span><span class="p">,</span> <span class="n">model_args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineStage</span><span class="p">:</span>
+attributes of the model. In this example for two stages (2 ranks), the model is cut in half.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">manual_model_split</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineStage</span><span class="p">:</span>
    <span class="k">if</span> <span class="n">stage_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
       <span class="c1"># prepare the first stage model</span>
       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
             <span class="k">del</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
       <span class="n">model</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
       <span class="n">model</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
-      <span class="n">stage_input_microbatch</span> <span class="o">=</span> <span class="n">example_input_microbatch</span>
 
    <span class="k">elif</span> <span class="n">stage_index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
       <span class="c1"># prepare the second stage model</span>
       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
             <span class="k">del</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
       <span class="n">model</span><span class="o">.</span><span class="n">tok_embeddings</span> <span class="o">=</span> <span class="kc">None</span>
-      <span class="n">stage_input_microbatch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">example_input_microbatch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">example_input_microbatch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">model_args</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
 
    <span class="n">stage</span> <span class="o">=</span> <span class="n">PipelineStage</span><span class="p">(</span>
       <span class="n">model</span><span class="p">,</span>
       <span class="n">stage_index</span><span class="p">,</span>
       <span class="n">num_stages</span><span class="p">,</span>
       <span class="n">device</span><span class="p">,</span>
-      <span class="n">input_args</span><span class="o">=</span><span class="n">stage_input_microbatch</span><span class="p">,</span>
    <span class="p">)</span>
    <span class="k">return</span> <span class="n">stage</span>
 </pre></div>
@@ -693,18 +690,19 @@ as well as multiple-stage-per-rank schedules such as <code class="docutils liter
    <span class="n">example_input_microbatch</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="n">num_microbatches</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
    <span class="c1"># Option 1: Manual model splitting</span>
-   <span class="n">stage</span> <span class="o">=</span> <span class="n">manual_model_split</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">example_input_microbatch</span><span class="p">,</span> <span class="n">model_args</span><span class="p">)</span>
+   <span class="n">stage</span> <span class="o">=</span> <span class="n">manual_model_split</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
    <span class="c1"># Option 2: Tracer model splitting</span>
    <span class="c1"># stage = tracer_model_split(model, example_input_microbatch)</span>
 
+   <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
    <span class="k">def</span> <span class="nf">tokenwise_loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
       <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
-      <span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model_args</span><span class="o">.</span><span class="n">vocab_size</span><span class="p">)</span>
-      <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model_args</span><span class="o">.</span><span class="n">vocab_size</span><span class="p">)</span>
+      <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
       <span class="k">return</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
 
    <span class="n">schedule</span> <span class="o">=</span> <span class="n">ScheduleGPipe</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">n_microbatches</span><span class="o">=</span><span class="n">num_microbatches</span><span class="p">,</span> <span class="n">loss_fn</span><span class="o">=</span><span class="n">tokenwise_loss_fn</span><span class="p">)</span>
@@ -714,6 +712,7 @@ as well as multiple-stage-per-rank schedules such as <code class="docutils liter
    <span class="k">elif</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
       <span class="n">losses</span> <span class="o">=</span> <span class="p">[]</span>
       <span class="n">output</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">losses</span><span class="o">=</span><span class="n">losses</span><span class="p">)</span>
+      <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"losses: </span><span class="si">{</span><span class="n">losses</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -740,7 +739,12 @@ We explored setting up the environment, defining a transformer model, and partit
 We discussed two methods of model partitioning, manual and tracer-based, and demonstrated how to schedule computations on
 micro-batches across different stages. Finally, we covered the execution of the pipeline schedule and the launch of distributed
 processes using <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>.</p>
-<p>For a production ready usage of pipeline parallelism as well as composition with other distributed techniques, see also
+</div>
+<div class="section" id="additional-resources">
+<h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Permalink to this heading">¶</a></h2>
+<p>We have successfully integrated <code class="docutils literal notranslate"><span class="pre">torch.distributed.pipelining</span></code> into the <a class="reference external" href="https://github.com/pytorch/torchtitan">torchtitan repository</a>. TorchTitan is a clean, minimal code base for
+large-scale LLM training using native PyTorch. For a production ready usage of pipeline
+parallelism as well as composition with other distributed techniques, see
 <a class="reference external" href="https://github.com/pytorch/torchtitan">TorchTitan end to end example of 3D parallelism</a>.</p>
 </div>
 </div>
@@ -792,6 +796,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#step-2-define-the-main-execution">Step 2: Define The Main Execution</a></li>
 <li><a class="reference internal" href="#step-3-launch-the-distributed-processes">Step 3: Launch the Distributed Processes</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+<li><a class="reference internal" href="#additional-resources">Additional Resources</a></li>
 </ul>
 </li>
 </ul>
