@@ -109,7 +109,7 @@ Step 1: Partition the Transformer Model
 There are two different ways of partitioning the model:
 
 First is the manual mode in which we can manually create two instances of the model by deleting portions of
-attributes of the model. In this example for 2 stages (2 ranks) the model is cut in half.
+attributes of the model. In this example for two stages (2 ranks), the model is cut in half.
 
 .. code:: python
 
