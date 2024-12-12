@@ -632,34 +632,33 @@ print(a)
 # does this *without* changing ``a`` - you can see that when we print
 # ``a`` again at the end, it retains its ``requires_grad=True`` property.
 # 
-# Moving to GPU
+# Moving to `Accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 # -------------
 # 
-# One of the major advantages of PyTorch is its robust acceleration on
-# CUDA-compatible Nvidia GPUs. (“CUDA” stands for *Compute Unified Device
-# Architecture*, which is Nvidia’s platform for parallel computing.) So
-# far, everything we’ve done has been on CPU. How do we move to the faster
+# One of the major advantages of PyTorch is its robust acceleration on an
+# `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+# such as CUDA, MPS, MTIA, or XPU. 
+# So far, everything we’ve done has been on CPU. How do we move to the faster
 # hardware?
 # 
-# First, we should check whether a GPU is available, with the
+# First, we should check whether an accelerator is available, with the
 # ``is_available()`` method.
 # 
 # .. note::
-#      If you do not have a CUDA-compatible GPU and CUDA drivers
-#      installed, the executable cells in this section will not execute any
-#      GPU-related code.
+#      If you do not have an accelerator, the executable cells in this section will not execute any
+#      accelerator-related code.
 # 
 
-if torch.cuda.is_available():
-    print('We have a GPU!')
+if torch.accelerator.is_available():
+    print('We have an accelerator!')
 else:
     print('Sorry, CPU only.')
 
 
 ##########################################################################
-# Once we’ve determined that one or more GPUs is available, we need to put
-# our data someplace where the GPU can see it. Your CPU does computation
-# on data in your computer’s RAM. Your GPU has dedicated memory attached
+# Once we’ve determined that one or more accelerators is available, we need to put
+# our data someplace where the accelerator can see it. Your CPU does computation
+# on data in your computer’s RAM. Your accelerator has dedicated memory attached
 # to it. Whenever you want to perform a computation on a device, you must
 # move *all* the data needed for that computation to memory accessible by
 # that device. (Colloquially, “moving the data to memory accessible by the
@@ -669,8 +668,8 @@ else:
 # may do it at creation time:
 # 
 
-if torch.cuda.is_available():
-    gpu_rand = torch.rand(2, 2, device='cuda')
+if torch.accelerator.is_available():
+    gpu_rand = torch.rand(2, 2, device=torch.accelerator.current_accelerator())
     print(gpu_rand)
 else:
     print('Sorry, CPU only.')
@@ -678,25 +677,22 @@ else:
 
 ##########################################################################
 # By default, new tensors are created on the CPU, so we have to specify
-# when we want to create our tensor on the GPU with the optional
+# when we want to create our tensor on the accelerator with the optional
 # ``device`` argument. You can see when we print the new tensor, PyTorch
 # informs us which device it’s on (if it’s not on CPU).
 # 
-# You can query the number of GPUs with ``torch.cuda.device_count()``. If
-# you have more than one GPU, you can specify them by index:
+# You can query the number of accelerators with ``torch.accelerator.device_count()``. If
+# you have more than one accelerator, you can specify them by index, take CUDA for example:
 # ``device='cuda:0'``, ``device='cuda:1'``, etc.
 # 
 # As a coding practice, specifying our devices everywhere with string
 # constants is pretty fragile. In an ideal world, your code would perform
-# robustly whether you’re on CPU or GPU hardware. You can do this by
+# robustly whether you’re on CPU or accelerator hardware. You can do this by
 # creating a device handle that can be passed to your tensors instead of a
 # string:
 # 
 
-if torch.cuda.is_available():
-    my_device = torch.device('cuda')
-else:
-    my_device = torch.device('cpu')
+my_device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
 print('Device: {}'.format(my_device))
 
 x = torch.rand(2, 2, device=my_device)
@@ -718,12 +714,12 @@ y = y.to(my_device)
 # It is important to know that in order to do computation involving two or
 # more tensors, *all of the tensors must be on the same device*. The
 # following code will throw a runtime error, regardless of whether you
-# have a GPU device available:
+# have an accelerator device available, take CUDA for example:
 # 
 # .. code-block:: python
 # 
 #    x = torch.rand(2, 2)
-#    y = torch.rand(2, 2, device='gpu')
+#    y = torch.rand(2, 2, device='cuda')
 #    z = x + y  # exception will be thrown
 # 
 
