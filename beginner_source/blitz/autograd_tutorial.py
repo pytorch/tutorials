@@ -191,7 +191,7 @@ print(-2*b == b.grad)
 # .. math::
 #
 #
-#      J^{T}\cdot \vec{v}=\left(\begin{array}{ccc}
+#      J^{T}\cdot \vec{v} = m \cdot \left(\begin{array}{ccc}
 #       \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
 #       \vdots & \ddots & \vdots\\
 #       \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
@@ -199,7 +199,7 @@ print(-2*b == b.grad)
 #       \frac{\partial l}{\partial y_{1}}\\
 #       \vdots\\
 #       \frac{\partial l}{\partial y_{m}}
-#       \end{array}\right)=\left(\begin{array}{c}
+#       \end{array}\right) = m \cdot \left(\begin{array}{c}
 #       \frac{\partial l}{\partial x_{1}}\\
 #       \vdots\\
 #       \frac{\partial l}{\partial x_{n}}
@@ -207,7 +207,6 @@ print(-2*b == b.grad)
 #
 # This characteristic of vector-Jacobian product is what we use in the above example;
 # ``external_grad`` represents :math:`\vec{v}`.
-#
 
 
 
