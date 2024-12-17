@@ -90,11 +90,6 @@ First, let's import the required dependencies:
 
     albumentations are already installed
 
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 93-100
-
 VGG Configuration
 -----------------
 
@@ -102,8 +97,6 @@ In this section, we will define configurations suggested in the VGG paper.
 We use the CIFAR100 dataset. The authors of the VGG paper scale images ``isotropically``,
 which means increasing the size of an image while maintaining its proportions,
 preventing distortion and maintaining the consistency of the object.
-
-.. GENERATED FROM PYTHON SOURCE LINES 100-140
 
 .. code-block:: default
 
@@ -146,16 +139,11 @@ preventing distortion and maintaining the consistency of the object.
 
     model_layers =None
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 141-147
-
 .. note:: In the code above, we have defined the batch size as 32,
    which is recommended for Google Colab. However, if you are
    running this code on a machine with 24GB of GPU memory,
    you can set the batch size to 128. You can modify the batch
    size according to your preference and hardware capabilities.
-
-.. GENERATED FROM PYTHON SOURCE LINES 149-174
 
 Defining the dataset
 --------------------
@@ -181,9 +169,6 @@ thus improving its performance on both test data and in real-world applications.
 
 To apply preprocessing, we need to override the CIFAR100 class that we have imported from the
 ``torchvision.datasets`` with a custom class:
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 174-227
 
 .. code-block:: default
 
@@ -240,9 +225,6 @@ To apply preprocessing, we need to override the CIFAR100 class that we have impo
             img=img.transpose((2,0,1))
             return img, target
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 228-238
-
 Define Model
 ------------
 
@@ -253,8 +235,6 @@ We will use two main components to define the model:
 
 * ``Config_channels``: This refers to the number of output channels for each layer.
 * ``Config_kernels``: This refers to the kernel size (or filter size) for each layer.
-
-.. GENERATED FROM PYTHON SOURCE LINES 238-266
 
 .. code-block:: default
 
@@ -285,12 +265,7 @@ We will use two main components to define the model:
     "E":[3,3,2,3,3,2,3,3,3,3,2,3,3,3,3,2,3,3,3,3,2],
     }
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-269
-
 Next, we define a model class that generates a model with a choice of six versions.
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 269-363
 
 .. code-block:: default
 
@@ -300,7 +275,6 @@ Next, we define a model class that generates a model with a choice of six versio
         in_channels = 3
         i = 1
         for  out_channels , kernel in zip(cfg_c,cfg_k) :
-            # print(f"{i} th layer {out_channels} processing")
             if out_channels == "M" :
                 feature_extract += [nn.MaxPool2d(kernel,2) ]
             elif out_channels == "LRN":
@@ -372,8 +346,6 @@ Next, we define a model class that generates a model with a choice of six versio
                     self.last_xavier+=1
                 nn.init.constant_(m.bias, 0)
 
-.. GENERATED FROM PYTHON SOURCE LINES 364-377
-
 Initializing Model Weights
 ----------------------------
 
@@ -387,8 +359,6 @@ To reproduce the VGG results, we will use the Xavier initialization method
 to initialize the model weights. Specifically, we will apply Xavier
 initialization to the first few layers and the last few layers, while using
 random initialization for the remaining layers.
-
-.. GENERATED FROM PYTHON SOURCE LINES 377-399
 
 .. code-block:: default
 
@@ -413,14 +383,10 @@ random initialization for the remaining layers.
     # 
     # These values have been found to work well in practice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 400-405
-
 Training the Model
 ------------------
 
 First, let's define top-k error.
-
-.. GENERATED FROM PYTHON SOURCE LINES 405-422
 
 .. code-block:: default
 
@@ -439,12 +405,8 @@ First, let's define top-k error.
             res.append(correct_k)
         return res
 
-.. GENERATED FROM PYTHON SOURCE LINES 423-426
-
 Next, we initiate the model and loss function, optimizer and schedulers. In the VGG model,
 they use a softmax output, Momentum Optimizer, and scheduling based on accuracy.
-
-.. GENERATED FROM PYTHON SOURCE LINES 426-434
 
 .. code-block:: default
 
