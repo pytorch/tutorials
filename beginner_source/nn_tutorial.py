@@ -31,7 +31,7 @@ What is `torch.nn` *really*?
 # MNIST data setup
 # ----------------
 #
-# We will use the classic `MNIST <http://deeplearning.net/data/mnist/>`_ dataset,
+# We will use the classic `MNIST <https://yann.lecun.com/exdb/mnist/index.html>`_ dataset,
 # which consists of black-and-white images of hand-drawn digits (between 0 and 9).
 #
 # We will use `pathlib <https://docs.python.org/3/library/pathlib.html>`_

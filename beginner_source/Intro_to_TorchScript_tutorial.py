@@ -4,7 +4,7 @@ Introduction to TorchScript
 
 **Authors:** James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com), rev2
 
-.. note:: TorchScript is no longer in active development.
+.. warning:: TorchScript is no longer in active development.
 
 This tutorial is an introduction to TorchScript, an intermediate
 representation of a PyTorch model (subclass of ``nn.Module``) that

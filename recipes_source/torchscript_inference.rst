@@ -1,7 +1,7 @@
 TorchScript for Deployment
 ==========================
 
-.. note:: TorchScript is no longer in active development.
+.. warning:: TorchScript is no longer in active development.
 
 In this recipe, you will learn:
 

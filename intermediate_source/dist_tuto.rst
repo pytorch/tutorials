@@ -252,7 +252,7 @@ PyTorch. Here are a few supported collectives.
    from all processes to ``tensor_list``, on all processes.
 -  ``dist.barrier(group)``: Blocks all processes in `group` until each one has entered this function.
 -  ``dist.all_to_all(output_tensor_list, input_tensor_list, group)``: Scatters list of input tensors to all processes in
-a group and return gathered list of tensors in output list.
+   a group and return gathered list of tensors in output list.
 
 The full list of supported collectives can be found by looking at the latest documentation for PyTorch Distributed
 `(link) <https://pytorch.org/docs/stable/distributed.html>`__.

@@ -1,7 +1,7 @@
 Loading a TorchScript Model in C++
 =====================================
 
-.. note:: TorchScript is no longer in active development.
+.. warning:: TorchScript is no longer in active development.
 
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for

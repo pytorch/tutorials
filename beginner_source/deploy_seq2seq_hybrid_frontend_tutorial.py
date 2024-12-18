@@ -4,7 +4,7 @@ Deploying a Seq2Seq Model with TorchScript
 ==================================================
 **Author:** `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
 
-.. note:: TorchScript is no longer in active development.
+.. warning:: TorchScript is no longer in active development.
 """
 
 
