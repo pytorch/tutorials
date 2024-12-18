@@ -526,7 +526,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="prototype-flight-recorder-for-debugging-stuck-jobs">
-<h1>(prototype) Flight Recorder for Debugging Stuck Jobs<a class="headerlink" href="#prototype-flight-recorder-for-debugging-stuck-jobs" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Sep 09, 2024 | Last Updated: Nov 26, 2024 | Last Verified: Sep 09, 2024</p>
+<h1>(prototype) Flight Recorder for Debugging Stuck Jobs<a class="headerlink" href="#prototype-flight-recorder-for-debugging-stuck-jobs" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Sep 09, 2024 | Last Updated: Dec 17, 2024 | Last Verified: Sep 09, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/c-p-i-o">Chirag Pandya</a>, <a class="reference external" href="https://github.com/fduwjj">Junjie Wang</a></p>
 <div class="section" id="what-you-will-learn">
 <h2>What you will learn<a class="headerlink" href="#what-you-will-learn" title="Permalink to this heading">¶</a></h2>
@@ -725,6 +725,43 @@ For demonstration purposes, we named this program <code class="docutils literal 
 <p class="admonition-title">Note</p>
 <p>Please note that this is a simplified example. In real-world scenarios, the process would involve more
 complexities.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"LOCAL_RANK"</span><span class="p">])</span>
+<span class="n">world_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"WORLD_SIZE"</span><span class="p">])</span>
+<span class="k">assert</span> <span class="n">world_size</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">"world size must be less than or equal to 8"</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TORCH_NCCL_DEBUG_INFO_TEMP_FILE"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"/tmp/trace_"</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TORCH_NCCL_DUMP_ON_TIMEOUT"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"TORCH_NCCL_TRACE_BUFFER_SIZE"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"2000"</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda:</span><span class="si">{</span><span class="n">local_rank</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">world_size</span><span class="si">=}</span><span class="s2"> master addr: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span><span class="si">}</span><span class="s2"> master port: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">device</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># Initialize the process group with a small timeout so that jobs fail quickly</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">local_rank</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">local_rank</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="c1"># Write some collectives to populate Flight Recorder data</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"calling allreduce on </span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+<span class="c1"># rank0 is doing an additional collective</span>
+<span class="k">if</span> <span class="n">local_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"rank0 is doing an allreduce on tensor b, but other ranks forgot"</span><span class="p">)</span>
+  <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">local_rank</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"calling allreduce on </span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s2"> exiting"</span><span class="p">)</span>
+</pre></div>
 </div>
 <p>To run this program, use <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torchrun</span> <span class="o">--</span><span class="n">nnodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">nproc_per_node</span><span class="o">=</span><span class="mi">2</span> <span class="n">crash</span><span class="o">.</span><span class="n">py</span>

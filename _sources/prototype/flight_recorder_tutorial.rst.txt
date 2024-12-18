@@ -214,7 +214,6 @@ For demonstration purposes, we named this program ``crash.py``.
    complexities.
 
 .. code:: python
-  :caption: A crashing example
 
   import torch
   import torch.distributed as dist
