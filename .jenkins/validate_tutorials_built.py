@@ -53,8 +53,6 @@ NOT_RUN = [
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "intermediate_source/torch_export_tutorial", # reenable after 2940 is fixed.
     "prototype_source/gpu_quantization_torchao_tutorial", # enable when 3194
-    "advanced_source/pendulum", # enable when 3195 is fixed
-    "intermediate_source/reinforcement_ppo" # enable when 3195 is fixed 
 ]
 
 def tutorial_source_dirs() -> List[Path]:
