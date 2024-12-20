@@ -420,3 +420,7 @@ In this tutorial, we went over the recommended approach to integrating Custom C+
 and CUDA operators with PyTorch. The ``TORCH_LIBRARY/torch.library`` APIs are fairly
 low-level. For more information about how to use the API, see
 `The Custom Operators Manual <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual>`_.
+
+Custom Operators on the AMD GPU
+-------------------------------
+This tutorial will also work on the AMD GPU with no additional modifications.
