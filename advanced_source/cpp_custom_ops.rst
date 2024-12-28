@@ -78,12 +78,15 @@ CPython version through setuptools' ``py_limited_api`` flag, like so:
 
   setup(name="extension_cpp",
         ext_modules=[
-            cpp_extension.CppExtension("extension_cpp", ["muladd.cpp"], py_limited_api=True)],
+            cpp_extension.CppExtension(
+              "extension_cpp",
+              ["python_agnostic_code.cpp"],
+              py_limited_api=True)],
         cmdclass={'build_ext': cpp_extension.BuildExtension},
         options={"bdist_wheel": {"py_limited_api": "cp39"}}
   )
 
-Note that you must specify ``py_limited_api=True`` both within ``setup``:
+Note that you must specify ``py_limited_api=True`` both within ``setup``
 and also as an option to the ``"bdist_wheel"`` command with the minimal supported
 Python version (in this case, 3.9). This ``setup`` would build one wheel that could
 be installed across multiple Python versions ``python>=3.9``. Please see
@@ -95,9 +98,9 @@ be installed across multiple Python versions ``python>=3.9``. Please see
   Specifying ``py_limited_api`` does not check for any guarantees, so it is possible
   to build a wheel that looks Python agnostic but will crash, or worse, be silently
   incorrect, in another Python environment. Take care to avoid using unstable CPython
-  APIs, for example APIs from libtorch_python (in particular pytorch/python bindings)
+  APIs, for example APIs from libtorch_python (in particular pytorch/python bindings,)
   and to only use APIs from libtorch (aten objects, operators and the dispatcher).
-  For example, to give access to custom ops from python, the library should register
+  For example, to give access to custom ops from Python, the library should register
   the ops through the dispatcher (covered below!).
 
 Defining the custom op and adding backend implementations
@@ -251,7 +254,7 @@ of two ways:
 2. If your C++ custom operator is located in a shared library object, you can
    also use ``torch.ops.load_library("/path/to/library.so")`` to load it. This
    is the blessed path for Python agnosticism, as you will not have a Python C
-   extension module to import. See `torchao __init__.py <https://github.com/pytorch/ao/blob/881e84b4398eddcea6fee4d911fc329a38b5cd69/torchao/__init__.py#L26-L28>`
+   extension module to import. See `torchao __init__.py <https://github.com/pytorch/ao/blob/881e84b4398eddcea6fee4d911fc329a38b5cd69/torchao/__init__.py#L26-L28>`_
    for an example.
 
 
