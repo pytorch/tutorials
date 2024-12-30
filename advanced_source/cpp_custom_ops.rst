@@ -66,10 +66,12 @@ If you need to compile CUDA code (for example, ``.cu`` files), then instead use
 Please see `extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an
 example for how this is set up.
 
-In PyTorch 2.6 and later, if your custom library adheres to the `CPython stable
-Limited API <https://docs.python.org/3/c-api/stable.html>`_ or avoids CPython
-entirely, you can build one python agnostic wheel against a minimum supported
-CPython version through setuptools' ``py_limited_api`` flag, like so:
+Starting with PyTorch 2.6, you can now build a single wheel for multiple CPython
+versions (similar to what you would do for pure python packages). In particular,
+if your custom library adheres to the `CPython Stable Limited API
+<https://docs.python.org/3/c-api/stable.html>`_ or avoids CPython entirely, you
+can build one Python agnostic wheel against a minimum supported CPython version
+through setuptools' ``py_limited_api`` flag, like so:
 
 .. code-block:: python
 
