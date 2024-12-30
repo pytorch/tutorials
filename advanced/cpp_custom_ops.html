@@ -528,7 +528,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="custom-c-and-cuda-operators">
-<span id="cpp-custom-ops-tutorial"></span><h1>Custom C++ and CUDA Operators<a class="headerlink" href="#custom-c-and-cuda-operators" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 18, 2024 | Last Updated: Aug 29, 2024 | Last Verified: Nov 05, 2024</p>
+<span id="cpp-custom-ops-tutorial"></span><h1>Custom C++ and CUDA Operators<a class="headerlink" href="#custom-c-and-cuda-operators" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 18, 2024 | Last Updated: Dec 30, 2024 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/zou3519">Richard Zou</a></p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
@@ -593,9 +593,43 @@ we’ll focus on the “ahead of time” flavor.</p>
 </div>
 <p>If you need to compile CUDA code (for example, <code class="docutils literal notranslate"><span class="pre">.cu</span></code> files), then instead use
 <a class="reference external" href="https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension">torch.utils.cpp_extension.CUDAExtension</a>.
-Please see how
-<a class="reference external" href="https://github.com/pytorch/extension-cpp">extension-cpp</a> for an example for
-how this is set up.</p>
+Please see <a class="reference external" href="https://github.com/pytorch/extension-cpp">extension-cpp</a> for an
+example for how this is set up.</p>
+<p>Starting with PyTorch 2.6, you can now build a single wheel for multiple CPython
+versions (similar to what you would do for pure python packages). In particular,
+if your custom library adheres to the <a class="reference external" href="https://docs.python.org/3/c-api/stable.html">CPython Stable Limited API</a> or avoids CPython entirely, you
+can build one Python agnostic wheel against a minimum supported CPython version
+through setuptools’ <code class="docutils literal notranslate"><span class="pre">py_limited_api</span></code> flag, like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">Extension</span>
+<span class="kn">from</span> <span class="nn">torch.utils</span> <span class="kn">import</span> <span class="n">cpp_extension</span>
+
+<span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"extension_cpp"</span><span class="p">,</span>
+      <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span>
+          <span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span>
+            <span class="s2">"extension_cpp"</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">"python_agnostic_code.cpp"</span><span class="p">],</span>
+            <span class="n">py_limited_api</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+      <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">cpp_extension</span><span class="o">.</span><span class="n">BuildExtension</span><span class="p">},</span>
+      <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"bdist_wheel"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"py_limited_api"</span><span class="p">:</span> <span class="s2">"cp39"</span><span class="p">}}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that you must specify <code class="docutils literal notranslate"><span class="pre">py_limited_api=True</span></code> both within <code class="docutils literal notranslate"><span class="pre">setup</span></code>
+and also as an option to the <code class="docutils literal notranslate"><span class="pre">"bdist_wheel"</span></code> command with the minimal supported
+Python version (in this case, 3.9). This <code class="docutils literal notranslate"><span class="pre">setup</span></code> would build one wheel that could
+be installed across multiple Python versions <code class="docutils literal notranslate"><span class="pre">python&gt;=3.9</span></code>. Please see
+<a class="reference external" href="https://github.com/pytorch/ao">torchao</a> for an example.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must verify independently that the built wheel is truly Python agnostic.
+Specifying <code class="docutils literal notranslate"><span class="pre">py_limited_api</span></code> does not check for any guarantees, so it is possible
+to build a wheel that looks Python agnostic but will crash, or worse, be silently
+incorrect, in another Python environment. Take care to avoid using unstable CPython
+APIs, for example APIs from libtorch_python (in particular pytorch/python bindings,)
+and to only use APIs from libtorch (aten objects, operators and the dispatcher).
+For example, to give access to custom ops from Python, the library should register
+the ops through the dispatcher (covered below!).</p>
+</div>
 </div>
 <div class="section" id="defining-the-custom-op-and-adding-backend-implementations">
 <h2>Defining the custom op and adding backend implementations<a class="headerlink" href="#defining-the-custom-op-and-adding-backend-implementations" title="Permalink to this heading">¶</a></h2>
@@ -700,7 +734,7 @@ metadata (such as shape, dtype, device) but no data: the FakeTensor kernel for a
 operator specifies how to compute the metadata of output tensors given the metadata of input tensors.
 The FakeTensor kernel should return dummy Tensors of your choice with
 the correct Tensor metadata (shape/strides/<code class="docutils literal notranslate"><span class="pre">dtype</span></code>/device).</p>
-<p>We recommend that this be done from Python via the <cite>torch.library.register_fake</cite> API,
+<p>We recommend that this be done from Python via the <code class="docutils literal notranslate"><span class="pre">torch.library.register_fake</span></code> API,
 though it is possible to do this from C++ as well (see
 <a class="reference external" href="https://pytorch.org/docs/main/notes/custom_operators.html">The Custom Operators Manual</a>
 for more details).</p>
@@ -708,7 +742,9 @@ for more details).</p>
 <span class="c1"># before calling ``torch.library`` APIs that add registrations for the</span>
 <span class="c1"># C++ custom operator(s). The following import loads our</span>
 <span class="c1"># C++ custom operator definitions.</span>
-<span class="c1"># See the next section for more details.</span>
+<span class="c1"># Note that if you are striving for Python agnosticism, you should use</span>
+<span class="c1"># the ``load_library(...)`` API call instead. See the next section for</span>
+<span class="c1"># more details.</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_C</span>
 
 <span class="nd">@torch</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">register_fake</span><span class="p">(</span><span class="s2">"extension_cpp::mymuladd"</span><span class="p">)</span>
@@ -735,7 +771,10 @@ of two ways:</p>
 <li><p>If you’re following this tutorial, importing the Python C extension module
 we created will load the C++ custom operator definitions.</p></li>
 <li><p>If your C++ custom operator is located in a shared library object, you can
-also use <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library("/path/to/library.so")</span></code> to load it.</p></li>
+also use <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library("/path/to/library.so")</span></code> to load it. This
+is the blessed path for Python agnosticism, as you will not have a Python C
+extension module to import. See <a class="reference external" href="https://github.com/pytorch/ao/blob/881e84b4398eddcea6fee4d911fc329a38b5cd69/torchao/__init__.py#L26-L28">torchao __init__.py</a>
+for an example.</p></li>
 </ol>
 </div>
 <div class="section" id="adding-training-autograd-support-for-an-operator">
