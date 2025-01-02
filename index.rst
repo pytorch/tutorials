@@ -426,14 +426,14 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
-   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
+   :card_description: Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
-   :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
+   :card_description: Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
