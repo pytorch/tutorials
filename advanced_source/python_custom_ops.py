@@ -3,7 +3,7 @@
 """
 .. _python-custom-ops-tutorial:
 
-Python Custom Operators
+Custom Python Operators
 =======================
 
 .. grid:: 2

@@ -397,14 +397,14 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. customcarditem::
-   :header: Python Custom Operators Landing Page
+   :header: PyTorch Custom Operators Landing Page
    :card_description: This is the landing page for all things related to custom operators in PyTorch.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/custom_ops_landing_page.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
-   :header: Python Custom Operators
+   :header: Custom Python Operators
    :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
