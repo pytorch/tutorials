@@ -157,6 +157,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/torch_export_aoti_python.html
    :tags: Basics
 
+.. customcarditem::
+   :header: Demonstration of torch.export flow, common challenges and the solutions to address them
+   :card_description: Learn how to export models for popular usecases
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_export_challenges_solutions.html
+   :tags: Compiler,TorchCompile
+
 .. Interpretability
 
 .. customcarditem::
@@ -472,3 +479,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
    /recipes/distributed_comm_debug_mode
+   /recipes/torch_export_challenges_solutions
