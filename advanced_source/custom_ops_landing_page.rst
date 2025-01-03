@@ -23,6 +23,7 @@ You may wish to author a custom operator from Python (as opposed to C++) if:
   respect to ``torch.compile`` and ``torch.export``.
 - you have some Python bindings to C++/CUDA kernels and want those to compose with PyTorch
   subsystems (like ``torch.compile`` or ``torch.autograd``)
+- you are using Python (and not a C++-only environment like AOTInductor).
 
 Integrating custom C++ and/or CUDA code with PyTorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
