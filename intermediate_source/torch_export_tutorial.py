@@ -163,22 +163,6 @@ try:
 except Exception:
     tb.print_exc()
 
-######################################################################
-# - unsupported Python language features (e.g. throwing exceptions, match statements)
-
-class Bad4(torch.nn.Module):
-    def forward(self, x):
-        try:
-            x = x + 1
-            raise RuntimeError("bad")
-        except:
-            x = x + 2
-        return x
-
-try:
-    export(Bad4(), (torch.randn(3, 3),))
-except Exception:
-    tb.print_exc()
 
 ######################################################################
 # Non-Strict Export
@@ -197,16 +181,6 @@ except Exception:
 # ``strict=False`` flag.
 #
 # Looking at some of the previous examples which resulted in graph breaks:
-#
-# - Accessing tensor data with ``.data`` now works correctly
-
-class Bad2(torch.nn.Module):
-    def forward(self, x):
-        x.data[0, 0] = 3
-        return x
-
-bad2_nonstrict = export(Bad2(), (torch.randn(3, 3),), strict=False)
-print(bad2_nonstrict.module()(torch.ones(3, 3)))
 
 ######################################################################
 # - Calling unsupported functions (such as many built-in functions) traces
@@ -222,22 +196,6 @@ class Bad3(torch.nn.Module):
 bad3_nonstrict = export(Bad3(), (torch.randn(3, 3),), strict=False)
 print(bad3_nonstrict)
 print(bad3_nonstrict.module()(torch.ones(3, 3)))
-
-######################################################################
-# - Unsupported Python language features (such as throwing exceptions, match
-# statements) now also get traced through.
-
-class Bad4(torch.nn.Module):
-    def forward(self, x):
-        try:
-            x = x + 1
-            raise RuntimeError("bad")
-        except:
-            x = x + 2
-        return x
-
-bad4_nonstrict = export(Bad4(), (torch.randn(3, 3),), strict=False)
-print(bad4_nonstrict.module()(torch.ones(3, 3)))
 
 
 ######################################################################
@@ -349,7 +307,7 @@ except Exception:
 # ``inp1`` has an unconstrained first dimension, but the size of the second
 # dimension must be in the interval [4, 18].
 
-from torch.export import Dim
+from torch.export.dynamic_shapes import Dim
 
 inp1 = torch.randn(10, 10, 2)
 
@@ -358,7 +316,7 @@ class DynamicShapesExample1(torch.nn.Module):
         x = x[:, 2:]
         return torch.relu(x)
 
-inp1_dim0 = Dim("inp1_dim0")
+inp1_dim0 = Dim("inp1_dim0", max=50)
 inp1_dim1 = Dim("inp1_dim1", min=4, max=18)
 dynamic_shapes1 = {
     "x": {0: inp1_dim0, 1: inp1_dim1},
@@ -479,9 +437,7 @@ inp5 = torch.randn(16, 32)
 
 class DynamicShapesExample3(torch.nn.Module):
     def forward(self, x, y):
-        if x.shape[0] <= 16:
-            return x @ y[:, :16]
-        return y
+        return x @ y
 
 dynamic_shapes3 = {
     "x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())},
@@ -537,6 +493,28 @@ torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
 print(exported_dynamic_shapes_example3.range_constraints)
 
 ######################################################################
+# In PyTorch v2.5, we also introduced an automatic way of determining dynamic
+# shapes. In the case where you don't know the dynamism of tensors, or the
+# relationship of dynamic shapes between input tensors, we can mark dimensions
+# with `Dim.AUTO`, and export will determine the dynamism the input dimensions.
+# Going back to the previous example, we can rewrite it as follows:
+
+inp4 = torch.randn(8, 16)
+inp5 = torch.randn(16, 32)
+
+class DynamicShapesExample3(torch.nn.Module):
+    def forward(self, x, y):
+        return x @ y
+
+dynamic_shapes3_2 = {
+    "x": {i: Dim.AUTO for i in range(inp4.dim())},
+    "y": {i: Dim.AUTO for i in range(inp5.dim())},
+}
+
+exported_dynamic_shapes_example_3_2 = export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3_2)
+print(exported_dynamic_shapes_example_3_2)
+
+######################################################################
 # Custom Ops
 # ----------
 #
@@ -548,7 +526,7 @@ print(exported_dynamic_shapes_example3.range_constraints)
 #   as with any other custom op
 
 @torch.library.custom_op("my_custom_library::custom_op", mutates_args={})
-def custom_op(input: torch.Tensor) -> torch.Tensor:
+def custom_op(x: torch.Tensor) -> torch.Tensor:
     print("custom_op called!")
     return torch.relu(x)
 
