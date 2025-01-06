@@ -47,18 +47,24 @@ operators. Reasons why you may wish to create a custom operator in PyTorch inclu
   into the function).
 - Adding training support to an arbitrary Python function
 
+Use :func:`torch.library.custom_op` to create Python custom operators.
+Use the C++ ``TORCH_LIBRARY`` APIs to create C++ custom operators (these
+work in Python-less environments).
+See the `Custom Operators Landing Page <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`_
+for more details.
+
 Please note that if your operation can be expressed as a composition of
 existing PyTorch operators, then there is usually no need to use the custom operator
 API -- everything (for example ``torch.compile``, training support) should
 just work.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-42
+.. GENERATED FROM PYTHON SOURCE LINES 45-48
 
 Example: Wrapping PIL's crop into a custom operator
 ------------------------------------
 Let's say that we are using PIL's ``crop`` operation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-61
+.. GENERATED FROM PYTHON SOURCE LINES 48-67
 
 .. code-block:: default
 
@@ -93,7 +99,7 @@ Let's say that we are using PIL's ``crop`` operation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-66
+.. GENERATED FROM PYTHON SOURCE LINES 68-72
 
 .. code-block:: default
 
@@ -113,7 +119,7 @@ Let's say that we are using PIL's ``crop`` operation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-74
+.. GENERATED FROM PYTHON SOURCE LINES 73-80
 
 ``crop`` is not handled effectively out-of-the-box by
 ``torch.compile``: ``torch.compile`` induces a
@@ -123,7 +129,7 @@ The following code demonstrates this by raising an error
 (``torch.compile`` with ``fullgraph=True`` raises an error if a
 graph break occurs).
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-82
+.. GENERATED FROM PYTHON SOURCE LINES 80-88
 
 .. code-block:: default
 
@@ -142,7 +148,7 @@ graph break occurs).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-91
+.. GENERATED FROM PYTHON SOURCE LINES 89-97
 
 In order to black-box ``crop`` for use with ``torch.compile``, we need to
 do two things:
@@ -153,7 +159,7 @@ do two things:
    this function should return dummy Tensors of your choice with the correct
    Tensor metadata (shape/strides/``dtype``/device).
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-111
+.. GENERATED FROM PYTHON SOURCE LINES 97-117
 
 .. code-block:: default
 
@@ -184,11 +190,11 @@ do two things:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-113
+.. GENERATED FROM PYTHON SOURCE LINES 118-119
 
 After this, ``crop`` now works without graph breaks:
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-121
+.. GENERATED FROM PYTHON SOURCE LINES 119-127
 
 .. code-block:: default
 
@@ -225,7 +231,7 @@ After this, ``crop`` now works without graph breaks:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-125
+.. GENERATED FROM PYTHON SOURCE LINES 128-131
 
 .. code-block:: default
 
@@ -244,7 +250,7 @@ After this, ``crop`` now works without graph breaks:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-141
+.. GENERATED FROM PYTHON SOURCE LINES 132-147
 
 Adding training support for crop
 --------------------------------
@@ -262,7 +268,7 @@ The gradient formula for ``crop`` is essentially ``PIL.paste`` (we'll leave the
 derivation as an exercise to the reader). Let's first wrap ``paste`` into a
 custom operator:
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-157
+.. GENERATED FROM PYTHON SOURCE LINES 147-163
 
 .. code-block:: default
 
@@ -289,11 +295,11 @@ custom operator:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-159
+.. GENERATED FROM PYTHON SOURCE LINES 164-165
 
 And now let's use ``register_autograd`` to specify the gradient formula for ``crop``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-172
+.. GENERATED FROM PYTHON SOURCE LINES 165-178
 
 .. code-block:: default
 
@@ -317,13 +323,13 @@ And now let's use ``register_autograd`` to specify the gradient formula for ``cr
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-176
+.. GENERATED FROM PYTHON SOURCE LINES 179-182
 
 Note that the backward must be a composition of PyTorch-understood operators,
 which is why we wrapped paste into a custom operator instead of directly using
 PIL's paste.
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-182
+.. GENERATED FROM PYTHON SOURCE LINES 182-188
 
 .. code-block:: default
 
@@ -345,12 +351,12 @@ PIL's paste.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-185
+.. GENERATED FROM PYTHON SOURCE LINES 189-191
 
 This is the correct gradient, with 1s (white) in the cropped region and 0s
 (black) in the unused region.
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-197
+.. GENERATED FROM PYTHON SOURCE LINES 193-203
 
 Testing Python Custom operators
 -------------------------------
@@ -363,7 +369,7 @@ operator supports training, then the examples should include Tensors that
 require grad. If your operator supports multiple devices, then the examples
 should include Tensors from each device.
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-208
+.. GENERATED FROM PYTHON SOURCE LINES 203-214
 
 .. code-block:: default
 
@@ -385,7 +391,7 @@ should include Tensors from each device.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-219
+.. GENERATED FROM PYTHON SOURCE LINES 215-225
 
 Mutable Python Custom operators
 -------------------------------
@@ -398,7 +404,7 @@ the input and an output tensor and write ``input.sin()`` to the output tensor.
 We'll use ``numpy.sin`` to demonstrate an example of a mutable Python
 custom operator.
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-230
+.. GENERATED FROM PYTHON SOURCE LINES 225-236
 
 .. code-block:: default
 
@@ -420,12 +426,12 @@ custom operator.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-233
+.. GENERATED FROM PYTHON SOURCE LINES 237-239
 
 Because the operator doesn't return anything, there is no need to register
 a ``FakeTensor`` kernel (meta kernel) to get it to work with ``torch.compile``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-244
+.. GENERATED FROM PYTHON SOURCE LINES 239-250
 
 .. code-block:: default
 
@@ -447,12 +453,12 @@ a ``FakeTensor`` kernel (meta kernel) to get it to work with ``torch.compile``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-247
+.. GENERATED FROM PYTHON SOURCE LINES 251-253
 
 And here's an ``opcheck`` run telling us that we did indeed register the operator correctly.
 ``opcheck`` would error out if we forgot to add the output to ``mutates_args``, for example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-257
+.. GENERATED FROM PYTHON SOURCE LINES 253-263
 
 .. code-block:: default
 
@@ -473,7 +479,7 @@ And here's an ``opcheck`` run telling us that we did indeed register the operato
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-270
+.. GENERATED FROM PYTHON SOURCE LINES 264-276
 
 Conclusion
 ----------
@@ -491,7 +497,7 @@ For more detailed information, see:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  4.595 seconds)
+   **Total running time of the script:** ( 0 minutes  4.733 seconds)
 
 
 .. _sphx_glr_download_advanced_python_custom_ops.py:
