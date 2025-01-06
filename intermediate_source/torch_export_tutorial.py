@@ -365,7 +365,7 @@ ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 # When guards involve symbols allocated for input dimensions, the program contains restrictions on what input shapes are valid;
 # i.e. the program's dynamic behavior. The symbolic shapes subsystem is the part responsible for taking in all the emitted guards
 # and producing a final program representation that adheres to all of these guards. Before we see this "final representation" in
-# an ExportedProgram, let's look at the guards emitted by the toy model we're tracing.
+# an ``ExportedProgram``, let's look at the guards emitted by the toy model we're tracing.
 #
 # Here, each forward input tensor is annotated with the symbol allocated at the start of tracing:
 
@@ -416,7 +416,7 @@ print(ep)
 # so interesting currently, since this export call doesn't emit any guards related to symbol bounds and each base symbol has
 # a generic bound, but this will come up later.
 #
-# So far, because we've been exporting this toy model, this experience has been misrepresentative of how hard
+# So far, because we've been exporting this toy model, this experience has not been representative of how hard
 # it typically is to debug dynamic shapes guards & issues. In most cases it isn't obvious what guards are being emitted,
 # and which operations and parts of user code are responsible. For this toy model we pinpoint the exact lines, and the guards
 # are rather intuitive.
@@ -542,7 +542,7 @@ ep.module()(torch.randn(2, 4))
 # and presenting what export believes is the overall dynamic behavior of the program. The drawback of this design appears once the user has stronger expectations or
 # beliefs about the dynamic behavior of these models - maybe there is a strong desire on dynamism and specializations on particular dimensions are to be avoided at
 # all costs, or maybe we just want to catch changes in dynamic behavior with changes to the original model code, or possibly underlying decompositions or meta-kernels.
-# These changes won't be detected and the ``export()`` call will most likely succeed, unless tests are in place that check the resulting ExportedProgram representation.
+# These changes won't be detected and the ``export()`` call will most likely succeed, unless tests are in place that check the resulting ``ExportedProgram`` representation.
 #
 # For such cases, our stance is to recommend the "traditional" way of specifying dynamic shapes, which longer-term users of export might be familiar with: named ``Dims``:
 
@@ -555,7 +555,7 @@ dynamic_shapes = {
 
 ######################################################################
 # This style of dynamic shapes allows the user to specify what symbols are allocated for input dimensions, min/max bounds on those symbols, and places restrictions on the
-# dynamic behavior of the ExportedProgram produced; ConstraintViolation errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
+# dynamic behavior of the ``ExportedProgram`` produced; ``ConstraintViolation`` errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
 # specifications given. For example, in the above specification, the following is asserted:
 # - ``x.shape[0]`` is to have range ``[4, 256]``, and related to ``y.shape[0]`` by ``y.shape[0] == 2 * x.shape[0]``.
 # - ``x.shape[1]`` is static.
@@ -571,7 +571,7 @@ dynamic_shapes = {
 
 ######################################################################
 # One common issue with this specification style (before ``Dim.AUTO`` was introduced), is that the specification would often be mismatched with what was produced by model tracing.
-# That would lead to ConstraintViolation errors and export suggested fixes - see for example with this model & specification, where the model inherently requires equality between
+# That would lead to ``ConstraintViolation`` errors and export suggested fixes - see for example with this model & specification, where the model inherently requires equality between
 # dimensions 0 of ``x`` and ``y``, and requires dimension 1 to be static.
 
 class Foo(torch.nn.Module):
@@ -596,7 +596,7 @@ ep = export(
 # - ``None`` is a good option for static behavior:
 #   - ``dynamic_shapes=None`` (default) exports with the entire model being static.
 #   - specifying ``None`` at an input-level exports with all tensor dimensions static, and alternatively is also required for non-tensor inputs.
-#   - specfiying ``None`` at a dimension-level specializes that dimension, though this is deprecated in favor of ``Dim.STATIC``.
+#   - specifying ``None`` at a dimension-level specializes that dimension, though this is deprecated in favor of ``Dim.STATIC``.
 # - specifying per-dimension integer values also produces static behavior, and will additionally check that the provided sample input matches the specification.
 #
 # These options are combined in the inputs & dynamic shapes spec below:
