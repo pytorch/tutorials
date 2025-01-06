@@ -357,7 +357,7 @@ ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 ######################################################################
 # Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
 # and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
-# allocated, taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or [1, inf]``? we'll explain later in the
+# allocated, taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or ``[1, inf]``? we'll explain later in the
 # 0/1 specialization section).
 #
 # Export then runs model tracing, looking at each operation that's performed by the model. Each individual operation can emit
@@ -390,21 +390,18 @@ class DynamicModel(torch.nn.Module):
 ######################################################################
 # Let's understand each of the operations and the emitted guards:
 #
-# - ``x0 = x + y``: This is an element-wise add with broadcasting, since ``x`` is a 1-d tensor and ``y`` a 2-d tensor.
-# ``x`` is broadcasted along the last dimension of ``y``, emitting the guard ``s2 == s4``.
-# - ``x1 = self.l(w)``: Calling ``nn.Linear()`` performs a matrix multiplication with model parameters. In export,
-# parameters, buffers, and constants are considered program state, which is considered static, and so this is
-# a matmul between a dynamic input (``w: [s0, s1]``), and a statically-shaped tensor. This emits the guard ``s1 == 5``.
+# - ``x0 = x + y``: This is an element-wise add with broadcasting, since ``x`` is a 1-d tensor and ``y`` a 2-d tensor. ``x`` is broadcasted along the last dimension of ``y``, emitting the guard ``s2 == s4``.
+# - ``x1 = self.l(w)``: Calling ``nn.Linear()`` performs a matrix multiplication with model parameters. In export, parameters, buffers, and constants are considered program state, which is considered static, and so this is a matmul between a dynamic input (``w: [s0, s1]``), and a statically-shaped tensor. This emits the guard ``s1 == 5``.
 # - ``x2 = x0.flatten()``: This call actually doesn't emit any guards! (at least none relevant to input shapes)
 # - ``x3 = x2 + z``: ``x2`` has shape ``[s3*s4]`` after flattening, and this element-wise add emits ``s3 * s4 == s5``.
 #
 # Writing all of these guards down and summarizing is almost like a mathematical proof, which is what the symbolic shapes
 # subsystem tries to do! In summary, we can conclude that the program must have the following input shapes to be valid:
-# 
-# ``w: [s0, 5]``
-# ``x: [s2]``
-# ``y: [s3, s2]``
-# ``z: [s2*s3]``
+#
+# - ``w: [s0, 5]``
+# - ``x: [s2]``
+# - ``y: [s3, s2]``
+# - ``z: [s2*s3]``
 #
 # And when we do finally print out the exported program to see our result, those shapes are what we see annotated on the
 # corresponding inputs:
@@ -557,6 +554,7 @@ dynamic_shapes = {
 # This style of dynamic shapes allows the user to specify what symbols are allocated for input dimensions, min/max bounds on those symbols, and places restrictions on the
 # dynamic behavior of the ``ExportedProgram`` produced; ``ConstraintViolation`` errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
 # specifications given. For example, in the above specification, the following is asserted:
+#
 # - ``x.shape[0]`` is to have range ``[4, 256]``, and related to ``y.shape[0]`` by ``y.shape[0] == 2 * x.shape[0]``.
 # - ``x.shape[1]`` is static.
 # - ``y.shape[1]`` has range ``[2, 512]``, and is unrelated to any other dimension.
@@ -593,6 +591,7 @@ ep = export(
 # The expectation with suggested fixes is that the user can interactively copy-paste the changes into their dynamic shapes specification, and successfully export afterwards.
 #
 # Lastly, there's couple nice-to-knows about the options for specification:
+#
 # - ``None`` is a good option for static behavior:
 #   - ``dynamic_shapes=None`` (default) exports with the entire model being static.
 #   - specifying ``None`` at an input-level exports with all tensor dimensions static, and alternatively is also required for non-tensor inputs.
