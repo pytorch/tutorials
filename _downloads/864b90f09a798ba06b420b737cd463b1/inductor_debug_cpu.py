@@ -343,7 +343,7 @@ def forward2(self, arg0_1):
     return (neg,)
 
 ######################################################################
-# For more usage details about Minifier, please refer to `Troubleshooting <https://pytorch.org/docs/stable/dynamo/troubleshooting.html>`_.
+# For more usage details about Minifier, please refer to `Troubleshooting <https://pytorch.org/docs/stable/torch.compiler_troubleshooting.html>`_.
 
 
 ######################################################################
