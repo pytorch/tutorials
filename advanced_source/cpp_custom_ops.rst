@@ -63,9 +63,47 @@ Using ``cpp_extension`` is as simple as writing the following ``setup.py``:
 
 If you need to compile CUDA code (for example, ``.cu`` files), then instead use
 `torch.utils.cpp_extension.CUDAExtension <https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension>`_.
-Please see how
-`extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an example for
-how this is set up.
+Please see `extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an
+example for how this is set up.
+
+Starting with PyTorch 2.6, you can now build a single wheel for multiple CPython
+versions (similar to what you would do for pure python packages). In particular,
+if your custom library adheres to the `CPython Stable Limited API
+<https://docs.python.org/3/c-api/stable.html>`_ or avoids CPython entirely, you
+can build one Python agnostic wheel against a minimum supported CPython version
+through setuptools' ``py_limited_api`` flag, like so:
+
+.. code-block:: python
+
+  from setuptools import setup, Extension
+  from torch.utils import cpp_extension
+
+  setup(name="extension_cpp",
+        ext_modules=[
+            cpp_extension.CppExtension(
+              "extension_cpp",
+              ["python_agnostic_code.cpp"],
+              py_limited_api=True)],
+        cmdclass={'build_ext': cpp_extension.BuildExtension},
+        options={"bdist_wheel": {"py_limited_api": "cp39"}}
+  )
+
+Note that you must specify ``py_limited_api=True`` both within ``setup``
+and also as an option to the ``"bdist_wheel"`` command with the minimal supported
+Python version (in this case, 3.9). This ``setup`` would build one wheel that could
+be installed across multiple Python versions ``python>=3.9``. Please see
+`torchao <https://github.com/pytorch/ao>`_ for an example.
+
+.. note::
+
+  You must verify independently that the built wheel is truly Python agnostic.
+  Specifying ``py_limited_api`` does not check for any guarantees, so it is possible
+  to build a wheel that looks Python agnostic but will crash, or worse, be silently
+  incorrect, in another Python environment. Take care to avoid using unstable CPython
+  APIs, for example APIs from libtorch_python (in particular pytorch/python bindings,)
+  and to only use APIs from libtorch (aten objects, operators and the dispatcher).
+  For example, to give access to custom ops from Python, the library should register
+  the ops through the dispatcher (covered below!).
 
 Defining the custom op and adding backend implementations
 ---------------------------------------------------------
@@ -177,7 +215,7 @@ operator specifies how to compute the metadata of output tensors given the metad
 The FakeTensor kernel should return dummy Tensors of your choice with
 the correct Tensor metadata (shape/strides/``dtype``/device).
 
-We recommend that this be done from Python via the `torch.library.register_fake` API,
+We recommend that this be done from Python via the ``torch.library.register_fake`` API,
 though it is possible to do this from C++ as well (see
 `The Custom Operators Manual <https://pytorch.org/docs/main/notes/custom_operators.html>`_
 for more details).
@@ -188,7 +226,9 @@ for more details).
   # before calling ``torch.library`` APIs that add registrations for the
   # C++ custom operator(s). The following import loads our
   # C++ custom operator definitions.
-  # See the next section for more details.
+  # Note that if you are striving for Python agnosticism, you should use
+  # the ``load_library(...)`` API call instead. See the next section for
+  # more details.
   from . import _C
 
   @torch.library.register_fake("extension_cpp::mymuladd")
@@ -214,7 +254,10 @@ of two ways:
 1. If you're following this tutorial, importing the Python C extension module
    we created will load the C++ custom operator definitions.
 2. If your C++ custom operator is located in a shared library object, you can
-   also use ``torch.ops.load_library("/path/to/library.so")`` to load it.
+   also use ``torch.ops.load_library("/path/to/library.so")`` to load it. This
+   is the blessed path for Python agnosticism, as you will not have a Python C
+   extension module to import. See `torchao __init__.py <https://github.com/pytorch/ao/blob/881e84b4398eddcea6fee4d911fc329a38b5cd69/torchao/__init__.py#L26-L28>`_
+   for an example.
 
 
 Adding training (autograd) support for an operator
