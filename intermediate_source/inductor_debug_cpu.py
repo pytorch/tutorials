@@ -19,8 +19,8 @@ Inductor CPU backend debugging and profiling
 #
 # Meanwhile, you may also find related tutorials about ``torch.compile`` 
 # around `basic usage <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_, 
-# comprehensive `troubleshooting <https://pytorch.org/docs/stable/torch.compiler_troubleshooting.html>`_
-# and GPU-specific knowledge like `GPU performance profiling <https://github.com/pytorch/pytorch/blob/main/docs/source/torch.compiler_profiling_torch_compile.rst>`_.
+# comprehensive `troubleshooting <https://pytorch.org/docs/stable/torch.compiler_troubleshooting.html>`_ 
+# and GPU-specific knowledge like `GPU performance profiling <https://pytorch.org/docs/stable/torch.compiler_inductor_profiling.html>`_.
 #
 # We will start debugging with a motivating example that triggers compilation issues and accuracy problems 
 # by demonstrating the process of debugging to pinpoint the problems.
