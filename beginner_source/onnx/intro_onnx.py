@@ -7,7 +7,7 @@ Introduction to ONNX
 ====================
 
 Authors:
-`Ti-Tai Wang <https://github.com/titaiwangms>`_ and `Xavier Dupré <https://github.com/xadupre>`_
+`Ti-Tai Wang <https://github.com/titaiwangms>`_ and Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
 
 `Open Neural Network eXchange (ONNX) <https://onnx.ai/>`_ is an open standard
 format for representing machine learning models. The ``torch.onnx`` module provides APIs to
@@ -19,8 +19,10 @@ The exported model can be consumed by any of the many
 including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
 
 .. note::
-    Currently, there are two flavors of ONNX exporter APIs,
-    but this tutorial will focus on the ``torch.onnx.dynamo_export``.
+    Currently, the users can choose either through `TorchScript https://pytorch.org/docs/stable/jit.html`_ or
+    `ExportedProgram https://pytorch.org/docs/stable/export.html`_ to export the model to ONNX by the 
+    boolean parameter dynamo in `torch.onnx.export <https://pytorch.org/docs/stable/generated/torch.onnx.export.html>`_.
+    In this tutorial, we will focus on the ExportedProgram approach.
 
 The TorchDynamo engine is leveraged to hook into Python's frame evaluation API and dynamically rewrite its
 bytecode into an `FX graph <https://pytorch.org/docs/stable/fx.html>`_.
@@ -33,7 +35,7 @@ bytecode analysis that preserves the dynamic nature of the model instead of usin
 Dependencies
 ------------
 
-PyTorch 2.1.0 or newer is required.
+PyTorch 2.5.0 or newer is required.
 
 The ONNX exporter depends on extra Python packages:
 
