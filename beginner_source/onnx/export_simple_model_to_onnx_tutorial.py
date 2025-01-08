@@ -7,12 +7,12 @@
 Export a PyTorch model to ONNX
 ==============================
 
-**Author**: `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_
+**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_
 
 .. note::
-    As of PyTorch 2.1, there are two versions of ONNX Exporter.
+    As of PyTorch 2.5, there are two versions of ONNX Exporter.
 
-    * ``torch.onnx.dynamo_export`` is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0
+    * ``torch.onnx.export(..., dynamo=True)`` is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0
     * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0
 
 """
@@ -21,7 +21,7 @@ Export a PyTorch model to ONNX
 # In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_,
 # we had the opportunity to learn about PyTorch at a high level and train a small neural network to classify images.
 # In this tutorial, we are going to expand this to describe how to convert a model defined in PyTorch into the
-# ONNX format using TorchDynamo and the ``torch.onnx.dynamo_export`` ONNX exporter.
+# ONNX format using TorchDynamo and the ``torch.onnx.export(..., dynamo=True)`` ONNX exporter.
 #
 # While PyTorch is great for iterating on the development of models, the model can be deployed to production
 # using different formats, including `ONNX <https://onnx.ai/>`_ (Open Neural Network Exchange)!
@@ -90,7 +90,16 @@ class MyModel(nn.Module):
 
 torch_model = MyModel()
 torch_input = torch.randn(1, 1, 32, 32)
-onnx_program = torch.onnx.dynamo_export(torch_model, torch_input)
+onnx_program = torch.onnx.export(torch_model, torch_input, dynamo=True)
+
+######################################################################
+# 3.5. (Optional) Optimize the ONNX model
+# ---------------------------------------
+#
+# The ONNX model can be optimized with constant folding, and elimination of redundant nodes.
+# The optimization is done in-place, so the original ONNX model is modified.
+
+onnx_program.optimize()
 
 ######################################################################
 # As we can see, we didn't need any code change to the model.
@@ -127,7 +136,7 @@ onnx.checker.check_model(onnx_model)
 # Once Netron is open, we can drag and drop our ``my_image_classifier.onnx`` file into the browser or select it after
 # clicking the **Open model** button.
 #
-# .. image:: ../../_static/img/onnx/image_clossifier_onnx_modelon_netron_web_ui.png
+# .. image:: ../../_static/img/onnx/image_classifier_onnx_modelon_netron_web_ui.png
 #   :width: 50%
 #
 #
@@ -155,7 +164,7 @@ onnx.checker.check_model(onnx_model)
 
 import onnxruntime
 
-onnx_input = onnx_program.adapt_torch_inputs_to_onnx(torch_input)
+onnx_input = [torch_input]
 print(f"Input length: {len(onnx_input)}")
 print(f"Sample input: {onnx_input}")
 
@@ -166,7 +175,7 @@ def to_numpy(tensor):
 
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 
-onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+onnxruntime_outputs = ort_session.run(None, onnxruntime_input)[0]
 
 ####################################################################
 # 7. Compare the PyTorch results with the ones from the ONNX Runtime
@@ -179,7 +188,6 @@ onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
 # Before comparing the results, we need to convert the PyTorch's output to match ONNX's format.
 
 torch_outputs = torch_model(torch_input)
-torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
