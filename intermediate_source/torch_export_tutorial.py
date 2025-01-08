@@ -342,8 +342,7 @@ ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
 ######################################################################
 # Basic concepts: symbols and guards
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-######################################################################
+#
 # To enable dynamism, ``export()`` provides a ``dynamic_shapes`` argument. The easiest way to work with
 # dynamic shapes is using ``Dim.AUTO`` and looking at the program that's returned. Dynamic behavior is specified
 # at a input dimension-level; for each input we can specify a tuple of values:
@@ -527,7 +526,7 @@ print(ep)
 ######################################################################
 # 0/1 specialization
 # ^^^^^^^^^^^^^^^^^^
-
+#
 # Since we're talking about guards and specializations, it's a good time to talk about the 0/1 specialization issue we brought up earlier.
 # The bottom line is that export will specialize on sample input dimensions with value 0 or 1, because these shapes have trace-time properties that
 # don't generalize to other shapes. For example, size 1 tensors can broadcast while other sizes fail; and size 0 ... . This just means that you should
@@ -546,8 +545,7 @@ ep.module()(torch.randn(2, 4))
 ######################################################################
 # Named Dims
 # ^^^^^^^^^^
-
-######################################################################
+#
 # So far we've only been talking about 3 ways to specify dynamic shapes: ``Dim.AUTO``, ``Dim.DYNAMIC``, and ``Dim.STATIC``. The attraction of these is the
 # low-friction user experience; all the guards emitted during model tracing are adhered to, and dynamic behavior like min/max ranges, relations, and static/dynamic
 # dimensions are automatically figured out underneath export. The dynamic shapes subsystem essentially acts as a "discovery" process, summarizing these guards
@@ -585,8 +583,7 @@ dynamic_shapes = {
 ######################################################################
 # Constraint violations, suggested fixes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-######################################################################
+#
 # One common issue with this specification style (before ``Dim.AUTO`` was introduced), is that the specification would often be mismatched with what was produced by model tracing.
 # That would lead to ``ConstraintViolation`` errors and export suggested fixes - see for example with this model & specification, where the model inherently requires equality between
 # dimensions 0 of ``x`` and ``y``, and requires dimension 1 to be static.
