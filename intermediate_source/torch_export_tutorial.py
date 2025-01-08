@@ -339,6 +339,7 @@ ep = export(model, (w, x, y, z))
 model(w, x, torch.randn(3, 4), torch.randn(12))
 ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
 
+######################################################################
 # Basic concepts: symbols and guards
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -360,7 +361,7 @@ ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 ######################################################################
 # Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
 # and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
-# `allocated <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`,
+# `allocated <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_,
 # taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or ``[1, inf]``? we'll explain later in the
 # 0/1 specialization section).
 #
@@ -523,6 +524,7 @@ print(ep)
 # Additionally, you might ask why we traced only the ``if`` branch, and if it's possible to maintain control-flow in your program and keep both branches
 # alive. For that, refer to rewriting your model code following the ``Control Flow Ops`` section above.
 
+######################################################################
 # 0/1 specialization
 # ^^^^^^^^^^^^^^^^^^
 
@@ -541,6 +543,7 @@ ep = export(
 )
 ep.module()(torch.randn(2, 4))
 
+######################################################################
 # Named Dims
 # ^^^^^^^^^^
 
@@ -579,6 +582,7 @@ dynamic_shapes = {
     "x": (4 * dx, None)  # x.shape[0] has range [16, 2048], and is divisible by 4.
 }
 
+######################################################################
 # Constraint violations, suggested fixes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
