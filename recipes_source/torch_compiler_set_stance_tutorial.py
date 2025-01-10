@@ -7,7 +7,7 @@
 """
 
 ######################################################################
-# ``torch.compiler.set_stance`` is a recent ``torch.compiler`` API that
+# ``torch.compiler.set_stance`` is a ``torch.compiler`` API that
 # enables you to change the behavior of ``torch.compile`` across different
 # calls to your model without having to reapply ``torch.compile`` to your model.
 #
