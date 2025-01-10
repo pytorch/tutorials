@@ -144,7 +144,8 @@ else:
 # -------------------------------------------------------------------
 #
 # User-defined triton kernels do not automatically support all PyTorch
-# subsystems, like in the following use cases:
+# subsystems. This can be seen in the following use cases:
+
 # - Adding a CPU fallback
 # - Adding a ``FlopCounter`` formula
 # - Composing with Tensor Subclasses
