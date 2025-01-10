@@ -531,12 +531,12 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="torch-export-tutorial">
-<span id="sphx-glr-intermediate-torch-export-tutorial-py"></span><h1>torch.export Tutorial<a class="headerlink" href="#torch-export-tutorial" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2023 | Last Updated: Jul 22, 2024 | Last Verified: Nov 05, 2024</p>
-<p><strong>Author:</strong> William Wen, Zhengxu Chen, Angela Yi</p>
+<span id="sphx-glr-intermediate-torch-export-tutorial-py"></span><h1>torch.export Tutorial<a class="headerlink" href="#torch-export-tutorial" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2023 | Last Updated: Jan 09, 2025 | Last Verified: Nov 05, 2024</p>
+<p><strong>Author:</strong> William Wen, Zhengxu Chen, Angela Yi, Pian Pawakapan</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and its related features are in prototype status and are subject to backwards compatibility
-breaking changes. This tutorial provides a snapshot of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> usage as of PyTorch 2.3.</p>
+breaking changes. This tutorial provides a snapshot of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> usage as of PyTorch 2.5.</p>
 </div>
 <p><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export()</span></code> is the PyTorch 2.X way to export PyTorch models into
 standardized model representations, intended
@@ -553,12 +553,19 @@ to make in order to make your model compatible with <code class="docutils litera
 <li><p><a class="reference internal" href="#graph-breaks" id="id2">Graph Breaks</a></p></li>
 <li><p><a class="reference internal" href="#non-strict-export" id="id3">Non-Strict Export</a></p></li>
 <li><p><a class="reference internal" href="#control-flow-ops" id="id4">Control Flow Ops</a></p></li>
-<li><p><a class="reference internal" href="#constraints-dynamic-shapes" id="id5">Constraints/Dynamic Shapes</a></p></li>
-<li><p><a class="reference internal" href="#custom-ops" id="id6">Custom Ops</a></p></li>
-<li><p><a class="reference internal" href="#decompositions" id="id7">Decompositions</a></p></li>
-<li><p><a class="reference internal" href="#exportdb" id="id8">ExportDB</a></p></li>
-<li><p><a class="reference internal" href="#running-the-exported-program" id="id9">Running the Exported Program</a></p></li>
-<li><p><a class="reference internal" href="#conclusion" id="id10">Conclusion</a></p></li>
+<li><p><a class="reference internal" href="#constraints-dynamic-shapes" id="id5">Constraints/Dynamic Shapes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#basic-concepts-symbols-and-guards" id="id6">Basic concepts: symbols and guards</a></p></li>
+<li><p><a class="reference internal" href="#specialization" id="id7">0/1 specialization</a></p></li>
+<li><p><a class="reference internal" href="#named-dims" id="id8">Named Dims</a></p></li>
+<li><p><a class="reference internal" href="#constraint-violations-suggested-fixes" id="id9">Constraint violations, suggested fixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#custom-ops" id="id10">Custom Ops</a></p></li>
+<li><p><a class="reference internal" href="#decompositions" id="id11">Decompositions</a></p></li>
+<li><p><a class="reference internal" href="#exportdb" id="id12">ExportDB</a></p></li>
+<li><p><a class="reference internal" href="#running-the-exported-program" id="id13">Running the Exported Program</a></p></li>
+<li><p><a class="reference internal" href="#conclusion" id="id14">Conclusion</a></p></li>
 </ul>
 </div>
 <div class="section" id="basic-usage">
@@ -575,7 +582,7 @@ generally refers to the actual function call.</p>
     <span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dim</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dynamic_shapes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedProgram</span>
 </pre></div>
 </div>
@@ -799,228 +806,308 @@ defined in the scope of a method.</p></li>
 </div>
 <div class="section" id="constraints-dynamic-shapes">
 <h2><a class="toc-backref" href="#id5">Constraints/Dynamic Shapes</a><a class="headerlink" href="#constraints-dynamic-shapes" title="Permalink to this heading">¶</a></h2>
-<p>Ops can have different specializations/behaviors for different tensor shapes, so by default,
-<code class="docutils literal notranslate"><span class="pre">torch.export</span></code> requires inputs to <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> to have the same shape as the respective
-example inputs given to the initial <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code> call.
-If we try to run the <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> in the example below with a tensor
-with a different shape, we get an error:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<p>This section covers dynamic behavior and representation of exported programs. Dynamic behavior is
+subjective to the particular model being exported, so for the most part of this tutorial, we’ll focus
+on this particular toy model (with the resulting tensor shapes annotated):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DynamicModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lin</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">return</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu" title="torch.nn.functional.relu"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lin</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">mod2</span> <span class="o">=</span> <span class="n">MyModule2</span><span class="p">()</span>
-<span class="n">exported_mod2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_mod2</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">w</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [6, 5]</span>
+        <span class="n">x</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [4]</span>
+        <span class="n">y</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [8, 4]</span>
+        <span class="n">z</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [32]</span>
+    <span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>  <span class="c1"># [8, 4]</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>  <span class="c1"># [6, 3]</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>  <span class="c1"># [32]</span>
+        <span class="n">x3</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">z</span>  <span class="c1"># [32]</span>
+        <span class="k">return</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x3</span>
 </pre></div>
 </div>
-<p>We can relax this constraint using the <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument of
-<code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code>, which allows us to specify, using <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code>
-(<a class="reference external" href="https://pytorch.org/docs/main/export.html#torch.export.Dim">documentation</a>),
-which dimensions of the input tensors are dynamic.</p>
-<p>For each tensor argument of the input callable, we can specify a mapping from the dimension
-to a <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code>.
-A <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> is essentially a named symbolic integer with optional
-minimum and maximum bounds.</p>
-<p>Then, the format of <code class="docutils literal notranslate"><span class="pre">torch.export.export()</span></code>’s <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument is a mapping
-from the input callable’s tensor argument names, to dimension –&gt; dim mappings as described above.
-If there is no <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> given to a tensor argument’s dimension, then that dimension is
-assumed to be static.</p>
-<p>The first argument of <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> is the name for the symbolic integer, used for debugging.
-Then we can specify an optional minimum and maximum bound (inclusive). Below, we show a usage example.</p>
-<p>In the example below, our input
-<code class="docutils literal notranslate"><span class="pre">inp1</span></code> has an unconstrained first dimension, but the size of the second
-dimension must be in the interval [4, 18].</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <span class="n">Dim</span>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> produces a static program. One consequence of this is that at runtime,
+the program won’t work on inputs with different shapes, even if they’re valid in eager mode.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DynamicModel</span><span class="p">()</span>
+<span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+<span class="n">model</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="n">ep</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="basic-concepts-symbols-and-guards">
+<h3><a class="toc-backref" href="#id6">Basic concepts: symbols and guards</a><a class="headerlink" href="#basic-concepts-symbols-and-guards" title="Permalink to this heading">¶</a></h3>
+<p>To enable dynamism, <code class="docutils literal notranslate"><span class="pre">export()</span></code> provides a <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> argument. The easiest way to work with
+dynamic shapes is using <code class="docutils literal notranslate"><span class="pre">Dim.AUTO</span></code> and looking at the program that’s returned. Dynamic behavior is specified
+at a input dimension-level; for each input we can specify a tuple of values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.export.dynamic_shapes</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a>
 
-<span class="n">inp1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">DynamicShapesExample1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">inp1_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim0"</span><span class="p">)</span>
-<span class="n">inp1_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim1"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
-<span class="n">dynamic_shapes1</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp1_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp1_dim1</span><span class="p">},</span>
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"w"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">),</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,),</span>
+    <span class="s2">"y"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">),</span>
+    <span class="s2">"z"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,),</span>
 <span class="p">}</span>
-
-<span class="n">exported_dynamic_shapes_example1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample1</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp1</span><span class="p">,),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes1</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_dynamic_shapes_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_dynamic_shapes_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_dynamic_shapes_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_dynamic_shapes_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+<span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if our example inputs to <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> do not satisfy the constraints
-given by <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code>, then we get an error.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp1_dim1_bad</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp1_dim1_bad"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
-<span class="n">dynamic_shapes1_bad</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp1_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp1_dim1_bad</span><span class="p">},</span>
+<p>Before we look at the program that’s produced, let’s understand what specifying <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> entails,
+and how that interacts with export. For every input dimension where a <code class="docutils literal notranslate"><span class="pre">Dim</span></code> object is specified, a symbol is
+<a class="reference external" href="https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes">allocated</a>,
+taking on a range of <code class="docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">inf]</span></code> (why not <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">inf]</span></code> or <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">inf]</span></code>? we’ll explain later in the
+0/1 specialization section).</p>
+<p>Export then runs model tracing, looking at each operation that’s performed by the model. Each individual operation can emit
+what’s called “guards”; basically boolean condition that are required to be true for the program to be valid.
+When guards involve symbols allocated for input dimensions, the program contains restrictions on what input shapes are valid;
+i.e. the program’s dynamic behavior. The symbolic shapes subsystem is the part responsible for taking in all the emitted guards
+and producing a final program representation that adheres to all of these guards. Before we see this “final representation” in
+an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>, let’s look at the guards emitted by the toy model we’re tracing.</p>
+<p>Here, each forward input tensor is annotated with the symbol allocated at the start of tracing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DynamicModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">w</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [s0, s1]</span>
+        <span class="n">x</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [s2]</span>
+        <span class="n">y</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [s3, s4]</span>
+        <span class="n">z</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span>  <span class="c1"># [s5]</span>
+    <span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>  <span class="c1"># guard: s2 == s4</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>  <span class="c1"># guard: s1 == 5</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>  <span class="c1"># no guard added here</span>
+        <span class="n">x3</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">z</span>  <span class="c1"># guard: s3 * s4 == s5</span>
+        <span class="k">return</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x3</span>
+</pre></div>
+</div>
+<p>Let’s understand each of the operations and the emitted guards:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">y</span></code>: This is an element-wise add with broadcasting, since <code class="docutils literal notranslate"><span class="pre">x</span></code> is a 1-d tensor and <code class="docutils literal notranslate"><span class="pre">y</span></code> a 2-d tensor. <code class="docutils literal notranslate"><span class="pre">x</span></code> is broadcasted along the last dimension of <code class="docutils literal notranslate"><span class="pre">y</span></code>, emitting the guard <code class="docutils literal notranslate"><span class="pre">s2</span> <span class="pre">==</span> <span class="pre">s4</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x1</span> <span class="pre">=</span> <span class="pre">self.l(w)</span></code>: Calling <code class="docutils literal notranslate"><span class="pre">nn.Linear()</span></code> performs a matrix multiplication with model parameters. In export, parameters, buffers, and constants are considered program state, which is considered static, and so this is a matmul between a dynamic input (<code class="docutils literal notranslate"><span class="pre">w:</span> <span class="pre">[s0,</span> <span class="pre">s1]</span></code>), and a statically-shaped tensor. This emits the guard <code class="docutils literal notranslate"><span class="pre">s1</span> <span class="pre">==</span> <span class="pre">5</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x2</span> <span class="pre">=</span> <span class="pre">x0.flatten()</span></code>: This call actually doesn’t emit any guards! (at least none relevant to input shapes)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x3</span> <span class="pre">=</span> <span class="pre">x2</span> <span class="pre">+</span> <span class="pre">z</span></code>: <code class="docutils literal notranslate"><span class="pre">x2</span></code> has shape <code class="docutils literal notranslate"><span class="pre">[s3*s4]</span></code> after flattening, and this element-wise add emits <code class="docutils literal notranslate"><span class="pre">s3</span> <span class="pre">*</span> <span class="pre">s4</span> <span class="pre">==</span> <span class="pre">s5</span></code>.</p></li>
+</ul>
+<p>Writing all of these guards down and summarizing is almost like a mathematical proof, which is what the symbolic shapes
+subsystem tries to do! In summary, we can conclude that the program must have the following input shapes to be valid:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">w:</span> <span class="pre">[s0,</span> <span class="pre">5]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">[s2]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y:</span> <span class="pre">[s3,</span> <span class="pre">s2]</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">z:</span> <span class="pre">[s2*s3]</span></code></p></li>
+</ul>
+<p>And when we do finally print out the exported program to see our result, those shapes are what we see annotated on the
+corresponding inputs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another feature to notice is the range_constraints field above, which contains a valid range for each symbol. This isn’t
+so interesting currently, since this export call doesn’t emit any guards related to symbol bounds and each base symbol has
+a generic bound, but this will come up later.</p>
+<p>So far, because we’ve been exporting this toy model, this experience has not been representative of how hard
+it typically is to debug dynamic shapes guards &amp; issues. In most cases it isn’t obvious what guards are being emitted,
+and which operations and parts of user code are responsible. For this toy model we pinpoint the exact lines, and the guards
+are rather intuitive.</p>
+<p>In more complicated cases, a helpful first step is always to enable verbose logging. This can be done either with the environment
+variable <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS="+dynamic"</span></code>, or interactively with <code class="docutils literal notranslate"><span class="pre">torch._logging.set_logs(dynamic=10)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-_logging sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch._logging.set_logs.html#torch._logging.set_logs" title="torch._logging.set_logs"><span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span></a><span class="p">(</span><span class="n">dynamic</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This spits out quite a handful, even with this simple toy model. The log lines here have been cut short at front and end
+to ignore unnecessary info, but looking through the logs we can see the lines relevant to what we described above;
+e.g. the allocation of symbols:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
+<span class="sd">create_symbol s0 = 6 for L['w'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">create_symbol s1 = 5 for L['w'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">runtime_assert True == True [statically known]</span>
+<span class="sd">create_symbol s2 = 4 for L['x'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">create_symbol s3 = 8 for L['y'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">create_symbol s4 = 4 for L['y'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">create_symbol s5 = 32 for L['z'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in &lt;lambda&gt;)</span>
+<span class="sd">"""</span>
+</pre></div>
+</div>
+<p>The lines with <cite>create_symbol</cite> show when a new symbol has been allocated, and the logs also identify the tensor variable names
+and dimensions they’ve been allocated for. In other lines we can also see the guards emitted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
+<span class="sd">runtime_assert Eq(s2, s4) [guard added] x0 = x + y  # output shape: [8, 4]  # dynamic_shapes_tutorial.py:16 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2, s4)"</span>
+<span class="sd">runtime_assert Eq(s1, 5) [guard added] x1 = self.l(w)  # [6, 3]  # dynamic_shapes_tutorial.py:17 in forward (_meta_registrations.py:2127 in meta_mm), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s1, 5)"</span>
+<span class="sd">runtime_assert Eq(s2*s3, s5) [guard added] x3 = x2 + z  # [32]  # dynamic_shapes_tutorial.py:19 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2*s3, s5)"</span>
+<span class="sd">"""</span>
+</pre></div>
+</div>
+<p>Next to the <code class="docutils literal notranslate"><span class="pre">[guard</span> <span class="pre">added]</span></code> messages, we also see the responsible user lines of code - luckily here the model is simple enough.
+In many real-world cases it’s not so straightforward: high-level torch operations can have complicated fake-kernel implementations
+or operator decompositions that complicate where and what guards are emitted. In such cases the best way to dig deeper and investigate
+is to follow the logs’ suggestion, and re-run with environment variable <code class="docutils literal notranslate"><span class="pre">TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="..."</span></code>, to further
+attribute the guard of interest.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Dim.AUTO</span></code> is just one of the available options for interacting with <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code>; as of writing this 2 other options are available:
+<code class="docutils literal notranslate"><span class="pre">Dim.DYNAMIC</span></code>, and <code class="docutils literal notranslate"><span class="pre">Dim.STATIC</span></code>. <code class="docutils literal notranslate"><span class="pre">Dim.STATIC</span></code> simply marks a dimension static, while <code class="docutils literal notranslate"><span class="pre">Dim.DYNAMIC</span></code> is similar to <code class="docutils literal notranslate"><span class="pre">Dim.AUTO</span></code> in all
+ways except one: it raises an error when specializing to a constant; this is designed to maintain dynamism. See for example what happens when a
+static guard is emitted on a dynamically-marked dimension:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dynamic_shapes</span><span class="p">[</span><span class="s2">"w"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">DYNAMIC</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Static guards also aren’t always inherent to the model; they can also come from user specifications. In fact, a common pitfall leading to shape
+specializations is when the user specifies conflicting markers for equivalent dimensions; one dynamic and another static. The same error type is
+raised when this is the case for <code class="docutils literal notranslate"><span class="pre">x.shape[0]</span></code> and <code class="docutils literal notranslate"><span class="pre">y.shape[1]</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dynamic_shapes</span><span class="p">[</span><span class="s2">"w"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">)</span>
+<span class="n">dynamic_shapes</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">STATIC</span><span class="p">,)</span>
+<span class="n">dynamic_shapes</span><span class="p">[</span><span class="s2">"y"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">DYNAMIC</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here you might ask why export “specializes”, i.e. why we resolve this static/dynamic conflict by going with the static route. The answer is because
+of the symbolic shapes system described above, of symbols and guards. When <code class="docutils literal notranslate"><span class="pre">x.shape[0]</span></code> is marked static, we don’t allocate a symbol, and compile
+treating this shape as a concrete integer 4. A symbol is allocated for <code class="docutils literal notranslate"><span class="pre">y.shape[1]</span></code>, and so we finally emit the guard <code class="docutils literal notranslate"><span class="pre">s3</span> <span class="pre">==</span> <span class="pre">4</span></code>, leading to
+specialization.</p>
+<p>One feature of export is that during tracing, statements like asserts, <code class="docutils literal notranslate"><span class="pre">torch._check()</span></code>, and <code class="docutils literal notranslate"><span class="pre">if/else</span></code> conditions will also emit guards.
+See what happens when we augment the existing model with such statements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DynamicModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">512</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">x2</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">x3</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">z</span>
+            <span class="k">return</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">w</span>
+
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"w"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">),</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,),</span>
+    <span class="s2">"y"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">),</span>
+    <span class="s2">"z"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,),</span>
 <span class="p">}</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample1</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp1</span><span class="p">,),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes1_bad</span><span class="p">)</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+<span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicModel</span><span class="p">(),</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can enforce that equalities between dimensions of different tensors
-by using the same <code class="docutils literal notranslate"><span class="pre">torch.export.Dim</span></code> object, for example, in matrix multiplication:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-<span class="n">inp3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">DynamicShapesExample2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">y</span>
-
-<span class="n">inp2_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp2_dim0"</span><span class="p">)</span>
-<span class="n">inner_dim</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inner_dim"</span><span class="p">)</span>
-<span class="n">inp3_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s2">"inp3_dim1"</span><span class="p">)</span>
-
-<span class="n">dynamic_shapes2</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp2_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inner_dim</span><span class="p">},</span>
-    <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inner_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp3_dim1</span><span class="p">},</span>
+<p>Each of these statements emits an additional guard, and the exported program shows the changes; <code class="docutils literal notranslate"><span class="pre">s0</span></code> is eliminated in favor of <code class="docutils literal notranslate"><span class="pre">s2</span> <span class="pre">+</span> <span class="pre">2</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">s2</span></code> now contains lower and upper bounds, reflected in <code class="docutils literal notranslate"><span class="pre">range_constraints</span></code>.</p>
+<p>For the if/else condition, you might ask why the True branch was taken, and why it wasn’t the <code class="docutils literal notranslate"><span class="pre">w.shape[0]</span> <span class="pre">!=</span> <span class="pre">x.shape[0]</span> <span class="pre">+</span> <span class="pre">2</span></code> guard that
+got emitted from tracing. The answer is that export is guided by the sample inputs provided by tracing, and specializes on the branches taken.
+If different sample input shapes were provided that fail the <code class="docutils literal notranslate"><span class="pre">if</span></code> condition, export would trace and emit guards corresponding to the <code class="docutils literal notranslate"><span class="pre">else</span></code> branch.
+Additionally, you might ask why we traced only the <code class="docutils literal notranslate"><span class="pre">if</span></code> branch, and if it’s possible to maintain control-flow in your program and keep both branches
+alive. For that, refer to rewriting your model code following the <code class="docutils literal notranslate"><span class="pre">Control</span> <span class="pre">Flow</span> <span class="pre">Ops</span></code> section above.</p>
+</div>
+<div class="section" id="specialization">
+<h3><a class="toc-backref" href="#id7">0/1 specialization</a><a class="headerlink" href="#specialization" title="Permalink to this heading">¶</a></h3>
+<p>Since we’re talking about guards and specializations, it’s a good time to talk about the 0/1 specialization issue we brought up earlier.
+The bottom line is that export will specialize on sample input dimensions with value 0 or 1, because these shapes have trace-time properties that
+don’t generalize to other shapes. For example, size 1 tensors can broadcast while other sizes fail; and size 0 … . This just means that you should
+specify 0/1 sample inputs when you’d like your program to hardcode them, and non-0/1 sample inputs when dynamic behavior is desirable. See what happens
+at runtime when we export this linear layer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),),</span>
+    <span class="n">dynamic_shapes</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">STATIC</span><span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">ep</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="named-dims">
+<h3><a class="toc-backref" href="#id8">Named Dims</a><a class="headerlink" href="#named-dims" title="Permalink to this heading">¶</a></h3>
+<p>So far we’ve only been talking about 3 ways to specify dynamic shapes: <code class="docutils literal notranslate"><span class="pre">Dim.AUTO</span></code>, <code class="docutils literal notranslate"><span class="pre">Dim.DYNAMIC</span></code>, and <code class="docutils literal notranslate"><span class="pre">Dim.STATIC</span></code>. The attraction of these is the
+low-friction user experience; all the guards emitted during model tracing are adhered to, and dynamic behavior like min/max ranges, relations, and static/dynamic
+dimensions are automatically figured out underneath export. The dynamic shapes subsystem essentially acts as a “discovery” process, summarizing these guards
+and presenting what export believes is the overall dynamic behavior of the program. The drawback of this design appears once the user has stronger expectations or
+beliefs about the dynamic behavior of these models - maybe there is a strong desire on dynamism and specializations on particular dimensions are to be avoided at
+all costs, or maybe we just want to catch changes in dynamic behavior with changes to the original model code, or possibly underlying decompositions or meta-kernels.
+These changes won’t be detected and the <code class="docutils literal notranslate"><span class="pre">export()</span></code> call will most likely succeed, unless tests are in place that check the resulting <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> representation.</p>
+<p>For such cases, our stance is to recommend the “traditional” way of specifying dynamic shapes, which longer-term users of export might be familiar with: named <code class="docutils literal notranslate"><span class="pre">Dims</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dx</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="p">(</span><span class="s2">"dx"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+<span class="n">dh</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="p">(</span><span class="s2">"dh"</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">"y"</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dh</span><span class="p">),</span>
 <span class="p">}</span>
-
-<span class="n">exported_dynamic_shapes_example2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample2</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp2</span><span class="p">,</span> <span class="n">inp3</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes2</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_dynamic_shapes_example2</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">exported_dynamic_shapes_example2</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can also describe one dimension in terms of other. There are some
-restrictions to how detailed we can specify one dimension in terms of another,
-but generally, those in the form of <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">Dim</span> <span class="pre">+</span> <span class="pre">B</span></code> should work.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DerivedDimExample1</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-
-<span class="n">foo</span> <span class="o">=</span> <span class="n">DerivedDimExample1</span><span class="p">()</span>
-
-<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">dimx</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-module" href="https://pytorch.org/docs/stable/export.html#module-torch.export" title="torch.export"><span class="n">torch</span><span class="o">.</span><span class="n">export</span></a><span class="o">.</span><span class="n">Dim</span><span class="p">(</span><span class="s2">"dimx"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">dimy</span> <span class="o">=</span> <span class="n">dimx</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">derived_dynamic_shapes1</span> <span class="o">=</span> <span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">dimx</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">dimy</span><span class="p">})</span>
-
-<span class="n">derived_dim_example1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">derived_dynamic_shapes1</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">derived_dim_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">)))</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">derived_dim_example1</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-
-
-<span class="k">class</span> <span class="nc">DerivedDimExample2</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
-
-<span class="n">foo</span> <span class="o">=</span> <span class="n">DerivedDimExample2</span><span class="p">()</span>
-
-<span class="n">z</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">dx</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-module" href="https://pytorch.org/docs/stable/export.html#module-torch.export" title="torch.export"><span class="n">torch</span><span class="o">.</span><span class="n">export</span></a><span class="o">.</span><span class="n">Dim</span><span class="p">(</span><span class="s2">"dx"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">dz</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">dy</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">derived_dynamic_shapes2</span> <span class="o">=</span> <span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">dz</span><span class="p">},</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">dy</span><span class="p">})</span>
-
-<span class="n">derived_dim_example2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">derived_dynamic_shapes2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">derived_dim_example2</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">19</span><span class="p">)))</span>
-</pre></div>
-</div>
-<p>We can actually use <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> to guide us as to which <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> constraints
-are necessary. We can do this by relaxing all constraints (recall that if we
-do not provide constraints for a dimension, the default behavior is to constrain
-to the exact shape value of the example input) and letting <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>
-error out.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inp4</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-<span class="n">inp5</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">DynamicShapesExample3</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">16</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">y</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">16</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">y</span>
-
-<span class="n">dynamic_shapes3</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Dim</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inp4_dim</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inp4</span><span class="o">.</span><span class="n">dim</span><span class="p">())},</span>
-    <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Dim</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inp5_dim</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inp5</span><span class="o">.</span><span class="n">dim</span><span class="p">())},</span>
+<p>This style of dynamic shapes allows the user to specify what symbols are allocated for input dimensions, min/max bounds on those symbols, and places restrictions on the
+dynamic behavior of the <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> produced; <code class="docutils literal notranslate"><span class="pre">ConstraintViolation</span></code> errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
+specifications given. For example, in the above specification, the following is asserted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x.shape[0]</span></code> is to have range <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">256]</span></code>, and related to <code class="docutils literal notranslate"><span class="pre">y.shape[0]</span></code> by <code class="docutils literal notranslate"><span class="pre">y.shape[0]</span> <span class="pre">==</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">x.shape[0]</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x.shape[1]</span></code> is static.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y.shape[1]</span></code> has range <code class="docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">512]</span></code>, and is unrelated to any other dimension.</p></li>
+</ul>
+<p>In this design, we allow relations between dimensions to be specified with univariate linear expressions: <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">dim</span> <span class="pre">+</span> <span class="pre">B</span></code> can be specified for any dimension. This allows users
+to specify more complex constraints like integer divisibility for dynamic dimensions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dx</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="p">(</span><span class="s2">"dx"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"x"</span><span class="p">:</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># x.shape[0] has range [16, 2048], and is divisible by 4.</span>
 <span class="p">}</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample3</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3</span><span class="p">)</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="n">tb</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We can see that the error message gives us suggested fixes to our
-dynamic shape constraints. Let us follow those suggestions (exact
-suggestions may differ slightly):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">suggested_fixes</span><span class="p">():</span>
-    <span class="n">inp4_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'shared_dim'</span><span class="p">)</span>
-    <span class="c1"># suggested fixes below</span>
-    <span class="n">inp4_dim0</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'inp4_dim0'</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">inp5_dim1</span> <span class="o">=</span> <span class="n">Dim</span><span class="p">(</span><span class="s1">'inp5_dim1'</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
-    <span class="n">inp5_dim0</span> <span class="o">=</span> <span class="n">inp4_dim1</span>
-    <span class="c1"># end of suggested fixes</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp4_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp4_dim1</span><span class="p">},</span>
-        <span class="s2">"y"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">inp5_dim0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="n">inp5_dim1</span><span class="p">},</span>
-    <span class="p">}</span>
+</div>
+<div class="section" id="constraint-violations-suggested-fixes">
+<h3><a class="toc-backref" href="#id9">Constraint violations, suggested fixes</a><a class="headerlink" href="#constraint-violations-suggested-fixes" title="Permalink to this heading">¶</a></h3>
+<p>One common issue with this specification style (before <code class="docutils literal notranslate"><span class="pre">Dim.AUTO</span></code> was introduced), is that the specification would often be mismatched with what was produced by model tracing.
+That would lead to <code class="docutils literal notranslate"><span class="pre">ConstraintViolation</span></code> errors and export suggested fixes - see for example with this model &amp; specification, where the model inherently requires equality between
+dimensions 0 of <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>, and requires dimension 1 to be static.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+        <span class="k">return</span> <span class="n">w</span> <span class="o">+</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 
-<span class="n">dynamic_shapes3_fixed</span> <span class="o">=</span> <span class="n">suggested_fixes</span><span class="p">()</span>
-<span class="n">exported_dynamic_shapes_example3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample3</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3_fixed</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">exported_dynamic_shapes_example3</span><span class="o">.</span><span class="n">module</span><span class="p">()(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)))</span>
+<span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">d1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dims" title="torch.export.dims"><span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">dims</span></a><span class="p">(</span><span class="s2">"dx"</span><span class="p">,</span> <span class="s2">"dy"</span><span class="p">,</span> <span class="s2">"d1"</span><span class="p">)</span>
+<span class="n">ep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span>
+    <span class="n">Foo</span><span class="p">(),</span>
+    <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
+    <span class="n">dynamic_shapes</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"x"</span><span class="p">:</span> <span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">d1</span><span class="p">),</span>
+        <span class="s2">"y"</span><span class="p">:</span> <span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">d1</span><span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that in the example above, because we constrained the value of <code class="docutils literal notranslate"><span class="pre">x.shape[0]</span></code> in
-<code class="docutils literal notranslate"><span class="pre">dynamic_shapes_example3</span></code>, the exported program is sound even though there is a
-raw <code class="docutils literal notranslate"><span class="pre">if</span></code> statement.</p>
-<p>If you want to see why <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> generated these constraints, you can
-re-run the script with the environment variable <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS=dynamic,dynamo</span></code>,
-or use <code class="docutils literal notranslate"><span class="pre">torch._logging.set_logs</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
-<a class="sphx-glr-backref-module-torch-_logging sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch._logging.set_logs.html#torch._logging.set_logs" title="torch._logging.set_logs"><span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span></a><span class="p">(</span><span class="n">dynamic</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">dynamo</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-<span class="n">exported_dynamic_shapes_example3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">export</span></a><span class="p">(</span><span class="n">DynamicShapesExample3</span><span class="p">(),</span> <span class="p">(</span><span class="n">inp4</span><span class="p">,</span> <span class="n">inp5</span><span class="p">),</span> <span class="n">dynamic_shapes</span><span class="o">=</span><span class="n">dynamic_shapes3_fixed</span><span class="p">)</span>
-
-<span class="c1"># reset to previous values</span>
-<a class="sphx-glr-backref-module-torch-_logging sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch._logging.set_logs.html#torch._logging.set_logs" title="torch._logging.set_logs"><span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span></a><span class="p">(</span><span class="n">dynamic</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">dynamo</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+<p>The expectation with suggested fixes is that the user can interactively copy-paste the changes into their dynamic shapes specification, and successfully export afterwards.</p>
+<p>Lastly, there’s couple nice-to-knows about the options for specification:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> is a good option for static behavior:
+- <code class="docutils literal notranslate"><span class="pre">dynamic_shapes=None</span></code> (default) exports with the entire model being static.
+- specifying <code class="docutils literal notranslate"><span class="pre">None</span></code> at an input-level exports with all tensor dimensions static, and is also required for non-tensor inputs.
+- specifying <code class="docutils literal notranslate"><span class="pre">None</span></code> at a dimension-level specializes that dimension, though this is deprecated in favor of <code class="docutils literal notranslate"><span class="pre">Dim.STATIC</span></code>.</p></li>
+<li><p>specifying per-dimension integer values also produces static behavior, and will additionally check that the provided sample input matches the specification.</p></li>
+</ul>
+<p>These options are combined in the inputs &amp; dynamic shapes spec below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="mi">16</span><span class="p">,</span>
+    <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">dynamic_shapes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"tensor_0"</span><span class="p">:</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch-export-dynamic_shapes sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.dynamic_shapes.Dim" title="torch.export.dynamic_shapes.Dim"><span class="n">Dim</span></a><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">"tensor_1"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">"int_val"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">"bool_val"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>We can view an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>’s symbolic shape ranges using the
-<code class="docutils literal notranslate"><span class="pre">range_constraints</span></code> field.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">exported_dynamic_shapes_example3</span><span class="o">.</span><span class="n">range_constraints</span><span class="p">)</span>
-</pre></div>
 </div>
 </div>
 <div class="section" id="custom-ops">
-<h2><a class="toc-backref" href="#id6">Custom Ops</a><a class="headerlink" href="#custom-ops" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id10">Custom Ops</a><a class="headerlink" href="#custom-ops" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> can export PyTorch programs with custom operators.</p>
 <p>Currently, the steps to register a custom op for use by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> are:</p>
 <ul class="simple">
@@ -1069,7 +1156,7 @@ as evidenced by the <code class="docutils literal notranslate"><span class="pre"
 to make it compatible with <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>.</p>
 </div>
 <div class="section" id="decompositions">
-<h2><a class="toc-backref" href="#id7">Decompositions</a><a class="headerlink" href="#decompositions" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id11">Decompositions</a><a class="headerlink" href="#decompositions" title="Permalink to this heading">¶</a></h2>
 <p>The graph produced by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> by default returns a graph containing
 only functional ATen operators. This functional ATen operator set (or “opset”) contains around 2000
 operators, all of which are functional, that is, they do not
@@ -1148,7 +1235,7 @@ like to decompose, feel free to send a pull request into PyTorch
 implementing the decomposition!</p>
 </div>
 <div class="section" id="exportdb">
-<h2><a class="toc-backref" href="#id8">ExportDB</a><a class="headerlink" href="#exportdb" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id12">ExportDB</a><a class="headerlink" href="#exportdb" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> will only ever export a single computation graph from a PyTorch program. Because of this requirement,
 there will be Python or PyTorch features that are not compatible with <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>, which will require users to
 rewrite parts of their model code. We have seen examples of this earlier in the tutorial – for example, rewriting
@@ -1180,7 +1267,7 @@ and you want to know if <code class="docutils literal notranslate"><span class="
 out if there is an important Python/PyTorch feature that should be added to ExportDB or supported by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>.</p>
 </div>
 <div class="section" id="running-the-exported-program">
-<h2><a class="toc-backref" href="#id9">Running the Exported Program</a><a class="headerlink" href="#running-the-exported-program" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id13">Running the Exported Program</a><a class="headerlink" href="#running-the-exported-program" title="Permalink to this heading">¶</a></h2>
 <p>As <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> is only a graph capturing mechanism, calling the artifact
 produced by <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> eagerly will be equivalent to running the eager
 module. To optimize the execution of the Exported Program, we can pass this
@@ -1225,7 +1312,7 @@ or <a class="reference external" href="https://pytorch.org/TensorRT/dynamo/dynam
 </div>
 </div>
 <div class="section" id="conclusion">
-<h2><a class="toc-backref" href="#id10">Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id14">Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>We introduced <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>, the new PyTorch 2.X way to export single computation
 graphs from PyTorch programs. In particular, we demonstrate several code modifications
 and considerations (control flow ops, constraints, etc.) that need to be made in order to export a graph.</p>
@@ -1284,7 +1371,13 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#graph-breaks">Graph Breaks</a></li>
 <li><a class="reference internal" href="#non-strict-export">Non-Strict Export</a></li>
 <li><a class="reference internal" href="#control-flow-ops">Control Flow Ops</a></li>
-<li><a class="reference internal" href="#constraints-dynamic-shapes">Constraints/Dynamic Shapes</a></li>
+<li><a class="reference internal" href="#constraints-dynamic-shapes">Constraints/Dynamic Shapes</a><ul>
+<li><a class="reference internal" href="#basic-concepts-symbols-and-guards">Basic concepts: symbols and guards</a></li>
+<li><a class="reference internal" href="#specialization">0/1 specialization</a></li>
+<li><a class="reference internal" href="#named-dims">Named Dims</a></li>
+<li><a class="reference internal" href="#constraint-violations-suggested-fixes">Constraint violations, suggested fixes</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#custom-ops">Custom Ops</a></li>
 <li><a class="reference internal" href="#decompositions">Decompositions</a></li>
 <li><a class="reference internal" href="#exportdb">ExportDB</a></li>
