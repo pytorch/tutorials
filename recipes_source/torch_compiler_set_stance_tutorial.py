@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
 """
-``torch.compiler.set_stance`` Tutorial
-=================================
-**Author:** William Wen
+Dynamic Compilation Control with ``torch.compiler.set_stance``
+=========================================================================
+**Author:** `William Wen <https://github.com/williamwen42>`_
 """
 
 ######################################################################
-# ``torch.compiler.set_stance`` is a recent ``torch.compiler`` API that
+# ``torch.compiler.set_stance`` is a ``torch.compiler`` API that
 # enables you to change the behavior of ``torch.compile`` across different
 # calls to your model without having to reapply ``torch.compile`` to your model.
 #
 # This recipe provides some examples on how to use ``torch.compiler.set_stance``.
 #
-# **Contents**
 #
 # .. contents::
 #     :local:
 #
-# **Requirements**
+# Prerequisites
+# ---------------
 #
 # - ``torch >= 2.6``
 
@@ -75,7 +75,7 @@ torch.compiler.set_stance("default")
 print(foo(inp))  # compiled, prints 1
 
 ######################################################################
-# ``torch.compile`` stance can only be changed _outside_ of any ``torch.compile`` region. Attempts
+# ``torch.compile`` stance can only be changed **outside** of any ``torch.compile`` region. Attempts
 # to do otherwise will result in an error.
 
 
@@ -123,9 +123,9 @@ except Exception as e:
 
 ######################################################################
 # Preventing recompilation
-# ========================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Some models do not expect any recompilations - for example, you may always inputs to be the same shape.
+# Some models do not expect any recompilations - for example, you may always have inputs with the same shape.
 # Since recompilations may be expensive, we may wish to error out when we attempt to recompile so we can detect and fix recompilation cases.
 # The ``"fail_on_recompilation"`` stance can be used for this.
 
@@ -230,3 +230,15 @@ try:
     print(my_humongous_model(torch.randn(3)))
 except Exception as e:
     print(e)
+
+########################################
+# Conclusion
+# --------------
+# In this recipe, we have learned how to use the ``torch.compiler.set_stance`` API
+# to modify the behavior of ``torch.compile`` across different calls to a model
+# without needing to reapply it. The recipe demonstrates using
+# ``torch.compiler.set_stance`` as a decorator, context manager, or raw function
+# to control compilation stances like ``force_eager``, ``default``,
+# ``eager_on_recompile``, and "fail_on_recompile." 
+# 
+# For more information, see: `torch.compiler.set_stance API documentation <https://pytorch.org/docs/main/generated/torch.compiler.set_stance.html#torch.compiler.set_stance>`__.
