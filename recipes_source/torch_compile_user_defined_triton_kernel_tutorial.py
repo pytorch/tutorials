@@ -143,7 +143,7 @@ else:
 # Composability
 # -------------------------------------------------------------------
 #
-# User-defined triton kernels do not automatically support all PyTorch
+# User-defined Triton kernels do not automatically support all PyTorch
 # subsystems. This can be seen in the following use cases:
 
 # - Adding a CPU fallback
