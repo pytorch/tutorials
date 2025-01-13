@@ -306,7 +306,7 @@ mysin.register_autograd(backward, setup_context=setup_context)
 ######################################################################
 # Adding a CPU Fallback
 # ^^^^^^^^^^^^^^^^^^^^^
-# triton kernels don’t run on CPU. Use  ``register_kernel`` to add a CPU (or any other device) fallback for the ``triton_op``:
+# Triton kernels don’t run on CPU. Use  ``register_kernel`` to add a CPU (or any other device) fallback for the ``triton_op``:
 
 @mysin.register_kernel("cpu")
 def _(x):
