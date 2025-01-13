@@ -200,7 +200,7 @@ else:
 # Wrapping triton kernels with triton_op
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Use ``torch.library.triton_op`` to wrap a function that may invoke one or more triton kernels.
+# Use ``torch.library.triton_op`` to wrap a function that may invoke one or more Triton kernels.
 # Use ``torch.library.wrap_triton`` to wrap the calls to the triton kernel.
 
 from torch.library import triton_op, wrap_triton
