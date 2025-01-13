@@ -175,7 +175,7 @@ else:
 #      - In the majority of cases
 #      - Yes
 #      - Yes
-#    * - Supports torch.compile
+#    * - Supports ``torch.compile``
 #      - Yes
 #      - Yes
 #      - Yes
