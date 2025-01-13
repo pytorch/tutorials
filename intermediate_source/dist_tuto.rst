@@ -73,7 +73,7 @@ the following template.
         else:
             mp.set_start_method("spawn")
         for rank in range(size):
-            p = mp.Process(target=init_process, args=(rank, size, run))
+            p = mp.Process(target=init_process, args=(rank, world_size, run))
             p.start()
             processes.append(p)
 
