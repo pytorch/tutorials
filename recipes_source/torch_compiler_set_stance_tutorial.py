@@ -230,7 +230,7 @@ try:
     print(my_humongous_model(torch.randn(3)))
 except Exception as e:
     print(e)
-
+    
 ########################################
 # Conclusion
 # --------------
