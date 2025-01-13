@@ -528,7 +528,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="writing-distributed-applications-with-pytorch">
-<h1>Writing Distributed Applications with PyTorch<a class="headerlink" href="#writing-distributed-applications-with-pytorch" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 06, 2017 | Last Updated: Dec 10, 2024 | Last Verified: Nov 05, 2024</p>
+<h1>Writing Distributed Applications with PyTorch<a class="headerlink" href="#writing-distributed-applications-with-pytorch" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 06, 2017 | Last Updated: Jan 13, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://seba1511.com">Séb Arnold</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -566,6 +566,7 @@ the following template.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""run.py:"""</span>
 <span class="c1">#!/usr/bin/env python</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
 <span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
@@ -585,8 +586,12 @@ the following template.</p>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">mp</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">world_size</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">"google.colab"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Running in Google Colab"</span><span class="p">)</span>
+        <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mp</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s2">"spawn"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">init_process</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">run</span><span class="p">))</span>
         <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -665,7 +670,8 @@ we should not modify the sent tensor nor access the received tensor before <code
 In other words,</p>
 <ul class="simple">
 <li><p>writing to <code class="docutils literal notranslate"><span class="pre">tensor</span></code> after <code class="docutils literal notranslate"><span class="pre">dist.isend()</span></code> will result in undefined behaviour.</p></li>
-<li><p>reading from <code class="docutils literal notranslate"><span class="pre">tensor</span></code> after <code class="docutils literal notranslate"><span class="pre">dist.irecv()</span></code> will result in undefined behaviour.</p></li>
+<li><p>reading from <code class="docutils literal notranslate"><span class="pre">tensor</span></code> after <code class="docutils literal notranslate"><span class="pre">dist.irecv()</span></code> will result in undefined
+behaviour, until <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code> has been executed.</p></li>
 </ul>
 <p>However, after <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code>
 has been executed we are guaranteed that the communication took place,
