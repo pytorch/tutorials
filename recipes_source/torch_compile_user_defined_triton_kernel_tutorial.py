@@ -337,7 +337,10 @@ def _(x_shape):
 
 x = torch.randn(3, device="cuda")
 
-# NB: FlopCounterMode requires tabulate.
+#########################################################
+# ``FlopCounterMode`` requires `tabulate <https://pypi.org/project/tabulate/>`__.
+# Before running the code below, make sure you have ``tabulate`` installed or install by
+# running ``pip install tabulate``. 
 #
 # >>> with FlopCounterMode() as flop_counter:
 # >>>     y = mysin(x)
