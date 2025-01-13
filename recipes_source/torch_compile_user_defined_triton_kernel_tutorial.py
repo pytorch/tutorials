@@ -158,7 +158,7 @@ else:
 # However, unlike ``torch.library.custom_op``, which creates opaque callables with respect to
 # ``torch.compile``, ``torch.compile`` traces into ``triton_op`` to apply optimizations.
 #
-# Here’s a chart of which API to use when integrating triton kernels with PyTorch.
+# Here’s a chart of which API to use when integrating Triton kernels with PyTorch.
 #
 # .. list-table::
 #    :header-rows: 1
