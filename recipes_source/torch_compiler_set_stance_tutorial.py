@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-``torch.compiler.set_stance`` Tutorial
-=================================
+Dynamic Compilation Control with ``torch.compiler.set_stance``
+=========================================================================
 **Author:** `William Wen <https://github.com/williamwen42>`_
 """
 
