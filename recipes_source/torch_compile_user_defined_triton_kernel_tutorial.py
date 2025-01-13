@@ -269,7 +269,7 @@ mysin.register_autograd(backward, setup_context=setup_context)
 
 ######################################################################
 # Note that the backward must be a composition of PyTorch-understood operators.
-# If you want the backward to call triton kernels, then those must be wrapped in ``triton_op`` as well:
+# If you want the backward to call Triton kernels, then those must be wrapped in ``triton_op`` as well:
 
 @triton.jit
 def cos_kernel(
