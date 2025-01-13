@@ -35,18 +35,17 @@ quantization and measure their impact.
 #
 # Segment Anything Model checkpoint setup:
 #
-# 1. Go to the `segment-anything repo <checkpoint https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can just use ``wget``: `wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>
+# 1. Go to the `segment-anything repo checkpoint <https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints>`_ and download the ``vit_h`` checkpoint. Alternatively, you can use ``wget`` (for example, ``wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth --directory-prefix=<path>``).
 # 2. Pass in that directory by editing the code below to say:
 #
-# .. code-block::
+# .. code-block:: bash
 #
-# {sam_checkpoint_base_path}=<path>
-#
-# This was run on an A100-PG509-200 power limited to 330.00 W
+#   {sam_checkpoint_base_path}=<path>
 #
 
 import torch
-from torchao.quantization import change_linear_weights_to_int8_dqtensors
+from torchao.quantization.quant_api import quantize_, int8_dynamic_activation_int8_weight
+from torchao.utils import unwrap_tensor_subclass, TORCH_VERSION_AT_LEAST_2_5
 from segment_anything import sam_model_registry
 from torch.utils.benchmark import Timer
 
@@ -158,9 +157,9 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # in memory bound situations where the benefit comes from loading less
 # weight data, rather than doing less computation. The torchao APIs:
 #
-# ``change_linear_weights_to_int8_dqtensors``,
-# ``change_linear_weights_to_int8_woqtensors`` or
-# ``change_linear_weights_to_int4_woqtensors``
+# ``int8_dynamic_activation_int8_weight()``,
+# ``int8_weight_only()`` or
+# ``int4_weight_only()``
 #
 # can be used to easily apply the desired quantization technique and then
 # once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
@@ -172,7 +171,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 #    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
 #    above (no replacement for int4).
 #
-#  The difference between the two APIs is that ``change_linear_weights`` API
+# The difference between the two APIs is that ``int8_dynamic_activation`` API
 # alters the weight tensor of the linear module so instead of doing a
 # normal linear, it does a quantized operation. This is helpful when you
 # have non-standard linear ops that do more than one thing. The ``apply``
@@ -187,7 +186,10 @@ del model_c, model, image
 model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -222,7 +224,10 @@ model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the fused quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -253,7 +258,10 @@ torch._inductor.config.epilogue_fusion = False
 torch._inductor.config.coordinate_descent_tuning = True
 torch._inductor.config.coordinate_descent_check_all_directions = True
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-change_linear_weights_to_int8_dqtensors(model)
+quantize_(model, int8_dynamic_activation_int8_weight())
+if not TORCH_VERSION_AT_LEAST_2_5:
+    # needed for subclass + compile to work on older versions of pytorch
+    unwrap_tensor_subclass(model)
 model_c = torch.compile(model, mode='max-autotune')
 quant_res = benchmark(model_c, image)
 print(f"bf16 compiled runtime of the final quantized block is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -282,7 +290,10 @@ try:
     model, image = get_sam_model(False, batchsize)
     model = model.to(torch.bfloat16)
     image = image.to(torch.bfloat16)
-    change_linear_weights_to_int8_dqtensors(model)
+    quantize_(model, int8_dynamic_activation_int8_weight())
+    if not TORCH_VERSION_AT_LEAST_2_5:
+        # needed for subclass + compile to work on older versions of pytorch
+        unwrap_tensor_subclass(model)
     model_c = torch.compile(model, mode='max-autotune')
     quant_res = benchmark(model_c, image)
     print(f"bf16 compiled runtime of the quantized full model is {quant_res['time']:0.2f}ms and peak memory {quant_res['memory']: 0.2f}GB")
@@ -297,7 +308,7 @@ except Exception as e:
 # -----------------
 # In this tutorial, we have learned about the quantization and optimization techniques
 # on the example of the segment anything model.
-
+#
 # In the end, we achieved a full-model apples to apples quantization speedup
 # of about 7.7% on batch size 16 (677.28ms to 729.65ms). We can push this a
 # bit further by increasing the batch size and optimizing other parts of

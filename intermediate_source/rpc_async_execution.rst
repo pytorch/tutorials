@@ -199,7 +199,7 @@ speed.
 Batch-Processing CartPole Solver
 --------------------------------
 
-This section uses CartPole-v1 from `OpenAI Gym <https://gym.openai.com/>`__ as
+This section uses CartPole-v1 from OpenAI Gym as
 an example to show the performance impact of batch processing RPC. Please note
 that since the goal is to demonstrate the usage of
 `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__

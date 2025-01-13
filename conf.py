@@ -45,6 +45,7 @@ from get_sphinx_filenames import SPHINX_SHOULD_RUN
 import pandocfilters
 import pypandoc
 import plotly.io as pio
+from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
 
@@ -67,6 +68,12 @@ rst_epilog ="""
 #
 # needs_sphinx = '1.0'
 
+html_meta = {
+    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
+    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
+    'author': 'PyTorch Contributors'
+}
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -76,6 +83,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
+    'sphinx_sitemap'
 ]
 
 intersphinx_mapping = {
@@ -114,6 +122,14 @@ sphinx_gallery_conf = {
     },
 }
 
+html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+sitemap_locales = [None]
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+]
+sitemap_url_scheme = "{link}"
+
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
     # tutorial.  Previously this was fed into filename_pattern, but
@@ -125,22 +141,17 @@ if os.getenv('GALLERY_PATTERN'):
     sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
 
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
-    gallery_dir = sphinx_gallery_conf['gallery_dirs'][i]
-    source_dir = sphinx_gallery_conf['examples_dirs'][i]
-    # Create gallery dirs if it doesn't exist
-    try:
-        os.mkdir(gallery_dir)
-    except OSError:
-        pass
+    gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
+    source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
 
     # Copy rst files from source dir to gallery dir
-    for f in glob.glob(os.path.join(source_dir, '*.rst')):
-        distutils.file_util.copy_file(f, gallery_dir, update=True)
-
+    for f in source_dir.rglob("*.rst"):
+        f_dir = Path(f).parent
+        gallery_subdir_path = gallery_dir / f_dir.relative_to(source_dir)
+        gallery_subdir_path.mkdir(parents=True, exist_ok=True)
+        distutils.file_util.copy_file(f, gallery_subdir_path, update=True)
 
 # Add any paths that contain templates here, relative to this directory.
-
-
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
@@ -176,7 +187,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
 exclude_patterns += sphinx_gallery_conf['examples_dirs']
 exclude_patterns += ['*/index.rst']
 
@@ -292,6 +303,10 @@ html_css_files = [
         'css/custom.css',
         'css/custom2.css'
     ]
+
+html_js_files = [
+    "js/custom.js",
+]
 
 def setup(app):
     # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value

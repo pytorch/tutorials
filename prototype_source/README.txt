@@ -7,7 +7,7 @@ Prototype Tutorials
 2. graph_mode_static_quantization_tutorial.py
 	   Graph Mode Post Training Static Quantization in PyTorch
 	   https://pytorch.org/tutorials/prototype/graph_mode_static_quantization_tutorial.html
-	   
+
 3. graph_mode_dynamic_bert_tutorial.rst
 	   Graph Mode Dynamic Quantization on BERT
 	   https://github.com/pytorch/tutorials/blob/main/prototype_source/graph_mode_dynamic_bert_tutorial.rst
@@ -30,9 +30,16 @@ Prototype Tutorials
 
 8. fx_graph_mode_ptq_dynamic.py
 	   FX Graph Mode Post Training Dynamic Quantization
-	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html	   
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html
 
 9. fx_graph_mode_quant_guide.py
 	   FX Graph Mode Quantization User Guide
-	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html	   
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html
 
+10 flight_recorder_tutorial.rst
+	   Flight Recorder User Guide
+	   https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html
+
+11 python_extension_autoload.rst
+	   Autoloading Out-of-Tree Extension
+	   https://pytorch.org/tutorials/prototype/python_extension_autoload.html

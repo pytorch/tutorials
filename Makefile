@@ -82,26 +82,33 @@ download:
 	wget -nv -N http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz -P $(DATADIR)
 	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
 
-	# Download dataset for beginner_source/torchtext_custom_dataset_tutorial.py
-	wget -nv -N https://www.manythings.org/anki/deu-eng.zip -P $(DATADIR)
-	unzip -o $(DATADIR)/deu-eng.zip -d beginner_source/data/
-
 	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
 
+download-last-reviewed-json:
+	@echo "Downloading tutorials-review-data.json..."
+	curl -o tutorials-review-data.json https://raw.githubusercontent.com/pytorch/tutorials/refs/heads/last-reviewed-data-json/tutorials-review-data.json
+	@echo "Finished downloading tutorials-review-data.json."
 docs:
 	make download
+	make download-last-reviewed-json
 	make html
+	@python .jenkins/insert_last_verified.py $(BUILDDIR)/html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
+	rm -rf tutorials-review-data.json
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 	# bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
 	@echo
+	make download-last-reviewed-json
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	@echo "Running post-processing script to insert 'Last Verified' dates..."
+	@python .jenkins/insert_last_verified.py $(BUILDDIR)/html
+	rm -rf tutorials-review-data.json
 
 clean-cache:
 	make clean

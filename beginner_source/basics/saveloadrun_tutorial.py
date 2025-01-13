@@ -57,8 +57,8 @@ torch.save(model, 'model.pth')
 ########################
 # We can then load the model as demonstrated below.
 #
-# As described in `Saving and loading torch.nn.Modules <pytorch.org/docs/main/notes/serialization.html#saving-and-loading-torch-nn-modules>`__,
-# saving ``state_dict``s is considered the best practice. However,
+# As described in `Saving and loading torch.nn.Modules <https://pytorch.org/docs/main/notes/serialization.html#saving-and-loading-torch-nn-modules>`_,
+# saving ``state_dict`` is considered the best practice. However,
 # below we use ``weights_only=False`` because this involves loading the
 # model, which is a legacy use case for ``torch.save``.
 

@@ -17,7 +17,7 @@ to `register a dispatched operator in C++ <dispatcher>`_ and how to write a
 What's a new backend?
 ---------------------
 
-Adding a new backend to PyTorch requires a lot of developement and maintainence from backend extenders.
+Adding a new backend to PyTorch requires a lot of development and maintenance from backend extenders.
 Before adding a new backend, let's first consider a few common use cases and recommended solutions for them:
 
 * If you have new algorithms for an existing PyTorch operator, send a PR to PyTorch.
@@ -30,7 +30,7 @@ Before adding a new backend, let's first consider a few common use cases and rec
 
 In this tutorial we'll mainly focus on adding a new out-of-tree device below.  Adding out-of-tree support
 for a different tensor layout might share many common steps with devices, but we haven't seen an example of
-such integrations yet so it might require addtional work from PyTorch to support it.
+such integrations yet so it might require additional work from PyTorch to support it.
 
 Get a dispatch key for your backend
 -----------------------------------
@@ -67,12 +67,12 @@ To create a Tensor on ``PrivateUse1`` backend, you need to set dispatch key in `
 Note that ``TensorImpl`` class above assumes your Tensor is backed by a storage like CPU/CUDA. We also
 provide ``OpaqueTensorImpl`` for backends without a storage. And you might need to tweak/override certain
 methods to fit your customized hardware.
-One example in pytorch repo is `Vulkan TensorImpl <https://github.com/pytorch/pytorch/blob/1.7/aten/src/ATen/native/vulkan/VulkanOpaqueTensorImpl.h>`_.
+One example in pytorch repo is `Vulkan TensorImpl <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/vulkan/VulkanOpaqueTensorImpl.h>`_.
 
 
 .. note::
    Once the prototype is done and you plan to do regular releases for your backend extension,  please feel free to
-   submit a PR to ``pytorch/pytorch`` to reserve a dedicated dispath key for your backend.
+   submit a PR to ``pytorch/pytorch`` to reserve a dedicated dispatch key for your backend.
 
 
 Get the full list of PyTorch operators
@@ -361,7 +361,7 @@ actively working on might improve the experience in the future:
 
 * Improve test coverage of generic testing framework.
 * Improve ``Math`` kernel coverage and more comprehensive tests to make sure ``Math``
-  kernel bahavior matches other backends like ``CPU/CUDA``.
+  kernel behavior matches other backends like ``CPU/CUDA``.
 * Refactor ``RegistrationDeclarations.h`` to carry the minimal information and reuse
   PyTorch's codegen as much as possible.
 * Support a backend fallback kernel to automatic convert inputs to CPU and convert the
