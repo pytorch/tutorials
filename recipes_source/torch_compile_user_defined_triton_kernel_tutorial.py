@@ -179,7 +179,7 @@ else:
 #      - Yes
 #      - Yes
 #      - Yes
-#    * - Supports torch.compile(fullgraph=True)
+#    * - Supports ``torch.compile(fullgraph=True)``
 #      - In the majority of cases
 #      - In the majority of cases
 #      - In all cases
