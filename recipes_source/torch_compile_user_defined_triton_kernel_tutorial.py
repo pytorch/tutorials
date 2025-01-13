@@ -155,7 +155,7 @@ else:
 # triton_op is a structured way of defining a custom operator that is backed by one
 # or more Triton kernels: like regular custom operators (``torch.library.custom_op``),
 # you are able to specify the interactions with PyTorch subsystems via ``torch.library``.
-# However, unlike ``torch.library.custom_op``, which creates opaque callables w.r.t.
+# However, unlike ``torch.library.custom_op``, which creates opaque callables with respect to
 # ``torch.compile``, ``torch.compile`` traces into ``triton_op`` to apply optimizations.
 #
 # Here’s a chart of which API to use when integrating triton kernels with PyTorch.
