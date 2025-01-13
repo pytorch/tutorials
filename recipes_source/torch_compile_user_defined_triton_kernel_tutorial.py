@@ -166,7 +166,7 @@ else:
 #    * -
 #      - Triton kernel (no explicit ``torch.library`` wrapper)
 #      - ``torch.library.triton_op``
-#      - torch.library.custom_op
+#      - ``torch.library.custom_op``
 #    * - Supports inference
 #      - Yes
 #      - Yes
