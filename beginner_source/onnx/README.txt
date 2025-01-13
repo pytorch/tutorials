@@ -3,7 +3,7 @@ ONNX
 
 1. intro_onnx.py
     Introduction to ONNX
-    https://pytorch.org/tutorials/onnx/intro_onnx.html
+    https://pytorch.org/tutorials/beginner/onnx/intro_onnx.html
 
 2. export_simple_model_to_onnx_tutorial.py
     Exporting a PyTorch model to ONNX
