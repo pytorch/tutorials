@@ -153,7 +153,7 @@ else:
 # To compose with additional PyTorch subsystems, use ``torch.library.triton_op``.
 #
 # triton_op is a structured way of defining a custom operator that is backed by one
-# or more triton kernels: like regular custom operators (``torch.library.custom_op``),
+# or more Triton kernels: like regular custom operators (``torch.library.custom_op``),
 # you are able to specify the interactions with PyTorch subsystems via ``torch.library``.
 # However, unlike ``torch.library.custom_op``, which creates opaque callables w.r.t.
 # ``torch.compile``, ``torch.compile`` traces into ``triton_op`` to apply optimizations.
