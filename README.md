@@ -29,7 +29,7 @@ Here is how you can create a new tutorial (for a detailed description, see [CONT
 3. For Tutorials (except if it is a prototype feature), include it in the `toctree` directive and create a `customcarditem` in [index.rst](./index.rst).
 4. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/main/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
 
-If you are starting off with a Jupyter notebook, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to Python file. After conversion and addition to the project, please make sure that section headings and other things are in logical order.
+If you are starting off with a Jupyter notebook, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to Python file. After conversion and addition to the project, make sure that section headings and other things are in logical order.
 
 ## Building locally
 
