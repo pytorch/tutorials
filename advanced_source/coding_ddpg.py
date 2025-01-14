@@ -893,7 +893,7 @@ def make_recorder(actor_model_explore, transform_state_dict, record_interval):
         record_frames=1000,
         policy_exploration=actor_model_explore,
         environment=environment,
-        exploration_type=ExplorationType.MEAN,
+        exploration_type=ExplorationType.DETERMINISTIC,
         record_interval=record_interval,
     )
     return recorder_obj
