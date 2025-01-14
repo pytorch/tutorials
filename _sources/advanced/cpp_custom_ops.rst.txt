@@ -19,6 +19,10 @@ Custom C++ and CUDA Operators
        * PyTorch 2.4 or later
        * Basic understanding of C++ and CUDA programming
 
+.. note::
+
+  This tutorial will also work on AMD ROCm with no additional modifications.
+
 PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc).
 However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the
 blessed path to authoring a custom operator written in C++/CUDA.
