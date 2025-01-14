@@ -132,7 +132,7 @@ bias = torch.zeros(10, requires_grad=True)
 # we'll write `log_softmax` and use it. Remember: although PyTorch
 # provides lots of prewritten loss functions, activation functions, and
 # so forth, you can easily write your own using plain python. PyTorch will
-# even create fast GPU or vectorized CPU code for your function
+# even create fast accelerator or vectorized CPU code for your function
 # automatically.
 
 def log_softmax(x):
@@ -827,28 +827,25 @@ opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 
 ###############################################################################
-# Using your GPU
+# Using your `Accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 # ---------------
 #
-# If you're lucky enough to have access to a CUDA-capable GPU (you can
+# If you're lucky enough to have access to an accelerator such as CUDA (you can
 # rent one for about $0.50/hour from most cloud providers) you can
-# use it to speed up your code. First check that your GPU is working in
+# use it to speed up your code. First check that your accelerator is working in
 # Pytorch:
 
-print(torch.cuda.is_available())
+# If the current accelerator is available, we will use it. Otherwise, we use the CPU.
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
+
 
 ###############################################################################
-# And then create a device object for it:
-
-dev = torch.device(
-    "cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-###############################################################################
-# Let's update ``preprocess`` to move batches to the GPU:
+# Let's update ``preprocess`` to move batches to the accelerator:
 
 
 def preprocess(x, y):
-    return x.view(-1, 1, 28, 28).to(dev), y.to(dev)
+    return x.view(-1, 1, 28, 28).to(device), y.to(device)
 
 
 train_dl, valid_dl = get_data(train_ds, valid_ds, bs)
@@ -856,9 +853,9 @@ train_dl = WrappedDataLoader(train_dl, preprocess)
 valid_dl = WrappedDataLoader(valid_dl, preprocess)
 
 ###############################################################################
-# Finally, we can move our model to the GPU.
+# Finally, we can move our model to the accelerator.
 
-model.to(dev)
+model.to(device)
 opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
 ###############################################################################
