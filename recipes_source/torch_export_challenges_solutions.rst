@@ -43,9 +43,9 @@ You can identify graph breaks in your program by using the following command:
 
 You will need to modify your program to get rid of graph breaks. Once resolved, you are ready to export the model.
 PyTorch runs `nightly benchmarks <https://hud.pytorch.org/benchmark/compilers>`__ for `torch.compile` on popular HuggingFace and TIMM models.
-Most of these models have no graph break.
+Most of these models have no graph breaks.
 
-The models in this recipe have no graph break, but fail with `torch.export`
+The models in this recipe have no graph breaks, but fail with `torch.export`
 
 Video Classification
 --------------------
