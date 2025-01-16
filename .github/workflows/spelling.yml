@@ -5,16 +5,90 @@ on:
   push:
     branches:
       - main
+
 jobs:
   pyspelling:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Check for skip label
+        if: github.event_name == 'pull_request'
+        id: skip-label
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const skipLabel = labels.find(label => label.name === 'skip-spell-check');
+            if (skipLabel) {
+              console.log('Found skip-spell-check label, skipping spell check');
+              core.setOutput('skip', 'true');
+            } else {
+              core.setOutput('skip', 'false');
+            }
+
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- \                         
+              './*.{rst,md}' \
+              'beginner_source/**/*.{py,rst,md}' \
+              'intermediate_source/**/*.{py,rst,md}' \
+              'advanced_source/**/*.{py,rst,md}' \
+              'recipes_source/**/*.{py,rst,md}' \
+              'prototype_source/**/*.{py,rst,md}') 
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD^..HEAD -- \
+              './*.{rst,md}' \
+              'beginner_source/**/*.{py,rst,md}' \
+              'intermediate_source/**/*.{py,rst,md}' \
+              'advanced_source/**/*.{py,rst,md}' \
+              'recipes_source/**/*.{py,rst,md}' \
+              'prototype_source/**/*.{py,rst,md}') 
+          fi
+          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+
+      - name: Check if relevant files changed
+        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
+        id: check
+        run: |
+          if [ -z "${{ steps.changed-files.outputs.files }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "No relevant files changed in monitored directories, skipping spell check"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Found changed files to check:"
+            echo "${{ steps.changed-files.outputs.files }}"
+          fi
+
       - uses: actions/setup-python@v4
+        if: |
+          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check.outputs.skip != 'true'
         with:
           python-version: '3.9'
           cache: 'pip'
-      - run: pip install pyspelling
-      - run: sudo apt-get install aspell aspell-en
-      - run: pyspelling
 
+      - name: Install dependencies
+        if: |
+          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check.outputs.skip != 'true'
+        run: |
+          pip install pyspelling
+          sudo apt-get install aspell aspell-en
+
+      - name: Run pyspelling
+        if: |
+          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check.outputs.skip != 'true'
+        run: |
+          pyspelling --source "${{ steps.changed-files.outputs.files }}"
