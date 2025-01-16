@@ -10,69 +10,80 @@ jobs:
   pyspelling:
     runs-on: ubuntu-20.04
     steps:
-      - name: Check for skip label
-        if: github.event_name == 'pull_request'
-        id: skip-label
+      - name: Check for skip label and get changed files
+        id: check-files
         uses: actions/github-script@v6
         with:
           script: |
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
-            const skipLabel = labels.find(label => label.name === 'skip-spell-check');
-            if (skipLabel) {
-              console.log('Found skip-spell-check label, skipping spell check');
-              core.setOutput('skip', 'true');
+            let skipCheck = false;
+            let changedFiles = [];
+            
+            if (context.eventName === 'pull_request') {
+              // Check for skip label
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              skipCheck = labels.some(label => label.name === 'skip-spell-check');
+              
+              if (!skipCheck) {
+                // Get changed files in PR
+                const { data: files } = await github.rest.pulls.listFiles({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number
+                });
+                
+                changedFiles = files
+                  .filter(file => file.filename.match(/\.(py|rst|md)$/))
+                  .map(file => file.filename);
+              }
             } else {
-              core.setOutput('skip', 'false');
+              // For push events, we'll still need to use git diff
+              // We'll handle this after checkout
             }
+            
+            core.setOutput('skip', skipCheck.toString());
+            core.setOutput('files', changedFiles.join(' '));
+            core.setOutput('is-pr', (context.eventName === 'pull_request').toString());
 
       - uses: actions/checkout@v4
-        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
+        if: steps.check-files.outputs.skip != 'true'
         with:
           fetch-depth: 0
 
-      - name: Get changed files
-        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
-        id: changed-files
+      - name: Get changed files for push event
+        if: |
+          steps.check-files.outputs.skip != 'true' &&
+          steps.check-files.outputs.is-pr != 'true'
+        id: push-files
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD -- \                         
-              '*.rst' '*.md' \
-              'beginner_source/**/*.{py,rst,md}' \
-              'intermediate_source/**/*.{py,rst,md}' \
-              'advanced_source/**/*.{py,rst,md}' \
-              'recipes_source/**/*.{py,rst,md}' \
-              'prototype_source/**/*.{py,rst,md}') 
-          else
-            CHANGED_FILES=$(git diff --name-only HEAD^..HEAD -- \
-              '*.rst' '*.md' \
-              'beginner_source/**/*.{py,rst,md}' \
-              'intermediate_source/**/*.{py,rst,md}' \
-              'advanced_source/**/*.{py,rst,md}' \
-              'recipes_source/**/*.{py,rst,md}' \
-              'prototype_source/**/*.{py,rst,md}') 
-          fi
+          CHANGED_FILES=$(git diff --name-only HEAD^..HEAD -- '*.py' '*.rst' '*.md')
           echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
 
       - name: Check if relevant files changed
-        if: github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true'
+        if: steps.check-files.outputs.skip != 'true'
         id: check
         run: |
-          if [ -z "${{ steps.changed-files.outputs.files }}" ]; then
+          if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
+            FILES="${{ steps.check-files.outputs.files }}"
+          else
+            FILES="${{ steps.push-files.outputs.files }}"
+          fi
+          
+          if [ -z "$FILES" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "No relevant files changed in monitored directories, skipping spell check"
+            echo "No relevant files changed (*.py, *.rst, *.md), skipping spell check"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
             echo "Found changed files to check:"
-            echo "${{ steps.changed-files.outputs.files }}"
+            echo "$FILES"
           fi
 
       - uses: actions/setup-python@v4
         if: |
-          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
         with:
           python-version: '3.9'
@@ -80,7 +91,7 @@ jobs:
 
       - name: Install dependencies
         if: |
-          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
         run: |
           pip install pyspelling
@@ -88,7 +99,12 @@ jobs:
 
       - name: Run pyspelling
         if: |
-          (github.event_name != 'pull_request' || steps.skip-label.outputs.skip != 'true') &&
+          steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
         run: |
-          pyspelling --source "${{ steps.changed-files.outputs.files }}"
+          if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
+            FILES="${{ steps.check-files.outputs.files }}"
+          else
+            FILES="${{ steps.push-files.outputs.files }}"
+          fi
+          pyspelling --source "$FILES"
