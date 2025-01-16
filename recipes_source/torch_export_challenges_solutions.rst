@@ -8,7 +8,7 @@ This tutorial expands on the previous one and explores the process of exporting 
 In this tutorial, you will learn how to export models for these use cases:
 
 * Video classifier (`MViT <https://pytorch.org/vision/main/models/video_mvit.html>`__)
-* Pose Estimation (`Yolov11 Pose <https://docs.ultralytics.com/tasks/pose/>`__)
+* Automatic Speech Recognition (`OpenAI Whisper-Tiny <https://huggingface.co/openai/whisper-tiny>`__)
 * Image Captioning (`BLIP <https://github.com/salesforce/BLIP>`__)
 * Promptable Image Segmentation (`SAM2 <https://ai.meta.com/sam2/>`__)
 
@@ -33,7 +33,7 @@ handle the unsupported code, and then resumes capturing the graph. This break in
 One of the key differences between ``torch.export`` and ``torch.compile`` is that ``torch.export`` doesn’t support graph breaks
 which means that the entire model or part of the model that you are exporting needs to be a single graph. This is because handling graph breaks
 involves interpreting the unsupported operation with default Python evaluation, which is incompatible with what ``torch.export`` is
-designed for.
+designed for. You can read details about the differences between the various PyTorch frameworks in this `link <https://pytorch.org/docs/main/export.html#existing-frameworks>`__
 
 You can identify graph breaks in your program by using the following command:
 
@@ -152,15 +152,22 @@ for analyzing human pose for determining action or intent. The code below tries 
 
 .. code:: python
 
-   from ultralytics import YOLO
    import torch
-   from torch.export import export
+   from transformers import WhisperProcessor, WhisperForConditionalGeneration
+   from datasets import load_dataset
 
-   pose_model = YOLO("yolo11n-pose.pt")  # Load model
-   pose_model.model.eval()
+   # load model
+   model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-tiny")
 
-   inputs = torch.rand((1,3,640,640))
-   exported_program: torch.export.ExportedProgram= export(pose_model.model, args=(inputs,))
+   # dummy inputs for exporting the model
+   input_features = torch.randn(1,80, 3000)
+   attention_mask = torch.ones(1, 3000)
+   decoder_input_ids = torch.tensor([[1, 1, 1 , 1]]) * model.config.decoder_start_token_id
+
+   model.eval()
+
+   exported_program: torch.export.ExportedProgram= torch.export.export(model, args=(input_features, attention_mask, decoder_input_ids,))
+
 
 
 Error: strict tracing with TorchDynamo
@@ -168,7 +175,7 @@ Error: strict tracing with TorchDynamo
 
 .. code:: console
 
-   torch._dynamo.exc.InternalTorchDynamoError: PendingUnbackedSymbolNotFound: Pending unbacked symbols {zuf0} not in returned outputs FakeTensor(..., size=(6400, 1)) ((1, 1), 0).
+   torch._dynamo.exc.InternalTorchDynamoError: AttributeError: 'DynamicCache' object has no attribute 'key_cache'
 
 
 By default ``torch.export`` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
@@ -184,15 +191,21 @@ a graph. By using ``strict=False``, we are able to export the program.
 
 .. code:: python
 
-   from ultralytics import YOLO
    import torch
-   from torch.export import export
+   from transformers import WhisperProcessor, WhisperForConditionalGeneration
+   from datasets import load_dataset
 
-   pose_model = YOLO("yolo11n-pose.pt")  # Load model
-   pose_model.model.eval()
+   # load model
+   model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-tiny")
 
-   inputs = torch.rand((1,3,640,640))
-   exported_program: torch.export.ExportedProgram= export(pose_model.model, args=(inputs,), strict=False)
+   # dummy inputs for exporting the model
+   input_features = torch.randn(1,80, 3000)
+   attention_mask = torch.ones(1, 3000)
+   decoder_input_ids = torch.tensor([[1, 1, 1 , 1]]) * model.config.decoder_start_token_id
+
+   model.eval()
+
+   exported_program: torch.export.ExportedProgram= torch.export.export(model, args=(input_features, attention_mask, decoder_input_ids,), strict=False)
 
 
 
@@ -223,7 +236,7 @@ details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Imag
 
 
 
-Error: Unsupported Python Operations
+Error: Cannot mutate tensors with frozen storage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While exporting a model, it might fail because the model implementation might contain certain Python operations which are not yet supported by ``torch.export``.
@@ -249,6 +262,8 @@ Clone the `tensor <https://github.com/salesforce/BLIP/blob/main/models/blip.py#L
 
    text.input_ids = text.input_ids.clone() # clone the tensor
    text.input_ids[:,0] = self.tokenizer.bos_token_id
+
+Note: This constraint has been relaxed in PyTorch 2.7 nightlies. This should work out-of-the-box in PyTorch 2.7
 
 
 
