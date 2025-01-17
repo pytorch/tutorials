@@ -142,12 +142,12 @@ for ``torch.export`` can be found in the export tutorial. The code shown below d
 
 
 
-Pose Estimation
+Automatic Speech Recognition
 ---------------
 
-**Pose Estimation** is a Computer Vision concept that can be used to identify the location of joints of a human in a 2D image.
-`Ultralytics <https://docs.ultralytics.com/tasks/pose/>`__ has published a Pose Estimation model based on `YOLO11 <https://docs.ultralytics.com/models/yolo11/>`__. This has been trained on the `COCO Dataset <https://cocodataset.org/#keypoints-2017>`__. This model can be used
-for analyzing human pose for determining action or intent. The code below tries to export the YOLO11 Pose model with `batch_size=1`
+**Automatic Speech Recognition**(ASR) is the use of machine learning to transcribe spoken language into text.
+`Whisper <https://arxiv.org/abs/2212.04356>`__ is a Transformer based encoder-decoder model from OpenAI, which was trained on 680k hours of labelled data for ASR and speech translation.
+The code below tries to export ``whisper-tiny`` model for ASR.
 
 
 .. code:: python
