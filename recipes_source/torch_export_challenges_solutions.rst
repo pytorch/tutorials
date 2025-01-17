@@ -145,7 +145,7 @@ for ``torch.export`` can be found in the export tutorial. The code shown below d
 Automatic Speech Recognition
 ---------------
 
-**Automatic Speech Recognition**(ASR) is the use of machine learning to transcribe spoken language into text.
+**Automatic Speech Recognition** (ASR) is the use of machine learning to transcribe spoken language into text.
 `Whisper <https://arxiv.org/abs/2212.04356>`__ is a Transformer based encoder-decoder model from OpenAI, which was trained on 680k hours of labelled data for ASR and speech translation.
 The code below tries to export ``whisper-tiny`` model for ASR.
 
