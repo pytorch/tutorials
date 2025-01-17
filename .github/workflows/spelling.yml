@@ -45,7 +45,7 @@ jobs:
             }
             
             core.setOutput('skip', skipCheck.toString());
-            core.setOutput('files', changedFiles.join(' '));
+            core.setOutput('files', changedFiles.join('\n'));
             core.setOutput('is-pr', (context.eventName === 'pull_request').toString());
 
       - uses: actions/checkout@v4
@@ -60,7 +60,9 @@ jobs:
         id: push-files
         run: |
           CHANGED_FILES=$(git diff --name-only HEAD^..HEAD -- '*.py' '*.rst' '*.md')
-          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Check if relevant files changed
         if: steps.check-files.outputs.skip != 'true'
@@ -97,14 +99,45 @@ jobs:
           pip install pyspelling
           sudo apt-get install aspell aspell-en
 
-      - name: Run pyspelling
+      - name: Run spell check on each file
         if: |
           steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
         run: |
+          # Get the list of files into an array
           if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
-            FILES="${{ steps.check-files.outputs.files }}"
+            mapfile -t FILES <<< "${{ steps.check-files.outputs.files }}"
           else
-            FILES="${{ steps.push-files.outputs.files }}"
+            mapfile -t FILES <<< "${{ steps.push-files.outputs.files }}"
           fi
-          pyspelling --source "$FILES"
+          
+          # Check each file individually
+          FINAL_EXIT_CODE=0
+          for file in "${FILES[@]}"; do
+            if [ -n "$file" ]; then
+              echo "Checking spelling in $file"
+              # Create a temporary config file based on the existing one
+              python3 - <<EOF > temp_config.yml
+          import yaml
+          
+          with open('.pyspelling.yml', 'r') as f:
+              config = yaml.safe_load(f)
+          
+          # Modify only the sources in each matrix entry
+          for matrix in config['matrix']:
+              matrix['sources'] = ['$file']
+          
+          with open('temp_config.yml', 'w') as f:
+              yaml.dump(config, f, default_flow_style=False)
+          EOF
+              
+              if ! pyspelling -c temp_config.yml; then
+                FINAL_EXIT_CODE=1
+              fi
+            fi
+          done
+          
+          if [ $FINAL_EXIT_CODE -ne 0 ]; then
+            echo "Spell check failed!"
+            exit 1
+          fi
