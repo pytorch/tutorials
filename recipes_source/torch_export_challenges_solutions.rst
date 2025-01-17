@@ -180,7 +180,7 @@ Error: strict tracing with TorchDynamo
 
 By default ``torch.export`` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
 This analysis provides a stronger guarantee about safety but not all Python code is supported. When we export the ``whisper-tiny`` model  using the
-default strict mode, it typically returns an error in dynamo due to an unsupported feature.
+default strict mode, it typically returns an error in Dynamo due to an unsupported feature. To understand why this errors in Dynamo, you can refer to this `GitHub issue <https://github.com/pytorch/pytorch/issues/144906>`__
 
 Solution
 ~~~~~~~~
