@@ -37,7 +37,7 @@ designed for. You can read details about the differences between the various PyT
 
 You can identify graph breaks in your program by using the following command:
 
-.. code:: console
+.. code:: sh
 
    TORCH_LOGS="graph_breaks" python <file_name>.py
 
@@ -45,7 +45,7 @@ You will need to modify your program to get rid of graph breaks. Once resolved, 
 PyTorch runs `nightly benchmarks <https://hud.pytorch.org/benchmark/compilers>`__ for `torch.compile` on popular HuggingFace and TIMM models.
 Most of these models have no graph breaks.
 
-The models in this recipe have no graph breaks, but fail with `torch.export`
+The models in this recipe have no graph breaks, but fail with `torch.export`.
 
 Video Classification
 --------------------
@@ -88,7 +88,7 @@ The code below exports MViT by tracing with ``batch_size=2`` and then checks if 
 Error: Static batch size
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: console
+.. code-block:: sh
 
        raise RuntimeError(
    RuntimeError: Expected input at *args[0].shape[0] to be equal to 2, but got 4
@@ -139,9 +139,6 @@ for ``torch.export`` can be found in the export tutorial. The code shown below d
        tb.print_exc()
 
 
-
-
-
 Automatic Speech Recognition
 ---------------
 
@@ -180,7 +177,7 @@ Error: strict tracing with TorchDynamo
 
 By default ``torch.export`` traces your code using `TorchDynamo <https://pytorch.org/docs/stable/torch.compiler_dynamo_overview.html>`__, a byte-code analysis engine,  which symbolically analyzes your code and builds a graph.
 This analysis provides a stronger guarantee about safety but not all Python code is supported. When we export the ``whisper-tiny`` model  using the
-default strict mode, it typically returns an error in Dynamo due to an unsupported feature. To understand why this errors in Dynamo, you can refer to this `GitHub issue <https://github.com/pytorch/pytorch/issues/144906>`__
+default strict mode, it typically returns an error in Dynamo due to an unsupported feature. To understand why this errors in Dynamo, you can refer to this `GitHub issue <https://github.com/pytorch/pytorch/issues/144906>`__.
 
 Solution
 ~~~~~~~~
@@ -207,14 +204,12 @@ a graph. By using ``strict=False``, we are able to export the program.
 
    exported_program: torch.export.ExportedProgram= torch.export.export(model, args=(input_features, attention_mask, decoder_input_ids,), strict=False)
 
-
-
 Image Captioning
 ----------------
 
 **Image Captioning** is the task of defining the contents of an image in words. In the context of gaming, Image Captioning can be used to enhance the
 gameplay experience by dynamically generating text description of the various game objects in the scene, thereby providing the gamer with additional
-details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Image Captioning `released by SalesForce Research <https://github.com/salesforce/BLIP>`__. The code below tries to export BLIP with ``batch_size=1``
+details. `BLIP <https://arxiv.org/pdf/2201.12086>`__ is a popular model for Image Captioning `released by SalesForce Research <https://github.com/salesforce/BLIP>`__. The code below tries to export BLIP with ``batch_size=1``.
 
 
 .. code:: python
@@ -263,9 +258,8 @@ Clone the `tensor <https://github.com/salesforce/BLIP/blob/main/models/blip.py#L
    text.input_ids = text.input_ids.clone() # clone the tensor
    text.input_ids[:,0] = self.tokenizer.bos_token_id
 
-Note: This constraint has been relaxed in PyTorch 2.7 nightlies. This should work out-of-the-box in PyTorch 2.7
-
-
+.. note::
+   This constraint has been relaxed in PyTorch 2.7 nightlies. This should work out-of-the-box in PyTorch 2.7
 
 Promptable Image Segmentation
 -----------------------------
@@ -333,5 +327,5 @@ Conclusion
 
 In this tutorial, we have learned how to use ``torch.export`` to export models for popular use cases by addressing challenges through correct configuration and simple code modifications.
 Once you are able to export a model, you can lower the ``ExportedProgram`` into your hardware using `AOTInductor <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html>`__ in case of servers and `ExecuTorch <https://pytorch.org/executorch/stable/index.html>`__ in case of edge device.
-To learn more about ``AOTInductor`` (AOTI), please refer to the `AOTI tutorial <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
-To learn more about ``ExecuTorch`` , please refer to the `ExecuTorch tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>`__
+To learn more about ``AOTInductor`` (AOTI), please refer to the `AOTI tutorial <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__.
+To learn more about ``ExecuTorch`` , please refer to the `ExecuTorch tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>`__.
