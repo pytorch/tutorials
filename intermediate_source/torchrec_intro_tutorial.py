@@ -744,7 +744,7 @@ sharded_ebc._lookups
 # ``EmbeddingBagCollection`` to generate a
 # ``ShardedEmbeddingBagCollection`` module. This workflow is fine, but
 # typically when implementing model parallel,
-# `DistributedModelParallel <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
+# `DistributedModelParallel <https://pytorch.org/torchrec/model-parallel-api-reference.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
 # (DMP) is used as the standard interface. When wrapping your model (in
 # our case ``ebc``), with DMP, the following will occur:
 # 
