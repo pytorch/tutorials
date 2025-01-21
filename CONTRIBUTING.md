@@ -218,9 +218,8 @@ described in the preceding sections:
 - [NLP From Scratch: Generating Names with a Character-Level RNN
 Tutorial](https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html)
 
-If you are creating a recipe, we recommend that you use [this
-template](https://github.com/pytorch/tutorials/blob/tutorials_refresh/recipes_source/recipes/example_recipe.py)
-as a guide.
+If you are creating a recipe, [this is a good
+example.](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes/what_is_state_dict.py)
 
 
 # Submission Process #
