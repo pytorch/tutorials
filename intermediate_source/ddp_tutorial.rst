@@ -147,8 +147,8 @@ different DDP processes starting from different initial model parameter values.
         print(f"Finished running basic DDP example on rank {rank}.")
 
 
-    def run_demo(demo_fn, world_size):
-        mp.spawn(demo_fn,
+    def run_demo(demo_basic, world_size):
+        mp.spawn(demo_basic,
                  args=(world_size,),
                  nprocs=world_size,
                  join=True)
