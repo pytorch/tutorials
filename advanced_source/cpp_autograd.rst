@@ -255,9 +255,9 @@ Out:
   [ CPUFloatType{3,4} ]
 
 Please see the documentation for ``torch::autograd::backward``
-(`link <https://pytorch.org/cppdocs/api/function_namespacetorch_1_1autograd_1afa9b5d4329085df4b6b3d4b4be48914b.html>`_)
+(`link <https://pytorch.org/cppdocs/api/function_namespacetorch_1_1autograd_1a1403bf65b1f4f8c8506a9e6e5312d030.html#function-torch-autograd-backward>`_)
 and ``torch::autograd::grad``
-(`link <https://pytorch.org/cppdocs/api/function_namespacetorch_1_1autograd_1a1e03c42b14b40c306f9eb947ef842d9c.html>`_)
+(`link <https://pytorch.org/cppdocs/api/function_namespacetorch_1_1autograd_1ab9fa15dc09a8891c26525fb61d33401a.html#function-torch-autograd-grad>`_)
 for more information on how to use them.
 
 Using custom autograd function in C++
