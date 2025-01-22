@@ -44,7 +44,7 @@ print(x)
 
 
 ##########################################################################
-# Let’s unpack what we just did:
+# Let’s upack what we just did:
 # 
 # -  We created a tensor using one of the numerous factory methods
 #    attached to the ``torch`` module.
@@ -85,7 +85,7 @@ print(random)
 
 
 #########################################################################
-# The factory methods all do just what you’d expect - we have a tensor
+# The fctory methods all do just what you’d expect - we have a tensor
 # full of zeros, another full of ones, and another with random values
 # between 0 and 1.
 # 
