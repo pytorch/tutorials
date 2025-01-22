@@ -8,83 +8,136 @@ on:
 
 jobs:
   pyspelling:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - name: Get changed files and check skip label
-        id: files
+      - name: Check for skip label and get changed files
+        id: check-files
         uses: actions/github-script@v6
         with:
           script: |
+            let skipCheck = false;
+            let changedFiles = [];
+            
             if (context.eventName === 'pull_request') {
               // Check for skip label
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-                ...context.repo,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 issue_number: context.issue.number
               });
-              if (labels.some(label => label.name === 'skip-spell-check')) {
-                core.setOutput('skip', 'true');
-                return;
+              skipCheck = labels.some(label => label.name === 'skip-spell-check');
+              
+              if (!skipCheck) {
+                // Get changed files in PR
+                const { data: files } = await github.rest.pulls.listFiles({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number
+                });
+                
+                changedFiles = files
+                  .filter(file => file.filename.match(/\.(py|rst|md)$/))
+                  .map(file => file.filename);
               }
+            } else {
+              // For push events, we'll still need to use git diff
+              // We'll handle this after checkout
             }
             
-            core.setOutput('skip', 'false');
+            core.setOutput('skip', skipCheck.toString());
+            core.setOutput('files', changedFiles.join('\n'));
+            core.setOutput('is-pr', (context.eventName === 'pull_request').toString());
 
       - uses: actions/checkout@v4
-        if: steps.files.outputs.skip != 'true'
+        if: steps.check-files.outputs.skip != 'true'
         with:
           fetch-depth: 0
 
-      - name: Get files to check
-        if: steps.files.outputs.skip != 'true'
+      - name: Get changed files for push event
+        if: |
+          steps.check-files.outputs.skip != 'true' &&
+          steps.check-files.outputs.is-pr != 'true'
+        id: push-files
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD^..HEAD -- '*.py' '*.rst' '*.md')
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check if relevant files changed
+        if: steps.check-files.outputs.skip != 'true'
         id: check
         run: |
-          if [[ ${{ github.event_name }} == 'pull_request' ]]; then
-            FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' | grep -E '\.(py|rst|md)$' || true)
+          if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
+            FILES="${{ steps.check-files.outputs.files }}"
           else
-            FILES=$(git diff --name-only HEAD^..HEAD | grep -E '\.(py|rst|md)$' || true)
+            FILES="${{ steps.push-files.outputs.files }}"
           fi
           
           if [ -z "$FILES" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "No relevant files changed"
+            echo "No relevant files changed (*.py, *.rst, *.md), skipping spell check"
           else
-            echo "files<<EOF" >> $GITHUB_OUTPUT
-            echo "$FILES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "Files to check:"
+            echo "Found changed files to check:"
             echo "$FILES"
           fi
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - uses: actions/setup-python@v4
-        if: steps.files.outputs.skip != 'true' && steps.check.outputs.skip != 'true'
+        if: |
+          steps.check-files.outputs.skip != 'true' &&
+          steps.check.outputs.skip != 'true'
         with:
           python-version: '3.9'
           cache: 'pip'
 
       - name: Install dependencies
-        if: steps.files.outputs.skip != 'true' && steps.check.outputs.skip != 'true'
+        if: |
+          steps.check-files.outputs.skip != 'true' &&
+          steps.check.outputs.skip != 'true'
         run: |
           pip install pyspelling
           sudo apt-get install aspell aspell-en
 
-      - name: Run spell check
-        if: steps.files.outputs.skip != 'true' && steps.check.outputs.skip != 'true'
+      - name: Run spell check on each file
+        if: |
+          steps.check-files.outputs.skip != 'true' &&
+          steps.check.outputs.skip != 'true'
         run: |
-          while IFS= read -r file; do
+          # Get the list of files into an array
+          if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
+            mapfile -t FILES <<< "${{ steps.check-files.outputs.files }}"
+          else
+            mapfile -t FILES <<< "${{ steps.push-files.outputs.files }}"
+          fi
+          
+          # Check each file individually
+          FINAL_EXIT_CODE=0
+          for file in "${FILES[@]}"; do
             if [ -n "$file" ]; then
-              echo "Checking $file"
-              python -c "
-                import yaml
-                with open('.pyspelling.yml') as config_file:
-                    config = yaml.safe_load(config_file)
-                for matrix_entry in config['matrix']:
-                    matrix_entry['sources'] = ['$file']
-                with open('temp_config.yml', 'w') as output_file:
-                    yaml.dump(config, output_file)
-              "
-              pyspelling -c temp_config.yml || exit 1
+              echo "Checking spelling in $file"
+              # Create a temporary config file based on the existing one
+              python3 - <<EOF > temp_config.yml
+          import yaml
+          
+          with open('.pyspelling.yml', 'r') as f:
+              config = yaml.safe_load(f)
+          
+          # Modify only the sources in each matrix entry
+          for matrix in config['matrix']:
+              matrix['sources'] = ['$file']
+          
+          with open('temp_config.yml', 'w') as f:
+              yaml.dump(config, f, default_flow_style=False)
+          EOF
+              
+              if ! pyspelling -c temp_config.yml; then
+                FINAL_EXIT_CODE=1
+              fi
             fi
-          done <<< "${{ steps.check.outputs.files }}"
+          done
+          
+          if [ $FINAL_EXIT_CODE -ne 0 ]; then
+            echo "Spell check failed!"
+            exit 1
+          fi
