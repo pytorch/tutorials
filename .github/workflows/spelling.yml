@@ -120,12 +120,77 @@ jobs:
 
               if ! pyspelling -c temp_config.yml; then
                 FINAL_EXIT_CODE=1
+                SPELLCHECK_LOG+="### $file\n$OUTPUT\n\n"
               fi
             fi
           done
 
           if [ $FINAL_EXIT_CODE -ne 0 ]; then
-            echo "Spell check failed!"
+            echo "spell_failed=true" >> $GITHUB_OUTPUT
+            echo "spell_log<<EOF" >> $GITHUB_OUTPUT
+            echo "$SPELLCHECK_LOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
             exit 1
           fi
 
+      - name: Check for existing comment
+        if: |
+          failure() &&
+          steps.spellcheck.outputs.spell_failed == 'true' &&
+          github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        id: find-comment
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Spellcheck has failed')
+            );
+            return botComment ? botComment.id : '';
+          result-encoding: string
+
+      - name: Post or update spell check comment
+        if: |
+          failure() &&
+          steps.spellcheck.outputs.spell_failed == 'true' &&
+          github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `Spellcheck has failed. Please review the log and address the issues.
+
+            Here are a few tips:
+            - All PyTorch API objects must be in double backticks or use an intersphinx directive. Example: \`\`torch.nn\`\`, :func:\`torch.load\`.
+            - Consult en-wordlist.txt for spellings of some of the words. You can add a word to en-wordlist.txt if:
+              1) It's a common abbreviation, like RNN.
+              2) It's a word widely accepted in the industry.
+            - Please do not add words like \`dtype\`, \`torch.nn.Transformer\` to pass spellcheck. Instead wrap it in double backticks or use an intersphinx directive.
+
+            Spell check log:
+            \`\`\`
+            ${process.env.SPELL_LOG}
+            \`\`\``;
+
+            const commentId = '${{ steps.find-comment.outputs.result }}';
+            if (commentId) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(commentId),
+                body: message
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+            }
+        env:
+          SPELL_LOG: ${{ steps.spellcheck.outputs.spell_log }}
