@@ -116,27 +116,7 @@ jobs:
           for file in "${FILES[@]}"; do
             if [ -n "$file" ]; then
               echo "Checking spelling in $file"
-              cat > temp_config.py << 'EOL'
-import yaml
-
-with open('.pyspelling.yml', 'r') as f:
-    config = yaml.safe_load(f)
-
-new_matrix = []
-for matrix in config['matrix']:
-    if (('python' in matrix['name'].lower() and '$file'.endswith('.py')) or
-        ('reST' in matrix['name'].lower() and '$file'.endswith('.rst')) or
-        ('markdown' in matrix['name'].lower() and '$file'.endswith('.md'))):
-        matrix_copy = matrix.copy()
-        matrix_copy['sources'] = ['$file']
-        new_matrix.append(matrix_copy)
-
-config['matrix'] = new_matrix
-
-with open('temp_config.yml', 'w') as f:
-    yaml.dump(config, f, default_flow_style=False)
-EOL
-              python3 temp_config.py
+              python3 -c "import yaml; config = yaml.safe_load(open('.pyspelling.yml')); new_matrix = [matrix.copy() for matrix in config['matrix'] if (('python' in matrix['name'].lower() and '$file'.endswith('.py')) or ('rest' in matrix['name'].lower() and '$file'.endswith('.rst')) or ('markdown' in matrix['name'].lower() and '$file'.endswith('.md'))) and not matrix.update({'sources': ['$file']})]; config['matrix'] = new_matrix; yaml.dump(config, open('temp_config.yml', 'w'))"
 
               if ! pyspelling -c temp_config.yml; then
                 FINAL_EXIT_CODE=1
@@ -148,3 +128,4 @@ EOL
             echo "Spell check failed!"
             exit 1
           fi
+
