@@ -104,7 +104,6 @@ jobs:
           steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
         run: |
-          # Get the list of files into an array
           if [ "${{ steps.check-files.outputs.is-pr }}" == "true" ]; then
             mapfile -t FILES <<< "${{ steps.check-files.outputs.files }}"
           else
@@ -113,15 +112,16 @@ jobs:
           
           # Check each file individually
           FINAL_EXIT_CODE=0
+          SPELLCHECK_LOG=""
           for file in "${FILES[@]}"; do
             if [ -n "$file" ]; then
               echo "Checking spelling in $file"
               python3 -c "import yaml; config = yaml.safe_load(open('.pyspelling.yml')); new_matrix = [matrix.copy() for matrix in config['matrix'] if (('python' in matrix['name'].lower() and '$file'.endswith('.py')) or ('rest' in matrix['name'].lower() and '$file'.endswith('.rst')) or ('markdown' in matrix['name'].lower() and '$file'.endswith('.md'))) and not matrix.update({'sources': ['$file']})]; config['matrix'] = new_matrix; yaml.dump(config, open('temp_config.yml', 'w'))"
 
-              if ! pyspelling -c temp_config.yml; then
+              OUTPUT=$(pyspelling -c temp_config.yml 2>&1) || {  
                 FINAL_EXIT_CODE=1
                 SPELLCHECK_LOG+="### $file\n$OUTPUT\n\n"
-              fi
+              }
             fi
           done
 
