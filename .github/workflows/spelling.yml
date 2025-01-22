@@ -100,6 +100,7 @@ jobs:
           sudo apt-get install aspell aspell-en
 
       - name: Run spell check on each file
+        id: spellcheck
         if: |
           steps.check-files.outputs.skip != 'true' &&
           steps.check.outputs.skip != 'true'
@@ -118,18 +119,21 @@ jobs:
               echo "Checking spelling in $file"
               python3 -c "import yaml; config = yaml.safe_load(open('.pyspelling.yml')); new_matrix = [matrix.copy() for matrix in config['matrix'] if (('python' in matrix['name'].lower() and '$file'.endswith('.py')) or ('rest' in matrix['name'].lower() and '$file'.endswith('.rst')) or ('markdown' in matrix['name'].lower() and '$file'.endswith('.md'))) and not matrix.update({'sources': ['$file']})]; config['matrix'] = new_matrix; yaml.dump(config, open('temp_config.yml', 'w'))"
 
-              OUTPUT=$(pyspelling -c temp_config.yml 2>&1) || {  
+              if ! OUTPUT=$(pyspelling -c temp_config.yml 2>&1); then
                 FINAL_EXIT_CODE=1
-                SPELLCHECK_LOG+="### $file\n$OUTPUT\n\n"
-              }
+                SPELLCHECK_LOG="${SPELLCHECK_LOG}### ${file}\n${OUTPUT}\n\n"
+              fi
             fi
           done
 
-          if [ $FINAL_EXIT_CODE -ne 0 ]; then
-            echo "spell_failed=true" >> $GITHUB_OUTPUT
+          {
+            echo "spell_failed=${FINAL_EXIT_CODE}" >> $GITHUB_OUTPUT
             echo "spell_log<<EOF" >> $GITHUB_OUTPUT
-            echo "$SPELLCHECK_LOG" >> $GITHUB_OUTPUT
+            echo "${SPELLCHECK_LOG}" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
+          }
+
+          if [ $FINAL_EXIT_CODE -ne 0 ]; then
             exit 1
           fi
 
