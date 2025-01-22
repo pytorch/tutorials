@@ -119,23 +119,28 @@ jobs:
               echo "Checking spelling in $file"
               python3 -c "import yaml; config = yaml.safe_load(open('.pyspelling.yml')); new_matrix = [matrix.copy() for matrix in config['matrix'] if (('python' in matrix['name'].lower() and '$file'.endswith('.py')) or ('rest' in matrix['name'].lower() and '$file'.endswith('.rst')) or ('markdown' in matrix['name'].lower() and '$file'.endswith('.md'))) and not matrix.update({'sources': ['$file']})]; config['matrix'] = new_matrix; yaml.dump(config, open('temp_config.yml', 'w'))"
 
-              if ! OUTPUT=$(pyspelling -c temp_config.yml 2>&1); then
+              if OUTPUT=$(pyspelling -c temp_config.yml 2>&1); then
+                echo "No spelling errors found in $file"
+              else
                 FINAL_EXIT_CODE=1
-                SPELLCHECK_LOG="${SPELLCHECK_LOG}### ${file}\n${OUTPUT}\n\n"
+                echo "Spelling errors found in $file:"
+                echo "$OUTPUT"
+                SPELLCHECK_LOG+="### $file\n$OUTPUT\n\n"
               fi
             fi
           done
 
-          {
-            echo "spell_failed=${FINAL_EXIT_CODE}" >> $GITHUB_OUTPUT
-            echo "spell_log<<EOF" >> $GITHUB_OUTPUT
-            echo "${SPELLCHECK_LOG}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          }
+          # Save the results to GITHUB_OUTPUT
+          echo "spell_failed=$FINAL_EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "spell_log<<SPELLEOF" >> $GITHUB_OUTPUT
+          echo "$SPELLCHECK_LOG" >> $GITHUB_OUTPUT
+          echo "SPELLEOF" >> $GITHUB_OUTPUT
 
           if [ $FINAL_EXIT_CODE -ne 0 ]; then
+            echo "Spell check failed! See above for details."
             exit 1
           fi
+        
 
       - name: Check for existing comment
         if: |
