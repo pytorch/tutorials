@@ -275,8 +275,6 @@ of two ways:
   // in, say, not_agnostic/csrc/extension_BAD.cpp
   PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {}
 
-   and later imported in Python like so:
-
 .. code-block:: python
 
   # in, say, extension_BAD/__init__.py
