@@ -141,16 +141,15 @@ jobs:
             exit 1
           fi
         
-
       - name: Check for existing comment
         if: |
-          failure() &&
-          steps.spellcheck.outputs.spell_failed == 'true' &&
-          github.event_name == 'pull_request'
+          github.event_name == 'pull_request' &&
+          steps.spellcheck.outputs.spell_failed == '1'
         uses: actions/github-script@v6
         id: find-comment
         with:
           script: |
+            console.log('Checking for existing comments...');
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -160,17 +159,18 @@ jobs:
               comment.user.type === 'Bot' && 
               comment.body.includes('Spellcheck has failed')
             );
+            console.log('Found existing comment:', botComment ? botComment.id : 'none');
             return botComment ? botComment.id : '';
           result-encoding: string
 
       - name: Post or update spell check comment
         if: |
-          failure() &&
-          steps.spellcheck.outputs.spell_failed == 'true' &&
-          github.event_name == 'pull_request'
+          github.event_name == 'pull_request' &&
+          steps.spellcheck.outputs.spell_failed == '1'
         uses: actions/github-script@v6
         with:
           script: |
+            console.log('Spell check log:', process.env.SPELL_LOG);
             const message = `Spellcheck has failed. Please review the log and address the issues.
 
             Here are a few tips:
@@ -186,7 +186,10 @@ jobs:
             \`\`\``;
 
             const commentId = '${{ steps.find-comment.outputs.result }}';
+            console.log('Comment ID:', commentId);
+            
             if (commentId) {
+              console.log('Updating existing comment');
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -194,6 +197,7 @@ jobs:
                 body: message
               });
             } else {
+              console.log('Creating new comment');
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -202,4 +206,4 @@ jobs:
               });
             }
         env:
-          SPELL_LOG: ${{ steps.spellcheck.outputs.spell_log }}
+          SPELL_LOG: ${{ steps.spellcheck.outputs.spell_log }}  
