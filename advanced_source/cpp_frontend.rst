@@ -57,7 +57,7 @@ the right tool for the job. Examples for such environments include:
   Multiprocessing is an alternative, but not as scalable and has significant
   shortcomings. C++ has no such constraints and threads are easy to use and
   create. Models requiring heavy parallelization, like those used in `Deep
-  Neuroevolution <https://eng.uber.com/deep-neuroevolution/>`_, can benefit from
+  Neuroevolution <https://www.uber.com/blog/deep-neuroevolution/>`_, can benefit from
   this.
 - **Existing C++ Codebases**: You may be the owner of an existing C++
   application doing anything from serving web pages in a backend server to
@@ -662,7 +662,7 @@ Defining the DCGAN Modules
 We now have the necessary background and introduction to define the modules for
 the machine learning task we want to solve in this post. To recap: our task is
 to generate images of digits from the `MNIST dataset
-<http://yann.lecun.com/exdb/mnist/>`_. We want to use a `generative adversarial
+<https://huggingface.co/datasets/ylecun/mnist>`_. We want to use a `generative adversarial
 network (GAN)
 <https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf>`_ to solve
 this task. In particular, we'll use a `DCGAN architecture
