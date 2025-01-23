@@ -633,7 +633,7 @@ dynamic_shapes = {
 # Data-dependent errors
 # ---------------------
 #
-# While trying to export models, you have may have encountered errors like "Could not guard on data-dependent expression", or Could not extract specialized integer from data-dependent expression".
+# While trying to export models, you have may have encountered errors like "Could not guard on data-dependent expression", or "Could not extract specialized integer from data-dependent expression".
 # These errors exist because ``torch.export()`` compiles programs using FakeTensors, which symbolically represent their real tensor counterparts. For example, they may have equivalent symbolic properties
 # (e.g. sizes, strides, dtypes), but diverge in that FakeTensors do not contain any data values. While this avoids unnecessary memory usage and expensive computation, it does mean that export may struggle
 # with parts of user code where compilation relies on data values. In short, if the compiler requires a concrete, data-dependent value in order to proceed, it will error out, complaining that
