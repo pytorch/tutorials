@@ -6,7 +6,7 @@ training <ddp_series_multinode.html>`__ \|\| **minGPT Training**
 Training “real-world” models with DDP
 =====================================
 
-Authors: `Suraj Subramanian <https://github.com/suraj813>`__
+Authors: `Suraj Subramanian <https://github.com/subramen>`__
 
 .. grid:: 2
 
