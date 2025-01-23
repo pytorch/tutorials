@@ -59,7 +59,7 @@ Distributed Reinforcement Learning using RPC and RRef
 -----------------------------------------------------
 
 This section describes steps to build a toy distributed reinforcement learning
-model using RPC to solve CartPole-v1 from `OpenAI Gym <https://gym.openai.com>`__.
+model using RPC to solve CartPole-v1 from `OpenAI Gym <https://www.gymlibrary.dev/environments/classic_control/cart_pole/>`__.
 The policy code is mostly borrowed from the existing single-thread
 `example <https://github.com/pytorch/examples/blob/master/reinforcement_learning>`__
 as shown below. We will skip details of the ``Policy`` design, and focus on RPC
@@ -156,7 +156,7 @@ send commands. Applications don't need to worry about the lifetime of ``RRefs``.
 The owner of each ``RRef`` maintains a reference counting map to track its
 lifetime, and guarantees the remote data object will not be deleted as long as
 there is any live user of that ``RRef``. Please refer to the ``RRef``
-`design doc <https://pytorch.org/docs/master/notes/rref.html>`__ for details.
+`design doc <https://pytorch.org/docs/stable/rpc/rref.html>`__ for details.
 
 
 .. code:: python
@@ -531,7 +531,7 @@ the given arguments (i.e., ``lr=0.05``).
 In the training loop, it first creates a distributed autograd context, which
 will help the distributed autograd engine to find gradients and involved RPC
 send/recv functions. The design details of the distributed autograd engine can
-be found in its `design note <https://pytorch.org/docs/master/notes/distributed_autograd.html>`__.
+be found in its `design note <https://pytorch.org/docs/stable/rpc/distributed_autograd.html>`__.
 Then, it kicks off the forward pass as if it is a local
 model, and run the distributed backward pass. For the distributed backward, you
 only need to specify a list of roots, in this case, it is the loss ``Tensor``.
