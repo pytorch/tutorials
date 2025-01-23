@@ -828,10 +828,10 @@ constructors.</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.4715 ms
-pinned_tensor.to('cuda:0'):  0.3705 ms
-pageable_tensor.pin_memory():  0.3634 ms
-pageable_tensor.pin_memory().to('cuda:0'):  0.7595 ms
+<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.4601 ms
+pinned_tensor.to('cuda:0'):  0.3645 ms
+pageable_tensor.pin_memory():  0.3488 ms
+pageable_tensor.pin_memory().to('cuda:0'):  0.7109 ms
 </pre></div>
 </div>
 <p>We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
@@ -903,8 +903,8 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  26.7011 ms
-copy_to_device_nonblocking(*tensors):  19.8550 ms
+<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  25.6207 ms
+copy_to_device_nonblocking(*tensors):  18.8253 ms
 </pre></div>
 </div>
 <p>To get a better sense of what is happening here, let us profile these two functions:</p>
@@ -926,14 +926,14 @@ copy_to_device_nonblocking(*tensors):  19.8550 ms
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         3.69%       1.152ms       100.00%      31.206ms      31.206us          1000
-           aten::_to_copy        13.81%       4.310ms        96.31%      30.053ms      30.053us          1000
-      aten::empty_strided        25.96%       8.101ms        25.96%       8.101ms       8.101us          1000
-              aten::copy_        19.22%       5.999ms        56.53%      17.642ms      17.642us          1000
-          cudaMemcpyAsync        18.72%       5.843ms        18.72%       5.843ms       5.843us          1000
-    cudaStreamSynchronize        18.59%       5.801ms        18.59%       5.801ms       5.801us          1000
+                 aten::to         3.91%       1.167ms       100.00%      29.867ms      29.867us          1000
+           aten::_to_copy        13.09%       3.909ms        96.09%      28.700ms      28.700us          1000
+      aten::empty_strided        24.56%       7.334ms        24.56%       7.334ms       7.334us          1000
+              aten::copy_        18.49%       5.524ms        58.45%      17.457ms      17.457us          1000
+          cudaMemcpyAsync        18.34%       5.479ms        18.34%       5.479ms       5.479us          1000
+    cudaStreamSynchronize        21.61%       6.454ms        21.61%       6.454ms       6.454us          1000
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 31.206ms
+Self CPU time total: 29.867ms
 
 Call to `to(device)` None
 </pre></div>
@@ -949,14 +949,14 @@ Call to `to(device)` None
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         4.42%       1.076ms        99.89%      24.330ms      24.330us          1000
-           aten::_to_copy        16.84%       4.102ms        95.47%      23.254ms      23.254us          1000
-      aten::empty_strided        32.57%       7.933ms        32.57%       7.933ms       7.933us          1000
-              aten::copy_        22.13%       5.390ms        46.06%      11.219ms      11.219us          1000
-          cudaMemcpyAsync        23.93%       5.829ms        23.93%       5.829ms       5.829us          1000
-    cudaDeviceSynchronize         0.11%      27.015us         0.11%      27.015us      27.015us             1
+                 aten::to         4.37%     985.735us        99.86%      22.522ms      22.522us          1000
+           aten::_to_copy        16.16%       3.644ms        95.49%      21.536ms      21.536us          1000
+      aten::empty_strided        33.31%       7.512ms        33.31%       7.512ms       7.512us          1000
+              aten::copy_        22.25%       5.018ms        46.02%      10.380ms      10.380us          1000
+          cudaMemcpyAsync        23.77%       5.362ms        23.77%       5.362ms       5.362us          1000
+    cudaDeviceSynchronize         0.14%      31.303us         0.14%      31.303us      31.303us             1
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 24.357ms
+Self CPU time total: 22.553ms
 
 Call to `to(device, non_blocking=True)` None
 </pre></div>
@@ -1042,12 +1042,12 @@ somewhat large batches of large tensors:</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  629.6036 ms
-copy_to_device_nonblocking(*tensors):  555.7756 ms
-copy_to_device(*tensors_pinned):  371.5933 ms
-copy_to_device_nonblocking(*tensors_pinned):  345.1067 ms
-pin_copy_to_device(*tensors):  1012.3033 ms
-pin_copy_to_device_nonblocking(*tensors):  691.3235 ms
+<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  567.1132 ms
+copy_to_device_nonblocking(*tensors):  492.5421 ms
+copy_to_device(*tensors_pinned):  364.4063 ms
+copy_to_device_nonblocking(*tensors_pinned):  339.7137 ms
+pin_copy_to_device(*tensors):  940.5129 ms
+pin_copy_to_device_nonblocking(*tensors):  613.6916 ms
 </pre></div>
 </div>
 </div>
@@ -1175,10 +1175,10 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  634.9015 ms
-td.to('cuda:0'):  558.7877 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=0):  698.9676 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=4):  359.4268 ms
+<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  575.1050 ms
+td.to('cuda:0'):  504.2321 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=0):  624.1625 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=4):  360.6190 ms
 </pre></div>
 </div>
 <p>In this example, we are transferring many large tensors from the CPU to the GPU.
@@ -1255,7 +1255,7 @@ what was discussed in this tutorial, check the following references:</p>
 <li><p><a class="reference external" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">How to Optimize Data Transfers in CUDA C/C++</a>;</p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tensordict/stable/index.html">tensordict doc</a> and <a class="reference external" href="https://github.com/pytorch/tensordict">repo</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  18.207 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  17.817 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pinmem-nonblock-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/562d6bd0e2a429f010fcf8007f6a7cac/pinmem_nonblock.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pinmem_nonblock.py</span></code></a></p>
