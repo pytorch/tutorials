@@ -141,74 +141,16 @@ jobs:
 
           if [ $FINAL_EXIT_CODE -ne 0 ]; then
             echo "Spell check failed! See above for details."
+            echo
+            echo "Here are a few tips:"
+            echo "- All PyTorch API objects must be in double backticks or use an intersphinx directive."
+            echo "  Example: ``torch.nn``, :func:`torch.load`"
+            echo "- Consult en-wordlist.txt for spellings of some of the words."
+            echo "  You can add a word to en-wordlist.txt if:"
+            echo "  1) It's a common abbreviation, like RNN."
+            echo "  2) It's a word widely accepted in the industry."
+            echo "- Please do not add words like 'dtype', 'torch.nn.Transformer' to pass spellcheck."
+            echo "  Instead wrap it in double backticks or use an intersphinx directive."
+            echo
             exit 1
           fi
-        
-      - name: Check for existing comment
-        if: |
-          github.event_name == 'pull_request' &&
-          steps.spellcheck.outcome == 'failure'
-        uses: actions/github-script@v6
-        id: find-comment
-        with:
-          script: |
-            console.log('Checking for existing comments...');
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('Spellcheck has failed')
-            );
-            console.log('Found existing comment:', botComment ? botComment.id : 'none');
-            return botComment ? botComment.id : '';
-          result-encoding: string
-
-      - name: Post or update spell check comment
-        if: |
-          github.event_name == 'pull_request' &&
-          steps.spellcheck.outcome == 'failure'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log('Debug: Attempting to post/update comment');
-            console.log('Debug: spell_failed =', '${{ steps.spellcheck.outputs.spell_failed }}');
-
-            const message = `Spellcheck has failed. Please review the log and address the issues.
-
-            Here are a few tips:
-            - All PyTorch API objects must be in double backticks or use an intersphinx directive. Example: \`\`torch.nn\`\`, :func:\`torch.load\`.
-            - Consult en-wordlist.txt for spellings of some of the words. You can add a word to en-wordlist.txt if:
-              1) It's a common abbreviation, like RNN.
-              2) It's a word widely accepted in the industry.
-            - Please do not add words like \`dtype\`, \`torch.nn.Transformer\` to pass spellcheck. Instead wrap it in double backticks or use an intersphinx directive.
-
-            Spell check log:
-            \`\`\`
-            ${process.env.SPELL_LOG}
-            \`\`\``;
-
-            const commentId = '${{ steps.find-comment.outputs.result }}';
-            console.log('Comment ID:', commentId);
-            
-            if (commentId) {
-              console.log('Updating existing comment');
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: parseInt(commentId),
-                body: message
-              });
-            } else {
-              console.log('Creating new comment');
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: message
-              });
-            }
-        env:
-          SPELL_LOG: ${{ steps.spellcheck.outputs.spell_log }}  
