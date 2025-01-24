@@ -58,7 +58,6 @@ Extending the ONNX Exporter Operator Support
 #   before proceeding.
 
 import torch
-import onnxruntime
 import onnxscript
 
 # Opset 18 is the standard supported version as of PyTorch 2.6

@@ -9,13 +9,35 @@ Export a model with control flow to ONNX
 ==========================================
 
 **Author**: `Xavier Dupré <https://github.com/xadupre>`_.
-
-Conditional logic cannot be exported into ONNX unless they refactored
-to use :func:`torch.cond`. Let's start with a simple model
-implementing a test.
 """
 
+
+###############################################################################
+# Overview
+# --------
+# 
+# This tutorial demonstrates how to handle control flow logic while exporting
+# a PyTorch model to ONNX. It highlights the challenges of exporting
+# conditional statements directly and provides solutions to circumvent them.
+#
+# Conditional logic cannot be exported into ONNX unless they refactored
+# to use :func:`torch.cond`. Let's start with a simple model
+# implementing a test.
+
 import torch
+
+###############################################################################
+# Define the Models
+# --------
+#
+# Two models are defined:
+#
+# ForwardWithControlFlowTest: A model with a forward method containing an
+# if-else conditional.
+#
+# ModelWithControlFlowTest: A model that incorporates ForwardWithControlFlowTest
+# as part of a simple multi-layer perceptron (MLP). The models are tested with
+# a random input tensor to confirm they execute as expected.
 
 class ForwardWithControlFlowTest(torch.nn.Module):
     def forward(self, x):
@@ -40,33 +62,55 @@ class ModelWithControlFlowTest(torch.nn.Module):
 
 model = ModelWithControlFlowTest()
 
-# %%
-# Let's check it runs.
+
+###############################################################################
+# Exporting the Model: First Attempt
+# --------
+#
+# Exporting this model using torch.export.export fails because the control
+# flow logic in the forward pass creates a graph break that the exporter cannot
+# handle. This behavior is expected, as conditional logic not written using
+# torch.cond is unsupported.
+# 
+# A try-except block is used to capture the expected failure during the export
+# process. If the export unexpectedly succeeds, an AssertionError is raised.
+
 x = torch.randn(3)
 model(x)
 
-# %%
-# As expected, it does not export.
 try:
     torch.export.export(model, (x,), strict=False)
-    raise AssertionError("This export should failed unless pytorch now supports this model.")
+    raise AssertionError("This export should failed unless PyTorch now supports this model.")
 except Exception as e:
     print(e)
 
-# %%
-# It does export with :func:`torch.onnx.export` because
-# the exporter falls back to use JIT tracing as the graph capturing strategy.
-# But the model is not exactly the same as the initial model.
+###############################################################################
+# Using torch.onnx.export with JIT Tracing
+# --------
+#
+# When exporting the model using torch.onnx.export with the dynamo=True
+# argument, the exporter defaults to using JIT tracing. This fallback allows
+# the model to export, but the resulting ONNX graph may not faithfully represent
+# the original model logic due to the limitations of tracing.
+
+
 onnx_program = torch.onnx.export(model, (x,), dynamo=True) 
 print(onnx_program.model)
 
 
-# %%
-# Suggested Patch
-# +++++++++++++++
+###############################################################################
+# Suggested Patch: Refactoring with torch.cond
+# --------
 #
-# Let's avoid the graph break by replacing the forward.
-
+# To make the control flow exportable, the tutorial demonstrates replacing the
+# forward method in ForwardWithControlFlowTest with a refactored version that
+# uses torch.cond.
+#
+# Details of the Refactoring:
+#
+# Two helper functions (identity2 and neg) represent the branches of the conditional logic:
+# * torch.cond is used to specify the condition and the two branches along with the input arguments.
+# * The updated forward method is then dynamically assigned to the ForwardWithControlFlowTest instance within the model. A list of submodules is printed to confirm the replacement.
 
 def new_forward(x):
     def identity2(x):
@@ -84,21 +128,44 @@ for name, mod in model.named_modules():
     if isinstance(mod, ForwardWithControlFlowTest):
         mod.forward = new_forward
 
-# %%
+###############################################################################
 # Let's see what the fx graph looks like.
 
 print(torch.export.export(model, (x,), strict=False))  
 
-# %%
+###############################################################################
 # Let's export again.
 
 onnx_program = torch.onnx.export(model, (x,), dynamo=True)  
 print(onnx_program.model) 
 
 
-# %%  
+###############################################################################
 # We can optimize the model and get rid of the model local functions created to capture the control flow branches.  
 
-onnx_program = torch.onnx.export(model, (x,), dynamo=True)  
 onnx_program.optimize()  
 print(onnx_program.model)  
+
+###############################################################################
+# Conclusion
+# --------
+# This tutorial demonstrates the challenges of exporting models with conditional
+# logic to ONNX and presents a practical solution using torch.cond.
+# While the default exporters may fail or produce imperfect graphs, refactoring the
+# model's logic ensures compatibility and generates a faithful ONNX representation.
+#
+# By understanding these techniques, we can overcome common pitfalls when
+# working with control flow in PyTorch models and ensure smooth integration with ONNX workflows.
+#
+# Further reading
+# ---------------
+#
+# The list below refers to tutorials that ranges from basic examples to advanced scenarios,
+# not necessarily in the order they are listed.
+# Feel free to jump directly to specific topics of your interest or
+# sit tight and have fun going through all of them to learn all there is about the ONNX exporter.
+#
+# .. include:: /beginner_source/onnx/onnx_toc.txt
+#
+# .. toctree::
+#    :hidden:
