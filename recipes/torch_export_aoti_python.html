@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="An end-to-end example of how to use AOTInductor for Python runtime." name="description">
-<meta content="torch.export, AOTInductor, torch._inductor.aot_compile, torch._export.aot_load" name="keywords"/>
+<meta content="torch.export, AOTInductor, torch._inductor.aoti_compile_and_package, aot_compile, torch._export.aoti_load_package" name="keywords"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>torch.export AOTInductor Tutorial for Python runtime (Beta) — PyTorch Tutorials 2.6.0+cu124 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
@@ -533,21 +533,21 @@
 to download the full example code</p>
 </div>
 <span class="target" id="sphx-glr-recipes-torch-export-aoti-python-py"></span><div class="sphx-glr-example-title section" id="torch-export-aotinductor-tutorial-for-python-runtime-beta">
-<h1><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> AOTInductor Tutorial for Python runtime (Beta)<a class="headerlink" href="#torch-export-aotinductor-tutorial-for-python-runtime-beta" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 23, 2024 | Last Updated: Sep 05, 2024 | Last Verified: Nov 05, 2024</p>
+<h1><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> AOTInductor Tutorial for Python runtime (Beta)<a class="headerlink" href="#torch-export-aotinductor-tutorial-for-python-runtime-beta" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 23, 2024 | Last Updated: Jan 24, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> Ankith Gunapal, Bin Bao, Angela Yi</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p><code class="docutils literal notranslate"><span class="pre">torch._inductor.aot_compile</span></code> and <code class="docutils literal notranslate"><span class="pre">torch._export.aot_load</span></code> are in Beta status and are subject to backwards compatibility
-breaking changes. This tutorial provides an example of how to use these APIs for model deployment using Python runtime.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torch._inductor.aoti_compile_and_package</span></code> and
+<code class="docutils literal notranslate"><span class="pre">torch._inductor.aoti_load_package</span></code> are in Beta status and are subject
+to backwards compatibility breaking changes. This tutorial provides an
+example of how to use these APIs for model deployment using Python
+runtime.</p>
 </div>
-<p>It has been shown <a class="reference external" href="https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#">previously</a> how AOTInductor can be used
-to do Ahead-of-Time compilation of PyTorch exported models by creating
-a shared library that can be run in a non-Python environment.</p>
-<p>In this tutorial, you will learn an end-to-end example of how to use AOTInductor for Python runtime.
-We will look at how  to use <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aot_compile()</span></code> along with <a class="reference external" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export.export()</span></code></a> to generate a
-shared library. Additionally, we will examine how to execute the shared library in Python runtime using <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._export.aot_load()</span></code>.
-You will learn about the speed up seen in the first inference time using AOTInductor, especially when using
-<code class="docutils literal notranslate"><span class="pre">max-autotune</span></code> mode which can take some time to execute.</p>
+<p>It has been shown <a class="reference external" href="https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#">previously</a> how
+AOTInductor can be used to do Ahead-of-Time compilation of PyTorch exported
+models by creating an artifact that can be run in a non-Python environment.
+In this tutorial, you will learn an end-to-end example of how to use
+AOTInductor for Python runtime.</p>
 <p><strong>Contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -555,14 +555,14 @@ You will learn about the speed up seen in the first inference time using AOTIndu
 <li><p><a class="reference internal" href="#what-you-will-learn" id="id2">What you will learn</a></p></li>
 <li><p><a class="reference internal" href="#model-compilation" id="id3">Model Compilation</a></p></li>
 <li><p><a class="reference internal" href="#model-inference-in-python" id="id4">Model Inference in Python</a></p></li>
-<li><p><a class="reference internal" href="#when-to-use-aotinductor-for-python-runtime" id="id5">When to use AOTInductor for Python Runtime</a></p></li>
+<li><p><a class="reference internal" href="#when-to-use-aotinductor-with-a-python-runtime" id="id5">When to use AOTInductor with a Python Runtime</a></p></li>
 <li><p><a class="reference internal" href="#conclusion" id="id6">Conclusion</a></p></li>
 </ul>
 </div>
 <div class="section" id="prerequisites">
 <h2><a class="toc-backref" href="#id1">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>PyTorch 2.4 or later</p></li>
+<li><p>PyTorch 2.6 or later</p></li>
 <li><p>Basic understanding of <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and AOTInductor</p></li>
 <li><p>Complete the <a class="reference external" href="https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#">AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models</a> tutorial</p></li>
 </ul>
@@ -570,59 +570,58 @@ You will learn about the speed up seen in the first inference time using AOTIndu
 <div class="section" id="what-you-will-learn">
 <h2><a class="toc-backref" href="#id2">What you will learn</a><a class="headerlink" href="#what-you-will-learn" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>How to use AOTInductor for python runtime.</p></li>
-<li><p>How  to use <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aot_compile()</span></code> along with <a class="reference external" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export.export()</span></code></a> to generate a shared library</p></li>
-<li><p>How to run a shared library in Python runtime using <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._export.aot_load()</span></code>.</p></li>
-<li><p>When do you use AOTInductor for python runtime</p></li>
+<li><p>How to use AOTInductor for Python runtime.</p></li>
+<li><p>How to use <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aoti_compile_and_package()</span></code> along with <a class="reference external" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export.export()</span></code></a> to generate a compiled artifact</p></li>
+<li><p>How to load and run the artifact in a Python runtime using <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._export.aot_load()</span></code>.</p></li>
+<li><p>When to you use AOTInductor with a Python runtime</p></li>
 </ul>
 </div>
 <div class="section" id="model-compilation">
 <h2><a class="toc-backref" href="#id3">Model Compilation</a><a class="headerlink" href="#model-compilation" title="Permalink to this heading">¶</a></h2>
-<p>We will use the TorchVision pretrained <cite>ResNet18</cite> model and TorchInductor on the
-exported PyTorch program using <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aot_compile()</span></code>.</p>
+<p>We will use the TorchVision pretrained <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model as an example.</p>
+<p>The first step is to export the model to a graph representation using
+<a class="reference external" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export.export()</span></code></a>. To learn more about using this function, you can
+check out the <a class="reference external" href="https://pytorch.org/docs/main/export.html">docs</a> or the
+<a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html">tutorial</a>.</p>
+<p>Once we have exported the PyTorch model and obtained an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>,
+we can apply <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aoti_compile_and_package()</span></code> to AOTInductor
+to compile the program to a specified device, and save the generated contents
+into a “.pt2” artifact.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This API also supports <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.compile()</span></code></a> options like <code class="docutils literal notranslate"><span class="pre">mode</span></code>
-This means that if used on a CUDA enabled device, you can, for example, set <code class="docutils literal notranslate"><span class="pre">"max_autotune":</span> <span class="pre">True</span></code>
-which leverages Triton based matrix multiplications &amp; convolutions, and enables CUDA graphs by default.</p>
+<p>This API supports the same available options that <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.compile()</span></code></a>
+has, such as <code class="docutils literal notranslate"><span class="pre">mode</span></code> and <code class="docutils literal notranslate"><span class="pre">max_autotune</span></code> (for those who want to enable
+CUDA graphs and leverage Triton based matrix multiplications and
+convolutions)</p>
 </div>
-<p>We also specify <code class="docutils literal notranslate"><span class="pre">dynamic_shapes</span></code> for the batch dimension. In this example, <code class="docutils literal notranslate"><span class="pre">min=2</span></code> is not a bug and is
-explained in <a class="reference external" href="https://docs.google.com/document/d/16VPOa3d-Liikf48teAOmxLc92rgvJdfosIy-yoT38Io/edit?fbclid=IwAR3HNwmmexcitV0pbZm_x1a4ykdXZ9th_eJWK-3hBtVgKnrkmemz6Pm5jRQ#heading=h.ez923tomjvyk">The 0/1 Specialization Problem</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch._inductor</span>
 <span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">ResNet18_Weights</span><span class="p">,</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">resnet18</span></a>
 
 <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">resnet18</span></a><span class="p">(</span><span class="n">weights</span><span class="o">=</span><a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.ResNet18_Weights" title="torchvision.models.ResNet18_Weights"><span class="n">ResNet18_Weights</span><span class="o">.</span><span class="n">DEFAULT</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.eval" title="torch.nn.Module.eval"><span class="n">model</span><span class="o">.</span><span class="n">eval</span></a><span class="p">()</span>
 
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-grad_mode sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.autograd.grad_mode.inference_mode.html#torch.autograd.grad_mode.inference_mode" title="torch.autograd.grad_mode.inference_mode"><span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span></a><span class="p">():</span>
+    <span class="n">inductor_configs</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="c1"># Specify the generated shared library path</span>
-    <span class="n">aot_compile_options</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"aot_inductor.output_path"</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"resnet18_pt2.so"</span><span class="p">),</span>
-    <span class="p">}</span>
     <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
         <span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span>
-        <span class="n">aot_compile_options</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"max_autotune"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+        <span class="n">inductor_configs</span><span class="p">[</span><span class="s2">"max_autotune"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span>
 
     <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.to" title="torch.nn.Module.to"><span class="n">model</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),)</span>
 
-    <span class="c1"># min=2 is not a bug and is explained in the 0/1 Specialization Problem</span>
-    <span class="n">batch_dim</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">Dim</span><span class="p">(</span><span class="s2">"batch"</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
     <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="torch.export.export"><span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export</span></a><span class="p">(</span>
         <span class="n">model</span><span class="p">,</span>
         <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a><span class="p">,</span>
-        <span class="c1"># Specify the first dimension of the input x as dynamic</span>
-        <span class="n">dynamic_shapes</span><span class="o">=</span><span class="p">{</span><span class="s2">"x"</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">batch_dim</span><span class="p">}},</span>
     <span class="p">)</span>
-    <span class="n">so_path</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">aot_compile</span><span class="p">(</span>
-        <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram.module" title="torch.export.ExportedProgram.module"><span class="n">exported_program</span><span class="o">.</span><span class="n">module</span></a><span class="p">(),</span>
-        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a><span class="p">,</span>
-        <span class="c1"># Specify the generated shared library path</span>
-        <span class="n">options</span><span class="o">=</span><span class="n">aot_compile_options</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">aoti_compile_and_package</span><span class="p">(</span>
+        <a class="sphx-glr-backref-module-torch-export sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/export.html#torch.export.ExportedProgram" title="torch.export.ExportedProgram"><span class="n">exported_program</span></a><span class="p">,</span>
+        <span class="n">package_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"resnet18.pt2"</span><span class="p">),</span>
+        <span class="n">inductor_configs</span><span class="o">=</span><span class="n">inductor_configs</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -631,171 +630,199 @@ explained in <a class="reference external" href="https://docs.google.com/documen
 
   0%|          | 0.00/44.7M [00:00&lt;?, ?B/s]
 
- 94%|#########4| 42.1M/44.7M [00:00&lt;00:00, 441MB/s]
-100%|##########| 44.7M/44.7M [00:00&lt;00:00, 422MB/s]
+ 88%|########7 | 39.1M/44.7M [00:00&lt;00:00, 410MB/s]
+100%|##########| 44.7M/44.7M [00:00&lt;00:00, 411MB/s]
 AUTOTUNE convolution(2x3x224x224, 64x3x7x7)
-  convolution 0.0461 ms 100.0%
-  triton_convolution2d_4 0.1074 ms 42.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_0 0.1143 ms 40.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_3 0.1259 ms 36.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_1 0.1356 ms 34.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_5 0.1759 ms 26.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_2 0.2194 ms 21.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.8657 seconds and 0.0067 seconds precompiling for 7 choices
+  convolution 0.0525 ms 100.0%
+  triton_convolution2d_4 0.1397 ms 37.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_0 0.1498 ms 35.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_3 0.1845 ms 28.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_5 0.2461 ms 21.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_2 0.5298 ms 9.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+  triton_convolution2d_1 0.8789 ms 6.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 0.9653 seconds and 0.0051 seconds precompiling for 7 choices
 AUTOTUNE convolution(2x64x56x56, 64x64x3x3)
-  convolution 0.0440 ms 100.0%
-  triton_convolution2d_9 0.0732 ms 60.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_6 0.0754 ms 58.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_12 0.0800 ms 55.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_11 0.0809 ms 54.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_10 0.0828 ms 53.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_7 0.0917 ms 47.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_8 0.1418 ms 31.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.9447 seconds and 0.0006 seconds precompiling for 8 choices
+  triton_convolution2d_10 0.0356 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_6 0.0365 ms 97.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_11 0.0365 ms 97.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_9 0.0411 ms 86.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  convolution 0.0457 ms 77.7%
+  triton_convolution2d_12 0.0649 ms 54.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_7 0.0769 ms 46.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_8 0.1259 ms 28.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9393 seconds and 0.0006 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x64x56x56, 128x64x3x3)
-  convolution 0.0338 ms 100.0%
-  triton_convolution2d_38 0.0636 ms 53.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_40 0.0822 ms 41.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_34 0.0876 ms 38.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_39 0.0884 ms 38.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_35 0.0910 ms 37.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_37 0.1032 ms 32.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_36 0.2737 ms 12.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.9500 seconds and 0.0007 seconds precompiling for 8 choices
-AUTOTUNE convolution(2x64x56x56, 128x64x1x1)
-  triton_convolution2d_52 0.0110 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_48 0.0118 ms 93.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_53 0.0126 ms 87.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  convolution 0.0128 ms 85.8%
-  triton_convolution2d_54 0.0150 ms 73.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_49 0.0155 ms 70.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_51 0.0156 ms 70.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_50 0.0456 ms 24.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.9244 seconds and 0.0006 seconds precompiling for 8 choices
+  triton_convolution2d_38 0.0290 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_39 0.0399 ms 72.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  convolution 0.0460 ms 62.9%
+  triton_convolution2d_34 0.0483 ms 60.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_37 0.0607 ms 47.7% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_40 0.0622 ms 46.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_35 0.0716 ms 40.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_36 0.1319 ms 22.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9391 seconds and 0.0006 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x128x28x28, 128x128x3x3)
-  convolution 0.0436 ms 100.0%
-  triton_convolution2d_59 0.1164 ms 37.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_61 0.1415 ms 30.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_55 0.1656 ms 26.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_60 0.1706 ms 25.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_56 0.1728 ms 25.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_58 0.1890 ms 23.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_57 0.2675 ms 16.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.9677 seconds and 0.0007 seconds precompiling for 8 choices
+  convolution 0.0449 ms 100.0%
+  triton_convolution2d_45 0.0493 ms 90.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_46 0.0694 ms 64.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_41 0.0845 ms 53.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_44 0.1041 ms 43.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_47 0.1172 ms 38.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_42 0.1399 ms 32.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_43 0.2418 ms 18.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9519 seconds and 0.0007 seconds precompiling for 8 choices
+AUTOTUNE convolution(2x64x56x56, 128x64x1x1)
+  triton_convolution2d_52 0.0092 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_53 0.0106 ms 86.7% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_48 0.0108 ms 85.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_51 0.0129 ms 71.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  convolution 0.0136 ms 67.6%
+  triton_convolution2d_54 0.0137 ms 67.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_49 0.0144 ms 63.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_50 0.0213 ms 43.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9234 seconds and 0.0006 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x128x28x28, 256x128x3x3)
-  convolution 0.0370 ms 100.0%
-  triton_convolution2d_73 0.1002 ms 36.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_75 0.1597 ms 23.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_70 0.1777 ms 20.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_72 0.2047 ms 18.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_71 0.2291 ms 16.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-  triton_convolution2d_74 0.2543 ms 14.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_69 0.3597 ms 10.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 0.9770 seconds and 0.0008 seconds precompiling for 8 choices
-AUTOTUNE convolution(2x128x28x28, 256x128x1x1)
-  triton_convolution2d_87 0.0125 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_83 0.0198 ms 63.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  convolution 0.0200 ms 62.5%
-  triton_convolution2d_86 0.0203 ms 61.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_88 0.0215 ms 58.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_84 0.0224 ms 55.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_89 0.0261 ms 47.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_85 0.0325 ms 38.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-SingleProcess AUTOTUNE benchmarking takes 0.9288 seconds and 0.0006 seconds precompiling for 8 choices
+  convolution 0.0379 ms 100.0%
+  triton_convolution2d_73 0.0492 ms 76.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_74 0.1108 ms 34.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_72 0.1128 ms 33.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_75 0.1165 ms 32.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_69 0.1321 ms 28.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_70 0.1344 ms 28.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_71 0.2052 ms 18.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9538 seconds and 0.0006 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x256x14x14, 256x256x3x3)
-  convolution 0.0529 ms 100.0%
-  triton_convolution2d_94 0.1871 ms 28.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_92 0.2594 ms 20.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-  triton_convolution2d_96 0.2634 ms 20.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_91 0.3285 ms 16.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_93 0.3782 ms 14.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_95 0.4916 ms 10.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_90 0.7006 ms 7.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 0.9942 seconds and 0.0006 seconds precompiling for 8 choices
+  convolution 0.0564 ms 100.0%
+  triton_convolution2d_80 0.0920 ms 61.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_79 0.2097 ms 26.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_81 0.2149 ms 26.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_82 0.2271 ms 24.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_76 0.2558 ms 22.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_77 0.2718 ms 20.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_78 0.3742 ms 15.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9753 seconds and 0.0007 seconds precompiling for 8 choices
+AUTOTUNE convolution(2x128x28x28, 256x128x1x1)
+  triton_convolution2d_87 0.0108 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_86 0.0186 ms 58.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_88 0.0192 ms 56.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_89 0.0192 ms 56.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_84 0.0219 ms 49.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_83 0.0220 ms 49.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  convolution 0.0256 ms 42.1%
+  triton_convolution2d_85 0.0261 ms 41.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+SingleProcess AUTOTUNE benchmarking takes 0.9275 seconds and 0.0006 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x256x14x14, 512x256x3x3)
-  convolution 0.0527 ms 100.0%
-  triton_convolution2d_108 0.1912 ms 27.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_106 0.2602 ms 20.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-  triton_convolution2d_110 0.2718 ms 19.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_105 0.3620 ms 14.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_107 0.3948 ms 13.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_109 0.5040 ms 10.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_104 0.6516 ms 8.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 0.9986 seconds and 0.0007 seconds precompiling for 8 choices
-AUTOTUNE convolution(2x256x14x14, 512x256x1x1)
-  triton_convolution2d_122 0.0175 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  convolution 0.0256 ms 68.3%
-  triton_convolution2d_121 0.0309 ms 56.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_118 0.0317 ms 55.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-  triton_convolution2d_123 0.0327 ms 53.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_120 0.0339 ms 51.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-  triton_convolution2d_124 0.0346 ms 50.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-  triton_convolution2d_119 0.0350 ms 49.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 0.9296 seconds and 0.0007 seconds precompiling for 8 choices
+  convolution 0.0578 ms 100.0%
+  triton_convolution2d_108 0.0935 ms 61.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_109 0.2173 ms 26.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_107 0.2212 ms 26.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_110 0.2256 ms 25.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_106 0.2422 ms 23.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+  triton_convolution2d_104 0.2600 ms 22.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_105 0.2603 ms 22.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 0.9714 seconds and 0.0005 seconds precompiling for 8 choices
 AUTOTUNE convolution(2x512x7x7, 512x512x3x3)
-  convolution 0.0857 ms 100.0%
-  triton_convolution2d_127 0.2771 ms 30.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-  triton_convolution2d_129 0.3584 ms 23.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_131 0.4219 ms 20.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_126 0.4839 ms 17.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-  triton_convolution2d_128 0.7199 ms 11.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_130 0.9991 ms 8.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-  triton_convolution2d_125 1.4202 ms 6.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 1.0308 seconds and 0.0006 seconds precompiling for 8 choices
+  convolution 0.0853 ms 100.0%
+  triton_convolution2d_115 0.1811 ms 47.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_113 0.2147 ms 39.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+  triton_convolution2d_117 0.2666 ms 32.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_112 0.3226 ms 26.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+  triton_convolution2d_114 0.4026 ms 21.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_116 0.4277 ms 20.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+  triton_convolution2d_111 0.5131 ms 16.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 0.9918 seconds and 0.0006 seconds precompiling for 8 choices
+AUTOTUNE convolution(2x256x14x14, 512x256x1x1)
+  triton_convolution2d_122 0.0155 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_120 0.0264 ms 58.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+  convolution 0.0286 ms 54.1%
+  triton_convolution2d_121 0.0306 ms 50.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_124 0.0308 ms 50.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_118 0.0310 ms 49.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+  triton_convolution2d_123 0.0314 ms 49.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+  triton_convolution2d_119 0.0332 ms 46.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 0.9274 seconds and 0.0007 seconds precompiling for 8 choices
 AUTOTUNE addmm(2x1000, 2x512, 512x1000)
-  addmm 0.0158 ms 100.0%
-  triton_mm_142 0.0201 ms 78.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
-  triton_mm_143 0.0210 ms 75.3% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
-  triton_mm_140 0.0220 ms 71.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=2
-  triton_mm_152 0.0308 ms 51.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
-  triton_mm_146 0.0309 ms 51.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
-  triton_mm_153 0.0309 ms 51.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=4, num_warps=4
-  triton_mm_141 0.0311 ms 50.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=4
-  triton_mm_139 0.0345 ms 45.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=16, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=1, num_warps=2
-  triton_mm_145 0.0372 ms 42.4% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=4
-SingleProcess AUTOTUNE benchmarking takes 1.7742 seconds and 0.0022 seconds precompiling for 18 choices
+  addmm 0.0157 ms 100.0%
+  triton_mm_142 0.0197 ms 79.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
+  triton_mm_140 0.0248 ms 63.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=2
+  triton_mm_143 0.0253 ms 62.2% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
+  triton_mm_146 0.0302 ms 52.2% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
+  triton_mm_153 0.0310 ms 50.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=4, num_warps=4
+  triton_mm_141 0.0310 ms 50.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=4
+  triton_mm_152 0.0311 ms 50.6% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
+  triton_mm_139 0.0342 ms 46.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=16, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=1, num_warps=2
+  triton_mm_145 0.0376 ms 41.9% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=4
+SingleProcess AUTOTUNE benchmarking takes 1.7747 seconds and 0.0020 seconds precompiling for 18 choices
+</pre></div>
+</div>
+<p>The result of <code class="xref py py-func docutils literal notranslate"><span class="pre">aoti_compile_and_package()</span></code> is an artifact “resnet18.pt2”
+which can be loaded and executed in Python and C++.</p>
+<p>The artifact itself contains a bunch of AOTInductor generated code, such as
+a generated C++ runner file, a shared library compiled from the C++ file, and
+CUDA binary files, aka cubin files, if optimizing for CUDA.</p>
+<p>Structure-wise, the artifact is a structured <code class="docutils literal notranslate"><span class="pre">.zip</span></code> file, with the following
+specification:</p>
+<p>We can use the following command to inspect the artifact contents:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>unzip<span class="w"> </span>-l<span class="w"> </span>resnet18.pt2
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Archive</span><span class="p">:</span>  <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">resnet18</span></a><span class="o">.</span><span class="n">pt2</span>
+  <span class="n">Length</span>      <span class="n">Date</span>    <span class="n">Time</span>    <span class="n">Name</span>
+<span class="o">---------</span>  <span class="o">----------</span> <span class="o">-----</span>   <span class="o">----</span>
+        <span class="mi">1</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">version</span>
+        <span class="mi">3</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">archive_format</span>
+    <span class="mi">10088</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cagzt6akdaczvxwtbvqe34otfe5jlorktbqlojbzqjqvbfsjlge4</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">17160</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c6oytfjmt5w4c7onvtm6fray7clirxt7q5xjbwx3hdydclmwoujz</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">16616</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c7ydp7nocyz323hij4tmlf2kcedmwlyg6r57gaqzcsy3huneamu6</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">17776</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cyqdf46ordevqhiddvpdpp3uzwatfbzdpl3auj2nx23uxvplnne2</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">10856</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cpzfebfgrusqslui7fxsuoo4tvwulmrxirc5tmrpa4mvrbdno7kn</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">14608</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c5ukeoz5wmaszd7vczdz2qhtt6n7tdbl3b6wuy4rb2se24fjwfoy</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">11376</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">csu3nstcp56tsjfycygaqsewpu64l5s6zavvz7537cm4s4cv2k3r</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">10984</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cp76lez4glmgq7gedf2u25zvvv6rksv5lav4q22dibd2zicbgwj3</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">14736</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c2bb5p6tnwz4elgujqelsrp3unvkgsyiv7xqxmpvuxcm4jfl7pc2</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">11376</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c6eopmb2b4ngodwsayae4r5q6ni3jlfogfbdk3ypg56tgpzhubfy</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">11624</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">chmwe6lvoekzfowdbiizitm3haiiuad5kdm6sd2m6mv6dkn2zk32</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">15632</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">c3jop5g344hj3ztsu4qm6ibxyaaerlhkzh2e6emak23rxfje6jam</span><span class="o">.</span><span class="n">cubin</span>
+    <span class="mi">25472</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">chaiixybeiuuitm2nmqnxzijzwgnn2n7uuss4qmsupgblfh3h5hk</span><span class="o">.</span><span class="n">cubin</span>
+   <span class="mi">139389</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t</span><span class="o">.</span><span class="n">cpp</span>
+       <span class="mi">27</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t_metadata</span><span class="o">.</span><span class="n">json</span>
+ <span class="mi">47195424</span>  <span class="mi">01</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">2025</span> <span class="mi">16</span><span class="p">:</span><span class="mi">40</span>   <span class="n">data</span><span class="o">/</span><span class="n">aotinductor</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t</span><span class="o">.</span><span class="n">so</span>
+<span class="o">---------</span>                     <span class="o">-------</span>
+ <span class="mi">47523148</span>                     <span class="mi">18</span> <span class="n">files</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="model-inference-in-python">
 <h2><a class="toc-backref" href="#id4">Model Inference in Python</a><a class="headerlink" href="#model-inference-in-python" title="Permalink to this heading">¶</a></h2>
-<p>Typically, the shared object generated above is used in a non-Python environment. In PyTorch 2.3,
-we added a new API called <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._export.aot_load()</span></code> to load the shared library in the Python runtime.
-The API follows a structure similar to the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.jit.load.html#torch.jit.load" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.jit.load()</span></code></a> API . You need to specify the path
-of the shared library and the device where it should be loaded.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In the example above, we specified <code class="docutils literal notranslate"><span class="pre">batch_size=1</span></code> for inference and  it still functions correctly even though we specified <code class="docutils literal notranslate"><span class="pre">min=2</span></code> in
-<a class="reference external" href="https://pytorch.org/docs/stable/export.html#torch.export.export" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.export.export()</span></code></a>.</p>
-</div>
+<p>To load and run the artifact in Python, we can use <code class="xref py py-func docutils literal notranslate"><span class="pre">torch._inductor.aoti_load_package()</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch._inductor</span>
 
-<span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
-<span class="n">model_so_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"resnet18_pt2.so"</span><span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"resnet18.pt2"</span><span class="p">)</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_export</span><span class="o">.</span><span class="n">aot_load</span><span class="p">(</span><span class="n">model_so_path</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),)</span>
+<span class="n">compiled_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">aoti_load_package</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),)</span>
 
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-grad_mode sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.autograd.grad_mode.inference_mode.html#torch.autograd.grad_mode.inference_mode" title="torch.autograd.grad_mode.inference_mode"><span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span></a><span class="p">():</span>
-    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a> <span class="o">=</span> <span class="n">compiled_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="when-to-use-aotinductor-for-python-runtime">
-<h2><a class="toc-backref" href="#id5">When to use AOTInductor for Python Runtime</a><a class="headerlink" href="#when-to-use-aotinductor-for-python-runtime" title="Permalink to this heading">¶</a></h2>
-<p>One of the requirements for using AOTInductor is that the model shouldn’t have any graph breaks.
-Once this requirement is met, the primary use case for using AOTInductor Python Runtime is for
-model deployment using Python.
-There are mainly two reasons why you would use AOTInductor Python Runtime:</p>
+<div class="section" id="when-to-use-aotinductor-with-a-python-runtime">
+<h2><a class="toc-backref" href="#id5">When to use AOTInductor with a Python Runtime</a><a class="headerlink" href="#when-to-use-aotinductor-with-a-python-runtime" title="Permalink to this heading">¶</a></h2>
+<p>There are mainly two reasons why one would use AOTInductor with a Python Runtime:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">torch._inductor.aot_compile</span></code> generates a shared library. This is useful for model
-versioning for deployments and tracking model performance over time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch._inductor.aoti_compile_and_package</span></code> generates a singular
+serialized artifact. This is useful for model versioning for deployments
+and tracking model performance over time.</p></li>
 <li><p>With <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.compile()</span></code></a> being a JIT compiler, there is a warmup
-cost associated with the first compilation. Your deployment needs to account for the
-compilation time taken for the first inference. With AOTInductor, the compilation is
-done offline using <code class="docutils literal notranslate"><span class="pre">torch.export.export</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">torch._indutor.aot_compile</span></code>. The deployment
-would only load the shared library using <code class="docutils literal notranslate"><span class="pre">torch._export.aot_load</span></code> and run inference.</p></li>
+cost associated with the first compilation. Your deployment needs to
+account for the compilation time taken for the first inference. With
+AOTInductor, the compilation is done ahead of time using
+<code class="docutils literal notranslate"><span class="pre">torch.export.export</span></code> and <code class="docutils literal notranslate"><span class="pre">torch._inductor.aoti_compile_and_package</span></code>.
+At deployment time, after loading the model, running inference does not
+have any additional cost.</p></li>
 </ul>
 <p>The section below shows the speedup achieved with AOTInductor for first inference</p>
 <p>We define a utility function <code class="docutils literal notranslate"><span class="pre">timed</span></code> to measure the time taken for inference</p>
@@ -830,7 +857,7 @@ would only load the shared library using <code class="docutils literal notransla
 <p>Lets measure the time for first inference using AOTInductor</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_export</span><span class="o">.</span><span class="n">aot_load</span><span class="p">(</span><span class="n">model_so_path</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">aoti_load_package</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">example_inputs</span></a> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),)</span>
 
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-autograd-grad_mode sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.autograd.grad_mode.inference_mode.html#torch.autograd.grad_mode.inference_mode" title="torch.autograd.grad_mode.inference_mode"><span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span></a><span class="p">():</span>
@@ -838,7 +865,7 @@ would only load the shared library using <code class="docutils literal notransla
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Time taken for first inference for AOTInductor is </span><span class="si">{</span><span class="n">time_taken</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Time taken for first inference for AOTInductor is 2.94 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Time taken for first inference for AOTInductor is 4.09 ms
 </pre></div>
 </div>
 <p>Lets measure the time for first inference using <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p>
@@ -855,7 +882,7 @@ would only load the shared library using <code class="docutils literal notransla
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Time taken for first inference for torch.compile is </span><span class="si">{</span><span class="n">time_taken</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Time taken for first inference for torch.compile is 5622.85 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Time taken for first inference for torch.compile is 5683.09 ms
 </pre></div>
 </div>
 <p>We see that there is a drastic speedup in first inference time using AOTInductor compared
@@ -864,12 +891,11 @@ to <code class="docutils literal notranslate"><span class="pre">torch.compile</s
 <div class="section" id="conclusion">
 <h2><a class="toc-backref" href="#id6">Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>In this recipe, we have learned how to effectively use the AOTInductor for Python runtime by
-compiling and loading a pretrained <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model using the <code class="docutils literal notranslate"><span class="pre">torch._inductor.aot_compile</span></code>
-and <code class="docutils literal notranslate"><span class="pre">torch._export.aot_load</span></code> APIs. This process demonstrates the practical application of
-generating a shared library and running it within a Python environment, even with dynamic shape
-considerations and device-specific optimizations. We also looked at the advantage of using
+compiling and loading a pretrained <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model. This process
+demonstrates the practical application of generating a compiled artifact and
+running it within a Python environment. We also looked at the advantage of using
 AOTInductor in model deployments, with regards to speed up in first inference time.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  16.010 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  4.410 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-torch-export-aoti-python-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/c336d4946233fb6b466f499da1a95891/torch_export_aoti_python.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_export_aoti_python.py</span></code></a></p>
@@ -924,7 +950,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#what-you-will-learn">What you will learn</a></li>
 <li><a class="reference internal" href="#model-compilation">Model Compilation</a></li>
 <li><a class="reference internal" href="#model-inference-in-python">Model Inference in Python</a></li>
-<li><a class="reference internal" href="#when-to-use-aotinductor-for-python-runtime">When to use AOTInductor for Python Runtime</a></li>
+<li><a class="reference internal" href="#when-to-use-aotinductor-with-a-python-runtime">When to use AOTInductor with a Python Runtime</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>

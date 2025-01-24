@@ -20,112 +20,109 @@
 
 .. meta::
    :description: An end-to-end example of how to use AOTInductor for Python runtime.
-   :keywords: torch.export, AOTInductor, torch._inductor.aot_compile, torch._export.aot_load
+   :keywords: torch.export, AOTInductor, torch._inductor.aoti_compile_and_package, aot_compile, torch._export.aoti_load_package
 
 ``torch.export`` AOTInductor Tutorial for Python runtime (Beta)
 ===============================================================
 **Author:** Ankith Gunapal, Bin Bao, Angela Yi
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-34
+.. GENERATED FROM PYTHON SOURCE LINES 14-33
 
 .. warning::
 
-    ``torch._inductor.aot_compile`` and ``torch._export.aot_load`` are in Beta status and are subject to backwards compatibility
-    breaking changes. This tutorial provides an example of how to use these APIs for model deployment using Python runtime.
+    ``torch._inductor.aoti_compile_and_package`` and
+    ``torch._inductor.aoti_load_package`` are in Beta status and are subject
+    to backwards compatibility breaking changes. This tutorial provides an
+    example of how to use these APIs for model deployment using Python
+    runtime.
 
-It has been shown `previously <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`__ how AOTInductor can be used 
-to do Ahead-of-Time compilation of PyTorch exported models by creating
-a shared library that can be run in a non-Python environment.
-
-
-In this tutorial, you will learn an end-to-end example of how to use AOTInductor for Python runtime.
-We will look at how  to use :func:`torch._inductor.aot_compile` along with :func:`torch.export.export` to generate a 
-shared library. Additionally, we will examine how to execute the shared library in Python runtime using :func:`torch._export.aot_load`.
-You will learn about the speed up seen in the first inference time using AOTInductor, especially when using 
-``max-autotune`` mode which can take some time to execute.
+It has been shown `previously
+<https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`__ how
+AOTInductor can be used to do Ahead-of-Time compilation of PyTorch exported
+models by creating an artifact that can be run in a non-Python environment.
+In this tutorial, you will learn an end-to-end example of how to use
+AOTInductor for Python runtime.
 
 **Contents**
 
 .. contents::
     :local:
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-42
+.. GENERATED FROM PYTHON SOURCE LINES 36-41
 
 Prerequisites
 -------------
-* PyTorch 2.4 or later
+* PyTorch 2.6 or later
 * Basic understanding of ``torch.export`` and AOTInductor
 * Complete the `AOTInductor: Ahead-Of-Time Compilation for Torch.Export-ed Models <https://pytorch.org/docs/stable/torch.compiler_aot_inductor.html#>`_ tutorial
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-50
+.. GENERATED FROM PYTHON SOURCE LINES 43-49
 
 What you will learn
 ----------------------
-* How to use AOTInductor for python runtime.
-* How  to use :func:`torch._inductor.aot_compile` along with :func:`torch.export.export` to generate a shared library
-* How to run a shared library in Python runtime using :func:`torch._export.aot_load`.
-* When do you use AOTInductor for python runtime
+* How to use AOTInductor for Python runtime.
+* How to use :func:`torch._inductor.aoti_compile_and_package` along with :func:`torch.export.export` to generate a compiled artifact
+* How to load and run the artifact in a Python runtime using :func:`torch._export.aot_load`.
+* When to you use AOTInductor with a Python runtime
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-66
+.. GENERATED FROM PYTHON SOURCE LINES 51-72
 
 Model Compilation
 -----------------
 
-We will use the TorchVision pretrained `ResNet18` model and TorchInductor on the 
-exported PyTorch program using :func:`torch._inductor.aot_compile`.
+We will use the TorchVision pretrained ``ResNet18`` model as an example.
+
+The first step is to export the model to a graph representation using
+:func:`torch.export.export`. To learn more about using this function, you can
+check out the `docs <https://pytorch.org/docs/main/export.html>`_ or the
+`tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`_.
+
+Once we have exported the PyTorch model and obtained an ``ExportedProgram``,
+we can apply :func:`torch._inductor.aoti_compile_and_package` to AOTInductor
+to compile the program to a specified device, and save the generated contents
+into a ".pt2" artifact.
 
 .. note::
 
-      This API also supports :func:`torch.compile` options like ``mode``
-      This means that if used on a CUDA enabled device, you can, for example, set ``"max_autotune": True``
-      which leverages Triton based matrix multiplications & convolutions, and enables CUDA graphs by default.
+      This API supports the same available options that :func:`torch.compile`
+      has, such as ``mode`` and ``max_autotune`` (for those who want to enable
+      CUDA graphs and leverage Triton based matrix multiplications and
+      convolutions)
 
-We also specify ``dynamic_shapes`` for the batch dimension. In this example, ``min=2`` is not a bug and is 
-explained in `The 0/1 Specialization Problem <https://docs.google.com/document/d/16VPOa3d-Liikf48teAOmxLc92rgvJdfosIy-yoT38Io/edit?fbclid=IwAR3HNwmmexcitV0pbZm_x1a4ykdXZ9th_eJWK-3hBtVgKnrkmemz6Pm5jRQ#heading=h.ez923tomjvyk>`__
-
-.. GENERATED FROM PYTHON SOURCE LINES 66-106
+.. GENERATED FROM PYTHON SOURCE LINES 72-103
 
 .. code-block:: default
 
 
-
     import os
     import torch
+    import torch._inductor
     from torchvision.models import ResNet18_Weights, resnet18
 
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
     model.eval()
 
     with torch.inference_mode():
+        inductor_configs = {}
 
-        # Specify the generated shared library path
-        aot_compile_options = {
-                "aot_inductor.output_path": os.path.join(os.getcwd(), "resnet18_pt2.so"),
-        }
         if torch.cuda.is_available():
             device = "cuda"
-            aot_compile_options.update({"max_autotune": True})
+            inductor_configs["max_autotune"] = True
         else:
             device = "cpu"
 
         model = model.to(device=device)
         example_inputs = (torch.randn(2, 3, 224, 224, device=device),)
 
-        # min=2 is not a bug and is explained in the 0/1 Specialization Problem
-        batch_dim = torch.export.Dim("batch", min=2, max=32)
         exported_program = torch.export.export(
             model,
             example_inputs,
-            # Specify the first dimension of the input x as dynamic
-            dynamic_shapes={"x": {0: batch_dim}},
         )
-        so_path = torch._inductor.aot_compile(
-            exported_program.module(),
-            example_inputs,
-            # Specify the generated shared library path
-            options=aot_compile_options
+        path = torch._inductor.aoti_compile_and_package(
+            exported_program,
+            package_path=os.path.join(os.getcwd(), "resnet18.pt2"),
+            inductor_configs=inductor_configs
         )
-
 
 
 
@@ -138,163 +135,218 @@ explained in `The 0/1 Specialization Problem <https://docs.google.com/document/d
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
 
       0%|          | 0.00/44.7M [00:00<?, ?B/s]
-     94%|#########4| 42.1M/44.7M [00:00<00:00, 441MB/s]    100%|##########| 44.7M/44.7M [00:00<00:00, 422MB/s]
+     88%|########7 | 39.1M/44.7M [00:00<00:00, 410MB/s]    100%|##########| 44.7M/44.7M [00:00<00:00, 411MB/s]
     AUTOTUNE convolution(2x3x224x224, 64x3x7x7)
-      convolution 0.0461 ms 100.0% 
-      triton_convolution2d_4 0.1074 ms 42.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_0 0.1143 ms 40.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_3 0.1259 ms 36.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_1 0.1356 ms 34.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_5 0.1759 ms 26.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_2 0.2194 ms 21.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.8657 seconds and 0.0067 seconds precompiling for 7 choices
+      convolution 0.0525 ms 100.0% 
+      triton_convolution2d_4 0.1397 ms 37.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_0 0.1498 ms 35.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_3 0.1845 ms 28.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_5 0.2461 ms 21.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_2 0.5298 ms 9.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+      triton_convolution2d_1 0.8789 ms 6.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=7, KERNEL_W=7, PADDING_H=3, PADDING_W=3, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+    SingleProcess AUTOTUNE benchmarking takes 0.9653 seconds and 0.0051 seconds precompiling for 7 choices
     AUTOTUNE convolution(2x64x56x56, 64x64x3x3)
-      convolution 0.0440 ms 100.0% 
-      triton_convolution2d_9 0.0732 ms 60.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_6 0.0754 ms 58.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_12 0.0800 ms 55.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_11 0.0809 ms 54.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_10 0.0828 ms 53.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_7 0.0917 ms 47.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_8 0.1418 ms 31.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.9447 seconds and 0.0006 seconds precompiling for 8 choices
+      triton_convolution2d_10 0.0356 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_6 0.0365 ms 97.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_11 0.0365 ms 97.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_9 0.0411 ms 86.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      convolution 0.0457 ms 77.7% 
+      triton_convolution2d_12 0.0649 ms 54.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_7 0.0769 ms 46.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_8 0.1259 ms 28.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9393 seconds and 0.0006 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x64x56x56, 128x64x3x3)
-      convolution 0.0338 ms 100.0% 
-      triton_convolution2d_38 0.0636 ms 53.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_40 0.0822 ms 41.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_34 0.0876 ms 38.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_39 0.0884 ms 38.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_35 0.0910 ms 37.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_37 0.1032 ms 32.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_36 0.2737 ms 12.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.9500 seconds and 0.0007 seconds precompiling for 8 choices
-    AUTOTUNE convolution(2x64x56x56, 128x64x1x1)
-      triton_convolution2d_52 0.0110 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_48 0.0118 ms 93.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_53 0.0126 ms 87.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      convolution 0.0128 ms 85.8% 
-      triton_convolution2d_54 0.0150 ms 73.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_49 0.0155 ms 70.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_51 0.0156 ms 70.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_50 0.0456 ms 24.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.9244 seconds and 0.0006 seconds precompiling for 8 choices
+      triton_convolution2d_38 0.0290 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_39 0.0399 ms 72.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      convolution 0.0460 ms 62.9% 
+      triton_convolution2d_34 0.0483 ms 60.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_37 0.0607 ms 47.7% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_40 0.0622 ms 46.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_35 0.0716 ms 40.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_36 0.1319 ms 22.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9391 seconds and 0.0006 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x128x28x28, 128x128x3x3)
-      convolution 0.0436 ms 100.0% 
-      triton_convolution2d_59 0.1164 ms 37.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_61 0.1415 ms 30.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_55 0.1656 ms 26.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_60 0.1706 ms 25.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_56 0.1728 ms 25.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_58 0.1890 ms 23.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_57 0.2675 ms 16.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.9677 seconds and 0.0007 seconds precompiling for 8 choices
+      convolution 0.0449 ms 100.0% 
+      triton_convolution2d_45 0.0493 ms 90.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_46 0.0694 ms 64.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_41 0.0845 ms 53.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_44 0.1041 ms 43.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_47 0.1172 ms 38.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_42 0.1399 ms 32.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_43 0.2418 ms 18.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9519 seconds and 0.0007 seconds precompiling for 8 choices
+    AUTOTUNE convolution(2x64x56x56, 128x64x1x1)
+      triton_convolution2d_52 0.0092 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_53 0.0106 ms 86.7% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_48 0.0108 ms 85.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_51 0.0129 ms 71.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      convolution 0.0136 ms 67.6% 
+      triton_convolution2d_54 0.0137 ms 67.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_49 0.0144 ms 63.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_50 0.0213 ms 43.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9234 seconds and 0.0006 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x128x28x28, 256x128x3x3)
-      convolution 0.0370 ms 100.0% 
-      triton_convolution2d_73 0.1002 ms 36.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_75 0.1597 ms 23.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_70 0.1777 ms 20.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_72 0.2047 ms 18.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_71 0.2291 ms 16.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-      triton_convolution2d_74 0.2543 ms 14.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_69 0.3597 ms 10.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 0.9770 seconds and 0.0008 seconds precompiling for 8 choices
-    AUTOTUNE convolution(2x128x28x28, 256x128x1x1)
-      triton_convolution2d_87 0.0125 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_83 0.0198 ms 63.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      convolution 0.0200 ms 62.5% 
-      triton_convolution2d_86 0.0203 ms 61.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_88 0.0215 ms 58.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_84 0.0224 ms 55.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_89 0.0261 ms 47.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_85 0.0325 ms 38.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-    SingleProcess AUTOTUNE benchmarking takes 0.9288 seconds and 0.0006 seconds precompiling for 8 choices
+      convolution 0.0379 ms 100.0% 
+      triton_convolution2d_73 0.0492 ms 76.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_74 0.1108 ms 34.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_72 0.1128 ms 33.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_75 0.1165 ms 32.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_69 0.1321 ms 28.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_70 0.1344 ms 28.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_71 0.2052 ms 18.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9538 seconds and 0.0006 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x256x14x14, 256x256x3x3)
-      convolution 0.0529 ms 100.0% 
-      triton_convolution2d_94 0.1871 ms 28.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_92 0.2594 ms 20.4% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-      triton_convolution2d_96 0.2634 ms 20.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_91 0.3285 ms 16.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_93 0.3782 ms 14.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_95 0.4916 ms 10.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_90 0.7006 ms 7.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 0.9942 seconds and 0.0006 seconds precompiling for 8 choices
+      convolution 0.0564 ms 100.0% 
+      triton_convolution2d_80 0.0920 ms 61.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_79 0.2097 ms 26.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_81 0.2149 ms 26.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_82 0.2271 ms 24.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_76 0.2558 ms 22.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_77 0.2718 ms 20.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_78 0.3742 ms 15.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9753 seconds and 0.0007 seconds precompiling for 8 choices
+    AUTOTUNE convolution(2x128x28x28, 256x128x1x1)
+      triton_convolution2d_87 0.0108 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_86 0.0186 ms 58.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_88 0.0192 ms 56.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_89 0.0192 ms 56.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_84 0.0219 ms 49.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_83 0.0220 ms 49.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      convolution 0.0256 ms 42.1% 
+      triton_convolution2d_85 0.0261 ms 41.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=1024, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+    SingleProcess AUTOTUNE benchmarking takes 0.9275 seconds and 0.0006 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x256x14x14, 512x256x3x3)
-      convolution 0.0527 ms 100.0% 
-      triton_convolution2d_108 0.1912 ms 27.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_106 0.2602 ms 20.3% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
-      triton_convolution2d_110 0.2718 ms 19.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_105 0.3620 ms 14.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_107 0.3948 ms 13.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_109 0.5040 ms 10.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_104 0.6516 ms 8.1% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 0.9986 seconds and 0.0007 seconds precompiling for 8 choices
-    AUTOTUNE convolution(2x256x14x14, 512x256x1x1)
-      triton_convolution2d_122 0.0175 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      convolution 0.0256 ms 68.3% 
-      triton_convolution2d_121 0.0309 ms 56.5% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_118 0.0317 ms 55.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-      triton_convolution2d_123 0.0327 ms 53.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_120 0.0339 ms 51.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
-      triton_convolution2d_124 0.0346 ms 50.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
-      triton_convolution2d_119 0.0350 ms 49.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 0.9296 seconds and 0.0007 seconds precompiling for 8 choices
+      convolution 0.0578 ms 100.0% 
+      triton_convolution2d_108 0.0935 ms 61.8% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_109 0.2173 ms 26.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_107 0.2212 ms 26.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_110 0.2256 ms 25.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_106 0.2422 ms 23.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=1, num_warps=8
+      triton_convolution2d_104 0.2600 ms 22.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_105 0.2603 ms 22.2% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=2, STRIDE_W=2, UNROLL=False, num_stages=2, num_warps=4
+    SingleProcess AUTOTUNE benchmarking takes 0.9714 seconds and 0.0005 seconds precompiling for 8 choices
     AUTOTUNE convolution(2x512x7x7, 512x512x3x3)
-      convolution 0.0857 ms 100.0% 
-      triton_convolution2d_127 0.2771 ms 30.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
-      triton_convolution2d_129 0.3584 ms 23.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_131 0.4219 ms 20.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_126 0.4839 ms 17.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-      triton_convolution2d_128 0.7199 ms 11.9% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_130 0.9991 ms 8.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
-      triton_convolution2d_125 1.4202 ms 6.0% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 1.0308 seconds and 0.0006 seconds precompiling for 8 choices
+      convolution 0.0853 ms 100.0% 
+      triton_convolution2d_115 0.1811 ms 47.1% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_113 0.2147 ms 39.8% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=16, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=1, num_warps=8
+      triton_convolution2d_117 0.2666 ms 32.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_112 0.3226 ms 26.5% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=128, BLOCK_N=64, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+      triton_convolution2d_114 0.4026 ms 21.2% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_116 0.4277 ms 20.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=8
+      triton_convolution2d_111 0.5131 ms 16.6% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=3, KERNEL_W=3, PADDING_H=1, PADDING_W=1, STRIDE_H=1, STRIDE_W=1, UNROLL=False, num_stages=2, num_warps=4
+    SingleProcess AUTOTUNE benchmarking takes 0.9918 seconds and 0.0006 seconds precompiling for 8 choices
+    AUTOTUNE convolution(2x256x14x14, 512x256x1x1)
+      triton_convolution2d_122 0.0155 ms 100.0% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_120 0.0264 ms 58.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=512, BLOCK_N=16, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=1, num_warps=8
+      convolution 0.0286 ms 54.1% 
+      triton_convolution2d_121 0.0306 ms 50.6% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=128, BLOCK_N=128, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_124 0.0308 ms 50.4% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_118 0.0310 ms 49.9% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+      triton_convolution2d_123 0.0314 ms 49.3% ALLOW_TF32=True, BLOCK_K=32, BLOCK_M=64, BLOCK_N=256, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=8
+      triton_convolution2d_119 0.0332 ms 46.7% ALLOW_TF32=True, BLOCK_K=16, BLOCK_M=256, BLOCK_N=64, GROUPS=1, KERNEL_H=1, KERNEL_W=1, PADDING_H=0, PADDING_W=0, STRIDE_H=2, STRIDE_W=2, UNROLL=True, num_stages=2, num_warps=4
+    SingleProcess AUTOTUNE benchmarking takes 0.9274 seconds and 0.0007 seconds precompiling for 8 choices
     AUTOTUNE addmm(2x1000, 2x512, 512x1000)
-      addmm 0.0158 ms 100.0% 
-      triton_mm_142 0.0201 ms 78.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
-      triton_mm_143 0.0210 ms 75.3% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
-      triton_mm_140 0.0220 ms 71.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=2
-      triton_mm_152 0.0308 ms 51.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
-      triton_mm_146 0.0309 ms 51.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
-      triton_mm_153 0.0309 ms 51.0% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=4, num_warps=4
-      triton_mm_141 0.0311 ms 50.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=4
-      triton_mm_139 0.0345 ms 45.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=16, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=1, num_warps=2
-      triton_mm_145 0.0372 ms 42.4% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=4
-    SingleProcess AUTOTUNE benchmarking takes 1.7742 seconds and 0.0022 seconds precompiling for 18 choices
+      addmm 0.0157 ms 100.0% 
+      triton_mm_142 0.0197 ms 79.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
+      triton_mm_140 0.0248 ms 63.5% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=2
+      triton_mm_143 0.0253 ms 62.2% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=128, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=2
+      triton_mm_146 0.0302 ms 52.2% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=64, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
+      triton_mm_153 0.0310 ms 50.8% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=4, num_warps=4
+      triton_mm_141 0.0310 ms 50.7% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=5, num_warps=4
+      triton_mm_152 0.0311 ms 50.6% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=3, num_warps=4
+      triton_mm_139 0.0342 ms 46.1% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=16, BLOCK_M=16, BLOCK_N=32, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=1, num_warps=2
+      triton_mm_145 0.0376 ms 41.9% ACC_TYPE='tl.float32', ALLOW_TF32=False, BLOCK_K=32, BLOCK_M=16, BLOCK_N=64, B_PROLOGUE_CAST_TYPE=None, EVEN_K=True, GROUP_M=8, num_stages=2, num_warps=4
+    SingleProcess AUTOTUNE benchmarking takes 1.7747 seconds and 0.0020 seconds precompiling for 18 choices
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-118
+.. GENERATED FROM PYTHON SOURCE LINES 104-163
+
+The result of :func:`aoti_compile_and_package` is an artifact "resnet18.pt2"
+which can be loaded and executed in Python and C++.
+
+The artifact itself contains a bunch of AOTInductor generated code, such as
+a generated C++ runner file, a shared library compiled from the C++ file, and
+CUDA binary files, aka cubin files, if optimizing for CUDA.
+
+Structure-wise, the artifact is a structured ``.zip`` file, with the following 
+specification:
+
+.. code::
+   .
+   ├── archive_format
+   ├── version
+   ├── data
+   │   ├── aotinductor
+   │   │   └── model
+   │   │       ├── xxx.cpp            # AOTInductor generated cpp file
+   │   │       ├── xxx.so             # AOTInductor generated shared library
+   │   │       ├── xxx.cubin          # Cubin files (if running on CUDA)
+   │   │       └── xxx_metadata.json  # Additional metadata to save
+   │   ├── weights
+   │   │  └── TBD
+   │   └── constants
+   │      └── TBD
+   └── extra
+       └── metadata.json
+
+We can use the following command to inspect the artifact contents:
+
+.. code:: bash
+
+   $ unzip -l resnet18.pt2
+
+.. code::
+
+   Archive:  resnet18.pt2
+     Length      Date    Time    Name
+   ---------  ---------- -----   ----
+           1  01-08-2025 16:40   version
+           3  01-08-2025 16:40   archive_format
+       10088  01-08-2025 16:40   data/aotinductor/model/cagzt6akdaczvxwtbvqe34otfe5jlorktbqlojbzqjqvbfsjlge4.cubin
+       17160  01-08-2025 16:40   data/aotinductor/model/c6oytfjmt5w4c7onvtm6fray7clirxt7q5xjbwx3hdydclmwoujz.cubin
+       16616  01-08-2025 16:40   data/aotinductor/model/c7ydp7nocyz323hij4tmlf2kcedmwlyg6r57gaqzcsy3huneamu6.cubin
+       17776  01-08-2025 16:40   data/aotinductor/model/cyqdf46ordevqhiddvpdpp3uzwatfbzdpl3auj2nx23uxvplnne2.cubin
+       10856  01-08-2025 16:40   data/aotinductor/model/cpzfebfgrusqslui7fxsuoo4tvwulmrxirc5tmrpa4mvrbdno7kn.cubin
+       14608  01-08-2025 16:40   data/aotinductor/model/c5ukeoz5wmaszd7vczdz2qhtt6n7tdbl3b6wuy4rb2se24fjwfoy.cubin
+       11376  01-08-2025 16:40   data/aotinductor/model/csu3nstcp56tsjfycygaqsewpu64l5s6zavvz7537cm4s4cv2k3r.cubin
+       10984  01-08-2025 16:40   data/aotinductor/model/cp76lez4glmgq7gedf2u25zvvv6rksv5lav4q22dibd2zicbgwj3.cubin
+       14736  01-08-2025 16:40   data/aotinductor/model/c2bb5p6tnwz4elgujqelsrp3unvkgsyiv7xqxmpvuxcm4jfl7pc2.cubin
+       11376  01-08-2025 16:40   data/aotinductor/model/c6eopmb2b4ngodwsayae4r5q6ni3jlfogfbdk3ypg56tgpzhubfy.cubin
+       11624  01-08-2025 16:40   data/aotinductor/model/chmwe6lvoekzfowdbiizitm3haiiuad5kdm6sd2m6mv6dkn2zk32.cubin
+       15632  01-08-2025 16:40   data/aotinductor/model/c3jop5g344hj3ztsu4qm6ibxyaaerlhkzh2e6emak23rxfje6jam.cubin
+       25472  01-08-2025 16:40   data/aotinductor/model/chaiixybeiuuitm2nmqnxzijzwgnn2n7uuss4qmsupgblfh3h5hk.cubin
+      139389  01-08-2025 16:40   data/aotinductor/model/cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t.cpp
+          27  01-08-2025 16:40   data/aotinductor/model/cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t_metadata.json
+    47195424  01-08-2025 16:40   data/aotinductor/model/cvk6qzuybruhwxtfblzxiov3rlrziv5fkqc4mdhbmantfu3lmd6t.so
+   ---------                     -------
+    47523148                     18 files
+
+.. GENERATED FROM PYTHON SOURCE LINES 166-171
 
 Model Inference in Python
 -------------------------
 
-Typically, the shared object generated above is used in a non-Python environment. In PyTorch 2.3, 
-we added a new API called :func:`torch._export.aot_load` to load the shared library in the Python runtime.
-The API follows a structure similar to the :func:`torch.jit.load` API . You need to specify the path 
-of the shared library and the device where it should be loaded.
+To load and run the artifact in Python, we can use :func:`torch._inductor.aoti_load_package`.
 
-.. note::
-     In the example above, we specified ``batch_size=1`` for inference and  it still functions correctly even though we specified ``min=2`` in 
-     :func:`torch.export.export`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-132
+.. GENERATED FROM PYTHON SOURCE LINES 171-185
 
 .. code-block:: default
 
 
-
     import os
     import torch
+    import torch._inductor
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_so_path = os.path.join(os.getcwd(), "resnet18_pt2.so")
+    model_path = os.path.join(os.getcwd(), "resnet18.pt2")
 
-    model = torch._export.aot_load(model_so_path, device)
-    example_inputs = (torch.randn(1, 3, 224, 224, device=device),)
+    compiled_model = torch._inductor.aoti_load_package(model_path)
+    example_inputs = (torch.randn(2, 3, 224, 224, device=device),)
 
     with torch.inference_mode():
-        output = model(example_inputs)
+        output = compiled_model(example_inputs)
 
 
 
@@ -303,23 +355,24 @@ of the shared library and the device where it should be loaded.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-154
 
-When to use AOTInductor for Python Runtime
-------------------------------------------
+.. GENERATED FROM PYTHON SOURCE LINES 186-207
 
-One of the requirements for using AOTInductor is that the model shouldn't have any graph breaks.
-Once this requirement is met, the primary use case for using AOTInductor Python Runtime is for
-model deployment using Python.
-There are mainly two reasons why you would use AOTInductor Python Runtime:
+When to use AOTInductor with a Python Runtime
+---------------------------------------------
 
--  ``torch._inductor.aot_compile`` generates a shared library. This is useful for model
-   versioning for deployments and tracking model performance over time.
+There are mainly two reasons why one would use AOTInductor with a Python Runtime:
+
+-  ``torch._inductor.aoti_compile_and_package`` generates a singular
+   serialized artifact. This is useful for model versioning for deployments
+   and tracking model performance over time.
 -  With :func:`torch.compile` being a JIT compiler, there is a warmup
-   cost associated with the first compilation. Your deployment needs to account for the
-   compilation time taken for the first inference. With AOTInductor, the compilation is
-   done offline using ``torch.export.export`` & ``torch._indutor.aot_compile``. The deployment
-   would only load the shared library using ``torch._export.aot_load`` and run inference.
+   cost associated with the first compilation. Your deployment needs to
+   account for the compilation time taken for the first inference. With
+   AOTInductor, the compilation is done ahead of time using
+   ``torch.export.export`` and ``torch._inductor.aoti_compile_and_package``.
+   At deployment time, after loading the model, running inference does not
+   have any additional cost.
 
 
 The section below shows the speedup achieved with AOTInductor for first inference
@@ -327,7 +380,7 @@ The section below shows the speedup achieved with AOTInductor for first inferenc
 We define a utility function ``timed`` to measure the time taken for inference
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-183
+.. GENERATED FROM PYTHON SOURCE LINES 207-236
 
 .. code-block:: default
 
@@ -367,18 +420,18 @@ We define a utility function ``timed`` to measure the time taken for inference
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 184-185
+.. GENERATED FROM PYTHON SOURCE LINES 237-238
 
 Lets measure the time for first inference using AOTInductor
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-196
+.. GENERATED FROM PYTHON SOURCE LINES 238-249
 
 .. code-block:: default
 
 
     torch._dynamo.reset()
 
-    model = torch._export.aot_load(model_so_path, device)
+    model = torch._inductor.aoti_load_package(model_path)
     example_inputs = (torch.randn(1, 3, 224, 224, device=device),)
 
     with torch.inference_mode():
@@ -394,16 +447,16 @@ Lets measure the time for first inference using AOTInductor
 
  .. code-block:: none
 
-    Time taken for first inference for AOTInductor is 2.94 ms
+    Time taken for first inference for AOTInductor is 4.09 ms
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-198
+.. GENERATED FROM PYTHON SOURCE LINES 250-251
 
 Lets measure the time for first inference using ``torch.compile``
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-211
+.. GENERATED FROM PYTHON SOURCE LINES 251-264
 
 .. code-block:: default
 
@@ -428,32 +481,31 @@ Lets measure the time for first inference using ``torch.compile``
 
  .. code-block:: none
 
-    Time taken for first inference for torch.compile is 5622.85 ms
+    Time taken for first inference for torch.compile is 5683.09 ms
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-214
+.. GENERATED FROM PYTHON SOURCE LINES 265-267
 
 We see that there is a drastic speedup in first inference time using AOTInductor compared
 to ``torch.compile``
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-225
+.. GENERATED FROM PYTHON SOURCE LINES 269-277
 
 Conclusion
 ----------
 
 In this recipe, we have learned how to effectively use the AOTInductor for Python runtime by 
-compiling and loading a pretrained ``ResNet18`` model using the ``torch._inductor.aot_compile``
-and ``torch._export.aot_load`` APIs. This process demonstrates the practical application of 
-generating a shared library and running it within a Python environment, even with dynamic shape
-considerations and device-specific optimizations. We also looked at the advantage of using 
+compiling and loading a pretrained ``ResNet18`` model. This process
+demonstrates the practical application of generating a compiled artifact and
+running it within a Python environment. We also looked at the advantage of using 
 AOTInductor in model deployments, with regards to speed up in first inference time.
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  16.010 seconds)
+   **Total running time of the script:** ( 1 minutes  4.410 seconds)
 
 
 .. _sphx_glr_download_recipes_torch_export_aoti_python.py:
