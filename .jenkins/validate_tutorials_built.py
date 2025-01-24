@@ -25,7 +25,6 @@ NOT_RUN = [
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/fx_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
-    "intermediate_source/transformer_building_blocks",  # does not work on release
     "advanced_source/super_resolution_with_onnxruntime",
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "prototype_source/fx_graph_mode_ptq_dynamic",
@@ -53,6 +52,9 @@ NOT_RUN = [
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "intermediate_source/torch_export_tutorial", # reenable after 2940 is fixed.
     "prototype_source/gpu_quantization_torchao_tutorial", # enable when 3194
+    "advanced_source/pendulum",
+    "beginner_source/onnx/export_simple_model_to_onnx_tutorial",
+    "beginner_source/onnx/onnx_registry_tutorial"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
