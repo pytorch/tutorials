@@ -87,6 +87,7 @@ The first is the specification of ``Py_LIMITED_API`` in ``extra_compile_args`` t
 minimum CPython version you would like to support:
 
 .. code-block:: python
+
   extra_compile_args={"cxx": ["-DPy_LIMITED_API=0x03090000"]},
 
 Defining the ``Py_LIMITED_API`` flag helps guarantee that the extension is in fact
@@ -99,13 +100,11 @@ pytorch/python bindings,) and to only use APIs from libtorch (ATen objects, oper
 and the dispatcher). We strongly recommend defining the ``Py_LIMITED_API`` flag to
 ensure the extension is compliant and safe as a CPython agnostic wheel.
 
-The second and third lines inform setuptools that you intend to build a CPython agnostic
-wheel and will influence the naming of the wheel accordingly. It is necessary to specify
-``py_limited_api=True`` as an argument to CppExtension/CUDAExtension and also as an option
-to the ``"bdist_wheel"`` command with the minimal supported CPython version (in this case,
-3.9):
+The second and third lines specifying ``py_limited_api`` inform setuptools that you intend
+to build a CPython agnostic wheel and will influence the naming of the wheel accordingly:
 
 .. code-block:: python
+
   setup(name="extension_cpp",
         ext_modules=[
             cpp_extension.CppExtension(
@@ -115,11 +114,15 @@ to the ``"bdist_wheel"`` command with the minimal supported CPython version (in 
         options={"bdist_wheel": {"py_limited_api": "cp39"}}  # 3.9 is minimum supported Python version
   )
 
-This ``setup`` would build one wheel that could be installed across multiple CPython
-versions ``>=3.9``.
+It is necessary to specify ``py_limited_api=True`` as an argument to CppExtension/
+CUDAExtension and also as an option to the ``"bdist_wheel"`` command with the minimal
+supported CPython version (in this case, 3.9, as it is the oldest supported version
+currently). Consequently, the ``setup`` in our tutorial would build one wheel that could
+be installed across multiple CPython versions ``>=3.9``.
 
-If your extension uses CPython APIs outside the stable limited set, then you should build
-a wheel per CPython version instead, like so:
+If your extension uses CPython APIs outside the stable limited set, then you cannot
+build a CPython agnostic wheel! You should build one wheel per CPython version instead,
+like so:
 
 .. code-block:: python
 
