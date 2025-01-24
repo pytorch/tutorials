@@ -142,7 +142,7 @@ torch.testing.assert_close(result, torch.tensor([3.0]))
 # Using custom ONNX operators
 # ---------------------------
 #
-# In this case, the user creates a model with standard PyTorch operators, but the runtime
+# In this case, you create a model with standard PyTorch operators, but the runtime
 # (e.g. Microsoft's ONNX Runtime) can provide a custom implementation for that kernel, effectively replacing the
 # existing implementation.
 #
