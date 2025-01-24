@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-**Introduction to ONNX** ||
+`Introduction to ONNX <intro_onnx.html>`_ ||
 `Exporting a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_ ||
-`Extending the ONNX Registry <onnx_registry_tutorial.html>`_
+`Extending the ONNX exporter operator support <onnx_registry_tutorial.html>`_ ||
+**`Export a model with control flow to ONNX**
 
-Export a control flow model to ONNX
+Export a model with control flow to ONNX
 ==========================================
 
 **Author**: `Xavier Dupré <https://github.com/xadupre>`_.
 
-Tests cannot be exported into ONNX unless they refactored
+Conditional logic cannot be exported into ONNX unless they refactored
 to use :func:`torch.cond`. Let's start with a simple model
 implementing a test.
 """
 
-from onnx.printer import to_text
 import torch
 
 class ForwardWithControlFlowTest(torch.nn.Module):
@@ -48,17 +48,17 @@ model(x)
 # %%
 # As expected, it does not export.
 try:
-    torch.export.export(model, (x,))
+    torch.export.export(model, (x,), strict=False)
     raise AssertionError("This export should failed unless pytorch now supports this model.")
 except Exception as e:
     print(e)
 
 # %%
 # It does export with :func:`torch.onnx.export` because
-# it uses JIT to trace the execution.
+# the exporter falls back to use JIT tracing as the graph capturing strategy.
 # But the model is not exactly the same as the initial model.
-ep = torch.onnx.export(model, (x,), dynamo=True)
-print(to_text(ep.model_proto))
+onnx_program = torch.onnx.export(model, (x,), dynamo=True) 
+print(onnx_program.model)
 
 
 # %%
@@ -87,18 +87,18 @@ for name, mod in model.named_modules():
 # %%
 # Let's see what the fx graph looks like.
 
-print(torch.export.export(model, (x,)).graph)
+print(torch.export.export(model, (x,), strict=False))  
 
 # %%
 # Let's export again.
 
-ep = torch.onnx.export(model, (x,), dynamo=True)
-print(to_text(ep.model_proto))
+onnx_program = torch.onnx.export(model, (x,), dynamo=True)  
+print(onnx_program.model) 
 
 
-# %%
-# Let's optimize to see a small model.
+# %%  
+# We can optimize the model and get rid of the model local functions created to capture the control flow branches.  
 
-ep = torch.onnx.export(model, (x,), dynamo=True)
-ep.optimize()
-print(to_text(ep.model_proto))
+onnx_program = torch.onnx.export(model, (x,), dynamo=True)  
+onnx_program.optimize()  
+print(onnx_program.model)  

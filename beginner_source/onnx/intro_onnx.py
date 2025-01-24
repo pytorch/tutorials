@@ -1,7 +1,8 @@
 """
 **Introduction to ONNX** ||
 `Exporting a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_ ||
-`Extending the ONNX Registry <onnx_registry_tutorial.html>`_
+`Extending the ONNX exporter operator support <onnx_registry_tutorial.html>`_ ||
+`Export a model with control flow to ONNX <export_control_flow_model_to_onnx_tutorial.html>`_
 
 Introduction to ONNX
 ====================
