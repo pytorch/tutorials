@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 `Introduction to ONNX <intro_onnx.html>`_ ||
 `Exporting a PyTorch model to ONNX <export_simple_model_to_onnx_tutorial.html>`_ ||
