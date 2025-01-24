@@ -123,6 +123,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
+   :card_description: Learn how to use torch.compiler.set_stance
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compiler_set_stance_tutorial.html
+   :tags: Compiler
+
+.. customcarditem::
    :header: Reasoning about Shapes in PyTorch
    :card_description: Learn how to use the meta device to reason about shapes in your model.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
