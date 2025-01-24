@@ -6,7 +6,7 @@ training** \|\| `minGPT Training <ddp_series_minGPT.html>`__
 Multinode Training
 ==================
 
-Authors: `Suraj Subramanian <https://github.com/suraj813>`__
+Authors: `Suraj Subramanian <https://github.com/subramen>`__
 
 .. grid:: 2
 

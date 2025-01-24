@@ -30,6 +30,12 @@ operators. Reasons why you may wish to create a custom operator in PyTorch inclu
   into the function).
 - Adding training support to an arbitrary Python function
 
+Use :func:`torch.library.custom_op` to create Python custom operators.
+Use the C++ ``TORCH_LIBRARY`` APIs to create C++ custom operators (these
+work in Python-less environments).
+See the `Custom Operators Landing Page <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`_
+for more details.
+
 Please note that if your operation can be expressed as a composition of
 existing PyTorch operators, then there is usually no need to use the custom operator
 API -- everything (for example ``torch.compile``, training support) should
