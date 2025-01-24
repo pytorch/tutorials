@@ -37,8 +37,10 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 
-# Check if GPU is available, and if not, use the CPU
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Check if the current `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+# is available, and if not, use the CPU
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
 
 ######################################################################
 # Loading CIFAR-10
