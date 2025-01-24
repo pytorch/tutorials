@@ -284,15 +284,16 @@ three ways:
 
 1. The first way to load the C++ library that holds the custom operator definition
    is to define a dummy Python module for _C. Then, in Python, when you import the
-   module with ``import _C``, the ``.so``s corresponding to the extension will be
-   loaded and the ``TORCH_LIBRARY`` and ``TORCH_LIBRARY_IMPL`` static initializers
+   module with ``import _C``, the ``.so`` files corresponding to the extension will
+   be loaded and the ``TORCH_LIBRARY`` and ``TORCH_LIBRARY_IMPL`` static initializers
    will run. One can create a dummy Python module with ``PYBIND11_MODULE`` like below,
    but you will notice that this does not compile with ``Py_LIMITED_API``, because
    ``pybind11`` does not promise to only use the stable limited CPython API! With
    the below code, you sadly cannot build a CPython agnostic wheel for your extension!
-   (Foreshadowing: I wonder what the second way is ;)).
+   (Foreshadowing: I wonder what the second way is ;) ).
 
 .. code-block:: cpp
+
   // in, say, not_agnostic/csrc/extension_BAD.cpp
   #include <pybind11/pybind11.h>
 
@@ -312,6 +313,7 @@ three ways:
    for more details:
 
 .. code-block:: cpp
+  
   #include <Python.h>
 
   extern "C" {
