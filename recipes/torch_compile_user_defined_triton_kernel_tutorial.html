@@ -531,7 +531,7 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="using-user-defined-triton-kernels-with-torch-compile">
-<span id="sphx-glr-recipes-torch-compile-user-defined-triton-kernel-tutorial-py"></span><h1>Using User-Defined Triton Kernels with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code><a class="headerlink" href="#using-user-defined-triton-kernels-with-torch-compile" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Oct 16, 2024 | Last Verified: Nov 05, 2024</p>
+<span id="sphx-glr-recipes-torch-compile-user-defined-triton-kernel-tutorial-py"></span><h1>Using User-Defined Triton Kernels with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code><a class="headerlink" href="#using-user-defined-triton-kernels-with-torch-compile" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Jan 24, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/oulgen">Oguz Ulgen</a></p>
 <p>User-defined Triton kernels can be used to optimize specific parts of your
 model’s computation. These kernels are written in Triton’s language, which is designed
@@ -674,15 +674,224 @@ tensor([-1.2161, -0.6421, -0.2577, -2.5744], device='cuda:0')
 </pre></div>
 </div>
 </div>
-<div class="section" id="composibility-and-limitations">
-<h2>Composibility and Limitations<a class="headerlink" href="#composibility-and-limitations" title="Permalink to this heading">¶</a></h2>
+<div class="section" id="composability">
+<h2>Composability<a class="headerlink" href="#composability" title="Permalink to this heading">¶</a></h2>
+<p>User-defined Triton kernels do not automatically support all PyTorch
+subsystems. This can be seen in the following use cases:</p>
+<ul class="simple">
+<li><p>Adding a CPU fallback</p></li>
+<li><p>Adding a <code class="docutils literal notranslate"><span class="pre">FlopCounter</span></code> formula</p></li>
+<li><p>Composing with Tensor Subclasses</p></li>
+</ul>
+<p>To compose with additional PyTorch subsystems, use <code class="docutils literal notranslate"><span class="pre">torch.library.triton_op</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">triton_op</span> <span class="pre">is</span></code> a structured way of defining a custom operator that is backed by one
+or more Triton kernels: like regular custom operators (<code class="docutils literal notranslate"><span class="pre">torch.library.custom_op</span></code>),
+you are able to specify the interactions with PyTorch subsystems via <code class="docutils literal notranslate"><span class="pre">torch.library</span></code>.
+However, unlike <code class="docutils literal notranslate"><span class="pre">torch.library.custom_op</span></code>, which creates opaque callables with respect to
+<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> traces into <code class="docutils literal notranslate"><span class="pre">triton_op</span></code> to apply optimizations.</p>
+<p>Here’s a chart of which API to use when integrating Triton kernels with PyTorch.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%"/>
+<col style="width: 25%"/>
+<col style="width: 25%"/>
+<col style="width: 25%"/>
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Triton kernel (no explicit <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> wrapper)</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">torch.library.triton_op</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">torch.library.custom_op</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Supports inference</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Supports training</p></td>
+<td><p>In the majority of cases</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>Supports <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Supports <code class="docutils literal notranslate"><span class="pre">torch.compile(fullgraph=True)</span></code></p></td>
+<td><p>In the majority of cases</p></td>
+<td><p>In the majority of cases</p></td>
+<td><p>In all cases</p></td>
+</tr>
+<tr class="row-even"><td><p>Does torch.compile trace into the implementation?</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Supports AOTInductor</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>Supports PyTorch Subsystems like FlopCounterMode, CPU Fallback, Tensor Subclasses</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="wrapping-triton-kernels-with-triton-op">
+<h3>Wrapping Triton kernels with <code class="docutils literal notranslate"><span class="pre">triton_op</span></code><a class="headerlink" href="#wrapping-triton-kernels-with-triton-op" title="Permalink to this heading">¶</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">torch.library.triton_op</span></code> to wrap a function that may invoke one or more Triton kernels.
+Use <code class="docutils literal notranslate"><span class="pre">torch.library.wrap_triton</span></code> to wrap the calls to the Triton kernel.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.library</span> <span class="kn">import</span> <span class="n">triton_op</span><span class="p">,</span> <span class="n">wrap_triton</span>
+
+<span class="nd">@triton_op</span><span class="p">(</span><span class="s2">"mylib::mysin"</span><span class="p">,</span> <span class="n">mutates_args</span><span class="o">=</span><span class="p">{})</span>
+<span class="k">def</span> <span class="nf">mysin</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+    <span class="n">n_elements</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+    <span class="n">wrap_triton</span><span class="p">(</span><span class="n">sin_kernel</span><span class="p">)[(</span><span class="n">n_elements</span><span class="p">,)](</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a>
+
+<span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">sin_kernel</span><span class="p">(</span>
+    <span class="n">in_ptr0</span><span class="p">,</span>
+    <span class="n">out_ptr</span><span class="p">,</span>
+    <span class="n">n_elements</span><span class="p">,</span>
+    <span class="n">BLOCK_SIZE</span><span class="p">:</span> <span class="s2">"tl.constexpr"</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">block_start</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">BLOCK_SIZE</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">block_start</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">offsets</span> <span class="o">&lt;</span> <span class="n">n_elements</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_ptr0</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+    <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">out_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">sin_triton</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+    <span class="n">n_elements</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+    <span class="n">sin_kernel</span><span class="p">[(</span><span class="n">n_elements</span><span class="p">,)](</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a>
+</pre></div>
+</div>
+<p>You can invoke the <code class="docutils literal notranslate"><span class="pre">triton_op</span></code> in one of the following two ways.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">z</span></a> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">mylib</span><span class="o">.</span><a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="o">.</span><span class="n">default</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+
+<span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+<span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">z</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The resulting <code class="docutils literal notranslate"><span class="pre">triton_op</span></code> works with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> and <code class="docutils literal notranslate"><span class="pre">AOTInductor</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="p">)(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+<span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-training-support">
+<h3>Adding training support<a class="headerlink" href="#adding-training-support" title="Permalink to this heading">¶</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">register_autograd</span></code> to add an autograd formula for the <code class="docutils literal notranslate"><span class="pre">triton_op</span></code>.
+Prefer this to using <code class="docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> (which has various composability footguns
+with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+    <span class="k">return</span> <span class="n">grad_input</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">cos</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">setup_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <span class="o">=</span> <span class="n">inputs</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="o">.</span><span class="n">register_autograd</span><span class="p">(</span><span class="n">backward</span><span class="p">,</span> <span class="n">setup_context</span><span class="o">=</span><span class="n">setup_context</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the backward must be a composition of PyTorch-understood operators.
+If you want the backward to call Triton kernels, then those must be wrapped in <code class="docutils literal notranslate"><span class="pre">triton_op</span></code> as well:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">cos_kernel</span><span class="p">(</span>
+    <span class="n">in_ptr0</span><span class="p">,</span>
+    <span class="n">out_ptr</span><span class="p">,</span>
+    <span class="n">n_elements</span><span class="p">,</span>
+    <span class="n">BLOCK_SIZE</span><span class="p">:</span> <span class="s2">"tl.constexpr"</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">block_start</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">BLOCK_SIZE</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">block_start</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">offsets</span> <span class="o">&lt;</span> <span class="n">n_elements</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_ptr0</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+    <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">out_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+
+<span class="nd">@triton_op</span><span class="p">(</span><span class="s2">"mylib::mycos"</span><span class="p">,</span> <span class="n">mutates_args</span><span class="o">=</span><span class="p">{})</span>
+<span class="k">def</span> <span class="nf">mycos</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+    <span class="n">n_elements</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+    <span class="n">wrap_triton</span><span class="p">(</span><span class="n">cos_kernel</span><span class="p">)[(</span><span class="n">n_elements</span><span class="p">,)](</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">out</span></a>
+
+<span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+    <span class="k">return</span> <span class="n">grad_input</span> <span class="o">*</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mycos</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">setup_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <span class="o">=</span> <span class="n">inputs</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="o">.</span><span class="n">register_autograd</span><span class="p">(</span><span class="n">backward</span><span class="p">,</span> <span class="n">setup_context</span><span class="o">=</span><span class="n">setup_context</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-a-cpu-fallback">
+<h3>Adding a CPU Fallback<a class="headerlink" href="#adding-a-cpu-fallback" title="Permalink to this heading">¶</a></h3>
+<p>Triton kernels don’t run on CPU. Use  <code class="docutils literal notranslate"><span class="pre">register_kernel</span></code> to add a CPU (or any other device) fallback for the <code class="docutils literal notranslate"><span class="pre">triton_op</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@mysin</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.sin.html#torch.sin" title="torch.sin"><span class="n">torch</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+<span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The fallback must be composed of PyTorch operators.</p>
+</div>
+<div class="section" id="adding-a-flopcounter-formula">
+<h3>Adding a FlopCounter Formula<a class="headerlink" href="#adding-a-flopcounter-formula" title="Permalink to this heading">¶</a></h3>
+<p>To specify how many flops the triton kernel reports under PyTorch’s flop counter,
+use <code class="docutils literal notranslate"><span class="pre">register_flop_formula</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.flop_counter</span> <span class="kn">import</span> <span class="n">FlopCounterMode</span><span class="p">,</span> <span class="n">register_flop_formula</span>
+
+<span class="nd">@register_flop_formula</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">mylib</span><span class="o">.</span><a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">x_shape</span><span class="p">):</span>
+    <span class="n">numel</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">x_shape</span><span class="p">:</span>
+        <span class="n">numel</span> <span class="o">*=</span> <span class="n">s</span>
+    <span class="k">return</span> <span class="n">numel</span>
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">FlopCounterMode</span></code> requires <a class="reference external" href="https://pypi.org/project/tabulate/">tabulate</a>.
+Before running the code below, make sure you have <code class="docutils literal notranslate"><span class="pre">tabulate</span></code> installed or install by
+running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">tabulate</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">FlopCounterMode</span><span class="p">()</span> <span class="k">as</span> <span class="n">flop_counter</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">mysin</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h2>
 <p>As of PyTorch 2.3, the support for user-defined Triton kernels in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>
 includes dynamic shapes, <code class="docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code>, JIT inductor, and AOT inductor.
 You can use these features together to build complex, high-performance models.</p>
+<p>PyTorch 2.6 added <code class="docutils literal notranslate"><span class="pre">torch.library.triton_op</span></code>, which adds support for
+user-defined Triton kernels in tensor subclasses and other advanced features.</p>
 <p>However, there are certain limitations to be aware of:</p>
 <ul class="simple">
-<li><p><strong>Tensor Subclasses:</strong> Currently, there is no support for
-tensor subclasses and other advanced features.</p></li>
 <li><p><strong>Triton Features:</strong> While <code class="docutils literal notranslate"><span class="pre">triton.heuristics</span></code> can be used either standalone or
 before <code class="docutils literal notranslate"><span class="pre">triton.autotune</span></code>, it cannot be used after <code class="docutils literal notranslate"><span class="pre">triton.autotune</span></code>. This
 implies that if <code class="docutils literal notranslate"><span class="pre">triton.heuristics</span></code> and <code class="docutils literal notranslate"><span class="pre">triton.autotune</span></code> are to be used
@@ -703,7 +912,7 @@ kernels with other PyTorch features and highlighted some current limitations.</p
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/compiling_optimizer.html">Compiling the Optimizers</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with Scaled Dot Product Attention</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.940 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.257 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-torch-compile-user-defined-triton-kernel-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0ccffddcfee1f815c02241b985844376/torch_compile_user_defined_triton_kernel_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_compile_user_defined_triton_kernel_tutorial.py</span></code></a></p>
@@ -757,7 +966,14 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
 <li><a class="reference internal" href="#advanced-usage">Advanced Usage</a></li>
-<li><a class="reference internal" href="#composibility-and-limitations">Composibility and Limitations</a></li>
+<li><a class="reference internal" href="#composability">Composability</a><ul>
+<li><a class="reference internal" href="#wrapping-triton-kernels-with-triton-op">Wrapping Triton kernels with <code class="docutils literal notranslate"><span class="pre">triton_op</span></code></a></li>
+<li><a class="reference internal" href="#adding-training-support">Adding training support</a></li>
+<li><a class="reference internal" href="#adding-a-cpu-fallback">Adding a CPU Fallback</a></li>
+<li><a class="reference internal" href="#adding-a-flopcounter-formula">Adding a FlopCounter Formula</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 <li><a class="reference internal" href="#see-also">See Also</a></li>
 </ul>
