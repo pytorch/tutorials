@@ -307,8 +307,8 @@ three ways:
    CPython versions, we will replace the unstable ``PYBIND11`` call with stable API calls.
    The below code compiles with ``-DPy_LIMITED_API=0x03090000`` and successfully creates
    a dummy Python module for our ``_C`` extension so that it can be imported from Python.
-   See `extension_cpp/__init__.py <https://github.com/pytorch/extension-cpp/blob/master/extension_cpp/__init__.py>`_
-   and `extension_cpp/csrc/muladd.cpp  <https://github.com/pytorch/extension-cpp/blob/master/extension_cpp/csrc/muladd.cpp>`_
+   See `extension_cpp/__init__.py <https://github.com/pytorch/extension-cpp/blob/38ec45e/extension_cpp/__init__.py>`_
+   and `extension_cpp/csrc/muladd.cpp  <https://github.com/pytorch/extension-cpp/blob/38ec45e/extension_cpp/csrc/muladd.cpp>`_
    for more details:
 
 .. code-block:: cpp
