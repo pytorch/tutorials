@@ -57,7 +57,7 @@ the right tool for the job. Examples for such environments include:
   Multiprocessing is an alternative, but not as scalable and has significant
   shortcomings. C++ has no such constraints and threads are easy to use and
   create. Models requiring heavy parallelization, like those used in `Deep
-  Neuroevolution <https://eng.uber.com/deep-neuroevolution/>`_, can benefit from
+  Neuroevolution <https://www.uber.com/blog/deep-neuroevolution/>`_, can benefit from
   this.
 - **Existing C++ Codebases**: You may be the owner of an existing C++
   application doing anything from serving web pages in a backend server to
@@ -662,7 +662,7 @@ Defining the DCGAN Modules
 We now have the necessary background and introduction to define the modules for
 the machine learning task we want to solve in this post. To recap: our task is
 to generate images of digits from the `MNIST dataset
-<http://yann.lecun.com/exdb/mnist/>`_. We want to use a `generative adversarial
+<https://huggingface.co/datasets/ylecun/mnist>`_. We want to use a `generative adversarial
 network (GAN)
 <https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf>`_ to solve
 this task. In particular, we'll use a `DCGAN architecture
@@ -969,7 +969,7 @@ the data loader every epoch and then write the GAN training code:
       discriminator->zero_grad();
       torch::Tensor real_images = batch.data;
       torch::Tensor real_labels = torch::empty(batch.data.size(0)).uniform_(0.8, 1.0);
-      torch::Tensor real_output = discriminator->forward(real_images);
+      torch::Tensor real_output = discriminator->forward(real_images).reshape(real_labels.sizes());
       torch::Tensor d_loss_real = torch::binary_cross_entropy(real_output, real_labels);
       d_loss_real.backward();
 
@@ -977,7 +977,7 @@ the data loader every epoch and then write the GAN training code:
       torch::Tensor noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1});
       torch::Tensor fake_images = generator->forward(noise);
       torch::Tensor fake_labels = torch::zeros(batch.data.size(0));
-      torch::Tensor fake_output = discriminator->forward(fake_images.detach());
+      torch::Tensor fake_output = discriminator->forward(fake_images.detach()).reshape(fake_labels.sizes());
       torch::Tensor d_loss_fake = torch::binary_cross_entropy(fake_output, fake_labels);
       d_loss_fake.backward();
 
@@ -987,7 +987,7 @@ the data loader every epoch and then write the GAN training code:
       // Train generator.
       generator->zero_grad();
       fake_labels.fill_(1);
-      fake_output = discriminator->forward(fake_images);
+      fake_output = discriminator->forward(fake_images).reshape(fake_labels.sizes());
       torch::Tensor g_loss = torch::binary_cross_entropy(fake_output, fake_labels);
       g_loss.backward();
       generator_optimizer.step();

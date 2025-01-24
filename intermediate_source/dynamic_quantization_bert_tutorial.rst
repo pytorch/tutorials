@@ -138,7 +138,7 @@ the following helper functions: one for converting the text examples
 into the feature vectors; The other one for measuring the F1 score of
 the predicted result.
 
-The `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_ function converts the texts into input features:
+The `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/main/src/transformers/data/datasets/glue.py>`_ function converts the texts into input features:
 
 -  Tokenize the input sequences;
 -  Insert [CLS] in the beginning;
@@ -147,7 +147,7 @@ The `glue_convert_examples_to_features <https://github.com/huggingface/transform
 -  Generate token type ids to indicate whether a token belongs to the
    first sequence or the second sequence.
 
-The `glue_compute_metrics <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_  function has the compute metrics with
+The `glue_compute_metrics <https://github.com/huggingface/transformers/blob/main/src/transformers/data/metrics/__init__.py#L60>`_  function has the compute metrics with
 the `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_, which
 can be interpreted as a weighted average of the precision and recall,
 where an F1 score reaches its best value at 1 and worst score at 0. The
@@ -273,7 +273,7 @@ We load the tokenizer and fine-tuned BERT sequence classifier model
 2.3 Define the tokenize and evaluation function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We reuse the tokenize and evaluation function from `HuggingFace <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
+We reuse the tokenize and evaluation function from `HuggingFace <https://github.com/huggingface/transformers/blob/main/examples/legacy/pytorch-lightning/run_glue.py>`_.
 
 .. code:: python
 
