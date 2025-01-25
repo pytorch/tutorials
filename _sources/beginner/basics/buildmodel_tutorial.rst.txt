@@ -58,26 +58,19 @@ In the following sections, we'll build a neural network to classify images in th
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-38
+.. GENERATED FROM PYTHON SOURCE LINES 33-37
 
 Get Device for Training
 -----------------------
-We want to be able to train our model on a hardware accelerator like the GPU or MPS,
-if available. Let's check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_
-or `torch.backends.mps <https://pytorch.org/docs/stable/notes/mps.html>`_ are available, otherwise we use the CPU.
+We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-48
+.. GENERATED FROM PYTHON SOURCE LINES 37-41
 
 .. code-block:: default
 
 
-    device = (
-        "cuda"
-        if torch.cuda.is_available()
-        else "mps"
-        if torch.backends.mps.is_available()
-        else "cpu"
-    )
+    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
     print(f"Using {device} device")
 
 
@@ -93,7 +86,7 @@ or `torch.backends.mps <https://pytorch.org/docs/stable/notes/mps.html>`_ are av
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-54
+.. GENERATED FROM PYTHON SOURCE LINES 42-47
 
 Define the Class
 -------------------------
@@ -101,7 +94,7 @@ We define our neural network by subclassing ``nn.Module``, and
 initialize the neural network layers in ``__init__``. Every ``nn.Module`` subclass implements
 the operations on input data in the ``forward`` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-72
+.. GENERATED FROM PYTHON SOURCE LINES 47-65
 
 .. code-block:: default
 
@@ -130,12 +123,12 @@ the operations on input data in the ``forward`` method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-75
+.. GENERATED FROM PYTHON SOURCE LINES 66-68
 
 We create an instance of ``NeuralNetwork``, and move it to the ``device``, and print
 its structure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-80
+.. GENERATED FROM PYTHON SOURCE LINES 68-73
 
 .. code-block:: default
 
@@ -166,7 +159,7 @@ its structure.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-87
+.. GENERATED FROM PYTHON SOURCE LINES 74-80
 
 To use the model, we pass it the input data. This executes the model's ``forward``,
 along with some `background operations <https://github.com/pytorch/pytorch/blob/270111b7b611d174967ed204776985cefca9c144/torch/nn/modules/module.py#L866>`_.
@@ -175,7 +168,7 @@ Do not call ``model.forward()`` directly!
 Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output.
 We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-95
+.. GENERATED FROM PYTHON SOURCE LINES 80-88
 
 .. code-block:: default
 
@@ -200,12 +193,12 @@ We get the prediction probabilities by passing it through an instance of the ``n
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-98
+.. GENERATED FROM PYTHON SOURCE LINES 89-91
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-107
+.. GENERATED FROM PYTHON SOURCE LINES 94-100
 
 Model Layers
 -------------------------
@@ -214,7 +207,7 @@ Let's break down the layers in the FashionMNIST model. To illustrate it, we
 will take a sample minibatch of 3 images of size 28x28 and see what happens to it as
 we pass it through the network.
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-111
+.. GENERATED FROM PYTHON SOURCE LINES 100-104
 
 .. code-block:: default
 
@@ -235,7 +228,7 @@ we pass it through the network.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 105-110
 
 nn.Flatten
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -243,7 +236,7 @@ We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.
 layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values (
 the minibatch dimension (at dim=0) is maintained).
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-122
+.. GENERATED FROM PYTHON SOURCE LINES 110-115
 
 .. code-block:: default
 
@@ -265,7 +258,7 @@ the minibatch dimension (at dim=0) is maintained).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-128
+.. GENERATED FROM PYTHON SOURCE LINES 116-121
 
 nn.Linear
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -273,7 +266,7 @@ The `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.htm
 is a module that applies a linear transformation on the input using its stored weights and biases.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-133
+.. GENERATED FROM PYTHON SOURCE LINES 121-126
 
 .. code-block:: default
 
@@ -295,7 +288,7 @@ is a module that applies a linear transformation on the input using its stored w
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-142
+.. GENERATED FROM PYTHON SOURCE LINES 127-135
 
 nn.ReLU
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -306,7 +299,7 @@ learn a wide variety of phenomena.
 In this model, we use `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ between our
 linear layers, but there's other activations to introduce non-linearity in your model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-149
+.. GENERATED FROM PYTHON SOURCE LINES 135-142
 
 .. code-block:: default
 
@@ -349,7 +342,7 @@ linear layers, but there's other activations to introduce non-linearity in your 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-155
+.. GENERATED FROM PYTHON SOURCE LINES 143-148
 
 nn.Sequential
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -357,7 +350,7 @@ nn.Sequential
 container of modules. The data is passed through all the modules in the same order as defined. You can use
 sequential containers to put together a quick network like ``seq_modules``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-165
+.. GENERATED FROM PYTHON SOURCE LINES 148-158
 
 .. code-block:: default
 
@@ -378,7 +371,7 @@ sequential containers to put together a quick network like ``seq_modules``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-172
+.. GENERATED FROM PYTHON SOURCE LINES 159-165
 
 nn.Softmax
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -387,7 +380,7 @@ The last linear layer of the neural network returns `logits` - raw values in [-\
 [0, 1] representing the model's predicted probabilities for each class. ``dim`` parameter indicates the dimension along
 which the values must sum to 1.
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-177
+.. GENERATED FROM PYTHON SOURCE LINES 165-170
 
 .. code-block:: default
 
@@ -403,7 +396,7 @@ which the values must sum to 1.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-187
+.. GENERATED FROM PYTHON SOURCE LINES 171-180
 
 Model Parameters
 -------------------------
@@ -415,7 +408,7 @@ accessible using your model's ``parameters()`` or ``named_parameters()`` methods
 In this example, we iterate over each parameter, and print its size and a preview of its values.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-194
+.. GENERATED FROM PYTHON SOURCE LINES 180-187
 
 .. code-block:: default
 
@@ -468,12 +461,12 @@ In this example, we iterate over each parameter, and print its size and a previe
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-197
+.. GENERATED FROM PYTHON SOURCE LINES 188-190
 
 --------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-202
+.. GENERATED FROM PYTHON SOURCE LINES 192-195
 
 Further Reading
 -----------------
@@ -482,7 +475,7 @@ Further Reading
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.143 seconds)
+   **Total running time of the script:** ( 0 minutes  0.132 seconds)
 
 
 .. _sphx_glr_download_beginner_basics_buildmodel_tutorial.py:
