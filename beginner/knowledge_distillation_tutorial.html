@@ -533,7 +533,7 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="knowledge-distillation-tutorial">
-<span id="sphx-glr-beginner-knowledge-distillation-tutorial-py"></span><h1>Knowledge Distillation Tutorial<a class="headerlink" href="#knowledge-distillation-tutorial" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 22, 2023 | Last Updated: Jul 30, 2024 | Last Verified: Nov 05, 2024</p>
+<span id="sphx-glr-beginner-knowledge-distillation-tutorial-py"></span><h1>Knowledge Distillation Tutorial<a class="headerlink" href="#knowledge-distillation-tutorial" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 22, 2023 | Last Updated: Jan 24, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/AlexandrosChrtn">Alexandros Chariton</a></p>
 <p>Knowledge distillation is a technique that enables knowledge transfer from large, computationally expensive
 models to smaller ones without losing validity. This allows for deployment on less powerful
@@ -564,8 +564,13 @@ In this tutorial, we do not use any external packages as everything we need is a
 <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
 <span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
 
-<span class="c1"># Check if GPU is available, and if not, use the CPU</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<span class="c1"># Check if the current `accelerator &lt;https://pytorch.org/docs/stable/torch.html#accelerators&gt;`__</span>
+<span class="c1"># is available, and if not, use the CPU</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">current_accelerator</span><span class="p">()</span><span class="o">.</span><span class="n">type</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> device"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Using cuda device
 </pre></div>
 </div>
 <div class="section" id="loading-cifar-10">
@@ -601,34 +606,25 @@ This is done to avoid selecting a model based on the greedy and biased optimizat
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/170M [00:00&lt;?, ?B/s]
-  0%|          | 459k/170M [00:00&lt;00:37, 4.57MB/s]
-  3%|2         | 5.11M/170M [00:00&lt;00:05, 29.2MB/s]
-  6%|6         | 10.9M/170M [00:00&lt;00:03, 42.4MB/s]
- 10%|9         | 16.8M/170M [00:00&lt;00:03, 48.8MB/s]
- 13%|#3        | 22.7M/170M [00:00&lt;00:02, 52.2MB/s]
- 17%|#6        | 28.5M/170M [00:00&lt;00:02, 54.3MB/s]
- 20%|##        | 34.4M/170M [00:00&lt;00:02, 55.6MB/s]
- 24%|##3       | 40.1M/170M [00:00&lt;00:02, 56.1MB/s]
- 27%|##6       | 46.0M/170M [00:00&lt;00:02, 56.9MB/s]
- 30%|###       | 51.9M/170M [00:01&lt;00:02, 57.4MB/s]
- 34%|###3      | 57.8M/170M [00:01&lt;00:01, 57.8MB/s]
- 37%|###7      | 63.7M/170M [00:01&lt;00:01, 58.0MB/s]
- 41%|####      | 69.5M/170M [00:01&lt;00:01, 58.0MB/s]
- 44%|####4     | 75.4M/170M [00:01&lt;00:01, 58.2MB/s]
- 48%|####7     | 81.2M/170M [00:01&lt;00:01, 58.0MB/s]
- 51%|#####1    | 87.0M/170M [00:01&lt;00:01, 57.9MB/s]
- 54%|#####4    | 92.9M/170M [00:01&lt;00:01, 57.9MB/s]
- 58%|#####7    | 98.7M/170M [00:01&lt;00:01, 57.8MB/s]
- 61%|######1   | 105M/170M [00:01&lt;00:01, 58.0MB/s]
- 65%|######4   | 110M/170M [00:02&lt;00:01, 58.0MB/s]
- 68%|######8   | 116M/170M [00:02&lt;00:00, 58.2MB/s]
- 72%|#######1  | 122M/170M [00:02&lt;00:00, 58.2MB/s]
- 75%|#######5  | 128M/170M [00:02&lt;00:00, 58.6MB/s]
- 80%|#######9  | 136M/170M [00:02&lt;00:00, 65.9MB/s]
- 86%|########6 | 147M/170M [00:02&lt;00:00, 77.4MB/s]
- 93%|#########3| 159M/170M [00:02&lt;00:00, 89.3MB/s]
-100%|#########9| 170M/170M [00:02&lt;00:00, 97.3MB/s]
-100%|##########| 170M/170M [00:02&lt;00:00, 62.8MB/s]
+  0%|          | 688k/170M [00:00&lt;00:24, 6.87MB/s]
+  5%|4         | 8.42M/170M [00:00&lt;00:03, 48.1MB/s]
+ 10%|#         | 17.7M/170M [00:00&lt;00:02, 68.3MB/s]
+ 17%|#6        | 28.6M/170M [00:00&lt;00:01, 84.4MB/s]
+ 22%|##2       | 38.3M/170M [00:00&lt;00:01, 88.8MB/s]
+ 29%|##8       | 48.9M/170M [00:00&lt;00:01, 94.6MB/s]
+ 34%|###4      | 58.6M/170M [00:00&lt;00:01, 95.3MB/s]
+ 41%|####      | 69.5M/170M [00:00&lt;00:01, 99.5MB/s]
+ 47%|####6     | 79.4M/170M [00:00&lt;00:00, 98.7MB/s]
+ 53%|#####2    | 90.3M/170M [00:01&lt;00:00, 102MB/s]
+ 59%|#####8    | 101M/170M [00:01&lt;00:00, 100MB/s]
+ 65%|######5   | 111M/170M [00:01&lt;00:00, 103MB/s]
+ 71%|#######1  | 122M/170M [00:01&lt;00:00, 99.5MB/s]
+ 78%|#######7  | 132M/170M [00:01&lt;00:00, 102MB/s]
+ 84%|########3 | 143M/170M [00:01&lt;00:00, 91.4MB/s]
+ 89%|########9 | 152M/170M [00:01&lt;00:00, 78.2MB/s]
+ 94%|#########4| 160M/170M [00:01&lt;00:00, 72.5MB/s]
+ 98%|#########8| 168M/170M [00:02&lt;00:00, 65.9MB/s]
+100%|##########| 170M/170M [00:02&lt;00:00, 83.1MB/s]
 </pre></div>
 </div>
 <div class="admonition note">
@@ -721,7 +717,7 @@ One function is called <code class="docutils literal notranslate"><span class="p
 <img alt="../_static/img/knowledge_distillation/ce_only.png" src="../_static/img/knowledge_distillation/ce_only.png"/>
 <p class="caption"><span class="caption-text">Train both networks with Cross-Entropy. The student will be used as a baseline:</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
     <span class="n">criterion</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
@@ -732,7 +728,7 @@ One function is called <code class="docutils literal notranslate"><span class="p
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">:</span>
             <span class="c1"># inputs: A collection of batch_size images</span>
             <span class="c1"># labels: A vector of dimensionality batch_size with integers denoting class of each image</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
             <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -747,8 +743,8 @@ One function is called <code class="docutils literal notranslate"><span class="p
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">, Loss: </span><span class="si">{</span><span class="n">running_loss</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
     <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
@@ -756,7 +752,7 @@ One function is called <code class="docutils literal notranslate"><span class="p
 
     <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.max.html#torch.max" title="torch.max"><span class="n">torch</span><span class="o">.</span><span class="n">max</span></a><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -776,33 +772,33 @@ One function is called <code class="docutils literal notranslate"><span class="p
 it makes sense to initialize the networks with the same weights.
 Start by training the teacher network using cross-entropy:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">nn_deep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">DeepNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">train</span><span class="p">(</span><span class="n">nn_deep</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">test_accuracy_deep</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_deep</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">nn_deep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">DeepNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="n">train</span><span class="p">(</span><span class="n">nn_deep</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">test_accuracy_deep</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_deep</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
 <span class="c1"># Instantiate the lightweight network:</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3325968857311532
-Epoch 2/10, Loss: 0.8644360282536968
-Epoch 3/10, Loss: 0.6794423803953868
-Epoch 4/10, Loss: 0.545456605417954
-Epoch 5/10, Loss: 0.4281282229801578
-Epoch 6/10, Loss: 0.3170763014070213
-Epoch 7/10, Loss: 0.2337407998340514
-Epoch 8/10, Loss: 0.1762202571972709
-Epoch 9/10, Loss: 0.13989751796473932
-Epoch 10/10, Loss: 0.12978940455676496
-Test Accuracy: 74.98%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3348281470406087
+Epoch 2/10, Loss: 0.8714998429998413
+Epoch 3/10, Loss: 0.6829037758547937
+Epoch 4/10, Loss: 0.538982663084479
+Epoch 5/10, Loss: 0.4242823752372161
+Epoch 6/10, Loss: 0.32350436115966125
+Epoch 7/10, Loss: 0.22927232067603284
+Epoch 8/10, Loss: 0.178326161049516
+Epoch 9/10, Loss: 0.14625312814779598
+Epoch 10/10, Loss: 0.12484352084834252
+Test Accuracy: 75.85%
 </pre></div>
 </div>
 <p>We instantiate one more lightweight network model to compare their performances.
 Back propagation is sensitive to weight initialization,
 so we need to make sure these two networks have the exact same initialization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">new_nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">new_nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To ensure we have created a copy of the first network, we inspect the norm of its first layer.
@@ -829,21 +825,21 @@ LightNN parameters: 267,738
 </pre></div>
 </div>
 <p>Train and test the lightweight network with cross entropy loss:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">test_accuracy_light_ce</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">test_accuracy_light_ce</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.4700268650298838
-Epoch 2/10, Loss: 1.1616405431571823
-Epoch 3/10, Loss: 1.0326116013404962
-Epoch 4/10, Loss: 0.934209159877904
-Epoch 5/10, Loss: 0.8595592464937274
-Epoch 6/10, Loss: 0.7943135917644062
-Epoch 7/10, Loss: 0.7311161119309838
-Epoch 8/10, Loss: 0.6763007226959824
-Epoch 9/10, Loss: 0.6263224002345443
-Epoch 10/10, Loss: 0.5758895110291289
-Test Accuracy: 70.26%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.4682242687400955
+Epoch 2/10, Loss: 1.155671822750355
+Epoch 3/10, Loss: 1.0255631095613056
+Epoch 4/10, Loss: 0.9248217361052627
+Epoch 5/10, Loss: 0.8508572765933279
+Epoch 6/10, Loss: 0.7825198911340036
+Epoch 7/10, Loss: 0.7183346463286359
+Epoch 8/10, Loss: 0.6604392542253674
+Epoch 9/10, Loss: 0.6091043096216743
+Epoch 10/10, Loss: 0.5580292826570818
+Test Accuracy: 70.54%
 </pre></div>
 </div>
 <p>As we can see, based on test accuracy, we can now compare the deeper network that is to be used as a teacher with the lightweight network that is our supposed student. So far, our student has not intervened with the teacher, therefore this performance is achieved by the student itself.
@@ -852,8 +848,8 @@ The metrics so far can be seen with the following lines:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy: </span><span class="si">{</span><span class="n">test_accuracy_light_ce</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.98%
-Student accuracy: 70.26%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 75.85%
+Student accuracy: 70.54%
 </pre></div>
 </div>
 </div>
@@ -883,7 +879,7 @@ tend to be so small that propagated gradients do not meaningfully change the wei
 <img alt="../_static/img/knowledge_distillation/distillation_output_loss.png" src="../_static/img/knowledge_distillation/distillation_output_loss.png"/>
 <p class="caption"><span class="caption-text">Distillation loss is calculated from the logits of the networks. It only returns gradients to the student:</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_knowledge_distillation</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">soft_target_loss_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_knowledge_distillation</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">soft_target_loss_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
     <span class="n">ce_loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">student</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
@@ -893,7 +889,7 @@ tend to be so small that propagated gradients do not meaningfully change the wei
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
         <span class="n">running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
@@ -925,8 +921,8 @@ tend to be so small that propagated gradients do not meaningfully change the wei
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">, Loss: </span><span class="si">{</span><span class="n">running_loss</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Apply ``train_knowledge_distillation`` with a temperature of 2. Arbitrarily set the weights to 0.75 for CE and 0.25 for distillation loss.</span>
-<span class="n">train_knowledge_distillation</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">nn_deep</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">new_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">soft_target_loss_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">test_accuracy_light_ce_and_kd</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">new_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">train_knowledge_distillation</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">nn_deep</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">new_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">soft_target_loss_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">test_accuracy_light_ce_and_kd</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">new_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
 <span class="c1"># Compare the student test accuracy with and without the teacher, after distillation</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Teacher accuracy: </span><span class="si">{</span><span class="n">test_accuracy_deep</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
@@ -934,20 +930,20 @@ tend to be so small that propagated gradients do not meaningfully change the wei
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + KD: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_kd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.3220968712931094
-Epoch 2/10, Loss: 1.8121741162541578
-Epoch 3/10, Loss: 1.5951955056251468
-Epoch 4/10, Loss: 1.434416202023206
-Epoch 5/10, Loss: 1.3109155419232594
-Epoch 6/10, Loss: 1.203266421699768
-Epoch 7/10, Loss: 1.107404696971864
-Epoch 8/10, Loss: 1.0220603973359403
-Epoch 9/10, Loss: 0.947688187784551
-Epoch 10/10, Loss: 0.884056080485244
-Test Accuracy: 70.69%
-Teacher accuracy: 74.98%
-Student accuracy without teacher: 70.26%
-Student accuracy with CE + KD: 70.69%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.38088470011416
+Epoch 2/10, Loss: 1.85985983668081
+Epoch 3/10, Loss: 1.6364130562223742
+Epoch 4/10, Loss: 1.4753438719093341
+Epoch 5/10, Loss: 1.3499858318387394
+Epoch 6/10, Loss: 1.23796275921185
+Epoch 7/10, Loss: 1.146990974693347
+Epoch 8/10, Loss: 1.0610196591948
+Epoch 9/10, Loss: 0.9896433665929243
+Epoch 10/10, Loss: 0.917631197463521
+Test Accuracy: 70.68%
+Teacher accuracy: 75.85%
+Student accuracy without teacher: 70.54%
+Student accuracy with CE + KD: 70.68%
 </pre></div>
 </div>
 </div>
@@ -1034,7 +1030,7 @@ Now, the forward function returns not only the logits of the network but also th
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">flattened_conv_output</span>
 
 <span class="c1"># We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance</span>
-<span class="n">modified_nn_deep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedDeepNNCosine</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">modified_nn_deep</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedDeepNNCosine</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict" title="torch.nn.Module.load_state_dict"><span class="n">modified_nn_deep</span><span class="o">.</span><span class="n">load_state_dict</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.state_dict" title="torch.nn.Module.state_dict"><span class="n">nn_deep</span><span class="o">.</span><span class="n">state_dict</span></a><span class="p">())</span>
 
 <span class="c1"># Once again ensure the norm of the first layer is the same for both networks</span>
@@ -1043,19 +1039,19 @@ Now, the forward function returns not only the logits of the network but also th
 
 <span class="c1"># Initialize a modified lightweight network with the same seed as our other lightweight instances. This will be trained from scratch to examine the effectiveness of cosine loss minimization.</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">modified_nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedLightNNCosine</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">modified_nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedLightNNCosine</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Norm of 1st layer:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.norm.html#torch.norm" title="torch.norm"><span class="n">torch</span><span class="o">.</span><span class="n">norm</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">modified_nn_light</span><span class="o">.</span><span class="n">features</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.527215957641602
-Norm of 1st layer for modified_deep_nn: 7.527215957641602
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.5032830238342285
+Norm of 1st layer for modified_deep_nn: 7.5032830238342285
 Norm of 1st layer: 2.327361822128296
 </pre></div>
 </div>
 <p>Naturally, we need to change the train loop because now the model returns a tuple <code class="docutils literal notranslate"><span class="pre">(logits,</span> <span class="pre">hidden_representation)</span></code>. Using a sample input tensor
 we can print their shapes.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a sample input tensor</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">sample_input</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span> <span class="c1"># Batch size: 128, Filters: 3, Image size: 32x32</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">sample_input</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1"># Batch size: 128, Filters: 3, Image size: 32x32</span>
 
 <span class="c1"># Pass the input through the student</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">logits</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">hidden_representation</span></a> <span class="o">=</span> <span class="n">modified_nn_light</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">sample_input</span></a><span class="p">)</span>
@@ -1086,20 +1082,20 @@ The modified training loop is the following:</p>
 <img alt="../_static/img/knowledge_distillation/cosine_loss_distillation.png" src="../_static/img/knowledge_distillation/cosine_loss_distillation.png"/>
 <p class="caption"><span class="caption-text">In Cosine Loss minimization, we want to maximize the cosine similarity of the two representations by returning gradients to the student:</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_cosine_loss</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">hidden_rep_loss_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_cosine_loss</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">hidden_rep_loss_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
     <span class="n">ce_loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
     <span class="n">cosine_loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html#torch.nn.CosineEmbeddingLoss" title="torch.nn.CosineEmbeddingLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CosineEmbeddingLoss</span></a><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">student</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
-    <span class="n">teacher</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-    <span class="n">student</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+    <span class="n">teacher</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">student</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">teacher</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Teacher set to evaluation mode</span>
     <span class="n">student</span><span class="o">.</span><span class="n">train</span><span class="p">()</span> <span class="c1"># Student to train mode</span>
 
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
         <span class="n">running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
@@ -1111,7 +1107,7 @@ The modified training loop is the following:</p>
             <span class="n">student_logits</span><span class="p">,</span> <span class="n">student_hidden_representation</span> <span class="o">=</span> <span class="n">student</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
             <span class="c1"># Calculate the cosine loss. Target is a vector of ones. From the loss formula above we can see that is the case where loss minimization leads to cosine similarity increase.</span>
-            <span class="n">hidden_rep_loss</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">student_hidden_representation</span><span class="p">,</span> <span class="n">teacher_hidden_representation</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">))</span>
+            <span class="n">hidden_rep_loss</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">student_hidden_representation</span><span class="p">,</span> <span class="n">teacher_hidden_representation</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
 
             <span class="c1"># Calculate the true label loss</span>
             <span class="n">label_loss</span> <span class="o">=</span> <span class="n">ce_loss</span><span class="p">(</span><span class="n">student_logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
@@ -1128,8 +1124,8 @@ The modified training loop is the following:</p>
 </pre></div>
 </div>
 <p>We need to modify our test function for the same reason. Here we ignore the hidden representation returned by the model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_multiple_outputs</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_multiple_outputs</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
     <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1137,7 +1133,7 @@ The modified training loop is the following:</p>
 
     <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">outputs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="c1"># Disregard the second tensor of the tuple</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.max.html#torch.max" title="torch.max"><span class="n">torch</span><span class="o">.</span><span class="n">max</span></a><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -1153,21 +1149,21 @@ The modified training loop is the following:</p>
 <p>In this case, we could easily include both knowledge distillation and cosine loss minimization in the same function. It is common to combine methods to achieve better performance in teacher-student paradigms.
 For now, we can run a simple train-test session.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train and test the lightweight network with cross entropy loss</span>
-<span class="n">train_cosine_loss</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">modified_nn_deep</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">hidden_rep_loss_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">test_accuracy_light_ce_and_cosine_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">train_cosine_loss</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">modified_nn_deep</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">hidden_rep_loss_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">test_accuracy_light_ce_and_cosine_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.305280317735794
-Epoch 2/10, Loss: 1.0722044143835296
-Epoch 3/10, Loss: 0.9722916976265286
-Epoch 4/10, Loss: 0.8962984982963718
-Epoch 5/10, Loss: 0.8394639507279067
-Epoch 6/10, Loss: 0.7959256321572892
-Epoch 7/10, Loss: 0.752156037503801
-Epoch 8/10, Loss: 0.7155042026963685
-Epoch 9/10, Loss: 0.6803831305650189
-Epoch 10/10, Loss: 0.6522796169266372
-Test Accuracy: 70.63%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.304237344990606
+Epoch 2/10, Loss: 1.0672405125844815
+Epoch 3/10, Loss: 0.9668559834475408
+Epoch 4/10, Loss: 0.8907892665899623
+Epoch 5/10, Loss: 0.835941873547976
+Epoch 6/10, Loss: 0.7895324864350927
+Epoch 7/10, Loss: 0.748118154228191
+Epoch 8/10, Loss: 0.7119611184615309
+Epoch 9/10, Loss: 0.6747511056682948
+Epoch 10/10, Loss: 0.6456018273940172
+Test Accuracy: 71.09%
 </pre></div>
 </div>
 </div>
@@ -1269,20 +1265,20 @@ feature maps and the teacher class to return the output of the final convolution
 <p>After that, we have to update our train loop again. This time, we extract the regressor output of the student, the feature map of the teacher,
 we calculate the <code class="docutils literal notranslate"><span class="pre">MSE</span></code> on these tensors (they have the exact same shape so it’s properly defined) and we back propagate gradients based on that loss,
 in addition to the regular cross entropy loss of the classification task.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_mse_loss</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">feature_map_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_mse_loss</span><span class="p">(</span><span class="n">teacher</span><span class="p">,</span> <span class="n">student</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">feature_map_weight</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
     <span class="n">ce_loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()</span>
     <span class="n">mse_loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html#torch.nn.MSELoss" title="torch.nn.MSELoss"><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span></a><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">student</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
-    <span class="n">teacher</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-    <span class="n">student</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+    <span class="n">teacher</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">student</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">teacher</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Teacher set to evaluation mode</span>
     <span class="n">student</span><span class="o">.</span><span class="n">train</span><span class="p">()</span> <span class="c1"># Student to train mode</span>
 
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
         <span class="n">running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">:</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
@@ -1313,28 +1309,28 @@ in addition to the regular cross entropy loss of the classification task.</p>
 
 <span class="c1"># Initialize a ModifiedLightNNRegressor</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">modified_nn_light_reg</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedLightNNRegressor</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">modified_nn_light_reg</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedLightNNRegressor</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
 <span class="c1"># We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance</span>
-<span class="n">modified_nn_deep_reg</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedDeepNNRegressor</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">modified_nn_deep_reg</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ModifiedDeepNNRegressor</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict" title="torch.nn.Module.load_state_dict"><span class="n">modified_nn_deep_reg</span><span class="o">.</span><span class="n">load_state_dict</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.state_dict" title="torch.nn.Module.state_dict"><span class="n">nn_deep</span><span class="o">.</span><span class="n">state_dict</span></a><span class="p">())</span>
 
 <span class="c1"># Train and test once again</span>
-<span class="n">train_mse_loss</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">modified_nn_deep_reg</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">feature_map_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-<span class="n">test_accuracy_light_ce_and_mse_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<span class="n">train_mse_loss</span><span class="p">(</span><span class="n">teacher</span><span class="o">=</span><span class="n">modified_nn_deep_reg</span><span class="p">,</span> <span class="n">student</span><span class="o">=</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">train_loader</span></a><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">feature_map_weight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ce_loss_weight</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">test_accuracy_light_ce_and_mse_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.6641677959495798
-Epoch 2/10, Loss: 1.2945281581195724
-Epoch 3/10, Loss: 1.1520699058347346
-Epoch 4/10, Loss: 1.0574869045516109
-Epoch 5/10, Loss: 0.9808458900817519
-Epoch 6/10, Loss: 0.916649489908877
-Epoch 7/10, Loss: 0.863325124963775
-Epoch 8/10, Loss: 0.8127519075218064
-Epoch 9/10, Loss: 0.7703358050807357
-Epoch 10/10, Loss: 0.7325920444315351
-Test Accuracy: 70.95%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.6907462634698813
+Epoch 2/10, Loss: 1.316327338938213
+Epoch 3/10, Loss: 1.1722631024582613
+Epoch 4/10, Loss: 1.0773004034291143
+Epoch 5/10, Loss: 0.996433595257342
+Epoch 6/10, Loss: 0.9339195608787829
+Epoch 7/10, Loss: 0.8779662800262041
+Epoch 8/10, Loss: 0.8308914168106626
+Epoch 9/10, Loss: 0.7867331942329017
+Epoch 10/10, Loss: 0.7482772571656405
+Test Accuracy: 70.79%
 </pre></div>
 </div>
 <p>It is expected that the final method will work better than <code class="docutils literal notranslate"><span class="pre">CosineLoss</span></code> because now we have allowed a trainable layer between the teacher and the student,
@@ -1347,11 +1343,11 @@ Including the extra network is the idea behind hint-based distillation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + RegressorMSE: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_mse_loss</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.98%
-Student accuracy without teacher: 70.26%
-Student accuracy with CE + KD: 70.69%
-Student accuracy with CE + CosineLoss: 70.63%
-Student accuracy with CE + RegressorMSE: 70.95%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 75.85%
+Student accuracy without teacher: 70.54%
+Student accuracy with CE + KD: 70.68%
+Student accuracy with CE + CosineLoss: 71.09%
+Student accuracy with CE + RegressorMSE: 70.79%
 </pre></div>
 </div>
 </div>
@@ -1369,7 +1365,7 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
 <li><p><a class="reference external" href="https://arxiv.org/abs/1503.02531">Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015)</a></p></li>
 <li><p><a class="reference external" href="https://arxiv.org/abs/1412.6550">Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015)</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 7 minutes  38.632 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 7 minutes  47.835 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-knowledge-distillation-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/19879e6777280194639314bd79851483/knowledge_distillation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">knowledge_distillation_tutorial.py</span></code></a></p>

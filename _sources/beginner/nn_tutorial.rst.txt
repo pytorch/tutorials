@@ -240,7 +240,7 @@ to create a simple linear model. We also need an activation function, so
 we'll write `log_softmax` and use it. Remember: although PyTorch
 provides lots of prewritten loss functions, activation functions, and
 so forth, you can easily write your own using plain python. PyTorch will
-even create fast GPU or vectorized CPU code for your function
+even create fast accelerator or vectorized CPU code for your function
 automatically.
 
 .. GENERATED FROM PYTHON SOURCE LINES 137-144
@@ -1538,20 +1538,23 @@ Let's try it out:
 
 .. GENERATED FROM PYTHON SOURCE LINES 830-837
 
-Using your GPU
+Using your `Accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 ---------------
 
-If you're lucky enough to have access to a CUDA-capable GPU (you can
+If you're lucky enough to have access to an accelerator such as CUDA (you can
 rent one for about $0.50/hour from most cloud providers) you can
-use it to speed up your code. First check that your GPU is working in
+use it to speed up your code. First check that your accelerator is working in
 Pytorch:
 
-.. GENERATED FROM PYTHON SOURCE LINES 837-840
+.. GENERATED FROM PYTHON SOURCE LINES 837-843
 
 .. code-block:: default
 
 
-    print(torch.cuda.is_available())
+    # If the current accelerator is available, we will use it. Otherwise, we use the CPU.
+    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+    print(f"Using {device} device")
+
 
 
 
@@ -1561,42 +1564,23 @@ Pytorch:
 
  .. code-block:: none
 
-    True
+    Using cuda device
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 841-842
+.. GENERATED FROM PYTHON SOURCE LINES 844-845
 
-And then create a device object for it:
+Let's update ``preprocess`` to move batches to the accelerator:
 
-.. GENERATED FROM PYTHON SOURCE LINES 842-846
-
-.. code-block:: default
-
-
-    dev = torch.device(
-        "cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 847-848
-
-Let's update ``preprocess`` to move batches to the GPU:
-
-.. GENERATED FROM PYTHON SOURCE LINES 848-858
+.. GENERATED FROM PYTHON SOURCE LINES 845-855
 
 .. code-block:: default
 
 
 
     def preprocess(x, y):
-        return x.view(-1, 1, 28, 28).to(dev), y.to(dev)
+        return x.view(-1, 1, 28, 28).to(device), y.to(device)
 
 
     train_dl, valid_dl = get_data(train_ds, valid_ds, bs)
@@ -1610,16 +1594,16 @@ Let's update ``preprocess`` to move batches to the GPU:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 859-860
+.. GENERATED FROM PYTHON SOURCE LINES 856-857
 
-Finally, we can move our model to the GPU.
+Finally, we can move our model to the accelerator.
 
-.. GENERATED FROM PYTHON SOURCE LINES 860-864
+.. GENERATED FROM PYTHON SOURCE LINES 857-861
 
 .. code-block:: default
 
 
-    model.to(dev)
+    model.to(device)
     opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
 
@@ -1629,11 +1613,11 @@ Finally, we can move our model to the GPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 865-866
+.. GENERATED FROM PYTHON SOURCE LINES 862-863
 
 You should find it runs faster now:
 
-.. GENERATED FROM PYTHON SOURCE LINES 866-869
+.. GENERATED FROM PYTHON SOURCE LINES 863-866
 
 .. code-block:: default
 
@@ -1648,13 +1632,13 @@ You should find it runs faster now:
 
  .. code-block:: none
 
-    0 0.18051404888629913
-    1 0.16902811585068703
+    0 0.18439602632522584
+    1 0.17107771265506744
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 870-902
+.. GENERATED FROM PYTHON SOURCE LINES 867-899
 
 Closing thoughts
 -----------------
@@ -1692,7 +1676,7 @@ what we've seen:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  35.092 seconds)
+   **Total running time of the script:** ( 0 minutes  34.615 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:

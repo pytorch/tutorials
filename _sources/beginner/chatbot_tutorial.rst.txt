@@ -102,7 +102,7 @@ Preparations
 
 To get started, `download <https://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip>`__ the Movie-Dialogs Corpus zip file.
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-115
+.. GENERATED FROM PYTHON SOURCE LINES 88-117
 
 .. code-block:: default
 
@@ -129,18 +129,26 @@ To get started, `download <https://zissou.infosci.cornell.edu/convokit/datasets/
     import json
 
 
-    USE_CUDA = torch.cuda.is_available()
-    device = torch.device("cuda" if USE_CUDA else "cpu")
+    # If the current `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__ is available,
+    # we will use it. Otherwise, we use the CPU.
+    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+    print(f"Using {device} device")
 
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Using cuda device
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-138
+
+.. GENERATED FROM PYTHON SOURCE LINES 118-140
 
 Load & Preprocess Data
 ----------------------
@@ -165,7 +173,7 @@ First, we’ll take a look at some lines of our datafile to see the
 original format.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-151
+.. GENERATED FROM PYTHON SOURCE LINES 140-153
 
 .. code-block:: default
 
@@ -204,7 +212,7 @@ original format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-167
+.. GENERATED FROM PYTHON SOURCE LINES 154-169
 
 Create formatted data file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -222,7 +230,7 @@ The following functions facilitate the parsing of the raw
    conversations
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-210
+.. GENERATED FROM PYTHON SOURCE LINES 169-212
 
 .. code-block:: default
 
@@ -276,13 +284,13 @@ The following functions facilitate the parsing of the raw
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-214
+.. GENERATED FROM PYTHON SOURCE LINES 213-216
 
 Now we’ll call these functions and create the file. We’ll call it
 ``formatted_movie_lines.txt``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-241
+.. GENERATED FROM PYTHON SOURCE LINES 216-243
 
 .. code-block:: default
 
@@ -341,7 +349,7 @@ Now we’ll call these functions and create the file. We’ll call it
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-260
+.. GENERATED FROM PYTHON SOURCE LINES 244-262
 
 Load and trim data
 ~~~~~~~~~~~~~~~~~~
@@ -362,7 +370,7 @@ vocabulary (``addWord``), adding all words in a sentence
 on trimming later.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-314
+.. GENERATED FROM PYTHON SOURCE LINES 262-316
 
 .. code-block:: default
 
@@ -427,7 +435,7 @@ on trimming later.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-326
+.. GENERATED FROM PYTHON SOURCE LINES 317-328
 
 Now we can assemble our vocabulary and query/response sentence pairs.
 Before we are ready to use this data, we must perform some
@@ -441,7 +449,7 @@ filter out sentences with length greater than the ``MAX_LENGTH``
 threshold (``filterPairs``).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 326-389
+.. GENERATED FROM PYTHON SOURCE LINES 328-391
 
 .. code-block:: default
 
@@ -538,7 +546,7 @@ threshold (``filterPairs``).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 390-401
+.. GENERATED FROM PYTHON SOURCE LINES 392-403
 
 Another tactic that is beneficial to achieving faster convergence during
 training is trimming rarely used words out of our vocabulary. Decreasing
@@ -552,7 +560,7 @@ process:
 2) Filter out pairs with trimmed words.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 401-437
+.. GENERATED FROM PYTHON SOURCE LINES 403-439
 
 .. code-block:: default
 
@@ -606,7 +614,7 @@ process:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 438-489
+.. GENERATED FROM PYTHON SOURCE LINES 440-491
 
 Prepare Data for Models
 -----------------------
@@ -660,7 +668,7 @@ the same shape as the output target tensor, but every element that is a
 and target tensors using the aforementioned functions.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 489-550
+.. GENERATED FROM PYTHON SOURCE LINES 491-552
 
 .. code-block:: default
 
@@ -769,7 +777,7 @@ and target tensors using the aforementioned functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 551-579
+.. GENERATED FROM PYTHON SOURCE LINES 553-581
 
 Define Models
 -------------
@@ -800,7 +808,7 @@ Image source:
 https://jeddy92.github.io/JEddy92.github.io/ts_seq2seq_intro/
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 582-648
+.. GENERATED FROM PYTHON SOURCE LINES 584-650
 
 Encoder
 ~~~~~~~
@@ -869,7 +877,7 @@ must pack and unpack padding around the RNN pass using
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 648-676
+.. GENERATED FROM PYTHON SOURCE LINES 650-678
 
 .. code-block:: default
 
@@ -908,7 +916,7 @@ must pack and unpack padding around the RNN pass using
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 677-739
+.. GENERATED FROM PYTHON SOURCE LINES 679-741
 
 Decoder
 ~~~~~~~
@@ -973,7 +981,7 @@ max_length)*.
    :alt: global_attn
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 739-781
+.. GENERATED FROM PYTHON SOURCE LINES 741-783
 
 .. code-block:: default
 
@@ -1026,7 +1034,7 @@ max_length)*.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 782-814
+.. GENERATED FROM PYTHON SOURCE LINES 784-816
 
 Now that we have defined our attention submodule, we can implement the
 actual decoder model. For the decoder, we will manually feed our batch
@@ -1061,7 +1069,7 @@ GRU output will both have shape *(1, batch_size, hidden_size)*.
    num_directions, batch_size, hidden_size)*
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 814-858
+.. GENERATED FROM PYTHON SOURCE LINES 816-860
 
 .. code-block:: default
 
@@ -1116,7 +1124,7 @@ GRU output will both have shape *(1, batch_size, hidden_size)*.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 859-873
+.. GENERATED FROM PYTHON SOURCE LINES 861-875
 
 Define Training Procedure
 -------------------------
@@ -1133,7 +1141,7 @@ negative log likelihood of the elements that correspond to a *1* in the
 mask tensor.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 873-882
+.. GENERATED FROM PYTHON SOURCE LINES 875-884
 
 .. code-block:: default
 
@@ -1153,7 +1161,7 @@ mask tensor.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 883-942
+.. GENERATED FROM PYTHON SOURCE LINES 885-944
 
 Single training iteration
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1215,7 +1223,7 @@ Image source: Goodfellow et al. *Deep Learning*. 2016. https://www.deeplearningb
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 942-1018
+.. GENERATED FROM PYTHON SOURCE LINES 944-1020
 
 .. code-block:: default
 
@@ -1302,7 +1310,7 @@ Image source: Goodfellow et al. *Deep Learning*. 2016. https://www.deeplearningb
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1019-1035
+.. GENERATED FROM PYTHON SOURCE LINES 1021-1037
 
 Training iterations
 ~~~~~~~~~~~~~~~~~~~
@@ -1321,7 +1329,7 @@ After loading a checkpoint, we will be able to use the model parameters
 to run inference, or we can continue training right where we left off.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1035-1084
+.. GENERATED FROM PYTHON SOURCE LINES 1037-1086
 
 .. code-block:: default
 
@@ -1381,7 +1389,7 @@ to run inference, or we can continue training right where we left off.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1085-1120
+.. GENERATED FROM PYTHON SOURCE LINES 1087-1122
 
 Define Evaluation
 -----------------
@@ -1419,7 +1427,7 @@ using the following computational graph:
    6) Return collections of word tokens and scores.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1120-1152
+.. GENERATED FROM PYTHON SOURCE LINES 1122-1154
 
 .. code-block:: default
 
@@ -1462,7 +1470,7 @@ using the following computational graph:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1153-1181
+.. GENERATED FROM PYTHON SOURCE LINES 1155-1183
 
 Evaluate my text
 ~~~~~~~~~~~~~~~~
@@ -1493,7 +1501,7 @@ the vocabulary, we handle this gracefully by printing an error message
 and prompting the user to enter another sentence.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1181-1220
+.. GENERATED FROM PYTHON SOURCE LINES 1183-1222
 
 .. code-block:: default
 
@@ -1543,7 +1551,7 @@ and prompting the user to enter another sentence.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1221-1233
+.. GENERATED FROM PYTHON SOURCE LINES 1223-1235
 
 Run Model
 ---------
@@ -1558,7 +1566,7 @@ models. Feel free to play with different model configurations to
 optimize performance.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1233-1249
+.. GENERATED FROM PYTHON SOURCE LINES 1235-1251
 
 .. code-block:: default
 
@@ -1585,7 +1593,7 @@ optimize performance.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1250-1257
+.. GENERATED FROM PYTHON SOURCE LINES 1252-1259
 
 Sample code to load from a checkpoint:
 
@@ -1595,7 +1603,7 @@ Sample code to load from a checkpoint:
                        '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
                        '{}_checkpoint.tar'.format(checkpoint_iter))
 
-.. GENERATED FROM PYTHON SOURCE LINES 1257-1289
+.. GENERATED FROM PYTHON SOURCE LINES 1259-1291
 
 .. code-block:: default
 
@@ -1645,7 +1653,7 @@ Sample code to load from a checkpoint:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1290-1299
+.. GENERATED FROM PYTHON SOURCE LINES 1292-1301
 
 Run Training
 ~~~~~~~~~~~~
@@ -1657,7 +1665,7 @@ finally we call the ``trainIters`` function to run our training
 iterations.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1299-1339
+.. GENERATED FROM PYTHON SOURCE LINES 1301-1341
 
 .. code-block:: default
 
@@ -1683,16 +1691,16 @@ iterations.
         encoder_optimizer.load_state_dict(encoder_optimizer_sd)
         decoder_optimizer.load_state_dict(decoder_optimizer_sd)
 
-    # If you have CUDA, configure CUDA to call
+    # If you have an accelerator, configure it to call
     for state in encoder_optimizer.state.values():
         for k, v in state.items():
             if isinstance(v, torch.Tensor):
-                state[k] = v.cuda()
+                state[k] = v.to(device)
 
     for state in decoder_optimizer.state.values():
         for k, v in state.items():
             if isinstance(v, torch.Tensor):
-                state[k] = v.cuda()
+                state[k] = v.to(device)
 
     # Run training iterations
     print("Starting Training!")
@@ -5717,7 +5725,7 @@ iterations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1340-1345
+.. GENERATED FROM PYTHON SOURCE LINES 1342-1347
 
 Run Evaluation
 ~~~~~~~~~~~~~~
@@ -5725,7 +5733,7 @@ Run Evaluation
 To chat with your model, run the following block.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1345-1357
+.. GENERATED FROM PYTHON SOURCE LINES 1347-1359
 
 .. code-block:: default
 
@@ -5748,7 +5756,7 @@ To chat with your model, run the following block.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1358-1370
+.. GENERATED FROM PYTHON SOURCE LINES 1360-1372
 
 Conclusion
 ----------
@@ -5766,7 +5774,7 @@ in PyTorch!
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 5 minutes  53.518 seconds)
+   **Total running time of the script:** ( 5 minutes  51.641 seconds)
 
 
 .. _sphx_glr_download_beginner_chatbot_tutorial.py:

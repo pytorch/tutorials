@@ -87,9 +87,9 @@ The simplest way to create a tensor is with the ``torch.empty()`` call:
  .. code-block:: none
 
     <class 'torch.Tensor'>
-    tensor([[ 2.6602e-24,  3.0938e-41,  1.4013e-45,  0.0000e+00],
-            [ 0.0000e+00,  0.0000e+00, -7.9865e-14,  3.0934e-41],
-            [ 7.2528e+35,  3.0934e-41,  3.6748e-17,  3.0934e-41]])
+    tensor([[-9.9391e-17,  3.0959e-41,  1.4013e-45,  0.0000e+00],
+            [-1.4725e-38,  3.0952e-41,  0.0000e+00,  0.0000e+00],
+            [-7.7127e+36,  3.0952e-41, -1.6001e-03,  4.5780e-41]])
 
 
 
@@ -271,17 +271,17 @@ have the ``torch.*_like()`` methods:
  .. code-block:: none
 
     torch.Size([2, 2, 3])
-    tensor([[[ 8.4804e-40,  0.0000e+00,  3.5873e-43],
-             [ 0.0000e+00, -1.5040e-18,  4.5907e-41]],
+    tensor([[[-3.0242e-27,  3.0959e-41,  1.4013e-45],
+             [ 0.0000e+00, -1.1622e+35,  3.0952e-41]],
 
-            [[ 0.0000e+00,  0.0000e+00,  0.0000e+00],
-             [ 0.0000e+00,  0.0000e+00,  0.0000e+00]]])
+            [[ 4.7692e-34,  3.0953e-41, -5.1643e+17],
+             [ 3.0952e-41, -1.4725e-38,  3.0952e-41]]])
     torch.Size([2, 2, 3])
-    tensor([[[-2.5932e-17,  4.5907e-41,  3.7422e+22],
-             [ 3.0934e-41,  3.6748e-17,  3.0934e-41]],
+    tensor([[[-1.5042e-15,  3.0959e-41,  1.4013e-45],
+             [ 0.0000e+00, -1.4725e-38,  3.0952e-41]],
 
-            [[ 0.0000e+00,  0.0000e+00, -4.3762e-22],
-             [ 3.0934e-41, -7.6275e-28,  4.5907e-41]]])
+            [[ 0.0000e+00,  0.0000e+00, -4.5388e+32],
+             [ 3.0952e-41, -1.6001e-03,  4.5780e-41]]])
     torch.Size([2, 2, 3])
     tensor([[[0., 0., 0.],
              [0., 0., 0.]],
@@ -1160,7 +1160,7 @@ use the ``.detach()`` method on the source tensor:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 615-652
+.. GENERATED FROM PYTHON SOURCE LINES 615-651
 
 What’s happening here?
 
@@ -1182,31 +1182,30 @@ history.* It says, “do whatever comes next as if autograd was off.” It
 does this *without* changing ``a`` - you can see that when we print
 ``a`` again at the end, it retains its ``requires_grad=True`` property.
 
-Moving to GPU
+Moving to `Accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 -------------
 
-One of the major advantages of PyTorch is its robust acceleration on
-CUDA-compatible Nvidia GPUs. (“CUDA” stands for *Compute Unified Device
-Architecture*, which is Nvidia’s platform for parallel computing.) So
-far, everything we’ve done has been on CPU. How do we move to the faster
+One of the major advantages of PyTorch is its robust acceleration on an
+`accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+such as CUDA, MPS, MTIA, or XPU. 
+So far, everything we’ve done has been on CPU. How do we move to the faster
 hardware?
 
-First, we should check whether a GPU is available, with the
+First, we should check whether an accelerator is available, with the
 ``is_available()`` method.
 
 .. note::
-     If you do not have a CUDA-compatible GPU and CUDA drivers
-     installed, the executable cells in this section will not execute any
-     GPU-related code.
+     If you do not have an accelerator, the executable cells in this section will not execute any
+     accelerator-related code.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 652-659
+.. GENERATED FROM PYTHON SOURCE LINES 651-658
 
 .. code-block:: default
 
 
-    if torch.cuda.is_available():
-        print('We have a GPU!')
+    if torch.accelerator.is_available():
+        print('We have an accelerator!')
     else:
         print('Sorry, CPU only.')
 
@@ -1219,16 +1218,16 @@ First, we should check whether a GPU is available, with the
 
  .. code-block:: none
 
-    We have a GPU!
+    We have an accelerator!
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 660-671
+.. GENERATED FROM PYTHON SOURCE LINES 659-670
 
-Once we’ve determined that one or more GPUs is available, we need to put
-our data someplace where the GPU can see it. Your CPU does computation
-on data in your computer’s RAM. Your GPU has dedicated memory attached
+Once we’ve determined that one or more accelerators is available, we need to put
+our data someplace where the accelerator can see it. Your CPU does computation
+on data in your computer’s RAM. Your accelerator has dedicated memory attached
 to it. Whenever you want to perform a computation on a device, you must
 move *all* the data needed for that computation to memory accessible by
 that device. (Colloquially, “moving the data to memory accessible by the
@@ -1238,13 +1237,13 @@ There are multiple ways to get your data onto your target device. You
 may do it at creation time:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 671-679
+.. GENERATED FROM PYTHON SOURCE LINES 670-678
 
 .. code-block:: default
 
 
-    if torch.cuda.is_available():
-        gpu_rand = torch.rand(2, 2, device='cuda')
+    if torch.accelerator.is_available():
+        gpu_rand = torch.rand(2, 2, device=torch.accelerator.current_accelerator())
         print(gpu_rand)
     else:
         print('Sorry, CPU only.')
@@ -1264,33 +1263,30 @@ may do it at creation time:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 680-695
+.. GENERATED FROM PYTHON SOURCE LINES 679-694
 
 By default, new tensors are created on the CPU, so we have to specify
-when we want to create our tensor on the GPU with the optional
+when we want to create our tensor on the accelerator with the optional
 ``device`` argument. You can see when we print the new tensor, PyTorch
 informs us which device it’s on (if it’s not on CPU).
 
-You can query the number of GPUs with ``torch.cuda.device_count()``. If
-you have more than one GPU, you can specify them by index:
+You can query the number of accelerators with ``torch.accelerator.device_count()``. If
+you have more than one accelerator, you can specify them by index, take CUDA for example:
 ``device='cuda:0'``, ``device='cuda:1'``, etc.
 
 As a coding practice, specifying our devices everywhere with string
 constants is pretty fragile. In an ideal world, your code would perform
-robustly whether you’re on CPU or GPU hardware. You can do this by
+robustly whether you’re on CPU or accelerator hardware. You can do this by
 creating a device handle that can be passed to your tensors instead of a
 string:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 695-706
+.. GENERATED FROM PYTHON SOURCE LINES 694-702
 
 .. code-block:: default
 
 
-    if torch.cuda.is_available():
-        my_device = torch.device('cuda')
-    else:
-        my_device = torch.device('cpu')
+    my_device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
     print('Device: {}'.format(my_device))
 
     x = torch.rand(2, 2, device=my_device)
@@ -1312,7 +1308,7 @@ string:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 707-712
+.. GENERATED FROM PYTHON SOURCE LINES 703-708
 
 If you have an existing tensor living on one device, you can move it to
 another with the ``to()`` method. The following line of code creates a
@@ -1320,7 +1316,7 @@ tensor on CPU, and moves it to whichever device handle you acquired in
 the previous cell.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 712-717
+.. GENERATED FROM PYTHON SOURCE LINES 708-713
 
 .. code-block:: default
 
@@ -1336,21 +1332,21 @@ the previous cell.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 718-729
+.. GENERATED FROM PYTHON SOURCE LINES 714-725
 
 It is important to know that in order to do computation involving two or
 more tensors, *all of the tensors must be on the same device*. The
 following code will throw a runtime error, regardless of whether you
-have a GPU device available:
+have an accelerator device available, take CUDA for example:
 
 .. code-block:: python
 
    x = torch.rand(2, 2)
-   y = torch.rand(2, 2, device='gpu')
+   y = torch.rand(2, 2, device='cuda')
    z = x + y  # exception will be thrown
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 732-751
+.. GENERATED FROM PYTHON SOURCE LINES 728-747
 
 Manipulating Tensor Shapes
 --------------------------
@@ -1372,7 +1368,7 @@ is expecting input of shape ``(N, 3, 226, 226)``, where ``N`` is the
 number of images in the batch. So how do you make a batch of one?
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 751-759
+.. GENERATED FROM PYTHON SOURCE LINES 747-755
 
 .. code-block:: default
 
@@ -1398,7 +1394,7 @@ number of images in the batch. So how do you make a batch of one?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 760-768
+.. GENERATED FROM PYTHON SOURCE LINES 756-764
 
 The ``unsqueeze()`` method adds a dimension of extent 1.
 ``unsqueeze(0)`` adds it as a new zeroth dimension - now you have a
@@ -1409,7 +1405,7 @@ advantage of the fact that any dimension of extent 1 *does not* change
 the number of elements in the tensor.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 768-773
+.. GENERATED FROM PYTHON SOURCE LINES 764-769
 
 .. code-block:: default
 
@@ -1431,7 +1427,7 @@ the number of elements in the tensor.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 774-783
+.. GENERATED FROM PYTHON SOURCE LINES 770-779
 
 Continuing the example above, let’s say the model’s output is a
 20-element vector for each input. You would then expect the output to
@@ -1443,7 +1439,7 @@ What if you want to do some *non-batched* computation with that output -
 something that’s just expecting a 20-element vector?
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 783-799
+.. GENERATED FROM PYTHON SOURCE LINES 779-795
 
 .. code-block:: default
 
@@ -1485,7 +1481,7 @@ something that’s just expecting a 20-element vector?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 800-830
+.. GENERATED FROM PYTHON SOURCE LINES 796-826
 
 You can see from the shapes that our 2-dimensional tensor is now
 1-dimensional, and if you look closely at the output of the cell above
@@ -1518,7 +1514,7 @@ match up according to the broadcasting rules. ``unsqueeze()`` comes to
 the rescue:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 830-838
+.. GENERATED FROM PYTHON SOURCE LINES 826-834
 
 .. code-block:: default
 
@@ -1558,13 +1554,13 @@ the rescue:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 839-842
+.. GENERATED FROM PYTHON SOURCE LINES 835-838
 
 The ``squeeze()`` and ``unsqueeze()`` methods also have in-place
 versions, ``squeeze_()`` and ``unsqueeze_()``:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 842-849
+.. GENERATED FROM PYTHON SOURCE LINES 838-845
 
 .. code-block:: default
 
@@ -1589,7 +1585,7 @@ versions, ``squeeze_()`` and ``unsqueeze_()``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 850-860
+.. GENERATED FROM PYTHON SOURCE LINES 846-856
 
 Sometimes you’ll want to change the shape of a tensor more radically,
 while still preserving the number of elements and their contents. One
@@ -1602,7 +1598,7 @@ provided that the dimensions you request yield the same number of
 elements as the input tensor has:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 860-871
+.. GENERATED FROM PYTHON SOURCE LINES 856-867
 
 .. code-block:: default
 
@@ -1632,7 +1628,7 @@ elements as the input tensor has:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 872-891
+.. GENERATED FROM PYTHON SOURCE LINES 868-887
 
 .. note::
      The ``(6 * 20 * 20,)`` argument in the final line of the cell
@@ -1654,7 +1650,7 @@ more information, see the
 `docs <https://pytorch.org/docs/stable/torch.html#torch.reshape>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 894-907
+.. GENERATED FROM PYTHON SOURCE LINES 890-903
 
 NumPy Bridge
 ------------
@@ -1670,7 +1666,7 @@ efficient abstractions for building ML models. It’s easy to switch
 between ndarrays and PyTorch tensors:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 907-917
+.. GENERATED FROM PYTHON SOURCE LINES 903-913
 
 .. code-block:: default
 
@@ -1700,7 +1696,7 @@ between ndarrays and PyTorch tensors:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 918-924
+.. GENERATED FROM PYTHON SOURCE LINES 914-920
 
 PyTorch creates a tensor of the same shape and containing the same data
 as the NumPy array, going so far as to keep NumPy’s default 64-bit float
@@ -1709,7 +1705,7 @@ data type.
 The conversion can just as easily go the other way:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 924-932
+.. GENERATED FROM PYTHON SOURCE LINES 920-928
 
 .. code-block:: default
 
@@ -1737,14 +1733,14 @@ The conversion can just as easily go the other way:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 933-937
+.. GENERATED FROM PYTHON SOURCE LINES 929-933
 
 It is important to know that these converted objects are using *the same
 underlying memory* as their source objects, meaning that changes to one
 are reflected in the other:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 937-943
+.. GENERATED FROM PYTHON SOURCE LINES 933-939
 
 .. code-block:: default
 
@@ -1773,7 +1769,7 @@ are reflected in the other:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.290 seconds)
+   **Total running time of the script:** ( 0 minutes  0.307 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_tensors_deeper_tutorial.py:
