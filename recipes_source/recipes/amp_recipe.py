@@ -150,7 +150,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # The same ``GradScaler`` instance should be used for the entire convergence run.
 # If you perform multiple convergence runs in the same script, each run should use
 # a dedicated fresh ``GradScaler`` instance. ``GradScaler`` instances are lightweight.
-scaler = torch.GradScaler("cuda")
+scaler = torch.amp.GradScaler("cuda")
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
@@ -182,7 +182,7 @@ use_amp = True
 
 net = make_model(in_size, out_size, num_layers)
 opt = torch.optim.SGD(net.parameters(), lr=0.001)
-scaler = torch.GradScaler("cuda" ,enabled=use_amp)
+scaler = torch.amp.GradScaler("cuda" ,enabled=use_amp)
 
 start_timer()
 for epoch in range(epochs):
