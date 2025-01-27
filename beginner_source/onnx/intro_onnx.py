@@ -21,17 +21,14 @@ including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
 
 .. note::
     Currently, you can choose either through `TorchScript https://pytorch.org/docs/stable/jit.html`_ or
-    `ExportedProgram https://pytorch.org/docs/stable/export.html`_ to export the model to ONNX by the 
+    `ExportedProgram https://pytorch.org/docs/stable/export.html`_ to export the model to ONNX by the
     boolean parameter dynamo in `torch.onnx.export <https://pytorch.org/docs/stable/generated/torch.onnx.export.html>`_.
-    In this tutorial, we will focus on the ExportedProgram approach.
+    In this tutorial, we will focus on the ``ExportedProgram`` approach.
 
-The TorchDynamo engine is leveraged to hook into Python's frame evaluation API and dynamically rewrite its
-bytecode into an `FX graph <https://pytorch.org/docs/stable/fx.html>`_.
-The resulting FX Graph is polished before it is finally translated into an
-`ONNX graph <https://github.com/onnx/onnx/blob/main/docs/IR.md>`_.
-
-The main advantage of this approach is that the `FX graph <https://pytorch.org/docs/stable/fx.html>`_ is captured using
-bytecode analysis that preserves the dynamic nature of the model instead of using traditional static tracing techniques.
+When setting ``dynamo=True``, the exporter will use `torch.export <https://pytorch.org/docs/stable/export.html>`_ to capture an ``ExportedProgram``,
+before translating the graph into ONNX representations. This approach is the new and recommended way to export models to ONNX.
+It works with PyTorch 2.0 features more robustly, has better support for newer ONNX opsets, and consumes less resources
+to make exporting larger models possible.
 
 Dependencies
 ------------
@@ -60,8 +57,6 @@ To validate the installation, run the following commands:
 
   import onnxscript
   print(onnxscript.__version__)
-
-  from onnxscript import opset18  # opset 18 is the latest (and only) supported version for now
 
   import onnxruntime
   print(onnxruntime.__version__)
