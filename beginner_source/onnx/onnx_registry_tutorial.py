@@ -109,7 +109,7 @@ print(onnx_program.model)
 #         ir_version=10,
 #         opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
 #         producer_name='pytorch',
-#         producer_version='2.7.0.dev20250124+cu124',
+#         producer_version='2.6.0',
 #         domain=None,
 #         model_version=None,
 #     >
@@ -200,7 +200,7 @@ print(onnx_program.model)
 #         ir_version=10,
 #         opset_imports={'pkg.onnxscript.torch_lib.common': 1, 'com.microsoft': 1, '': 18},
 #         producer_name='pytorch',
-#         producer_version='2.7.0.dev20250124+cu124',
+#         producer_version='2.6.0',
 #         domain=None,
 #         model_version=None,
 #     >
@@ -283,7 +283,7 @@ print(onnx_program)
 #         ir_version=10,
 #         opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
 #         producer_name='pytorch',
-#         producer_version='2.7.0.dev20250124+cu124',
+#         producer_version='2.6.0',
 #         domain=None,
 #         model_version=None,
 #     >

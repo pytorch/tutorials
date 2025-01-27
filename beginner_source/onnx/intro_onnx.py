@@ -20,7 +20,7 @@ The exported model can be consumed by any of the many
 including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
 
 .. note::
-    Currently, the users can choose either through `TorchScript https://pytorch.org/docs/stable/jit.html`_ or
+    Currently, you can choose either through `TorchScript https://pytorch.org/docs/stable/jit.html`_ or
     `ExportedProgram https://pytorch.org/docs/stable/export.html`_ to export the model to ONNX by the 
     boolean parameter dynamo in `torch.onnx.export <https://pytorch.org/docs/stable/generated/torch.onnx.export.html>`_.
     In this tutorial, we will focus on the ExportedProgram approach.
