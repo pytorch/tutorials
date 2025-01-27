@@ -51,7 +51,6 @@ NOT_RUN = [
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "intermediate_source/torch_export_tutorial", # reenable after 2940 is fixed.
-    "advanced_source/pendulum",
 ]
 
 def tutorial_source_dirs() -> List[Path]:
