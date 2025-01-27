@@ -52,8 +52,6 @@ NOT_RUN = [
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "intermediate_source/torch_export_tutorial", # reenable after 2940 is fixed.
     "advanced_source/pendulum",
-    "beginner_source/onnx/export_simple_model_to_onnx_tutorial",
-    "beginner_source/onnx/onnx_registry_tutorial"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
