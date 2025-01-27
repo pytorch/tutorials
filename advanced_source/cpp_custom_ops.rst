@@ -78,10 +78,16 @@ If you need to compile CUDA code (for example, ``.cu`` files), then instead use
 Please see `extension-cpp <https://github.com/pytorch/extension-cpp>`_ for an
 example for how this is set up.
 
-The above example represents what we refer to as a CPython agnostic wheel, meaning
-we are building a single wheel that can be run across multiple CPython versions (similar
-to pure Python packages). CPython agnosticism is desirable in minimizing the number of wheels your
-custom library needs to support and release. To achieve this, there are three key lines to note.
+The above example represents what we refer to as a CPython agnostic wheel, meaning we are
+building a single wheel that can be run across multiple CPython versions (similar to pure
+Python packages). CPython agnosticism is desirable in minimizing the number of wheels your
+custom library needs to support and release. The minimum version we'd like to support is
+3.9, since it is the oldest supported version currently, so we use the corresponding hexcode
+and specifier throughout the setup code. We suggest building the extension in the same
+environment as the minimum CPython version you'd like to support to minimize unknown behavior,
+so, here, we build the extension in a CPython 3.9 environment. When built, this single wheel
+will be runnable in any CPython environment 3.9+. To achieve this, there are three key lines
+to note.
 
 The first is the specification of ``Py_LIMITED_API`` in ``extra_compile_args`` to the
 minimum CPython version you would like to support:
@@ -90,7 +96,7 @@ minimum CPython version you would like to support:
 
   extra_compile_args={"cxx": ["-DPy_LIMITED_API=0x03090000"]},
 
-Defining the ``Py_LIMITED_API`` flag helps guarantee that the extension is in fact
+Defining the ``Py_LIMITED_API`` flag helps verify that the extension is in fact
 only using the `CPython Stable Limited API <https://docs.python.org/3/c-api/stable.html>`_,
 which is a requirement for the building a CPython agnostic wheel. If this requirement
 is not met, it is possible to build a wheel that looks CPython agnostic but will crash,
@@ -98,7 +104,12 @@ or worse, be silently incorrect, in another CPython environment. Take care to av
 using unstable CPython APIs, for example APIs from libtorch_python (in particular
 pytorch/python bindings,) and to only use APIs from libtorch (ATen objects, operators
 and the dispatcher). We strongly recommend defining the ``Py_LIMITED_API`` flag to
-ensure the extension is compliant and safe as a CPython agnostic wheel.
+help ascertain the extension is compliant and safe as a CPython agnostic wheel. Note that
+defining this flag is not a full guarantee that the built wheel is CPython agnostic, but
+it is better than the wild wild west. There are several caveats mentioned in the
+`Python docs <https://docs.python.org/3/c-api/stable.html#limited-api-caveats>`_,
+and you should test and verify yourself that the wheel is truly agnostic for the relevant
+CPython versions.
 
 The second and third lines specifying ``py_limited_api`` inform setuptools that you intend
 to build a CPython agnostic wheel and will influence the naming of the wheel accordingly:
@@ -116,9 +127,9 @@ to build a CPython agnostic wheel and will influence the naming of the wheel acc
 
 It is necessary to specify ``py_limited_api=True`` as an argument to CppExtension/
 CUDAExtension and also as an option to the ``"bdist_wheel"`` command with the minimal
-supported CPython version (in this case, 3.9, as it is the oldest supported version
-currently). Consequently, the ``setup`` in our tutorial would build one wheel that could
-be installed across multiple CPython versions ``>=3.9``.
+supported CPython version (in this case, 3.9). Consequently, the ``setup`` in our
+tutorial would build one properly named wheel that could be installed across multiple
+CPython versions ``>=3.9``.
 
 If your extension uses CPython APIs outside the stable limited set, then you cannot
 build a CPython agnostic wheel! You should build one wheel per CPython version instead,
