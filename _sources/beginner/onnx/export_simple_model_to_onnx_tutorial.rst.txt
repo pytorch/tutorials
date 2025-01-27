@@ -25,7 +25,7 @@
 Export a PyTorch model to ONNX
 ==============================
 
-**Author**: `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_
+**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_ and `Xavier Dupré <https://github.com/xadupre>`_
 
 .. note::
     As of PyTorch 2.1, there are two versions of ONNX Exporter.
@@ -104,6 +104,12 @@ exactly like we did in the `60 Minute Blitz <https://pytorch.org/tutorials/begin
             return x
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 85-90
 
 3. Export the model to ONNX format
@@ -120,6 +126,33 @@ Next, we can export the model to ONNX format.
     torch_model = MyModel()
     torch_input = torch.randn(1, 1, 32, 32)
     onnx_program = torch.onnx.dynamo_export(torch_model, torch_input)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:820: FutureWarning:
+
+    'onnxscript.values.Op.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+
+    /usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:820: FutureWarning:
+
+    'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+
+    /usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
+
+    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+
+    /usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/fx/onnxfunction_dispatcher.py:503: FutureWarning:
+
+    'onnxscript.values.TracedOnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 96-104
@@ -141,6 +174,12 @@ we can save it to disk with the following code:
     onnx_program.save("my_image_classifier.onnx")
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 108-109
 
 You can load the ONNX file back into memory and check if it is well formed with the following code:
@@ -153,6 +192,12 @@ You can load the ONNX file back into memory and check if it is well formed with 
     import onnx
     onnx_model = onnx.load("my_image_classifier.onnx")
     onnx.checker.check_model(onnx_model)
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 115-155
@@ -172,7 +217,7 @@ Let's try the web version by opening the following link: https://netron.app/.
 Once Netron is open, we can drag and drop our ``my_image_classifier.onnx`` file into the browser or select it after
 clicking the **Open model** button.
 
-.. image:: ../../_static/img/onnx/image_clossifier_onnx_modelon_netron_web_ui.png
+.. image:: ../../_static/img/onnx/image_classifier_onnx_model_on_netron_web_ui.png
   :width: 50%
 
 
@@ -198,14 +243,14 @@ and wrap them on a dictionary with keys being a string with the input name as ke
 Now we can create an *ONNX Runtime Inference Session*, execute the ONNX model with the processed input
 and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it could be executed on GPU as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-171
+.. GENERATED FROM PYTHON SOURCE LINES 155-172
 
 .. code-block:: default
 
 
     import onnxruntime
 
-    onnx_input = onnx_program.adapt_torch_inputs_to_onnx(torch_input)
+    onnx_input = [torch_input]
     print(f"Input length: {len(onnx_input)}")
     print(f"Sample input: {onnx_input}")
 
@@ -216,10 +261,30 @@ and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it co
 
     onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
 
-    onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+    # onnxruntime returns a list of outputs
+    onnxruntime_outputs = ort_session.run(None, onnxruntime_input)[0]
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-180
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Input length: 1
+    Sample input: [tensor([[[[-1.0416,  1.1125, -0.3602,  ..., -0.0189, -1.2205,  0.3472],
+              [ 0.6651,  1.1037, -0.3674,  ..., -1.4724,  0.2539, -0.0788],
+              [-0.1239, -0.6458, -0.7785,  ..., -0.2674,  0.3019, -0.5682],
+              ...,
+              [-0.0300, -0.4833, -0.3928,  ..., -1.2406,  0.8488, -0.5473],
+              [-0.8185, -0.1276,  0.3475,  ..., -1.0702, -1.6922, -0.6048],
+              [ 0.8268, -0.0248, -0.3354,  ..., -0.9178, -0.3240,  0.7485]]]])]
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 173-181
 
 7. Compare the PyTorch results with the ones from the ONNX Runtime
 ------------------------------------------------------------------
@@ -230,13 +295,12 @@ against PyTorch, which is our source of truth.
 For that, we need to execute the PyTorch model with the same input and compare the results with ONNX Runtime's.
 Before comparing the results, we need to convert the PyTorch's output to match ONNX's format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-192
+.. GENERATED FROM PYTHON SOURCE LINES 181-192
 
 .. code-block:: default
 
 
     torch_outputs = torch_model(torch_input)
-    torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
     assert len(torch_outputs) == len(onnxruntime_outputs)
     for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -245,6 +309,21 @@ Before comparing the results, we need to convert the PyTorch's output to match O
     print("PyTorch and ONNX Runtime output matched!")
     print(f"Output length: {len(onnxruntime_outputs)}")
     print(f"Sample output: {onnxruntime_outputs}")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    PyTorch and ONNX Runtime output matched!
+    Output length: 1
+    Sample output: [[ 0.14531787 -0.05903321 -0.00652155  0.09054166  0.01458297 -0.08046442
+      -0.12109031 -0.03938238 -0.01814789 -0.01363543]]
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 193-212
@@ -272,7 +351,7 @@ sit tight and have fun going through all of them to learn all there is about the
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  1.733 seconds)
 
 
 .. _sphx_glr_download_beginner_onnx_export_simple_model_to_onnx_tutorial.py:
