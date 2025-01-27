@@ -282,7 +282,10 @@ z = torch.randn(32)
 model = DynamicModel()
 ep = export(model, (w, x, y, z))
 model(w, x, torch.randn(3, 4), torch.randn(12))
-ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
+try:
+    ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Basic concepts: symbols and guards
@@ -411,7 +414,10 @@ runtime_assert Eq(s2*s3, s5) [guard added] x3 = x2 + z  # [32]  # dynamic_shapes
 # static guard is emitted on a dynamically-marked dimension:
 
 dynamic_shapes["w"] = (Dim.AUTO, Dim.DYNAMIC)
-export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+try:
+    export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Static guards also aren't always inherent to the model; they can also come from user specifications. In fact, a common pitfall leading to shape
@@ -421,7 +427,10 @@ export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 dynamic_shapes["w"] = (Dim.AUTO, Dim.AUTO)
 dynamic_shapes["x"] = (Dim.STATIC,)
 dynamic_shapes["y"] = (Dim.AUTO, Dim.DYNAMIC)
-export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+try:
+    export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Here you might ask why export "specializes", i.e. why we resolve this static/dynamic conflict by going with the static route. The answer is because
@@ -439,7 +448,7 @@ class DynamicModel(torch.nn.Module):
 
     def forward(self, w, x, y, z):
         assert w.shape[0] <= 512
-        torch._check(x.shape[0] >= 16)
+        torch._check(x.shape[0] >= 4)
         if w.shape[0] == x.shape[0] + 2:
             x0 = x + y
             x1 = self.l(w)
@@ -455,8 +464,10 @@ dynamic_shapes = {
     "y": (Dim.AUTO, Dim.AUTO),
     "z": (Dim.AUTO,),
 }
-ep = export(DynamicModel(), (w, x, y, z), dynamic_shapes=dynamic_shapes)
-print(ep)
+try:
+    ep = export(DynamicModel(), (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Each of these statements emits an additional guard, and the exported program shows the changes; ``s0`` is eliminated in favor of ``s2 + 2``,
@@ -485,7 +496,10 @@ ep = export(
         "input": (Dim.AUTO, Dim.STATIC),
     },
 )
-ep.module()(torch.randn(2, 4))
+try:
+    ep.module()(torch.randn(2, 4))
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Named Dims
@@ -539,14 +553,17 @@ class Foo(torch.nn.Module):
         return w + torch.ones(4)
 
 dx, dy, d1 = torch.export.dims("dx", "dy", "d1")
-ep = export(
-    Foo(),
-    (torch.randn(6, 4), torch.randn(6, 4)),
-    dynamic_shapes={
-        "x": (dx, d1),
-        "y": (dy, d1),
-    },
-)
+try:
+    ep = export(
+        Foo(),
+        (torch.randn(6, 4), torch.randn(6, 4)),
+        dynamic_shapes={
+            "x": (dx, d1),
+            "y": (dy, d1),
+        },
+    )
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # The expectation with suggested fixes is that the user can interactively copy-paste the changes into their dynamic shapes specification, and successfully export afterwards.
@@ -688,7 +705,10 @@ inps = (
     torch.tensor(32),
     torch.randn(60),
 )
-export(Foo(), inps)
+try:
+    export(Foo(), inps)
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # Here is a scenario where ``torch._check()`` insertion is required simply to prevent an operation from failing. The export call will fail with
@@ -700,7 +720,7 @@ class Foo(torch.nn.Module):
     def forward(self, x, y):
         a = x.item()
         torch._check(a >= 0)
-        torch._check(a <= y.shape[0])
+        torch._check(a < y.shape[0])
         return y[a]
 
 inps = (
@@ -732,7 +752,10 @@ inps = (
     torch.tensor(32),
     torch.randn(60),
 )
-export(Foo(), inps, strict=False)
+try:
+    export(Foo(), inps, strict=False)
+except Exception:
+    tb.print_exc()
 
 ######################################################################
 # For these errors, some basic options you have are:
