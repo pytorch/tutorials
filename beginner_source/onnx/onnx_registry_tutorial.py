@@ -102,32 +102,6 @@ onnx_program.optimize()
 print(onnx_program.model)
 
 ######################################################################
-# We get
-#
-# .. code-block:: python
-#     <
-#         ir_version=10,
-#         opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
-#         producer_name='pytorch',
-#         producer_version='2.6.0',
-#         domain=None,
-#         model_version=None,
-#     >
-#     graph(
-#         name=main_graph,
-#         inputs=(
-#             %"input_x"<FLOAT,[1]>,
-#             %"input_y"<FLOAT,[1]>
-#         ),
-#         outputs=(
-#             %"add"<FLOAT,[1]>
-#         ),
-#     ) {
-#         0 |  # node_Add_0
-#             %"add"<FLOAT,[1]> ⬅️ ::Add(%"input_y", %"input_x")
-#         return %"add"<FLOAT,[1]>
-#     }
-#
 # The translation is using our custom implementation: In node ``node_Add_0``, ``input_y`` now
 # comes first, and ``input_x`` comes second.
 #
@@ -193,33 +167,6 @@ onnx_program.optimize()
 print(onnx_program.model)
 
 ######################################################################
-# We get
-#
-# .. code-block:: python
-#     <
-#         ir_version=10,
-#         opset_imports={'pkg.onnxscript.torch_lib.common': 1, 'com.microsoft': 1, '': 18},
-#         producer_name='pytorch',
-#         producer_version='2.6.0',
-#         domain=None,
-#         model_version=None,
-#     >
-#     graph(
-#         name=main_graph,
-#         inputs=(
-#             %"input_x"<FLOAT,[1]>
-#         ),
-#         outputs=(
-#             %"gelu"<FLOAT,[1]>
-#         ),
-#     ) {
-#         0 |  # n0
-#              %"gelu"<FLOAT,[1]> ⬅️ com.microsoft::Gelu(%"input_x")
-#         return %"gelu"<FLOAT,[1]>
-#     }
-
-
-######################################################################
 # Similar to the previous example, we can use ONNX Runtime to run the model and verify the results.
 
 result = onnx_program(x)[0]
@@ -276,47 +223,6 @@ onnx_program.optimize()
 print(onnx_program)
 
 ######################################################################
-# We get
-#
-# .. code-block:: python
-#     <
-#         ir_version=10,
-#         opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
-#         producer_name='pytorch',
-#         producer_version='2.6.0',
-#         domain=None,
-#         model_version=None,
-#     >
-#     graph(
-#         name=main_graph,
-#         inputs=(
-#             %"input"<FLOAT,[1]>
-#         ),
-#         outputs=(
-#             %"add_and_round_op"<FLOAT,[1]>
-#         ),
-#     ) {
-#         0 |  # node_Add_0
-#             %"val_0"<FLOAT,[1]> ⬅️ ::Add(%"input", %"input")
-#         1 |  # node_Round_1
-#             %"add_and_round_op"<FLOAT,[1]> ⬅️ ::Round(%"val_0")
-#         return %"add_and_round_op"<FLOAT,[1]>
-#     }
-#
-# And exported program
-#
-# .. code-block:: python
-#     ExportedProgram:
-#         class GraphModule(torch.nn.Module):
-#             def forward(self, input: "f32[1]"):
-#                 input_1 = input
-#
-#                 add_and_round_op: "f32[1]" = torch.ops.mylibrary.add_and_round_op.default(input_1);  input_1 = None
-#                 return (add_and_round_op,)
-#
-#     Graph signature: ExportGraphSignature(input_specs=[InputSpec(kind=<InputKind.USER_INPUT: 1>, arg=TensorArgument(name='input'), target=None, persistent=None)], output_specs=[OutputSpec(kind=<OutputKind.USER_OUTPUT: 1>, arg=TensorArgument(name='add_and_round_op'), target=None)])
-#     Range constraints: {}
-#
 # The translation is using our custom implementation to translate the ``torch.ops.mylibrary.add_and_round_op.default``
 # operator in the ExportedProgram to the ONNX operator ``Add`` and ``Round``.
 #

@@ -6,7 +6,7 @@
 **`Export a model with control flow to ONNX**
 
 Export a model with control flow to ONNX
-==========================================
+========================================
 
 **Author**: `Xavier Dupré <https://github.com/xadupre>`_.
 """
@@ -28,7 +28,7 @@ import torch
 
 ###############################################################################
 # Define the Models
-# --------
+# -----------------
 #
 # Two models are defined:
 #
@@ -65,7 +65,7 @@ model = ModelWithControlFlowTest()
 
 ###############################################################################
 # Exporting the Model: First Attempt
-# --------
+# ----------------------------------
 #
 # Exporting this model using torch.export.export fails because the control
 # flow logic in the forward pass creates a graph break that the exporter cannot
@@ -86,7 +86,7 @@ except Exception as e:
 
 ###############################################################################
 # Using torch.onnx.export with JIT Tracing
-# --------
+# ----------------------------------------
 #
 # When exporting the model using torch.onnx.export with the dynamo=True
 # argument, the exporter defaults to using JIT tracing. This fallback allows
@@ -100,7 +100,7 @@ print(onnx_program.model)
 
 ###############################################################################
 # Suggested Patch: Refactoring with torch.cond
-# --------
+# --------------------------------------------
 #
 # To make the control flow exportable, the tutorial demonstrates replacing the
 # forward method in ForwardWithControlFlowTest with a refactored version that
@@ -148,7 +148,8 @@ print(onnx_program.model)
 
 ###############################################################################
 # Conclusion
-# --------
+# ----------
+#
 # This tutorial demonstrates the challenges of exporting models with conditional
 # logic to ONNX and presents a practical solution using torch.cond.
 # While the default exporters may fail or produce imperfect graphs, refactoring the
