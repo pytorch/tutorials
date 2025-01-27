@@ -433,7 +433,7 @@ for i, data in enumerate(collector):
     exploration_module.step(data.numel())
     updater.step()
 
-    with set_exploration_type(ExplorationType.DETERMINISTIC), torch.no_grad():
+    with set_exploration_type(ExplorationType.MODE), torch.no_grad():
         rollout = env.rollout(10000, stoch_policy)
         traj_lens.append(rollout.get(("next", "step_count")).max().item())
 

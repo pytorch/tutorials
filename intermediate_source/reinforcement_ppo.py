@@ -419,8 +419,8 @@ policy_module = ProbabilisticActor(
     in_keys=["loc", "scale"],
     distribution_class=TanhNormal,
     distribution_kwargs={
-        "low": env.action_spec.space.low,
-        "high": env.action_spec.space.high,
+        "min": env.action_spec.space.low,
+        "max": env.action_spec.space.high,
     },
     return_log_prob=True,
     # we'll need the log-prob for the numerator of the importance weights

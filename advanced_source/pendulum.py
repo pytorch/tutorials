@@ -604,7 +604,7 @@ env = TransformedEnv(
     env,
     # ``Unsqueeze`` the observations that we will concatenate
     UnsqueezeTransform(
-        dim=-1,
+        unsqueeze_dim=-1,
         in_keys=["th", "thdot"],
         in_keys_inv=["th", "thdot"],
     ),
