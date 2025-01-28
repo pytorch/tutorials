@@ -22,7 +22,7 @@ including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
 .. note::
     Currently, you can choose either through `TorchScript https://pytorch.org/docs/stable/jit.html`_ or
     `ExportedProgram https://pytorch.org/docs/stable/export.html`_ to export the model to ONNX by the
-    boolean parameter dynamo in `torch.onnx.export <https://pytorch.org/docs/stable/generated/torch.onnx.export.html>`_.
+    boolean parameter dynamo in `torch.onnx.export <https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export>`_.
     In this tutorial, we will focus on the ``ExportedProgram`` approach.
 
 When setting ``dynamo=True``, the exporter will use `torch.export <https://pytorch.org/docs/stable/export.html>`_ to capture an ``ExportedProgram``,
