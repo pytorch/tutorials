@@ -528,7 +528,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="custom-c-and-cuda-operators">
-<span id="cpp-custom-ops-tutorial"></span><h1>Custom C++ and CUDA Operators<a class="headerlink" href="#custom-c-and-cuda-operators" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 18, 2024 | Last Updated: Jan 13, 2025 | Last Verified: Nov 05, 2024</p>
+<span id="cpp-custom-ops-tutorial"></span><h1>Custom C++ and CUDA Operators<a class="headerlink" href="#custom-c-and-cuda-operators" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 18, 2024 | Last Updated: Jan 28, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/zou3519">Richard Zou</a></p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
@@ -591,19 +591,71 @@ we’ll focus on the “ahead of time” flavor.</p>
 
 <span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"extension_cpp"</span><span class="p">,</span>
       <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span>
-          <span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span><span class="s2">"extension_cpp"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"muladd.cpp"</span><span class="p">])],</span>
-      <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">cpp_extension</span><span class="o">.</span><span class="n">BuildExtension</span><span class="p">})</span>
+          <span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span>
+            <span class="s2">"extension_cpp"</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">"muladd.cpp"</span><span class="p">],</span>
+            <span class="c1"># define Py_LIMITED_API with min version 3.9 to expose only the stable</span>
+            <span class="c1"># limited API subset from Python.h</span>
+            <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">{</span><span class="s2">"cxx"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"-DPy_LIMITED_API=0x03090000"</span><span class="p">]},</span>
+            <span class="n">py_limited_api</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>  <span class="c1"># Build 1 wheel across multiple Python versions</span>
+      <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">cpp_extension</span><span class="o">.</span><span class="n">BuildExtension</span><span class="p">},</span>
+      <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"bdist_wheel"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"py_limited_api"</span><span class="p">:</span> <span class="s2">"cp39"</span><span class="p">}}</span>  <span class="c1"># 3.9 is minimum supported Python version</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>If you need to compile CUDA code (for example, <code class="docutils literal notranslate"><span class="pre">.cu</span></code> files), then instead use
 <a class="reference external" href="https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.CUDAExtension">torch.utils.cpp_extension.CUDAExtension</a>.
 Please see <a class="reference external" href="https://github.com/pytorch/extension-cpp">extension-cpp</a> for an
 example for how this is set up.</p>
-<p>Starting with PyTorch 2.6, you can now build a single wheel for multiple CPython
-versions (similar to what you would do for pure python packages). In particular,
-if your custom library adheres to the <a class="reference external" href="https://docs.python.org/3/c-api/stable.html">CPython Stable Limited API</a> or avoids CPython entirely, you
-can build one Python agnostic wheel against a minimum supported CPython version
-through setuptools’ <code class="docutils literal notranslate"><span class="pre">py_limited_api</span></code> flag, like so:</p>
+<p>The above example represents what we refer to as a CPython agnostic wheel, meaning we are
+building a single wheel that can be run across multiple CPython versions (similar to pure
+Python packages). CPython agnosticism is desirable in minimizing the number of wheels your
+custom library needs to support and release. The minimum version we’d like to support is
+3.9, since it is the oldest supported version currently, so we use the corresponding hexcode
+and specifier throughout the setup code. We suggest building the extension in the same
+environment as the minimum CPython version you’d like to support to minimize unknown behavior,
+so, here, we build the extension in a CPython 3.9 environment. When built, this single wheel
+will be runnable in any CPython environment 3.9+. To achieve this, there are three key lines
+to note.</p>
+<p>The first is the specification of <code class="docutils literal notranslate"><span class="pre">Py_LIMITED_API</span></code> in <code class="docutils literal notranslate"><span class="pre">extra_compile_args</span></code> to the
+minimum CPython version you would like to support:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">extra_compile_args</span><span class="o">=</span><span class="p">{</span><span class="s2">"cxx"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"-DPy_LIMITED_API=0x03090000"</span><span class="p">]},</span>
+</pre></div>
+</div>
+<p>Defining the <code class="docutils literal notranslate"><span class="pre">Py_LIMITED_API</span></code> flag helps verify that the extension is in fact
+only using the <a class="reference external" href="https://docs.python.org/3/c-api/stable.html">CPython Stable Limited API</a>,
+which is a requirement for the building a CPython agnostic wheel. If this requirement
+is not met, it is possible to build a wheel that looks CPython agnostic but will crash,
+or worse, be silently incorrect, in another CPython environment. Take care to avoid
+using unstable CPython APIs, for example APIs from libtorch_python (in particular
+pytorch/python bindings,) and to only use APIs from libtorch (ATen objects, operators
+and the dispatcher). We strongly recommend defining the <code class="docutils literal notranslate"><span class="pre">Py_LIMITED_API</span></code> flag to
+help ascertain the extension is compliant and safe as a CPython agnostic wheel. Note that
+defining this flag is not a full guarantee that the built wheel is CPython agnostic, but
+it is better than the wild wild west. There are several caveats mentioned in the
+<a class="reference external" href="https://docs.python.org/3/c-api/stable.html#limited-api-caveats">Python docs</a>,
+and you should test and verify yourself that the wheel is truly agnostic for the relevant
+CPython versions.</p>
+<p>The second and third lines specifying <code class="docutils literal notranslate"><span class="pre">py_limited_api</span></code> inform setuptools that you intend
+to build a CPython agnostic wheel and will influence the naming of the wheel accordingly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"extension_cpp"</span><span class="p">,</span>
+      <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span>
+          <span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span>
+            <span class="o">...</span><span class="p">,</span>
+            <span class="n">py_limited_api</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>  <span class="c1"># Build 1 wheel across multiple Python versions</span>
+      <span class="o">...</span><span class="p">,</span>
+      <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"bdist_wheel"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"py_limited_api"</span><span class="p">:</span> <span class="s2">"cp39"</span><span class="p">}}</span>  <span class="c1"># 3.9 is minimum supported Python version</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>It is necessary to specify <code class="docutils literal notranslate"><span class="pre">py_limited_api=True</span></code> as an argument to CppExtension/
+CUDAExtension and also as an option to the <code class="docutils literal notranslate"><span class="pre">"bdist_wheel"</span></code> command with the minimal
+supported CPython version (in this case, 3.9). Consequently, the <code class="docutils literal notranslate"><span class="pre">setup</span></code> in our
+tutorial would build one properly named wheel that could be installed across multiple
+CPython versions <code class="docutils literal notranslate"><span class="pre">&gt;=3.9</span></code>.</p>
+<p>If your extension uses CPython APIs outside the stable limited set, then you cannot
+build a CPython agnostic wheel! You should build one wheel per CPython version instead,
+like so:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">Extension</span>
 <span class="kn">from</span> <span class="nn">torch.utils</span> <span class="kn">import</span> <span class="n">cpp_extension</span>
 
@@ -611,28 +663,10 @@ through setuptools’ <code class="docutils literal notranslate"><span class="pr
       <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span>
           <span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span>
             <span class="s2">"extension_cpp"</span><span class="p">,</span>
-            <span class="p">[</span><span class="s2">"python_agnostic_code.cpp"</span><span class="p">],</span>
-            <span class="n">py_limited_api</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+            <span class="p">[</span><span class="s2">"muladd.cpp"</span><span class="p">])],</span>
       <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">cpp_extension</span><span class="o">.</span><span class="n">BuildExtension</span><span class="p">},</span>
-      <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"bdist_wheel"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"py_limited_api"</span><span class="p">:</span> <span class="s2">"cp39"</span><span class="p">}}</span>
 <span class="p">)</span>
 </pre></div>
-</div>
-<p>Note that you must specify <code class="docutils literal notranslate"><span class="pre">py_limited_api=True</span></code> both within <code class="docutils literal notranslate"><span class="pre">setup</span></code>
-and also as an option to the <code class="docutils literal notranslate"><span class="pre">"bdist_wheel"</span></code> command with the minimal supported
-Python version (in this case, 3.9). This <code class="docutils literal notranslate"><span class="pre">setup</span></code> would build one wheel that could
-be installed across multiple Python versions <code class="docutils literal notranslate"><span class="pre">python&gt;=3.9</span></code>. Please see
-<a class="reference external" href="https://github.com/pytorch/ao">torchao</a> for an example.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You must verify independently that the built wheel is truly Python agnostic.
-Specifying <code class="docutils literal notranslate"><span class="pre">py_limited_api</span></code> does not check for any guarantees, so it is possible
-to build a wheel that looks Python agnostic but will crash, or worse, be silently
-incorrect, in another Python environment. Take care to avoid using unstable CPython
-APIs, for example APIs from libtorch_python (in particular pytorch/python bindings,)
-and to only use APIs from libtorch (aten objects, operators and the dispatcher).
-For example, to give access to custom ops from Python, the library should register
-the ops through the dispatcher (covered below!).</p>
 </div>
 </div>
 <div class="section" id="defining-the-custom-op-and-adding-backend-implementations">
@@ -769,17 +803,86 @@ in Python. The order in which these registrations are loaded (or imported)
 matters (importing in the wrong order will lead to an error).</p>
 <p>To use the custom operator with hybrid Python/C++ registrations, we must
 first load the C++ library that holds the custom operator definition
-and then call the <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> registration APIs. This can happen in one
-of two ways:</p>
+and then call the <code class="docutils literal notranslate"><span class="pre">torch.library</span></code> registration APIs. This can happen in
+three ways:</p>
 <ol class="arabic simple">
-<li><p>If you’re following this tutorial, importing the Python C extension module
-we created will load the C++ custom operator definitions.</p></li>
-<li><p>If your C++ custom operator is located in a shared library object, you can
-also use <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library("/path/to/library.so")</span></code> to load it. This
-is the blessed path for Python agnosticism, as you will not have a Python C
-extension module to import. See <a class="reference external" href="https://github.com/pytorch/ao/blob/881e84b4398eddcea6fee4d911fc329a38b5cd69/torchao/__init__.py#L26-L28">torchao __init__.py</a>
-for an example.</p></li>
+<li><p>The first way to load the C++ library that holds the custom operator definition
+is to define a dummy Python module for _C. Then, in Python, when you import the
+module with <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">_C</span></code>, the <code class="docutils literal notranslate"><span class="pre">.so</span></code> files corresponding to the extension will
+be loaded and the <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code> and <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY_IMPL</span></code> static initializers
+will run. One can create a dummy Python module with <code class="docutils literal notranslate"><span class="pre">PYBIND11_MODULE</span></code> like below,
+but you will notice that this does not compile with <code class="docutils literal notranslate"><span class="pre">Py_LIMITED_API</span></code>, because
+<code class="docutils literal notranslate"><span class="pre">pybind11</span></code> does not promise to only use the stable limited CPython API! With
+the below code, you sadly cannot build a CPython agnostic wheel for your extension!
+(Foreshadowing: I wonder what the second way is ;) ).</p></li>
 </ol>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// in, say, not_agnostic/csrc/extension_BAD.cpp</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/pybind11.h&gt;</span>
+
+<span class="n">PYBIND11_MODULE</span><span class="p">(</span><span class="s">"_C"</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in, say, extension/__init__.py</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_C</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>In this tutorial, because we value being able to build a single wheel across multiple
+CPython versions, we will replace the unstable <code class="docutils literal notranslate"><span class="pre">PYBIND11</span></code> call with stable API calls.
+The below code compiles with <code class="docutils literal notranslate"><span class="pre">-DPy_LIMITED_API=0x03090000</span></code> and successfully creates
+a dummy Python module for our <code class="docutils literal notranslate"><span class="pre">_C</span></code> extension so that it can be imported from Python.
+See <a class="reference external" href="https://github.com/pytorch/extension-cpp/blob/38ec45e/extension_cpp/__init__.py">extension_cpp/__init__.py</a>
+and <a class="reference external" href="https://github.com/pytorch/extension-cpp/blob/38ec45e/extension_cpp/csrc/muladd.cpp">extension_cpp/csrc/muladd.cpp</a>
+for more details:</p></li>
+</ol>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+
+<span class="k">extern</span><span class="w"> </span><span class="s">"C"</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="cm">/* Creates a dummy empty _C module that can be imported from Python.</span>
+<span class="cm">    The import from Python will load the .so consisting of this file</span>
+<span class="cm">    in this extension, so that the TORCH_LIBRARY static initializers</span>
+<span class="cm">    below are run. */</span>
+<span class="w">  </span><span class="n">PyObject</span><span class="o">*</span><span class="w"> </span><span class="nf">PyInit__C</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">      </span><span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">module_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
+<span class="w">          </span><span class="s">"_C"</span><span class="p">,</span><span class="w">   </span><span class="cm">/* name of module */</span>
+<span class="w">          </span><span class="nb">NULL</span><span class="p">,</span><span class="w">   </span><span class="cm">/* module documentation, may be NULL */</span>
+<span class="w">          </span><span class="mi">-1</span><span class="p">,</span><span class="w">     </span><span class="cm">/* size of per-interpreter state of the module,</span>
+<span class="cm">                    or -1 if the module keeps state in global variables. */</span>
+<span class="w">          </span><span class="nb">NULL</span><span class="p">,</span><span class="w">   </span><span class="cm">/* methods */</span>
+<span class="w">      </span><span class="p">};</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">module_def</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in, say, extension/__init__.py</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_C</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>If you want to avoid <code class="docutils literal notranslate"><span class="pre">Python.h</span></code> entirely in your C++ custom operator, you may
+use <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library("/path/to/library.so")</span></code> in Python to load the <code class="docutils literal notranslate"><span class="pre">.so</span></code>
+file(s) compiled from the extension. Note that, with this method, there is no <code class="docutils literal notranslate"><span class="pre">_C</span></code>
+Python module created for the extension so you cannot call <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">_C</span></code> from Python.
+Instead of relying on the import statement to trigger the custom operators to be
+registered, <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library("/path/to/library.so")</span></code> will do the trick.
+The challenge then is shifted towards understanding where the <code class="docutils literal notranslate"><span class="pre">.so</span></code> files are
+located so that you can load them, which is not always trivial:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">so_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"_C*.so"</span><span class="p">))</span>
+<span class="k">assert</span> <span class="p">(</span>
+    <span class="nb">len</span><span class="p">(</span><span class="n">so_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="p">),</span> <span class="sa">f</span><span class="s2">"Expected one _C*.so file, found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">so_files</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="n">so_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ops</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="adding-training-autograd-support-for-an-operator">
 <h3>Adding training (autograd) support for an operator<a class="headerlink" href="#adding-training-autograd-support-for-an-operator" title="Permalink to this heading">¶</a></h3>
