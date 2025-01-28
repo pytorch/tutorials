@@ -98,7 +98,11 @@ dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+# such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
+
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
 
 ######################################################################
 # Visualize a few images
