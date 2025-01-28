@@ -23,6 +23,18 @@ Export a model with control flow to ONNX
 # Conditional logic cannot be exported into ONNX unless they refactored
 # to use :func:`torch.cond`. Let's start with a simple model
 # implementing a test.
+# 
+# What you will learn:
+#
+# - How to refactor the model to use :func:`torch.cond` for exporting.
+# - How to export a model with control flow logic to ONNX.
+# - How to optimize the exported model using the ONNX optimizer.
+#
+# Prerequisites
+# ~~~~~~~~~~~~~
+#
+# * ``torch >= 2.6``
+
 
 import torch
 

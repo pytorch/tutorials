@@ -25,6 +25,24 @@ Extending the ONNX Exporter Operator Support
 # * Using custom ONNX operators
 # * Supporting a custom PyTorch operator
 #
+# What you will learn:
+#
+# - How to override or add support for PyTorch operators in ONNX.
+# - How to integrate custom ONNX operators for specialized runtimes.
+# - How to implement and translate custom PyTorch operators to ONNX.
+#
+# Prerequisites
+# ~~~~~~~~~~~~~
+#
+# Before starting this tutorial, make sure you have completed the following prerequisites:
+#
+# * ``torch >= 2.6``
+# * The target PyTorch operator.
+# * Completed the
+#   `ONNX Script tutorial <https://github.com/microsoft/onnxscript/blob/main/docs/tutorial/index.md>`_
+#   before proceeding.
+# * The implementation of the operator using `ONNX Script <https://github.com/microsoft/onnxscript>`__.
+#
 # Overriding the implementation of an existing PyTorch operator
 # -------------------------------------------------------------
 #
@@ -33,8 +51,8 @@ Extending the ONNX Exporter Operator Support
 # unsupported PyTorch operators to the ONNX Registry.
 #
 # .. note::
-#       The steps to implement unsupported PyTorch operators are the same to replace the implementation of an existing
-#       PyTorch operator with a custom implementation.
+#       The steps to implement unsupported PyTorch operators are the same as those for replacing the implementation of an existing 
+#       PyTorch operator with a custom one.  
 #       Because we don't actually have an unsupported PyTorch operator to use in this tutorial, we are going to leverage
 #       this and replace the implementation of ``torch.ops.aten.add.Tensor`` with a custom implementation the same way we would
 #       if the operator was not implemented by the ONNX exporter.
@@ -49,14 +67,6 @@ Extending the ONNX Exporter Operator Support
 # The error message indicates that the unsupported PyTorch operator is ``torch.ops.aten.add.Tensor``.
 # The operator is of type ``<class 'torch._ops.OpOverload'>``, and this operator is what we will use as the
 # target to register our custom implementation.
-#
-# To add support for an unsupported PyTorch operator or to replace the implementation for an existing one, we need:
-#
-# * The target PyTorch operator.
-# * The implementation of the operator using `ONNX Script <https://github.com/microsoft/onnxscript>`__.
-#   ONNX Script is a prerequisite for this tutorial. Please make sure you have read the
-#   `ONNX Script tutorial <https://github.com/microsoft/onnxscript/blob/main/docs/tutorial/index.md>`_
-#   before proceeding.
 
 import torch
 import onnxscript
@@ -73,7 +83,7 @@ class Model(torch.nn.Module):
 
 # NOTE: The function signature (including param names) must match the signature of the unsupported PyTorch operator.
 # https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
-# NOTE: All attributes must be annotated with type hints.
+# All attributes must be annotated with type hints.
 def custom_aten_add(self, other, alpha: float = 1.0):
     if alpha != 1.0:
         alpha = op.CastLike(alpha, other)
@@ -118,7 +128,7 @@ torch.testing.assert_close(result, torch.tensor([3.0]))
 # ---------------------------
 #
 # In this case, we create a model with standard PyTorch operators, but the runtime
-# (e.g. Microsoft's ONNX Runtime) can provide a custom implementation for that kernel, effectively replacing the
+# (such as Microsoft's ONNX Runtime) can provide a custom implementation for that kernel, effectively replacing the
 # existing implementation.
 #
 # In the following example, we use the ``com.microsoft.Gelu`` operator provided by ONNX Runtime,
