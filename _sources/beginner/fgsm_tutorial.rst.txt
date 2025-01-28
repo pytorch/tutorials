@@ -127,7 +127,7 @@ into the implementation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-132
+.. GENERATED FROM PYTHON SOURCE LINES 103-128
 
 Implementation
 --------------
@@ -154,19 +154,14 @@ follows:
    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
    For simplicity, download the pretrained model `here <https://drive.google.com/file/d/1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl/view?usp=drive_link>`__.
 
--  ``use_cuda`` - boolean flag to use CUDA if desired and available.
-   Note, a GPU with CUDA is not critical for this tutorial as a CPU will
-   not take much time.
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 132-140
+.. GENERATED FROM PYTHON SOURCE LINES 128-135
 
 .. code-block:: default
 
 
     epsilons = [0, .05, .1, .15, .2, .25, .3]
     pretrained_model = "data/lenet_mnist_model.pth"
-    use_cuda=True
     # Set random seed for reproducibility
     torch.manual_seed(42)
 
@@ -180,11 +175,11 @@ follows:
  .. code-block:: none
 
 
-    <torch._C.Generator object at 0x7f462d77dc50>
+    <torch._C.Generator object at 0x7f951b785c50>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-152
+.. GENERATED FROM PYTHON SOURCE LINES 136-147
 
 Model Under Attack
 ~~~~~~~~~~~~~~~~~~
@@ -198,7 +193,7 @@ define the model and dataloader, then initialize the model and load the
 pretrained weights.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-201
+.. GENERATED FROM PYTHON SOURCE LINES 147-197
 
 .. code-block:: default
 
@@ -237,9 +232,10 @@ pretrained weights.
                 ])),
             batch_size=1, shuffle=True)
 
-    # Define what device we are using
-    print("CUDA Available: ",torch.cuda.is_available())
-    device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu")
+    # We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+    # such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
+    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+    print(f"Using {device} device")
 
     # Initialize the network
     model = Net().to(device)
@@ -261,17 +257,17 @@ pretrained weights.
 
 
       0%|          | 0.00/9.91M [00:00<?, ?B/s]
-    100%|##########| 9.91M/9.91M [00:00<00:00, 136MB/s]
+    100%|##########| 9.91M/9.91M [00:00<00:00, 141MB/s]
 
       0%|          | 0.00/28.9k [00:00<?, ?B/s]
-    100%|##########| 28.9k/28.9k [00:00<00:00, 76.8MB/s]
+    100%|##########| 28.9k/28.9k [00:00<00:00, 46.8MB/s]
 
       0%|          | 0.00/1.65M [00:00<?, ?B/s]
-    100%|##########| 1.65M/1.65M [00:00<00:00, 232MB/s]
+    100%|##########| 1.65M/1.65M [00:00<00:00, 318MB/s]
 
       0%|          | 0.00/4.54k [00:00<?, ?B/s]
-    100%|##########| 4.54k/4.54k [00:00<00:00, 17.9MB/s]
-    CUDA Available:  True
+    100%|##########| 4.54k/4.54k [00:00<00:00, 21.2MB/s]
+    Using cuda device
 
     Net(
       (conv1): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1))
@@ -284,7 +280,7 @@ pretrained weights.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-218
+.. GENERATED FROM PYTHON SOURCE LINES 198-214
 
 FGSM Attack
 ~~~~~~~~~~~
@@ -303,7 +299,7 @@ Finally, in order to maintain the original range of the data, the
 perturbed image is clipped to range :math:`[0,1]`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-251
+.. GENERATED FROM PYTHON SOURCE LINES 214-247
 
 .. code-block:: default
 
@@ -347,7 +343,7 @@ perturbed image is clipped to range :math:`[0,1]`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-268
+.. GENERATED FROM PYTHON SOURCE LINES 248-264
 
 Testing Function
 ~~~~~~~~~~~~~~~~
@@ -366,7 +362,7 @@ accuracy of the model, the function also saves and returns some
 successful adversarial examples to be visualized later.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-338
+.. GENERATED FROM PYTHON SOURCE LINES 264-334
 
 .. code-block:: default
 
@@ -447,7 +443,7 @@ successful adversarial examples to be visualized later.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-350
+.. GENERATED FROM PYTHON SOURCE LINES 335-346
 
 Run Attack
 ~~~~~~~~~~
@@ -461,7 +457,7 @@ note the :math:`\epsilon=0` case represents the original test accuracy,
 with no attack.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 350-361
+.. GENERATED FROM PYTHON SOURCE LINES 346-357
 
 .. code-block:: default
 
@@ -495,7 +491,7 @@ with no attack.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 362-379
+.. GENERATED FROM PYTHON SOURCE LINES 358-375
 
 Results
 -------
@@ -515,7 +511,7 @@ hits random accuracy for a 10-class classifier between
 :math:`\epsilon=0.25` and :math:`\epsilon=0.3`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 379-390
+.. GENERATED FROM PYTHON SOURCE LINES 375-386
 
 .. code-block:: default
 
@@ -542,7 +538,7 @@ hits random accuracy for a 10-class classifier between
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 391-407
+.. GENERATED FROM PYTHON SOURCE LINES 387-403
 
 Sample Adversarial Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -561,7 +557,7 @@ quite evident at :math:`\epsilon=0.3`. However, in all cases humans are
 still capable of identifying the correct class despite the added noise.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 407-426
+.. GENERATED FROM PYTHON SOURCE LINES 403-422
 
 .. code-block:: default
 
@@ -596,7 +592,7 @@ still capable of identifying the correct class despite the added noise.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 427-455
+.. GENERATED FROM PYTHON SOURCE LINES 423-451
 
 Where to go next?
 -----------------
@@ -630,7 +626,7 @@ vs working on one attack at a time in the above for each ``epsilon test()`` loop
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  5.659 seconds)
+   **Total running time of the script:** ( 4 minutes  0.947 seconds)
 
 
 .. _sphx_glr_download_beginner_fgsm_tutorial.py:
