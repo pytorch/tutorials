@@ -37,11 +37,11 @@ Extending the ONNX Exporter Operator Support
 # Before starting this tutorial, make sure you have completed the following prerequisites:
 #
 # * ``torch >= 2.6``
-# * The target PyTorch operator.
+# * The target PyTorch operator
 # * Completed the
 #   `ONNX Script tutorial <https://github.com/microsoft/onnxscript/blob/main/docs/tutorial/index.md>`_
-#   before proceeding.
-# * The implementation of the operator using `ONNX Script <https://github.com/microsoft/onnxscript>`__.
+#   before proceeding
+# * The implementation of the operator using `ONNX Script <https://github.com/microsoft/onnxscript>`__
 #
 # Overriding the implementation of an existing PyTorch operator
 # -------------------------------------------------------------
