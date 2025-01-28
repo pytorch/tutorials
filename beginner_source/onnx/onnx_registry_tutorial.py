@@ -31,147 +31,14 @@ Extending the ONNX Registry
 #
 # In this tutorial, we will cover three scenarios that require extending the ONNX registry with custom operators:
 #
-# * Unsupported ATen operators
 # * Custom operators with existing ONNX Runtime support
 # * Custom operators without ONNX Runtime support
-#
-# Unsupported ATen operators
-# --------------------------
-#
-# Although the ONNX exporter team does their best efforts to support all ATen operators, some of them
-# might not be supported yet. In this section, we will demonstrate how you can add
-# unsupported ATen operators to the ONNX Registry.
-#
-# .. note::
-#       The steps to implement unsupported ATen operators are the same to replace the implementation of an existing
-#       ATen operator with a custom implementation.
-#       Because we don't actually have an unsupported ATen operator to use in this tutorial, we are going to leverage
-#       this and replace the implementation of ``aten::add.Tensor`` with a custom implementation the same way we would
-#       if the operator was not present in the ONNX Registry.
-#
-# When a model cannot be exported to ONNX due to an unsupported operator, the ONNX exporter will show an error message
-# similar to:
-#
-# .. code-block:: python
-#
-#   RuntimeErrorWithDiagnostic: Unsupported FX nodes: {'call_function': ['aten.add.Tensor']}.
-#
-# The error message indicates that the fully qualified name of unsupported ATen operator is ``aten::add.Tensor``.
-# The fully qualified name of an operator is composed of the namespace, operator name, and overload following
-# the format ``namespace::operator_name.overload``.
-#
-# To add support for an unsupported ATen operator or to replace the implementation for an existing one, we need:
-#
-# * The fully qualified name of the ATen operator (e.g. ``aten::add.Tensor``).
-#   This information is always present in the error message as show above.
-# * The implementation of the operator using `ONNX Script <https://github.com/microsoft/onnxscript>`__.
-#   ONNX Script is a prerequisite for this tutorial. Please make sure you have read the
-#   `ONNX Script tutorial <https://github.com/microsoft/onnxscript/blob/main/docs/tutorial/index.md>`_
-#   before proceeding.
-#
-# Because ``aten::add.Tensor`` is already supported by the ONNX Registry, we will demonstrate how to replace it with a
-# custom implementation, but keep in mind that the same steps apply to support new unsupported ATen operators.
-#
-# This is possible because the :class:`OnnxRegistry` allows users to override an operator registration.
-# We will override the registration of ``aten::add.Tensor`` with our custom implementation and verify it exists.
 #
 
 import torch
 import onnxruntime
 import onnxscript
 from onnxscript import opset18  # opset 18 is the latest (and only) supported version for now
-
-class Model(torch.nn.Module):
-    def forward(self, input_x, input_y):
-        return torch.ops.aten.add(input_x, input_y)  # generates a aten::add.Tensor node
-
-input_add_x = torch.randn(3, 4)
-input_add_y = torch.randn(3, 4)
-aten_add_model = Model()
-
-
-# Now we create a ONNX Script function that implements ``aten::add.Tensor``.
-# The function name (e.g. ``custom_aten_add``) is displayed in the ONNX graph, so we recommend to use intuitive names.
-custom_aten = onnxscript.values.Opset(domain="custom.aten", version=1)
-
-# NOTE: The function signature must match the signature of the unsupported ATen operator.
-# https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
-# NOTE: All attributes must be annotated with type hints.
-@onnxscript.script(custom_aten)
-def custom_aten_add(input_x, input_y, alpha: float = 1.0):
-    input_y = opset18.Mul(input_y, alpha)
-    return opset18.Add(input_x, input_y)
-
-
-# Now we have everything we need to support unsupported ATen operators.
-# Let's register the ``custom_aten_add`` function to ONNX registry, and export the model to ONNX again.
-onnx_registry = torch.onnx.OnnxRegistry()
-onnx_registry.register_op(
-    namespace="aten", op_name="add", overload="Tensor", function=custom_aten_add
-    )
-print(f"aten::add.Tensor is supported by ONNX registry: \
-      {onnx_registry.is_registered_op(namespace='aten', op_name='add', overload='Tensor')}"
-      )
-export_options = torch.onnx.ExportOptions(onnx_registry=onnx_registry)
-onnx_program = torch.onnx.dynamo_export(
-    aten_add_model, input_add_x, input_add_y, export_options=export_options
-    )
-
-######################################################################
-# Now let's inspect the model and verify the model has a ``custom_aten_add`` instead of ``aten::add.Tensor``.
-# The graph has one graph node for ``custom_aten_add``, and inside of it there are four function nodes, one for each
-# operator, and one for constant attribute.
-#
-
-# graph node domain is the custom domain we registered
-assert onnx_program.model_proto.graph.node[0].domain == "custom.aten"
-assert len(onnx_program.model_proto.graph.node) == 1
-# graph node name is the function name
-assert onnx_program.model_proto.graph.node[0].op_type == "custom_aten_add"
-# function node domain is empty because we use standard ONNX operators
-assert {node.domain for node in onnx_program.model_proto.functions[0].node} == {""}
-# function node name is the standard ONNX operator name
-assert {node.op_type for node in onnx_program.model_proto.functions[0].node} == {"Add", "Mul", "Constant"}
-
-
-######################################################################
-# This is how ``custom_aten_add_model`` looks in the ONNX graph using Netron:
-#
-# .. image:: /_static/img/onnx/custom_aten_add_model.png
-#    :width: 70%
-#    :align: center
-#
-# Inside the ``custom_aten_add`` function, we can see the three ONNX nodes we
-# used in the function (``CastLike``, ``Add``, and ``Mul``), and one ``Constant`` attribute:
-#
-# .. image:: /_static/img/onnx/custom_aten_add_function.png
-#    :width: 70%
-#    :align: center
-#
-# This was all that we needed to register the new ATen operator into the ONNX Registry.
-# As an additional step, we can use ONNX Runtime to run the model, and compare the results with PyTorch.
-#
-
-
-# Use ONNX Runtime to run the model, and compare the results with PyTorch
-onnx_program.save("./custom_add_model.onnx")
-ort_session = onnxruntime.InferenceSession(
-    "./custom_add_model.onnx", providers=['CPUExecutionProvider']
-    )
-
-def to_numpy(tensor):
-    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-
-onnx_input = onnx_program.adapt_torch_inputs_to_onnx(input_add_x, input_add_y)
-onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
-onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
-
-torch_outputs = aten_add_model(input_add_x, input_add_y)
-torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
-
-assert len(torch_outputs) == len(onnxruntime_outputs)
-for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
-    torch.testing.assert_close(torch_output, torch.tensor(onnxruntime_output))
 
 
 ######################################################################
@@ -262,12 +129,11 @@ ort_session = onnxruntime.InferenceSession(
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
-onnx_input = onnx_program.adapt_torch_inputs_to_onnx(input_gelu_x)
+onnx_input = [input_gelu_x]
 onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
-onnxruntime_outputs = ort_session.run(None, onnxruntime_input)
+onnxruntime_outputs = ort_session.run(None, onnxruntime_input)[0]
 
 torch_outputs = aten_gelu_model(input_gelu_x)
-torch_outputs = onnx_program.adapt_torch_outputs_to_onnx(torch_outputs)
 
 assert len(torch_outputs) == len(onnxruntime_outputs)
 for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -369,25 +235,17 @@ onnx_program.save("./custom_addandround_model.onnx")
 #
 
 assert onnx_program.model_proto.graph.node[0].domain == "test.customop"
-assert onnx_program.model_proto.graph.node[0].op_type == "custom_addandround"
-assert onnx_program.model_proto.functions[0].node[0].domain == "test.customop"
-assert onnx_program.model_proto.functions[0].node[0].op_type == "CustomOpOne"
-assert onnx_program.model_proto.functions[0].node[1].domain == "test.customop"
-assert onnx_program.model_proto.functions[0].node[1].op_type == "CustomOpTwo"
+assert onnx_program.model_proto.graph.node[0].op_type == "CustomOpOne"
+assert onnx_program.model_proto.graph.node[1].domain == "test.customop"
+assert onnx_program.model_proto.graph.node[1].op_type == "CustomOpTwo"
 
 
 ######################################################################
-# This is how ``custom_addandround_model`` ONNX graph looks using Netron:
+# This is how ``custom_addandround_model`` ONNX graph looks using Netron. 
+# We can see the two custom operators we used in the function (``CustomOpOne``, and ``CustomOpTwo``), 
+# and they are from module ``test.customop``:
 #
-# .. image:: /_static/img/onnx/custom_addandround_model.png
-#    :width: 70%
-#    :align: center
-#
-# Inside the ``custom_addandround`` function, we can see the two custom operators we
-# used in the function (``CustomOpOne``, and ``CustomOpTwo``), and they are from module
-# ``test.customop``:
-#
-# .. image:: /_static/img/onnx/custom_addandround_function.png
+# .. image:: /_static/img/onnx/custom_addandround.png
 #
 # Custom Ops Registration in ONNX Runtime
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
