@@ -7,8 +7,7 @@ Welcome to PyTorch Tutorials
 
 * `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
 
-* `Understanding the torch.export Flow and Solutions to Common Challenges
-<https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
+* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
 
 * Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
 
