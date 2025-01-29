@@ -419,10 +419,10 @@ Let us check the speed of pinning memory and sending tensors to CUDA:
 
  .. code-block:: none
 
-    pageable_tensor.to('cuda:0'):  0.4788 ms
-    pinned_tensor.to('cuda:0'):  0.3676 ms
-    pageable_tensor.pin_memory():  0.3999 ms
-    pageable_tensor.pin_memory().to('cuda:0'):  0.7670 ms
+    pageable_tensor.to('cuda:0'):  0.4673 ms
+    pinned_tensor.to('cuda:0'):  0.3699 ms
+    pageable_tensor.pin_memory():  0.3606 ms
+    pageable_tensor.pin_memory().to('cuda:0'):  0.7225 ms
 
 
 
@@ -520,8 +520,8 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 
  .. code-block:: none
 
-    copy_to_device(*tensors):  28.2707 ms
-    copy_to_device_nonblocking(*tensors):  20.5884 ms
+    copy_to_device(*tensors):  24.9422 ms
+    copy_to_device_nonblocking(*tensors):  18.1755 ms
 
 
 
@@ -577,14 +577,14 @@ Let's see the call stack with a regular ``to(device)`` first:
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                          Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         3.82%       1.268ms       100.00%      33.193ms      33.193us          1000  
-               aten::_to_copy        13.37%       4.437ms        96.18%      31.924ms      31.924us          1000  
-          aten::empty_strided        24.69%       8.197ms        24.69%       8.197ms       8.197us          1000  
-                  aten::copy_        19.07%       6.331ms        58.12%      19.290ms      19.290us          1000  
-              cudaMemcpyAsync        19.54%       6.487ms        19.54%       6.487ms       6.487us          1000  
-        cudaStreamSynchronize        19.50%       6.473ms        19.50%       6.473ms       6.473us          1000  
+                     aten::to         4.04%       1.203ms       100.00%      29.767ms      29.767us          1000  
+               aten::_to_copy        12.92%       3.847ms        95.96%      28.564ms      28.564us          1000  
+          aten::empty_strided        25.22%       7.507ms        25.22%       7.507ms       7.507us          1000  
+                  aten::copy_        17.88%       5.323ms        57.82%      17.210ms      17.210us          1000  
+              cudaMemcpyAsync        17.33%       5.158ms        17.33%       5.158ms       5.158us          1000  
+        cudaStreamSynchronize        22.61%       6.729ms        22.61%       6.729ms       6.729us          1000  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 33.193ms
+    Self CPU time total: 29.767ms
 
     Call to `to(device)` None
 
@@ -619,14 +619,14 @@ and now the ``non_blocking`` version:
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                          Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         4.93%       1.244ms        99.91%      25.189ms      25.189us          1000  
-               aten::_to_copy        15.50%       3.909ms        94.97%      23.945ms      23.945us          1000  
-          aten::empty_strided        31.30%       7.892ms        31.30%       7.892ms       7.892us          1000  
-                  aten::copy_        22.70%       5.724ms        48.17%      12.145ms      12.145us          1000  
-              cudaMemcpyAsync        25.47%       6.421ms        25.47%       6.421ms       6.421us          1000  
-        cudaDeviceSynchronize         0.09%      22.811us         0.09%      22.811us      22.811us             1  
+                     aten::to         5.06%       1.092ms        99.91%      21.571ms      21.571us          1000  
+               aten::_to_copy        16.59%       3.582ms        94.85%      20.479ms      20.479us          1000  
+          aten::empty_strided        32.71%       7.063ms        32.71%       7.063ms       7.063us          1000  
+                  aten::copy_        22.45%       4.847ms        45.55%       9.835ms       9.835us          1000  
+              cudaMemcpyAsync        23.10%       4.988ms        23.10%       4.988ms       4.988us          1000  
+        cudaDeviceSynchronize         0.09%      19.420us         0.09%      19.420us      19.420us             1  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 25.212ms
+    Self CPU time total: 21.591ms
 
     Call to `to(device, non_blocking=True)` None
 
@@ -753,12 +753,12 @@ somewhat large batches of large tensors:
 
  .. code-block:: none
 
-    copy_to_device(*tensors):  621.6326 ms
-    copy_to_device_nonblocking(*tensors):  545.0814 ms
-    copy_to_device(*tensors_pinned):  369.6418 ms
-    copy_to_device_nonblocking(*tensors_pinned):  342.5608 ms
-    pin_copy_to_device(*tensors):  1005.9473 ms
-    pin_copy_to_device_nonblocking(*tensors):  687.5084 ms
+    copy_to_device(*tensors):  606.8119 ms
+    copy_to_device_nonblocking(*tensors):  531.4648 ms
+    copy_to_device(*tensors_pinned):  370.1311 ms
+    copy_to_device_nonblocking(*tensors_pinned):  345.9141 ms
+    pin_copy_to_device(*tensors):  962.0658 ms
+    pin_copy_to_device_nonblocking(*tensors):  642.8277 ms
 
 
 
@@ -937,10 +937,10 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 
  .. code-block:: none
 
-    td.to('cuda:0', non_blocking=False):  629.6706 ms
-    td.to('cuda:0'):  557.5960 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=0):  701.8044 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=4):  357.2402 ms
+    td.to('cuda:0', non_blocking=False):  617.5535 ms
+    td.to('cuda:0'):  539.3094 ms
+    td.to('cuda:0', non_blocking_pin=True, num_threads=0):  653.2275 ms
+    td.to('cuda:0', non_blocking_pin=True, num_threads=4):  358.8865 ms
 
 
 
@@ -1037,7 +1037,7 @@ what was discussed in this tutorial, check the following references:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  19.098 seconds)
+   **Total running time of the script:** ( 1 minutes  17.442 seconds)
 
 
 .. _sphx_glr_download_intermediate_pinmem_nonblock.py:

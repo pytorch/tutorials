@@ -540,7 +540,7 @@ to download the full example code</p>
 <p>Transferring data from the CPU to the GPU is fundamental in many PyTorch applications.
 It’s crucial for users to understand the most effective tools and options available for moving data between devices.
 This tutorial examines two key methods for device-to-device data transfer in PyTorch:
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a> with the <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> option.</p>
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a> with the <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> option.</p>
 <div class="section" id="what-you-will-learn">
 <h3>What you will learn<a class="headerlink" href="#what-you-will-learn" title="Permalink to this heading">¶</a></h3>
 <p>Optimizing the transfer of tensors from the CPU to the GPU can be achieved through asynchronous transfers and memory
@@ -623,10 +623,10 @@ before making the transfer.</p>
 <div></div></blockquote>
 <p id="pinned-memory-async-sync">When executing a copy from a host (e.g., CPU) to a device (e.g., GPU), the CUDA toolkit offers modalities to do these
 operations synchronously or asynchronously with respect to the host.</p>
-<p>In practice, when calling <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a>, PyTorch always makes a call to
+<p>In practice, when calling <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a>, PyTorch always makes a call to
 <a class="reference external" href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g85073372f776b4c4d5f89f7124b7bf79">cudaMemcpyAsync</a>.
 If <code class="docutils literal notranslate"><span class="pre">non_blocking=False</span></code> (default), a <code class="docutils literal notranslate"><span class="pre">cudaStreamSynchronize</span></code> will be called after each and every <code class="docutils literal notranslate"><span class="pre">cudaMemcpyAsync</span></code>, making
-the call to <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a> blocking in the main thread.
+the call to <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to()</span></code></a> blocking in the main thread.
 If <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code>, no synchronization is triggered, and the main thread on the host is not blocked.
 Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously,
 as the thread does not need to wait for one transfer to be completed to initiate the other.</p>
@@ -640,7 +640,7 @@ As the following example will show, three requirements must be met to enable thi
 <li><p>The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
 Tesla, or H100 devices have more than one DMA engine.</p></li>
 <li><p>The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.cuda.Stream.html#torch.cuda.Stream" title="(in PyTorch v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></a>.</p></li>
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.cuda.Stream.html#torch.cuda.Stream" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></a>.</p></li>
 <li><p>The source data must be in pinned memory.</p></li>
 </ol>
 <p>We demonstrate this by running profiles on the following script.</p>
@@ -744,11 +744,11 @@ the main stream:</p>
 <blockquote>
 <div></div></blockquote>
 <p id="pinned-memory-pinned">PyTorch offers the possibility to create and send tensors to page-locked memory through the
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> method and constructor arguments.
-CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a>
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> method and constructor arguments.
+CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a>
 method. Importantly, <code class="docutils literal notranslate"><span class="pre">pin_memory</span></code> is blocking on the main thread of the host: it will wait for the tensor to be copied to
 page-locked memory before executing the next operation.
-New tensors can be directly created in pinned memory with functions like <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">zeros()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="(in PyTorch v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">ones()</span></code></a> and other
+New tensors can be directly created in pinned memory with functions like <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros" title="(in PyTorch v2.6)"><code class="xref py py-func docutils literal notranslate"><span class="pre">zeros()</span></code></a>, <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="(in PyTorch v2.6)"><code class="xref py py-func docutils literal notranslate"><span class="pre">ones()</span></code></a> and other
 constructors.</p>
 <p>Let us check the speed of pinning memory and sending tensors to CUDA:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
@@ -810,15 +810,15 @@ constructors.</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.4788 ms
-pinned_tensor.to('cuda:0'):  0.3676 ms
-pageable_tensor.pin_memory():  0.3999 ms
-pageable_tensor.pin_memory().to('cuda:0'):  0.7670 ms
+<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.4673 ms
+pinned_tensor.to('cuda:0'):  0.3699 ms
+pageable_tensor.pin_memory():  0.3606 ms
+pageable_tensor.pin_memory().to('cuda:0'):  0.7225 ms
 </pre></div>
 </div>
 <p>We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
 the hood, a pageable tensor must be copied to pinned memory before being sent to GPU.</p>
-<p>However, contrary to a somewhat common belief, calling <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> on a pageable tensor before
+<p>However, contrary to a somewhat common belief, calling <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> on a pageable tensor before
 casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just
 executing the transfer. This makes sense, since we’re actually asking Python to execute an operation that CUDA will
 perform anyway before copying the data from host to device.</p>
@@ -885,8 +885,8 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  28.2707 ms
-copy_to_device_nonblocking(*tensors):  20.5884 ms
+<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  24.9422 ms
+copy_to_device_nonblocking(*tensors):  18.1755 ms
 </pre></div>
 </div>
 <p>To get a better sense of what is happening here, let us profile these two functions:</p>
@@ -908,14 +908,14 @@ copy_to_device_nonblocking(*tensors):  20.5884 ms
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         3.82%       1.268ms       100.00%      33.193ms      33.193us          1000
-           aten::_to_copy        13.37%       4.437ms        96.18%      31.924ms      31.924us          1000
-      aten::empty_strided        24.69%       8.197ms        24.69%       8.197ms       8.197us          1000
-              aten::copy_        19.07%       6.331ms        58.12%      19.290ms      19.290us          1000
-          cudaMemcpyAsync        19.54%       6.487ms        19.54%       6.487ms       6.487us          1000
-    cudaStreamSynchronize        19.50%       6.473ms        19.50%       6.473ms       6.473us          1000
+                 aten::to         4.04%       1.203ms       100.00%      29.767ms      29.767us          1000
+           aten::_to_copy        12.92%       3.847ms        95.96%      28.564ms      28.564us          1000
+      aten::empty_strided        25.22%       7.507ms        25.22%       7.507ms       7.507us          1000
+              aten::copy_        17.88%       5.323ms        57.82%      17.210ms      17.210us          1000
+          cudaMemcpyAsync        17.33%       5.158ms        17.33%       5.158ms       5.158us          1000
+    cudaStreamSynchronize        22.61%       6.729ms        22.61%       6.729ms       6.729us          1000
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 33.193ms
+Self CPU time total: 29.767ms
 
 Call to `to(device)` None
 </pre></div>
@@ -931,14 +931,14 @@ Call to `to(device)` None
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         4.93%       1.244ms        99.91%      25.189ms      25.189us          1000
-           aten::_to_copy        15.50%       3.909ms        94.97%      23.945ms      23.945us          1000
-      aten::empty_strided        31.30%       7.892ms        31.30%       7.892ms       7.892us          1000
-              aten::copy_        22.70%       5.724ms        48.17%      12.145ms      12.145us          1000
-          cudaMemcpyAsync        25.47%       6.421ms        25.47%       6.421ms       6.421us          1000
-    cudaDeviceSynchronize         0.09%      22.811us         0.09%      22.811us      22.811us             1
+                 aten::to         5.06%       1.092ms        99.91%      21.571ms      21.571us          1000
+           aten::_to_copy        16.59%       3.582ms        94.85%      20.479ms      20.479us          1000
+      aten::empty_strided        32.71%       7.063ms        32.71%       7.063ms       7.063us          1000
+              aten::copy_        22.45%       4.847ms        45.55%       9.835ms       9.835us          1000
+          cudaMemcpyAsync        23.10%       4.988ms        23.10%       4.988ms       4.988us          1000
+    cudaDeviceSynchronize         0.09%      19.420us         0.09%      19.420us      19.420us             1
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 25.212ms
+Self CPU time total: 21.591ms
 
 Call to `to(device, non_blocking=True)` None
 </pre></div>
@@ -977,7 +977,7 @@ and <code class="docutils literal notranslate"><span class="pre">to(device)</spa
     <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 </div>
-<p>The benefits of using <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> are more pronounced for
+<p>The benefits of using <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> are more pronounced for
 somewhat large batches of large tensors:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1_000_000</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">)]</span>
 <span class="n">page_copy</span> <span class="o">=</span> <span class="n">timer</span><span class="p">(</span><span class="s2">"copy_to_device(*tensors)"</span><span class="p">)</span>
@@ -1024,12 +1024,12 @@ somewhat large batches of large tensors:</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  621.6326 ms
-copy_to_device_nonblocking(*tensors):  545.0814 ms
-copy_to_device(*tensors_pinned):  369.6418 ms
-copy_to_device_nonblocking(*tensors_pinned):  342.5608 ms
-pin_copy_to_device(*tensors):  1005.9473 ms
-pin_copy_to_device_nonblocking(*tensors):  687.5084 ms
+<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  606.8119 ms
+copy_to_device_nonblocking(*tensors):  531.4648 ms
+copy_to_device(*tensors_pinned):  370.1311 ms
+copy_to_device_nonblocking(*tensors_pinned):  345.9141 ms
+pin_copy_to_device(*tensors):  962.0658 ms
+pin_copy_to_device_nonblocking(*tensors):  642.8277 ms
 </pre></div>
 </div>
 </div>
@@ -1096,14 +1096,14 @@ isn’t in pinned memory.
 If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to
 pin memory manually from python main thread is a blocking operation on the host, and hence will annihilate much of
 the benefit of using <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> (as CUDA does the <cite>pin_memory</cite> transfer anyway).</p>
-<p>One might now legitimately ask what use there is for the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> method.
+<p>One might now legitimately ask what use there is for the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> method.
 In the following section, we will explore further how this can be used to accelerate the data transfer even more.</p>
 </div>
 <div class="section" id="additional-considerations">
 <h2>Additional considerations<a class="headerlink" href="#additional-considerations" title="Permalink to this heading">¶</a></h2>
 <blockquote>
 <div></div></blockquote>
-<p id="pinned-memory-considerations">PyTorch notoriously provides a <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code></a> class whose constructor accepts a
+<p id="pinned-memory-considerations">PyTorch notoriously provides a <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code></a> class whose constructor accepts a
 <code class="docutils literal notranslate"><span class="pre">pin_memory</span></code> argument.
 Considering our previous discussion on <code class="docutils literal notranslate"><span class="pre">pin_memory</span></code>, you might wonder how the <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> manages to
 accelerate data transfers if memory pinning is inherently blocking.</p>
@@ -1157,10 +1157,10 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  629.6706 ms
-td.to('cuda:0'):  557.5960 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=0):  701.8044 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=4):  357.2402 ms
+<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  617.5535 ms
+td.to('cuda:0'):  539.3094 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=0):  653.2275 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=4):  358.8865 ms
 </pre></div>
 </div>
 <p>In this example, we are transferring many large tensors from the CPU to the GPU.
@@ -1220,7 +1220,7 @@ overall performance of an algorithm.</p>
 <div></div></blockquote>
 <p id="pinned-memory-conclusion">Throughout this tutorial, we have explored several critical factors that influence transfer speeds and memory
 management when sending tensors from the host to the device. We’ve learned that using <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> generally
-accelerates data transfers, and that <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> can also enhance performance if implemented
+accelerates data transfers, and that <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory" title="(in PyTorch v2.6)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pin_memory()</span></code></a> can also enhance performance if implemented
 correctly. However, these techniques require careful design and calibration to be effective.</p>
 <p>Remember that profiling your code and keeping an eye on the memory consumption are essential to optimize resource
 usage and achieve the best possible performance.</p>
@@ -1237,7 +1237,7 @@ what was discussed in this tutorial, check the following references:</p>
 <li><p><a class="reference external" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">How to Optimize Data Transfers in CUDA C/C++</a>;</p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tensordict/stable/index.html">tensordict doc</a> and <a class="reference external" href="https://github.com/pytorch/tensordict">repo</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  19.098 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  17.442 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pinmem-nonblock-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/562d6bd0e2a429f010fcf8007f6a7cac/pinmem_nonblock.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pinmem_nonblock.py</span></code></a></p>
