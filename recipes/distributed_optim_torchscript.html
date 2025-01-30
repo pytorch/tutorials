@@ -109,8 +109,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -129,6 +129,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -175,6 +178,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -189,7 +196,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -590,12 +608,12 @@ underlying is using a different mechanisms to get gradients and update parameter
 gradients separately instead of directly populating the <code class="docutils literal notranslate"><span class="pre">param.grad</span></code> field during backward).
 Separating the computation allows distributed optimizer to enable the possibility of optimizer
 update in multithreaded mode, as it eliminates the possible race condition to <code class="docutils literal notranslate"><span class="pre">param.grad</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 
 
-<span class="k">def</span> <span class="nf">qhm_update</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">qhm_update</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
             <span class="n">dp_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
             <span class="n">momentum_buffer_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
             <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -624,14 +642,14 @@ the optimizer states and calls into the TorchScript compatible update function w
 Note that a few conventions are different from normal custom optimizers: 1. We don’t inherit
 <code class="docutils literal notranslate"><span class="pre">torch.optim.Optimizer</span></code> as TorchScript does not support polymorphism 2. <code class="docutils literal notranslate"><span class="pre">step</span></code> takes gradients
 list instead of the loss closure.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
 
 <span class="c1"># define this as a TorchScript class</span>
 <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
-<span class="k">class</span> <span class="nc">FunctionalQHM</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionalQHM</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                 <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
                 <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                 <span class="n">momentum</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -661,7 +679,7 @@ list instead of the loss closure.</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span> <span class="p">{})</span>
 
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradients</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradients</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_group</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
         <span class="n">params_with_grad</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">grads</span> <span class="o">=</span> <span class="p">[]</span>
@@ -697,7 +715,7 @@ list instead of the loss closure.</p>
 <p>Finally, we register our newly defined distributed functional optimizer into the <code class="docutils literal notranslate"><span class="pre">functional_optim_map</span></code>
 This is so that the <code class="docutils literal notranslate"><span class="pre">DistributedOptimizer</span></code> will try to pick up our custom implementation instead of the
 pre-defined default ones.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.optim</span> <span class="kn">import</span> <span class="n">DistributedOptimizer</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedOptimizer</span>
 
 <span class="n">DistributedOptimizer</span><span class="o">.</span><span class="n">functional_optim_map</span><span class="p">[</span><span class="n">QHM</span><span class="p">]</span> <span class="o">=</span> <span class="n">FunctionalQHM</span>
 </pre></div>
@@ -1030,7 +1048,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1042,6 +1060,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1074,6 +1095,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1084,6 +1108,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>

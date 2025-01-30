@@ -109,8 +109,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -129,6 +129,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -175,6 +178,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -189,7 +196,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -559,18 +577,18 @@ is able to record operations in the backward pass, so there is usually
 nothing to worry about when we save an input for backward as
 the input should have grad_fn if it is a function of any tensor
 that requires grad. This allows the gradients to be properly propagated.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="k">class</span> <span class="nc">Square</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Square</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="c1"># Because we are saving one of the inputs use `save_for_backward`</span>
         <span class="c1"># Save non-tensors and non-inputs/non-outputs directly on ctx</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
         <span class="c1"># A function support double backward automatically if autograd</span>
         <span class="c1"># is able to record the computations performed in backward</span>
         <span class="n">x</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
@@ -584,7 +602,7 @@ that requires grad. This allows the gradients to be properly propagated.</p>
 </pre></div>
 </div>
 <p>We can use torchviz to visualize the graph to see why this works</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchviz</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchviz</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">Square</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -601,10 +619,10 @@ And the graph of this function has been properly constructed</p>
 <p>A slight variation on the previous example is to save an output
 instead of input. The mechanics are similar because outputs are also
 associated with a grad_fn.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="c1"># Simple case where everything goes well</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="c1"># This time we save the output</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="c1"># Note that we should use `save_for_backward` here when</span>
@@ -613,7 +631,7 @@ associated with a grad_fn.</p>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
         <span class="n">result</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="k">return</span> <span class="n">result</span> <span class="o">*</span> <span class="n">grad_out</span>
 
@@ -647,9 +665,9 @@ Because forward is performed in no-grad mode, if an intermediate result
 of the forward pass is used to compute gradients in the backward pass
 the backward graph of the gradients would not include the operations
 that computed the intermediate result. This leads to incorrect gradients.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sinh</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Sinh</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">expx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">expnegx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">expx</span><span class="p">,</span> <span class="n">expnegx</span><span class="p">)</span>
@@ -658,7 +676,7 @@ that computed the intermediate result. This leads to incorrect gradients.</p>
         <span class="k">return</span> <span class="p">(</span><span class="n">expx</span> <span class="o">-</span> <span class="n">expnegx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">expx</span><span class="p">,</span> <span class="n">expnegx</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">,</span> <span class="n">_grad_out_exp</span><span class="p">,</span> <span class="n">_grad_out_negexp</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">,</span> <span class="n">_grad_out_exp</span><span class="p">,</span> <span class="n">_grad_out_negexp</span><span class="p">):</span>
         <span class="n">expx</span><span class="p">,</span> <span class="n">expnegx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="p">(</span><span class="n">expx</span> <span class="o">+</span> <span class="n">expnegx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="c1"># We cannot skip accumulating these even though we won't use the outputs</span>
@@ -667,7 +685,7 @@ that computed the intermediate result. This leads to incorrect gradients.</p>
         <span class="n">grad_input</span> <span class="o">-=</span> <span class="n">_grad_out_negexp</span> <span class="o">*</span> <span class="n">expnegx</span>
         <span class="k">return</span> <span class="n">grad_input</span>
 
-<span class="k">def</span> <span class="nf">sinh</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sinh</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="c1"># Create a wrapper that only returns the first output</span>
     <span class="k">return</span> <span class="n">Sinh</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -690,10 +708,10 @@ that computed the intermediate result. This leads to incorrect gradients.</p>
 results as outputs: <cite>grad_x</cite> would not even have a  backward graph
 because it is purely a function <cite>exp</cite> and <cite>expnegx</cite>, which don’t
 require grad.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SinhBad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SinhBad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="c1"># This is an example of what NOT to do!</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">expx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">expnegx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">expx</span> <span class="o">=</span> <span class="n">expx</span>
@@ -701,7 +719,7 @@ require grad.</p>
         <span class="k">return</span> <span class="p">(</span><span class="n">expx</span> <span class="o">-</span> <span class="n">expnegx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
         <span class="n">expx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">expx</span>
         <span class="n">expnegx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">expnegx</span>
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="p">(</span><span class="n">expx</span> <span class="o">+</span> <span class="n">expnegx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
@@ -726,37 +744,37 @@ non-PyTorch library like SciPy or NumPy, or written as a
 C++ extension. The workaround demonstrated here is to create another
 custom function CubeBackward where you also manually specify the
 backward of cube_backward!</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cube_forward</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cube_forward</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">3</span>
 
-<span class="k">def</span> <span class="nf">cube_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cube_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
 
-<span class="k">def</span> <span class="nf">cube_backward_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">sav_grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cube_backward_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">sav_grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="n">sav_grad_out</span> <span class="o">*</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">x</span>
 
-<span class="k">def</span> <span class="nf">cube_backward_backward_grad_out</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cube_backward_backward_grad_out</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
 
-<span class="k">class</span> <span class="nc">Cube</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cube</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cube_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
         <span class="n">x</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="k">return</span> <span class="n">CubeBackward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 
-<span class="k">class</span> <span class="nc">CubeBackward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CubeBackward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cube_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_out</span><span class="p">):</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">sav_grad_out</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="n">cube_backward_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">sav_grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
         <span class="n">dgrad_out</span> <span class="o">=</span> <span class="n">cube_backward_backward_grad_out</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
@@ -1095,7 +1113,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1107,6 +1125,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1139,6 +1160,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1149,6 +1173,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>

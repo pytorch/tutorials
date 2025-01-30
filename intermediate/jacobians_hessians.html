@@ -109,8 +109,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -129,6 +129,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -175,6 +178,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -189,7 +196,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -548,15 +566,15 @@ efficiently.</p>
 </div>
 <div class="section" id="computing-the-jacobian">
 <h2>Computing the Jacobian<a class="headerlink" href="#computing-the-jacobian" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">_</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s start with a function that we’d like to compute the jacobian of.
 This is a simple linear function with non-linear activation.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.linear.html#torch.nn.functional.linear" title="torch.nn.functional.linear"><span class="n">F</span><span class="o">.</span><span class="n">linear</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">)</span><span class="o">.</span><span class="n">tanh</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -571,7 +589,7 @@ This is a simple linear function with non-linear activation.</p>
 PyTorch Autograd computes vector-Jacobian products. In order to compute the full
 Jacobian of this <span class="math">\(R^D \to R^D\)</span> function, we would have to compute it row-by-row
 by using a different unit vector each time.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute_jac</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">xp</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_jac</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">xp</span></a><span class="p">):</span>
     <span class="n">jacobian_rows</span> <span class="o">=</span> <span class="p">[</span><a class="sphx-glr-backref-module-torch-autograd sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.autograd.grad.html#torch.autograd.grad" title="torch.autograd.grad"><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span></a><span class="p">(</span><span class="n">predict</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">xp</span></a><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">xp</span></a><span class="p">,</span> <span class="n">vec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                      <span class="k">for</span> <span class="n">vec</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">unit_vectors</span></a><span class="p">]</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.stack.html#torch.stack" title="torch.stack"><span class="n">torch</span><span class="o">.</span><span class="n">stack</span></a><span class="p">(</span><span class="n">jacobian_rows</span><span class="p">)</span>
@@ -595,7 +613,7 @@ tensor([-0.5956, -0.6096, -0.1326, -0.2295,  0.4490,  0.3661, -0.1672, -1.1190,
 computation. We can’t directly apply <code class="docutils literal notranslate"><span class="pre">vmap</span></code> to <code class="docutils literal notranslate"><span class="pre">torch.autograd.grad</span></code>;
 instead, PyTorch provides a <code class="docutils literal notranslate"><span class="pre">torch.func.vjp</span></code> transform that composes with
 <code class="docutils literal notranslate"><span class="pre">torch.vmap</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.vmap.html#torch.vmap" title="torch.vmap"><span class="n">vmap</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a>
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">_</span></a><span class="p">,</span> <span class="n">vjp_fn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">predict</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">),</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
 
@@ -615,7 +633,7 @@ interesting quantities.</p>
 the <code class="docutils literal notranslate"><span class="pre">vmap-vjp</span></code> composition to compute jacobians. <code class="docutils literal notranslate"><span class="pre">jacrev</span></code> accepts an <code class="docutils literal notranslate"><span class="pre">argnums</span></code>
 argument that says which argument we would like to compute Jacobians with
 respect to.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a>
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ft_jacobian</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a><span class="p">(</span><span class="n">predict</span><span class="p">,</span> <span class="n">argnums</span><span class="o">=</span><span class="mi">2</span><span class="p">)(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
 
@@ -632,7 +650,7 @@ and give better utilization of your hardware.</p>
 primitive operations in order to obtain better performance.</p>
 <p>Let’s make a quick function to evaluate performance and deal with
 microseconds and milliseconds measurements:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_perf</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">first_descriptor</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">second_descriptor</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_perf</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">first_descriptor</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">second_descriptor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""takes torch.benchmark objects and compares delta of second vs first."""</span>
     <span class="n">faster</span> <span class="o">=</span> <span class="n">second</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">slower</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -643,7 +661,7 @@ microseconds and milliseconds measurements:</p>
 </pre></div>
 </div>
 <p>And then run the performance comparison:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.benchmark</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">Timer</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.benchmark</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">Timer</span></a>
 
 <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">without_vmap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">Timer</span></a><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"compute_jac(xp)"</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
 <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">with_vmap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-timer sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.utils.timer.Timer"><span class="n">Timer</span></a><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"jacrev(predict, argnums=2)(weight, bias, x)"</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
@@ -655,13 +673,13 @@ microseconds and milliseconds measurements:</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">with_vmap_timer</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f9638bb8250&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb754cc34f0&gt;
 compute_jac(xp)
-  3.09 ms
+  3.01 ms
   1 measurement, 500 runs , 1 thread
-&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f9633644e80&gt;
+&lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb74c93fc10&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  764.39 us
+  774.17 us
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -669,7 +687,7 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">no_vmap_timer</span></a><span class="p">,</span> <span class="s2">"without vmap"</span><span class="p">,</span>  <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">with_vmap_timer</span></a><span class="p">,</span> <span class="s2">"vmap"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 75.2859 percent improvement with vmap
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 74.2836 percent improvement with vmap
 </pre></div>
 </div>
 <p>Furthermore, it’s pretty easy to flip the problem around and say we want to
@@ -699,7 +717,7 @@ forward-mode AD (which computes Jacobian-vector products), we are computing
 it column-by-column. The Jacobian matrix has M rows and N columns, so if it
 is taller or wider one way we may prefer the method that deals with fewer
 rows or columns.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacfwd.html#torch.func.jacfwd" title="torch.func.jacfwd"><span class="n">jacfwd</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacfwd.html#torch.func.jacfwd" title="torch.func.jacfwd"><span class="n">jacfwd</span></a>
 </pre></div>
 </div>
 <p>First, let’s benchmark with more inputs than outputs:</p>
@@ -724,13 +742,13 @@ rows or columns.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([2048, 32])
-jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f96e82f8b80&gt;
+jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb7810effd0&gt;
 jacfwd(predict, argnums=2)(weight, bias, x)
-  1.38 ms
+  1.40 ms
   1 measurement, 500 runs , 1 thread
-jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f96336fbeb0&gt;
+jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb74c67ead0&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  9.26 ms
+  7.71 ms
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -738,7 +756,7 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacfwd_timing</span></a><span class="p">,</span> <span class="s2">"jacfwd"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="p">,</span> <span class="s2">"jacrev"</span><span class="p">,</span> <span class="p">);</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 571.0015 percent improvement with jacrev
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 451.6432 percent improvement with jacrev
 </pre></div>
 </div>
 <p>and now the reverse - more outputs (M) than inputs (N):</p>
@@ -758,13 +776,13 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'jacrev time: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f9633646cb0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>jacfwd time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb74c6fbc70&gt;
 jacfwd(predict, argnums=2)(weight, bias, x)
-  6.64 ms
+  6.55 ms
   1 measurement, 500 runs , 1 thread
-jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f963373b070&gt;
+jacrev time: &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fb74c8e9f60&gt;
 jacrev(predict, argnums=2)(weight, bias, x)
-  871.77 us
+  905.70 us
   1 measurement, 500 runs , 1 thread
 </pre></div>
 </div>
@@ -772,7 +790,7 @@ jacrev(predict, argnums=2)(weight, bias, x)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacrev_timing</span></a><span class="p">,</span> <span class="s2">"jacrev"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">jacfwd_timing</span></a><span class="p">,</span> <span class="s2">"jacfwd"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 662.1370 percent improvement with jacfwd
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Performance delta: 623.0131 percent improvement with jacfwd
 </pre></div>
 </div>
 </div>
@@ -787,7 +805,7 @@ Indeed, under the hood, <code class="docutils literal notranslate"><span class="
 <p>Note: to boost performance: depending on your model, you may also want to
 use <code class="docutils literal notranslate"><span class="pre">jacfwd(jacfwd(f))</span></code> or <code class="docutils literal notranslate"><span class="pre">jacrev(jacrev(f))</span></code> instead to compute hessians
 leveraging the rule of thumb above regarding wider vs taller matrices.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.hessian.html#torch.func.hessian" title="torch.func.hessian"><span class="n">hessian</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.hessian.html#torch.func.hessian" title="torch.func.hessian"><span class="n">hessian</span></a>
 
 <span class="c1"># lets reduce the size in order not to overwhelm Colab. Hessians require</span>
 <span class="c1"># significant memory:</span>
@@ -841,7 +859,7 @@ a Jacobian of shape <code class="docutils literal notranslate"><span class="pre"
 certain that each input produces an independent output, then it’s also
 sometimes possible to do this without using <code class="docutils literal notranslate"><span class="pre">vmap</span></code> by summing the outputs
 and then computing the Jacobian of that function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict_with_output_summed</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">predict_with_output_summed</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
     <span class="k">return</span> <span class="n">predict</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">batch_jacobian1</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jacrev.html#torch.func.jacrev" title="torch.func.jacrev"><span class="n">jacrev</span></a><span class="p">(</span><span class="n">predict_with_output_summed</span><span class="p">,</span> <span class="n">argnums</span><span class="o">=</span><span class="mi">2</span><span class="p">)(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weight</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">bias</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span><span class="o">.</span><span class="n">movedim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -875,14 +893,14 @@ go through two (of many) different strategies to compute Hessian-vector products
 with reverse-mode) is generally the more memory efficient way to compute a
 hvp because forward-mode AD doesn’t need to construct an Autograd graph and
 save intermediates for backward:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.func</span> <span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jvp.html#torch.func.jvp" title="torch.func.jvp"><span class="n">jvp</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.grad.html#torch.func.grad" title="torch.func.grad"><span class="n">grad</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.func</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jvp.html#torch.func.jvp" title="torch.func.jvp"><span class="n">jvp</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.grad.html#torch.func.grad" title="torch.func.grad"><span class="n">grad</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a>
 
-<span class="k">def</span> <span class="nf">hvp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hvp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
   <span class="k">return</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.jvp.html#torch.func.jvp" title="torch.func.jvp"><span class="n">jvp</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.grad.html#torch.func.grad" title="torch.func.grad"><span class="n">grad</span></a><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Here’s some sample usage.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">):</span>
   <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="o">.</span><span class="n">sin</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
@@ -893,7 +911,7 @@ save intermediates for backward:</p>
 </div>
 <p>If PyTorch forward-AD does not have coverage for your operations, then we can
 instead compose reverse-mode AD with reverse-mode AD:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">hvp_revrev</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">hvp_revrev</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">primals</span><span class="p">,</span> <span class="n">tangents</span><span class="p">):</span>
   <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">_</span></a><span class="p">,</span> <span class="n">vjp_fn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.vjp.html#torch.func.vjp" title="torch.func.vjp"><span class="n">vjp</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-func sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.func.grad.html#torch.func.grad" title="torch.func.grad"><span class="n">grad</span></a><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="o">*</span><span class="n">primals</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">vjp_fn</span><span class="p">(</span><span class="o">*</span><span class="n">tangents</span><span class="p">)</span>
 
@@ -901,7 +919,7 @@ instead compose reverse-mode AD with reverse-mode AD:</p>
 <span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">,</span> <span class="n">result_hvp_revrev</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  12.353 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  11.553 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-jacobians-hessians-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/089b69a49b6eb4080d35c4b983b939a5/jacobians_hessians.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">jacobians_hessians.py</span></code></a></p>
@@ -1225,7 +1243,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1237,6 +1255,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1269,6 +1290,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1279,6 +1303,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>

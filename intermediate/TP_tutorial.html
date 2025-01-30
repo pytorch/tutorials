@@ -109,8 +109,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -129,6 +129,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -175,6 +178,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -189,7 +196,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -598,7 +616,7 @@ and convergence constraints. For example, Llama 2 global batch size is 1K, so da
 Tensor Parallelism is a Single-Program Multiple-Data (SPMD) sharding algorithm similar to PyTorch DDP/FSDP, and it under the hood leverages the PyTorch DTensor
 to perform sharding. It also utilizes the DeviceMesh abstraction (which under the hood manages ProcessGroups) for device management and sharding.
 To see how to utilize DeviceMesh to set up multi-dimensional parallelisms, please refer to <a class="reference external" href="https://pytorch.org/tutorials/recipes/distributed_device_mesh.html">this tutorial</a>. Tensor Parallel usually works within each host, so let us first initialize a DeviceMesh that connects 8 GPUs within a host.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.device_mesh</span> <span class="kn">import</span> <span class="n">init_device_mesh</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.device_mesh</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_device_mesh</span>
 
 <span class="n">tp_mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,))</span>
 </pre></div>
@@ -608,14 +626,14 @@ Here we focus on the core <code class="docutils literal notranslate"><span class
 <p>The core <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code> consists of an <code class="docutils literal notranslate"><span class="pre">Attention</span></code> layer and a <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> layer. Let us first look at the simpler <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> layer.
 For the <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> Layer it consists of three Linear layers, where it performs a SwiGLU style MLP, looking at its forward function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># forward in the FeedForward layer</span>
-<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w2</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">silu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w3</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>It performs <code class="docutils literal notranslate"><span class="pre">w1</span></code> and <code class="docutils literal notranslate"><span class="pre">w3</span></code> matmuls concurrently and followed by a <code class="docutils literal notranslate"><span class="pre">w2</span></code> matmul with the result of the combined w1/w3 linear projection results. This means we could
 use the idea from the Tensor Parallelism paper to shard the w1/w3 Linear layers in the colwise fashion and shard the <code class="docutils literal notranslate"><span class="pre">w2</span></code> Linear layer in the rowwise fashion, so that
 there is only one <code class="docutils literal notranslate"><span class="pre">allreduce</span></code> communication happening at the end of all the three layers. With the PyTorch native Tensor Parallel, we can simply create a <code class="docutils literal notranslate"><span class="pre">parallelize_plan</span></code> for the <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> layer like below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.tensor.parallel</span> <span class="kn">import</span> <span class="n">ColwiseParallel</span><span class="p">,</span> <span class="n">RowwiseParallel</span><span class="p">,</span> <span class="n">parallelize_module</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColwiseParallel</span><span class="p">,</span> <span class="n">RowwiseParallel</span><span class="p">,</span> <span class="n">parallelize_module</span>
 
 <span class="n">layer_tp_plan</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># by default ColwiseParallel input layouts is replicated</span>
@@ -687,7 +705,7 @@ Here is an example:</p>
 <p>Sequence Parallel works on top of the Tensor Parallel illustrated above. Compared with basic Tensor Parallel, which only shards tensors within the <code class="docutils literal notranslate"><span class="pre">Attention</span></code> modules and <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> modules and keep their module inputs and outputs (namely activations in the forward pass and gradients in the backward pass) replicated, Sequence Parallel keeps them sharded on the sequence dimension.</p>
 <p>In a typical <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code>, the forward function combines norm layers (<code class="docutils literal notranslate"><span class="pre">LayerNorm</span></code> or <code class="docutils literal notranslate"><span class="pre">RMSNorm</span></code>), an attention layer, a feed forward layer, and residual connections. For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># forward in a TransformerBlock</span>
-<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention_norm</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">h</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed_forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ffn_norm</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">out</span>
@@ -696,7 +714,7 @@ Here is an example:</p>
 <p>In most use cases, the activations (and gradients) are of the shape <code class="docutils literal notranslate"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">sequence</span> <span class="pre">length,</span> <span class="pre">hidden</span> <span class="pre">dimension]</span></code> outside the <code class="docutils literal notranslate"><span class="pre">Attention</span></code> and <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> modules. In the DTensor’s language, Sequence Parallel performs activation computation using the <code class="docutils literal notranslate"><span class="pre">Shard(1)</span></code> layout for both forward/backward of the module.
 Following the code example earlier, the code below demonstrates how we apply Sequence Parallel to the norm layers within a <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code>:</p>
 <p>First let’s import the required dependencies for Sequence Parallel:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.tensor.parallel</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">PrepareModuleInput</span><span class="p">,</span>
     <span class="n">SequenceParallel</span><span class="p">,</span>
 <span class="p">)</span>
@@ -776,8 +794,8 @@ This can be facilitated by explicitly specifying the output of the beginning <co
 </pre></div>
 </div>
 <p>In the code above, we also apply Sequence Parallel to the norm layer before output. We apply <code class="docutils literal notranslate"><span class="pre">use_local_output=False</span></code> to let the output stay as a DTensor, to work with the <code class="docutils literal notranslate"><span class="pre">loss_parallel</span></code> context manager. After that, one can simply call the cross_entropy loss function as is shown below. Note that the backward computation also needs to happen within the context.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.tensor.parallel</span> <span class="kn">import</span> <span class="n">loss_parallel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">loss_parallel</span>
 
 <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">loss_parallel</span><span class="p">():</span>
@@ -797,9 +815,9 @@ In practice, we usually apply Tensor Parallel within each host, and apply Fully 
 <p class="caption"><span class="caption-text">Figure 3. FSDP and TP work on separate device dimensions, FSDP communication happens inter-host and TP communication happens intra-host.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>This 2-D parallelism pattern can be easily expressed via a 2-D DeviceMesh, and we just need pass each “sub” DeviceMesh to each individual parallelism APIs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.device_mesh</span> <span class="kn">import</span> <span class="n">init_device_mesh</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.tensor.parallel</span> <span class="kn">import</span> <span class="n">ColwiseParallel</span><span class="p">,</span> <span class="n">RowwiseParallel</span><span class="p">,</span> <span class="n">parallelize_module</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.fsdp</span> <span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.device_mesh</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_device_mesh</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColwiseParallel</span><span class="p">,</span> <span class="n">RowwiseParallel</span><span class="p">,</span> <span class="n">parallelize_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
 
 <span class="c1"># i.e. 2-D mesh is [dp, tp], training on 64 GPUs that performs 8 way DP and 8 way TP</span>
 <span class="n">mesh_2d</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
@@ -1140,7 +1158,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1152,6 +1170,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1184,6 +1205,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1194,6 +1218,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>

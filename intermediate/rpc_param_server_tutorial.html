@@ -109,8 +109,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -129,6 +129,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -175,6 +178,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -189,7 +196,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -543,25 +561,25 @@
 <p>Using the Distributed RPC Framework, we’ll build an example where multiple trainers use RPC to communicate with the same parameter server and use <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef">RRef</a> to access states on the remote parameter server instance. Each trainer will launch its dedicated backward pass in a distributed fashion through stitching of the autograd graph across multiple nodes using distributed autograd.</p>
 <p><strong>Note</strong>: This tutorial covers the use of the Distributed RPC Framework, which is useful for splitting a model onto multiple machines, or for implementing a parameter-server training strategy where network trainers fetch parameters hosted on a different machine. If instead you are looking for replicating your model across many GPUs, please see the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">Distributed Data Parallel tutorial</a>. There is also another <a class="reference external" href="https://pytorch.org/tutorials/intermediate/rpc_tutorial.html">RPC tutorial</a> that covers reinforcement learning and RNN use cases.</p>
 <p>Let’s start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the <a class="reference external" href="https://github.com/pytorch/examples/tree/master/mnist">pytorch/examples repo</a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.distributed.autograd</span> <span class="k">as</span> <span class="nn">dist_autograd</span>
-<span class="kn">import</span> <span class="nn">torch.distributed.rpc</span> <span class="k">as</span> <span class="nn">rpc</span>
-<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.optim</span> <span class="kn">import</span> <span class="n">DistributedOptimizer</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed.autograd</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist_autograd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed.rpc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rpc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">optim</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedOptimizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
 
 <span class="c1"># --------- MNIST Network to train, from pytorch/examples -----</span>
 
-<span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using </span><span class="si">{</span><span class="n">num_gpus</span><span class="si">}</span><span class="s2"> GPUs to train"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_gpus</span> <span class="o">=</span> <span class="n">num_gpus</span>
@@ -581,7 +599,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">9216</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -608,7 +626,7 @@
 <span class="c1"># RRef. Other args are passed in as arguments to the function called.</span>
 <span class="c1"># Useful for calling instance methods. method could be any matching function, including</span>
 <span class="c1"># class methods.</span>
-<span class="k">def</span> <span class="nf">call_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">call_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="n">rref</span><span class="o">.</span><span class="n">local_value</span><span class="p">(),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <span class="c1"># Given an RRef, return the result of calling the passed in method on the value</span>
@@ -619,15 +637,15 @@
 <span class="c1"># &lt;foo_instance&gt;.bar(arg1, arg2) on the remote node and getting the result</span>
 <span class="c1"># back.</span>
 
-<span class="k">def</span> <span class="nf">remote_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">remote_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">(</span><span class="n">rref</span><span class="o">.</span><span class="n">owner</span><span class="p">(),</span> <span class="n">call_method</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, we’re ready to define our parameter server. We will subclass <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> and save a handle to our network defined above. We’ll also save an input device which will be the device our input is transferred to before invoking the model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># --------- Parameter Server --------------------</span>
-<span class="k">class</span> <span class="nc">ParameterServer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParameterServer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="n">num_gpus</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
@@ -636,9 +654,9 @@
 </pre></div>
 </div>
 <p>Next, we’ll define our forward pass. Note that regardless of the device of the model output, we move the output to CPU, as the Distributed RPC Framework currently only supports sending CPU tensors over RPC. We have intentionally disabled sending CUDA tensors over RPC due to the potential for different devices (CPU/GPU) on on the caller/callee, but may support this in future releases.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParameterServer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ParameterServer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
         <span class="n">inp</span> <span class="o">=</span> <span class="n">inp</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_device</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
         <span class="c1"># This output is forwarded over RPC, which as of 1.5.0 only accepts CPU tensors.</span>
@@ -650,7 +668,7 @@
 <p>Next, we’ll define a few miscellaneous functions useful for training and verification purposes. The first, <code class="docutils literal notranslate"><span class="pre">get_dist_gradients</span></code>, will take in a Distributed Autograd context ID and call into the <code class="docutils literal notranslate"><span class="pre">dist_autograd.get_gradients</span></code> API in order to retrieve gradients computed by distributed autograd. More information can be found in the <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#distributed-autograd-framework">distributed autograd documentation</a>. Note that we also iterate through the resulting dictionary and convert each tensor to a CPU tensor, as the framework currently only supports sending tensors over RPC. Next, <code class="docutils literal notranslate"><span class="pre">get_param_rrefs</span></code> will iterate through our model parameters and wrap them as a (local) <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef">RRef</a>. This method will be invoked over RPC by trainer nodes and will return a list of the parameters to be optimized. This is required as input to the <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim">Distributed Optimizer</a>, which requires all parameters it must optimize as a list of <code class="docutils literal notranslate"><span class="pre">RRef</span></code>s.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use dist autograd to retrieve gradients accumulated for this model.</span>
 <span class="c1"># Primarily used for verification.</span>
-<span class="k">def</span> <span class="nf">get_dist_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cid</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dist_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cid</span><span class="p">):</span>
     <span class="n">grads</span> <span class="o">=</span> <span class="n">dist_autograd</span><span class="o">.</span><span class="n">get_gradients</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span>
     <span class="c1"># This output is forwarded over RPC, which as of 1.5.0 only accepts CPU tensors.</span>
     <span class="c1"># Tensors must be moved in and out of GPU memory due to this.</span>
@@ -662,7 +680,7 @@
 
 <span class="c1"># Wrap local parameters in a RRef. Needed for building the</span>
 <span class="c1"># DistributedOptimizer which optimizes paramters remotely.</span>
-<span class="k">def</span> <span class="nf">get_param_rrefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_param_rrefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">param_rrefs</span> <span class="o">=</span> <span class="p">[</span><span class="n">rpc</span><span class="o">.</span><span class="n">RRef</span><span class="p">(</span><span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()]</span>
     <span class="k">return</span> <span class="n">param_rrefs</span>
 </pre></div>
@@ -674,7 +692,7 @@
 <span class="n">global_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">get_parameter_server</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_parameter_server</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns a singleton parameter server to all trainer processes</span>
 <span class="sd">    """</span>
@@ -686,7 +704,7 @@
             <span class="n">param_server</span> <span class="o">=</span> <span class="n">ParameterServer</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="n">num_gpus</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">param_server</span>
 
-<span class="k">def</span> <span class="nf">run_parameter_server</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_parameter_server</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
     <span class="c1"># The parameter server just acts as a host for the model and responds to</span>
     <span class="c1"># requests from trainers.</span>
     <span class="c1"># rpc.shutdown() will wait for all workers to complete by default, which</span>
@@ -706,8 +724,8 @@
 <span class="c1"># nn.Module corresponding to the network trained by this trainer. The</span>
 <span class="c1"># forward() method simply invokes the network on the given parameter</span>
 <span class="c1"># server.</span>
-<span class="k">class</span> <span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_gpus</span> <span class="o">=</span> <span class="n">num_gpus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">param_server_rref</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
@@ -715,9 +733,9 @@
 </pre></div>
 </div>
 <p>Next, we’ll define a method called <code class="docutils literal notranslate"><span class="pre">get_global_param_rrefs</span></code>. To motivate the need for this method, it is worth it to read through the documentation on <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim">DistributedOptimizer</a>, specifically the API signature.  The optimizer must be passed a list of <code class="docutils literal notranslate"><span class="pre">RRef</span></code>s corresponding to the remote parameters to be optimized, so here we obtain the necessary <code class="docutils literal notranslate"><span class="pre">RRef</span></code>s. Since the only remote worker that a given <code class="docutils literal notranslate"><span class="pre">TrainerNet</span></code> interacts with is the <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code>, we simply invoke a <code class="docutils literal notranslate"><span class="pre">remote_method</span></code> on the <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code>. We use the <code class="docutils literal notranslate"><span class="pre">get_param_rrefs</span></code> method which we defined in the <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code> class. This method will return a list of <code class="docutils literal notranslate"><span class="pre">RRef</span></code>s to the parameters that need to be optimized. Note that in this case our <code class="docutils literal notranslate"><span class="pre">TrainerNet</span></code> does not define its own paramaters; if it did, we would need to wrap each parameter in an <code class="docutils literal notranslate"><span class="pre">RRef</span></code> as well and include it into our input to <code class="docutils literal notranslate"><span class="pre">DistributedOptimizer</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">get_global_param_rrefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_global_param_rrefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">remote_params</span> <span class="o">=</span> <span class="n">remote_method</span><span class="p">(</span>
             <span class="n">ParameterServer</span><span class="o">.</span><span class="n">get_param_rrefs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">param_server_rref</span><span class="p">)</span>
@@ -725,9 +743,9 @@
 </pre></div>
 </div>
 <p>Now, we’re ready to define our <code class="docutils literal notranslate"><span class="pre">forward</span></code> method, which will invoke (synchronous) RPC to run the forward pass of the network defined on the <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code>. Note that we pass in <code class="docutils literal notranslate"><span class="pre">self.param_server_rref</span></code>, which is a remote handle to our <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code>, to our RPC call. This call will send an RPC to the node on which our <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code> is running, invoke the <code class="docutils literal notranslate"><span class="pre">forward</span></code> pass, and return the <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> corresponding to the model’s output.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TrainerNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">model_output</span> <span class="o">=</span> <span class="n">remote_method</span><span class="p">(</span>
             <span class="n">ParameterServer</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_server_rref</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">model_output</span>
@@ -735,7 +753,7 @@
 </div>
 <p>With our trainer fully defined, it’s now time to write our neural network training loop that will create our network and optimizer, run some inputs through the network and compute the loss. The training loop looks a lot like that of a local training program, with some modifications due to the nature of our network being distributed across machines.</p>
 <p>Below, we initialize our <code class="docutils literal notranslate"><span class="pre">TrainerNet</span></code> and build a <code class="docutils literal notranslate"><span class="pre">DistributedOptimizer</span></code>. Note that as mentioned above, we must pass in all of the global (across all nodes participating in distributed training) parameters that we want to be optimized. In addition, we pass in the local optimizer to be used, in this case, SGD. Note that we can configure the underlying optimizer algorithm in the same way as creating a local optimizer - all arguments for <code class="docutils literal notranslate"><span class="pre">optimizer.SGD</span></code> will be forwarded properly. As an example, we pass in a custom learning rate that will be used as the learning rate for all local optimizers.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training_loop</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">run_training_loop</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
     <span class="c1"># Runs the typical nueral network forward + backward + optimizer step, but</span>
     <span class="c1"># in a distributed fashion.</span>
     <span class="n">net</span> <span class="o">=</span> <span class="n">TrainerNet</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="n">num_gpus</span><span class="p">)</span>
@@ -746,7 +764,7 @@
 </div>
 <p>Next, we define our main training loop. We loop through iterables given by PyTorch’s <a class="reference external" href="https://pytorch.org/docs/stable/data.html">DataLoader</a>. Before writing our typical forward/backward/optimizer loop, we first wrap the logic within a <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html#torch.distributed.autograd.context">Distributed Autograd context</a>. Note that this is needed to record RPCs invoked in the model’s forward pass, so that an appropriate graph can be constructed which includes all participating distributed workers in the backward pass. The distributed autograd context returns a <code class="docutils literal notranslate"><span class="pre">context_id</span></code> which serves as an identifier for accumulating and optimizing gradients corresponding to a particular iteration.</p>
 <p>As opposed to calling the typical <code class="docutils literal notranslate"><span class="pre">loss.backward()</span></code> which would kick off the backward pass on this local worker, we call <code class="docutils literal notranslate"><span class="pre">dist_autograd.backward()</span></code> and pass in our context_id as well as <code class="docutils literal notranslate"><span class="pre">loss</span></code>, which is the root at which we want the backward pass to begin. In addition, we pass this <code class="docutils literal notranslate"><span class="pre">context_id</span></code> into our optimizer call, which is required to be able to look up the corresponding gradients computed by this particular backwards pass across all nodes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training_loop</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">run_training_loop</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
 <span class="o">...</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">dist_autograd</span><span class="o">.</span><span class="n">context</span><span class="p">()</span> <span class="k">as</span> <span class="n">cid</span><span class="p">:</span>
@@ -770,7 +788,7 @@
 </pre></div>
 </div>
 <p>The following simply computes the accuracy of our model after we’re done training, much like a traditional local model. However, note that the <code class="docutils literal notranslate"><span class="pre">net</span></code> we pass into this function above is an instance of <code class="docutils literal notranslate"><span class="pre">TrainerNet</span></code> and therefore the forward pass invokes RPC in a transparent fashion.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_accuracy</span><span class="p">(</span><span class="n">test_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_accuracy</span><span class="p">(</span><span class="n">test_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
     <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
     <span class="n">correct_sum</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="c1"># Use GPU to evaluate if possible</span>
@@ -789,7 +807,7 @@
 </div>
 <p>Next, similar to how we defined <code class="docutils literal notranslate"><span class="pre">run_parameter_server</span></code> as the main loop for our <code class="docutils literal notranslate"><span class="pre">ParameterServer</span></code> that is responsible for initializing RPC, let’s define a similar loop for our trainers. The difference will be that our trainers must run the training loop we defined above:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Main loop for trainers.</span>
-<span class="k">def</span> <span class="nf">run_worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Worker rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2"> initializing RPC"</span><span class="p">)</span>
     <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"trainer_</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
@@ -1194,7 +1212,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1206,6 +1224,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1238,6 +1259,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1248,6 +1272,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>

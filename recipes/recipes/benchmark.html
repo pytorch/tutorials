@@ -107,8 +107,8 @@
 <span class="dropdown-title">Developer Resources</span>
 <p>Find resources and get questions answered</p>
 </a>
-<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2023">
-<span class="dropdown-title">Contributor Awards - 2023</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/ecosystem/contributor-awards-2024">
+<span class="dropdown-title">Contributor Awards - 2024</span>
 <p>Award winners announced at this year's PyTorch Conference</p>
 </a>
 </div>
@@ -127,6 +127,9 @@
 <a class="nav-dropdown-item" href="https://pytorch.org/executorch-overview">
 <span class="dropdown-title">ExecuTorch</span>
 <p>End-to-end solution for enabling on-device inference capabilities across mobile and edge devices</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/executorch/stable/index.html">
+<span class="dropdown-title">ExecuTorch Docs</span>
 </a>
 </div>
 </div>
@@ -173,6 +176,10 @@
 <span class="dropdown-title">Events</span>
 <p>Find events, webinars, and podcasts</p>
 </a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+<p>Stay up-to-date with the latest updates</p>
+</a>
 </a></div>
 </div></li>
 <li>
@@ -187,7 +194,18 @@
 </a>
 <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
 <span class="dropdown-title">Governing Board</span>
-<p></p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact-us">
+<span class="dropdown-title">Contact Us</span>
 </a>
 </div>
 </div>
@@ -574,15 +592,15 @@ different code, generate input for benchmarking and more.</p>
 does not support batched mode, so we will compare two approaches to
 implementing it using existing <code class="docutils literal notranslate"><span class="pre">torch</span></code> operators: one approach uses a
 combination of <code class="docutils literal notranslate"><span class="pre">mul</span></code> and <code class="docutils literal notranslate"><span class="pre">sum</span></code> while the other reduces the problem to <code class="docutils literal notranslate"><span class="pre">bmm</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 
-<span class="k">def</span> <span class="nf">batched_dot_mul_sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">batched_dot_mul_sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Computes batched dot by multiplying and summing'''</span>
     <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">batched_dot_bmm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">batched_dot_bmm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Computes batched dot by reducing to ``bmm``'''</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
@@ -602,7 +620,7 @@ combination of <code class="docutils literal notranslate"><span class="pre">mul<
 <p>First, let’s benchmark the code using Python’s builtin <code class="docutils literal notranslate"><span class="pre">timeit</span></code> module.
 We keep the benchmark code simple here so we can compare the defaults
 of <code class="docutils literal notranslate"><span class="pre">timeit</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.utils.benchmark</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">timeit</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">timeit</span>
 
 <span class="n">t0</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span>
     <span class="n">stmt</span><span class="o">=</span><span class="s1">'batched_dot_mul_sum(x, x)'</span><span class="p">,</span>
@@ -632,7 +650,7 @@ of <code class="docutils literal notranslate"><span class="pre">timeit</span></c
 have used the <code class="docutils literal notranslate"><span class="pre">timeit</span></code> module before. However, its defaults make it
 easier and safer to use for benchmarking PyTorch code. Let’s first
 compare the same basic API as above.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.utils.benchmark</span> <span class="k">as</span> <span class="nn">benchmark</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.utils.benchmark</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">benchmark</span>
 
 <span class="n">t0</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">benchmark</span><span class="o">.</span><span class="n">Timer</span></a><span class="p">(</span>
     <span class="n">stmt</span><span class="o">=</span><span class="s1">'batched_dot_mul_sum(x, x)'</span><span class="p">,</span>
@@ -849,7 +867,7 @@ annotations described above (<cite>label</cite>, <cite>sub_label</cite>, <cite>n
 well as <cite>description</cite> to group and organize the table. Let’s use
 <code class="docutils literal notranslate"><span class="pre">Compare</span></code> to see how our functions perform for different input sizes
 and number of threads.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 
 <span class="c1"># Compare takes a list of measurements which we'll save in results.</span>
 <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
@@ -985,7 +1003,7 @@ The example below demonstrates how one might A/B test them. For
 simplicity, we only use a subset of shapes, and simply round trip
 results through pickle rather than actually using multiple environments
 and writing results to disk.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 
 <span class="n">ab_test_results</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">env</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'environment A: mul/sum'</span><span class="p">,</span> <span class="s1">'environment B: bmm'</span><span class="p">):</span>
@@ -1036,7 +1054,7 @@ However, creating all these input tensors can be tedious which is
 where <code class="docutils literal notranslate"><span class="pre">torch.utils.benchmark.Fuzzer</span></code> and related classes come in.
 Let’s take a look at how we can use the <code class="docutils literal notranslate"><span class="pre">Fuzzer</span></code> to create some test
 cases for the benchmark.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.benchmark</span> <span class="kn">import</span> <span class="n">Fuzzer</span><span class="p">,</span> <span class="n">FuzzedParameter</span><span class="p">,</span> <span class="n">FuzzedTensor</span><span class="p">,</span> <span class="n">ParameterAlias</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fuzzer</span><span class="p">,</span> <span class="n">FuzzedParameter</span><span class="p">,</span> <span class="n">FuzzedTensor</span><span class="p">,</span> <span class="n">ParameterAlias</span>
 
 <span class="c1"># Generates random tensors with 128 to 10000000 elements and sizes k0 and k1 chosen from a</span>
 <span class="c1"># ``loguniform`` distribution in [1, 10000], 40% of which will be discontiguous on average.</span>
@@ -1102,7 +1120,7 @@ is great for creating a powerful set of inputs to benchmark. But to
 make things even simpler, PyTorch benchmark module comes with some
 built-in <code class="docutils literal notranslate"><span class="pre">fuzzers</span></code> for common benchmarking needs. Let’s take a look at
 how we can use one of these built-in <code class="docutils literal notranslate"><span class="pre">fuzzers</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.benchmark.op_fuzzers</span> <span class="kn">import</span> <span class="n">binary</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.benchmark.op_fuzzers</span><span class="w"> </span><span class="kn">import</span> <span class="n">binary</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">tensors</span><span class="p">,</span> <span class="n">tensor_params</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">binary</span><span class="o">.</span><span class="n">BinaryOpFuzzer</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
@@ -1190,8 +1208,8 @@ in C++ is whether we should take arguments by value or reference.</p>
 
 <span class="c1"># PyTorch makes it easy to test our C++ implementations by providing a utility</span>
 <span class="c1"># to JIT compile C++ source into Python extensions:</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">torch.utils</span> <span class="kn">import</span> <span class="n">cpp_extension</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpp_extension</span>
 <span class="n">cpp_lib</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-cpp_extension sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.load_inline" title="torch.utils.cpp_extension.load_inline"><span class="n">cpp_extension</span><span class="o">.</span><span class="n">load_inline</span></a><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">'cpp_lib'</span><span class="p">,</span>
     <span class="n">cpp_sources</span><span class="o">=</span><span class="n">batched_dot_src</span><span class="p">,</span>
@@ -1214,8 +1232,8 @@ in C++ is whether we should take arguments by value or reference.</p>
 <span class="s2">cpp_lib = importlib.util.module_from_spec(spec)</span>
 <span class="s2">spec.loader.exec_module(cpp_lib)"""</span>
 
-<span class="kn">import</span> <span class="nn">textwrap</span>
-<span class="k">def</span> <span class="nf">pretty_print</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pretty_print</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Import machinery for ``cpp_lib.so`` can get repetitive to look at."""</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">module_import_str</span><span class="p">,</span> <span class="s2">"  "</span><span class="p">),</span> <span class="s2">"  import cpp_lib"</span><span class="p">))</span>
 
@@ -1686,7 +1704,7 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <a href="https://pytorch.org/resources">Developer Resources</a>
 </li>
 <li>
-<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2023</a>
+<a href="https://pytorch.org/ecosystem/contributor-awards-2023">Contributor Awards - 2024</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1698,6 +1716,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/executorch-overview">ExecuTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/executorch/stable/index.html">ExecuTorch Documentation</a>
 </li>
 </ul>
 <li class="resources-mobile-menu-title">
@@ -1730,6 +1751,9 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <li>
 <a href="https://pytorch.org/events">Events</a>
 </li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
 </ul>
 <li class="resources-mobile-menu-title">
 <a>About</a>
@@ -1740,6 +1764,18 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </li>
 <li>
 <a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact-us">Contact Us</a>
 </li>
 </ul>
 </ul>
