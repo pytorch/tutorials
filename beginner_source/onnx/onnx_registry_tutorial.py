@@ -81,7 +81,7 @@ class Model(torch.nn.Module):
         return torch.ops.aten.add.Tensor(input_x, input_y)
 
 
-# NOTE: The function signature (including param names) must match the signature of the unsupported PyTorch operator.
+# NOTE: The function signature (including parameter names) must match the signature of the unsupported PyTorch operator.
 # https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
 # All attributes must be annotated with type hints.
 def custom_aten_add(self, other, alpha: float = 1.0):
@@ -117,7 +117,7 @@ print(onnx_program.model)
 # comes first, and ``input_x`` comes second.
 #
 # We can use ONNX Runtime to run the model and verify the results by calling
-# the ONNXProgram directly on the input tensors.
+# the :class:`torch.onnx.ONNXProgram` directly on the input tensors.
 
 result = onnx_program(x, y)[0]
 torch.testing.assert_close(result, torch.tensor([3.0]))
@@ -141,10 +141,10 @@ class GeluModel(torch.nn.Module):
 
 
 # Create a namespace for the custom operator using ONNX Script
-# com.microsoft is an official ONNX Runtime namespace
+# ``com.microsoft`` is an official ONNX Runtime namespace
 microsoft_op = onnxscript.values.Opset(domain="com.microsoft", version=1)
 
-# NOTE: The function signature (including param names) must match the signature of the unsupported PyTorch operator.
+# NOTE: The function signature (including parameter names) must match the signature of the unsupported PyTorch operator.
 # https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml
 # NOTE: All attributes must be annotated with type hints.
 # The function must be scripted using the ``@onnxscript.script()`` decorator when
@@ -235,7 +235,7 @@ print(onnx_program)
 
 ######################################################################
 # The translation is using our custom implementation to translate the ``torch.ops.mylibrary.add_and_round_op.default``
-# operator in the ExportedProgram to the ONNX operator ``Add`` and ``Round``.
+# operator in the :class:`torch.export.ExportedProgram`` to the ONNX operator ``Add`` and ``Round``.
 #
 
 ######################################################################
@@ -268,3 +268,4 @@ torch.testing.assert_close(result, add_and_round_op(x))
 #
 # .. toctree::
 #    :hidden:
+#

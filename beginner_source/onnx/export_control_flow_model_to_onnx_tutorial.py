@@ -44,11 +44,11 @@ import torch
 #
 # Two models are defined:
 #
-# ForwardWithControlFlowTest: A model with a forward method containing an
+# ``ForwardWithControlFlowTest``: A model with a forward method containing an
 # if-else conditional.
 #
-# ModelWithControlFlowTest: A model that incorporates ForwardWithControlFlowTest
-# as part of a simple multi-layer perceptron (MLP). The models are tested with
+# ``ModelWithControlFlowTest``: A model that incorporates ``ForwardWithControlFlowTest``
+# as part of a simple MLP. The models are tested with
 # a random input tensor to confirm they execute as expected.
 
 class ForwardWithControlFlowTest(torch.nn.Module):
@@ -82,10 +82,10 @@ model = ModelWithControlFlowTest()
 # Exporting this model using torch.export.export fails because the control
 # flow logic in the forward pass creates a graph break that the exporter cannot
 # handle. This behavior is expected, as conditional logic not written using
-# torch.cond is unsupported.
+# :func:`torch.cond` is unsupported.
 # 
 # A try-except block is used to capture the expected failure during the export
-# process. If the export unexpectedly succeeds, an AssertionError is raised.
+# process. If the export unexpectedly succeeds, an ``AssertionError`` is raised.
 
 x = torch.randn(3)
 model(x)
@@ -97,10 +97,10 @@ except Exception as e:
     print(e)
 
 ###############################################################################
-# Using torch.onnx.export with JIT Tracing
+# Using :func:`torch.onnx.export` with JIT Tracing
 # ----------------------------------------
 #
-# When exporting the model using torch.onnx.export with the dynamo=True
+# When exporting the model using :func:`torch.onnx.export` with the dynamo=True
 # argument, the exporter defaults to using JIT tracing. This fallback allows
 # the model to export, but the resulting ONNX graph may not faithfully represent
 # the original model logic due to the limitations of tracing.
@@ -111,18 +111,18 @@ print(onnx_program.model)
 
 
 ###############################################################################
-# Suggested Patch: Refactoring with torch.cond
+# Suggested Patch: Refactoring with :func:`torch.cond`
 # --------------------------------------------
 #
 # To make the control flow exportable, the tutorial demonstrates replacing the
-# forward method in ForwardWithControlFlowTest with a refactored version that
-# uses torch.cond.
+# forward method in ``ForwardWithControlFlowTest`` with a refactored version that
+# uses :func:`torch.cond``.
 #
 # Details of the Refactoring:
 #
 # Two helper functions (identity2 and neg) represent the branches of the conditional logic:
-# * torch.cond is used to specify the condition and the two branches along with the input arguments.
-# * The updated forward method is then dynamically assigned to the ForwardWithControlFlowTest instance within the model. A list of submodules is printed to confirm the replacement.
+# * :func:`torch.cond`` is used to specify the condition and the two branches along with the input arguments.
+# * The updated forward method is then dynamically assigned to the ``ForwardWithControlFlowTest`` instance within the model. A list of submodules is printed to confirm the replacement.
 
 def new_forward(x):
     def identity2(x):
@@ -141,7 +141,7 @@ for name, mod in model.named_modules():
         mod.forward = new_forward
 
 ###############################################################################
-# Let's see what the fx graph looks like.
+# Let's see what the FX graph looks like.
 
 print(torch.export.export(model, (x,), strict=False))  
 
@@ -163,7 +163,7 @@ print(onnx_program.model)
 # ----------
 #
 # This tutorial demonstrates the challenges of exporting models with conditional
-# logic to ONNX and presents a practical solution using torch.cond.
+# logic to ONNX and presents a practical solution using :func:`torch.cond`.
 # While the default exporters may fail or produce imperfect graphs, refactoring the
 # model's logic ensures compatibility and generates a faithful ONNX representation.
 #
@@ -182,3 +182,4 @@ print(onnx_program.model)
 #
 # .. toctree::
 #    :hidden:
+#
