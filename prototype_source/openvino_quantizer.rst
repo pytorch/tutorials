@@ -3,6 +3,11 @@ PyTorch 2 Export Quantization for OpenVINO torch.compile backend.
 
 **Author**: dlyakhov, asuslov, aamir, # TODO: add required authors
 
+Prerequisites
+--------------
+- [PyTorch 2 Export Post Training Quantization](https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html)
+- [How to Write a Quantizer for PyTorch 2 Export Quantization](https://pytorch.org/tutorials/prototype/pt2e_quantizer.html)
+
 Introduction
 --------------
 
@@ -80,8 +85,7 @@ We will start by performing the necessary imports, capturing the FX Graph from t
     from torch.ao.quantization.quantize_pt2e import convert_pt2e
     from torch.ao.quantization.quantize_pt2e import prepare_pt2e
 
-    import nncf
-    from nncf.torch import disable_patching
+    import nncf.torch
 
     # Create the Eager Model
     model_name = "resnet18"
@@ -92,11 +96,11 @@ We will start by performing the necessary imports, capturing the FX Graph from t
 
     # Create the data, using the dummy data here as an example
     traced_bs = 50
-    x = torch.randn(traced_bs, 3, 224, 224).contiguous(memory_format=torch.channels_last)
+    x = torch.randn(traced_bs, 3, 224, 224)
     example_inputs = (x,)
 
     # Capture the FX Graph to be quantized
-    with torch.no_grad(), disable_patching():
+    with torch.no_grad(), nncf.torch.disable_patching():
         exported_model = torch.export.export(model, example_inputs).module()
 
 
@@ -193,7 +197,7 @@ After that the FX Graph can utilize OpenVINO optimizations using `torch.compile(
 
 .. code-block:: python
 
-    with torch.no_grad(), disable_patching():
+    with torch.no_grad(), nncf.torch.disable_patching():
         optimized_model = torch.compile(quantized_model, backend="openvino")
 
         # Running some benchmark
@@ -207,5 +211,6 @@ This should significantly speed up inference time in comparison with the eager m
 Conclusion
 ------------
 
-With this tutorial, we introduce how to use torch.compile with the OpenVINO backend and the OpenVINO quantizer.
-For further information, please visit `OpenVINO deployment via torch.compile documentation <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_.
+This tutorial introduces how to use torch.compile with the OpenVINO backend and the OpenVINO quantizer.
+For more details on NNCF and the NNCF Quantization Flow for PyTorch models, refer to the `NNCF Quantization Guide <https://docs.openvino.ai/2025/openvino-workflow/model-optimization-guide/quantizing-models-post-training/basic-quantization-flow.html.>`_.
+For additional information, check out the `OpenVINO Deployment via torch.compile Documentation <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_.
