@@ -3,7 +3,7 @@
 """
 torch.export Tutorial
 ===================================================
-**Author:** William Wen, Zhengxu Chen, Angela Yi
+**Author:** William Wen, Zhengxu Chen, Angela Yi, Pian Pawakapan
 """
 
 ######################################################################
@@ -11,7 +11,7 @@ torch.export Tutorial
 # .. warning::
 #
 #     ``torch.export`` and its related features are in prototype status and are subject to backwards compatibility
-#     breaking changes. This tutorial provides a snapshot of ``torch.export`` usage as of PyTorch 2.3.
+#     breaking changes. This tutorial provides a snapshot of ``torch.export`` usage as of PyTorch 2.5.
 #
 # :func:`torch.export` is the PyTorch 2.X way to export PyTorch models into
 # standardized model representations, intended
@@ -45,17 +45,18 @@ torch.export Tutorial
 # .. code-block:: python
 #
 #     export(
-#         f: Callable,
+#         mod: torch.nn.Module,
 #         args: Tuple[Any, ...],
 #         kwargs: Optional[Dict[str, Any]] = None,
 #         *,
 #         dynamic_shapes: Optional[Dict[str, Dict[int, Dim]]] = None
 #     ) -> ExportedProgram
 #
-# ``torch.export.export()`` traces the tensor computation graph from calling ``f(*args, **kwargs)``
+# ``torch.export.export()`` traces the tensor computation graph from calling ``mod(*args, **kwargs)``
 # and wraps it in an ``ExportedProgram``, which can be serialized or executed later with
-# different inputs. Note that while the output ``ExportedGraph`` is callable and can be
-# called in the same way as the original input callable, it is not a ``torch.nn.Module``.
+# different inputs. To execute the ``ExportedProgram`` we can call ``.module()``
+# on it to return a ``torch.nn.Module`` which is callable, just like the
+# original program.
 # We will detail the ``dynamic_shapes`` argument later in the tutorial.
 
 import torch
@@ -80,30 +81,15 @@ print(exported_mod.module()(torch.randn(8, 100), torch.randn(8, 100)))
 #
 # The ``graph`` attribute is an `FX graph <https://pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__
 # traced from the function we exported, that is, the computation graph of all PyTorch operations.
-# The FX graph has some important properties:
+# The FX graph is in "ATen IR" meaning that it contains only "ATen-level" operations.
 #
-# - The operations are "ATen-level" operations.
-# - The graph is "functionalized", meaning that no operations are mutations.
+# The ``graph_signature`` attribute gives a more detailed description of the
+# input and output nodes in the exported graph, describing which ones are
+# parameters, buffers, user inputs, or user outputs.
 #
-# The ``graph_module`` attribute is the ``GraphModule`` that wraps the ``graph`` attribute
-# so that it can be ran as a ``torch.nn.Module``.
+# The ``range_constraints`` attributes will be covered later.
 
 print(exported_mod)
-print(exported_mod.graph_module)
-
-######################################################################
-# The printed code shows that FX graph only contains ATen-level ops (such as ``torch.ops.aten``)
-# and that mutations were removed. For example, the mutating op ``torch.nn.functional.relu(..., inplace=True)``
-# is represented in the printed code by ``torch.ops.aten.relu.default``, which does not mutate.
-# Future uses of input to the original mutating ``relu`` op are replaced by the additional new output
-# of the replacement non-mutating ``relu`` op.
-#
-# Other attributes of interest in ``ExportedProgram`` include:
-#
-# - ``graph_signature`` -- the inputs, outputs, parameters, buffers, etc. of the exported graph.
-# - ``range_constraints`` -- constraints, covered later
-
-print(exported_mod.graph_signature)
 
 ######################################################################
 # See the ``torch.export`` `documentation <https://pytorch.org/docs/main/export.html#torch.export.export>`__
@@ -163,32 +149,16 @@ try:
 except Exception:
     tb.print_exc()
 
-######################################################################
-# - unsupported Python language features (e.g. throwing exceptions, match statements)
-
-class Bad4(torch.nn.Module):
-    def forward(self, x):
-        try:
-            x = x + 1
-            raise RuntimeError("bad")
-        except:
-            x = x + 2
-        return x
-
-try:
-    export(Bad4(), (torch.randn(3, 3),))
-except Exception:
-    tb.print_exc()
 
 ######################################################################
 # Non-Strict Export
 # -----------------
 #
-# To trace the program, ``torch.export`` uses TorchDynamo, a byte code analysis
-# engine, to symbolically analyze the Python code and build a graph based on the
-# results. This analysis allows ``torch.export`` to provide stronger guarantees
-# about safety, but not all Python code is supported, causing these graph
-# breaks.
+# To trace the program, ``torch.export`` uses TorchDynamo by default, a byte
+# code analysis engine, to symbolically analyze the Python code and build a
+# graph based on the results. This analysis allows ``torch.export`` to provide
+# stronger guarantees about safety, but not all Python code is supported,
+# causing these graph breaks.
 #
 # To address this issue, in PyTorch 2.3, we introduced a new mode of
 # exporting called non-strict mode, where we trace through the program using the
@@ -197,16 +167,6 @@ except Exception:
 # ``strict=False`` flag.
 #
 # Looking at some of the previous examples which resulted in graph breaks:
-#
-# - Accessing tensor data with ``.data`` now works correctly
-
-class Bad2(torch.nn.Module):
-    def forward(self, x):
-        x.data[0, 0] = 3
-        return x
-
-bad2_nonstrict = export(Bad2(), (torch.randn(3, 3),), strict=False)
-print(bad2_nonstrict.module()(torch.ones(3, 3)))
 
 ######################################################################
 # - Calling unsupported functions (such as many built-in functions) traces
@@ -223,22 +183,6 @@ bad3_nonstrict = export(Bad3(), (torch.randn(3, 3),), strict=False)
 print(bad3_nonstrict)
 print(bad3_nonstrict.module()(torch.ones(3, 3)))
 
-######################################################################
-# - Unsupported Python language features (such as throwing exceptions, match
-# statements) now also get traced through.
-
-class Bad4(torch.nn.Module):
-    def forward(self, x):
-        try:
-            x = x + 1
-            raise RuntimeError("bad")
-        except:
-            x = x + 2
-        return x
-
-bad4_nonstrict = export(Bad4(), (torch.randn(3, 3),), strict=False)
-print(bad4_nonstrict.module()(torch.ones(3, 3)))
-
 
 ######################################################################
 # However, there are still some features that require rewrites to the original
@@ -252,17 +196,16 @@ print(bad4_nonstrict.module()(torch.ones(3, 3)))
 # But these need to be expressed using control flow ops. For example,
 # we can fix the control flow example above using the ``cond`` op, like so:
 
-from functorch.experimental.control_flow import cond
-
 class Bad1Fixed(torch.nn.Module):
     def forward(self, x):
         def true_fn(x):
             return torch.sin(x)
         def false_fn(x):
             return torch.cos(x)
-        return cond(x.sum() > 0, true_fn, false_fn, [x])
+        return torch.cond(x.sum() > 0, true_fn, false_fn, [x])
 
 exported_bad1_fixed = export(Bad1Fixed(), (torch.randn(3, 3),))
+print(exported_bad1_fixed)
 print(exported_bad1_fixed.module()(torch.ones(3, 3)))
 print(exported_bad1_fixed.module()(-torch.ones(3, 3)))
 
@@ -280,288 +223,589 @@ print(exported_bad1_fixed.module()(-torch.ones(3, 3)))
 # For more details about ``cond``, check out the `cond documentation <https://pytorch.org/docs/main/cond.html>`__.
 
 ######################################################################
-# ..
-#     [NOTE] map is not documented at the moment
-#     We can also use ``map``, which applies a function across the first dimension
-#     of the first tensor argument.
-#
-#     from functorch.experimental.control_flow import map
-#
-#     def map_example(xs):
-#         def map_fn(x, const):
-#             def true_fn(x):
-#                 return x + const
-#             def false_fn(x):
-#                 return x - const
-#             return control_flow.cond(x.sum() > 0, true_fn, false_fn, [x])
-#         return control_flow.map(map_fn, xs, torch.tensor([2.0]))
-#
-#     exported_map_example= export(map_example, (torch.randn(4, 3),))
-#     inp = torch.cat((torch.ones(2, 3), -torch.ones(2, 3)))
-#     print(exported_map_example(inp))
+# We can also use ``map``, which applies a function across the first dimension
+# of the first tensor argument.
+
+from torch._higher_order_ops.map import map as torch_map
+
+class MapModule(torch.nn.Module):
+    def forward(self, xs, y, z):
+        def body(x, y, z):
+            return x + y + z
+
+        return torch_map(body, xs, y, z)
+
+inps = (torch.ones(6, 4), torch.tensor(5), torch.tensor(4))
+exported_map_example = export(MapModule(), inps)
+print(exported_map_example)
+print(exported_map_example.module()(*inps))
+
+######################################################################
+# Other control flow ops include ``while_loop``, ``associative_scan``, and
+# ``scan``. For more documentation on each operator, please refer to
+# `this page <https://github.com/pytorch/pytorch/tree/main/torch/_higher_order_ops>`__.
 
 ######################################################################
 # Constraints/Dynamic Shapes
 # --------------------------
 #
-# Ops can have different specializations/behaviors for different tensor shapes, so by default,
-# ``torch.export`` requires inputs to ``ExportedProgram`` to have the same shape as the respective
-# example inputs given to the initial ``torch.export.export()`` call.
-# If we try to run the ``ExportedProgram`` in the example below with a tensor
-# with a different shape, we get an error:
+# This section covers dynamic behavior and representation of exported programs. Dynamic behavior is
+# subjective to the particular model being exported, so for the most part of this tutorial, we'll focus
+# on this particular toy model (with the resulting tensor shapes annotated):
 
-class MyModule2(torch.nn.Module):
+class DynamicModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.lin = torch.nn.Linear(100, 10)
+        self.l = torch.nn.Linear(5, 3)
 
-    def forward(self, x, y):
-        return torch.nn.functional.relu(self.lin(x + y), inplace=True)
+    def forward(
+        self,
+        w: torch.Tensor,  # [6, 5]
+        x: torch.Tensor,  # [4]
+        y: torch.Tensor,  # [8, 4]
+        z: torch.Tensor,  # [32]
+    ):
+        x0 = x + y  # [8, 4]
+        x1 = self.l(w)  # [6, 3]
+        x2 = x0.flatten()  # [32]
+        x3 = x2 + z  # [32]
+        return x1, x3
 
-mod2 = MyModule2()
-exported_mod2 = export(mod2, (torch.randn(8, 100), torch.randn(8, 100)))
+######################################################################
+# By default, ``torch.export`` produces a static program. One consequence of this is that at runtime,
+# the program won't work on inputs with different shapes, even if they're valid in eager mode.
 
+w = torch.randn(6, 5)
+x = torch.randn(4)
+y = torch.randn(8, 4)
+z = torch.randn(32)
+model = DynamicModel()
+ep = export(model, (w, x, y, z))
+model(w, x, torch.randn(3, 4), torch.randn(12))
 try:
-    exported_mod2.module()(torch.randn(10, 100), torch.randn(10, 100))
+    ep.module()(w, x, torch.randn(3, 4), torch.randn(12))
 except Exception:
     tb.print_exc()
 
 ######################################################################
-# We can relax this constraint using the ``dynamic_shapes`` argument of
-# ``torch.export.export()``, which allows us to specify, using ``torch.export.Dim``
-# (`documentation <https://pytorch.org/docs/main/export.html#torch.export.Dim>`__),
-# which dimensions of the input tensors are dynamic.
+# Basic concepts: symbols and guards
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# For each tensor argument of the input callable, we can specify a mapping from the dimension
-# to a ``torch.export.Dim``.
-# A ``torch.export.Dim`` is essentially a named symbolic integer with optional
-# minimum and maximum bounds.
+# To enable dynamism, ``export()`` provides a ``dynamic_shapes`` argument. The easiest way to work with
+# dynamic shapes is using ``Dim.AUTO`` and looking at the program that's returned. Dynamic behavior is specified
+# at a input dimension-level; for each input we can specify a tuple of values:
+
+from torch.export.dynamic_shapes import Dim
+
+dynamic_shapes = {
+    "w": (Dim.AUTO, Dim.AUTO),
+    "x": (Dim.AUTO,),
+    "y": (Dim.AUTO, Dim.AUTO),
+    "z": (Dim.AUTO,),
+}
+ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+
+######################################################################
+# Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
+# and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
+# `allocated <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_,
+# taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or ``[1, inf]``? we'll explain later in the
+# 0/1 specialization section).
 #
-# Then, the format of ``torch.export.export()``'s ``dynamic_shapes`` argument is a mapping
-# from the input callable's tensor argument names, to dimension --> dim mappings as described above.
-# If there is no ``torch.export.Dim`` given to a tensor argument's dimension, then that dimension is
-# assumed to be static.
+# Export then runs model tracing, looking at each operation that's performed by the model. Each individual operation can emit
+# what's called "guards"; basically boolean condition that are required to be true for the program to be valid.
+# When guards involve symbols allocated for input dimensions, the program contains restrictions on what input shapes are valid;
+# i.e. the program's dynamic behavior. The symbolic shapes subsystem is the part responsible for taking in all the emitted guards
+# and producing a final program representation that adheres to all of these guards. Before we see this "final representation" in
+# an ``ExportedProgram``, let's look at the guards emitted by the toy model we're tracing.
 #
-# The first argument of ``torch.export.Dim`` is the name for the symbolic integer, used for debugging.
-# Then we can specify an optional minimum and maximum bound (inclusive). Below, we show a usage example.
+# Here, each forward input tensor is annotated with the symbol allocated at the start of tracing:
+
+class DynamicModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.l = torch.nn.Linear(5, 3)
+
+    def forward(
+        self,
+        w: torch.Tensor,  # [s0, s1]
+        x: torch.Tensor,  # [s2]
+        y: torch.Tensor,  # [s3, s4]
+        z: torch.Tensor,  # [s5]
+    ):
+        x0 = x + y  # guard: s2 == s4
+        x1 = self.l(w)  # guard: s1 == 5
+        x2 = x0.flatten()  # no guard added here
+        x3 = x2 + z  # guard: s3 * s4 == s5
+        return x1, x3
+
+######################################################################
+# Let's understand each of the operations and the emitted guards:
 #
-# In the example below, our input
-# ``inp1`` has an unconstrained first dimension, but the size of the second
-# dimension must be in the interval [4, 18].
+# - ``x0 = x + y``: This is an element-wise add with broadcasting, since ``x`` is a 1-d tensor and ``y`` a 2-d tensor. ``x`` is broadcasted along the last dimension of ``y``, emitting the guard ``s2 == s4``.
+# - ``x1 = self.l(w)``: Calling ``nn.Linear()`` performs a matrix multiplication with model parameters. In export, parameters, buffers, and constants are considered program state, which is considered static, and so this is a matmul between a dynamic input (``w: [s0, s1]``), and a statically-shaped tensor. This emits the guard ``s1 == 5``.
+# - ``x2 = x0.flatten()``: This call actually doesn't emit any guards! (at least none relevant to input shapes)
+# - ``x3 = x2 + z``: ``x2`` has shape ``[s3*s4]`` after flattening, and this element-wise add emits ``s3 * s4 == s5``.
+#
+# Writing all of these guards down and summarizing is almost like a mathematical proof, which is what the symbolic shapes
+# subsystem tries to do! In summary, we can conclude that the program must have the following input shapes to be valid:
+#
+# - ``w: [s0, 5]``
+# - ``x: [s2]``
+# - ``y: [s3, s2]``
+# - ``z: [s2*s3]``
+#
+# And when we do finally print out the exported program to see our result, those shapes are what we see annotated on the
+# corresponding inputs:
 
-from torch.export import Dim
+print(ep)
 
-inp1 = torch.randn(10, 10, 2)
+######################################################################
+# Another feature to notice is the range_constraints field above, which contains a valid range for each symbol. This isn't
+# so interesting currently, since this export call doesn't emit any guards related to symbol bounds and each base symbol has
+# a generic bound, but this will come up later.
+#
+# So far, because we've been exporting this toy model, this experience has not been representative of how hard
+# it typically is to debug dynamic shapes guards & issues. In most cases it isn't obvious what guards are being emitted,
+# and which operations and parts of user code are responsible. For this toy model we pinpoint the exact lines, and the guards
+# are rather intuitive.
+#
+# In more complicated cases, a helpful first step is always to enable verbose logging. This can be done either with the environment
+# variable ``TORCH_LOGS="+dynamic"``, or interactively with ``torch._logging.set_logs(dynamic=10)``:
 
-class DynamicShapesExample1(torch.nn.Module):
-    def forward(self, x):
-        x = x[:, 2:]
-        return torch.relu(x)
+torch._logging.set_logs(dynamic=10)
+ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 
-inp1_dim0 = Dim("inp1_dim0")
-inp1_dim1 = Dim("inp1_dim1", min=4, max=18)
-dynamic_shapes1 = {
-    "x": {0: inp1_dim0, 1: inp1_dim1},
+######################################################################
+# This spits out quite a handful, even with this simple toy model. The log lines here have been cut short at front and end
+# to ignore unnecessary info, but looking through the logs we can see the lines relevant to what we described above;
+# e.g. the allocation of symbols:
+
+"""
+create_symbol s0 = 6 for L['w'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+create_symbol s1 = 5 for L['w'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+runtime_assert True == True [statically known]
+create_symbol s2 = 4 for L['x'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+create_symbol s3 = 8 for L['y'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+create_symbol s4 = 4 for L['y'].size()[1] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+create_symbol s5 = 32 for L['z'].size()[0] [2, int_oo] (_dynamo/variables/builder.py:2841 in <lambda>)
+"""
+
+######################################################################
+# The lines with `create_symbol` show when a new symbol has been allocated, and the logs also identify the tensor variable names
+# and dimensions they've been allocated for. In other lines we can also see the guards emitted:
+
+"""
+runtime_assert Eq(s2, s4) [guard added] x0 = x + y  # output shape: [8, 4]  # dynamic_shapes_tutorial.py:16 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2, s4)"
+runtime_assert Eq(s1, 5) [guard added] x1 = self.l(w)  # [6, 3]  # dynamic_shapes_tutorial.py:17 in forward (_meta_registrations.py:2127 in meta_mm), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s1, 5)"
+runtime_assert Eq(s2*s3, s5) [guard added] x3 = x2 + z  # [32]  # dynamic_shapes_tutorial.py:19 in forward (_subclasses/fake_impls.py:845 in infer_size), for more info run with TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="Eq(s2*s3, s5)"
+"""
+
+######################################################################
+# Next to the ``[guard added]`` messages, we also see the responsible user lines of code - luckily here the model is simple enough.
+# In many real-world cases it's not so straightforward: high-level torch operations can have complicated fake-kernel implementations
+# or operator decompositions that complicate where and what guards are emitted. In such cases the best way to dig deeper and investigate
+# is to follow the logs' suggestion, and re-run with environment variable ``TORCHDYNAMO_EXTENDED_DEBUG_GUARD_ADDED="..."``, to further
+# attribute the guard of interest.
+#
+# ``Dim.AUTO`` is just one of the available options for interacting with ``dynamic_shapes``; as of writing this 2 other options are available:
+# ``Dim.DYNAMIC``, and ``Dim.STATIC``. ``Dim.STATIC`` simply marks a dimension static, while ``Dim.DYNAMIC`` is similar to ``Dim.AUTO`` in all
+# ways except one: it raises an error when specializing to a constant; this is designed to maintain dynamism. See for example what happens when a
+# static guard is emitted on a dynamically-marked dimension:
+
+dynamic_shapes["w"] = (Dim.AUTO, Dim.DYNAMIC)
+try:
+    export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# Static guards also aren't always inherent to the model; they can also come from user specifications. In fact, a common pitfall leading to shape
+# specializations is when the user specifies conflicting markers for equivalent dimensions; one dynamic and another static. The same error type is
+# raised when this is the case for ``x.shape[0]`` and ``y.shape[1]``:
+
+dynamic_shapes["w"] = (Dim.AUTO, Dim.AUTO)
+dynamic_shapes["x"] = (Dim.STATIC,)
+dynamic_shapes["y"] = (Dim.AUTO, Dim.DYNAMIC)
+try:
+    export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# Here you might ask why export "specializes", i.e. why we resolve this static/dynamic conflict by going with the static route. The answer is because
+# of the symbolic shapes system described above, of symbols and guards. When ``x.shape[0]`` is marked static, we don't allocate a symbol, and compile
+# treating this shape as a concrete integer 4. A symbol is allocated for ``y.shape[1]``, and so we finally emit the guard ``s3 == 4``, leading to
+# specialization.
+#
+# One feature of export is that during tracing, statements like asserts, ``torch._check()``, and ``if/else`` conditions will also emit guards.
+# See what happens when we augment the existing model with such statements:
+
+class DynamicModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.l = torch.nn.Linear(5, 3)
+
+    def forward(self, w, x, y, z):
+        assert w.shape[0] <= 512
+        torch._check(x.shape[0] >= 4)
+        if w.shape[0] == x.shape[0] + 2:
+            x0 = x + y
+            x1 = self.l(w)
+            x2 = x0.flatten()
+            x3 = x2 + z
+            return x1, x3
+        else:
+            return w
+
+dynamic_shapes = {
+    "w": (Dim.AUTO, Dim.AUTO),
+    "x": (Dim.AUTO,),
+    "y": (Dim.AUTO, Dim.AUTO),
+    "z": (Dim.AUTO,),
+}
+try:
+    ep = export(DynamicModel(), (w, x, y, z), dynamic_shapes=dynamic_shapes)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# Each of these statements emits an additional guard, and the exported program shows the changes; ``s0`` is eliminated in favor of ``s2 + 2``,
+# and ``s2`` now contains lower and upper bounds, reflected in ``range_constraints``.
+#
+# For the if/else condition, you might ask why the True branch was taken, and why it wasn't the ``w.shape[0] != x.shape[0] + 2`` guard that
+# got emitted from tracing. The answer is that export is guided by the sample inputs provided by tracing, and specializes on the branches taken.
+# If different sample input shapes were provided that fail the ``if`` condition, export would trace and emit guards corresponding to the ``else`` branch.
+# Additionally, you might ask why we traced only the ``if`` branch, and if it's possible to maintain control-flow in your program and keep both branches
+# alive. For that, refer to rewriting your model code following the ``Control Flow Ops`` section above.
+
+######################################################################
+# 0/1 specialization
+# ^^^^^^^^^^^^^^^^^^
+#
+# Since we're talking about guards and specializations, it's a good time to talk about the 0/1 specialization issue we brought up earlier.
+# The bottom line is that export will specialize on sample input dimensions with value 0 or 1, because these shapes have trace-time properties that
+# don't generalize to other shapes. For example, size 1 tensors can broadcast while other sizes fail; and size 0 ... . This just means that you should
+# specify 0/1 sample inputs when you'd like your program to hardcode them, and non-0/1 sample inputs when dynamic behavior is desirable. See what happens
+# at runtime when we export this linear layer:
+
+ep = export(
+    torch.nn.Linear(4, 3),
+    (torch.randn(1, 4),),
+    dynamic_shapes={
+        "input": (Dim.AUTO, Dim.STATIC),
+    },
+)
+try:
+    ep.module()(torch.randn(2, 4))
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# Named Dims
+# ^^^^^^^^^^
+#
+# So far we've only been talking about 3 ways to specify dynamic shapes: ``Dim.AUTO``, ``Dim.DYNAMIC``, and ``Dim.STATIC``. The attraction of these is the
+# low-friction user experience; all the guards emitted during model tracing are adhered to, and dynamic behavior like min/max ranges, relations, and static/dynamic
+# dimensions are automatically figured out underneath export. The dynamic shapes subsystem essentially acts as a "discovery" process, summarizing these guards
+# and presenting what export believes is the overall dynamic behavior of the program. The drawback of this design appears once the user has stronger expectations or
+# beliefs about the dynamic behavior of these models - maybe there is a strong desire on dynamism and specializations on particular dimensions are to be avoided at
+# all costs, or maybe we just want to catch changes in dynamic behavior with changes to the original model code, or possibly underlying decompositions or meta-kernels.
+# These changes won't be detected and the ``export()`` call will most likely succeed, unless tests are in place that check the resulting ``ExportedProgram`` representation.
+#
+# For such cases, our stance is to recommend the "traditional" way of specifying dynamic shapes, which longer-term users of export might be familiar with: named ``Dims``:
+
+dx = Dim("dx", min=4, max=256)
+dh = Dim("dh", max=512)
+dynamic_shapes = {
+    "x": (dx, None),
+    "y": (2 * dx, dh),
 }
 
-exported_dynamic_shapes_example1 = export(DynamicShapesExample1(), (inp1,), dynamic_shapes=dynamic_shapes1)
-
-print(exported_dynamic_shapes_example1.module()(torch.randn(5, 5, 2)))
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 1, 2))
-except Exception:
-    tb.print_exc()
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 20, 2))
-except Exception:
-    tb.print_exc()
-
-try:
-    exported_dynamic_shapes_example1.module()(torch.randn(8, 8, 3))
-except Exception:
-    tb.print_exc()
-
 ######################################################################
-# Note that if our example inputs to ``torch.export`` do not satisfy the constraints
-# given by ``dynamic_shapes``, then we get an error.
-
-inp1_dim1_bad = Dim("inp1_dim1_bad", min=11, max=18)
-dynamic_shapes1_bad = {
-    "x": {0: inp1_dim0, 1: inp1_dim1_bad},
-}
-
-try:
-    export(DynamicShapesExample1(), (inp1,), dynamic_shapes=dynamic_shapes1_bad)
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can enforce that equalities between dimensions of different tensors
-# by using the same ``torch.export.Dim`` object, for example, in matrix multiplication:
-
-inp2 = torch.randn(4, 8)
-inp3 = torch.randn(8, 2)
-
-class DynamicShapesExample2(torch.nn.Module):
-    def forward(self, x, y):
-        return x @ y
-
-inp2_dim0 = Dim("inp2_dim0")
-inner_dim = Dim("inner_dim")
-inp3_dim1 = Dim("inp3_dim1")
-
-dynamic_shapes2 = {
-    "x": {0: inp2_dim0, 1: inner_dim},
-    "y": {0: inner_dim, 1: inp3_dim1},
-}
-
-exported_dynamic_shapes_example2 = export(DynamicShapesExample2(), (inp2, inp3), dynamic_shapes=dynamic_shapes2)
-
-print(exported_dynamic_shapes_example2.module()(torch.randn(2, 16), torch.randn(16, 4)))
-
-try:
-    exported_dynamic_shapes_example2.module()(torch.randn(4, 8), torch.randn(4, 2))
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can also describe one dimension in terms of other. There are some
-# restrictions to how detailed we can specify one dimension in terms of another,
-# but generally, those in the form of ``A * Dim + B`` should work.
-
-class DerivedDimExample1(torch.nn.Module):
-    def forward(self, x, y):
-        return x + y[1:]
-
-foo = DerivedDimExample1()
-
-x, y = torch.randn(5), torch.randn(6)
-dimx = torch.export.Dim("dimx", min=3, max=6)
-dimy = dimx + 1
-derived_dynamic_shapes1 = ({0: dimx}, {0: dimy})
-
-derived_dim_example1 = export(foo, (x, y), dynamic_shapes=derived_dynamic_shapes1)
-
-print(derived_dim_example1.module()(torch.randn(4), torch.randn(5)))
-
-try:
-    derived_dim_example1.module()(torch.randn(4), torch.randn(6))
-except Exception:
-    tb.print_exc()
-
-
-class DerivedDimExample2(torch.nn.Module):
-    def forward(self, z, y):
-        return z[1:] + y[1::3]
-
-foo = DerivedDimExample2()
-
-z, y = torch.randn(4), torch.randn(10)
-dx = torch.export.Dim("dx", min=3, max=6)
-dz = dx + 1
-dy = dx * 3 + 1
-derived_dynamic_shapes2 = ({0: dz}, {0: dy})
-
-derived_dim_example2 = export(foo, (z, y), dynamic_shapes=derived_dynamic_shapes2)
-print(derived_dim_example2.module()(torch.randn(7), torch.randn(19)))
-
-######################################################################
-# We can actually use ``torch.export`` to guide us as to which ``dynamic_shapes`` constraints
-# are necessary. We can do this by relaxing all constraints (recall that if we
-# do not provide constraints for a dimension, the default behavior is to constrain
-# to the exact shape value of the example input) and letting ``torch.export``
-# error out.
-
-inp4 = torch.randn(8, 16)
-inp5 = torch.randn(16, 32)
-
-class DynamicShapesExample3(torch.nn.Module):
-    def forward(self, x, y):
-        if x.shape[0] <= 16:
-            return x @ y[:, :16]
-        return y
-
-dynamic_shapes3 = {
-    "x": {i: Dim(f"inp4_dim{i}") for i in range(inp4.dim())},
-    "y": {i: Dim(f"inp5_dim{i}") for i in range(inp5.dim())},
-}
-
-try:
-    export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3)
-except Exception:
-    tb.print_exc()
-
-######################################################################
-# We can see that the error message gives us suggested fixes to our
-# dynamic shape constraints. Let us follow those suggestions (exact
-# suggestions may differ slightly):
-
-def suggested_fixes():
-    inp4_dim1 = Dim('shared_dim')
-    # suggested fixes below
-    inp4_dim0 = Dim('inp4_dim0', max=16)
-    inp5_dim1 = Dim('inp5_dim1', min=17)
-    inp5_dim0 = inp4_dim1
-    # end of suggested fixes
-    return {
-        "x": {0: inp4_dim0, 1: inp4_dim1},
-        "y": {0: inp5_dim0, 1: inp5_dim1},
-    }
-
-dynamic_shapes3_fixed = suggested_fixes()
-exported_dynamic_shapes_example3 = export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
-print(exported_dynamic_shapes_example3.module()(torch.randn(4, 32), torch.randn(32, 64)))
-
-######################################################################
-# Note that in the example above, because we constrained the value of ``x.shape[0]`` in
-# ``dynamic_shapes_example3``, the exported program is sound even though there is a
-# raw ``if`` statement.
+# This style of dynamic shapes allows the user to specify what symbols are allocated for input dimensions, min/max bounds on those symbols, and places restrictions on the
+# dynamic behavior of the ``ExportedProgram`` produced; ``ConstraintViolation`` errors will be raised if model tracing emits guards that conflict with the relations or static/dynamic
+# specifications given. For example, in the above specification, the following is asserted:
 #
-# If you want to see why ``torch.export`` generated these constraints, you can
-# re-run the script with the environment variable ``TORCH_LOGS=dynamic,dynamo``,
-# or use ``torch._logging.set_logs``.
+# - ``x.shape[0]`` is to have range ``[4, 256]``, and related to ``y.shape[0]`` by ``y.shape[0] == 2 * x.shape[0]``.
+# - ``x.shape[1]`` is static.
+# - ``y.shape[1]`` has range ``[2, 512]``, and is unrelated to any other dimension.
+#
+# In this design, we allow relations between dimensions to be specified with univariate linear expressions: ``A * dim + B`` can be specified for any dimension. This allows users
+# to specify more complex constraints like integer divisibility for dynamic dimensions:
 
-import logging
-torch._logging.set_logs(dynamic=logging.INFO, dynamo=logging.INFO)
-exported_dynamic_shapes_example3 = export(DynamicShapesExample3(), (inp4, inp5), dynamic_shapes=dynamic_shapes3_fixed)
-
-# reset to previous values
-torch._logging.set_logs(dynamic=logging.WARNING, dynamo=logging.WARNING)
+dx = Dim("dx", min=4, max=512)
+dynamic_shapes = {
+    "x": (4 * dx, None)  # x.shape[0] has range [16, 2048], and is divisible by 4.
+}
 
 ######################################################################
-# We can view an ``ExportedProgram``'s symbolic shape ranges using the
-# ``range_constraints`` field.
+# Constraint violations, suggested fixes
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# One common issue with this specification style (before ``Dim.AUTO`` was introduced), is that the specification would often be mismatched with what was produced by model tracing.
+# That would lead to ``ConstraintViolation`` errors and export suggested fixes - see for example with this model & specification, where the model inherently requires equality between
+# dimensions 0 of ``x`` and ``y``, and requires dimension 1 to be static.
 
-print(exported_dynamic_shapes_example3.range_constraints)
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        w = x + y
+        return w + torch.ones(4)
+
+dx, dy, d1 = torch.export.dims("dx", "dy", "d1")
+try:
+    ep = export(
+        Foo(),
+        (torch.randn(6, 4), torch.randn(6, 4)),
+        dynamic_shapes={
+            "x": (dx, d1),
+            "y": (dy, d1),
+        },
+    )
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# The expectation with suggested fixes is that the user can interactively copy-paste the changes into their dynamic shapes specification, and successfully export afterwards.
+#
+# Lastly, there's couple nice-to-knows about the options for specification:
+#
+# - ``None`` is a good option for static behavior:
+#   - ``dynamic_shapes=None`` (default) exports with the entire model being static.
+#   - specifying ``None`` at an input-level exports with all tensor dimensions static, and is also required for non-tensor inputs.
+#   - specifying ``None`` at a dimension-level specializes that dimension, though this is deprecated in favor of ``Dim.STATIC``.
+# - specifying per-dimension integer values also produces static behavior, and will additionally check that the provided sample input matches the specification.
+#
+# These options are combined in the inputs & dynamic shapes spec below:
+
+inputs = (
+    torch.randn(4, 4),
+    torch.randn(3, 3),
+    16,
+    False,
+)
+dynamic_shapes = {
+    "tensor_0": (Dim.AUTO, None),
+    "tensor_1": None,
+    "int_val": None,
+    "bool_val": None,
+}
+
+######################################################################
+# Data-dependent errors
+# ---------------------
+#
+# While trying to export models, you have may have encountered errors like "Could not guard on data-dependent expression", or Could not extract specialized integer from data-dependent expression".
+# These errors exist because ``torch.export()`` compiles programs using FakeTensors, which symbolically represent their real tensor counterparts. While these have equivalent symbolic properties
+# (e.g. sizes, strides, dtypes), they diverge in that FakeTensors do not contain any data values. While this avoids unnecessary memory usage and expensive computation, it does mean that export may be
+# unable to out-of-the-box compile parts of user code where compilation relies on data values. In short, if the compiler requires a concrete, data-dependent value in order to proceed, it will error out,
+# complaining that the value is not available.
+#
+# Data-dependent values appear in many places, and common sources are calls like ``item()``, ``tolist()``, or ``torch.unbind()`` that extract scalar values from tensors.
+# How are these values represented in the exported program? In the `Constraints/Dynamic Shapes <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`_
+# section, we talked about allocating symbols to represent dynamic input dimensions.
+# The same happens here: we allocate symbols for every data-dependent value that appears in the program. The important distinction is that these are "unbacked" symbols,
+# in contrast to the "backed" symbols allocated for input dimensions. The `"backed/unbacked" <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_
+# nomenclature refers to the presence/absence of a "hint" for the symbol: a concrete value backing the symbol, that can inform the compiler on how to proceed.
+#
+# In the input shape symbol case (backed symbols), these hints are simply the sample input shapes provided, which explains why control-flow branching is determined by the sample input properties.
+# For data-dependent values, the symbols are taken from FakeTensor "data" during tracing, and so the compiler doesn't know the actual values (hints) that these symbols would take on.
+#
+# Let's see how these show up in exported programs:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        b = y.tolist()
+        return b + [a]
+
+inps = (
+    torch.tensor(1),
+    torch.tensor([2, 3]),
+)
+ep = export(Foo(), inps)
+print(ep)
+
+######################################################################
+# The result is that 3 unbacked symbols (notice they're prefixed with "u", instead of the usual "s" for input shape/backed symbols) are allocated and returned:
+# 1 for the ``item()`` call, and 1 for each of the elements of ``y`` with the ``tolist()`` call.
+# Note from the range constraints field that these take on ranges of ``[-int_oo, int_oo]``, not the default ``[0, int_oo]`` range allocated to input shape symbols,
+# since we have no information on what these values are - they don't represent sizes, so don't necessarily have positive values.
+
+######################################################################
+# Guards, torch._check()
+# ^^^^^^^^^^^^^^^^^^^^^^
+#
+# But the case above is easy to export, because the concrete values of these symbols aren't used in any compiler decision-making; all that's relevant is that the return values are unbacked symbols.
+# The data-dependent errors highlighted in this section are cases like the following, where `data-dependent guards <https://pytorch.org/docs/main/export.programming_model.html#control-flow-static-vs-dynamic>`_ are encountered:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        if a // 2 >= 5:
+            return y + 2
+        else:
+            return y * 5
+
+######################################################################
+# Here we actually need the "hint", or the concrete value of ``a`` for the compiler to decide whether to trace ``return y + 2`` or ``return y * 5`` as the output.
+# Because we trace with FakeTensors, we don't know what ``a // 2 >= 5`` actually evaluates to, and export errors out with "Could not guard on data-dependent expression ``u0 // 2 >= 5 (unhinted)``".
+#
+# So how do we export this toy model? Unlike ``torch.compile()``, export requires full graph compilation, and we can't just graph break on this. Here are some basic options:
+#
+# 1. Manual specialization: we could intervene by selecting the branch to trace, either by removing the control-flow code to contain only the specialized branch, or using ``torch.compiler.is_compiling()`` to guard what's traced at compile-time.
+# 2. ``torch.cond()``: we could rewrite the control-flow code to use ``torch.cond()`` so we don't specialize on a branch.
+#
+# While these options are valid, they have their pitfalls. Option 1 sometimes requires drastic, invasive rewrites of the model code to specialize, and ``torch.cond()`` is not a comprehensive system for handling data-dependent errors.
+# As we will see, there are data-dependent errors that do not involve control-flow.
+#
+# The generally recommended approach is to start with ``torch._check()`` calls. While these give the impression of purely being assert statements, they are in fact a system of informing the compiler on properties of symbols.
+# While a ``torch._check()`` call does act as an assertion at runtime, when traced at compile-time, the checked expression is sent to the symbolic shapes subsystem for reasoning, and any symbol properties that follow from the expression being true,
+# are stored as symbol properties (provided it's smart enough to infer those properties). So even if unbacked symbols don't have hints, if we're able to communicate properties that are generally true for these symbols via
+# ``torch._check()`` calls, we can potentially bypass data-dependent guards without rewriting the offending model code.
+#
+# For example in the model above, inserting ``torch._check(a >= 10)`` would tell the compiler that ``y + 2`` can always be returned, and ``torch._check(a == 4)`` tells it to return ``y * 5``.
+# See what happens when we re-export this model.
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        torch._check(a >= 10)
+        torch._check(a <= 60)
+        if a // 2 >= 5:
+            return y + 2
+        else:
+            return y * 5
+
+inps = (
+    torch.tensor(32),
+    torch.randn(4),
+)
+ep = export(Foo(), inps)
+print(ep)
+
+######################################################################
+# Export succeeds, and note from the range constraints field that ``u0`` takes on a range of ``[10, 60]``.
+#
+# So what information do ``torch._check()`` calls actually communicate? This varies as the symbolic shapes subsystem gets smarter, but at a fundamental level, these are generally true:
+#
+# 1. Equality with non-data-dependent expressions: ``torch._check()`` calls that communicate equalities like ``u0 == s0 + 4`` or ``u0 == 5``.
+# 2. Range refinement: calls that provide lower or upper bounds for symbols, like the above.
+# 3. Some basic reasoning around more complicated expressions: inserting ``torch._check(a < 4)`` will typically tell the compiler that ``a >= 4`` is false. Checks on complex expressions like ``torch._check(a ** 2 - 3 * a <= 10)`` will typically get you past identical guards.
+#
+# As mentioned previously, ``torch._check()`` calls have applicability outside of data-dependent control flow. For example, here's a model where ``torch._check()`` insertion
+# prevails while manual specialization & ``torch.cond()`` do not:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        return y[a]
+
+inps = (
+    torch.tensor(32),
+    torch.randn(60),
+)
+try:
+    export(Foo(), inps)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# Here is a scenario where ``torch._check()`` insertion is required simply to prevent an operation from failing. The export call will fail with
+# "Could not guard on data-dependent expression ``-u0 > 60``", implying that the compiler doesn't know if this is a valid indexing operation -
+# if the value of ``x`` is out-of-bounds for ``y`` or not. Here, manual specialization is too prohibitive, and ``torch.cond()`` has no place.
+# Instead, informing the compiler of ``u0``'s range is sufficient:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        torch._check(a >= 0)
+        torch._check(a < y.shape[0])
+        return y[a]
+
+inps = (
+    torch.tensor(32),
+    torch.randn(60),
+)
+ep = export(Foo(), inps)
+print(ep)
+
+######################################################################
+# Specialized values
+# ^^^^^^^^^^^^^^^^^^
+#
+# Another category of data-dependent error happens when the program attempts to extract a concrete data-dependent integer/float value
+# while tracing. This looks something like "Could not extract specialized integer from data-dependent expression", and is analogous to
+# the previous class of errors - if these occur when attempting to evaluate concrete integer/float values, data-dependent guard errors arise
+# with evaluating concrete boolean values.
+#
+# This error typically occurs when there is an explicit or implicit ``int()`` cast on a data-dependent expression. For example, this list comprehension
+# has a `range()` call that implicitly does an ``int()`` cast on the size of the list:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        b = torch.cat([y for y in range(a)], dim=0)
+        return b + int(a)
+
+inps = (
+    torch.tensor(32),
+    torch.randn(60),
+)
+try:
+    export(Foo(), inps, strict=False)
+except Exception:
+    tb.print_exc()
+
+######################################################################
+# For these errors, some basic options you have are:
+#
+# 1. Avoid unnecessary ``int()`` cast calls, in this case the ``int(a)`` in the return statement.
+# 2. Use ``torch._check()`` calls; unfortunately all you may be able to do in this case is specialize (with ``torch._check(a == 60)``).
+# 3. Rewrite the offending code at a higher level. For example, the list comprehension is semantically a ``repeat()`` op, which doesn't involve an ``int()`` cast. The following rewrite avoids data-dependent errors:
+
+class Foo(torch.nn.Module):
+    def forward(self, x, y):
+        a = x.item()
+        b = y.unsqueeze(0).repeat(a, 1)
+        return b + a
+
+inps = (
+    torch.tensor(32),
+    torch.randn(60),
+)
+ep = export(Foo(), inps, strict=False)
+print(ep)
+
+######################################################################
+# Data-dependent errors can be much more involved, and there are many more options in your toolkit to deal with them: ``torch._check_is_size()``, ``guard_size_oblivious()``, or real-tensor tracing, as starters.
+# For more in-depth guides, please refer to the `Export Programming Model <https://pytorch.org/docs/main/export.programming_model.html>`_,
+# or `Dealing with GuardOnDataDependentSymNode errors <https://docs.google.com/document/d/1HSuTTVvYH1pTew89Rtpeu84Ht3nQEFTYhAX3Ypa_xJs>`_.
 
 ######################################################################
 # Custom Ops
 # ----------
 #
-# ``torch.export`` can export PyTorch programs with custom operators.
+# ``torch.export`` can export PyTorch programs with custom operators. Please
+# refer to `this page <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__
+# on how to author a custom operator in either C++ or Python.
 #
-# Currently, the steps to register a custom op for use by ``torch.export`` are:
-#
-# - Define the custom op using ``torch.library`` (`reference <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__)
-#   as with any other custom op
+# The following is an example of registering a custom operator in python to be
+# used by ``torch.export``. The important thing to note is that the custom op
+# must have a `FakeTensor kernel <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit?tab=t.0#heading=h.xvrg7clz290>`__.
 
 @torch.library.custom_op("my_custom_library::custom_op", mutates_args={})
-def custom_op(input: torch.Tensor) -> torch.Tensor:
+def custom_op(x: torch.Tensor) -> torch.Tensor:
     print("custom_op called!")
     return torch.relu(x)
 
-######################################################################
-# - Define a ``"Meta"`` implementation of the custom op that returns an empty
-#   tensor with the same shape as the expected output
-
-@custom_op.register_fake 
+@custom_op.register_fake
 def custom_op_meta(x):
+    # Returns an empty tensor with the same shape as the expected output
     return torch.empty_like(x)
 
 ######################################################################
-# - Call the custom op from the code you want to export using ``torch.ops``
+# Here is an example of exporting a program with the custom op.
 
 class CustomOpExample(torch.nn.Module):
     def forward(self, x):
@@ -570,30 +814,27 @@ class CustomOpExample(torch.nn.Module):
         x = torch.cos(x)
         return x
 
-######################################################################
-# - Export the code as before
-
 exported_custom_op_example = export(CustomOpExample(), (torch.randn(3, 3),))
-exported_custom_op_example.graph_module.print_readable()
+print(exported_custom_op_example)
 print(exported_custom_op_example.module()(torch.randn(3, 3)))
 
 ######################################################################
-# Note in the above outputs that the custom op is included in the exported graph.
-# And when we call the exported graph as a function, the original custom op is called,
-# as evidenced by the ``print`` call.
-#
-# If you have a custom operator implemented in C++, please refer to
-# `this document <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz>`__
-# to make it compatible with ``torch.export``.
+# Note that in the ``ExportedProgram``, the custom operator is included in the graph.
 
 ######################################################################
-# Decompositions
-# --------------
+# IR/Decompositions
+# -----------------
 #
-# The graph produced by ``torch.export`` by default returns a graph containing
-# only functional ATen operators. This functional ATen operator set (or "opset") contains around 2000
-# operators, all of which are functional, that is, they do not
-# mutate or alias inputs.  You can find a list of all ATen operators
+# The graph produced by ``torch.export`` returns a graph containing only
+# `ATen operators <https://pytorch.org/cppdocs/#aten>`__, which are the
+# basic unit of computation in PyTorch. As there are over 3000 ATen operators,
+# export provides a way to narrow down the operator set used in the graph based
+# on certain characteristics, creating different IRs.
+#
+# By default, export produces the most generic IR which contains all ATen
+# operators, including both functional and non-functional operators. A functional
+# operator is one that does not contain any mutations or aliasing of the inputs.
+# You can find a list of all ATen operators
 # `here <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml>`__
 # and you can inspect if an operator is functional by checking
 # ``op._schema.is_mutable``, for example:
@@ -602,77 +843,78 @@ print(torch.ops.aten.add.Tensor._schema.is_mutable)
 print(torch.ops.aten.add_.Tensor._schema.is_mutable)
 
 ######################################################################
-# By default, the environment in which you want to run the exported graph
-# should support all ~2000 of these operators.
-# However, you can use the following API on the exported program
-# if your specific environment is only able to support a subset of
-# the ~2000 operators.
-#
-# .. code-block:: python
-#
-#     def run_decompositions(
-#         self: ExportedProgram,
-#         decomposition_table: Optional[Dict[torch._ops.OperatorBase, Callable]]
-#     ) -> ExportedProgram
-#
-# ``run_decompositions`` takes in a decomposition table, which is a mapping of
-# operators to a function specifying how to reduce, or decompose, that operator
-# into an equivalent sequence of other ATen operators.
-#
-# The default decomposition table for ``run_decompositions`` is the
-# `Core ATen decomposition table <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L252>`__
-# which will decompose the all ATen operators to the
-# `Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__
-# which consists of only ~180 operators.
+# This generic IR can be used to train in eager PyTorch Autograd. This IR can be
+# more explicitly reached through the API ``torch.export.export_for_training``,
+# which was introduced in PyTorch 2.5, but calling ``torch.export.export``
+# should produce the same graph as of PyTorch 2.6.
 
-class M(torch.nn.Module):
-    def __init__(self):
+class DecompExample(torch.nn.Module):
+    def __init__(self) -> None:
         super().__init__()
-        self.linear = torch.nn.Linear(3, 4)
+        self.conv = torch.nn.Conv2d(1, 3, 1, 1)
+        self.bn = torch.nn.BatchNorm2d(3)
 
     def forward(self, x):
-        return self.linear(x)
+        x = self.conv(x)
+        x = self.bn(x)
+        return (x,)
 
-ep = export(M(), (torch.randn(2, 3),))
-print(ep.graph)
-
-core_ir_ep = ep.run_decompositions()
-print(core_ir_ep.graph)
-
-######################################################################
-# Notice that after running ``run_decompositions`` the
-# ``torch.ops.aten.t.default`` operator, which is not part of the Core ATen
-# Opset, has been replaced with ``torch.ops.aten.permute.default`` which is part
-# of the Core ATen Opset.
-#
-# Most ATen operators already have decompositions, which are located
-# `here <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/decompositions.py>`__.
-# If you would like to use some of these existing decomposition functions,
-# you can pass in a list of operators you would like to decompose to the
-# `get_decompositions <https://github.com/pytorch/pytorch/blob/b460c3089367f3fadd40aa2cb3808ee370aa61e1/torch/_decomp/__init__.py#L191>`__
-# function, which will return a decomposition table using existing
-# decomposition implementations.
-
-class M(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.linear = torch.nn.Linear(3, 4)
-
-    def forward(self, x):
-        return self.linear(x)
-
-ep = export(M(), (torch.randn(2, 3),))
-print(ep.graph)
-
-from torch._decomp import get_decompositions
-decomp_table = get_decompositions([torch.ops.aten.t.default, torch.ops.aten.transpose.int])
-core_ir_ep = ep.run_decompositions(decomp_table)
-print(core_ir_ep.graph)
+ep_for_training = torch.export.export_for_training(DecompExample(), (torch.randn(1, 1, 3, 3),))
+print(ep_for_training.graph)
 
 ######################################################################
-# If there is no existing decomposition function for an ATen operator that you would
-# like to decompose, feel free to send a pull request into PyTorch
-# implementing the decomposition!
+# We can then lower this exported program to an operator set which only contains
+# functional ATen operators through the API ``run_decompositions``, which
+# decomposes the ATen operators into the ones specified in the decomposition
+# table, and functionalizes the graph. By specifying an empty set, we're only
+# performing functionalization, and does not do any additional decompositions.
+# This results in an IR which contains ~2000 operators (instead of the 3000
+# operators above), and is ideal for inference cases.
+
+ep_for_inference = ep_for_training.run_decompositions(decomp_table={})
+print(ep_for_inference.graph)
+
+######################################################################
+# As we can see, the previously mutable operator,
+# ``torch.ops.aten.add_.default`` has now been replaced with
+# ``torch.ops.aten.add.default``, a l operator.
+
+######################################################################
+# We can also further lower this exported program to an operator set which only
+# contains the
+# `Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__,
+# which is a collection of only ~180 operators. This IR is optimal for backends
+# who do not want to reimplement all ATen operators.
+
+from torch.export import default_decompositions
+
+core_aten_decomp_table = default_decompositions()
+core_aten_ep = ep_for_training.run_decompositions(decomp_table=core_aten_decomp_table)
+print(core_aten_ep.graph)
+
+######################################################################
+# We now see that ``torch.ops.aten.conv2d.default`` has been decomposed
+# into ``torch.ops.aten.convolution.default``. This is because ``convolution``
+# is a more "core" operator, as operations like ``conv1d`` and ``conv2d`` can be
+# implemented using the same op.
+
+######################################################################
+# We can also specify our own decomposition behaviors:
+
+my_decomp_table = torch.export.default_decompositions()
+
+def my_awesome_custom_conv2d_function(x, weight, bias, stride=[1, 1], padding=[0, 0], dilation=[1, 1], groups=1):
+    return 2 * torch.ops.aten.convolution(x, weight, bias, stride, padding, dilation, False, [0, 0], groups)
+
+my_decomp_table[torch.ops.aten.conv2d.default] = my_awesome_custom_conv2d_function
+my_ep = ep_for_training.run_decompositions(my_decomp_table)
+print(my_ep.graph)
+
+######################################################################
+# Notice that instead of ``torch.ops.aten.conv2d.default`` being decomposed
+# into ``torch.ops.aten.convolution.default``, it is now decomposed into
+# ``torch.ops.aten.convolution.default`` and ``torch.ops.aten.mul.Tensor``,
+# which matches our custom decomposition rule.
 
 ######################################################################
 # ExportDB
@@ -746,18 +988,18 @@ print(res)
 ######################################################################
 # .. code-block:: python
 #
-#    import torch._export
 #    import torch._inductor
 #
 #    # Note: these APIs are subject to change
-#    # Compile the exported program to a .so using ``AOTInductor``
+#    # Compile the exported program to a PT2 archive using ``AOTInductor``
 #    with torch.no_grad():
-#    so_path = torch._inductor.aot_compile(ep.module(), [inp])
+#        pt2_path = torch._inductor.aoti_compile_and_package(ep)
 #
 #    # Load and run the .so file in Python.
 #    # To load and run it in a C++ environment, see:
 #    # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
-#    res = torch._export.aot_load(so_path, device="cuda")(inp)
+#    aoti_compiled = torch._inductor.aoti_load_package(pt2_path)
+#    res = aoti_compiled(inp)
 
 ######################################################################
 # Conclusion

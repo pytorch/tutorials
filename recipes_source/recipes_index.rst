@@ -123,6 +123,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
+   :card_description: Learn how to use torch.compiler.set_stance
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compiler_set_stance_tutorial.html
+   :tags: Compiler
+
+.. customcarditem::
    :header: Reasoning about Shapes in PyTorch
    :card_description: Learn how to use the meta device to reason about shapes in your model.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -156,6 +163,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/torch_export_aoti_python.html
    :tags: Basics
+
+.. customcarditem::
+   :header: Demonstration of torch.export flow, common challenges and the solutions to address them
+   :card_description: Learn how to export models for popular usecases
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_export_challenges_solutions.html
+   :tags: Compiler,TorchCompile
 
 .. Interpretability
 
@@ -472,3 +486,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/distributed_optim_torchscript
    /recipes/mobile_interpreter
    /recipes/distributed_comm_debug_mode
+   /recipes/torch_export_challenges_solutions

@@ -3,13 +3,12 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Compiled Autograd: Capturing a larger backward graph for torch.compile <https://pytorch.org/tutorials/intermediate/compiled_autograd_tutorial>`__
-* `Reducing torch.compile cold start compilation time with regional compilation <https://pytorch.org/tutorials/recipes/regional_compilation.html>`__
-* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html>`__
-* `(prototype) Flight Recorder for Debugging Stuck Jobs <https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html>`__
-* `(prototype) How to use TorchInductor on Windows CPU <https://pytorch.org/tutorials/prototype/inductor_windows_cpu.html>`__
-* `(prototype) Using Max-Autotune Compilation on CPU for Better Performance <https://pytorch.org/tutorials/prototype/max_autotune_on_CPU_tutorial.html>`__
-* `(prototype) Autoloading Out-of-Tree Extension <https://pytorch.org/tutorials/prototype/python_extension_autoload.html>`__
+* `Dynamic Compilation Control with torch.compiler.set_stance <https://pytorch.org/tutorials/recipes/torch_compiler_set_stance_tutorial.html>`__
+* `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
+* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
+* Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
+* Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
+* Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
 
 .. raw:: html
 
@@ -397,14 +396,14 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. customcarditem::
-   :header: Python Custom Operators Landing Page
+   :header: PyTorch Custom Operators Landing Page
    :card_description: This is the landing page for all things related to custom operators in PyTorch.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/custom_ops_landing_page.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
-   :header: Python Custom Operators
+   :header: Custom Python Operators
    :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
@@ -426,14 +425,14 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
-   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
+   :card_description: Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
-   :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
+   :card_description: Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++

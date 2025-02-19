@@ -33,9 +33,9 @@ Key learnings:
 
   In the process, we will touch three crucial components of TorchRL:
 
-* `environments <https://pytorch.org/rl/reference/envs.html>`__
-* `transforms <https://pytorch.org/rl/reference/envs.html#transforms>`__
-* `models (policy and value function) <https://pytorch.org/rl/reference/modules.html>`__
+* `environments <https://pytorch.org/rl/stable/reference/envs.html>`__
+* `transforms <https://pytorch.org/rl/stable/reference/envs.html#transforms>`__
+* `models (policy and value function) <https://pytorch.org/rl/stable/reference/modules.html>`__
 
 """
 
@@ -384,7 +384,7 @@ def _reset(self, tensordict):
 # convenient shortcuts to the content of the output and input spec containers.
 #
 # TorchRL offers multiple :class:`~torchrl.data.TensorSpec`
-# `subclasses <https://pytorch.org/rl/reference/data.html#tensorspec>`_ to
+# `subclasses <https://pytorch.org/rl/stable/reference/data.html#tensorspec>`_ to
 # encode the environment's input and output characteristics.
 #
 # Specs shape
@@ -604,7 +604,7 @@ env = TransformedEnv(
     env,
     # ``Unsqueeze`` the observations that we will concatenate
     UnsqueezeTransform(
-        unsqueeze_dim=-1,
+        dim=-1,
         in_keys=["th", "thdot"],
         in_keys_inv=["th", "thdot"],
     ),
