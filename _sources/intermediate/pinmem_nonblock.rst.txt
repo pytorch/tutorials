@@ -136,7 +136,7 @@ Asynchronous vs. Synchronous Operations with ``non_blocking=True`` (CUDA ``cudaM
 
   .. _pinned_memory_async_sync:
 
-When executing a copy from a host (e.g., CPU) to a device (e.g., GPU), the CUDA toolkit offers modalities to do these
+When executing a copy from a host (such as, CPU) to a device (such as, GPU), the CUDA toolkit offers modalities to do these
 operations synchronously or asynchronously with respect to the host.
 
 In practice, when calling :meth:`~torch.Tensor.to`, PyTorch always makes a call to
@@ -419,10 +419,10 @@ Let us check the speed of pinning memory and sending tensors to CUDA:
 
  .. code-block:: none
 
-    pageable_tensor.to('cuda:0'):  0.4688 ms
-    pinned_tensor.to('cuda:0'):  0.3729 ms
-    pageable_tensor.pin_memory():  0.3623 ms
-    pageable_tensor.pin_memory().to('cuda:0'):  0.7267 ms
+    pageable_tensor.to('cuda:0'):  0.4858 ms
+    pinned_tensor.to('cuda:0'):  0.3751 ms
+    pageable_tensor.pin_memory():  0.3941 ms
+    pageable_tensor.pin_memory().to('cuda:0'):  0.7615 ms
 
 
 
@@ -520,8 +520,8 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 
  .. code-block:: none
 
-    copy_to_device(*tensors):  26.9607 ms
-    copy_to_device_nonblocking(*tensors):  19.6101 ms
+    copy_to_device(*tensors):  28.5258 ms
+    copy_to_device_nonblocking(*tensors):  21.3208 ms
 
 
 
@@ -577,14 +577,14 @@ Let's see the call stack with a regular ``to(device)`` first:
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                          Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         3.74%       1.203ms       100.00%      32.181ms      32.181us          1000  
-               aten::_to_copy        13.68%       4.402ms        96.26%      30.978ms      30.978us          1000  
-          aten::empty_strided        24.77%       7.970ms        24.77%       7.970ms       7.970us          1000  
-                  aten::copy_        18.44%       5.934ms        57.82%      18.605ms      18.605us          1000  
-              cudaMemcpyAsync        17.62%       5.669ms        17.62%       5.669ms       5.669us          1000  
-        cudaStreamSynchronize        21.76%       7.003ms        21.76%       7.003ms       7.003us          1000  
+                     aten::to         4.20%       1.470ms       100.00%      35.023ms      35.023us          1000  
+               aten::_to_copy        13.43%       4.703ms        95.80%      33.553ms      33.553us          1000  
+          aten::empty_strided        24.43%       8.556ms        24.43%       8.556ms       8.556us          1000  
+                  aten::copy_        18.84%       6.598ms        57.95%      20.295ms      20.295us          1000  
+              cudaMemcpyAsync        19.38%       6.789ms        19.38%       6.789ms       6.789us          1000  
+        cudaStreamSynchronize        19.72%       6.908ms        19.72%       6.908ms       6.908us          1000  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 32.181ms
+    Self CPU time total: 35.023ms
 
     Call to `to(device)` None
 
@@ -619,14 +619,14 @@ and now the ``non_blocking`` version:
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
                          Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         4.68%       1.123ms        99.90%      23.996ms      23.996us          1000  
-               aten::_to_copy        17.47%       4.196ms        95.22%      22.873ms      22.873us          1000  
-          aten::empty_strided        32.60%       7.831ms        32.60%       7.831ms       7.831us          1000  
-                  aten::copy_        22.05%       5.297ms        45.15%      10.846ms      10.846us          1000  
-              cudaMemcpyAsync        23.10%       5.549ms        23.10%       5.549ms       5.549us          1000  
-        cudaDeviceSynchronize         0.10%      24.911us         0.10%      24.911us      24.911us             1  
+                     aten::to         5.21%       1.366ms        99.90%      26.216ms      26.216us          1000  
+               aten::_to_copy        16.96%       4.450ms        94.70%      24.850ms      24.850us          1000  
+          aten::empty_strided        31.50%       8.267ms        31.50%       8.267ms       8.267us          1000  
+                  aten::copy_        21.50%       5.643ms        46.23%      12.133ms      12.133us          1000  
+              cudaMemcpyAsync        24.73%       6.490ms        24.73%       6.490ms       6.490us          1000  
+        cudaDeviceSynchronize         0.10%      25.551us         0.10%      25.551us      25.551us             1  
     -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 24.021ms
+    Self CPU time total: 26.242ms
 
     Call to `to(device, non_blocking=True)` None
 
@@ -753,17 +753,17 @@ somewhat large batches of large tensors:
 
  .. code-block:: none
 
-    copy_to_device(*tensors):  612.0971 ms
-    copy_to_device_nonblocking(*tensors):  537.7727 ms
-    copy_to_device(*tensors_pinned):  374.0692 ms
-    copy_to_device_nonblocking(*tensors_pinned):  347.7238 ms
-    pin_copy_to_device(*tensors):  968.0525 ms
-    pin_copy_to_device_nonblocking(*tensors):  647.8676 ms
+    copy_to_device(*tensors):  622.4433 ms
+    copy_to_device_nonblocking(*tensors):  545.6987 ms
+    copy_to_device(*tensors_pinned):  374.6710 ms
+    copy_to_device_nonblocking(*tensors_pinned):  346.7168 ms
+    pin_copy_to_device(*tensors):  977.8953 ms
+    pin_copy_to_device_nonblocking(*tensors):  687.8764 ms
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 508-520
+.. GENERATED FROM PYTHON SOURCE LINES 508-527
 
 Other copy directions (GPU -> CPU, CPU -> MPS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -772,16 +772,96 @@ Other copy directions (GPU -> CPU, CPU -> MPS)
 
 Until now, we have operated under the assumption that asynchronous copies from the CPU to the GPU are safe.
 This is generally true because CUDA automatically handles synchronization to ensure that the data being accessed is
-valid at read time.
-However, this guarantee does not extend to transfers in the opposite direction, from GPU to CPU.
-Without explicit synchronization, these transfers offer no assurance that the copy will be complete at the time of
-data access. Consequently, the data on the host might be incomplete or incorrect, effectively rendering it garbage:
+valid at read time __whenever the tensor is in pageable memory__.
 
+However, in other cases we cannot make the same assumption: when a tensor is placed in pinned memory, mutating the
+original copy after calling the host-to-device transfer may corrupt the data received on GPU.
+Similarly, when a transfer is achieved in the opposite direction, from GPU to CPU, or from any device that is not CPU
+or GPU to any device that is not a CUDA-handled GPU (such as, MPS), there is no guarantee that the data read on GPU is
+valid without explicit synchronization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 520-553
+In these scenarios, these transfers offer no assurance that the copy will be complete at the time of
+data access. Consequently, the data on the host might be incomplete or incorrect, effectively rendering it garbage.
+
+Let's first demonstrate this with a pinned-memory tensor:
+
+.. GENERATED FROM PYTHON SOURCE LINES 527-544
 
 .. code-block:: default
 
+    DELAY = 100000000
+    try:
+        i = -1
+        for i in range(100):
+            # Create a tensor in pin-memory
+            cpu_tensor = torch.ones(1024, 1024, pin_memory=True)
+            torch.cuda.synchronize()
+            # Send the tensor to CUDA
+            cuda_tensor = cpu_tensor.to("cuda", non_blocking=True)
+            torch.cuda._sleep(DELAY)
+            # Corrupt the original tensor
+            cpu_tensor.zero_()
+            assert (cuda_tensor == 1).all()
+        print("No test failed with non_blocking and pinned tensor")
+    except AssertionError:
+        print(f"{i}th test failed with non_blocking and pinned tensor. Skipping remaining tests")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    1th test failed with non_blocking and pinned tensor. Skipping remaining tests
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 545-547
+
+Using a pageable tensor always works:
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 547-561
+
+.. code-block:: default
+
+
+    i = -1
+    for i in range(100):
+        # Create a tensor in pin-memory
+        cpu_tensor = torch.ones(1024, 1024)
+        torch.cuda.synchronize()
+        # Send the tensor to CUDA
+        cuda_tensor = cpu_tensor.to("cuda", non_blocking=True)
+        torch.cuda._sleep(DELAY)
+        # Corrupt the original tensor
+        cpu_tensor.zero_()
+        assert (cuda_tensor == 1).all()
+    print("No test failed with non_blocking and pageable tensor")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    No test failed with non_blocking and pageable tensor
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 562-563
+
+Now let's demonstrate that CUDA to CPU also fails to produce reliable outputs without synchronization:
+
+.. GENERATED FROM PYTHON SOURCE LINES 563-595
+
+.. code-block:: default
 
 
     tensor = (
@@ -829,11 +909,10 @@ data access. Consequently, the data on the host might be incomplete or incorrect
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 554-600
+.. GENERATED FROM PYTHON SOURCE LINES 596-641
 
-The same considerations apply to copies from the CPU to non-CUDA devices, such as MPS.
 Generally, asynchronous copies to a device are safe without explicit synchronization only when the target is a
-CUDA-enabled device.
+CUDA-enabled device and the original tensor is in pageable memory.
 
 In summary, copying data from CPU to GPU is safe when using ``non_blocking=True``, but for any other direction,
 ``non_blocking=True`` can still be used but the user must make sure that a device synchronization is executed before
@@ -878,7 +957,7 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 600-642
+.. GENERATED FROM PYTHON SOURCE LINES 641-683
 
 .. code-block:: default
 
@@ -937,15 +1016,15 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 
  .. code-block:: none
 
-    td.to('cuda:0', non_blocking=False):  622.4414 ms
-    td.to('cuda:0'):  546.2743 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=0):  664.7217 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=4):  358.8236 ms
+    td.to('cuda:0', non_blocking=False):  634.1979 ms
+    td.to('cuda:0'):  557.3964 ms
+    td.to('cuda:0', non_blocking_pin=True, num_threads=0):  699.0742 ms
+    td.to('cuda:0', non_blocking_pin=True, num_threads=4):  358.3714 ms
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 643-729
+.. GENERATED FROM PYTHON SOURCE LINES 684-770
 
 In this example, we are transferring many large tensors from the CPU to the GPU.
 This scenario is ideal for utilizing multithreaded ``pin_memory()``, which can significantly enhance performance.
@@ -1037,7 +1116,7 @@ what was discussed in this tutorial, check the following references:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  19.063 seconds)
+   **Total running time of the script:** ( 1 minutes  27.457 seconds)
 
 
 .. _sphx_glr_download_intermediate_pinmem_nonblock.py:
