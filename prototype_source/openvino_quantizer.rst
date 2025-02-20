@@ -1,12 +1,12 @@
 PyTorch 2 Export Quantization for OpenVINO torch.compile backend.
 ===========================================================================
 
-**Author**: dlyakhov, asuslov, aamir, # TODO: add required authors
+**Authors**: `Daniil Lyakhov <https://github.com/daniil-lyakhov>`_, `Alexander Suslov <https://github.com/alexsu52>`_, `Aamir Nazir <https://github.com/anzr299>`_
 
 Prerequisites
 --------------
-- [PyTorch 2 Export Post Training Quantization](https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html)
-- [How to Write a Quantizer for PyTorch 2 Export Quantization](https://pytorch.org/tutorials/prototype/pt2e_quantizer.html)
+- `PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_
+- `How to Write a Quantizer for PyTorch 2 Export Quantization <https://pytorch.org/tutorials/prototype/pt2e_quantizer.html>`_
 
 Introduction
 --------------
@@ -113,7 +113,7 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 
 .. code-block:: python
 
-    from nncf.experimental.torch.fx.quantization.quantizer.openvino_quantizer import OpenVINOQuantizer
+    from nncf.experimental.torch.fx import OpenVINOQuantizer
 
     quantizer = OpenVINOQuantizer()
 
@@ -166,6 +166,7 @@ Below is the list of essential parameters and their description:
 
         OpenVINOQuantizer(target_device=nncf.TargetDevice.CPU)
 
+For futher details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
 
 After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
 ``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
@@ -207,6 +208,34 @@ After that the FX Graph can utilize OpenVINO optimizations using `torch.compile(
 
 The optimized model is using low-level kernels designed specifically for Intel CPU.
 This should significantly speed up inference time in comparison with the eager model.
+
+5. Optional: Improve quantized model metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+NNCF implements advanced quantization algorithms like SmoothQuant and BiasCorrection, which help
+improve the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
+These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
+
+.. code-block:: python
+
+    from nncf.experimental.torch.fx import quantize_pt2e
+
+    calibration_loader = torch.utils.data.DataLoader(...)
+
+
+    def transform_fn(data_item):
+        images, _ = data_item
+        return images
+
+
+    calibration_dataset = nncf.Dataset(calibration_loader, transform_fn)
+    quantized_model = quantize_pt2e(
+        exported_model, quantizer, calibration_dataset, smooth_quant=True, fast_bias_correction=False
+    )
+
+
+For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
+and a complete `example on Resnet18 quantization <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_.
 
 Conclusion
 ------------
