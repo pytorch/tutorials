@@ -960,7 +960,7 @@ Additional Resources
    :maxdepth: 1
    :includehidden:
    :hidden:
-   :caption: Compiler
+   :caption: Torch Compiler
 
    intermediate/torch_compile_tutorial
    intermediate/compiled_autograd_tutorial
