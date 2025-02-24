@@ -189,7 +189,7 @@ Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt
 
 .. code-block:: python
 
-    quantized_model = convert_pt2e(prepared_model)
+    quantized_model = convert_pt2e(prepared_model, fold_quantize=False)
 
 After these steps, we finished running the quantization flow, and we will get the quantized model.
 
