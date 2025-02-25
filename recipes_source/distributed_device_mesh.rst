@@ -31,7 +31,7 @@ Users can also easily manage the underlying process_groups/devices for multi-dim
 Why DeviceMesh is Useful
 ------------------------
 DeviceMesh is useful when working with multi-dimensional parallelism (i.e. 3-D parallel) where parallelism composability is required. For example, when your parallelism solutions require both communication across hosts and within each host.
-The image above shows that we can create a 2D mesh that connects the devices within each host, and connects each device with its counterpart on the other hosts in a homogenous setup.
+The image above shows that we can create a 2D mesh that connects the devices within each host, and connects each device with its counterpart on the other hosts in a homogeneous setup.
 
 Without DeviceMesh, users would need to manually set up NCCL communicators, cuda devices on each process before applying any parallelism, which could be quite complicated.
 The following code snippet illustrates a hybrid sharding 2-D Parallel pattern setup without :class:`DeviceMesh`.
@@ -150,7 +150,7 @@ Then, run the following `torch elastic/torchrun <https://pytorch.org/docs/stable
 
 How to use DeviceMesh for your custom parallel solutions
 --------------------------------------------------------
-When working with large scale training, you might have more complex custom parallel training composition. For example, you may need to slice out submeshes for different parallelism solutions.
+When working with large scale training, you might have more complex custom parallel training composition. For example, you may need to slice out sub-meshes for different parallelism solutions.
 DeviceMesh allows users to slice child mesh from the parent mesh and re-use the NCCL communicators already created when the parent mesh is initialized.
 
 .. code-block:: python
@@ -175,5 +175,5 @@ they can be used to describe the layout of devices across the cluster.
 
 For more information, please see the following:
 
-- `2D parallel combining Tensor/Sequance Parallel with FSDP <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__
+- `2D parallel combining Tensor/Sequence Parallel with FSDP <https://github.com/pytorch/examples/blob/main/distributed/tensor_parallelism/fsdp_tp_example.py>`__
 - `Composable PyTorch Distributed with PT2 <https://static.sched.com/hosted_files/pytorch2023/d1/%5BPTC%2023%5D%20Composable%20PyTorch%20Distributed%20with%20PT2.pdf>`__
