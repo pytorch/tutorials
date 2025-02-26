@@ -8,9 +8,9 @@ Introduction
 PyTorch Compiler provides several caching offerings to reduce compilation latency.
 This recipe will explain these offerings in detail to help users pick the best option for their use case.
 
-Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>` for how to configure these caches.
+Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>`__ for how to configure these caches.
 
-Also check out our caching benchmark at `PT CacheBench Benchmarks <https://hud.pytorch.org/benchmark/llms?repoName=pytorch%2Fpytorch&benchmarkName=TorchCache+Benchmark>`.
+Also check out our caching benchmark at `PT CacheBench Benchmarks <https://hud.pytorch.org/benchmark/llms?repoName=pytorch%2Fpytorch&benchmarkName=TorchCache+Benchmark>`__.
 
 Prerequisites
 -------------------
@@ -94,7 +94,7 @@ All these cache artifacts are written to ``TORCHINDUCTOR_CACHE_DIR`` which by de
 Remote Caching
 ----------------
 
-We also provide a remote caching option for users who would like to take advantage of a ``Redis`` based cache. Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>` to learn more about how to enable the ``Redis`` based caching.
+We also provide a remote caching option for users who would like to take advantage of a ``Redis`` based cache. Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>`__ to learn more about how to enable the ``Redis`` based caching.
 
 
 Conclusion
