@@ -8,7 +8,7 @@
 Extending the ONNX Exporter Operator Support
 ============================================
 
-**Authors:** Ti-Tai Wang (titaiwang@microsoft.com), Justin Chu (justinchu@microsoft.com)
+**Authors:** `Ti-Tai Wang <titaiwang@microsoft.com>`_, `Justin Chu <justinchu@microsoft.com>`_
 """
 
 
