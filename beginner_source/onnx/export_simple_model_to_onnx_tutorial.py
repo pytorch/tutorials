@@ -8,7 +8,7 @@
 Export a PyTorch model to ONNX
 ==============================
 
-**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_, Justin Chu (justinchu@microsoft.com) and Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
+**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_, `Justin Chu <justinchu@microsoft.com>`_, `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
 
 .. note::
     As of PyTorch 2.5, there are two versions of ONNX Exporter.

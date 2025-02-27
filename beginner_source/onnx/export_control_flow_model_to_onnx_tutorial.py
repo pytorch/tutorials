@@ -8,7 +8,7 @@
 Export a model with control flow to ONNX
 ========================================
 
-**Author**: `Xavier Dupré <https://github.com/xadupre>`_.
+**Author**: `Xavier Dupré <https://github.com/xadupre>`_
 """
 
 
