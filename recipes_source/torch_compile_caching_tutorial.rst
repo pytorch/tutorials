@@ -62,16 +62,17 @@ Consider the following example. First, compile and save the cache artifacts.
 
     artifacts = torch.compiler.save_cache_artifacts()
 
-    # Now, potentially store these artifacts in a database
+    assert artifacts is not None
+    artifact_bytes, cache_info = artifacts
+
+    # Now, potentially store artifact_bytes in a database
+    # You can use cache_info for logging
 
 Later, you can jump-start the cache by the following:
 
 .. code-block:: python 
 
     # Potentially download/fetch the artifacts from the database
-    assert artifacts is not None
-    artifact_bytes, cache_info = artifacts
-
     torch.compiler.load_cache_artifacts(artifact_bytes)
 
 This operation populates all the modular caches that will be discussed in the next section, including ``PGO``, ``AOTAutograd``, ``Inductor``, ``Triton``, and ``Autotuning``.
