@@ -1,12 +1,16 @@
 Compile Time Caching in ``torch.compile``
 =========================================================
-**Authors:** `Oguz Ulgen <https://github.com/oulgen>`_ and `Sam Larsen <https://github.com/masnesral>`_
+**Author:** `Oguz Ulgen <https://github.com/oulgen>`_
 
 Introduction
 ------------------
 
-PyTorch Inductor implements several caches to reduce compilation latency.
-This recipe demonstrates how you can configure various parts of the caching in ``torch.compile``.
+PyTorch Compiler provides several caching offerings to reduce compilation latency.
+This recipe will explain these offerings in detail to help users pick the best option for their use case.
+
+Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>`__ for how to configure these caches.
+
+Also check out our caching benchmark at `PT CacheBench Benchmarks <https://hud.pytorch.org/benchmark/llms?repoName=pytorch%2Fpytorch&benchmarkName=TorchCache+Benchmark>`__.
 
 Prerequisites
 -------------------
@@ -17,60 +21,83 @@ Before starting this recipe, make sure that you have the following:
 
   * `torch.compiler API documentation <https://pytorch.org/docs/stable/torch.compiler.html#torch-compiler>`__
   * `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
+  * `Triton language documentation <https://triton-lang.org/main/index.html>`__
 
 * PyTorch 2.4 or later
 
-Inductor Cache Settings
-----------------------------
+Caching Offerings
+---------------------
 
-Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is caches that store compiled FX graphs (FXGraphCache, AOTAutogradCache). These caches allow Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.
+``torch.compile`` provides the following caching offerings:
 
-There are a few settings relevant to caching and to FX graph caching in particular.
-The settings are accessible via environment variables listed below or can be hard-coded in Inductor’s config file.
+* End to end caching (also known as ``Mega-Cache``)
+* Modular caching of ``TorchDynamo``, ``TorchInductor``, and ``Triton``
 
-TORCHINDUCTOR_FX_GRAPH_CACHE
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This setting enables the local FX graph cache feature, i.e., by storing artifacts in the host’s temp directory. ``1`` enables, and any other value disables it. By default, the disk location is per username, but users can enable sharing across usernames by specifying ``TORCHINDUCTOR_CACHE_DIR`` (below).
+It is important to note that caching validates that the cache artifacts are used with the same PyTorch and Triton version, as well as, same GPU when device is set to be cuda.
 
-TORCHINDUCTOR_AUTOGRAD_CACHE
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This setting extends FXGraphCache to store cached results at the AOTAutograd level, instead of at the Inductor level. ``1`` enables, and any other value disables it.
-By default, the disk location is per username, but users can enable sharing across usernames by specifying ``TORCHINDUCTOR_CACHE_DIR`` (below).
-`TORCHINDUCTOR_AUTOGRAD_CACHE` requires `TORCHINDUCTOR_FX_GRAPH_CACHE` to work. The same cache dir stores cache entries for AOTAutogradCache (under `{TORCHINDUCTOR_CACHE_DIR}/aotautograd`) and FXGraphCache (under `{TORCHINDUCTOR_CACHE_DIR}/fxgraph`).
+``torch.compile`` end-to-end caching (``Mega-Cache``)
+------------------------------------------------------------
 
-TORCHINDUCTOR_CACHE_DIR
-~~~~~~~~~~~~~~~~~~~~~~~~
-This setting specifies the location of all on-disk caches. By default, the location is in the system temp directory under ``torchinductor_<username>``, for example, ``/tmp/torchinductor_myusername``.
+End to end caching, from here onwards referred to ``Mega-Cache``, is the ideal solution for users looking for a portable caching solution that can be stored in a database and can later be fetched possibly on a separate machine.
 
-Note that if ``TRITON_CACHE_DIR`` is not set in the environment, Inductor sets the Triton cache directory to this same temp location, under the Triton subdirectory.
+``Mega-Cache`` provides two compiler APIs:
 
-TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This setting enables the remote FX graph cache feature. The current implementation uses Redis. ``1`` enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:
+* ``torch.compiler.save_cache_artifacts()``
+* ``torch.compiler.load_cache_artifacts()``
 
-``TORCHINDUCTOR_REDIS_HOST`` (defaults to ``localhost``)
-``TORCHINDUCTOR_REDIS_PORT`` (defaults to ``6379``)
+The intended use case is after compiling and executing a model, the user calls ``torch.compiler.save_cache_artifacts()`` which will return the compiler artifacts in a portable form. Later, potentially on a different machine, the user may call ``torch.compiler.load_cache_artifacts()`` with these artifacts to pre-populate the ``torch.compile`` caches in order to jump-start their cache.
 
-Note that if Inductor locates a remote cache entry, it stores the compiled artifact in the local on-disk cache; that local artifact would be served on subsequent runs on the same machine.
+Consider the following example. First, compile and save the cache artifacts.
 
-TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Like TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE, this setting enables the remote AOT AutogradCache feature. The current implementation uses Redis. ``1`` enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:
-``TORCHINDUCTOR_REDIS_HOST`` (defaults to ``localhost``)
-``TORCHINDUCTOR_REDIS_PORT`` (defaults to ``6379``)
+.. code-block:: python
 
-`TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE`` depends on `TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE` to be enabled to work. The same Redis server can store both AOTAutograd and FXGraph cache results.
+    @torch.compile
+    def fn(x, y):
+        return x.sin() @ y
 
-TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This setting enables a remote cache for Inductor’s autotuner. As with the remote FX graph cache, the current implementation uses Redis. ``1`` enables caching, and any other value disables it. The same host / port environment variables listed above apply to this cache.
+    a = torch.rand(100, 100, dtype=dtype, device=device)
+    b = torch.rand(100, 100, dtype=dtype, device=device)
 
-TORCHINDUCTOR_FORCE_DISABLE_CACHES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Set this value to ``1`` to disable all Inductor caching. This setting is useful for tasks like experimenting with cold-start compile times or forcing recompilation for debugging purposes.
+    result = fn(a, b)
+
+    artifacts = torch.compiler.save_cache_artifacts()
+
+    # Now, potentially store these artifacts in a database
+
+Later, you can jump-start the cache by the following:
+
+.. code-block:: python 
+
+    # Potentially download/fetch the artifacts from the database
+    assert artifacts is not None
+    artifact_bytes, cache_info = artifacts
+
+    torch.compiler.load_cache_artifacts(artifact_bytes)
+
+This operation populates all the modular caches that will be discussed in the next section, including ``PGO``, ``AOTAutograd``, ``Inductor``, ``Triton``, and ``Autotuning``.
+
+
+Modular caching of ``TorchDynamo``, ``TorchInductor``, and ``Triton``
+-----------------------------------------------------------
+
+The aforementioned ``Mega-Cache`` is composed of individual components that can be used without any user intervention. By default, PyTorch Compiler comes with local on-disk caches for ``TorchDynamo``, ``TorchInductor``, and ``Triton``. These caches include:
+
+* ``FXGraphCache``: A cache of graph-based IR components used in compilation.
+* ``TritonCache``: A cache of Triton-compilation results, including ``cubin`` files generated by ``Triton`` and other caching artifacts.
+* ``InductorCache``: A bundle of ``FXGraphCache`` and ``Triton`` cache.
+* ``AOTAutogradCache``: A cache of joint graph artifacts.
+* ``PGO-cache``: A cache of dynamic shape decisions to reduce number of recompilations.
+
+All these cache artifacts are written to ``TORCHINDUCTOR_CACHE_DIR`` which by default will look like ``/tmp/torchinductor_myusername``.
+
+
+Remote Caching
+----------------
+
+We also provide a remote caching option for users who would like to take advantage of a Redis based cache. Check out `Compile Time Caching Configurations <https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html>`__ to learn more about how to enable the Redis-based caching.
+
 
 Conclusion
 -------------
 In this recipe, we have learned that PyTorch Inductor's caching mechanisms significantly reduce compilation latency by utilizing both local and remote caches, which operate seamlessly in the background without requiring user intervention.
-Additionally, we explored the various settings and environment variables that allow users to configure and optimize these caching features according to their specific needs.
 

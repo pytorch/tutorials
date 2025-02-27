@@ -544,12 +544,14 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="compile-time-caching-in-torch-compile">
-<h1>Compile Time Caching in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code><a class="headerlink" href="#compile-time-caching-in-torch-compile" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 20, 2024 | Last Updated: Dec 06, 2024 | Last Verified: Nov 05, 2024</p>
-<p><strong>Authors:</strong> <a class="reference external" href="https://github.com/oulgen">Oguz Ulgen</a> and <a class="reference external" href="https://github.com/masnesral">Sam Larsen</a></p>
+<h1>Compile Time Caching in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code><a class="headerlink" href="#compile-time-caching-in-torch-compile" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jun 20, 2024 | Last Updated: Feb 27, 2025 | Last Verified: Nov 05, 2024</p>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/oulgen">Oguz Ulgen</a></p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>PyTorch Inductor implements several caches to reduce compilation latency.
-This recipe demonstrates how you can configure various parts of the caching in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p>
+<p>PyTorch Compiler provides several caching offerings to reduce compilation latency.
+This recipe will explain these offerings in detail to help users pick the best option for their use case.</p>
+<p>Check out <a class="reference external" href="https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html">Compile Time Caching Configurations</a> for how to configure these caches.</p>
+<p>Also check out our caching benchmark at <a class="reference external" href="https://hud.pytorch.org/benchmark/llms?repoName=pytorch%2Fpytorch&amp;benchmarkName=TorchCache+Benchmark">PT CacheBench Benchmarks</a>.</p>
 </div>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h2>
@@ -559,58 +561,74 @@ This recipe demonstrates how you can configure various parts of the caching in <
 <ul>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/torch.compiler.html#torch-compiler">torch.compiler API documentation</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">Introduction to torch.compile</a></p></li>
+<li><p><a class="reference external" href="https://triton-lang.org/main/index.html">Triton language documentation</a></p></li>
 </ul>
 </li>
 <li><p>PyTorch 2.4 or later</p></li>
 </ul>
 </div>
-<div class="section" id="inductor-cache-settings">
-<h2>Inductor Cache Settings<a class="headerlink" href="#inductor-cache-settings" title="Permalink to this heading">¶</a></h2>
-<p>Most of these caches are in-memory, only used within the same process, and are transparent to the user. An exception is caches that store compiled FX graphs (FXGraphCache, AOTAutogradCache). These caches allow Inductor to avoid recompilation across process boundaries when it encounters the same graph with the same Tensor input shapes (and the same configuration). The default implementation stores compiled artifacts in the system temp directory. An optional feature also supports sharing those artifacts within a cluster by storing them in a Redis database.</p>
-<p>There are a few settings relevant to caching and to FX graph caching in particular.
-The settings are accessible via environment variables listed below or can be hard-coded in Inductor’s config file.</p>
-<div class="section" id="torchinductor-fx-graph-cache">
-<h3>TORCHINDUCTOR_FX_GRAPH_CACHE<a class="headerlink" href="#torchinductor-fx-graph-cache" title="Permalink to this heading">¶</a></h3>
-<p>This setting enables the local FX graph cache feature, i.e., by storing artifacts in the host’s temp directory. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables, and any other value disables it. By default, the disk location is per username, but users can enable sharing across usernames by specifying <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_CACHE_DIR</span></code> (below).</p>
+<div class="section" id="caching-offerings">
+<h2>Caching Offerings<a class="headerlink" href="#caching-offerings" title="Permalink to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> provides the following caching offerings:</p>
+<ul class="simple">
+<li><p>End to end caching (also known as <code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code>)</p></li>
+<li><p>Modular caching of <code class="docutils literal notranslate"><span class="pre">TorchDynamo</span></code>, <code class="docutils literal notranslate"><span class="pre">TorchInductor</span></code>, and <code class="docutils literal notranslate"><span class="pre">Triton</span></code></p></li>
+</ul>
+<p>It is important to note that caching validates that the cache artifacts are used with the same PyTorch and Triton version, as well as, same GPU when device is set to be cuda.</p>
 </div>
-<div class="section" id="torchinductor-autograd-cache">
-<h3>TORCHINDUCTOR_AUTOGRAD_CACHE<a class="headerlink" href="#torchinductor-autograd-cache" title="Permalink to this heading">¶</a></h3>
-<p>This setting extends FXGraphCache to store cached results at the AOTAutograd level, instead of at the Inductor level. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables, and any other value disables it.
-By default, the disk location is per username, but users can enable sharing across usernames by specifying <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_CACHE_DIR</span></code> (below).
-<cite>TORCHINDUCTOR_AUTOGRAD_CACHE</cite> requires <cite>TORCHINDUCTOR_FX_GRAPH_CACHE</cite> to work. The same cache dir stores cache entries for AOTAutogradCache (under <cite>{TORCHINDUCTOR_CACHE_DIR}/aotautograd</cite>) and FXGraphCache (under <cite>{TORCHINDUCTOR_CACHE_DIR}/fxgraph</cite>).</p>
+<div class="section" id="torch-compile-end-to-end-caching-mega-cache">
+<h2><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> end-to-end caching (<code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code>)<a class="headerlink" href="#torch-compile-end-to-end-caching-mega-cache" title="Permalink to this heading">¶</a></h2>
+<p>End to end caching, from here onwards referred to <code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code>, is the ideal solution for users looking for a portable caching solution that can be stored in a database and can later be fetched possibly on a separate machine.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code> provides two compiler APIs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.compiler.save_cache_artifacts()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.compiler.load_cache_artifacts()</span></code></p></li>
+</ul>
+<p>The intended use case is after compiling and executing a model, the user calls <code class="docutils literal notranslate"><span class="pre">torch.compiler.save_cache_artifacts()</span></code> which will return the compiler artifacts in a portable form. Later, potentially on a different machine, the user may call <code class="docutils literal notranslate"><span class="pre">torch.compiler.load_cache_artifacts()</span></code> with these artifacts to pre-populate the <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> caches in order to jump-start their cache.</p>
+<p>Consider the following example. First, compile and save the cache artifacts.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@torch</span><span class="o">.</span><span class="n">compile</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span> <span class="o">@</span> <span class="n">y</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="n">artifacts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compiler</span><span class="o">.</span><span class="n">save_cache_artifacts</span><span class="p">()</span>
+
+<span class="c1"># Now, potentially store these artifacts in a database</span>
+</pre></div>
 </div>
-<div class="section" id="torchinductor-cache-dir">
-<h3>TORCHINDUCTOR_CACHE_DIR<a class="headerlink" href="#torchinductor-cache-dir" title="Permalink to this heading">¶</a></h3>
-<p>This setting specifies the location of all on-disk caches. By default, the location is in the system temp directory under <code class="docutils literal notranslate"><span class="pre">torchinductor_&lt;username&gt;</span></code>, for example, <code class="docutils literal notranslate"><span class="pre">/tmp/torchinductor_myusername</span></code>.</p>
-<p>Note that if <code class="docutils literal notranslate"><span class="pre">TRITON_CACHE_DIR</span></code> is not set in the environment, Inductor sets the Triton cache directory to this same temp location, under the Triton subdirectory.</p>
+<p>Later, you can jump-start the cache by the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Potentially download/fetch the artifacts from the database</span>
+<span class="k">assert</span> <span class="n">artifacts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="n">artifact_bytes</span><span class="p">,</span> <span class="n">cache_info</span> <span class="o">=</span> <span class="n">artifacts</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">compiler</span><span class="o">.</span><span class="n">load_cache_artifacts</span><span class="p">(</span><span class="n">artifact_bytes</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="torchinductor-fx-graph-remote-cache">
-<h3>TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE<a class="headerlink" href="#torchinductor-fx-graph-remote-cache" title="Permalink to this heading">¶</a></h3>
-<p>This setting enables the remote FX graph cache feature. The current implementation uses Redis. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:</p>
-<p><code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_HOST</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">localhost</span></code>)
-<code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_PORT</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">6379</span></code>)</p>
-<p>Note that if Inductor locates a remote cache entry, it stores the compiled artifact in the local on-disk cache; that local artifact would be served on subsequent runs on the same machine.</p>
+<p>This operation populates all the modular caches that will be discussed in the next section, including <code class="docutils literal notranslate"><span class="pre">PGO</span></code>, <code class="docutils literal notranslate"><span class="pre">AOTAutograd</span></code>, <code class="docutils literal notranslate"><span class="pre">Inductor</span></code>, <code class="docutils literal notranslate"><span class="pre">Triton</span></code>, and <code class="docutils literal notranslate"><span class="pre">Autotuning</span></code>.</p>
 </div>
-<div class="section" id="torchinductor-autograd-remote-cache">
-<h3>TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE<a class="headerlink" href="#torchinductor-autograd-remote-cache" title="Permalink to this heading">¶</a></h3>
-<p>Like TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE, this setting enables the remote AOT AutogradCache feature. The current implementation uses Redis. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables caching, and any other value disables it. The following environment variables configure the host and port of the Redis server:
-<code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_HOST</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">localhost</span></code>)
-<code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_REDIS_PORT</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">6379</span></code>)</p>
-<p><cite>TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE`</cite> depends on <cite>TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE</cite> to be enabled to work. The same Redis server can store both AOTAutograd and FXGraph cache results.</p>
+<div class="section" id="modular-caching-of-torchdynamo-torchinductor-and-triton">
+<h2>Modular caching of <code class="docutils literal notranslate"><span class="pre">TorchDynamo</span></code>, <code class="docutils literal notranslate"><span class="pre">TorchInductor</span></code>, and <code class="docutils literal notranslate"><span class="pre">Triton</span></code><a class="headerlink" href="#modular-caching-of-torchdynamo-torchinductor-and-triton" title="Permalink to this heading">¶</a></h2>
+<p>The aforementioned <code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code> is composed of individual components that can be used without any user intervention. By default, PyTorch Compiler comes with local on-disk caches for <code class="docutils literal notranslate"><span class="pre">TorchDynamo</span></code>, <code class="docutils literal notranslate"><span class="pre">TorchInductor</span></code>, and <code class="docutils literal notranslate"><span class="pre">Triton</span></code>. These caches include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">FXGraphCache</span></code>: A cache of graph-based IR components used in compilation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TritonCache</span></code>: A cache of Triton-compilation results, including <code class="docutils literal notranslate"><span class="pre">cubin</span></code> files generated by <code class="docutils literal notranslate"><span class="pre">Triton</span></code> and other caching artifacts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InductorCache</span></code>: A bundle of <code class="docutils literal notranslate"><span class="pre">FXGraphCache</span></code> and <code class="docutils literal notranslate"><span class="pre">Triton</span></code> cache.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AOTAutogradCache</span></code>: A cache of joint graph artifacts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PGO-cache</span></code>: A cache of dynamic shape decisions to reduce number of recompilations.</p></li>
+</ul>
+<p>All these cache artifacts are written to <code class="docutils literal notranslate"><span class="pre">TORCHINDUCTOR_CACHE_DIR</span></code> which by default will look like <code class="docutils literal notranslate"><span class="pre">/tmp/torchinductor_myusername</span></code>.</p>
 </div>
-<div class="section" id="torchinductor-autotune-remote-cache">
-<h3>TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE<a class="headerlink" href="#torchinductor-autotune-remote-cache" title="Permalink to this heading">¶</a></h3>
-<p>This setting enables a remote cache for Inductor’s autotuner. As with the remote FX graph cache, the current implementation uses Redis. <code class="docutils literal notranslate"><span class="pre">1</span></code> enables caching, and any other value disables it. The same host / port environment variables listed above apply to this cache.</p>
-</div>
-<div class="section" id="torchinductor-force-disable-caches">
-<h3>TORCHINDUCTOR_FORCE_DISABLE_CACHES<a class="headerlink" href="#torchinductor-force-disable-caches" title="Permalink to this heading">¶</a></h3>
-<p>Set this value to <code class="docutils literal notranslate"><span class="pre">1</span></code> to disable all Inductor caching. This setting is useful for tasks like experimenting with cold-start compile times or forcing recompilation for debugging purposes.</p>
-</div>
+<div class="section" id="remote-caching">
+<h2>Remote Caching<a class="headerlink" href="#remote-caching" title="Permalink to this heading">¶</a></h2>
+<p>We also provide a remote caching option for users who would like to take advantage of a Redis based cache. Check out <a class="reference external" href="https://pytorch.org/tutorials/recipes/torch_compile_caching_configuration_tutorial.html">Compile Time Caching Configurations</a> to learn more about how to enable the Redis-based caching.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>In this recipe, we have learned that PyTorch Inductor’s caching mechanisms significantly reduce compilation latency by utilizing both local and remote caches, which operate seamlessly in the background without requiring user intervention.
-Additionally, we explored the various settings and environment variables that allow users to configure and optimize these caching features according to their specific needs.</p>
+<p>In this recipe, we have learned that PyTorch Inductor’s caching mechanisms significantly reduce compilation latency by utilizing both local and remote caches, which operate seamlessly in the background without requiring user intervention.</p>
 </div>
 </div>
 </article>
@@ -654,16 +672,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#">Compile Time Caching in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#inductor-cache-settings">Inductor Cache Settings</a><ul>
-<li><a class="reference internal" href="#torchinductor-fx-graph-cache">TORCHINDUCTOR_FX_GRAPH_CACHE</a></li>
-<li><a class="reference internal" href="#torchinductor-autograd-cache">TORCHINDUCTOR_AUTOGRAD_CACHE</a></li>
-<li><a class="reference internal" href="#torchinductor-cache-dir">TORCHINDUCTOR_CACHE_DIR</a></li>
-<li><a class="reference internal" href="#torchinductor-fx-graph-remote-cache">TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE</a></li>
-<li><a class="reference internal" href="#torchinductor-autograd-remote-cache">TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE</a></li>
-<li><a class="reference internal" href="#torchinductor-autotune-remote-cache">TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE</a></li>
-<li><a class="reference internal" href="#torchinductor-force-disable-caches">TORCHINDUCTOR_FORCE_DISABLE_CACHES</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#caching-offerings">Caching Offerings</a></li>
+<li><a class="reference internal" href="#torch-compile-end-to-end-caching-mega-cache"><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> end-to-end caching (<code class="docutils literal notranslate"><span class="pre">Mega-Cache</span></code>)</a></li>
+<li><a class="reference internal" href="#modular-caching-of-torchdynamo-torchinductor-and-triton">Modular caching of <code class="docutils literal notranslate"><span class="pre">TorchDynamo</span></code>, <code class="docutils literal notranslate"><span class="pre">TorchInductor</span></code>, and <code class="docutils literal notranslate"><span class="pre">Triton</span></code></a></li>
+<li><a class="reference internal" href="#remote-caching">Remote Caching</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
