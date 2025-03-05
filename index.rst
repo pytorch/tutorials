@@ -9,6 +9,7 @@ Welcome to PyTorch Tutorials
 * Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
 * Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
 * Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
+* Updated `Compile Time Caching in torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_caching_tutorial.html>`__ with new ``Mega-Cache``
 
 .. raw:: html
 
