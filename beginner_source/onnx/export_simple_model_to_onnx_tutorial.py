@@ -176,7 +176,7 @@ ort_session = onnxruntime.InferenceSession(
 
 onnxruntime_input = {input_arg.name: input_value for input_arg, input_value in zip(ort_session.get_inputs(), onnx_inputs)}
 
-# onnxruntime returns a list of outputs
+# ONNX Runtime returns a list of outputs
 onnxruntime_outputs = ort_session.run(None, onnxruntime_input)[0]
 
 ####################################################################

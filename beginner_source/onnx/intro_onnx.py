@@ -27,7 +27,7 @@ including Microsoft's `ONNX Runtime <https://www.onnxruntime.ai>`_.
 
 When setting ``dynamo=True``, the exporter will use `torch.export <https://pytorch.org/docs/stable/export.html>`_ to capture an ``ExportedProgram``,
 before translating the graph into ONNX representations. This approach is the new and recommended way to export models to ONNX.
-It works with PyTorch 2.0 features more robustly, has better support for newer ONNX opsets, and consumes less resources
+It works with PyTorch 2.0 features more robustly, has better support for newer ONNX operator sets, and consumes less resources
 to make exporting larger models possible.
 
 Dependencies
