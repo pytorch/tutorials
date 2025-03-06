@@ -39,10 +39,10 @@ effectively vectorizing those operations.
 
 .. code-block:: default
 
-    import torch
+
     # NB: vmap is only available on nightly builds of PyTorch.
     # You can download one at pytorch.org if you're interested in testing it out.
-    from torch import vmap
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 25-39
@@ -62,17 +62,6 @@ One example of using `vmap` is to compute batched dot products. PyTorch
 doesn't provide a batched `torch.dot` API; instead of unsuccessfully
 rummaging through docs, use `vmap` to construct a new function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-45
-
-.. code-block:: default
-
-
-    torch.dot                            # [D], [D] -> []
-    batched_dot = torch.vmap(torch.dot)  # [N, D], [N, D] -> [N]
-    x, y = torch.randn(2, 5), torch.randn(2, 5)
-    batched_dot(x, y)
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 46-48
 
 `vmap` can be helpful in hiding batch dimensions, leading to a simpler
@@ -82,8 +71,8 @@ model authoring experience.
 
 .. code-block:: default
 
-    batch_size, feature_size = 3, 5
-    weights = torch.randn(feature_size, requires_grad=True)
+
+
 
     # Note that model doesn't work with a batch of feature vectors because
     # torch.dot must take 1D tensors. It's pretty easy to rewrite this
@@ -92,14 +81,14 @@ model authoring experience.
     # shenanigins), we can simply call `vmap`. `vmap` batches over ALL
     # inputs, unless otherwise specified (with the in_dims argument,
     # please see the documentation for more details).
-    def model(feature_vec):
-        # Very simple linear model with activation
-        return feature_vec.dot(weights).relu()
 
-    examples = torch.randn(batch_size, feature_size)
-    result = torch.vmap(model)(examples)
-    expected = torch.stack([model(example) for example in examples.unbind()])
-    assert torch.allclose(result, expected)
+
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 68-82
@@ -125,26 +114,26 @@ requires N calls to `autograd.grad`, one per Jacobian row.
 
 
     # Setup
-    N = 5
-    def f(x):
-        return x ** 2
 
-    x = torch.randn(N, requires_grad=True)
-    y = f(x)
-    basis_vectors = torch.eye(N)
+
+
+
+
+
+
 
     # Sequential approach
-    jacobian_rows = [torch.autograd.grad(y, x, v, retain_graph=True)[0]
-                     for v in basis_vectors.unbind()]
-    jacobian = torch.stack(jacobian_rows)
+
+
+
 
     # Using `vmap`, we can vectorize the whole computation, computing the
     # Jacobian in a single call to `autograd.grad`.
-    def get_vjp(v):
-        return torch.autograd.grad(y, x, v)[0]
 
-    jacobian_vmap = vmap(get_vjp)(basis_vectors)
-    assert torch.allclose(jacobian_vmap, jacobian)
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 106-111
@@ -155,17 +144,17 @@ right now. We're not sure what the API for computing per-sample-gradients
 should be, but if you have ideas, please comment in
 https://github.com/pytorch/pytorch/issues/7786.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-124
+.. GENERATED FROM PYTHON SOURCE LINES 111-125
 
 .. code-block:: default
 
 
-    def model(sample, weight):
-        # do something...    
-        return torch.dot(sample, weight)
 
-    def grad_sample(sample):
-        return torch.autograd.functional.vjp(lambda weight: model(sample), weight)[1]
+
+
+
+
+
 
     # The following doesn't actually work in the vmap prototype. But it
     # could be an API for computing per-sample-gradients.
@@ -173,6 +162,7 @@ https://github.com/pytorch/pytorch/issues/7786.
     # batch_of_samples = torch.randn(64, 5)
     # vmap(grad_sample)(batch_of_samples)
 
+    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
 .. rst-class:: sphx-glr-timing
 

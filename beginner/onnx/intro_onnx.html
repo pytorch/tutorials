@@ -552,11 +552,12 @@ to download the full example code</p>
 </div>
 <p class="sphx-glr-example-title" id="sphx-glr-beginner-onnx-intro-onnx-py"><strong>Introduction to ONNX</strong> ||
 <a class="reference external" href="export_simple_model_to_onnx_tutorial.html">Exporting a PyTorch model to ONNX</a> ||
-<a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX Registry</a></p>
+<a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a> ||
+<a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></p>
 <div class="section" id="introduction-to-onnx">
-<h1>Introduction to ONNX<a class="headerlink" href="#introduction-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Jan 27, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Introduction to ONNX<a class="headerlink" href="#introduction-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Mar 05, 2025 | Last Verified: Nov 05, 2024</p>
 <p>Authors:
-<a class="reference external" href="https://github.com/titaiwangms">Ti-Tai Wang</a> and <a class="reference external" href="https://github.com/xadupre">Xavier Dupré</a></p>
+<a class="reference external" href="https://github.com/titaiwangms">Ti-Tai Wang</a>, <a class="reference external" href="https://github.com/thiagocrepaldi">Thiago Crepaldi</a>.</p>
 <p><a class="reference external" href="https://onnx.ai/">Open Neural Network eXchange (ONNX)</a> is an open standard
 format for representing machine learning models. The <code class="docutils literal notranslate"><span class="pre">torch.onnx</span></code> module provides APIs to
 capture the computation graph from a native PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a> model and convert
@@ -566,18 +567,18 @@ it into an <a class="reference external" href="https://github.com/onnx/onnx/blob
 including Microsoft’s <a class="reference external" href="https://www.onnxruntime.ai">ONNX Runtime</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently, there are two flavors of ONNX exporter APIs,
-but this tutorial will focus on the <code class="docutils literal notranslate"><span class="pre">torch.onnx.dynamo_export</span></code>.</p>
+<p>Currently, you can choose either through <a href="#id5"><span class="problematic" id="id6">`TorchScript https://pytorch.org/docs/stable/jit.html`_</span></a> or
+<a href="#id7"><span class="problematic" id="id8">`ExportedProgram https://pytorch.org/docs/stable/export.html`_</span></a> to export the model to ONNX by the
+boolean parameter dynamo in <a class="reference external" href="https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export">torch.onnx.export</a>.
+In this tutorial, we will focus on the <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> approach.</p>
 </div>
-<p>The TorchDynamo engine is leveraged to hook into Python’s frame evaluation API and dynamically rewrite its
-bytecode into an <a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph</a>.
-The resulting FX Graph is polished before it is finally translated into an
-<a class="reference external" href="https://github.com/onnx/onnx/blob/main/docs/IR.md">ONNX graph</a>.</p>
-<p>The main advantage of this approach is that the <a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph</a> is captured using
-bytecode analysis that preserves the dynamic nature of the model instead of using traditional static tracing techniques.</p>
+<p>When setting <code class="docutils literal notranslate"><span class="pre">dynamo=True</span></code>, the exporter will use <a class="reference external" href="https://pytorch.org/docs/stable/export.html">torch.export</a> to capture an <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code>,
+before translating the graph into ONNX representations. This approach is the new and recommended way to export models to ONNX.
+It works with PyTorch 2.0 features more robustly, has better support for newer ONNX operator sets, and consumes less resources
+to make exporting larger models possible.</p>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
-<p>PyTorch 2.1.0 or newer is required.</p>
+<p>PyTorch 2.5.0 or newer is required.</p>
 <p>The ONNX exporter depends on extra Python packages:</p>
 <blockquote>
 <div><ul class="simple">
@@ -598,8 +599,6 @@ functions and models using a subset of Python in an expressive, and yet simple f
 <span class="kn">import</span><span class="w"> </span><span class="nn">onnxscript</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">onnxscript</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">onnxscript</span><span class="w"> </span><span class="kn">import</span> <span class="n">opset18</span>  <span class="c1"># opset 18 is the latest (and only) supported version for now</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">onnxruntime</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">onnxruntime</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
 </pre></div>
@@ -614,7 +613,8 @@ Feel free to jump directly to specific topics of your interest or
 sit tight and have fun going through all of them to learn all there is about the ONNX exporter.</p>
 <div class="line-block">
 <div class="line">1. <a class="reference external" href="export_simple_model_to_onnx_tutorial.html">Exporting a PyTorch model to ONNX</a></div>
-<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX registry</a></div>
+<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a></div>
+<div class="line">3. <a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></div>
 </div>
 <div class="toctree-wrapper compound">
 </div>

@@ -20,25 +20,26 @@
 
 `Introduction to ONNX <intro_onnx.html>`_ ||
 **Exporting a PyTorch model to ONNX** ||
-`Extending the ONNX Registry <onnx_registry_tutorial.html>`_
+`Extending the ONNX exporter operator support <onnx_registry_tutorial.html>`_ ||
+`Export a model with control flow to ONNX <export_control_flow_model_to_onnx_tutorial.html>`_
 
 Export a PyTorch model to ONNX
 ==============================
 
-**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_ and `Xavier Dupré <https://github.com/xadupre>`_
+**Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_, `Justin Chu <justinchu@microsoft.com>`_, `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
 
 .. note::
-    As of PyTorch 2.1, there are two versions of ONNX Exporter.
+    As of PyTorch 2.5, there are two versions of ONNX Exporter.
 
-    * ``torch.onnx.dynamo_export`` is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0
-    * ``torch.onnx.export`` is based on TorchScript backend and has been available since PyTorch 1.2.0
+    * ``torch.onnx.export(..., dynamo=True)`` is the newest (still in beta) exporter using ``torch.export`` and Torch FX to capture the graph. It was released with PyTorch 2.5
+    * ``torch.onnx.export`` uses TorchScript and has been available since PyTorch 1.2.0
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-59
+.. GENERATED FROM PYTHON SOURCE LINES 22-59
 
 In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_,
 we had the opportunity to learn about PyTorch at a high level and train a small neural network to classify images.
 In this tutorial, we are going to expand this to describe how to convert a model defined in PyTorch into the
-ONNX format using TorchDynamo and the ``torch.onnx.dynamo_export`` ONNX exporter.
+ONNX format using the ``torch.onnx.export(..., dynamo=True)`` ONNX exporter.
 
 While PyTorch is great for iterating on the development of models, the model can be deployed to production
 using different formats, including `ONNX <https://onnx.ai/>`_ (Open Neural Network Exchange)!
@@ -64,8 +65,7 @@ we will need to install them.
 
  .. code-block:: bash
 
-  pip install onnx
-  pip install onnxscript
+  pip install --upgrade onnx onnxscript
 
 2. Author a simple image classifier model
 -----------------------------------------
@@ -84,17 +84,16 @@ exactly like we did in the `60 Minute Blitz <https://pytorch.org/tutorials/begin
     import torch.nn.functional as F
 
 
-    class MyModel(nn.Module):
-
+    class ImageClassifierModel(nn.Module):
         def __init__(self):
-            super(MyModel, self).__init__()
+            super().__init__()
             self.conv1 = nn.Conv2d(1, 6, 5)
             self.conv2 = nn.Conv2d(6, 16, 5)
             self.fc1 = nn.Linear(16 * 5 * 5, 120)
             self.fc2 = nn.Linear(120, 84)
             self.fc3 = nn.Linear(84, 10)
 
-        def forward(self, x):
+        def forward(self, x: torch.Tensor):
             x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
             x = F.max_pool2d(F.relu(self.conv2(x)), 2)
             x = torch.flatten(x, 1)
@@ -102,6 +101,7 @@ exactly like we did in the `60 Minute Blitz <https://pytorch.org/tutorials/begin
             x = F.relu(self.fc2(x))
             x = self.fc3(x)
             return x
+
 
 
 
@@ -118,14 +118,15 @@ exactly like we did in the `60 Minute Blitz <https://pytorch.org/tutorials/begin
 Now that we have our model defined, we need to instantiate it and create a random 32x32 input.
 Next, we can export the model to ONNX format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-95
+.. GENERATED FROM PYTHON SOURCE LINES 90-96
 
 .. code-block:: default
 
 
-    torch_model = MyModel()
-    torch_input = torch.randn(1, 1, 32, 32)
-    onnx_program = torch.onnx.dynamo_export(torch_model, torch_input)
+    torch_model = ImageClassifierModel()
+    # Create example inputs for exporting the model. The inputs should be a tuple of tensors.
+    example_inputs = (torch.randn(1, 1, 32, 32),)
+    onnx_program = torch.onnx.export(torch_model, example_inputs, dynamo=True)
 
 
 
@@ -143,19 +144,39 @@ Next, we can export the model to ONNX format.
 
     'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
 
-    /usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
-
-    torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-    /usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/fx/onnxfunction_dispatcher.py:503: FutureWarning:
-
-    'onnxscript.values.TracedOnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
-
+    [torch.onnx] Obtain model graph for `ImageClassifierModel([...]` with `torch.export.export(..., strict=False)`...
+    [torch.onnx] Obtain model graph for `ImageClassifierModel([...]` with `torch.export.export(..., strict=False)`... ✅
+    [torch.onnx] Run decomposition...
+    [torch.onnx] Run decomposition... ✅
+    [torch.onnx] Translate the graph into ONNX...
+    [torch.onnx] Translate the graph into ONNX... ✅
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-104
+.. GENERATED FROM PYTHON SOURCE LINES 97-102
+
+3.5. (Optional) Optimize the ONNX model
+---------------------------------------
+
+The ONNX model can be optimized with constant folding, and elimination of redundant nodes.
+The optimization is done in-place, so the original ONNX model is modified.
+
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
+
+.. code-block:: default
+
+
+    onnx_program.optimize()
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 106-114
 
 As we can see, we didn't need any code change to the model.
 The resulting ONNX model is stored within ``torch.onnx.ONNXProgram`` as a binary protobuf file.
@@ -166,12 +187,12 @@ The resulting ONNX model is stored within ``torch.onnx.ONNXProgram`` as a binary
 Although having the exported model loaded in memory is useful in many applications,
 we can save it to disk with the following code:
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-107
+.. GENERATED FROM PYTHON SOURCE LINES 114-117
 
 .. code-block:: default
 
 
-    onnx_program.save("my_image_classifier.onnx")
+    onnx_program.save("image_classifier_model.onnx")
 
 
 
@@ -180,17 +201,18 @@ we can save it to disk with the following code:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-109
+.. GENERATED FROM PYTHON SOURCE LINES 118-119
 
 You can load the ONNX file back into memory and check if it is well formed with the following code:
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-114
+.. GENERATED FROM PYTHON SOURCE LINES 119-125
 
 .. code-block:: default
 
 
     import onnx
-    onnx_model = onnx.load("my_image_classifier.onnx")
+
+    onnx_model = onnx.load("image_classifier_model.onnx")
     onnx.checker.check_model(onnx_model)
 
 
@@ -200,7 +222,7 @@ You can load the ONNX file back into memory and check if it is well formed with 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-155
+.. GENERATED FROM PYTHON SOURCE LINES 126-166
 
 5. Visualize the ONNX model graph using Netron
 ----------------------------------------------
@@ -214,7 +236,7 @@ Let's try the web version by opening the following link: https://netron.app/.
   :align: center
 
 
-Once Netron is open, we can drag and drop our ``my_image_classifier.onnx`` file into the browser or select it after
+Once Netron is open, we can drag and drop our ``image_classifier_model.onnx`` file into the browser or select it after
 clicking the **Open model** button.
 
 .. image:: ../../_static/img/onnx/image_classifier_onnx_model_on_netron_web_ui.png
@@ -243,25 +265,24 @@ and wrap them on a dictionary with keys being a string with the input name as ke
 Now we can create an *ONNX Runtime Inference Session*, execute the ONNX model with the processed input
 and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it could be executed on GPU as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-172
+.. GENERATED FROM PYTHON SOURCE LINES 166-182
 
 .. code-block:: default
 
 
     import onnxruntime
 
-    onnx_input = [torch_input]
-    print(f"Input length: {len(onnx_input)}")
-    print(f"Sample input: {onnx_input}")
+    onnx_inputs = [tensor.numpy(force=True) for tensor in example_inputs]
+    print(f"Input length: {len(onnx_inputs)}")
+    print(f"Sample input: {onnx_inputs}")
 
-    ort_session = onnxruntime.InferenceSession("./my_image_classifier.onnx", providers=['CPUExecutionProvider'])
+    ort_session = onnxruntime.InferenceSession(
+        "./image_classifier_model.onnx", providers=["CPUExecutionProvider"]
+    )
 
-    def to_numpy(tensor):
-        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+    onnxruntime_input = {input_arg.name: input_value for input_arg, input_value in zip(ort_session.get_inputs(), onnx_inputs)}
 
-    onnxruntime_input = {k.name: to_numpy(v) for k, v in zip(ort_session.get_inputs(), onnx_input)}
-
-    # onnxruntime returns a list of outputs
+    # ONNX Runtime returns a list of outputs
     onnxruntime_outputs = ort_session.run(None, onnxruntime_input)[0]
 
 
@@ -273,18 +294,24 @@ and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it co
  .. code-block:: none
 
     Input length: 1
-    Sample input: [tensor([[[[-1.0416,  1.1125, -0.3602,  ..., -0.0189, -1.2205,  0.3472],
-              [ 0.6651,  1.1037, -0.3674,  ..., -1.4724,  0.2539, -0.0788],
-              [-0.1239, -0.6458, -0.7785,  ..., -0.2674,  0.3019, -0.5682],
-              ...,
-              [-0.0300, -0.4833, -0.3928,  ..., -1.2406,  0.8488, -0.5473],
-              [-0.8185, -0.1276,  0.3475,  ..., -1.0702, -1.6922, -0.6048],
-              [ 0.8268, -0.0248, -0.3354,  ..., -0.9178, -0.3240,  0.7485]]]])]
+    Sample input: [array([[[[-1.0416038 ,  1.1125288 , -0.36015213, ..., -0.01891615,
+              -1.2205342 ,  0.34716162],
+             [ 0.6650918 ,  1.1037157 , -0.3673973 , ..., -1.4723971 ,
+               0.25391102, -0.07882219],
+             [-0.1238785 , -0.6457882 , -0.7785251 , ..., -0.26744807,
+               0.30193356, -0.5681653 ],
+             ...,
+             [-0.02998495, -0.48333594, -0.39282662, ..., -1.2405719 ,
+               0.84881294, -0.5473476 ],
+             [-0.8185182 , -0.1276281 ,  0.34752363, ..., -1.0701932 ,
+              -1.6922146 , -0.60484964],
+             [ 0.8267504 , -0.02483911, -0.33541355, ..., -0.917776  ,
+              -0.32401627,  0.7485422 ]]]], dtype=float32)]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-181
+.. GENERATED FROM PYTHON SOURCE LINES 183-191
 
 7. Compare the PyTorch results with the ones from the ONNX Runtime
 ------------------------------------------------------------------
@@ -295,12 +322,12 @@ against PyTorch, which is our source of truth.
 For that, we need to execute the PyTorch model with the same input and compare the results with ONNX Runtime's.
 Before comparing the results, we need to convert the PyTorch's output to match ONNX's format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-192
+.. GENERATED FROM PYTHON SOURCE LINES 191-202
 
 .. code-block:: default
 
 
-    torch_outputs = torch_model(torch_input)
+    torch_outputs = torch_model(*example_inputs)
 
     assert len(torch_outputs) == len(onnxruntime_outputs)
     for torch_output, onnxruntime_output in zip(torch_outputs, onnxruntime_outputs):
@@ -326,7 +353,7 @@ Before comparing the results, we need to convert the PyTorch's output to match O
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-212
+.. GENERATED FROM PYTHON SOURCE LINES 203-223
 
 Conclusion
 ----------
@@ -349,9 +376,10 @@ sit tight and have fun going through all of them to learn all there is about the
    :hidden:
 
 
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.688 seconds)
+   **Total running time of the script:** ( 0 minutes  1.771 seconds)
 
 
 .. _sphx_glr_download_beginner_onnx_export_simple_model_to_onnx_tutorial.py:

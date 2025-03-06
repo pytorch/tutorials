@@ -550,22 +550,23 @@ to download the full example code</p>
 </div>
 <p class="sphx-glr-example-title" id="sphx-glr-beginner-onnx-export-simple-model-to-onnx-tutorial-py"><a class="reference external" href="intro_onnx.html">Introduction to ONNX</a> ||
 <strong>Exporting a PyTorch model to ONNX</strong> ||
-<a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX Registry</a></p>
+<a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a> ||
+<a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></p>
 <div class="section" id="export-a-pytorch-model-to-onnx">
-<h1>Export a PyTorch model to ONNX<a class="headerlink" href="#export-a-pytorch-model-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Jan 27, 2025 | Last Verified: Nov 05, 2024</p>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/titaiwangms">Ti-Tai Wang</a> and <a class="reference external" href="https://github.com/xadupre">Xavier Dupré</a></p>
+<h1>Export a PyTorch model to ONNX<a class="headerlink" href="#export-a-pytorch-model-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Mar 05, 2025 | Last Verified: Nov 05, 2024</p>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/titaiwangms">Ti-Tai Wang</a>, <a class="reference external" href="mailto:justinchu%40microsoft.com">Justin Chu</a>, <a class="reference external" href="https://github.com/thiagocrepaldi">Thiago Crepaldi</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>As of PyTorch 2.1, there are two versions of ONNX Exporter.</p>
+<p>As of PyTorch 2.5, there are two versions of ONNX Exporter.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.dynamo_export</span></code> is the newest (still in beta) exporter based on the TorchDynamo technology released with PyTorch 2.0</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export</span></code> is based on TorchScript backend and has been available since PyTorch 1.2.0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export(...,</span> <span class="pre">dynamo=True)</span></code> is the newest (still in beta) exporter using <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and Torch FX to capture the graph. It was released with PyTorch 2.5</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export</span></code> uses TorchScript and has been available since PyTorch 1.2.0</p></li>
 </ul>
 </div>
 <p>In the <a class="reference external" href="https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html">60 Minute Blitz</a>,
 we had the opportunity to learn about PyTorch at a high level and train a small neural network to classify images.
 In this tutorial, we are going to expand this to describe how to convert a model defined in PyTorch into the
-ONNX format using TorchDynamo and the <code class="docutils literal notranslate"><span class="pre">torch.onnx.dynamo_export</span></code> ONNX exporter.</p>
+ONNX format using the <code class="docutils literal notranslate"><span class="pre">torch.onnx.export(...,</span> <span class="pre">dynamo=True)</span></code> ONNX exporter.</p>
 <p>While PyTorch is great for iterating on the development of models, the model can be deployed to production
 using different formats, including <a class="reference external" href="https://onnx.ai/">ONNX</a> (Open Neural Network Exchange)!</p>
 <p>ONNX is a flexible open standard format for representing machine learning models which standardized representations
@@ -586,8 +587,7 @@ from large-scale cloud-based supercomputers to resource-constrained edge devices
 <p>Because the ONNX exporter uses <code class="docutils literal notranslate"><span class="pre">onnx</span></code> and <code class="docutils literal notranslate"><span class="pre">onnxscript</span></code> to translate PyTorch operators into ONNX operators,
 we will need to install them.</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>onnx
-pip<span class="w"> </span>install<span class="w"> </span>onnxscript
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>onnx<span class="w"> </span>onnxscript
 </pre></div>
 </div>
 </div></blockquote>
@@ -601,17 +601,16 @@ exactly like we did in the <a class="reference external" href="https://pytorch.o
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageClassifierModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">MyModel</span></a><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.max_pool2d.html#torch.nn.functional.max_pool2d" title="torch.nn.functional.max_pool2d"><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu" title="torch.nn.functional.relu"><span class="n">F</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.max_pool2d.html#torch.nn.functional.max_pool2d" title="torch.nn.functional.max_pool2d"><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu" title="torch.nn.functional.relu"><span class="n">F</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.flatten.html#torch.flatten" title="torch.flatten"><span class="n">torch</span><span class="o">.</span><span class="n">flatten</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -626,9 +625,10 @@ exactly like we did in the <a class="reference external" href="https://pytorch.o
 <h2>3. Export the model to ONNX format<a class="headerlink" href="#export-the-model-to-onnx-format" title="Permalink to this heading">¶</a></h2>
 <p>Now that we have our model defined, we need to instantiate it and create a random 32x32 input.
 Next, we can export the model to ONNX format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">MyModel</span></a><span class="p">()</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_input</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.dynamo_export" title="torch.onnx.dynamo_export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">dynamo_export</span></a><span class="p">(</span><span class="n">torch_model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_input</span></a><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ImageClassifierModel</span></a><span class="p">()</span>
+<span class="c1"># Create example inputs for exporting the model. The inputs should be a tuple of tensors.</span>
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">),)</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export" title="torch.onnx.export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span></a><span class="p">(</span><span class="n">torch_model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="p">,</span> <span class="n">dynamo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:823: FutureWarning:
@@ -639,13 +639,20 @@ Next, we can export the model to ONNX format.</p>
 
 'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
 
-/usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
-
-torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-/usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/fx/onnxfunction_dispatcher.py:503: FutureWarning:
-
-'onnxscript.values.TracedOnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
+[torch.onnx] Obtain model graph for `ImageClassifierModel([...]` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `ImageClassifierModel([...]` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-optimize-the-onnx-model">
+<h2>3.5. (Optional) Optimize the ONNX model<a class="headerlink" href="#optional-optimize-the-onnx-model" title="Permalink to this heading">¶</a></h2>
+<p>The ONNX model can be optimized with constant folding, and elimination of redundant nodes.
+The optimization is done in-place, so the original ONNX model is modified.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.optimize" title="torch.onnx.ONNXProgram.optimize"><span class="n">onnx_program</span><span class="o">.</span><span class="n">optimize</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <p>As we can see, we didn’t need any code change to the model.
@@ -655,12 +662,13 @@ The resulting ONNX model is stored within <code class="docutils literal notransl
 <h2>4. Save the ONNX model in a file<a class="headerlink" href="#save-the-onnx-model-in-a-file" title="Permalink to this heading">¶</a></h2>
 <p>Although having the exported model loaded in memory is useful in many applications,
 we can save it to disk with the following code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.save" title="torch.onnx.ONNXProgram.save"><span class="n">onnx_program</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"my_image_classifier.onnx"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.save" title="torch.onnx.ONNXProgram.save"><span class="n">onnx_program</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"image_classifier_model.onnx"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can load the ONNX file back into memory and check if it is well formed with the following code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">onnx</span>
-<span class="n">onnx_model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"my_image_classifier.onnx"</span><span class="p">)</span>
+
+<span class="n">onnx_model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"image_classifier_model.onnx"</span><span class="p">)</span>
 <span class="n">onnx</span><span class="o">.</span><span class="n">checker</span><span class="o">.</span><span class="n">check_model</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -671,7 +679,7 @@ we can save it to disk with the following code:</p>
 Netron can either be installed on macos, Linux or Windows computers, or run directly from the browser.
 Let’s try the web version by opening the following link: <a class="reference external" href="https://netron.app/">https://netron.app/</a>.</p>
 <a class="reference internal image-reference" href="../../_images/netron_web_ui.png"><img alt="../../_images/netron_web_ui.png" class="align-center" src="../../_images/netron_web_ui.png" style="width: 70%;"/></a>
-<p>Once Netron is open, we can drag and drop our <code class="docutils literal notranslate"><span class="pre">my_image_classifier.onnx</span></code> file into the browser or select it after
+<p>Once Netron is open, we can drag and drop our <code class="docutils literal notranslate"><span class="pre">image_classifier_model.onnx</span></code> file into the browser or select it after
 clicking the <strong>Open model</strong> button.</p>
 <a class="reference internal image-reference" href="../../_images/image_classifier_onnx_model_on_netron_web_ui.png"><img alt="../../_images/image_classifier_onnx_model_on_netron_web_ui.png" src="../../_images/image_classifier_onnx_model_on_netron_web_ui.png" style="width: 50%;"/></a>
 <p>And that is it! We have successfully exported our PyTorch model to ONNX format and visualized it with Netron.</p>
@@ -694,29 +702,34 @@ and wrap them on a dictionary with keys being a string with the input name as ke
 and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it could be executed on GPU as well.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">onnxruntime</span>
 
-<span class="n">onnx_input</span> <span class="o">=</span> <span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_input</span></a><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onnx_input</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sample input: </span><span class="si">{</span><span class="n">onnx_input</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">onnx_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="o">.</span><span class="n">numpy</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">example_inputs</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onnx_inputs</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sample input: </span><span class="si">{</span><span class="n">onnx_inputs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span><span class="s2">"./my_image_classifier.onnx"</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="p">[</span><span class="s1">'CPUExecutionProvider'</span><span class="p">])</span>
+<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span>
+    <span class="s2">"./image_classifier_model.onnx"</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="p">[</span><span class="s2">"CPUExecutionProvider"</span><span class="p">]</span>
+<span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">onnxruntime_input</span> <span class="o">=</span> <span class="p">{</span><span class="n">input_arg</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">input_value</span> <span class="k">for</span> <span class="n">input_arg</span><span class="p">,</span> <span class="n">input_value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(),</span> <span class="n">onnx_inputs</span><span class="p">)}</span>
 
-<span class="n">onnxruntime_input</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(),</span> <span class="n">onnx_input</span><span class="p">)}</span>
-
-<span class="c1"># onnxruntime returns a list of outputs</span>
+<span class="c1"># ONNX Runtime returns a list of outputs</span>
 <span class="n">onnxruntime_outputs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">onnxruntime_input</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Input length: 1
-Sample input: [tensor([[[[-1.0416,  1.1125, -0.3602,  ..., -0.0189, -1.2205,  0.3472],
-          [ 0.6651,  1.1037, -0.3674,  ..., -1.4724,  0.2539, -0.0788],
-          [-0.1239, -0.6458, -0.7785,  ..., -0.2674,  0.3019, -0.5682],
-          ...,
-          [-0.0300, -0.4833, -0.3928,  ..., -1.2406,  0.8488, -0.5473],
-          [-0.8185, -0.1276,  0.3475,  ..., -1.0702, -1.6922, -0.6048],
-          [ 0.8268, -0.0248, -0.3354,  ..., -0.9178, -0.3240,  0.7485]]]])]
+Sample input: [array([[[[-1.0416038 ,  1.1125288 , -0.36015213, ..., -0.01891615,
+          -1.2205342 ,  0.34716162],
+         [ 0.6650918 ,  1.1037157 , -0.3673973 , ..., -1.4723971 ,
+           0.25391102, -0.07882219],
+         [-0.1238785 , -0.6457882 , -0.7785251 , ..., -0.26744807,
+           0.30193356, -0.5681653 ],
+         ...,
+         [-0.02998495, -0.48333594, -0.39282662, ..., -1.2405719 ,
+           0.84881294, -0.5473476 ],
+         [-0.8185182 , -0.1276281 ,  0.34752363, ..., -1.0701932 ,
+          -1.6922146 , -0.60484964],
+         [ 0.8267504 , -0.02483911, -0.33541355, ..., -0.917776  ,
+          -0.32401627,  0.7485422 ]]]], dtype=float32)]
 </pre></div>
 </div>
 </div>
@@ -726,7 +739,7 @@ Sample input: [tensor([[[[-1.0416,  1.1125, -0.3602,  ..., -0.0189, -1.2205,  0.
 against PyTorch, which is our source of truth.</p>
 <p>For that, we need to execute the PyTorch model with the same input and compare the results with ONNX Runtime’s.
 Before comparing the results, we need to convert the PyTorch’s output to match ONNX’s format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a> <span class="o">=</span> <span class="n">torch_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_input</span></a><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a> <span class="o">=</span> <span class="n">torch_model</span><span class="p">(</span><span class="o">*</span><span class="n">example_inputs</span><span class="p">)</span>
 
 <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">onnxruntime_outputs</span><span class="p">)</span>
 <span class="k">for</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_output</span></a><span class="p">,</span> <span class="n">onnxruntime_output</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">,</span> <span class="n">onnxruntime_outputs</span><span class="p">):</span>
@@ -758,11 +771,12 @@ Feel free to jump directly to specific topics of your interest or
 sit tight and have fun going through all of them to learn all there is about the ONNX exporter.</p>
 <div class="line-block">
 <div class="line">1. <a class="reference external" href="export_simple_model_to_onnx_tutorial.html">Exporting a PyTorch model to ONNX</a></div>
-<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX registry</a></div>
+<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a></div>
+<div class="line">3. <a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></div>
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.688 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.771 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-simple-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/1c960eb430ba8694b1655bb03904dac2/export_simple_model_to_onnx_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">export_simple_model_to_onnx_tutorial.py</span></code></a></p>
@@ -816,6 +830,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#install-the-required-dependencies">1. Install the required dependencies</a></li>
 <li><a class="reference internal" href="#author-a-simple-image-classifier-model">2. Author a simple image classifier model</a></li>
 <li><a class="reference internal" href="#export-the-model-to-onnx-format">3. Export the model to ONNX format</a></li>
+<li><a class="reference internal" href="#optional-optimize-the-onnx-model">3.5. (Optional) Optimize the ONNX model</a></li>
 <li><a class="reference internal" href="#save-the-onnx-model-in-a-file">4. Save the ONNX model in a file</a></li>
 <li><a class="reference internal" href="#visualize-the-onnx-model-graph-using-netron">5. Visualize the ONNX model graph using Netron</a></li>
 <li><a class="reference internal" href="#execute-the-onnx-model-with-onnx-runtime">6. Execute the ONNX model with ONNX Runtime</a></li>

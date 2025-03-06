@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Extending the ONNX Registry — PyTorch Tutorials 2.6.0+cu124 documentation</title>
+<title>Extending the ONNX Exporter Operator Support — PyTorch Tutorials 2.6.0+cu124 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -506,7 +506,7 @@
           
         </a> &gt;
       </li>
-<li>Extending the ONNX Registry</li>
+<li>Extending the ONNX Exporter Operator Support</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../../_sources/beginner/onnx/onnx_registry_tutorial.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -550,55 +550,102 @@ to download the full example code</p>
 </div>
 <p class="sphx-glr-example-title" id="sphx-glr-beginner-onnx-onnx-registry-tutorial-py"><a class="reference external" href="intro_onnx.html">Introduction to ONNX</a> ||
 <a class="reference external" href="export_simple_model_to_onnx_tutorial.html">Exporting a PyTorch model to ONNX</a> ||
-<strong>Extending the ONNX Registry</strong></p>
-<div class="section" id="extending-the-onnx-registry">
-<h1>Extending the ONNX Registry<a class="headerlink" href="#extending-the-onnx-registry" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 06, 2023 | Last Updated: Jan 27, 2025 | Last Verified: Nov 05, 2024</p>
-<p><strong>Authors:</strong> Ti-Tai Wang (<a class="reference external" href="mailto:titaiwang%40microsoft.com">titaiwang<span>@</span>microsoft<span>.</span>com</a>)</p>
+<strong>Extending the ONNX exporter operator support</strong> ||
+<a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></p>
+<div class="section" id="extending-the-onnx-exporter-operator-support">
+<h1>Extending the ONNX Exporter Operator Support<a class="headerlink" href="#extending-the-onnx-exporter-operator-support" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 06, 2023 | Last Updated: Mar 05, 2025 | Last Verified: Nov 05, 2024</p>
+<p><strong>Authors:</strong> <a class="reference external" href="mailto:titaiwang%40microsoft.com">Ti-Tai Wang</a>, <a class="reference external" href="mailto:justinchu%40microsoft.com">Justin Chu</a></p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
-<p>This tutorial is an introduction to ONNX registry, which empowers users to implement new ONNX operators
-or even replace existing operators with a new implementation.</p>
-<p>During the model export to ONNX, the PyTorch model is lowered to an intermediate
-representation composed of <a class="reference external" href="https://pytorch.org/docs/stable/torch.compiler_ir.html">ATen operators</a>.
-While ATen operators are maintained by PyTorch core team, it is the responsibility of the ONNX exporter team
-to independently implement each of these operators to ONNX through <a class="reference external" href="https://onnxscript.ai/">ONNX Script</a>.
-The users can also replace the behavior implemented by the ONNX exporter team with their own implementation
-to fix bugs or improve performance for a specific ONNX runtime.</p>
-<p>The ONNX Registry manages the mapping between PyTorch operators and the ONNX operators counterparts and provides
-APIs to extend the registry.</p>
-<p>In this tutorial, we will cover three scenarios that require extending the ONNX registry with custom operators:</p>
+<p>This tutorial describes how you can create ONNX implementation for unsupported PyTorch operators
+or replace existing implementation with your own.</p>
+<p>We will cover three scenarios that require extending the ONNX exporter’s operator support:</p>
 <ul class="simple">
-<li><p>Custom operators with existing ONNX Runtime support</p></li>
-<li><p>Custom operators without ONNX Runtime support</p></li>
+<li><p>Overriding the implementation of an existing PyTorch operator</p></li>
+<li><p>Using custom ONNX operators</p></li>
+<li><p>Supporting a custom PyTorch operator</p></li>
 </ul>
+<p>What you will learn:</p>
+<ul class="simple">
+<li><p>How to override or add support for PyTorch operators in ONNX.</p></li>
+<li><p>How to integrate custom ONNX operators for specialized runtimes.</p></li>
+<li><p>How to implement and translate custom PyTorch operators to ONNX.</p></li>
+</ul>
+<div class="section" id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading">¶</a></h3>
+<p>Before starting this tutorial, make sure you have completed the following prerequisites:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">torch</span> <span class="pre">&gt;=</span> <span class="pre">2.6</span></code></p></li>
+<li><p>The target PyTorch operator</p></li>
+<li><p>Completed the
+<a class="reference external" href="https://github.com/microsoft/onnxscript/blob/main/docs/tutorial/index.md">ONNX Script tutorial</a>
+before proceeding</p></li>
+<li><p>The implementation of the operator using <a class="reference external" href="https://github.com/microsoft/onnxscript">ONNX Script</a></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="overriding-the-implementation-of-an-existing-pytorch-operator">
+<h2>Overriding the implementation of an existing PyTorch operator<a class="headerlink" href="#overriding-the-implementation-of-an-existing-pytorch-operator" title="Permalink to this heading">¶</a></h2>
+<p>Although the ONNX exporter team does their best efforts to support all PyTorch operators, some of them
+might not be supported yet. In this section, we will demonstrate how you can add
+unsupported PyTorch operators to the ONNX Registry.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The steps to implement unsupported PyTorch operators are the same as those for replacing the implementation of an existing
+PyTorch operator with a custom one.
+Because we don’t actually have an unsupported PyTorch operator to use in this tutorial, we are going to leverage
+this and replace the implementation of <code class="docutils literal notranslate"><span class="pre">torch.ops.aten.add.Tensor</span></code> with a custom implementation the same way we would
+if the operator was not implemented by the ONNX exporter.</p>
+</div>
+<p>When a model cannot be exported to ONNX due to an unsupported operator, the ONNX exporter will show an error message
+similar to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">No</span> <span class="n">decompositions</span> <span class="n">registered</span> <span class="k">for</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The error message indicates that the unsupported PyTorch operator is <code class="docutils literal notranslate"><span class="pre">torch.ops.aten.add.Tensor</span></code>.
+The operator is of type <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'torch._ops.OpOverload'&gt;</span></code>, and this operator is what we will use as the
+target to register our custom implementation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">onnxruntime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">onnxscript</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">onnxscript</span><span class="w"> </span><span class="kn">import</span> <span class="n">opset18</span>  <span class="c1"># opset 18 is the latest (and only) supported version for now</span>
+
+<span class="c1"># Opset 18 is the standard supported version as of PyTorch 2.6</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onnxscript</span><span class="w"> </span><span class="kn">import</span> <span class="n">opset18</span> <span class="k">as</span> <span class="n">op</span>
+
+
+<span class="c1"># Create a model that uses the operator torch.ops.aten.add.Tensor</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_x</span><span class="p">,</span> <span class="n">input_y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">input_x</span><span class="p">,</span> <span class="n">input_y</span><span class="p">)</span>
+
+
+<span class="c1"># NOTE: The function signature (including parameter names) must match the signature of the unsupported PyTorch operator.</span>
+<span class="c1"># https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml</span>
+<span class="c1"># All attributes must be annotated with type hints.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">custom_aten_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">CastLike</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="c1"># To distinguish the custom implementation from the builtin one, we switch the order of the inputs</span>
+    <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mf">1.0</span><span class="p">])</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mf">2.0</span><span class="p">])</span>
+
+<span class="c1"># Then we provide the custom implementation to the ONNX exporter as a ``custom_translation_table``.</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export" title="torch.onnx.export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
+    <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="p">),</span>
+    <span class="n">dynamo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">custom_translation_table</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span> <span class="n">custom_aten_add</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="c1"># Optimize the ONNX graph to remove redundant nodes</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.optimize" title="torch.onnx.ONNXProgram.optimize"><span class="n">onnx_program</span><span class="o">.</span><span class="n">optimize</span></a><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="custom-operators-with-existing-onnx-runtime-support">
-<h2>Custom operators with existing ONNX Runtime support<a class="headerlink" href="#custom-operators-with-existing-onnx-runtime-support" title="Permalink to this heading">¶</a></h2>
-<p>In this case, the user creates a model with standard PyTorch operators, but the ONNX runtime
-(e.g. Microsoft’s ONNX Runtime) can provide a custom implementation for that kernel, effectively replacing the
-existing implementation in the ONNX Registry. Another use case is when the user wants to use a custom implementation
-of an existing ONNX operator to fix a bug or improve performance of a specific operator.
-To achieve this, we only need to register the new implementation with the existing ATen fully qualified name.</p>
-<p>In the following example, we use the <code class="docutils literal notranslate"><span class="pre">com.microsoft.Gelu</span></code> from ONNX Runtime,
-which is not the same <code class="docutils literal notranslate"><span class="pre">Gelu</span></code> from ONNX spec. Thus, we register the Gelu with
-the namespace <code class="docutils literal notranslate"><span class="pre">com.microsoft</span></code> and operator name <code class="docutils literal notranslate"><span class="pre">Gelu</span></code>.</p>
-<p>Before we begin, let’s check whether <code class="docutils literal notranslate"><span class="pre">aten::gelu.default</span></code> is really supported by the ONNX registry.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">OnnxRegistry</span></a><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aten::gelu.default is supported by ONNX registry: </span><span class="se">\</span>
-<span class="s2">    </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry.is_registered_op" title="torch.onnx.OnnxRegistry.is_registered_op"><span class="n">onnx_registry</span><span class="o">.</span><span class="n">is_registered_op</span></a><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s1">'aten'</span><span class="p">,</span><span class="w"> </span><span class="n">op_name</span><span class="o">=</span><span class="s1">'gelu'</span><span class="p">,</span><span class="w"> </span><span class="n">overload</span><span class="o">=</span><span class="s1">'default'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
-
-torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-
-/usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:823: FutureWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:823: FutureWarning:
 
 'onnxscript.values.Op.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
 
@@ -606,234 +653,244 @@ torch.onnx.dynamo_export only implements opset version 18 for now. If you need t
 
 'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
 
-aten::gelu.default is supported by ONNX registry:     True
+[torch.onnx] Obtain model graph for `Model()` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `Model()` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅
 </pre></div>
 </div>
-<p>In our example, <code class="docutils literal notranslate"><span class="pre">aten::gelu.default</span></code> operator is supported by the ONNX registry,
-so <code class="xref py py-meth docutils literal notranslate"><span class="pre">onnx_registry.is_registered_op()</span></code> returns <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CustomGelu</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<p>Now let’s inspect the model and verify the model is using the custom implementation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;
+    ir_version=10,
+    opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
+    producer_name='pytorch',
+    producer_version='2.6.0+cu124',
+    domain=None,
+    model_version=None,
+&gt;
+graph(
+    name=main_graph,
+    inputs=(
+        %"input_x"&lt;FLOAT,[1]&gt;,
+        %"input_y"&lt;FLOAT,[1]&gt;
+    ),
+    outputs=(
+        %"add"&lt;FLOAT,[1]&gt;
+    ),
+) {
+    0 |  # node_Add_0
+         %"add"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"input_y", %"input_x")
+    return %"add"&lt;FLOAT,[1]&gt;
+}
+</pre></div>
+</div>
+<p>The translation is using our custom implementation: In node <code class="docutils literal notranslate"><span class="pre">node_Add_0</span></code>, <code class="docutils literal notranslate"><span class="pre">input_y</span></code> now
+comes first, and <code class="docutils literal notranslate"><span class="pre">input_x</span></code> comes second.</p>
+<p>We can use ONNX Runtime to run the model and verify the results by calling
+the <a class="reference external" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.onnx.ONNXProgram</span></code></a> directly on the input tensors.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mf">3.0</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-custom-onnx-operators">
+<h2>Using custom ONNX operators<a class="headerlink" href="#using-custom-onnx-operators" title="Permalink to this heading">¶</a></h2>
+<p>In this case, we create a model with standard PyTorch operators, but the runtime
+(such as Microsoft’s ONNX Runtime) can provide a custom implementation for that kernel, effectively replacing the
+existing implementation.</p>
+<p>In the following example, we use the <code class="docutils literal notranslate"><span class="pre">com.microsoft.Gelu</span></code> operator provided by ONNX Runtime,
+which is not the same <code class="docutils literal notranslate"><span class="pre">Gelu</span></code> from ONNX spec.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GeluModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_x</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">gelu</span><span class="p">(</span><span class="n">input_x</span><span class="p">)</span>
 
-<span class="c1"># com.microsoft is an official ONNX Runtime namspace</span>
-<span class="n">custom_ort</span> <span class="o">=</span> <span class="n">onnxscript</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">Opset</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="s2">"com.microsoft"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># NOTE: The function signature must match the signature of the unsupported ATen operator.</span>
+<span class="c1"># Create a namespace for the custom operator using ONNX Script</span>
+<span class="c1"># ``com.microsoft`` is an official ONNX Runtime namespace</span>
+<span class="n">microsoft_op</span> <span class="o">=</span> <span class="n">onnxscript</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">Opset</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="s2">"com.microsoft"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># NOTE: The function signature (including parameter names) must match the signature of the unsupported PyTorch operator.</span>
 <span class="c1"># https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml</span>
 <span class="c1"># NOTE: All attributes must be annotated with type hints.</span>
-<span class="nd">@onnxscript</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">custom_ort</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">custom_aten_gelu</span><span class="p">(</span><span class="n">input_x</span><span class="p">,</span> <span class="n">approximate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">):</span>
-    <span class="c1"># We know com.microsoft::Gelu is supported by ONNX Runtime</span>
-    <span class="c1"># It's only not supported by ONNX</span>
-    <span class="k">return</span> <span class="n">custom_ort</span><span class="o">.</span><span class="n">Gelu</span><span class="p">(</span><span class="n">input_x</span><span class="p">)</span>
+<span class="c1"># The function must be scripted using the ``@onnxscript.script()`` decorator when</span>
+<span class="c1"># using operators from custom domains. This may be improved in future versions.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onnxscript</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLOAT</span>
 
 
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">OnnxRegistry</span></a><span class="p">()</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry.register_op" title="torch.onnx.OnnxRegistry.register_op"><span class="n">onnx_registry</span><span class="o">.</span><span class="n">register_op</span></a><span class="p">(</span>
-    <span class="n">namespace</span><span class="o">=</span><span class="s2">"aten"</span><span class="p">,</span> <span class="n">op_name</span><span class="o">=</span><span class="s2">"gelu"</span><span class="p">,</span> <span class="n">overload</span><span class="o">=</span><span class="s2">"default"</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="n">custom_aten_gelu</span><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">ExportOptions</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a><span class="p">)</span>
+<span class="nd">@onnxscript</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">microsoft_op</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">custom_aten_gelu</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">FLOAT</span><span class="p">,</span> <span class="n">approximate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FLOAT</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">microsoft_op</span><span class="o">.</span><span class="n">Gelu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="n">aten_gelu_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">CustomGelu</span></a><span class="p">()</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_gelu_x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.dynamo_export" title="torch.onnx.dynamo_export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">dynamo_export</span></a><span class="p">(</span>
-    <span class="n">aten_gelu_model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_gelu_x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a>
-    <span class="p">)</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export" title="torch.onnx.export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">GeluModel</span></a><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
+    <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,),</span>
+    <span class="n">dynamo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">custom_translation_table</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">gelu</span><span class="o">.</span><span class="n">default</span><span class="p">:</span> <span class="n">custom_aten_gelu</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimize the ONNX graph to remove redundant nodes</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.optimize" title="torch.onnx.ONNXProgram.optimize"><span class="n">onnx_program</span><span class="o">.</span><span class="n">optimize</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>'Gelu' is not a known op in 'com.microsoft'
-/usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
-
-torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
+[torch.onnx] Obtain model graph for `GeluModel()` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `GeluModel()` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅
 </pre></div>
 </div>
 <p>Let’s inspect the model and verify the model uses op_type <code class="docutils literal notranslate"><span class="pre">Gelu</span></code>
 from namespace <code class="docutils literal notranslate"><span class="pre">com.microsoft</span></code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="xref py py-func docutils literal notranslate"><span class="pre">custom_aten_gelu()</span></code> does not exist in the graph because
-functions with fewer than three operators are inlined automatically.</p>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># graph node domain is the custom domain we registered</span>
-<span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">"com.microsoft"</span>
-<span class="c1"># graph node name is the function name</span>
-<span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">op_type</span> <span class="o">==</span> <span class="s2">"Gelu"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The following diagram shows <code class="docutils literal notranslate"><span class="pre">custom_aten_gelu_model</span></code> ONNX graph using Netron,
-we can see the <code class="docutils literal notranslate"><span class="pre">Gelu</span></code> node from module <code class="docutils literal notranslate"><span class="pre">com.microsoft</span></code> used in the function:</p>
-<img alt="../../_images/custom_aten_gelu_model.png" src="../../_images/custom_aten_gelu_model.png"/>
-<p>That is all we need to do. As an additional step, we can use ONNX Runtime to run the model,
-and compare the results with PyTorch.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.save" title="torch.onnx.ONNXProgram.save"><span class="n">onnx_program</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"./custom_gelu_model.onnx"</span><span class="p">)</span>
-<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span>
-    <span class="s2">"./custom_gelu_model.onnx"</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="p">[</span><span class="s1">'CPUExecutionProvider'</span><span class="p">]</span>
-    <span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-
-<span class="n">onnx_input</span> <span class="o">=</span> <span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_gelu_x</span></a><span class="p">]</span>
-<span class="n">onnxruntime_input</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(),</span> <span class="n">onnx_input</span><span class="p">)}</span>
-<span class="n">onnxruntime_outputs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">onnxruntime_input</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a> <span class="o">=</span> <span class="n">aten_gelu_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_gelu_x</span></a><span class="p">)</span>
-
-<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">onnxruntime_outputs</span><span class="p">)</span>
-<span class="k">for</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_output</span></a><span class="p">,</span> <span class="n">onnxruntime_output</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">,</span> <span class="n">onnxruntime_outputs</span><span class="p">):</span>
-    <a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_output</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">onnxruntime_output</span><span class="p">))</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;
+    ir_version=10,
+    opset_imports={'pkg.onnxscript.torch_lib.common': 1, 'com.microsoft': 1, '': 18},
+    producer_name='pytorch',
+    producer_version='2.6.0+cu124',
+    domain=None,
+    model_version=None,
+&gt;
+graph(
+    name=main_graph,
+    inputs=(
+        %"input_x"&lt;FLOAT,[1]&gt;
+    ),
+    outputs=(
+        %"gelu"&lt;FLOAT,[1]&gt;
+    ),
+) {
+    0 |  # n0
+         %"gelu"&lt;FLOAT,[1]&gt; ⬅️ com.microsoft::Gelu(%"input_x")
+    return %"gelu"&lt;FLOAT,[1]&gt;
+}
+</pre></div>
+</div>
+<p>Similar to the previous example, we can use ONNX Runtime to run the model and verify the results.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">aten</span><span class="o">.</span><span class="n">gelu</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">))</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="custom-operators-without-onnx-runtime-support">
-<h2>Custom operators without ONNX Runtime support<a class="headerlink" href="#custom-operators-without-onnx-runtime-support" title="Permalink to this heading">¶</a></h2>
-<p>In this case, the operator is not supported by any ONNX runtime, but we
-would like to use it as custom operator in ONNX graph. Therefore, we need to implement
-the operator in three places:</p>
-<ol class="arabic simple">
-<li><p>PyTorch FX graph</p></li>
-<li><p>ONNX Registry</p></li>
-<li><p>ONNX Runtime</p></li>
-</ol>
+<div class="section" id="supporting-a-custom-pytorch-operator">
+<h2>Supporting a custom PyTorch operator<a class="headerlink" href="#supporting-a-custom-pytorch-operator" title="Permalink to this heading">¶</a></h2>
+<p>In this case, the operator is an operator that is user implemented and registered to PyTorch.</p>
 <p>In the following example, we would like to use a custom operator
 that takes one tensor input, and returns one output. The operator adds
 the input to itself, and returns the rounded result.</p>
-<div class="section" id="custom-ops-registration-in-pytorch-fx-graph-beta">
-<h3>Custom Ops Registration in PyTorch FX Graph (Beta)<a class="headerlink" href="#custom-ops-registration-in-pytorch-fx-graph-beta" title="Permalink to this heading">¶</a></h3>
-<p>Firstly, we need to implement the operator in PyTorch FX graph.
-This can be done by using <code class="docutils literal notranslate"><span class="pre">torch._custom_op</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: This is a beta feature in PyTorch, and is subject to change.</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch._custom_op</span><span class="w"> </span><span class="kn">import</span> <span class="n">impl</span> <span class="k">as</span> <span class="n">custom_op</span>
+<p>Firstly, we assume the custom operator is implemented and registered with <code class="docutils literal notranslate"><span class="pre">torch.library.custom_op()</span></code>.
+You can refer to <a class="reference external" href="https://pytorch.org/docs/stable/library.html#torch.library.custom_op">Creating new custom ops in Python</a>
+for a detailed guide on how to create custom operators.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define and use the operator in PyTorch</span>
+<span class="nd">@torch</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">custom_op</span><span class="p">(</span><span class="s2">"mylibrary::add_and_round_op"</span><span class="p">,</span> <span class="n">mutates_args</span><span class="o">=</span><span class="p">())</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_and_round_op</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.round.html#torch.round" title="torch.round"><span class="n">torch</span><span class="o">.</span><span class="n">round</span></a><span class="p">(</span><span class="nb">input</span> <span class="o">+</span> <span class="nb">input</span><span class="p">)</span>
 
-<span class="nd">@custom_op</span><span class="o">.</span><span class="n">custom_op</span><span class="p">(</span><span class="s2">"mylibrary::addandround_op"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">addandround_op</span><span class="p">(</span><span class="n">tensor_x</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
-    <span class="o">...</span>
 
-<span class="nd">@addandround_op</span><span class="o">.</span><span class="n">impl_abstract</span><span class="p">()</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">addandround_op_impl_abstract</span><span class="p">(</span><span class="n">tensor_x</span><span class="p">):</span>
+<span class="nd">@add_and_round_op</span><span class="o">.</span><span class="n">register_fake</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_and_round_op_fake</span><span class="p">(</span><span class="n">tensor_x</span><span class="p">):</span>
     <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><span class="n">tensor_x</span><span class="p">)</span>
 
-<span class="nd">@addandround_op</span><span class="o">.</span><span class="n">impl</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">addandround_op_impl</span><span class="p">(</span><span class="n">tensor_x</span><span class="p">):</span>
-    <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.round.html#torch.round" title="torch.round"><span class="n">torch</span><span class="o">.</span><span class="n">round</span></a><span class="p">(</span><span class="n">tensor_x</span> <span class="o">+</span> <span class="n">tensor_x</span><span class="p">)</span>  <span class="c1"># add x to itself, and round the result</span>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">_dynamo</span><span class="o">.</span><span class="n">allow_in_graph</span><span class="p">(</span><span class="n">addandround_op</span><span class="p">)</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomFoo</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor_x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">addandround_op</span><span class="p">(</span><span class="n">tensor_x</span><span class="p">)</span>
-
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_addandround_x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">custom_addandround_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">CustomFoo</span></a><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="custom-ops-registration-in-onnx-registry">
-<h3>Custom Ops Registration in ONNX Registry<a class="headerlink" href="#custom-ops-registration-in-onnx-registry" title="Permalink to this heading">¶</a></h3>
-<p>For the step 2 and 3, we need to implement the operator in ONNX registry.
-In this example, we will implement the operator in ONNX registry
-with the namespace <code class="docutils literal notranslate"><span class="pre">test.customop</span></code> and operator name <code class="docutils literal notranslate"><span class="pre">CustomOpOne</span></code>,
-and <code class="docutils literal notranslate"><span class="pre">CustomOpTwo</span></code>. These two ops are registered and built in
-<a class="reference external" href="https://github.com/microsoft/onnxruntime/blob/main/onnxruntime/test/testdata/custom_op_library/cpu/cpu_ops.cc">cpu_ops.cc</a>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_opset</span> <span class="o">=</span> <span class="n">onnxscript</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">Opset</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="s2">"test.customop"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># NOTE: The function signature must match the signature of the unsupported ATen operator.</span>
-<span class="c1"># https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml</span>
-<span class="c1"># NOTE: All attributes must be annotated with type hints.</span>
-<span class="nd">@onnxscript</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">custom_opset</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">custom_addandround</span><span class="p">(</span><span class="n">input_x</span><span class="p">):</span>
-    <span class="c1"># The same as opset18.Add(x, x)</span>
-    <span class="n">add_x</span> <span class="o">=</span> <span class="n">custom_opset</span><span class="o">.</span><span class="n">CustomOpOne</span><span class="p">(</span><span class="n">input_x</span><span class="p">,</span> <span class="n">input_x</span><span class="p">)</span>
-    <span class="c1"># The same as opset18.Round(x, x)</span>
-    <span class="n">round_x</span> <span class="o">=</span> <span class="n">custom_opset</span><span class="o">.</span><span class="n">CustomOpTwo</span><span class="p">(</span><span class="n">add_x</span><span class="p">)</span>
-    <span class="c1"># Cast to FLOAT to match the ONNX type</span>
-    <span class="k">return</span> <span class="n">opset18</span><span class="o">.</span><span class="n">Cast</span><span class="p">(</span><span class="n">round_x</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AddAndRoundModel</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">add_and_round_op</span></a><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 
 
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">OnnxRegistry</span></a><span class="p">()</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry.register_op" title="torch.onnx.OnnxRegistry.register_op"><span class="n">onnx_registry</span><span class="o">.</span><span class="n">register_op</span></a><span class="p">(</span>
-    <span class="n">namespace</span><span class="o">=</span><span class="s2">"mylibrary"</span><span class="p">,</span> <span class="n">op_name</span><span class="o">=</span><span class="s2">"addandround_op"</span><span class="p">,</span> <span class="n">overload</span><span class="o">=</span><span class="s2">"default"</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="n">custom_addandround</span>
-    <span class="p">)</span>
+<span class="c1"># Implement the custom operator in ONNX using ONNX Script</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">onnx_add_and_round</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">Round</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="nb">input</span><span class="p">))</span>
 
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">ExportOptions</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.OnnxRegistry" title="torch.onnx.OnnxRegistry"><span class="n">onnx_registry</span></a><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.dynamo_export" title="torch.onnx.dynamo_export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">dynamo_export</span></a><span class="p">(</span>
-    <span class="n">custom_addandround_model</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_addandround_x</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ExportOptions" title="torch.onnx.ExportOptions"><span class="n">export_options</span></a>
-    <span class="p">)</span>
-<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.save" title="torch.onnx.ONNXProgram.save"><span class="n">onnx_program</span><span class="o">.</span><span class="n">save</span></a><span class="p">(</span><span class="s2">"./custom_addandround_model.onnx"</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>'CustomOpOne' is not a known op in 'test.customop'
-'CustomOpTwo' is not a known op in 'test.customop'
-/usr/local/lib/python3.10/dist-packages/torch/onnx/_internal/_exporter_legacy.py:101: UserWarning:
 
-torch.onnx.dynamo_export only implements opset version 18 for now. If you need to use a different opset version, please register them with register_custom_op.
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">onnx_program</span></code> exposes the exported model as protobuf through <code class="docutils literal notranslate"><span class="pre">onnx_program.model_proto</span></code>.
-The graph has one graph nodes for <code class="docutils literal notranslate"><span class="pre">custom_addandround</span></code>, and inside <code class="docutils literal notranslate"><span class="pre">custom_addandround</span></code>,
-there are two function nodes, one for each operator.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">"test.customop"</span>
-<span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">op_type</span> <span class="o">==</span> <span class="s2">"CustomOpOne"</span>
-<span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="s2">"test.customop"</span>
-<span class="k">assert</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-property" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.model_proto" title="torch.onnx.ONNXProgram.model_proto"><span class="n">onnx_program</span><span class="o">.</span><span class="n">model_proto</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op_type</span> <span class="o">==</span> <span class="s2">"CustomOpTwo"</span>
-</pre></div>
-</div>
-<p>This is how <code class="docutils literal notranslate"><span class="pre">custom_addandround_model</span></code> ONNX graph looks using Netron.
-We can see the two custom operators we used in the function (<code class="docutils literal notranslate"><span class="pre">CustomOpOne</span></code>, and <code class="docutils literal notranslate"><span class="pre">CustomOpTwo</span></code>),
-and they are from module <code class="docutils literal notranslate"><span class="pre">test.customop</span></code>:</p>
-<img alt="../../_images/custom_addandround.png" src="../../_images/custom_addandround.png"/>
-</div>
-<div class="section" id="custom-ops-registration-in-onnx-runtime">
-<h3>Custom Ops Registration in ONNX Runtime<a class="headerlink" href="#custom-ops-registration-in-onnx-runtime" title="Permalink to this heading">¶</a></h3>
-<p>To link your custom op library to ONNX Runtime, you need to
-compile your C++ code into a shared library and link it to ONNX Runtime.
-Follow the instructions below:</p>
-<ol class="arabic simple">
-<li><p>Implement your custom op in C++ by following
-<a class="reference external" href="`https://github.com/microsoft/onnxruntime/blob/gh-pages/docs/reference/operators/add-custom-op.md">ONNX Runtime instructions</a>.</p></li>
-<li><p>Download ONNX Runtime source distribution from
-<a class="reference external" href="https://github.com/microsoft/onnxruntime/releases">ONNX Runtime releases</a>.</p></li>
-<li><p>Compile and link your custom op library to ONNX Runtime, for example:</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gcc<span class="w"> </span>-shared<span class="w"> </span>-o<span class="w"> </span>libcustom_op_library.so<span class="w"> </span>custom_op_library.cc<span class="w"> </span>-L<span class="w"> </span>/path/to/downloaded/ort/lib/<span class="w"> </span>-lonnxruntime<span class="w"> </span>-fPIC
-</pre></div>
-</div>
-<ol class="arabic simple" start="4">
-<li><p>Run the model with ONNX Runtime Python API and compare the results with PyTorch.</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ort_session_options</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">SessionOptions</span><span class="p">()</span>
-
-<span class="c1"># NOTE: Link the custom op library to ONNX Runtime and replace the path</span>
-<span class="c1"># with the path to your custom op library</span>
-<span class="n">ort_session_options</span><span class="o">.</span><span class="n">register_custom_ops_library</span><span class="p">(</span>
-    <span class="s2">"/path/to/libcustom_op_library.so"</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/onnx_torchscript.html#torch.onnx.export" title="torch.onnx.export"><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">AddAndRoundModel</span></a><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
+    <span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">,),</span>
+    <span class="n">dynamo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">custom_translation_table</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">mylibrary</span><span class="o">.</span><a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">add_and_round_op</span></a><span class="o">.</span><span class="n">default</span><span class="p">:</span> <span class="n">onnx_add_and_round</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">)</span>
-<span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span>
-    <span class="s2">"./custom_addandround_model.onnx"</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="p">[</span><span class="s1">'CPUExecutionProvider'</span><span class="p">],</span> <span class="n">sess_options</span><span class="o">=</span><span class="n">ort_session_options</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-
-<span class="n">onnx_input</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="o">.</span><span class="n">adapt_torch_inputs_to_onnx</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_addandround_x</span></a><span class="p">)</span>
-<span class="n">onnxruntime_input</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(),</span> <span class="n">onnx_input</span><span class="p">)}</span>
-<span class="n">onnxruntime_outputs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">onnxruntime_input</span><span class="p">)</span>
-
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a> <span class="o">=</span> <span class="n">custom_addandround_model</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">input_addandround_x</span></a><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="o">.</span><span class="n">adapt_torch_outputs_to_onnx</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">)</span>
-
-<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">onnxruntime_outputs</span><span class="p">)</span>
-<span class="k">for</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_output</span></a><span class="p">,</span> <span class="n">onnxruntime_output</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_outputs</span></a><span class="p">,</span> <span class="n">onnxruntime_outputs</span><span class="p">):</span>
-    <a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch_output</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">onnxruntime_output</span><span class="p">))</span>
+<span class="c1"># Optimize the ONNX graph to remove redundant nodes</span>
+<a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.optimize" title="torch.onnx.ONNXProgram.optimize"><span class="n">onnx_program</span><span class="o">.</span><span class="n">optimize</span></a><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[torch.onnx] Obtain model graph for `AddAndRoundModel()` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `AddAndRoundModel()` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅
+ONNXProgram(
+    model=
+        &lt;
+            ir_version=10,
+            opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
+            producer_name='pytorch',
+            producer_version='2.6.0+cu124',
+            domain=None,
+            model_version=None,
+        &gt;
+        graph(
+            name=main_graph,
+            inputs=(
+                %"input"&lt;FLOAT,[1]&gt;
+            ),
+            outputs=(
+                %"add_and_round_op"&lt;FLOAT,[1]&gt;
+            ),
+        ) {
+            0 |  # node_Add_0
+                 %"val_0"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"input", %"input")
+            1 |  # node_Round_1
+                 %"add_and_round_op"&lt;FLOAT,[1]&gt; ⬅️ ::Round(%"val_0")
+            return %"add_and_round_op"&lt;FLOAT,[1]&gt;
+        }
+
+
+    ,
+    exported_program=
+        ExportedProgram:
+            class GraphModule(torch.nn.Module):
+                def forward(self, input: "f32[1]"):
+                    input_1 = input
+
+                     # File: /var/lib/workspace/beginner_source/onnx/onnx_registry_tutorial.py:215 in forward, code: return add_and_round_op(input)
+                    add_and_round_op: "f32[1]" = torch.ops.mylibrary.add_and_round_op.default(input_1);  input_1 = None
+                    return (add_and_round_op,)
+
+        Graph signature: ExportGraphSignature(input_specs=[InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='input'), target=None, persistent=None)], output_specs=[OutputSpec(kind=&lt;OutputKind.USER_OUTPUT: 1&gt;, arg=TensorArgument(name='add_and_round_op'), target=None)])
+        Range constraints: {}
+
+)
+</pre></div>
+</div>
+<p>The translation is using our custom implementation to translate the <code class="docutils literal notranslate"><span class="pre">torch.ops.mylibrary.add_and_round_op.default</span></code>
+operator in the <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.export.ExportedProgram`</span></code> to the ONNX operator <code class="docutils literal notranslate"><span class="pre">Add</span></code> and <code class="docutils literal notranslate"><span class="pre">Round</span></code>.</p>
+<p>Finally we verify the results.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">result</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-_library-custom_ops sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/library.html#torch._library.custom_ops.CustomOpDef" title="torch._library.custom_ops.CustomOpDef"><span class="n">add_and_round_op</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">))</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>Congratulations! In this tutorial, we explored the <code class="xref py py-class docutils literal notranslate"><span class="pre">ONNXRegistry</span></code> API and
-discovered how to create custom implementations for unsupported or existing ATen operators
-using ONNX Script.
-Finally, we leveraged ONNX Runtime to execute the model and compare the results with PyTorch,
+<p>Congratulations! In this tutorial, we explored the <code class="docutils literal notranslate"><span class="pre">custom_translation_table</span></code> option and
+discovered how to create custom implementations for unsupported or existing PyTorch operators
+using ONNX Script.</p>
+<p>Finally, we leveraged ONNX Runtime to execute the model and compare the results with PyTorch,
 providing us with a comprehensive understanding of handling unsupported
 operators in the ONNX ecosystem.</p>
 </div>
@@ -845,11 +902,12 @@ Feel free to jump directly to specific topics of your interest or
 sit tight and have fun going through all of them to learn all there is about the ONNX exporter.</p>
 <div class="line-block">
 <div class="line">1. <a class="reference external" href="export_simple_model_to_onnx_tutorial.html">Exporting a PyTorch model to ONNX</a></div>
-<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX registry</a></div>
+<div class="line">2. <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a></div>
+<div class="line">3. <a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></div>
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.700 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.140 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-onnx-registry-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/94896e8c36969aff0b2abe5e3848a487/onnx_registry_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">onnx_registry_tutorial.py</span></code></a></p>
@@ -899,15 +957,14 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Extending the ONNX Registry</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#custom-operators-with-existing-onnx-runtime-support">Custom operators with existing ONNX Runtime support</a></li>
-<li><a class="reference internal" href="#custom-operators-without-onnx-runtime-support">Custom operators without ONNX Runtime support</a><ul>
-<li><a class="reference internal" href="#custom-ops-registration-in-pytorch-fx-graph-beta">Custom Ops Registration in PyTorch FX Graph (Beta)</a></li>
-<li><a class="reference internal" href="#custom-ops-registration-in-onnx-registry">Custom Ops Registration in ONNX Registry</a></li>
-<li><a class="reference internal" href="#custom-ops-registration-in-onnx-runtime">Custom Ops Registration in ONNX Runtime</a></li>
+<li><a class="reference internal" href="#">Extending the ONNX Exporter Operator Support</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#overriding-the-implementation-of-an-existing-pytorch-operator">Overriding the implementation of an existing PyTorch operator</a></li>
+<li><a class="reference internal" href="#using-custom-onnx-operators">Using custom ONNX operators</a></li>
+<li><a class="reference internal" href="#supporting-a-custom-pytorch-operator">Supporting a custom PyTorch operator</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 <li><a class="reference internal" href="#further-reading">Further reading</a></li>
 </ul>
