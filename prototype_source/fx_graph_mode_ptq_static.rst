@@ -253,7 +253,7 @@ of the observers for activation and weight. ``QConfigMapping`` contains mapping 
 
 
 Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/qconfig.py>`_ file
-while those for ``QConfigMapping`` can be found in the `qconfig_mapping <https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/fx/qconfig_mapping.py>`
+while those for ``QConfigMapping`` can be found in the `qconfig_mapping <https://github.com/pytorch/pytorch/blob/main/torch/ao/quantization/fx/qconfig_mapping_utils.py>`
 
 .. code:: python
 
