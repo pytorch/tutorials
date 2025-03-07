@@ -268,14 +268,14 @@ Welcome to PyTorch Tutorials
    :header: Extending the ONNX exporter operator support
    :card_description: Demonstrate end-to-end how to address unsupported operators in ONNX.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: beginner/onnx_registry_tutorial.html
+   :link: beginner/onnx/onnx_registry_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. customcarditem::
    :header: Exporting a model with control flow to ONNX
    :card_description: Demonstrate how to handle control flow logic while exporting a PyTorch model to ONNX.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: beginner/export_control_flow_model_to_onnx_tutorial.html
+   :link: beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
