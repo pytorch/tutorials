@@ -25,7 +25,7 @@ to be the output, i.e. which class the word belongs to.
 
 Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
-spelling. 
+spelling.
 
 Recommended Preparation
 =======================
@@ -50,13 +50,13 @@ It would also be useful to know about RNNs and how they work:
    general
 """
 ######################################################################
-# Preparing Torch 
+# Preparing Torch
 # ==========================
 #
-# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). 
+# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA).
 #
 
-import torch 
+import torch
 
 # Check if CUDA is available
 device = torch.device('cpu')
@@ -70,7 +70,7 @@ print(f"Using device = {torch.get_default_device()}")
 # Preparing the Data
 # ==================
 #
-# Download the data from `here <https://download.pytorch.org/tutorial/data.zip>`__ 
+# Download the data from `here <https://download.pytorch.org/tutorial/data.zip>`__
 # and extract it to the current directory.
 #
 # Included in the ``data/names`` directory are 18 text files named as
@@ -78,16 +78,17 @@ print(f"Using device = {torch.get_default_device()}")
 # line, mostly romanized (but we still need to convert from Unicode to
 # ASCII).
 #
-# The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to 
-# limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
+# The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to
+# limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters.
 
-import string 
+import string
 import unicodedata
 
-allowed_characters = string.ascii_letters + " .,;'"
-n_letters = len(allowed_characters) 
+# We can use "_" to represent an out-of-vocabulary character, that is, any character we are not handling in our model
+allowed_characters = string.ascii_letters + " .,;'" + "_"
+n_letters = len(allowed_characters)
 
-# Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427    
+# Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -120,7 +121,11 @@ print (f"converting 'Ślusàrski' to {unicodeToAscii('Ślusàrski')}")
 
 # Find letter index from all_letters, e.g. "a" = 0
 def letterToIndex(letter):
-    return allowed_characters.find(letter)
+    # return our out-of-vocabulary character if we encounter a letter unknown to our model
+    if letter not in allowed_characters:
+        return allowed_characters.find("_")
+    else:
+        return allowed_characters.find(letter)
 
 # Turn a line into a <line_length x 1 x n_letters>,
 # or an array of one-hot letter vectors
@@ -137,16 +142,16 @@ print (f"The letter 'a' becomes {lineToTensor('a')}") #notice that the first pos
 print (f"The name 'Ahn' becomes {lineToTensor('Ahn')}") #notice 'A' sets the 27th index to 1
 
 #########################
-# Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach 
+# Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach
 # for other RNN tasks with text.
 #
-# Next, we need to combine all our examples into a dataset so we can train, test and validate our models. For this, 
-# we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__ classes 
+# Next, we need to combine all our examples into a dataset so we can train, test and validate our models. For this,
+# we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__ classes
 # to hold our dataset. Each Dataset needs to implement three functions: ``__init__``, ``__len__``, and ``__getitem__``.
 from io import open
 import glob
 import os
-import time 
+import time
 
 import torch
 from torch.utils.data import Dataset
@@ -155,26 +160,26 @@ class NamesDataset(Dataset):
 
     def __init__(self, data_dir):
         self.data_dir = data_dir #for provenance of the dataset
-        self.load_time = time.localtime #for provenance of the dataset 
+        self.load_time = time.localtime #for provenance of the dataset
         labels_set = set() #set of all classes
 
         self.data = []
         self.data_tensors = []
-        self.labels = [] 
-        self.labels_tensors = [] 
+        self.labels = []
+        self.labels_tensors = []
 
         #read all the ``.txt`` files in the specified directory
-        text_files = glob.glob(os.path.join(data_dir, '*.txt'))                           
+        text_files = glob.glob(os.path.join(data_dir, '*.txt'))
         for filename in text_files:
             label = os.path.splitext(os.path.basename(filename))[0]
             labels_set.add(label)
             lines = open(filename, encoding='utf-8').read().strip().split('\n')
-            for name in lines: 
+            for name in lines:
                 self.data.append(name)
                 self.data_tensors.append(lineToTensor(name))
                 self.labels.append(label)
 
-        #Cache the tensor representation of the labels 
+        #Cache the tensor representation of the labels
         self.labels_uniq = list(labels_set)
         for idx in range(len(self.labels)):
             temp_tensor = torch.tensor([self.labels_uniq.index(self.labels[idx])], dtype=torch.long)
@@ -187,7 +192,7 @@ class NamesDataset(Dataset):
         data_item = self.data[idx]
         data_label = self.labels[idx]
         data_tensor = self.data_tensors[idx]
-        label_tensor = self.labels_tensors[idx] 
+        label_tensor = self.labels_tensors[idx]
 
         return label_tensor, data_tensor, data_label, data_item
 
@@ -200,17 +205,17 @@ print(f"loaded {len(alldata)} items of data")
 print(f"example = {alldata[0]}")
 
 #########################
-#Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20 
-# split but the ``torch.utils.data`` has more useful utilities. Here we specify a generator since we need to use the 
-#same device as PyTorch defaults to above. 
+#Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20
+# split but the ``torch.utils.data`` has more useful utilities. Here we specify a generator since we need to use the
+#same device as PyTorch defaults to above.
 
 train_set, test_set = torch.utils.data.random_split(alldata, [.85, .15], generator=torch.Generator(device=device).manual_seed(2024))
 
 print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}")
 
 #########################
-# Now we have a basic dataset containing **20074** examples where each example is a pairing of label and name. We have also 
-#split the dataset into training and testing so we can validate the model that we build. 
+# Now we have a basic dataset containing **20074** examples where each example is a pairing of label and name. We have also
+#split the dataset into training and testing so we can validate the model that we build.
 
 
 ######################################################################
@@ -222,11 +227,11 @@ print(f"train examples = {len(train_set)}, validation examples = {len(test_set)}
 # held hidden state and gradients which are now entirely handled by the
 # graph itself. This means you can implement a RNN in a very "pure" way,
 # as regular feed-forward layers.
-# 
-# This CharRNN class implements an RNN with three components. 
+#
+# This CharRNN class implements an RNN with three components.
 # First, we use the `nn.RNN implementation <https://pytorch.org/docs/stable/generated/torch.nn.RNN.html>`__.
 # Next, we define a layer that maps the RNN hidden layers to our output. And finally, we apply a ``softmax`` function. Using ``nn.RNN``
-# leads to a significant improvement in performance, such as cuDNN-accelerated kernels, versus implementing 
+# leads to a significant improvement in performance, such as cuDNN-accelerated kernels, versus implementing
 # each layer as a ``nn.Linear``. It also simplifies the implementation in ``forward()``.
 #
 
@@ -240,7 +245,7 @@ class CharRNN(nn.Module):
         self.rnn = nn.RNN(input_size, hidden_size)
         self.h2o = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
-    
+
     def forward(self, line_tensor):
         rnn_out, hidden = self.rnn(line_tensor)
         output = self.h2o(hidden[0])
@@ -250,14 +255,14 @@ class CharRNN(nn.Module):
 
 
 ###########################
-# We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:
+# We can then create an RNN with 58 input nodes, 128 hidden nodes, and 18 outputs:
 
 n_hidden = 128
 rnn = CharRNN(n_letters, n_hidden, len(alldata.labels_uniq))
-print(rnn) 
+print(rnn)
 
 ######################################################################
-# After that we can pass our Tensor to the RNN to obtain a predicted output. Subsequently,  
+# After that we can pass our Tensor to the RNN to obtain a predicted output. Subsequently,
 # we use a helper function, ``label_from_output``, to derive a text label for the class.
 
 def label_from_output(output, output_labels):
@@ -267,7 +272,7 @@ def label_from_output(output, output_labels):
 
 input = lineToTensor('Albert')
 output = rnn(input) #this is equivalent to ``output = rnn.forward(input)``
-print(output) 
+print(output)
 print(label_from_output(output, alldata.labels_uniq))
 
 ######################################################################
@@ -283,13 +288,13 @@ print(label_from_output(output, alldata.labels_uniq))
 # Now all it takes to train this network is show it a bunch of examples,
 # have it make guesses, and tell it if it's wrong.
 #
-# We do this by defining a ``train()`` function which trains the model on a given dataset using minibatches. RNNs 
+# We do this by defining a ``train()`` function which trains the model on a given dataset using minibatches. RNNs
 # RNNs are trained similarly to other networks; therefore, for completeness, we include a batched training method here.
-# The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the 
-# weights. This operation is repeated until the number of epochs is reached. 
+# The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the
+# weights. This operation is repeated until the number of epochs is reached.
 
-import random 
-import numpy as np 
+import random
+import numpy as np
 
 def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50, learning_rate = 0.2, criterion = nn.NLLLoss()):
     """
@@ -298,14 +303,14 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
     # Keep track of losses for plotting
     current_loss = 0
     all_losses = []
-    rnn.train() 
+    rnn.train()
     optimizer = torch.optim.SGD(rnn.parameters(), lr=learning_rate)
 
     start = time.time()
     print(f"training on data set with n = {len(training_data)}")
 
-    for iter in range(1, n_epoch + 1): 
-        rnn.zero_grad() # clear the gradients 
+    for iter in range(1, n_epoch + 1):
+        rnn.zero_grad() # clear the gradients
 
         # create some minibatches
         # we cannot use dataloaders because each of our names is a different length
@@ -313,7 +318,7 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
         random.shuffle(batches)
         batches = np.array_split(batches, len(batches) //n_batch_size )
 
-        for idx, batch in enumerate(batches): 
+        for idx, batch in enumerate(batches):
             batch_loss = 0
             for i in batch: #for each example in this batch
                 (label_tensor, text_tensor, label, text) = training_data[i]
@@ -328,16 +333,16 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
             optimizer.zero_grad()
 
             current_loss += batch_loss.item() / len(batch)
-        
+
         all_losses.append(current_loss / len(batches) )
         if iter % report_every == 0:
             print(f"{iter} ({iter / n_epoch:.0%}): \t average batch loss = {all_losses[-1]}")
         current_loss = 0
-    
+
     return all_losses
 
 ##########################################################################
-# We can now train a dataset with minibatches for a specified number of epochs. The number of epochs for this 
+# We can now train a dataset with minibatches for a specified number of epochs. The number of epochs for this
 # example is reduced to speed up the build. You can get better results with different parameters.
 
 start = time.time()
@@ -373,12 +378,12 @@ plt.show()
 
 def evaluate(rnn, testing_data, classes):
     confusion = torch.zeros(len(classes), len(classes))
-    
+
     rnn.eval() #set to eval mode
     with torch.no_grad(): # do not record the gradients during eval phase
         for i in range(len(testing_data)):
             (label_tensor, text_tensor, label, text) = testing_data[i]
-            output = rnn(text_tensor)   
+            output = rnn(text_tensor)
             guess, guess_i = label_from_output(output, classes)
             label_i = classes.index(label)
             confusion[label_i][guess_i] += 1
@@ -409,7 +414,7 @@ def evaluate(rnn, testing_data, classes):
 
 
 evaluate(rnn, test_set, classes=alldata.labels_uniq)
- 
+
 
 ######################################################################
 # You can pick out bright spots off the main axis that show which
@@ -429,7 +434,7 @@ evaluate(rnn, test_set, classes=alldata.labels_uniq)
 #    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
 #    -  Modify the size of the layers, such as increasing or decreasing the number of hidden nodes or adding additional linear layers
 #    -  Combine multiple of these RNNs as a higher level network
-# 
+#
 # -  Try with a different dataset of line -> label, for example:
 #
 #    -  Any word -> language
