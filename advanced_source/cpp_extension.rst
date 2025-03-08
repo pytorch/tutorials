@@ -7,6 +7,11 @@ Custom C++ and CUDA Extensions
     This tutorial is deprecated as of PyTorch 2.4. Please see :ref:`custom-ops-landing-page`
     for the newest up-to-date guides on extending PyTorch with Custom C++/CUDA Extensions.
 
+.. note::
+
+    A blog on writing extensions for AMD ROCm can be found `here
+    <https://rocm.blogs.amd.com/artificial-intelligence/cpp-extn/readme.html>`_.
+
 PyTorch provides a plethora of operations related to neural networks, arbitrary
 tensor algebra, data wrangling and other purposes. However, you may still find
 yourself in need of a more customized operation. For example, you might want to
