@@ -43,7 +43,7 @@ to be the output, i.e. which class the word belongs to.
 
 Specifically, we'll train on a few thousand surnames from 18 languages
 of origin, and predict which language a name is from based on the
-spelling. 
+spelling.
 
 Recommended Preparation
 =======================
@@ -69,10 +69,10 @@ It would also be useful to know about RNNs and how they work:
 
 .. GENERATED FROM PYTHON SOURCE LINES 53-58
 
-Preparing Torch 
+Preparing Torch
 ==========================
 
-Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). 
+Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA).
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 58-69
@@ -80,7 +80,7 @@ Set up torch to default to the right device use GPU acceleration depending on yo
 .. code-block:: default
 
 
-    import torch 
+    import torch
 
     # Check if CUDA is available
     device = torch.device('cpu')
@@ -108,7 +108,7 @@ Set up torch to default to the right device use GPU acceleration depending on yo
 Preparing the Data
 ==================
 
-Download the data from `here <https://download.pytorch.org/tutorial/data.zip>`__ 
+Download the data from `here <https://download.pytorch.org/tutorial/data.zip>`__
 and extract it to the current directory.
 
 Included in the ``data/names`` directory are 18 text files named as
@@ -116,21 +116,22 @@ Included in the ``data/names`` directory are 18 text files named as
 line, mostly romanized (but we still need to convert from Unicode to
 ASCII).
 
-The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to 
-limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. 
+The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to
+limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-98
+.. GENERATED FROM PYTHON SOURCE LINES 83-99
 
 .. code-block:: default
 
 
-    import string 
+    import string
     import unicodedata
 
-    allowed_characters = string.ascii_letters + " .,;'"
-    n_letters = len(allowed_characters) 
+    # We can use "_" to represent an out-of-vocabulary character, that is, any character we are not handling in our model
+    allowed_characters = string.ascii_letters + " .,;'" + "_"
+    n_letters = len(allowed_characters)
 
-    # Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427    
+    # Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427
     def unicodeToAscii(s):
         return ''.join(
             c for c in unicodedata.normalize('NFD', s)
@@ -145,12 +146,12 @@ limit the RNN input layers. This is accomplished by converting Unicode strings t
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-101
+.. GENERATED FROM PYTHON SOURCE LINES 100-102
 
 Here's an example of converting a unicode alphabet name to plain ASCII. This simplifies the input layer
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-104
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 .. code-block:: default
 
@@ -170,7 +171,7 @@ Here's an example of converting a unicode alphabet name to plain ASCII. This sim
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-120
+.. GENERATED FROM PYTHON SOURCE LINES 106-121
 
 Turning Names into Tensors
 ==========================
@@ -188,14 +189,18 @@ To make a word we join a bunch of those into a 2D matrix
 That extra 1 dimension is because PyTorch assumes everything is in
 batches - we're just using a batch size of 1 here.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-133
+.. GENERATED FROM PYTHON SOURCE LINES 121-138
 
 .. code-block:: default
 
 
     # Find letter index from all_letters, e.g. "a" = 0
     def letterToIndex(letter):
-        return allowed_characters.find(letter)
+        # return our out-of-vocabulary character if we encounter a letter unknown to our model
+        if letter not in allowed_characters:
+            return allowed_characters.find("_")
+        else:
+            return allowed_characters.find(letter)
 
     # Turn a line into a <line_length x 1 x n_letters>,
     # or an array of one-hot letter vectors
@@ -212,11 +217,11 @@ batches - we're just using a batch size of 1 here.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-135
+.. GENERATED FROM PYTHON SOURCE LINES 139-140
 
 Here are some examples of how to use ``lineToTensor()`` for a single and multiple character string.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-139
+.. GENERATED FROM PYTHON SOURCE LINES 140-144
 
 .. code-block:: default
 
@@ -235,42 +240,42 @@ Here are some examples of how to use ``lineToTensor()`` for a single and multipl
     The letter 'a' becomes tensor([[[1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]]], device='cuda:0')
+              0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0')
     The name 'Ahn' becomes tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]]], device='cuda:0')
+              0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0')
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-146
+.. GENERATED FROM PYTHON SOURCE LINES 145-151
 
-Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach 
+Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach
 for other RNN tasks with text.
 
-Next, we need to combine all our examples into a dataset so we can train, test and validate our models. For this, 
-we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__ classes 
+Next, we need to combine all our examples into a dataset so we can train, test and validate our models. For this,
+we will use the `Dataset and DataLoader <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`__ classes
 to hold our dataset. Each Dataset needs to implement three functions: ``__init__``, ``__len__``, and ``__getitem__``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-195
+.. GENERATED FROM PYTHON SOURCE LINES 151-200
 
 .. code-block:: default
 
     from io import open
     import glob
     import os
-    import time 
+    import time
 
     import torch
     from torch.utils.data import Dataset
@@ -279,26 +284,26 @@ to hold our dataset. Each Dataset needs to implement three functions: ``__init__
 
         def __init__(self, data_dir):
             self.data_dir = data_dir #for provenance of the dataset
-            self.load_time = time.localtime #for provenance of the dataset 
+            self.load_time = time.localtime #for provenance of the dataset
             labels_set = set() #set of all classes
 
             self.data = []
             self.data_tensors = []
-            self.labels = [] 
-            self.labels_tensors = [] 
+            self.labels = []
+            self.labels_tensors = []
 
             #read all the ``.txt`` files in the specified directory
-            text_files = glob.glob(os.path.join(data_dir, '*.txt'))                           
+            text_files = glob.glob(os.path.join(data_dir, '*.txt'))
             for filename in text_files:
                 label = os.path.splitext(os.path.basename(filename))[0]
                 labels_set.add(label)
                 lines = open(filename, encoding='utf-8').read().strip().split('\n')
-                for name in lines: 
+                for name in lines:
                     self.data.append(name)
                     self.data_tensors.append(lineToTensor(name))
                     self.labels.append(label)
 
-            #Cache the tensor representation of the labels 
+            #Cache the tensor representation of the labels
             self.labels_uniq = list(labels_set)
             for idx in range(len(self.labels)):
                 temp_tensor = torch.tensor([self.labels_uniq.index(self.labels[idx])], dtype=torch.long)
@@ -311,7 +316,7 @@ to hold our dataset. Each Dataset needs to implement three functions: ``__init__
             data_item = self.data[idx]
             data_label = self.labels[idx]
             data_tensor = self.data_tensors[idx]
-            label_tensor = self.labels_tensors[idx] 
+            label_tensor = self.labels_tensors[idx]
 
             return label_tensor, data_tensor, data_label, data_item
 
@@ -323,11 +328,11 @@ to hold our dataset. Each Dataset needs to implement three functions: ``__init__
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-197
+.. GENERATED FROM PYTHON SOURCE LINES 201-202
 
 Here we can load our example data into the ``NamesDataset``
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-202
+.. GENERATED FROM PYTHON SOURCE LINES 202-207
 
 .. code-block:: default
 
@@ -345,46 +350,46 @@ Here we can load our example data into the ``NamesDataset``
  .. code-block:: none
 
     loaded 20074 items of data
-    example = (tensor([7], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+    example = (tensor([0], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]],
+              0., 0., 0., 0., 0., 0., 0.]],
 
             [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
               0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-              0., 0., 0., 0., 0., 0.]]], device='cuda:0'), 'Arabic', 'Khoury')
+              0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0'), 'Arabic', 'Khoury')
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-206
+.. GENERATED FROM PYTHON SOURCE LINES 208-211
 
-Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20 
- split but the ``torch.utils.data`` has more useful utilities. Here we specify a generator since we need to use the 
-same device as PyTorch defaults to above. 
+Using the dataset object allows us to easily split the data into train and test sets. Here we create a 80/20
+ split but the ``torch.utils.data`` has more useful utilities. Here we specify a generator since we need to use the
+same device as PyTorch defaults to above.
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-211
+.. GENERATED FROM PYTHON SOURCE LINES 211-216
 
 .. code-block:: default
 
@@ -406,12 +411,12 @@ same device as PyTorch defaults to above.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-214
+.. GENERATED FROM PYTHON SOURCE LINES 217-219
 
-Now we have a basic dataset containing **20074** examples where each example is a pairing of label and name. We have also 
-split the dataset into training and testing so we can validate the model that we build. 
+Now we have a basic dataset containing **20074** examples where each example is a pairing of label and name. We have also
+split the dataset into training and testing so we can validate the model that we build.
 
-.. GENERATED FROM PYTHON SOURCE LINES 217-232
+.. GENERATED FROM PYTHON SOURCE LINES 222-237
 
 Creating the Network
 ====================
@@ -422,14 +427,14 @@ held hidden state and gradients which are now entirely handled by the
 graph itself. This means you can implement a RNN in a very "pure" way,
 as regular feed-forward layers.
 
-This CharRNN class implements an RNN with three components. 
+This CharRNN class implements an RNN with three components.
 First, we use the `nn.RNN implementation <https://pytorch.org/docs/stable/generated/torch.nn.RNN.html>`__.
 Next, we define a layer that maps the RNN hidden layers to our output. And finally, we apply a ``softmax`` function. Using ``nn.RNN``
-leads to a significant improvement in performance, such as cuDNN-accelerated kernels, versus implementing 
+leads to a significant improvement in performance, such as cuDNN-accelerated kernels, versus implementing
 each layer as a ``nn.Linear``. It also simplifies the implementation in ``forward()``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 232-252
+.. GENERATED FROM PYTHON SOURCE LINES 237-257
 
 .. code-block:: default
 
@@ -444,7 +449,7 @@ each layer as a ``nn.Linear``. It also simplifies the implementation in ``forwar
             self.rnn = nn.RNN(input_size, hidden_size)
             self.h2o = nn.Linear(hidden_size, output_size)
             self.softmax = nn.LogSoftmax(dim=1)
-    
+
         def forward(self, line_tensor):
             rnn_out, hidden = self.rnn(line_tensor)
             output = self.h2o(hidden[0])
@@ -460,18 +465,18 @@ each layer as a ``nn.Linear``. It also simplifies the implementation in ``forwar
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-254
+.. GENERATED FROM PYTHON SOURCE LINES 258-259
 
-We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:
+We can then create an RNN with 58 input nodes, 128 hidden nodes, and 18 outputs:
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-259
+.. GENERATED FROM PYTHON SOURCE LINES 259-264
 
 .. code-block:: default
 
 
     n_hidden = 128
     rnn = CharRNN(n_letters, n_hidden, len(alldata.labels_uniq))
-    print(rnn) 
+    print(rnn)
 
 
 
@@ -482,7 +487,7 @@ We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:
  .. code-block:: none
 
     CharRNN(
-      (rnn): RNN(57, 128)
+      (rnn): RNN(58, 128)
       (h2o): Linear(in_features=128, out_features=18, bias=True)
       (softmax): LogSoftmax(dim=1)
     )
@@ -490,12 +495,12 @@ We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-262
+.. GENERATED FROM PYTHON SOURCE LINES 265-267
 
-After that we can pass our Tensor to the RNN to obtain a predicted output. Subsequently,  
+After that we can pass our Tensor to the RNN to obtain a predicted output. Subsequently,
 we use a helper function, ``label_from_output``, to derive a text label for the class.
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-273
+.. GENERATED FROM PYTHON SOURCE LINES 267-278
 
 .. code-block:: default
 
@@ -507,7 +512,7 @@ we use a helper function, ``label_from_output``, to derive a text label for the 
 
     input = lineToTensor('Albert')
     output = rnn(input) #this is equivalent to ``output = rnn.forward(input)``
-    print(output) 
+    print(output)
     print(label_from_output(output, alldata.labels_uniq))
 
 
@@ -518,20 +523,20 @@ we use a helper function, ``label_from_output``, to derive a text label for the 
 
  .. code-block:: none
 
-    tensor([[-2.9390, -2.8275, -2.8058, -3.0319, -2.8306, -2.9352, -2.9732, -2.9896,
-             -2.8615, -2.9002, -2.8282, -2.8838, -2.9461, -2.9186, -2.8518, -2.8175,
-             -2.8220, -2.9018]], device='cuda:0', grad_fn=<LogSoftmaxBackward0>)
-    ('Japanese', 2)
+    tensor([[-2.8627, -2.8503, -2.8578, -3.0326, -2.8298, -2.8469, -2.9527, -2.9330,
+             -2.9295, -2.9728, -2.8209, -2.7876, -2.9343, -2.9412, -2.8902, -2.9107,
+             -2.8262, -2.8812]], device='cuda:0', grad_fn=<LogSoftmaxBackward0>)
+    ('Polish', 11)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 274-276
+.. GENERATED FROM PYTHON SOURCE LINES 279-281
 
 Training
 ========
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-290
+.. GENERATED FROM PYTHON SOURCE LINES 285-295
 
 Training the Network
 --------------------
@@ -539,18 +544,18 @@ Training the Network
 Now all it takes to train this network is show it a bunch of examples,
 have it make guesses, and tell it if it's wrong.
 
-We do this by defining a ``train()`` function which trains the model on a given dataset using minibatches. RNNs 
+We do this by defining a ``train()`` function which trains the model on a given dataset using minibatches. RNNs
 RNNs are trained similarly to other networks; therefore, for completeness, we include a batched training method here.
-The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the 
-weights. This operation is repeated until the number of epochs is reached. 
+The loop (``for i in batch``) computes the losses for each of the items in the batch before adjusting the
+weights. This operation is repeated until the number of epochs is reached.
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-339
+.. GENERATED FROM PYTHON SOURCE LINES 295-344
 
 .. code-block:: default
 
 
-    import random 
-    import numpy as np 
+    import random
+    import numpy as np
 
     def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50, learning_rate = 0.2, criterion = nn.NLLLoss()):
         """
@@ -559,14 +564,14 @@ weights. This operation is repeated until the number of epochs is reached.
         # Keep track of losses for plotting
         current_loss = 0
         all_losses = []
-        rnn.train() 
+        rnn.train()
         optimizer = torch.optim.SGD(rnn.parameters(), lr=learning_rate)
 
         start = time.time()
         print(f"training on data set with n = {len(training_data)}")
 
-        for iter in range(1, n_epoch + 1): 
-            rnn.zero_grad() # clear the gradients 
+        for iter in range(1, n_epoch + 1):
+            rnn.zero_grad() # clear the gradients
 
             # create some minibatches
             # we cannot use dataloaders because each of our names is a different length
@@ -574,7 +579,7 @@ weights. This operation is repeated until the number of epochs is reached.
             random.shuffle(batches)
             batches = np.array_split(batches, len(batches) //n_batch_size )
 
-            for idx, batch in enumerate(batches): 
+            for idx, batch in enumerate(batches):
                 batch_loss = 0
                 for i in batch: #for each example in this batch
                     (label_tensor, text_tensor, label, text) = training_data[i]
@@ -589,12 +594,12 @@ weights. This operation is repeated until the number of epochs is reached.
                 optimizer.zero_grad()
 
                 current_loss += batch_loss.item() / len(batch)
-        
+
             all_losses.append(current_loss / len(batches) )
             if iter % report_every == 0:
                 print(f"{iter} ({iter / n_epoch:.0%}): \t average batch loss = {all_losses[-1]}")
             current_loss = 0
-    
+
         return all_losses
 
 
@@ -604,12 +609,12 @@ weights. This operation is repeated until the number of epochs is reached.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 340-342
+.. GENERATED FROM PYTHON SOURCE LINES 345-347
 
-We can now train a dataset with minibatches for a specified number of epochs. The number of epochs for this 
+We can now train a dataset with minibatches for a specified number of epochs. The number of epochs for this
 example is reduced to speed up the build. You can get better results with different parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-348
+.. GENERATED FROM PYTHON SOURCE LINES 347-353
 
 .. code-block:: default
 
@@ -628,17 +633,17 @@ example is reduced to speed up the build. You can get better results with differ
  .. code-block:: none
 
     training on data set with n = 17063
-    5 (19%):         average batch loss = 0.8829364083625458
-    10 (37%):        average batch loss = 0.6896499430740273
-    15 (56%):        average batch loss = 0.5782012006221582
-    20 (74%):        average batch loss = 0.4952789762078371
-    25 (93%):        average batch loss = 0.43444103539041734
-    training took 639.0255537033081s
+    5 (19%):         average batch loss = 0.8855802874333463
+    10 (37%):        average batch loss = 0.6834526651077287
+    15 (56%):        average batch loss = 0.5745124552482949
+    20 (74%):        average batch loss = 0.48784290999346486
+    25 (93%):        average batch loss = 0.4418420332430621
+    training took 671.1016409397125s
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 349-355
+.. GENERATED FROM PYTHON SOURCE LINES 354-360
 
 Plotting the Results
 --------------------
@@ -647,7 +652,7 @@ Plotting the historical loss from ``all_losses`` shows the network
 learning:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-363
+.. GENERATED FROM PYTHON SOURCE LINES 360-368
 
 .. code-block:: default
 
@@ -671,7 +676,7 @@ learning:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 364-373
+.. GENERATED FROM PYTHON SOURCE LINES 369-378
 
 Evaluating the Results
 ======================
@@ -683,19 +688,19 @@ matrix a bunch of samples are run through the network with
 ``evaluate()``, which is the same as ``train()`` minus the backprop.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 373-414
+.. GENERATED FROM PYTHON SOURCE LINES 378-419
 
 .. code-block:: default
 
 
     def evaluate(rnn, testing_data, classes):
         confusion = torch.zeros(len(classes), len(classes))
-    
+
         rnn.eval() #set to eval mode
         with torch.no_grad(): # do not record the gradients during eval phase
             for i in range(len(testing_data)):
                 (label_tensor, text_tensor, label, text) = testing_data[i]
-                output = rnn(text_tensor)   
+                output = rnn(text_tensor)
                 guess, guess_i = label_from_output(output, classes)
                 label_i = classes.index(label)
                 confusion[label_i][guess_i] += 1
@@ -726,7 +731,7 @@ matrix a bunch of samples are run through the network with
 
 
     evaluate(rnn, test_set, classes=alldata.labels_uniq)
- 
+
 
 
 
@@ -740,7 +745,7 @@ matrix a bunch of samples are run through the network with
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 415-420
+.. GENERATED FROM PYTHON SOURCE LINES 420-425
 
 You can pick out bright spots off the main axis that show which
 languages it guesses incorrectly, e.g. Chinese for Korean, and Spanish
@@ -748,7 +753,7 @@ for Italian. It seems to do very well with Greek, and very poorly with
 English (perhaps because of overlap with other languages).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 423-438
+.. GENERATED FROM PYTHON SOURCE LINES 428-443
 
 Exercises
 =========
@@ -770,7 +775,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 10 minutes  49.945 seconds)
+   **Total running time of the script:** ( 11 minutes  23.021 seconds)
 
 
 .. _sphx_glr_download_intermediate_char_rnn_classification_tutorial.py:

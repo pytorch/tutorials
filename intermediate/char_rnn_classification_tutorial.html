@@ -549,7 +549,7 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="nlp-from-scratch-classifying-names-with-a-character-level-rnn">
-<span id="sphx-glr-intermediate-char-rnn-classification-tutorial-py"></span><h1>NLP From Scratch: Classifying Names with a Character-Level RNN<a class="headerlink" href="#nlp-from-scratch-classifying-names-with-a-character-level-rnn" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Mar 24, 2017 | Last Updated: Dec 11, 2024 | Last Verified: Nov 05, 2024</p>
+<span id="sphx-glr-intermediate-char-rnn-classification-tutorial-py"></span><h1>NLP From Scratch: Classifying Names with a Character-Level RNN<a class="headerlink" href="#nlp-from-scratch-classifying-names-with-a-character-level-rnn" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Mar 24, 2017 | Last Updated: Mar 14, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/spro">Sean Robertson</a></p>
 <p>This tutorials is part of a three-part series:</p>
 <ul class="simple">
@@ -624,7 +624,8 @@ limit the RNN input layers. This is accomplished by converting Unicode strings t
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">unicodedata</span>
 
-<span class="n">allowed_characters</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span> <span class="o">+</span> <span class="s2">" .,;'"</span>
+<span class="c1"># We can use "_" to represent an out-of-vocabulary character, that is, any character we are not handling in our model</span>
+<span class="n">allowed_characters</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span> <span class="o">+</span> <span class="s2">" .,;'"</span> <span class="o">+</span> <span class="s2">"_"</span>
 <span class="n">n_letters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">allowed_characters</span><span class="p">)</span>
 
 <span class="c1"># Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427</span>
@@ -657,7 +658,11 @@ at index of the current letter, e.g. <code class="docutils literal notranslate">
 batches - we’re just using a batch size of 1 here.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find letter index from all_letters, e.g. "a" = 0</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">letterToIndex</span><span class="p">(</span><span class="n">letter</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">allowed_characters</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
+    <span class="c1"># return our out-of-vocabulary character if we encounter a letter unknown to our model</span>
+    <span class="k">if</span> <span class="n">letter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_characters</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">allowed_characters</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">allowed_characters</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
 
 <span class="c1"># Turn a line into a &lt;line_length x 1 x n_letters&gt;,</span>
 <span class="c1"># or an array of one-hot letter vectors</span>
@@ -676,21 +681,21 @@ batches - we’re just using a batch size of 1 here.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The letter 'a' becomes tensor([[[1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]]], device='cuda:0')
+          0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0')
 The name 'Ahn' becomes tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]]], device='cuda:0')
+          0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0')
 </pre></div>
 </div>
 <p>Congratulations, you have built the foundational tensor objects for this learning task! You can use a similar approach
@@ -754,35 +759,35 @@ to hold our dataset. Each Dataset needs to implement three functions: <code clas
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loaded 20074 items of data
-example = (tensor([7], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+example = (tensor([0], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]],
+          0., 0., 0., 0., 0., 0., 0.]],
 
         [[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-          0., 0., 0., 0., 0., 0.]]], device='cuda:0'), 'Arabic', 'Khoury')
+          0., 0., 0., 0., 0., 0., 0.]]], device='cuda:0'), 'Arabic', 'Khoury')
 </pre></div>
 </div>
 <dl class="simple">
@@ -832,14 +837,14 @@ each layer as a <code class="docutils literal notranslate"><span class="pre">nn.
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a>
 </pre></div>
 </div>
-<p>We can then create an RNN with 57 input nodes, 128 hidden nodes, and 18 outputs:</p>
+<p>We can then create an RNN with 58 input nodes, 128 hidden nodes, and 18 outputs:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_hidden</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">rnn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">CharRNN</span></a><span class="p">(</span><span class="n">n_letters</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alldata</span><span class="o">.</span><span class="n">labels_uniq</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">rnn</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>CharRNN(
-  (rnn): RNN(57, 128)
+  (rnn): RNN(58, 128)
   (h2o): Linear(in_features=128, out_features=18, bias=True)
   (softmax): LogSoftmax(dim=1)
 )
@@ -858,10 +863,10 @@ we use a helper function, <code class="docutils literal notranslate"><span class
 <span class="nb">print</span><span class="p">(</span><span class="n">label_from_output</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">alldata</span><span class="o">.</span><span class="n">labels_uniq</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9390, -2.8275, -2.8058, -3.0319, -2.8306, -2.9352, -2.9732, -2.9896,
-         -2.8615, -2.9002, -2.8282, -2.8838, -2.9461, -2.9186, -2.8518, -2.8175,
-         -2.8220, -2.9018]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
-('Japanese', 2)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8627, -2.8503, -2.8578, -3.0326, -2.8298, -2.8469, -2.9527, -2.9330,
+         -2.9295, -2.9728, -2.8209, -2.7876, -2.9343, -2.9412, -2.8902, -2.9107,
+         -2.8262, -2.8812]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
+('Polish', 11)
 </pre></div>
 </div>
 </div>
@@ -933,12 +938,12 @@ example is reduced to speed up the build. You can get better results with differ
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>training on data set with n = 17063
-5 (19%):         average batch loss = 0.8829364083625458
-10 (37%):        average batch loss = 0.6896499430740273
-15 (56%):        average batch loss = 0.5782012006221582
-20 (74%):        average batch loss = 0.4952789762078371
-25 (93%):        average batch loss = 0.43444103539041734
-training took 639.0255537033081s
+5 (19%):         average batch loss = 0.8855802874333463
+10 (37%):        average batch loss = 0.6834526651077287
+15 (56%):        average batch loss = 0.5745124552482949
+20 (74%):        average batch loss = 0.48784290999346486
+25 (93%):        average batch loss = 0.4418420332430621
+training took 671.1016409397125s
 </pre></div>
 </div>
 </div>
@@ -1028,7 +1033,7 @@ English (perhaps because of overlap with other languages).</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 10 minutes  49.945 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 11 minutes  23.021 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/37c8905519d3fd3f437b783a48d06eac/char_rnn_classification_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></p>
