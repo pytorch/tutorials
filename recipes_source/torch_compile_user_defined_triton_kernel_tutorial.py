@@ -227,12 +227,6 @@ def sin_kernel(
     output = tl.sin(x)
     tl.store(out_ptr + offsets, output, mask=mask)
 
-def sin_triton(x):
-    out = torch.empty_like(x)
-    n_elements = x.numel()
-    sin_kernel[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4)
-    return out
-
 ######################################################################
 # You can invoke the ``triton_op`` in one of the following two ways.
 
