@@ -1,7 +1,7 @@
 PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
 ==================================================================
 
-**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Liu River <https://github.com/riverliuintel>`_, `Cui Yifeng <https://github.com/CuiYifeng>`_
+**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Zhang, Liangang <https://github.com/liangan1>`_, `Liu River <https://github.com/riverliuintel>`_, `Cui Yifeng <https://github.com/CuiYifeng>`_
 
 Prerequisites
 ---------------
@@ -23,12 +23,12 @@ The quantization flow mainly includes three steps:
 
 - Step 1: Capture the FX Graph from the eager Model based on the `torch export mechanism <https://pytorch.org/docs/main/export.html>`_.
 - Step 2: Apply the Quantization flow based on the captured FX Graph, including defining the backend-specific quantizer, generating the prepared model with observers,
-  performing the prepared model's calibration or quantization-aware training, and converting the prepared model into the quantized model.
+  performing the prepared model's calibration, and converting the prepared model into the quantized model.
 - Step 3: Lower the quantized model into inductor with the API ``torch.compile``. 
 
-During Step 3, the inductor would decide which kernels are dispatched into. There are two kinds of kernels the Intel GPU would obtain benefits, oneDNN kernels and triton kernels. `Intel oneAPI Deep Neural Network Library (oneDNN) <https://github.com/uxlfoundation/oneDNN>` contains 
-highly-optimized quantized Cong/GEMM kernels for both CPU and GPU. Furthermore, oneDNN supports extra operator fusion on these operators, like quantized linear with eltwise activation function(ReLU) and binary operation(add, inplace sum).
-Besides oneDNN kernels, triton would be responsible for generating kernels on our GPUs, like operators `quantize` and `dequantize`. The triton kernels are optimized by `Intel XPU Backend for Triton <https://github.com/intel/intel-xpu-backend-for-triton>`
+During Step 3, the inductor would decide which kernels are dispatched into. There are two kinds of kernels the Intel GPU would obtain benefits, oneDNN kernels and triton kernels. `Intel oneAPI Deep Neural Network Library (oneDNN) <https://github.com/uxlfoundation/oneDNN>`_ contains 
+highly-optimized quantized Conv/GEMM kernels for both CPU and GPU. Furthermore, oneDNN supports extra operator fusion on these operators, like quantized linear with eltwise activation function(ReLU) and binary operation(add, inplace sum).
+Besides oneDNN kernels, triton would be responsible for generating kernels on our GPUs, like operators `quantize` and `dequantize`. The triton kernels are optimized by `Intel XPU Backend for Triton <https://github.com/intel/intel-xpu-backend-for-triton>`_
 
 
 The high-level architecture of this flow could look like this:
@@ -178,6 +178,7 @@ Besides the default quant configuration (asymmetric quantized activation), we al
 Then, we can set the quantization configuration to the quantizer.
 
 ::
+
     quantizer = XPUInductorQuantizer()
     quantizer.set_global(get_xpu_inductor_symm_quantization_config())
 
